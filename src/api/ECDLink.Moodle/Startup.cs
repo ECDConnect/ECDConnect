@@ -11,7 +11,7 @@ namespace ECDLink.Moodle
     {
         public static void ConfigureMoodleServices(IServiceCollection services, IConfiguration config)
         {
-            services.AddTransient<ITrainingService, TrainingService>();
+            services.AddTransient<ITrainingService, TrainingMoodleService>();
             services.AddControllers();
         }
 

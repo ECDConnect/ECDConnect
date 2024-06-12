@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<IEnumerable<UserTrainingCourse>> GetCurrentUserCompletedTrainingCourses(
           [Service] IHttpContextAccessor httpContextAccessor,
-          ITrainingService trainingService)
+          [Service] ITrainingService trainingService)
         {
             var requestingUser = httpContextAccessor.HttpContext.GetUser();
             var list = await trainingService.GetUserCompletedCourses(requestingUser.Id);
