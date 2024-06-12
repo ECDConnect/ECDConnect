@@ -53,11 +53,11 @@ export const SetupPrincipal: React.FC = () => {
   const { syncClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
-  const classroom = useSelector(classroomsSelectors.getClassroom);
   const user = useSelector(userSelectors.getUser);
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [isNotPrincipal, setIsNotPrincipal] = useState(false);
   const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
@@ -107,7 +107,7 @@ export const SetupPrincipal: React.FC = () => {
   }, [page, previousPage]);
 
   const onAllStepsComplete = async () => {
-    if (isNotPrincipal === true) {
+    if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
@@ -175,6 +175,10 @@ export const SetupPrincipal: React.FC = () => {
         })
       );
 
+      if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+        history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+        return;
+      }
       await appDispatch(
         practitionerThunkActions.updatePractitionerProgress({
           practitionerId: user.id,
@@ -415,11 +419,7 @@ export const SetupPrincipal: React.FC = () => {
             ? ''
             : label
         }
-        onBack={
-          !isFundaAppAdmin && isNotPrincipal
-            ? () => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)
-            : onBack
-        }
+        onBack={onBack}
         onClose={exitPrompt}
         backgroundColour={'white'}
         className={'relative'}

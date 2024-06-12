@@ -1539,6 +1539,30 @@ class PractitionerService {
 
     return response.data.data.updatePractitionerBusinessWalkthrough;
   }
+
+  async practitionerInvitePrincipal(
+    principalPhoneNumber: string,
+    practitionerUserId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation SendPrincipalInviteToApplication($principalPhoneNumber: String, $practitionerUserId: UUID!) {
+  sendPrincipalInviteToApplication(principalPhoneNumber: $principalPhoneNumber, practitionerUserId: $practitionerUserId)
+}
+      `,
+      variables: {
+        principalPhoneNumber,
+        practitionerUserId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Invite principal Failed - Server connection error');
+    }
+
+    return response.data.data.sendPrincipalInviteToApplication;
+  }
 }
 
 export default PractitionerService;

@@ -145,14 +145,14 @@ export const Article = ({
               {showClose && (
                 <div className={styles.bottom}>
                   <Button
-                    color={'primary'}
-                    type={'outlined'}
+                    color={'quatenary'}
+                    type={'filled'}
                     onClick={onClose}
                     className={styles.closeButton}
                   >
                     {renderIcon('XIcon', 'h-4 w-4 mr-2')}
                     <Typography
-                      color={'primary'}
+                      color={'white'}
                       type={'body'}
                       weight={'bold'}
                       text={'Close'}

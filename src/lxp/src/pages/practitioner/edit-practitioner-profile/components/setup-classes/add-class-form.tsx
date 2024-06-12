@@ -99,7 +99,10 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       .filter(Boolean) as { label: string; value: any }[];
 
     _list.push({
-      label: currentPractitioner?.user?.fullName || '',
+      label:
+        currentPractitioner?.user?.fullName ||
+        currentPractitioner?.user?.firstName ||
+        '',
       value: currentPractitioner?.userId,
     });
 

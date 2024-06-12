@@ -8,9 +8,9 @@ import {
   LoadingSpinner,
   CheckboxGroup,
 } from '@ecdlink/ui';
-import { UserDto } from '@ecdlink/core';
+import { PractitionerDto, UserDto } from '@ecdlink/core';
 import { useState, useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { FieldError, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   AddPractitionerModel,
@@ -20,7 +20,10 @@ import {
 import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { RegisterPractitioner } from '../../setup-principal/setup-principal.types';
+import {
+  ConfirmPractitionersSteps,
+  RegisterPractitioner,
+} from '../../setup-principal/setup-principal.types';
 import { UserIcon } from '@heroicons/react/solid';
 import {
   AddPractitinerInitialState,
@@ -32,23 +35,27 @@ import {
 } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
-import { useAppDispatch } from '@/store';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
+import { StackListItems } from './confirm-practitioners';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
   formData,
   listItems,
+  setListItems,
+  setConfirmPractitionerPage,
 }: {
   onSubmit: (data: RegisterPractitioner) => void;
   formData?: AddPractitionerModel;
-  listItems?: any[];
+  listItems?: StackListItems[];
+  setListItems?: (item: StackListItems[]) => void;
+  setConfirmPractitionerPage?: (item: ConfirmPractitionersSteps) => void;
 }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const dispatch = useAppDispatch();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
   const {
     register,
     control,
@@ -79,6 +86,7 @@ export const AddOrEditPractitioner = ({
     control,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
 
   const getPractitionerDetailsByIdNumber = async () => {
     // Check if the practitioner exists
@@ -151,6 +159,7 @@ export const AddOrEditPractitioner = ({
   };
 
   const handleSubmit = async () => {
+    setIsLoadingSubmit(true);
     const { firstName, idNumber, passport, surname } = getValues();
 
     const practitionerUserDetails: any =
@@ -180,6 +189,19 @@ export const AddOrEditPractitioner = ({
         practitionerUserDetails?.appUser?.practitionerObjectData?.isTrainee
       ),
     });
+    setIsLoadingSubmit(false);
+  };
+
+  const handleRemoveuser = () => {
+    const filteredPractitioners = listItems?.filter(
+      (item) => item?.idNumber !== idNumber
+    );
+    setListItems && setListItems(filteredPractitioners as StackListItems[]);
+
+    setConfirmPractitionerPage &&
+      setConfirmPractitionerPage(
+        ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS
+      );
   };
 
   const callForHelp = () => {
@@ -215,7 +237,7 @@ export const AddOrEditPractitioner = ({
           />
         </div>
         <div>
-          {preferId && (
+          {preferId && !isOpenAccess && (
             <div className="mt-4 flex items-center justify-between">
               <FormInput<AddPractitionerModel>
                 label={'Practitioner ID number'}
@@ -225,11 +247,25 @@ export const AddOrEditPractitioner = ({
                 error={errors['idNumber']}
                 placeholder={'E.g. 7601010338089'}
                 className="mr-2 w-full pb-2"
+                disabled={isEdit}
+              />
+            </div>
+          )}
+          {preferId && isOpenAccess && (
+            <div className="mt-4 flex items-center justify-between">
+              <FormInput<AddPractitionerModel>
+                label={'Practitioner username'}
+                visible={true}
+                nameProp={'idNumber'}
+                register={register}
+                placeholder={'e.g. Nothando_123'}
+                className="mr-2 w-full pb-2"
+                disabled={isEdit}
               />
             </div>
           )}
           <div>
-            {!preferId && (
+            {!preferId && !isOpenAccess && (
               <div className="mt-4 flex items-center justify-between">
                 <FormInput<AddPractitionerModel>
                   label={'Practitioner Passport number'}
@@ -238,10 +274,11 @@ export const AddOrEditPractitioner = ({
                   error={errors['passport']}
                   register={register}
                   className="mr-2 w-full pb-2"
+                  disabled={isEdit}
                 />
               </div>
             )}
-            {!preferId && (
+            {!preferId && !isOpenAccess && (
               <Button
                 className={'mt-3 mb-2'}
                 type="outlined"
@@ -253,7 +290,7 @@ export const AddOrEditPractitioner = ({
                 onClick={() => setValue('preferId', true)}
               />
             )}
-            {preferId && (
+            {preferId && !isOpenAccess && (
               <Button
                 className={'mt-3 mb-2'}
                 textColor="secondary"
@@ -266,7 +303,7 @@ export const AddOrEditPractitioner = ({
               />
             )}
           </div>
-          {(idNumber || passport) && !isEdit && (
+          {!isEdit && (
             <div>
               <Button
                 size="normal"
@@ -277,6 +314,7 @@ export const AddOrEditPractitioner = ({
                 textColor="white"
                 icon="SearchIcon"
                 onClick={handleSearch}
+                disabled={!idNumber && !passport}
               />
               <Alert
                 className="mt-2 mb-2 rounded-md"
@@ -324,22 +362,9 @@ export const AddOrEditPractitioner = ({
         {isValidPractitioner === false && (
           <div className="mb-8">
             <Alert
-              type={'error'}
-              title={'We do not have this practitioner on record.'}
-              list={[
-                'Check if the ID you entered is correct.',
-                'Make sure the practitioner is a SmartStarter.',
-                'If you have entered the correct information, contact the call centre or tap Skip to solve the problem later.',
-              ]}
-              button={
-                <Button
-                  text="Contact call centre"
-                  icon="PhoneIcon"
-                  type={'filled'}
-                  color={'primary'}
-                  textColor={'white'}
-                  onClick={callForHelp}
-                />
+              type={'warning'}
+              title={
+                'Oh dear! It looks like you practitioner has not joined AppName yet.'
               }
             />
           </div>
@@ -403,18 +428,33 @@ export const AddOrEditPractitioner = ({
           textColor="white"
           icon="SaveIcon"
           disabled={
-            !isValid || isValidPractitioner === false || addNote || isPrincipal
+            (!idNumber && !passport) ||
+            isValidPractitioner === false ||
+            addNote ||
+            isPrincipal
           }
           onClick={handleSubmit}
         />
+        {isEdit && (
+          <Button
+            size="normal"
+            className="mb-4 w-full"
+            type="outlined"
+            color="quatenary"
+            text="Remove practitioner"
+            textColor="quatenary"
+            icon="SaveIcon"
+            onClick={handleRemoveuser}
+          />
+        )}
         {isValidPractitioner === false && (
           <Button
             size="normal"
             className="mb-4 w-full"
             type="outlined"
-            color="primary"
+            color="quatenary"
             text="Skip"
-            textColor="primary"
+            textColor="quatenary"
             icon="ArrowCircleRightIcon"
             onClick={handleReset}
           />

@@ -109,7 +109,10 @@ export const EditPractitionerProfile: React.FC = () => {
           await new PractitionerService(
             userAuth.auth_token
           ).UpdatePractitionerRegistered(user.id, true);
-
+          if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+            history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+            return;
+          }
           await new PractitionerService(
             userAuth.auth_token
           ).UpdatePractitionerProgress(user.id, 2.0);

@@ -68,6 +68,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+
   const isPrincipal = practitioner?.isPrincipal === true;
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
     useDocuments();

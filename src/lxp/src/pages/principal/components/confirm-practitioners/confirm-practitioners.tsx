@@ -173,12 +173,10 @@ export default function ConfirmPractitioners({
       return {
         title: `${data.firstName} ${data.surname}`,
         idNumber: data.idNumber ?? data.passport,
-        subTitle: data.isRegistered ? 'Practitioner' : 'Not on Funda App',
+        subTitle: 'Practitioner',
         titleStyle:
           'text-textDark font-body text-base font-semibold leading-snug ',
-        subTitleStyle: `${
-          data.isRegistered ? 'text-textMid' : 'text-alertDark'
-        } font-body text-sm leading-5 `,
+        subTitleStyle: 'text-textMid',
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         buttonType: 'filled',
@@ -298,6 +296,8 @@ export default function ConfirmPractitioners({
             onSubmit={handleAddOrEditPractitionerSubmit}
             formData={editPractitioner}
             listItems={listItems}
+            setListItems={setListItems}
+            setConfirmPractitionerPage={setConfirmPractitionerPage}
           />
         );
       case ConfirmPractitionersSteps.ADD_PRACTITIONER:

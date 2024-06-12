@@ -1,249 +1,163 @@
-import { ProgrammeTypeDto } from '@ecdlink/core';
-import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
   Button,
-  ButtonGroup,
   Card,
+  Checkbox,
+  Dialog,
+  DialogPosition,
   FormInput,
+  LoadingSpinner,
   Typography,
 } from '@ecdlink/ui';
-import { ButtonGroupTypes } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
-import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '@store/static-data';
-// import * as styles from './add-programme-form.styles';
-import {
-  EditProgrammeModel,
-  editProgrammeSchema,
-} from '@schemas/practitioner/edit-programme';
-import { userSelectors } from '@/store/user';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@/store/classroom';
-import { useAppDispatch } from '@/store';
-import { newGuid } from '@/utils/common/uuid.utils';
 import {
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
-import { useEffect } from 'react';
-import { practitionerSelectors } from '@/store/practitioner';
-import { traineeSelectors } from '@/store/trainee';
-import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { useMemo, useState } from 'react';
+import { ClassroomService } from '@/services/ClassroomService';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import Article from '@/components/article/article';
+import { ContentConsentTypeEnum } from '@ecdlink/core';
+import { PrincipalCheckPreschoolCode } from './components/principal-check-preschool-code';
+import { InvitePrincipal } from './components/invite-principal';
+import { useTenant } from '@/hooks/useTenant';
+import { practitionerThunkActions } from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
+import { userSelectors } from '@/store/user';
+import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
+import { PractitionerService } from '@/services/PractitionerService';
+import { notificationActions } from '@/store/notifications';
+import { useNotificationService } from '@/hooks/useNotificationService';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 
 export const PreschoolCodeCheck: React.FC<{
   onNext: OnNext;
 }> = ({ onNext }) => {
-  const user = useSelector(userSelectors.getUser);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
-  const classroom = useSelector(classroomsSelectors.getClassroom);
-  const classroomGroups = useSelector(classroomsSelectors?.getClassroomGroups);
+  const user = useSelector(userSelectors.getUser);
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
+  const { stopService } = useNotificationService();
+  const [preschoolCode, setPreschoolCode] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [allowPermissions, setAllowPermissions] = useState(false);
+  const [viewPermissionToShare, setViewPermissionToShare] =
+    useState<boolean>(false);
+  const [principalPreschoolCodeTutorial, setPrincipalPreschoolCodeTutorial] =
+    useState(false);
+  const [invitePrincipal, setInvitePrincipal] = useState(false);
+  const [isValidPreschool, setIsValidPreschool] = useState<ClassroomDto>();
+  const [searched, setSearched] = useState(false);
+  const [classroomPrincipal, setClassroomPrincipal] = useState('');
+  const [isLoadingPractitionerInvite, setIsLoadingPractitionerInvite] =
+    useState(false);
 
-  const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
-  const traineeVisitData = useSelector(
-    traineeSelectors.getTraineeVisitData(traineeTimeline?.sSCoachVisitId)
-  );
-
-  const {
-    getValues: getProgrammeFormValues,
-    setValue: setProgrammeFormValue,
-    register: programmeFormRegister,
-    control: programmeFormControl,
-    handleSubmit,
-  } = useForm<EditProgrammeModel>({
-    resolver: yupResolver(editProgrammeSchema),
-    shouldUnregister: true,
-    mode: 'onChange',
-  });
-
-  const { isValid, errors } = useFormState({ control: programmeFormControl });
-
-  const {
-    isPrincipalOrLeader,
-    isPrincipleOrOwnerSmartStarter,
-    name,
-    type,
-    nonSmartStartPractitioners,
-    smartStartPractitioners,
-  } = useWatch<EditProgrammeModel>({
-    control: programmeFormControl,
-    defaultValue: {},
-  });
-
-  const programData = useSelector(staticDataSelectors.getProgrammeTypes);
-  const isSmartLinkImported = user?.isImported;
-  const isTrainee = practitioner?.isTrainee;
-
-  useEffect(() => {
-    if (isSmartLinkImported) {
-      // if (classroom?.isPrinciple) {
-      //   setProgrammeFormValue('isPrincipalOrLeader', true);
-      // }
-      if (classroom?.name) {
-        setProgrammeFormValue('name', classroom?.name);
-      }
-      // if (classroomGroups?.[0]?.programmeType?.id) {
-      //   setProgrammeFormValue('type', classroomGroups?.[0]?.programmeType?.id);
-      // }
-      if (typeof classroom?.numberOfPractitioners === 'number') {
-        setProgrammeFormValue(
-          'smartStartPractitioners',
-          classroom?.numberOfPractitioners
-        );
-      }
-      if (typeof classroom?.numberOfOtherAssistants === 'number') {
-        setProgrammeFormValue(
-          'nonSmartStartPractitioners',
-          classroom?.numberOfOtherAssistants
-        );
-      }
-    }
-  }, [
-    classroom?.name,
-    classroom?.numberOfOtherAssistants,
-    classroom?.numberOfPractitioners,
-    classroomGroups,
-    isSmartLinkImported,
-    setProgrammeFormValue,
-  ]);
-
-  useEffect(() => {
-    if (isTrainee) {
-      const programmeName =
-        traineeVisitData &&
-        traineeVisitData?.find(
-          (item) => item?.question === 'What is the name of your preschool?'
-        )?.questionAnswer;
-      const programmeType =
-        traineeVisitData &&
-        traineeVisitData?.find(
-          (item) =>
-            item?.question ===
-            ' What type of programme are you running or planning to run?'
-        )?.questionAnswer;
-      if (programmeName) {
-        setProgrammeFormValue('name', programmeName);
-      }
-      if (programmeType) {
-        setProgrammeFormValue('type', programmeType);
-      }
-    }
-  }, [isTrainee, setProgrammeFormValue, traineeVisitData]);
-
-  const validationForFundaAdmin =
-    name !== undefined &&
-    name !== null &&
-    type !== undefined &&
-    type !== null &&
-    nonSmartStartPractitioners !== undefined &&
-    nonSmartStartPractitioners !== null &&
-    smartStartPractitioners !== undefined &&
-    smartStartPractitioners !== null;
-
-  const createClassroom = (
-    programme: EditProgrammeModel,
-    classroomId: string
-  ) => {
-    const classroomInputModel: ClassroomDto = {
-      id: classroomId,
-      name: programme?.name ?? '',
-      numberOfPractitioners: programme?.smartStartPractitioners
-        ? +programme?.smartStartPractitioners
-        : 0,
-      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-        ? +programme?.nonSmartStartPractitioners
-        : 0,
-      imageUrl: '',
-      principal: {
-        email: user?.email!,
-        firstName: user?.firstName!,
-        phoneNumber: user?.phoneNumber!,
-        profileImageUrl: user?.profileImageUrl!,
-        surname: user?.surname!,
-        userId: user?.id!,
-      },
-      siteAddress: {
-        addressLine1: '',
-        addressLine2: '',
-        addressLine3: '',
-        id: '',
-        name: '',
-        postalCode: '',
-        ward: '',
-      },
+  const getPractitionerResponse = async () => {
+    setIsLoadingPractitionerInvite(true);
+    const input: MutationAddPractitionerToPrincipalArgs = {
+      userId: user?.id,
+      idNumber: user?.idNumber,
+      firstName: user?.firstName,
     };
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).AddPractitionerToPrincipal(input);
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
 
-    // TODO
-    appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
-    // Should this upsert the classroom ???
+    const principalHierarchy = classroomPrincipal;
+    const userId = user?.id!;
+    const accepted = true;
+
+    await appDispatch(
+      updatePrincipalInvitation({ userId, principalHierarchy, accepted })
+    );
+
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerShareInfo(user?.id!);
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerRegistered(user?.id!, true);
+
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerProgress(user?.id!, 2.0);
+
+    await appDispatch(notificationActions.resetFrontendNotificationState());
+    await appDispatch(
+      practitionerThunkActions.getPractitionerByUserId({ userId: user?.id! })
+    );
+    await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+    stopService();
+    onNext(PractitionerSetupSteps.ADD_PHOTO);
+    setIsLoading(false);
   };
 
-  const updateClassroom = (
-    programme: EditProgrammeModel,
-    classroomId: string
-  ) => {
-    const classroomInputModel: ClassroomDto = {
-      id: classroomId,
-      name: programme?.name ?? '',
-      numberOfPractitioners: programme?.smartStartPractitioners
-        ? +programme?.smartStartPractitioners
-        : 0,
-      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-        ? +programme?.nonSmartStartPractitioners
-        : 0,
-      imageUrl: '',
-      siteAddress: classroom?.siteAddress!,
-      preschoolFeeAmount: classroom?.preschoolFeeAmount,
-      preschoolFeeAmountLastUpdateDate:
-        classroom?.preschoolFeeAmountLastUpdateDate,
-      principal: {
-        email: user?.email!,
-        firstName: user?.firstName!,
-        phoneNumber: user?.phoneNumber!,
-        profileImageUrl: user?.profileImageUrl!,
-        surname: user?.surname!,
-        userId: user?.id!,
-      },
-    };
-
-    // This won't actually call the BE
-    appDispatch(classroomsActions.updateClassroom(classroomInputModel));
-    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
-  };
-
-  const onSubmit = (e: EditProgrammeModel) => {
-    const classroomId = newGuid();
-    createClassroom(e, classroomId);
-    onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
-  };
-
-  // Do we still have imported users?
-  const onSubmitForImportedUser = (e: EditProgrammeModel) => {
-    if (!e.isPrincipalOrLeader && e.isPrincipleOrOwnerSmartStarter) {
-      onNext(PractitionerSetupSteps.ADD_PHOTO);
+  const handleSearchPreschool = async () => {
+    setIsLoading(true);
+    const preschoolCodeValidation: any = await new ClassroomService(
+      userAuth?.auth_token!
+    ).getClassroomForPreschoolCode(preschoolCode);
+    // onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
+    setIsLoading(false);
+    if (preschoolCodeValidation) {
+      setIsValidPreschool(preschoolCodeValidation);
+      setSearched(true);
+      setClassroomPrincipal(preschoolCodeValidation?.userId as any);
     } else {
-      if (classroom?.id) {
-        updateClassroom(e, classroom.id);
-      } else {
-        //an imported user could have rejected the invite which would have cleared the classroom
-        const classroomId = newGuid();
-        createClassroom(e, classroomId);
-      }
-      onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
+      setSearched(true);
+      setIsValidPreschool(undefined);
+      setPreschoolCode('');
     }
   };
+
+  const handleSkipAddPractitionerToPrincipal = async () => {
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: user?.id!,
+        progress: 1.0,
+      })
+    );
+    onNext(PractitionerSetupSteps.ADD_PHOTO);
+  };
+
+  const renderPreschoolSearchMessage = useMemo(() => {
+    if (isValidPreschool && searched) {
+      return (
+        <Alert
+          className={'mt-5 mb-3'}
+          title={`Preschool found: ${isValidPreschool?.name}`}
+          type={'success'}
+        />
+      );
+    }
+
+    if (!isValidPreschool && searched) {
+      return (
+        <Alert
+          className={'mt-5 mb-3'}
+          title={`Oops, preschool not found!`}
+          list={[
+            'Ask your principal to check the code.',
+            'Re-enter the code and tap the search button.',
+          ]}
+          type={'error'}
+        />
+      );
+    }
+
+    return null;
+  }, [isValidPreschool, searched]);
 
   return (
-    <div className="h-full pt-7">
+    <div className="h-screen overscroll-y-auto pt-7">
       <div className="flex flex-col gap-11">
         <div>
           <Card
@@ -279,42 +193,129 @@ export const PreschoolCodeCheck: React.FC<{
         textColor="secondary"
         className={'mb-4 rounded-xl'}
         size={'small'}
-        onClick={() => {}}
+        onClick={() => setPrincipalPreschoolCodeTutorial(true)}
       />
 
-      <div className="space-y-4">
+      <div className="h-fit space-y-4">
         <FormInput
           label={'Preschool code:'}
           placeholder={'AngelsDaycare001'}
           type={'text'}
+          onChange={(e) => {
+            setPreschoolCode(e?.target?.value);
+            setSearched(false);
+          }}
+          value={preschoolCode}
         ></FormInput>
 
-        {isPrincipleOrOwnerSmartStarter === true &&
-          isPrincipalOrLeader === false && (
-            <div className="my-4">
-              <Alert
-                type="warning"
-                title="Ask the principal of the programme to add your details to their programme on Funda App."
+        {preschoolCode && !isLoading && (
+          <>
+            <Button
+              type="filled"
+              color="quatenary"
+              className={'mt-1 mb-2 w-full'}
+              disabled={!preschoolCode && !isLoading}
+              isLoading={isLoading}
+              onClick={handleSearchPreschool} // Navigate to a different page if it is principle
+            >
+              {renderIcon('SearchIcon', 'mr-2 text-white w-5')}
+              <Typography
+                type={'help'}
+                text={'Search for preschool'}
+                color={'white'}
               />
-            </div>
-          )}
-        <div className="mb-2">
-          <Button
-            type="filled"
-            color="quatenary"
-            className={'mt-1 mb-2 w-full'}
-            disabled={!getProgrammeFormValues()?.name}
-            onClick={
-              isSmartLinkImported
-                ? handleSubmit(onSubmitForImportedUser)
-                : handleSubmit(onSubmit)
-            } // Navigate to a different page if it is principle
+            </Button>
+          </>
+        )}
+
+        <div>{renderPreschoolSearchMessage}</div>
+
+        {isLoading && (
+          <LoadingSpinner
+            size="medium"
+            spinnerColor="quatenary"
+            backgroundColor="uiLight"
+          />
+        )}
+
+        {isValidPreschool && searched && (
+          <div
+            className={`${
+              allowPermissions
+                ? 'border-quatenary bg-quatenaryBg border'
+                : 'bg-uiBg'
+            } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
           >
-            {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-            <Typography type={'help'} text={'Next'} color={'white'} />
-          </Button>
-        </div>
+            <Checkbox
+              description={`I give permission for my information to be shared with the preschool principal`}
+              descriptionColor="textMid"
+              checked={allowPermissions}
+              onCheckboxChange={() => setAllowPermissions(!allowPermissions)}
+            />
+            &nbsp;
+            <Button
+              color={'secondaryAccent2'}
+              type={'filled'}
+              text="Read"
+              textColor="secondary"
+              className={'rounded-xl'}
+              size={'small'}
+              onClick={() => setViewPermissionToShare(true)}
+            />
+          </div>
+        )}
+
+        <Button
+          type="filled"
+          color="quatenary"
+          className={'bottom-12 mt-1 mb-2 w-full'}
+          disabled={!isValidPreschool?.name || !allowPermissions}
+          isLoading={isLoadingPractitionerInvite}
+          onClick={getPractitionerResponse} // Navigate to a different page if it is principle
+        >
+          {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+          <Typography type={'help'} text={'Next'} color={'white'} />
+        </Button>
+        <Button
+          type="outlined"
+          color="quatenary"
+          className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
+          onClick={() =>
+            isOpenAccess
+              ? setInvitePrincipal(true)
+              : handleSkipAddPractitionerToPrincipal()
+          } // Navigate to a different page if it is principle
+        >
+          {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+          <Typography type={'help'} text={'Skip'} color={'quatenary'} />
+        </Button>
       </div>
+      <Article
+        visible={viewPermissionToShare}
+        consentEnumType={ContentConsentTypeEnum.PermissionToShare}
+        onClose={function (): void {
+          setViewPermissionToShare(false);
+        }}
+      />
+      <Dialog
+        stretch={true}
+        visible={principalPreschoolCodeTutorial}
+        position={DialogPosition.Full}
+      >
+        <PrincipalCheckPreschoolCode
+          setPrincipalPreschoolCodeTutorial={setPrincipalPreschoolCodeTutorial}
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={invitePrincipal}
+        position={DialogPosition.Full}
+      >
+        <InvitePrincipal
+          onNext={onNext}
+          setInvitePrincipal={setInvitePrincipal}
+        />
+      </Dialog>
     </div>
   );
 };

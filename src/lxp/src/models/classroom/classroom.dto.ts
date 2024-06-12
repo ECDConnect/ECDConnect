@@ -12,4 +12,5 @@ export type ClassroomDto = {
   preschoolFeeAmountLastUpdateDate?: string;
   siteAddress: SiteAddressDto;
   principal: BasePractitionerDto;
+  preschoolCode?: string;
 };
