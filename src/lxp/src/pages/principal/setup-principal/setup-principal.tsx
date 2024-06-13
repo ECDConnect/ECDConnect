@@ -54,6 +54,7 @@ export const SetupPrincipal: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const user = useSelector(userSelectors.getUser);
+  const classroom = useSelector(classroomsSelectors?.getClassroom);
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -158,13 +159,21 @@ export const SetupPrincipal: React.FC = () => {
 
     // Update the principal data
     if (userAuth?.auth_token && user?.id) {
+      if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+        history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+        return;
+      }
       await new PractitionerService(
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);
 
       await appDispatch(
-        practitionerThunkActions.updatePractitionerShareInfo({
-          practitionerId: user.id,
+        practitionerThunkActions?.getPractitionerById({ id: user?.id! })
+      );
+
+      await appDispatch(
+        practitionerThunkActions.getPractitionerByUserId({
+          userId: user?.id || '',
         })
       );
 
@@ -175,10 +184,6 @@ export const SetupPrincipal: React.FC = () => {
         })
       );
 
-      if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
-        history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
-        return;
-      }
       await appDispatch(
         practitionerThunkActions.updatePractitionerProgress({
           practitionerId: user.id,
@@ -192,15 +197,33 @@ export const SetupPrincipal: React.FC = () => {
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
         principalPractitioners.forEach(async (principalPractitioner) => {
-          const input: MutationAddPractitionerToPrincipalArgs = {
-            userId: user?.id,
-            idNumber: principalPractitioner.idNumber,
-            firstName: principalPractitioner.firstName,
-            lastName: principalPractitioner.surname,
-          };
-          await new PractitionerService(
-            userAuth?.auth_token
-          ).AddPractitionerToPrincipal(input);
+          if (
+            !principalPractitioner?.userId &&
+            principalPractitioner?.phoneNumber
+          ) {
+            const principalInvite = await new PractitionerService(
+              userAuth?.auth_token!
+            )
+              .sendPractitionerInviteToPreschool(
+                principalPractitioner?.phoneNumber,
+                classroom?.preschoolCode!,
+                user?.id!
+              )
+              .catch((error) => {
+                console.log(error);
+                return;
+              });
+          } else {
+            const input: MutationAddPractitionerToPrincipalArgs = {
+              userId: user?.id,
+              idNumber: principalPractitioner.idNumber,
+              firstName: principalPractitioner.firstName,
+              lastName: principalPractitioner.surname,
+            };
+            await new PractitionerService(
+              userAuth?.auth_token
+            ).AddPractitionerToPrincipal(input);
+          }
         });
         await appDispatch(
           practitionerThunkActions.getAllPractitioners({})

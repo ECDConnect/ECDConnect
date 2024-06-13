@@ -73,7 +73,7 @@ export default function ConfirmPractitioners({
         if (item?.userId !== user?.id)
           listItems.push(
             createStackItem({
-              firstName: item?.user?.firstName ?? '',
+              firstName: item?.user?.firstName || item?.user?.userName || '',
               surname: item?.user?.surname ?? '',
               idNumber: item?.user?.idNumber ?? '',
               userId: item?.user?.id ?? '',
@@ -81,6 +81,7 @@ export default function ConfirmPractitioners({
               preferId: !!item?.user?.idNumber,
               isRegistered: Boolean(item?.isRegistered),
               isTrainee: Boolean(item?.isTrainee),
+              phoneNumber: item?.user?.phoneNumber || '',
             })
           );
 
@@ -101,6 +102,7 @@ export default function ConfirmPractitioners({
           preferId: !!item?.user?.idNumber,
           isRegistered: Boolean(item?.isRegistered),
           isTrainee: Boolean(item?.isTrainee),
+          phoneNumber: item?.user?.phoneNumber || '',
         });
       });
 
@@ -171,7 +173,9 @@ export default function ConfirmPractitioners({
   const createStackItem = useCallback(
     (data: RegisterPractitioner): StackListItems => {
       return {
-        title: `${data.firstName} ${data.surname}`,
+        title: data.firstName
+          ? `${data.firstName} ${data.surname}`
+          : data?.phoneNumber || '',
         idNumber: data.idNumber ?? data.passport,
         subTitle: 'Practitioner',
         titleStyle:
@@ -282,9 +286,9 @@ export default function ConfirmPractitioners({
                 className="mb-4 w-full"
                 type="filled"
                 color="quatenary"
-                text="Confirm"
+                text="Save & send invitations"
                 textColor="white"
-                icon="CheckCircleIcon"
+                icon="UploadIcon"
                 onClick={handleConfirmPractitionerSubmit}
               />
             </div>

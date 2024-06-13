@@ -123,7 +123,7 @@ export const InvitePrincipal: React.FC<{
           </div>
           <div className="h-fit mt-4 mb-1">
             <FormInput
-              label={'What is your principal’s phone number?'}
+              label={`What is your principal's phone number?`}
               placeholder={'e.g 0123456789'}
               type={'number'}
               onChange={(e) => {

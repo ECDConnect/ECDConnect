@@ -3,13 +3,12 @@ import {
   FormInput,
   Button,
   Alert,
-  SA_ID_REGEX,
-  SA_PASSPORT_REGEX,
   LoadingSpinner,
   CheckboxGroup,
+  SA_CELL_REGEX,
 } from '@ecdlink/ui';
-import { PractitionerDto, UserDto } from '@ecdlink/core';
-import { useState, useEffect } from 'react';
+import { UserDto } from '@ecdlink/core';
+import { useState, useEffect, useCallback } from 'react';
 import { FieldError, useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -29,15 +28,13 @@ import {
   AddPractitinerInitialState,
   AddNewPractitionerModel,
 } from '../add-practitioner/add-practitioner.types';
-import {
-  practitionerActions,
-  practitionerSelectors,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { StackListItems } from './confirm-practitioners';
+import { userSelectors } from '@/store/user';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -72,6 +69,7 @@ export const AddOrEditPractitioner = ({
   const [isValidPractitioner, setIsValidPractitioner] = useState<boolean>();
   const [isPractitionerRegistered, setIsPractitionerRegistered] =
     useState<boolean>();
+  const user = useSelector(userSelectors.getUser);
   const [isPrincipal, setIsPrincipal] = useState<boolean>(false);
   const [newPractitioner, setNewPractitioner] =
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
@@ -79,6 +77,8 @@ export const AddOrEditPractitioner = ({
   const [isEdit, setIsEdit] = useState(false);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const permissions = useSelector(staticDataSelectors.getPermissions);
+  const [practitionerPhoneNumber, setPractitionerPhoneNumber] = useState('');
+  const [error, setError] = useState('');
 
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
 
@@ -88,7 +88,7 @@ export const AddOrEditPractitioner = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
 
-  const getPractitionerDetailsByIdNumber = async () => {
+  const getPractitionerDetailsByIdNumber = useCallback(async () => {
     // Check if the practitioner exists
     let _practitioner: UserDto = {} as UserDto;
 
@@ -107,7 +107,7 @@ export const AddOrEditPractitioner = ({
       setIsLoading(false);
     }
     return _practitioner;
-  };
+  }, [idNumber, passport, userAuth]);
 
   const handleSearch = () => {
     let validPassportOrIdNumber = true;
@@ -137,6 +137,7 @@ export const AddOrEditPractitioner = ({
           idNumber: p?.appUser?.idNumber,
           userId: p?.appUser?.id,
           username: p?.appUser?.userName,
+          userPermissions: p?.appUser?.userPermissions,
         });
       });
     }
@@ -158,39 +159,78 @@ export const AddOrEditPractitioner = ({
     setIsValidPractitioner(undefined);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
+    if (practitionerPhoneNumber) {
+      let validPhoneNumber = true;
+      validPhoneNumber = SA_CELL_REGEX.test(practitionerPhoneNumber);
+
+      if (!validPhoneNumber) {
+        setError('Phone number is not valid');
+        setIsLoading(false);
+        return;
+      } else {
+        setError('');
+      }
+    }
     setIsLoadingSubmit(true);
     const { firstName, idNumber, passport, surname } = getValues();
 
     const practitionerUserDetails: any =
       await getPractitionerDetailsByIdNumber();
 
-    const updatePermissionInput: UpdateUserPermissionInputModelInput = {
-      userId: practitionerUserDetails?.appUser?.id,
-      permissionIds: permissionsAdded,
-    };
+    if (practitionerUserDetails) {
+      const updatePermissionInput: UpdateUserPermissionInputModelInput = {
+        userId: practitionerUserDetails?.appUser?.id,
+        permissionIds: permissionsAdded,
+      };
 
-    const updatePermissions = await new PermissionsService(
-      userAuth?.auth_token!
-    ).UpdateUserPermission(updatePermissionInput);
+      const updatePermissions = await new PermissionsService(
+        userAuth?.auth_token!
+      ).UpdateUserPermission(updatePermissionInput);
+    }
 
     onSubmit({
       id: practitionerUserDetails?.appUser?.practitionerObjectData?.id ?? '',
       userId: practitionerUserDetails?.appUser?.id ?? '',
       idNumber: idNumber || passport,
-      firstName: newPractitioner?.firstName || firstName,
+      firstName:
+        newPractitioner?.firstName ||
+        firstName ||
+        newPractitioner?.username ||
+        '',
       surname: newPractitioner?.surname || surname,
       passport: passport,
       preferId: !!idNumber,
       isRegistered: Boolean(
         practitionerUserDetails?.appUser?.practitionerObjectData?.isRegistered
       ),
-      isTrainee: Boolean(
-        practitionerUserDetails?.appUser?.practitionerObjectData?.isTrainee
-      ),
+      phoneNumber: practitionerPhoneNumber ? practitionerPhoneNumber : '',
     });
     setIsLoadingSubmit(false);
-  };
+  }, [
+    getPractitionerDetailsByIdNumber,
+    getValues,
+    newPractitioner?.firstName,
+    newPractitioner?.surname,
+    newPractitioner?.username,
+    onSubmit,
+    permissionsAdded,
+    practitionerPhoneNumber,
+    userAuth?.auth_token,
+  ]);
+
+  useEffect(() => {
+    if (
+      newPractitioner?.userPermissions?.some((item) => item?.isActive === true)
+    ) {
+      const userPermissions = newPractitioner?.userPermissions
+        ?.filter((item) => item?.isActive === true)
+        .map((perm) => perm?.permissionId!);
+      if (userPermissions) {
+        setPermissionsAdded(userPermissions);
+      }
+    }
+  }, [newPractitioner?.userPermissions]);
 
   const handleRemoveuser = () => {
     const filteredPractitioners = listItems?.filter(
@@ -316,11 +356,13 @@ export const AddOrEditPractitioner = ({
                 onClick={handleSearch}
                 disabled={!idNumber && !passport}
               />
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                title={`Fill in the ID number & tap the search button to find out if the practitioner is already using ${appName}.`}
-                type="info"
-              />
+              {isValidPractitioner === undefined && (
+                <Alert
+                  className="mt-2 mb-2 rounded-md"
+                  title={`Fill in the ID number & tap the search button to find out if the practitioner is already using ${appName}.`}
+                  type="info"
+                />
+              )}
             </div>
           )}
           {isLoading && (
@@ -358,16 +400,40 @@ export const AddOrEditPractitioner = ({
             />
           </div>
         )}
-
         {isValidPractitioner === false && (
-          <div className="mb-8">
-            <Alert
-              type={'warning'}
-              title={
-                'Oh dear! It looks like you practitioner has not joined AppName yet.'
-              }
-            />
-          </div>
+          <>
+            <div className="mb-8">
+              <Alert
+                type={'warning'}
+                title={
+                  'Oh dear! It looks like you practitioner has not joined AppName yet.'
+                }
+                list={[
+                  'Enter their cellphone number below to send them an invitation.',
+                ]}
+              />
+            </div>
+
+            <FormInput
+              label={`Cellphone number`}
+              placeholder={'e.g 0123456789'}
+              type={'number'}
+              onChange={(e) => {
+                setPractitionerPhoneNumber(e?.target?.value);
+                setError('');
+              }}
+              value={practitionerPhoneNumber}
+              error={error as unknown as FieldError}
+            ></FormInput>
+            {error && (
+              <Typography
+                type="body"
+                hasMarkup
+                text={error}
+                color="errorMain"
+              />
+            )}
+          </>
         )}
         {isValidPractitioner === true && !addNote && !isPrincipal && (
           <div className="mb-2">
@@ -386,7 +452,9 @@ export const AddOrEditPractitioner = ({
             />
             <Typography
               type={'h2'}
-              text={`What would you like ${newPractitioner?.firstName} to do on ${appName}?`}
+              text={`What would you like ${
+                newPractitioner?.firstName || newPractitioner?.username
+              } to do on ${appName}?`}
               color={'textDark'}
               className="mt-6"
             />
@@ -397,6 +465,7 @@ export const AddOrEditPractitioner = ({
             />
           </div>
         )}
+
         {isValidPractitioner === true &&
           !addNote &&
           permissions.map((item, index) => (
@@ -428,11 +497,12 @@ export const AddOrEditPractitioner = ({
           textColor="white"
           icon="SaveIcon"
           disabled={
-            (!idNumber && !passport) ||
-            isValidPractitioner === false ||
+            (!idNumber && !passport && !practitionerPhoneNumber) ||
+            (isValidPractitioner === false && !practitionerPhoneNumber) ||
             addNote ||
             isPrincipal
           }
+          isLoading={isLoadingSubmit}
           onClick={handleSubmit}
         />
         {isEdit && (
