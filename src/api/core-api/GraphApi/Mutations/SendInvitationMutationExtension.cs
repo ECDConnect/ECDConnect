@@ -1,32 +1,29 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
+using ECDLink.Security.Helpers;
 using ECDLink.Security.Managers;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Types;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
 using Microsoft.AspNetCore.Http;
-using ECDLink.Security.Extensions;
-using Microsoft.IdentityModel.Tokens;
-using ECDLink.Security.Helpers;
 using Newtonsoft.Json;
-using Azure.Storage.Blobs.Models;
-using static EcdLink.Api.CoreApi.Constants;
-using ECDLink.Tenancy.Context;
-using ECDLink.Abstractrions.Constants;
-using System.Net.Http;
-using EcdLink.Api.CoreApi.Security.Managers;
-using ECDLink.Core.Helpers;
-using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
+
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -187,6 +184,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(principalPhoneNumber);
+            var userByPhoneNumber = userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
+                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+
+            if (userByPhoneNumber != null)
+            {
+                throw new ValidationException("User with phone number already exists");
+            }
+
             var userId = httpContext.HttpContext.GetUser().Id;
             var tenantId = TenantExecutionContext.Tenant.Id;
             var user = new ApplicationUser
@@ -197,18 +202,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 PhoneNumber = normalizePhoneNumber,
                 ContactPreference = MessageTypeConstants.SMS
             };
-
-            var userByPhoneNumber = userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
-                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-
-            if (userByPhoneNumber == null)
-            {
-                await userManager.CreateAsync(user);
-                await userManager.AddToRoleAsync(user, "Principal");
-            } else
-            {
-                user = userByPhoneNumber;
-            }
+            await userManager.CreateAsync(user);
 
             var tokenWrapper = new PrincipalTokenWrapperModel
             {
@@ -225,7 +219,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var practitioner = await userManager.FindByIdAsync(practitionerUserId);
             await notificationManager.SendPrincipalInvitationAsync(user, practitioner.FullName, token);
-            await userManager.DeleteAsync(user);
+
+            await Task.Delay(1000);
+            user.IsActive = false;
+            user.PhoneNumber = null;
+            await userManager.UpdateAsync(user);
 
             return token;
         }
