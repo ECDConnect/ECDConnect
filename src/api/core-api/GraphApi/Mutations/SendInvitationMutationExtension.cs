@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 
@@ -129,40 +130,71 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public async Task<string> SendPractitionerInviteToPreSchool(
-                 [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
-                 [Service] InvitationNotificationManager notificationManager,
-                 [Service] ApplicationUserManager userManager,
-                 Guid userId,
-                 string principalFirstName,
-                 string preSchoolName)
+                [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
+                [Service] InvitationNotificationManager notificationManager,
+                [Service] ApplicationUserManager userManager,
+                [Service] IHttpContextAccessor httpContext,
+                 string practitionerPhoneNumber,
+                 string preSchoolNameCode,
+                 Guid principalUserId)
         {
-            if (string.IsNullOrEmpty(userId.ToString()))
+            if (string.IsNullOrEmpty(practitionerPhoneNumber))
             {
-                throw new ArgumentException("UserId is empty");
+                throw new ArgumentException("Practitioner phone number is empty");
             }
-            if (string.IsNullOrEmpty(principalFirstName))
+            if (string.IsNullOrEmpty(principalUserId.ToString()))
             {
-                throw new ArgumentException("Principal first name is empty");
+                throw new ArgumentException("Principal UserId is empty");
             }
-            if (string.IsNullOrEmpty(preSchoolName))
+            if (string.IsNullOrEmpty(preSchoolNameCode))
             {
-                throw new ArgumentException("Pre-school name is empty");
-            }
-            var user = await userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                throw new QueryException("User not found");
+                throw new ArgumentException("Preschool name is empty");
             }
 
-            var token = await invitationManager.GenerateTokenAsync(user);
+            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber);
+            var userByPhoneNumber = userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
+                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+
+            if (userByPhoneNumber != null)
+            {
+                throw new ValidationException("User with phone number already exists");
+            }
+
+            var userId = httpContext.HttpContext.GetUser().Id;
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var user = new ApplicationUser
+            {
+                UserName = $"External_Edit_{Guid.NewGuid()}",
+                IsActive = true,
+                TenantId = tenantId,
+                PhoneNumber = normalizePhoneNumber,
+                ContactPreference = MessageTypeConstants.SMS
+            };
+            await userManager.CreateAsync(user);
+
+            var tokenWrapper = new PrincipalPractitionerTokenWrapperModel
+            {
+                AddedByUserId = userId,
+                Token = await tokenManager.GenerateTokenAsync(user),
+                AddedToUserId = user.Id
+            };
+
+            var token = TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
             if (string.IsNullOrWhiteSpace(token))
             {
                 throw new QueryException("Token generation failed");
             }
 
-            await notificationManager.SendPreSchoolInvitationAsync(user, principalFirstName, preSchoolName, token);
+            var principal = await userManager.FindByIdAsync(principalUserId);
+            await notificationManager.SendPreSchoolInvitationAsync(user, principal.FullName, preSchoolNameCode, token);
+
+            await Task.Delay(1000);
+            user.IsActive = false;
+            user.PhoneNumber = null;
+            await userManager.UpdateAsync(user);
 
             return token;
+
         }
 
         public async Task<string> SendPrincipalInviteToApplication(
@@ -173,7 +205,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 string principalPhoneNumber,
                 Guid practitionerUserId)
         {
-
             if (string.IsNullOrEmpty(principalPhoneNumber.ToString()))
             {
                 throw new ArgumentException("Principal phone number is empty");
@@ -204,11 +235,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
             await userManager.CreateAsync(user);
 
-            var tokenWrapper = new PrincipalTokenWrapperModel
+            var tokenWrapper = new PrincipalPractitionerTokenWrapperModel
             {
                 AddedByUserId = userId,
                 Token = await tokenManager.GenerateTokenAsync(user),
-                PrincipalUserId = user.Id
+                AddedToUserId = user.Id
             };
 
             var token = TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
