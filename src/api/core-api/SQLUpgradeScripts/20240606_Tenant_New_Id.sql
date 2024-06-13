@@ -81,9 +81,17 @@ INSERT INTO "AspNetUsers" ("Id","RaceId","GenderId","UserName","NormalizedUserNa
 	 ('53f1384c-6d34-44e3-adb5-33d623906317',NULL,NULL,'WLSuperAdmin','WLSUPERADMIN','','',true,NULL,false,false,NULL,true,0,'AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==','H2SJ6OHCVQW25Z4HTDIM3MXQZ4D3L53A','c5a90618-996c-4f66-93bc-90273961d6fb',true,NULL,true,'2023-11-02 14:25:26.396','wlsuper','admin','WLSuper Admin','email',NULL,true,'2024-05-09 10:09:40.670',NULL,NULL,NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2023-11-02 14:25:29.747',NULL,false,'UserName'),
 	 ('710aa070-a6a1-4b3a-be08-ef9bb74792fa',NULL,NULL,'WLAdmin','WLADMIN','','',true,'',false,false,NULL,true,0,'AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==','G74EYL32F7LR2XAPBAC62NM3ANGJWVCR','384b571a-c717-47ab-8c02-777f1157b70a',false,'admin',false,'-infinity','wladmin','admin','wladmin admin','sms','',true,'2024-06-04 20:05:10.919',NULL,NULL,NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,false,NULL,NULL,NULL,'2023-06-20 22:29:42.381','2024-04-16 05:20:48.683',false,'UserName');
 
+
+INSERT INTO "AspNetRoles" ("Id","Name","NormalizedName","ConcurrencyStamp","TenantId","SystemName") VALUES
+	 ('88c06cd9-5162-4d0b-a3a1-dbfed47f6e75','Super Admin','SUPER ADMIN','51ef4ce2-2e7e-4c2c-b2dc-d85131ecc1ff','e8f571eb-1972-4e71-a20f-347c65d059bb','Super Admin'),
+	 ('4a38da49-481b-40f6-87ce-ca7b25343f3b','Administrator','ADMINISTRATOR','97c120fa-871e-45f1-a115-e1ebabb6c28e','e8f571eb-1972-4e71-a20f-347c65d059bb','Administrator');
+
+
 INSERT INTO public."AspNetUserRoles"
 ("UserId", "RoleId", "TenantId")
-VALUES('53f1384c-6d34-44e3-adb5-33d623906317', '829323b4-165b-4fde-b8eb-b74e21c70891', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
+VALUES('53f1384c-6d34-44e3-adb5-33d623906317', '88c06cd9-5162-4d0b-a3a1-dbfed47f6e75', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
 INSERT INTO public."AspNetUserRoles"
 ("UserId", "RoleId", "TenantId")
-VALUES('710aa070-a6a1-4b3a-be08-ef9bb74792fa', 'd595accd-2ed6-459d-b0dc-ee2f4a86bdda', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
+VALUES('710aa070-a6a1-4b3a-be08-ef9bb74792fa', '4a38da49-481b-40f6-87ce-ca7b25343f3b', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
+
+
