@@ -9,27 +9,48 @@ import {
   Typography,
   DialogPosition,
 } from '@ecdlink/ui';
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { programmeThemeSelectors } from '@store/content/programme-theme';
 import ROUTES from '@routes/routes';
 import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
-import { useAppContext } from '@/walkthrougContext';
+import { ProgrammeThemeRouteState } from './programme-theme.types';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '../../class-dashboard/class-dashboard.types';
+import { classroomsSelectors } from '@/store/classroom';
+import { ProgrammeTimingRouteState } from '../programme-timing/programme-timing.types';
 
 const ProgrammeTheme: React.FC = () => {
   const dialog = useDialog();
+
+  const location = useLocation<ProgrammeThemeRouteState>();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
-  const handleBack = () => {
-    history.replace('/classroom', { activeTabIndex: 3 });
-  };
 
-  const { setState, state } = useAppContext();
-  const nextStep = () => {
-    setState({ stepIndex: 2 });
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(location.state.classroomGroupId)
+  );
+  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+
+  useEffect(() => {
+    if (!location.state?.classroomGroupId) {
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.ACTIVITES,
+      } as ClassDashboardRouteState);
+    }
+  }, [history, location.state?.classroomGroupId]);
+
+  const handleBack = () => {
+    history.push(
+      ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.replace(
+        ':classroomGroupId',
+        location.state.classroomGroupId
+      )
+    );
   };
 
   const handleDialog = () => {
@@ -60,8 +81,10 @@ const ProgrammeTheme: React.FC = () => {
   };
 
   const handelThemeSelected = (theme: ProgrammeThemeModel) => {
-    nextStep();
-    history.push(ROUTES.PROGRAMMES.TIMING, { theme });
+    history.push(ROUTES.PROGRAMMES.TIMING, {
+      theme,
+      classroomGroupId: classroomGroup?.id,
+    } as ProgrammeTimingRouteState);
   };
 
   return (
@@ -69,44 +92,39 @@ const ProgrammeTheme: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Programme themes'}
+      title="Choose a theme"
       color={'primary'}
       onBack={handleBack}
       displayHelp={true}
       onHelp={handleDialog}
       displayOffline={!isOnline}
+      className="p-4 pt-6"
     >
       <ProgrammeWrapper />
-      <>
-        <Typography
-          className={'mx-4 my-2'}
-          type="h1"
-          text="Choose a theme"
-          color={'primary'}
-        />
-        <div className="px-2">
-          {themes?.map((theme, idx) => (
-            <div
-              className="mb-1 rounded-3xl"
-              key={idx}
-              id={
-                theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : ''
-              }
-            >
-              <IconImageListItem
-                key={`theme-item-${theme.id}`}
-                color={theme.color}
-                title={theme.name}
-                icon={theme.imageUrl}
-                showDivider={idx > 0}
-                onClick={() => handelThemeSelected(theme)}
-                backgroundColor={'uiBg'}
-                borderRadius={'xl'}
-              />
-            </div>
-          ))}
+      <Typography
+        type="h1"
+        text={`Choose a theme for ${classroomGroup?.name}`}
+        color={'primary'}
+        className="mb-4"
+      />
+      {themes?.map((theme, idx) => (
+        <div
+          className="mb-1 rounded-3xl"
+          key={idx}
+          id={theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : ''}
+        >
+          <IconImageListItem
+            key={`theme-item-${theme.id}`}
+            color={theme.color}
+            title={theme.name}
+            icon={theme.imageUrl}
+            showDivider={idx > 0}
+            onClick={() => handelThemeSelected(theme)}
+            backgroundColor={'uiBg'}
+            borderRadius={'xl'}
+          />
         </div>
-      </>
+      ))}
     </BannerWrapper>
   );
 };

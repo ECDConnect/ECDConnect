@@ -20,19 +20,11 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string Notes { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
-        public string Period { get; set; }
-        public bool Submitted { get; set; }
-        public double IncomeTotal { get; set; }
-        public double ExpenseTotal { get; set; }
-        public double Balance { get; set; }
-        public DateTime SubmittedDate { get; set; }
         public Guid? UserId { get; set; }
-        public bool AutoSubmitted { get; set; }
-        public DateTime? AnnualSubmittedDate { get; set; }
-        public string RelatedDocumentId { get; set; }
         public virtual ICollection<StatementsIncome> IncomeItems { get; set; }
         public virtual ICollection<StatementsExpenses> ExpenseItems { get; set; }
         public bool ContactedByCoach { get; set; }
+        public bool Downloaded { get; set; }
     }
 
     public interface StatementsIncomeStatementJoin<TKey>

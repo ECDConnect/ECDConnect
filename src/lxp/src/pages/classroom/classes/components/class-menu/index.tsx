@@ -2,7 +2,6 @@ import { DeleteClassActionModal } from '@/components/delete-class/delete-class';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import {
   ClassDashboardRouteState,
-  TabsItemForPrincipal,
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
@@ -92,11 +91,12 @@ export const ClassMenu = ({
           text: `${isPrincipal ? 'Plan' : 'See'} activities`,
           type: 'outlined',
           onClick: () => {
-            history.push(ROUTES.CLASSROOM.ROOT, {
-              activeTabIndex: isPrincipal
-                ? TabsItemForPrincipal.ACTIVITES
-                : TabsItems.ACTIVITES,
-            } as ClassDashboardRouteState);
+            history.push(
+              ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.replace(
+                ':classroomGroupId',
+                classroomGroupId
+              )
+            );
             onClose();
           },
           textColour: 'quatenary',

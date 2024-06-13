@@ -30,6 +30,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   const activityCategories = useSelector(
     progressTrackingSelectors.getActivityCategories(activity)
   );
+
+  // TODO: Implement permission check (W3)
+  const hasPermissionToEdit = true;
+
   const handleDetailsClick = () => {
     setDisplayDetails(true);
   };
@@ -108,6 +112,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
         fullScreen
       >
         <ActivityDetails
+          disabled={!hasPermissionToEdit}
           isSelected={selected}
           activityId={activity.id}
           onActivityChanged={() => {

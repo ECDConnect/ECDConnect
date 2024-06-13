@@ -1,25 +1,20 @@
 import {
   Typography,
   classNames,
-  Card,
   renderIcon,
   Dropdown,
   DropDownOption,
+  Button,
 } from '@ecdlink/ui/';
-import {
-  addDays,
-  addMonths,
-  getDate,
-  getISODay,
-  isSameDay,
-  subDays,
-} from 'date-fns';
+import { addDays, addMonths, isSameDay, subDays } from 'date-fns';
 import { ProgrammePlanningHeaderProps } from './programme-planning-header-updated.types';
-import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
 import format from 'date-fns/format';
+import { useParams } from 'react-router';
+import { ProgrammeDashboardRouteParams } from '../../programme-dashboard/programme-dashboard.types';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -38,20 +33,18 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   weekSummary,
   isWeekendDay,
 }) => {
-  function titleCase(string: string) {
-    return string[0].toUpperCase() + string.slice(1).toLowerCase();
-  }
-  const day = getDate(selectedDate!);
-  const weekNumber = getISODay(selectedDate!);
-  const dayName = titleCase(String(Weekdays[weekNumber]));
+  const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
+
   const dailyProgramme = theme?.dailyProgrammes?.find((item) => {
     return isSameDay(new Date(item?.dayDate), new Date(selectedDate!));
   });
   const [month, setMonth] = useState<string | undefined>();
 
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(classroomGroupId)
+  );
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosenTheme = themes?.find((item) => item?.name === theme?.name);
-  const isCurrentDay = isSameDay(selectedDate!, new Date());
 
   // Business rule to only go back 3 months and forward 6 months
   const threeMonthsBack: Date = addMonths(selectedDate!, -3);
@@ -67,34 +60,34 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
       // skip weekends
       var dayNr = selectDate.getDay();
-      if (dayNr == 5) {
+      if (dayNr === 5) {
         // Sat
         setSelectedDate(addDays(selectedDate!, 3));
-      } else if (dayNr == 6) {
+      } else if (dayNr === 6) {
         // Sun
         setSelectedDate(addDays(selectedDate!, 2));
       } else {
         setSelectedDate(addDays(selectedDate!, 1));
       }
     }
-  }, [selectedDate, setSelectedDate]);
+  }, [selectedDate, setSelectedDate, sixMonthsForward, threeMonthsBack]);
 
   const subDay = useCallback(() => {
     var selectDate = new Date(selectedDate!);
     if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
       // skip weekends
       var dayNr = selectDate.getDay();
-      if (dayNr == 0) {
+      if (dayNr === 0) {
         // Sat
         setSelectedDate(subDays(selectedDate!, 2));
-      } else if (dayNr == 1) {
+      } else if (dayNr === 1) {
         // Sun
         setSelectedDate(subDays(selectedDate!, 3));
       } else {
         setSelectedDate(subDays(selectedDate!, 1));
       }
     }
-  }, [selectedDate, setSelectedDate]);
+  }, [selectedDate, setSelectedDate, sixMonthsForward, threeMonthsBack]);
 
   const setDayCurrentDate = () => {
     setSelectedDate(new Date());
@@ -152,102 +145,95 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
 
   return (
     <div>
-      {!weekSummary && (
-        <div className="flex w-full items-center justify-between p-4">
-          <div
-            className={`flex flex-row items-center justify-center`}
+      <div className="flex items-center justify-between">
+        <Typography type="h2" color="textDark" text={classroomGroup?.name} />
+        {!weekSummary && (
+          <div className="flex items-center gap-4">
+            <Dropdown
+              placeholder={`${monthDropdownLabel}`}
+              list={newMonthYearList}
+              selectedValue={month}
+              onChange={(item) => {
+                setMonth(item);
+                monthYearHandler(Number(item));
+              }}
+              fillColor="quatenary"
+              textColor="white"
+              fillType="filled"
+              labelColor="white"
+              className="w-36"
+            />
+            <button
+              className="bg-secondary flex h-8 w-8 items-center justify-center rounded-full"
+              onClick={setDayCurrentDate}
+            >
+              {renderIcon('CalendarIcon', 'h-5 w-5 text-white')}
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="border-primaryAccent1 my-4 flex w-full items-center justify-between border-t border-b border-dashed py-4">
+        {!weekSummary && (
+          <Button
+            size="small"
+            type="filled"
+            color="secondaryAccent2"
+            textColor="secondary"
+            text="Back"
+            icon="ChevronLeftIcon"
             onClick={subDay}
-          >
-            {renderIcon('ChevronLeftIcon', 'h-6 w-6 text-textMid')}
-          </div>
-          <Dropdown
-            placeholder={`${monthDropdownLabel}`}
-            list={newMonthYearList}
-            selectedValue={month}
-            onChange={(item) => {
-              monthYearHandler(Number(item));
-            }}
-            fillColor="secondary"
-            textColor="white"
-            fillType="filled"
-            labelColor="white"
-            className="w-36"
           />
-          <div
-            className="bg-primary flex h-8 w-8 items-center justify-center rounded-full"
-            onClick={setDayCurrentDate}
-          >
-            {renderIcon('CalendarIcon', 'h-5 w-5 text-white')}
-          </div>
-          <div
-            className={`flex flex-row items-center justify-center `}
+        )}
+        <Typography
+          type="h3"
+          color="textDark"
+          text={format(selectedDate ?? new Date(), 'EEE, d MMM yyyy')}
+        />
+        {!weekSummary && (
+          <Button
+            size="small"
+            type="filled"
+            color="secondaryAccent2"
+            textColor="secondary"
+            text="Next"
+            icon="ChevronRightIcon"
+            iconPosition="end"
             onClick={addDay}
+          />
+        )}
+      </div>
+      <div className={classNames(className, 'flex w-full gap-2')}>
+        {!isWeekendDay && showChips && (
+          <div
+            className={`flex w-full items-center rounded-xl ${themeColour()}`}
           >
-            {renderIcon('ChevronRightIcon', 'h-6 w-6 text-textMid')}
-          </div>
-        </div>
-      )}
-      <div className={classNames(className, 'flex w-full gap-2 px-4')}>
-        <div className="flex w-1/4 p-2">
-          <Card
-            className={`${
-              isCurrentDay ? 'bg-secondaryAccent2' : 'bg-primaryAccent2'
-            } flex w-full flex-col items-center justify-center rounded-xl p-2`}
-            borderRaduis={'lg'}
-            shadowSize={'lg'}
-          >
-            <Typography
-              type="body"
-              text={dayName}
-              color={isCurrentDay ? `secondary` : `primary`}
-              weight={`bold`}
-            />
-            <Typography
-              type="small"
-              color={isCurrentDay ? `secondary` : `primary`}
-              text={String(day)}
-              className="mr-1"
-              weight={`bold`}
-            />
-          </Card>
-        </div>
-        {!isWeekendDay && (
-          <div className="flex w-3/4 items-center justify-center">
-            {showChips && (
-              <Card className={`flex w-full items-center rounded-xl p-2`}>
-                <div
-                  className={`flex w-full items-center rounded-xl p-2 ${themeColour()}`}
-                >
-                  {chosenTheme && (
-                    <img
-                      src={chosenTheme?.imageUrl}
-                      alt="theme"
-                      className="h-8 w-8"
-                    />
-                  )}
-                  {dailyProgramme && theme?.dailyProgrammes?.length ? (
-                    <Typography
-                      type="small"
-                      color={chosenTheme?.color ? 'white' : 'textDark'}
-                      text={
-                        themeName
-                          ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
-                          : `No theme`
-                      }
-                      className={'p-4'}
-                      weight={`bold`}
-                    />
-                  ) : (
-                    <Typography
-                      type="small"
-                      color={chosenTheme?.color ? 'white' : 'textDark'}
-                      text={`${themeName}`}
-                      className={'p-4'}
-                      weight={`bold`}
-                    />
-                  )}
-                </div>
-              </Card>
+            {chosenTheme && (
+              <img
+                src={chosenTheme?.imageUrl}
+                alt="theme"
+                className="h-8 w-8"
+              />
+            )}
+            {dailyProgramme && theme?.dailyProgrammes?.length ? (
+              <Typography
+                type="small"
+                color={chosenTheme?.color ? 'white' : 'textDark'}
+                text={
+                  themeName
+                    ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
+                    : `No theme`
+                }
+                className={'p-4'}
+                weight={`bold`}
+              />
+            ) : (
+              <Typography
+                type="small"
+                color={chosenTheme?.color ? 'white' : 'textDark'}
+                text={`${themeName}`}
+                className={'p-4'}
+                weight={`bold`}
+              />
             )}
           </div>
         )}

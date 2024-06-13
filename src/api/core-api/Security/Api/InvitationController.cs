@@ -33,6 +33,7 @@ namespace ECDLink.Security.Api
     {
         private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
         private readonly ITokenManager<ApplicationUser, SecurityCodeTokenManager> _securityCodeManager;
+        private readonly ITokenManager<ApplicationUser, OpenAccessTokenManager> _tokenManager;
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly ShortUrlManager _shortUrlManager;
         private readonly SecurityNotificationManager _notificationManager;
@@ -48,6 +49,7 @@ namespace ECDLink.Security.Api
         public InvitationController(
           ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
+          ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
           IPasswordManager<ApplicationUser> passwordManager,
           ShortUrlManager shortUrlManager,
           SecurityNotificationManager notificationManager,
@@ -66,6 +68,7 @@ namespace ECDLink.Security.Api
             _securityManager = securityManager;
             _userManager = userManager;
             _personnelService = personnelService;
+            _tokenManager = tokenManager;
 
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -100,7 +103,6 @@ namespace ECDLink.Security.Api
             {
                 await _securityManager.ChangePasswordAsync(user, invitationModel.Password);
             }
-          
 
             _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
 

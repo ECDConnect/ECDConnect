@@ -18,6 +18,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string MessageType { get; set; }
         public string URL { get; set; }
         public int Clicked { get; set; } = 0;
+        public int? NotificationResult { get; set; }
 
         [GraphQLIgnore]
         public string Hierarchy { get; set; }

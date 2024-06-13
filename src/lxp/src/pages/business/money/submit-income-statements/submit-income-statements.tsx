@@ -1,6 +1,11 @@
 import ROUTES from '@/routes/routes';
-import { statementsSelectors } from '@/store/statements';
-import { numberWithSpaces } from '@/utils/statements/statements-utils';
+import { statementsActions, statementsSelectors } from '@/store/statements';
+import {
+  getStatementBalance,
+  getStatementExpenseTotal,
+  getStatementIncomeTotal,
+  numberWithSpaces,
+} from '@/utils/statements/statements-utils';
 import {
   Typography,
   StatusChip,
@@ -23,6 +28,7 @@ import { useAppContext } from '@/walkthrougContext';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
+  IncomeStatementDto,
   LocalStorageKeys,
   SmartStartPointsLibrary,
   getNextMonth,
@@ -40,198 +46,53 @@ import {
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { InfoPage } from './components/info-page';
 import { CoachInfo } from '../../components/coach-info';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { useAppDispatch } from '@/store';
 
 export const SubmitIncomeStatements: React.FC = () => {
+  const dispatch = useAppDispatch();
+
   const [isLearnMore, setIsLearnMore] = useState(false);
 
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const statements = useSelector(statementsSelectors.getIncomeStatements);
-  const unSubmittedIncomeItems = useSelector(
-    statementsSelectors.getUnsubmittedIncomeItems
-  );
-  const unSubmittedExpenseItems = useSelector(
-    statementsSelectors.getUnsubmittedExpenseItems
-  );
 
   const { isLoading: isSubmittingStatement } = useThunkFetchCall(
     'statements',
     'submitIncomeStatement'
   );
 
-  const hasIncomeStatements =
-    unSubmittedIncomeItems.length > 0 ||
-    unSubmittedExpenseItems.length > 0 ||
-    statements.length > 0;
-
-  const isThisMonthSubmitted = useMemo<boolean>(
-    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
-    [statements]
-  );
-
-  const isLastMonthSubmitted = useMemo(() => {
-    var currentMonth = new Date().getMonth();
-
-    if (currentMonth === 0) {
-      return !!statements?.find(
-        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
-      );
-    }
-
-    return !!statements?.find((x) => x.month === currentMonth);
-  }, [statements]);
-
-  const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
-    useState<number>(0);
-
-  const currentDate = new Date();
-  const isSubmitWindowOpen =
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
-    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
-
-  const isStatementSubmitted =
-    new Date().getDate() <= IncomeStatementDates.SubmitEndDay
-      ? isLastMonthSubmitted
-      : isThisMonthSubmitted;
-
+  // If no statement for current month
+  // TODO if we ahven't fetched recently, do we need to force them to sync first? To ensure we don't create a statement for the month, if one exists on the server?
   useEffect(() => {
-    const date = new Date();
-    // Outside submit
-    if (
-      date.getDate() <= IncomeStatementDates.SubmitEndDay &&
-      !isLastMonthSubmitted
-    ) {
-      const nextSubmit = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        IncomeStatementDates.SubmitEndDay
-      );
-      setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-    } else {
-      const nextMonth = getNextMonth(date);
-      const nextSubmit = new Date(
-        nextMonth.getFullYear(),
-        nextMonth.getMonth(),
-        7
-      );
-      setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-    }
-  }, [statements, isSubmitWindowOpen, setDaysUntilFinalSubmission]);
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
 
-  const balanceNotifications = useMemo(() => {
-    const lastMonthStatement = statements[statements.length - 1];
-    const previousMonthStatement = statements[statements.length - 2];
-
-    // No data for last two months
-    if (!lastMonthStatement || !previousMonthStatement) {
-      return <></>;
-    }
-
-    if (lastMonthStatement.balance < 0 && previousMonthStatement.balance < 0) {
-      return (
-        <Alert
-          type="warning"
-          className="mt-4"
-          message="Over the past two months, you have made less money than you have earned. This means your business is running at a loss."
-          button={
-            <Button
-              text={`Learn more`}
-              type={'filled'}
-              color={'primary'}
-              textColor={'white'}
-              onClick={() => setIsLearnMore(true)}
-            />
-          }
-          customIcon={
-            <div className="rounded-full">
-              {renderIcon('ExclamationCircleIcon', 'text-alertMain w-5 h-5')}
-            </div>
-          }
-        />
+    if (!statements.some((x) => x.month === month && x.year === year)) {
+      dispatch(
+        statementsActions.createStatement({
+          id: newGuid(),
+          month: month,
+          year: year,
+          incomeItems: [],
+          expenseItems: [],
+          contactedByCoach: false,
+          downloaded: false,
+        })
       );
     }
-    if (lastMonthStatement.balance > 0 && previousMonthStatement.balance > 0) {
-      const lastTwoStatementsBalance =
-        lastMonthStatement.balance + previousMonthStatement.balance;
-      return (
-        <Alert
-          type="success"
-          className="mt-4"
-          message="Great job! You have made a profit for 2 months in a row!"
-          list={[
-            `You had R ${lastTwoStatementsBalance.toFixed(2)} left over for 
-            ${getMonthName(lastMonthStatement.month - 1).substring(0, 3)} & 
-            ${getMonthName(previousMonthStatement.month - 1).substring(
-              0,
-              3
-            )} combined.`,
-          ]}
-          customIcon={
-            <div className="rounded-full">
-              <img
-                src={PositiveBonusEmoticon}
-                alt="positive emoticon"
-                className="h-6 w-6"
-              />
-            </div>
-          }
-        />
-      );
-    }
-    return null;
-  }, [statements]);
+  }, []);
 
-  const lastMonthStatement = statements[statements.length - 1];
+  const currentMonthStatement = statements[statements.length - 1];
+  const lastMonthStatement = statements[statements.length - 2];
 
-  const previousMonthRecord = !!lastMonthStatement
-    ? `${getMonthName(lastMonthStatement.month! - 1).substring(0, 3)} ${
-        lastMonthStatement.year
-      }`
-    : `-`;
-
-  const previousMonthTotalIncome = !!lastMonthStatement
-    ? lastMonthStatement.incomeTotal
-    : 0;
-
-  const previousMonthTotalExpenses = !!lastMonthStatement
-    ? lastMonthStatement.expenseTotal
-    : 0;
-
-  const previousMonthTotalBalance = !!lastMonthStatement
-    ? lastMonthStatement.balance
-    : 0;
-
-  const currentMonthRecord = useMemo(() => {
-    var date = new Date();
-    if (isThisMonthSubmitted) {
-      return format(getNextMonth(date), 'MMM yyyy');
-    }
-    if (
-      !isLastMonthSubmitted &&
-      date.getDate() <= IncomeStatementDates.SubmitEndDay
-    ) {
-      return format(getPreviousMonth(date), 'MMM yyyy');
-    }
-
-    return format(date, 'MMM yyyy');
-  }, [isThisMonthSubmitted, isLastMonthSubmitted]);
-
-  const currentMonthTotalIncome = unSubmittedIncomeItems.reduce(
-    (total, item) => {
-      return total + item.amount;
-    },
-    0
-  );
-
-  const currentMonthTotalExpenses = unSubmittedExpenseItems.reduce(
-    (total, item) => {
-      return total + item.amount;
-    },
-    0
-  );
-
-  const currentMonthTotalBalance =
-    currentMonthTotalIncome - currentMonthTotalExpenses;
+  const getStatementTitle = (statement: IncomeStatementDto | undefined) =>
+    !!statement
+      ? `${getMonthName(statement.month! - 1).substring(0, 3)} ${
+          statement.year
+        }`
+      : `-`;
 
   const formatCurrentValue = (value: number) => {
     if (value === 0) return `R ${numberWithSpaces(value.toFixed(2))}`;
@@ -313,171 +174,202 @@ export const SubmitIncomeStatements: React.FC = () => {
     setPointsMessageDismissedDate(dismissedDate.toDateString());
   }, []);
 
-  const celebrationCard = useMemo<JSX.Element>(() => {
-    const messageDismissedDate = !!pointsMessageDismissedDate
-      ? new Date(pointsMessageDismissedDate)
-      : undefined;
+  // Points celebration card, not sure if still need any of this, but it's likely to change a lot with no submit at least
+  // const celebrationCard = useMemo<JSX.Element>(() => {
+  //   const messageDismissedDate = !!pointsMessageDismissedDate
+  //     ? new Date(pointsMessageDismissedDate)
+  //     : undefined;
 
-    if (
-      currentDate.getDate() < IncomeStatementDates.SubmitStartDay &&
-      currentDate.getDate() > IncomeStatementDates.SubmitEndDay
-    ) {
-      return <></>;
-    }
+  //   if (
+  //     currentDate.getDate() < IncomeStatementDates.SubmitStartDay &&
+  //     currentDate.getDate() > IncomeStatementDates.SubmitEndDay
+  //   ) {
+  //     return <></>;
+  //   }
 
-    if (
-      currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
-      !isThisMonthSubmitted
-    ) {
-      return <></>;
-    }
+  //   if (
+  //     currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
+  //     !isThisMonthSubmitted
+  //   ) {
+  //     return <></>;
+  //   }
 
-    if (
-      currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
-      isThisMonthSubmitted &&
-      !!messageDismissedDate &&
-      messageDismissedDate.getMonth() === currentDate.getMonth() &&
-      messageDismissedDate.getDate() >= IncomeStatementDates.SubmitStartDay
-    ) {
-      return <></>;
-    }
+  //   if (
+  //     currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
+  //     isThisMonthSubmitted &&
+  //     !!messageDismissedDate &&
+  //     messageDismissedDate.getMonth() === currentDate.getMonth() &&
+  //     messageDismissedDate.getDate() >= IncomeStatementDates.SubmitStartDay
+  //   ) {
+  //     return <></>;
+  //   }
 
-    if (
-      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay &&
-      !isLastMonthSubmitted
-    ) {
-      return <></>;
-    }
+  //   if (
+  //     currentDate.getDate() <= IncomeStatementDates.SubmitEndDay &&
+  //     !isLastMonthSubmitted
+  //   ) {
+  //     return <></>;
+  //   }
 
-    if (
-      currentDate.getDate() < IncomeStatementDates.SubmitEndDay &&
-      isLastMonthSubmitted &&
-      !!messageDismissedDate &&
-      ((messageDismissedDate.getMonth() ===
-        getPreviousMonth(currentDate).getMonth() &&
-        messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay) ||
-        (messageDismissedDate.getMonth() === currentDate.getMonth() &&
-          messageDismissedDate.getDate() <= IncomeStatementDates.SubmitEndDay))
-    ) {
-      return <></>;
-    }
+  //   if (
+  //     currentDate.getDate() < IncomeStatementDates.SubmitEndDay &&
+  //     isLastMonthSubmitted &&
+  //     !!messageDismissedDate &&
+  //     ((messageDismissedDate.getMonth() ===
+  //       getPreviousMonth(currentDate).getMonth() &&
+  //       messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay) ||
+  //       (messageDismissedDate.getMonth() === currentDate.getMonth() &&
+  //         messageDismissedDate.getDate() <= IncomeStatementDates.SubmitEndDay))
+  //   ) {
+  //     return <></>;
+  //   }
 
-    // Check depending on window if we need to try display last months message
-    // We can just add an offset of 1 to the logic below to ignore this months points if we want to show for last month
-    var offset =
-      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
-        ? 1 // Last month
-        : 0; // Current month
+  //   // Check depending on window if we need to try display last months message
+  //   // We can just add an offset of 1 to the logic below to ignore this months points if we want to show for last month
+  //   var offset =
+  //     currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
+  //       ? 1 // Last month
+  //       : 0; // Current month
 
-    let submittedMonthsInARow = 0;
-    for (
-      let i = offset;
-      i < submitStatementPoints.length &&
-      submitStatementPoints[i].pointsTotal !== 0;
-      i++
-    ) {
-      submittedMonthsInARow++;
-    }
+  //   let submittedMonthsInARow = 0;
+  //   for (
+  //     let i = offset;
+  //     i < submitStatementPoints.length &&
+  //     submitStatementPoints[i].pointsTotal !== 0;
+  //     i++
+  //   ) {
+  //     submittedMonthsInARow++;
+  //   }
 
-    if (submittedMonthsInARow === 0) {
-      return <></>;
-    }
+  //   if (submittedMonthsInARow === 0) {
+  //     return <></>;
+  //   }
 
-    let monthsSinceConsecutiveBonus = 0;
-    for (
-      let i = offset;
-      i < submitStatementConsecutivePoints.length &&
-      submitStatementConsecutivePoints[i].pointsTotal === 0;
-      i++
-    ) {
-      monthsSinceConsecutiveBonus++;
-    }
+  //   let monthsSinceConsecutiveBonus = 0;
+  //   for (
+  //     let i = offset;
+  //     i < submitStatementConsecutivePoints.length &&
+  //     submitStatementConsecutivePoints[i].pointsTotal === 0;
+  //     i++
+  //   ) {
+  //     monthsSinceConsecutiveBonus++;
+  //   }
 
-    const submittedPointsThisMonth = submitStatementPoints[offset].pointsTotal;
-    const submittedWithFeesPointsThisMonth =
-      submitPreschoolFeesPoints[offset].pointsTotal;
-    const submitConsecutiveBonusPointsThisMonth =
-      submitStatementConsecutivePoints[offset]?.pointsTotal;
-    const monthTotal =
-      submittedPointsThisMonth +
-      submittedWithFeesPointsThisMonth +
-      submitConsecutiveBonusPointsThisMonth;
+  //   const submittedPointsThisMonth = submitStatementPoints[offset].pointsTotal;
+  //   const submittedWithFeesPointsThisMonth =
+  //     submitPreschoolFeesPoints[offset].pointsTotal;
+  //   const submitConsecutiveBonusPointsThisMonth =
+  //     submitStatementConsecutivePoints[offset]?.pointsTotal;
+  //   const monthTotal =
+  //     submittedPointsThisMonth +
+  //     submittedWithFeesPointsThisMonth +
+  //     submitConsecutiveBonusPointsThisMonth;
 
-    const preschoolFeesMessage =
-      ' & you added preschool fees for each child this month';
-    const consecutiveBonusMessage = ' You earned 25 bonus points.';
+  //   const preschoolFeesMessage =
+  //     ' & you added preschool fees for each child this month';
+  //   const consecutiveBonusMessage = ' You earned 25 bonus points.';
 
-    // Improved messaging and colours for 12+ months submitted in a row
-    if (submittedMonthsInARow === 12) {
-      return (
-        <CelebrationCard
-          image={<EmojiYellowBigSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Amazing! You submitted statements for 12 months in a row${
-            submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-          }!`}
-          scoreMessage={`${monthTotal} points earned`}
-          scoreIcon="GiftIcon"
-          primaryTextColour="uiBg"
-          secondaryTextColour="uiBg"
-          backgroundColour="successMain"
-          onDismiss={onDismissCelebration}
-          secondaryMessage=""
-        />
-      );
-    }
+  //   // Improved messaging and colours for 12+ months submitted in a row
+  //   if (submittedMonthsInARow === 12) {
+  //     return (
+  //       <CelebrationCard
+  //         image={<EmojiYellowBigSmile className="mr-2 h-16 w-16" />}
+  //         primaryMessage={`Amazing! You submitted statements for 12 months in a row${
+  //           submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
+  //         }!`}
+  //         scoreMessage={`${monthTotal} points earned`}
+  //         scoreIcon="GiftIcon"
+  //         primaryTextColour="uiBg"
+  //         secondaryTextColour="uiBg"
+  //         backgroundColour="successMain"
+  //         onDismiss={onDismissCelebration}
+  //         secondaryMessage=""
+  //       />
+  //     );
+  //   }
 
-    // Only the last month submitted
-    if (submittedMonthsInARow === 1) {
-      return (
-        <CelebrationCard
-          image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Great jobl! You have submitted your ${format(
-            offset === 0 ? new Date() : getPreviousMonth(new Date()),
-            'MMMM'
-          )} statement${
-            submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-          }!`}
-          //scoreMessage={`${monthTotal} points earned`}
-          scoreIcon="GiftIcon"
-          primaryTextColour="successMain"
-          backgroundColour="successBg"
-          onDismiss={onDismissCelebration}
-          secondaryMessage=""
-          secondaryTextColour="black"
-        />
-      );
-    }
+  //   // Only the last month submitted
+  //   if (submittedMonthsInARow === 1) {
+  //     return (
+  //       <CelebrationCard
+  //         image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+  //         primaryMessage={`Great jobl! You have submitted your ${format(
+  //           offset === 0 ? new Date() : getPreviousMonth(new Date()),
+  //           'MMMM'
+  //         )} statement${
+  //           submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
+  //         }!`}
+  //         //scoreMessage={`${monthTotal} points earned`}
+  //         scoreIcon="GiftIcon"
+  //         primaryTextColour="successMain"
+  //         backgroundColour="successBg"
+  //         onDismiss={onDismissCelebration}
+  //         secondaryMessage=""
+  //         secondaryTextColour="black"
+  //       />
+  //     );
+  //   }
 
-    // Multiple months, but less than 12
-    return (
-      <CelebrationCard
-        image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-        primaryMessage={`Wow you're on a roll! You submitted statements for ${submittedMonthsInARow} months in a row${
-          submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-        }! ${
-          submitConsecutiveBonusPointsThisMonth > 0
-            ? consecutiveBonusMessage
-            : ''
-        }`}
-        // scoreMessage={`${monthTotal} points earned`}
-        scoreIcon="GiftIcon"
-        primaryTextColour="successMain"
-        backgroundColour="successBg"
-        onDismiss={onDismissCelebration}
-        secondaryMessage={
-          monthsSinceConsecutiveBonus === 2
-            ? `Submit you next statement to earn ${submitStatementConsecutivePointLibrary?.points} bonus points.`
-            : ''
-        }
-        secondaryTextColour="black"
-      />
-    );
-  }, [
-    pointsMessageDismissedDate,
-    submitStatementPoints,
-    submitPreschoolFeesPoints,
-    submitStatementConsecutivePoints,
-  ]);
+  //   // Multiple months, but less than 12
+  //   return (
+  //     <CelebrationCard
+  //       image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+  //       primaryMessage={`Wow you're on a roll! You submitted statements for ${submittedMonthsInARow} months in a row${
+  //         submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
+  //       }! ${
+  //         submitConsecutiveBonusPointsThisMonth > 0
+  //           ? consecutiveBonusMessage
+  //           : ''
+  //       }`}
+  //       // scoreMessage={`${monthTotal} points earned`}
+  //       scoreIcon="GiftIcon"
+  //       primaryTextColour="successMain"
+  //       backgroundColour="successBg"
+  //       onDismiss={onDismissCelebration}
+  //       secondaryMessage={
+  //         monthsSinceConsecutiveBonus === 2
+  //           ? `Submit you next statement to earn ${submitStatementConsecutivePointLibrary?.points} bonus points.`
+  //           : ''
+  //       }
+  //       secondaryTextColour="black"
+  //     />
+  //   );
+  // }, [
+  //   pointsMessageDismissedDate,
+  //   submitStatementPoints,
+  //   submitPreschoolFeesPoints,
+  //   submitStatementConsecutivePoints,
+  // ]);
+
+  const lastMonthIncomeTotal = useMemo(
+    () => getStatementIncomeTotal(lastMonthStatement),
+    [lastMonthStatement]
+  );
+
+  const currentMonthIncomeTotal = useMemo(
+    () => getStatementIncomeTotal(currentMonthStatement),
+    [currentMonthStatement]
+  );
+
+  const lastMonthExpenseTotal = useMemo(
+    () => getStatementIncomeTotal(lastMonthStatement),
+    [lastMonthStatement]
+  );
+
+  const currentMonthExpenseTotal = useMemo(
+    () => getStatementIncomeTotal(currentMonthStatement),
+    [currentMonthStatement]
+  );
+
+  const lastMonthBalance = lastMonthIncomeTotal - lastMonthExpenseTotal;
+  const currentMonthBalance =
+    currentMonthIncomeTotal - currentMonthExpenseTotal;
+
+  const hasIncomeStatements =
+    !!lastMonthIncomeTotal ||
+    !!lastMonthExpenseTotal ||
+    currentMonthExpenseTotal ||
+    currentMonthIncomeTotal;
 
   return (
     <>
@@ -508,74 +400,21 @@ export const SubmitIncomeStatements: React.FC = () => {
         )}
         {hasIncomeStatements && (
           <div id="statementsDashboard">
-            {((isOnline &&
-              !isThisMonthSubmitted &&
-              isSubmitWindowOpen &&
-              !isSubmittingStatement) ||
-              (tourActive && stepIndex === 8)) && (
-              <div className="flex items-center" id="howMayDaysToSubmit">
-                <StatusChip
-                  backgroundColour={
-                    daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-                  }
-                  borderColour={
-                    daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-                  }
-                  text={`${daysUntilFinalSubmission} days`}
-                  textColour={'white'}
-                  className={'mr-2'}
-                />
-                <Typography
-                  className="truncate"
-                  type="h4"
-                  weight="bold"
-                  color="textDark"
-                  text={'To submit next income statement'}
-                />
-              </div>
-            )}
-            {!!celebrationCard && celebrationCard}
+            {/* {!!celebrationCard && celebrationCard} */}
 
-            {((isOnline &&
-              isSubmitWindowOpen &&
-              !isStatementSubmitted &&
-              !isSubmittingStatement) ||
-              (tourActive && stepIndex === 9)) && (
-              <Button
-                shape="normal"
-                color="primary"
-                type="filled"
-                icon="ArrowCircleRightIcon"
-                onClick={() =>
-                  history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
-                }
-                className="mt-6 w-full rounded-2xl"
-                id="submitIncomeButton"
-              >
-                <Typography
-                  type="help"
-                  color="white"
-                  text="Submit income statement"
-                />
-              </Button>
-            )}
             <Card
               className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
               borderRaduis={'xl'}
               shadowSize={'md'}
             >
               <Typography
-                text={`${
-                  isThisMonthSubmitted
-                    ? format(getNextMonth(currentDate), 'MMMM')
-                    : format(currentDate, 'MMMM')
-                } balance`}
+                text={`${format(new Date(), 'MMMM')} balance`}
                 type="h4"
                 color={'white'}
                 className="w-6/12"
               />
               <Typography
-                text={`${formatCurrentValue(currentMonthTotalBalance)}`}
+                text={`${formatCurrentValue(currentMonthBalance)}`}
                 color={'white'}
                 type="h1"
                 className="w-8/12 text-right"
@@ -587,14 +426,14 @@ export const SubmitIncomeStatements: React.FC = () => {
                   <th className="w-1/3"></th>
                   <th className="text-textDark font-body">
                     <Typography
-                      text={previousMonthRecord}
+                      text={getStatementTitle(lastMonthStatement)}
                       type="body"
                       color={'textDark'}
                     />
                   </th>
                   <th className="w-1/3">
                     <Typography
-                      text={currentMonthRecord}
+                      text={getStatementTitle(currentMonthStatement)}
                       type="body"
                       color={'textDark'}
                     />
@@ -611,7 +450,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={`${formatCurrentValue(previousMonthTotalIncome)}`}
+                      text={`${formatCurrentValue(lastMonthIncomeTotal)}`}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -619,7 +458,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={`${formatCurrentValue(currentMonthTotalIncome)}`}
+                      text={`${formatCurrentValue(currentMonthIncomeTotal)}`}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -637,7 +476,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={`${formatCurrentValue(previousMonthTotalExpenses)}`}
+                      text={`${formatCurrentValue(lastMonthExpenseTotal)}`}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -645,7 +484,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={`${formatCurrentValue(currentMonthTotalExpenses)}`}
+                      text={`${formatCurrentValue(currentMonthExpenseTotal)}`}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -665,24 +504,20 @@ export const SubmitIncomeStatements: React.FC = () => {
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(previousMonthTotalBalance)}
+                      text={formatCurrentValue(lastMonthBalance)}
                       type="body"
                       color={
-                        previousMonthTotalBalance >= 0
-                          ? 'successMain'
-                          : 'errorMain'
+                        lastMonthBalance >= 0 ? 'successMain' : 'errorMain'
                       }
                       align={'center'}
                     />
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(currentMonthTotalBalance)}
+                      text={formatCurrentValue(currentMonthBalance)}
                       type="body"
                       color={
-                        currentMonthTotalBalance >= 0
-                          ? 'successMain'
-                          : 'errorMain'
+                        currentMonthBalance >= 0 ? 'successMain' : 'errorMain'
                       }
                       align={'center'}
                     />
@@ -690,8 +525,8 @@ export const SubmitIncomeStatements: React.FC = () => {
                 </tr>
               </tbody>
             </table>
-
-            {balanceNotifications}
+            {/* 
+              {balanceNotifications} */}
 
             <Button
               shape="normal"

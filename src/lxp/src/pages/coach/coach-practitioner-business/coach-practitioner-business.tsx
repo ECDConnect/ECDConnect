@@ -28,6 +28,7 @@ import { getMonthName } from '@/utils/classroom/attendance/track-attendance-util
 import { ProfitLossDetails } from './components/statements/profit-loss-details';
 import { StatementNotSubmitted } from './components/statements/not-submitted';
 import { StartupSupportEnding } from './components/support/startup-support-ending';
+import { getStatementBalance } from '@/utils/statements/statements-utils';
 
 export const CoachPractitionerBusiness = () => {
   const { isOnline } = useOnlineStatus();
@@ -44,12 +45,6 @@ export const CoachPractitionerBusiness = () => {
   );
   const statements = useSelector(
     practitionerForCoachSelectors.getStatementsForUser(userId)
-  );
-  const unsubmittedIncome = useSelector(
-    practitionerForCoachSelectors.getUnsubmittedIncomeForUser(userId)
-  );
-  const unsubmittedExpenses = useSelector(
-    practitionerForCoachSelectors.getUnsubmittedExpensesForUser(userId)
   );
 
   const currentDate = useMemo(() => new Date(), []);
@@ -89,8 +84,8 @@ export const CoachPractitionerBusiness = () => {
 
   var lastStatementsBalance = useMemo(
     () =>
-      statements[statements.length - 1]?.balance +
-      statements[statements.length - 2]?.balance,
+      getStatementBalance(statements[statements.length - 1]) +
+      getStatementBalance(statements[statements.length - 2]),
     [statements]
   );
 
@@ -217,16 +212,6 @@ export const CoachPractitionerBusiness = () => {
         endDate: undefined,
       })
     );
-    await appDispatch(
-      practitionerForCoachThunkActions.getUserExpensesForCoach({
-        userId: userId,
-      })
-    );
-    await appDispatch(
-      practitionerForCoachThunkActions.getUserIncomeForCoach({
-        userId: userId,
-      })
-    );
     setIsLoading(false);
   }, [setIsLoading, appDispatch, userId]);
 
@@ -236,15 +221,11 @@ export const CoachPractitionerBusiness = () => {
   }, []);
 
   useEffect(() => {
-    if (
-      unsubmittedIncome.length > 0 ||
-      unsubmittedExpenses.length > 0 ||
-      statements.length > 0
-    ) {
+    if (statements.length > 0) {
       setHasIncomeStatements(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statements, unsubmittedIncome, unsubmittedExpenses]);
+  }, [statements]);
 
   useEffect(() => {
     // Outside submit
@@ -345,8 +326,6 @@ export const CoachPractitionerBusiness = () => {
         ) : hasIncomeStatements ? (
           <IncomeStatements
             statements={statements}
-            unsubmittedIncome={unsubmittedIncome}
-            unsubmittedExpenses={unsubmittedExpenses}
             isSubmitWindowOpen={isSubmitWindowOpen}
             isThisMonthSubmitted={isThisMonthSubmitted}
             isLastMonthSubmitted={isLastMonthSubmitted}

@@ -2,7 +2,10 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { Alert, BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { IncomeStatementDto } from '@ecdlink/core';
-import { formatCurrentValue } from '@/utils/statements/statements-utils';
+import {
+  formatCurrentValue,
+  getStatementBalance,
+} from '@/utils/statements/statements-utils';
 import { WhatsappCall } from '../contact/whatsapp-call';
 import { useCallback, useEffect } from 'react';
 import { differenceInBusinessDays } from 'date-fns';
@@ -43,8 +46,8 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
       }`
     : `-`;
 
-  const lastStatementBalance = lastStatement.balance || 0;
-  const previousStatementBalance = previousStatement.balance || 0;
+  const lastStatementBalance = getStatementBalance(lastStatement);
+  const previousStatementBalance = getStatementBalance(previousStatement);
   const balance = lastStatementBalance + previousStatementBalance;
   const totalDiffDays = !!lastStatement
     ? differenceInBusinessDays(

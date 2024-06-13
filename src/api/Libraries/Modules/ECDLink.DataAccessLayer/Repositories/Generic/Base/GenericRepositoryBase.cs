@@ -140,6 +140,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             entity.TenantId = _tenantId;
             // TODO: Global change to Utc.
             entity.InsertedDate = DateTime.Now;
+            if (string.IsNullOrEmpty(entity.UpdatedBy) && _userId.HasValue && _userId.Value != Guid.Empty)
+                entity.UpdatedBy = _userId.Value.ToString();
 
             entities.Add(entity);
             context.SaveChanges();

@@ -4,7 +4,6 @@ import {
   BannerWrapper,
   Button,
   DialogPosition,
-  Divider,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';

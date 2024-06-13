@@ -88,10 +88,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             if (preSchoolCode == "")
             {
-                throw new ArgumentException("Pre-school code is empty");
+               throw new ArgumentException("Pre-school code is empty");
             }
             var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
-            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             return classRepo.GetAll().Where(x => x.PreschoolCode == preSchoolCode).FirstOrDefault();
         }
     }

@@ -21,7 +21,6 @@ import {
 } from '@utils/common/local-storage.utils';
 import { AttendanceComponent } from '../attendance/attendance';
 import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
-import ProgrammeDashboard from '../programme-planning/programme-dashboard/programme-dashboard';
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState, TabsItems } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
@@ -43,6 +42,7 @@ import { Classes } from '../classes/classes';
 import { NavigationNames } from '@/pages/navigation';
 import { WalkthroughModal } from '@/components/walkthrough/modal';
 import { InitialAttendanceTutorialModal } from '../attendance/components/attendance-tutorial/initial-tutorial-modal/initial-tutorial-modal';
+import { ActivitiesTab } from '../activities/activities';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -56,6 +56,7 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
+  // TODO: check this state
   const [programmeStartDate, setProgrammeStartDate] = useState(
     state?.programmeStartDate
   );
@@ -72,7 +73,6 @@ export const ClassDashboard: React.FC = () => {
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
 
@@ -100,8 +100,6 @@ export const ClassDashboard: React.FC = () => {
   const backToDashboard = () => {
     history.push('/');
   };
-
-  const isPrincipal = practitioner?.isPrincipal === true;
 
   useEffect(() => {
     const isTutorialComplete = getStorageItem<boolean>(
@@ -139,11 +137,7 @@ export const ClassDashboard: React.FC = () => {
 
   useEffect(() => {
     if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
-      if (isPrincipal && practitioners?.length! > 0) {
-        setCurrentTab(tabItemsForPrincipal[selectedTabIndex]);
-      } else {
-        setCurrentTab(tabItems[selectedTabIndex]);
-      }
+      setCurrentTab(tabItems[selectedTabIndex]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);
@@ -171,43 +165,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: NavigationNames.Classroom.Activities,
       initActive: false,
-      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
-    },
-    {
-      title: NavigationNames.Classroom.Resources,
-      initActive: false,
-      child: (
-        <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
-        </div>
-      ),
-    },
-  ];
-
-  const tabItemsForPrincipal: TabItem[] = [
-    {
-      title: NavigationNames.Classroom.Classes,
-      initActive: true,
-      child: <Classes />,
-    },
-    {
-      title: NavigationNames.Classroom.Attendance,
-      initActive: false,
-      child: <AttendanceComponent />,
-    },
-    {
-      title: NavigationNames.Classroom.Progress,
-      initActive: false,
-      child: (
-        <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
-        </div>
-      ),
-    },
-    {
-      title: NavigationNames.Classroom.Activities,
-      initActive: false,
-      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
+      child: <ActivitiesTab />,
     },
     {
       title: NavigationNames.Classroom.Resources,
@@ -221,7 +179,6 @@ export const ClassDashboard: React.FC = () => {
   ];
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
-    setProgrammeStartDate(new Date());
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
     if (tabIndex === TabsItems.ACTIVITES) {
@@ -460,11 +417,7 @@ export const ClassDashboard: React.FC = () => {
       >
         <TabList
           className="bg-uiBg"
-          tabItems={
-            isPrincipal && practitioners?.length! > 0
-              ? tabItemsForPrincipal
-              : tabItems
-          }
+          tabItems={tabItems}
           setSelectedIndex={selectedTabIndex}
           tabSelected={(tab: TabItem, tabIndex: number) =>
             setTabSelected(tab, tabIndex)

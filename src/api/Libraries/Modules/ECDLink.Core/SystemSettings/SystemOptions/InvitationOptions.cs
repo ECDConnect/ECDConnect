@@ -12,7 +12,6 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         public string TeamLeadSignup { get; set; }
         public string WLPreSchoolInvitation { get; set; }
         public string OAPreSchoolInvitation { get; set; }
-        public string WLPrincipalSignup { get; set; }
         public string OAPrincipalSignup { get; set; }
     }
 }

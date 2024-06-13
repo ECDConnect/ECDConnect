@@ -24,14 +24,13 @@ import {
 import { statementsSelectors } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { newGuid } from '@/utils/common/uuid.utils';
-import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { IncomeItemDto, NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import StatementsWrapper from '@/pages/business/money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { AddIncomeState } from '../../../add-amount.types';
-import { StatementsIncomeInput } from '@ecdlink/graphql';
 import { moneyInputFormat } from '@/utils/statements/statements-utils';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({
@@ -157,19 +156,14 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({
   };
 
   const sendIncomeUpdate = async () => {
-    const incomeInput: StatementsIncomeInput = {
-      IsActive: true,
-      UserId: userAuth?.id,
-      ChildUserId: child,
-      Submitted: false,
-      DateReceived: date,
-      Notes: note,
-      Amount: amount ? moneyInputFormat(amount) : 0,
-      AmountExpected: amount ? moneyInputFormat(amount) : 0,
-      ChildCoverAmount: 0,
-      ContributionTypeId: contributionType,
-      IncomeTypeId: incomeTypeValue?.id,
-      FeeTypeId: String(feeType) || '',
+    const incomeInput: IncomeItemDto = {
+      id: newGuid(),
+      //isActive: true,
+      dateReceived: date!,
+      amount: amount ? moneyInputFormat(amount) : 0,
+      incomeTypeId: incomeTypeValue!.id,
+      childUserId: child,
+      notes: note,
     };
 
     onSubmit(incomeInput);
@@ -191,20 +185,14 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({
       return;
     }
 
-    const incomeInput: StatementsIncomeInput = {
-      Id: newGuid(),
-      IsActive: true,
-      UserId: userAuth?.id,
-      ChildUserId: child,
-      Submitted: false,
-      DateReceived: date,
-      Notes: note,
-      Amount: amount ? moneyInputFormat(amount) : 0,
-      AmountExpected: amount ? moneyInputFormat(amount) : 0,
-      ChildCoverAmount: 0,
-      ContributionTypeId: contributionType,
-      IncomeTypeId: incomeTypeValue?.id,
-      FeeTypeId: String(feeType) || '',
+    const incomeInput: IncomeItemDto = {
+      id: newGuid(),
+      //isActive: true,
+      dateReceived: date!,
+      amount: amount ? moneyInputFormat(amount) : 0,
+      incomeTypeId: incomeTypeValue!.id,
+      childUserId: child,
+      notes: note,
     };
 
     onSubmit(incomeInput);

@@ -331,14 +331,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               endDate: undefined,
             })
           ).unwrap())();
-        (async () =>
-          await appDispatch(
-            statementsThunkActions.getUnsubmittedIncomeItems({})
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            statementsThunkActions.getUnsubmittedExpenseItems({})
-          ).unwrap())();
       }
     }
   }, [appDispatch, userData, isCoach, isPrincipal]);

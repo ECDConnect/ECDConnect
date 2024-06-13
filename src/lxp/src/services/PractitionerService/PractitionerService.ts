@@ -1181,25 +1181,22 @@ class PractitionerService {
     return true;
   }
 
-  async getMoodleSessionForUserId(userId: string): Promise<string> {
+  async getMoodleSessionForCurrentUser(): Promise<string> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
       query: `
-      query getMoodleSessionForUserId($userId: String) {
-        getMoodleSessionForUserId(userId: $userId) {
+      query getMoodleSessionForCurrentUser {
+        getMoodleSessionForCurrentUser {
         }
       }
       `,
-      variables: {
-        userId,
-      },
     });
     if (response.status !== 200) {
       throw new Error('Get Practitioner Failed - Server connection error');
     }
 
-    return response.data.data.getMoodleSessionForUserId;
+    return response.data.data.getMoodleSessionForCurrentUser;
   }
 
   async GetPractitionerInviteCount(userId: string): Promise<string> {

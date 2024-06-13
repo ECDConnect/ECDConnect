@@ -54,7 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var allUserPermissions = userPermissionRepo.GetAll().Where(x => x.UserId == input.UserId).ToList();
             var allUserPermissionIds = allUserPermissions.Select(x => x.PermissionId).ToList();
 
-            var permissionIdsToAddAsArchived = practitionerSystemPermissionsIds.Where(x => !input.PermissionIds.Contains(x)).ToList();
+            var permissionIdsToAddAsArchived = practitionerSystemPermissionsIds.Where(x => !input.PermissionIds.Contains(x) && !allUserPermissionIds.Contains(x)).ToList();
             var permissionIdsToAddAsActive = input.PermissionIds.Where(x => !allUserPermissionIds.Contains(x)).ToList();
             var permissionIdsToArchive = allUserPermissions.Where(x => x.IsActive == true && !input.PermissionIds.Contains(x.PermissionId)).Select(x => x.PermissionId).ToList();
             var permissionIdsToActivate = allUserPermissions.Where(x => x.IsActive == false && input.PermissionIds.Contains(x.PermissionId)).Select(x => x.PermissionId).ToList();

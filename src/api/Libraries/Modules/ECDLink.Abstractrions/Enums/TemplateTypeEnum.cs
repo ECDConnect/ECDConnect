@@ -24,9 +24,8 @@ namespace ECDLink.Abstractrions.Enums
         OAWLAuthCode = 19,
         OAInvitation = 20,
         WLInvitation = 21,
-        WLPrincipalInvitation = 22,
-        OAPrincipalInvitation = 23,
-        WLPreSchoolInvitation = 24,
-        OAPreSchoolInvitation = 25
+        OAPrincipalInvitation = 22,
+        WLPreSchoolInvitation = 23,
+        OAPreSchoolInvitation = 24
     }
 }
