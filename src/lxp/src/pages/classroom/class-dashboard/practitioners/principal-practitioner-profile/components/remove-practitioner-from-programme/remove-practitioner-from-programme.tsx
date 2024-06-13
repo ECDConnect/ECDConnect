@@ -482,7 +482,7 @@ export const RemovePractitionerFromProgramme: React.FC<
                 onClick={() => setRemovePractionerPromptVisible(true)}
                 className="w-full"
                 size="small"
-                color="errorMain"
+                color="quatenary"
                 type="filled"
                 disabled={!isValid}
               >

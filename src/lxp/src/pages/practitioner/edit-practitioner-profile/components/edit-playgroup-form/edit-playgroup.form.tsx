@@ -120,16 +120,13 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const getCannotDeletePlaygroupRender = (submit: () => void) => {
     return (
       <ActionModal
-        title={`Cannot delete this class`}
-        paragraphs={[
-          'You cannot delete this class because there are still children in the class.',
-          'Please move the children to a different class before deleting.',
-        ]}
+        title={`You cannot delete this class`}
+        alertMessage="To delete a class, first move all children to a different class or remove children who are no longer in your preschool."
         actionButtons={[
           {
             text: 'Okay',
             textColour: 'white',
-            colour: 'primary',
+            colour: 'quatenary',
             type: 'filled',
             onClick: submit,
             leadingIcon: 'CheckCircleIcon',
@@ -154,7 +151,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           {
             text: 'Delete',
             textColour: 'white',
-            colour: 'primary',
+            colour: 'quatenary',
             type: 'filled',
             onClick: () => {
               onDelete && onDelete();
@@ -164,8 +161,8 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           },
           {
             text: 'Cancel',
-            textColour: 'primary',
-            colour: 'primary',
+            textColour: 'quatenary',
+            colour: 'quatenary',
             type: 'outlined',
             onClick: () => cancel(),
             leadingIcon: 'XIcon',

@@ -113,7 +113,14 @@ export default function ConfirmPractitioners({
       setPrincipalPractitioners(principalFilteredList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFundaAppAdmin, isSmartLinkImported, practitioners, user?.idNumber]);
+  }, [
+    isFundaAppAdmin,
+    isSmartLinkImported,
+    listItems,
+    practitioners,
+    user?.id,
+    user?.idNumber,
+  ]);
 
   useEffect(() => {
     if (practitionersForPrincipal?.length) {
