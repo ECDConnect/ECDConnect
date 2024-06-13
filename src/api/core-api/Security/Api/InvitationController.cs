@@ -1,5 +1,3 @@
-using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -13,7 +11,6 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
@@ -471,29 +468,6 @@ namespace ECDLink.Security.Api
             }
 
             return Ok();
-        }
-
-
-        [Route("verify-oa-principal-invitation")]
-        [AllowAnonymous]
-        [HttpPost]
-        [TokenAccess(typeof(PrincipalOpenAccessValidator))]
-        public async Task<IActionResult> VerifyOAPrincipalInvitation([FromBody] VerifyInvitationModel verifyModel)
-        {
-            var tokenModel = JsonConvert.DeserializeObject<PrincipalTokenWrapperModel>(TokenHelper.DecodeToken(verifyModel.Token));
-            var appUser = await _tokenManager.GetValidUserWithTokenAsync(tokenModel.PrincipalUserId.ToString(), tokenModel.Token);
-
-            if (appUser == null)
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 1,
-                    Error = "Invalid token"
-                });
-            }
-            _shortUrlManager.RemoveShortUrl(appUser.Id, TemplateTypeConstants.OAPrincipalInvitation);
-
-            return Ok(appUser.Id);
         }
 
     }

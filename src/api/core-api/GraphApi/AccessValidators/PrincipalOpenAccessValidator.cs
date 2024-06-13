@@ -20,9 +20,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.AccessValidators
 
         public AuthState ValidateToken(string token)
         {
-            var tokenModel = JsonConvert.DeserializeObject<PrincipalTokenWrapperModel>(TokenHelper.DecodeToken(token));
+            var tokenModel = JsonConvert.DeserializeObject<PrincipalPractitionerTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
-            var appUser = _manager.GetValidUserWithTokenAsync(tokenModel.PrincipalUserId.ToString(), tokenModel.Token).Result;
+            var appUser = _manager.GetValidUserWithTokenAsync(tokenModel.AddedByUserId.ToString(), tokenModel.Token).Result;
 
             if (appUser == default(ApplicationUser))
             {
