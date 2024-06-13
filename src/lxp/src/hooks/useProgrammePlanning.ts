@@ -7,6 +7,7 @@ import {
 import {
   addDays,
   differenceInBusinessDays,
+  formatISO,
   isAfter,
   isFriday,
   isWeekend,
@@ -51,6 +52,7 @@ export const useProgrammePlanning = () => {
   ): Promise<ProgrammeDto> => {
     const newProgramme: ProgrammeDto = {
       id: newGuid(),
+      insertedDate: formatISO(new Date()),
       classroomId:
         classroom?.id || practitionerClassroomGroups?.at(0)?.classroomId || '',
       name: theme?.name || 'No theme',
@@ -129,8 +131,17 @@ export const useProgrammePlanning = () => {
     return date;
   };
 
-  const getConflictingProgramme = (startDate: Date, endDate: Date) => {
-    return findConflictingProgramme(programmes, startDate, endDate);
+  const getConflictingProgramme = (
+    startDate: Date,
+    endDate: Date,
+    classroomGroupId: string
+  ) => {
+    return findConflictingProgramme(
+      programmes,
+      startDate,
+      endDate,
+      classroomGroupId
+    );
   };
 
   const createProgrammeDailyProgrammes = (
@@ -159,7 +170,8 @@ export const useProgrammePlanning = () => {
       new Date(programme?.endDate),
       startDate
     );
-    while (dailyProgrammes.length < diffDays) {
+
+    while (dailyProgrammes.length <= diffDays) {
       if (dailyProgrammes.length > 0) {
         dayDate = getNextValidDate(dayDate);
       }
@@ -175,15 +187,9 @@ export const useProgrammePlanning = () => {
       endDate = isAfter(dayDate, endDate) ? dayDate : endDate;
     }
 
-    let skippedFridays = 0;
     const themeAppliedDailyProgrammes = [];
     for (const dailyProg of dailyProgrammes) {
-      if (isFriday(new Date(dailyProg.dayDate))) {
-        skippedFridays += 1;
-        themeAppliedDailyProgrammes.push(dailyProg);
-        continue;
-      }
-      const day = +dailyProg.day - skippedFridays;
+      const day = +dailyProg.day;
       const thDay = theme.themeDays.find((x) => +x.day === day);
 
       if (thDay) {

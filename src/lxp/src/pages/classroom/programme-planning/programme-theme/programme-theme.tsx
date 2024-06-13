@@ -1,13 +1,15 @@
 import {
   ProgrammeThemeDto as ProgrammeThemeModel,
+  getAvatarColor,
   useDialog,
 } from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
-  IconImageListItem,
   Typography,
   DialogPosition,
+  StackedList,
+  UserAlertListDataItem,
 } from '@ecdlink/ui';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -23,6 +25,8 @@ import {
 } from '../../class-dashboard/class-dashboard.types';
 import { classroomsSelectors } from '@/store/classroom';
 import { ProgrammeTimingRouteState } from '../programme-timing/programme-timing.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ProgrammeThemeActions } from '@/store/content/programme-theme/programme-theme.actions';
 
 const ProgrammeTheme: React.FC = () => {
   const dialog = useDialog();
@@ -35,6 +39,11 @@ const ProgrammeTheme: React.FC = () => {
     classroomsSelectors.getClassroomGroupById(location.state.classroomGroupId)
   );
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+
+  const { isLoading } = useThunkFetchCall(
+    'programmeThemeData',
+    ProgrammeThemeActions.GET_PROGRAMME_THEMES
+  );
 
   useEffect(() => {
     if (!location.state?.classroomGroupId) {
@@ -87,8 +96,24 @@ const ProgrammeTheme: React.FC = () => {
     } as ProgrammeTimingRouteState);
   };
 
+  const themeList: UserAlertListDataItem[] = themes?.map((theme) => ({
+    id: theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : '',
+    title: theme.name,
+    profileText: theme.name.slice(0, 2).toUpperCase(),
+    alertSeverity: 'none',
+    avatarColor: !!theme.color
+      ? theme.color
+      : !!theme.imageUrl
+      ? 'transparent'
+      : getAvatarColor(),
+    profileDataUrl: theme.imageUrl,
+    hideAlertSeverity: true,
+    onActionClick: () => handelThemeSelected(theme),
+  }));
+
   return (
     <BannerWrapper
+      isLoading={isLoading}
       showBackground={false}
       size="medium"
       renderBorder={true}
@@ -107,24 +132,11 @@ const ProgrammeTheme: React.FC = () => {
         color={'primary'}
         className="mb-4"
       />
-      {themes?.map((theme, idx) => (
-        <div
-          className="mb-1 rounded-3xl"
-          key={idx}
-          id={theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : ''}
-        >
-          <IconImageListItem
-            key={`theme-item-${theme.id}`}
-            color={theme.color}
-            title={theme.name}
-            icon={theme.imageUrl}
-            showDivider={idx > 0}
-            onClick={() => handelThemeSelected(theme)}
-            backgroundColor={'uiBg'}
-            borderRadius={'xl'}
-          />
-        </div>
-      ))}
+      <StackedList
+        className="flex flex-col gap-1"
+        type="UserAlertList"
+        listItems={themeList}
+      />
     </BannerWrapper>
   );
 };

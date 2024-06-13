@@ -3,13 +3,16 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ContentProgrammeThemeService } from '@services/ContentProgrammeThemeService';
 import { RootState, ThunkApiType } from '../../types';
 
+export const ProgrammeThemeActions = {
+  GET_PROGRAMME_THEMES: 'getProgrammeThemes',
+};
+
 export const getProgrammeThemes = createAsyncThunk<
   ProgrammeThemeDto[],
   { locale: string },
   ThunkApiType<RootState>
 >(
-  'getProgrammeThemes',
-  // eslint-disable-next-line no-empty-pattern
+  ProgrammeThemeActions.GET_PROGRAMME_THEMES,
   async ({ locale }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },

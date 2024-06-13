@@ -92,6 +92,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
 
   const chosedTheme = themes?.find((item) => item?.name === programme?.name);
+
   const { createProgramme } = useProgrammePlanning();
   const [selectedActitivy, setSelectedActivity] = useState(0);
   const [routineItemSet, setRoutineItemSet] =

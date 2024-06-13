@@ -78,17 +78,31 @@ const programmeSlice = createSlice({
     setThunkActionStatus(builder, upsertProgrammes);
     setThunkActionStatus(builder, updateProgrammes);
     builder.addCase(getProgrammes.fulfilled, (state, action) => {
-      state.programmes = action.payload;
+      state.programmes = action.payload?.map((programme) => ({
+        ...programme,
+        synced: true,
+      }));
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getUserProgrammes.fulfilled, (state, action) => {
-      state.programmes = action.payload;
+      state.programmes = action.payload?.map((programme) => ({
+        ...programme,
+        synced: true,
+      }));
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(upsertProgrammes.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(updateProgrammes.fulfilled, (state, action) => {
+      if (state.programmes && action.payload?.length) {
+        state.programmes = state.programmes.map((programme) => ({
+          ...programme,
+          synced: action.payload?.some(
+            (updatedProgramme) => updatedProgramme.id === programme.id
+          ),
+        }));
+      }
       setFulfilledThunkActionStatus(state, action);
     });
   },
