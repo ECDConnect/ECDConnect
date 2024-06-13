@@ -33,72 +33,36 @@ export const Money: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
 
-  const unsyncedIncome = useSelector(
-    statementsSelectors.getUnsyncedIncomeItems
-  );
-  const unsyncedExpenses = useSelector(
-    statementsSelectors.getUnsyncedExpenseItems
-  );
-
   const { isLoading: isSubmittingStatement } = useThunkFetchCall(
     'statements',
     'submitIncomeStatement'
   );
 
   useEffect(() => {
-    if (isOnline) {
-      unsyncedIncome.forEach(async (item) => {
-        appDispatch(
-          statementsThunkActions.addIncomeItem({
-            input: item,
-            firstAttempt: false,
+    const syncStatements = async () => {
+      if (userAuth?.auth_token && isOnline) {
+        setIsLoading(true);
+
+        // Push any updates
+        await appDispatch(
+          statementsThunkActions.upsertIncomeStatements({})
+        ).unwrap();
+
+        // Fetch updates
+        const startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        await appDispatch(
+          statementsThunkActions.getIncomeStatements({
+            startDate: startDate,
+            endDate: undefined,
           })
-        );
-      });
-    }
-  }, [appDispatch, isOnline, unsyncedIncome]);
+        ).unwrap();
+        setIsLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    if (isOnline) {
-      unsyncedExpenses.forEach(async (item) => {
-        appDispatch(
-          statementsThunkActions.addExpenseItem({
-            input: item,
-            firstAttempt: false,
-          })
-        );
-      });
-    }
-  }, [appDispatch, isOnline, unsyncedExpenses]);
-
-  const fetchStatements = useCallback(async () => {
-    if (userAuth?.auth_token && isOnline) {
-      setIsLoading(true);
-      const startDate = new Date();
-      startDate.setFullYear(startDate.getFullYear() - 1);
-      await appDispatch(
-        statementsThunkActions.getIncomeStatements({
-          startDate: startDate,
-          endDate: undefined,
-        })
-      ).unwrap();
-
-      await appDispatch(
-        statementsThunkActions.getUnsubmittedIncomeItems({})
-      ).unwrap();
-
-      await appDispatch(
-        statementsThunkActions.getUnsubmittedExpenseItems({})
-      ).unwrap();
-
-      setIsLoading(false);
-    }
-  }, [appDispatch, setIsLoading, userAuth, isOnline]);
-
-  useEffect(() => {
-    fetchStatements();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchStatements]);
+    syncStatements();
+  }, []);
 
   // Display update fees logic
   const practitioner = useSelector(practitionerSelectors.getPractitioner);

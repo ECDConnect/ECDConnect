@@ -24,10 +24,10 @@ import {
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { StatementsIncomeInput } from '@ecdlink/graphql';
 import { AddIncomeState } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import { IncomeItemDto } from '@ecdlink/core';
 
 export const OtherIncome: React.FC<AddIncomeState> = ({
   setType,
@@ -77,18 +77,11 @@ export const OtherIncome: React.FC<AddIncomeState> = ({
   const lastDateOfMonth = lastDayOfMonth(today);
 
   const sendIncomeUpdate = async () => {
-    const incomeInput: StatementsIncomeInput = {
-      Id: newGuid(),
-      IsActive: true,
-      UserId: userAuth?.id,
-      Submitted: false,
-      DateReceived: date,
-      Notes: note,
-      Description: description,
-      Amount: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
-      AmountExpected: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
-      ChildCoverAmount: 0,
-      IncomeTypeId: incomeTypeValue?.id,
+    const incomeInput: IncomeItemDto = {
+      id: newGuid(),
+      dateReceived: date!,
+      amount: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
+      incomeTypeId: incomeTypeValue!.id,
     };
 
     onSubmit(incomeInput);

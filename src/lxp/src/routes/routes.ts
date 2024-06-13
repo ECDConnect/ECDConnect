@@ -33,7 +33,6 @@ const ROUTES = {
     '/business-submit-income-statements-list',
   BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
-  BUSINESS_CURRENT_MONTH_STATEMENTS_DETAILS: '/current-month-statement-details',
   CALENDAR: '/calendar',
   CLASSROOM: addPrefix('/classroom', {
     CHILDREN: '/children',
@@ -185,7 +184,6 @@ const ROUTES = {
       BUSINESS: '/:userId',
       LIST_STATEMENTS: '/:userId/previous-statements-list',
       STATEMENT_DETAILS: '/:userId/statement-details',
-      CURRENT_MONTH_SUMMARY: '/:userId/current-month-summary',
     }),
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',

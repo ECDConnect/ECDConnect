@@ -375,91 +375,91 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region SS_IncomeStatements
 
-        public bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement)
-        {
-            var pointsMonth = new DateTime(lastStatement.Year, lastStatement.Month, 1);
+        //public bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement)
+        //{
+        //    var pointsMonth = new DateTime(lastStatement.Year, lastStatement.Month, 1);
 
-            var statementPointsActivities = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
+        //    var statementPointsActivities = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
 
-            var practitioner = _practitionerRepo.GetByUserId(userId);
-            var isPrincipalOrAdmin = (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value);
+        //    var practitioner = _practitionerRepo.GetByUserId(userId);
+        //    var isPrincipalOrAdmin = (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value);
 
-            // SUBMIT STATEMENT POINTS
-            // Just add points for submitting for the current month, we only call this after submitting
-            var submitActivity = statementPointsActivities.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac3).FirstOrDefault();
+        //    // SUBMIT STATEMENT POINTS
+        //    // Just add points for submitting for the current month, we only call this after submitting
+        //    var submitActivity = statementPointsActivities.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac3).FirstOrDefault();
             
-            UpdateUserSummaryPoints(
-                userId,
-                submitActivity,
-                pointsMonth,
-                isPrincipalOrAdmin);
+        //    UpdateUserSummaryPoints(
+        //        userId,
+        //        submitActivity,
+        //        pointsMonth,
+        //        isPrincipalOrAdmin);
 
-            // ALL CHILDREN WITH FEES POINTS
-            var feesActivity = statementPointsActivities.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac2).FirstOrDefault();
+        //    // ALL CHILDREN WITH FEES POINTS
+        //    var feesActivity = statementPointsActivities.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac2).FirstOrDefault();
 
-            // Fetch all children for principal
-            var classroom = _classRepo.GetByUserId(userId);
+        //    // Fetch all children for principal
+        //    var classroom = _classRepo.GetByUserId(userId);
 
-            if (classroom != null)
-            {
-                var children = _childService.GetChildrenForClassroom(classroom.Id);
+        //    if (classroom != null)
+        //    {
+        //        var children = _childService.GetChildrenForClassroom(classroom.Id);
 
-                if (children.Any())
-                {
-                    // Check preschool fees exist for all children
-                    var allChildrenHaveFees = children.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x.UserId));
+        //        if (children.Any())
+        //        {
+        //            // Check preschool fees exist for all children
+        //            var allChildrenHaveFees = children.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x.UserId));
 
-                    if (allChildrenHaveFees)
-                    {
-                        UpdateUserSummaryPoints(
-                           userId,
-                           feesActivity,
-                           pointsMonth,
-                           isPrincipalOrAdmin,
-                           children.Count());
-                    }
-                }
-            }
+        //            if (allChildrenHaveFees)
+        //            {
+        //                UpdateUserSummaryPoints(
+        //                   userId,
+        //                   feesActivity,
+        //                   pointsMonth,
+        //                   isPrincipalOrAdmin,
+        //                   children.Count());
+        //            }
+        //        }
+        //    }
 
-            // THREE SUBMITS IN A ROW
-            var timeSinceLastBonus = new TimeSpan();
-            var consecutiveBonusActivity = statementPointsActivities.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac4).FirstOrDefault();
+        //    // THREE SUBMITS IN A ROW
+        //    var timeSinceLastBonus = new TimeSpan();
+        //    var consecutiveBonusActivity = statementPointsActivities.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac4).FirstOrDefault();
 
-            var lastBonus = _pointsUserSummaryRepo.GetAll()
-                .Where(x => x.PointsLibraryId == consecutiveBonusActivity.Id && x.UserId.ToString() == userId)
-                .OrderByDescending(x => x.InsertedDate)
-                .FirstOrDefault();
+        //    var lastBonus = _pointsUserSummaryRepo.GetAll()
+        //        .Where(x => x.PointsLibraryId == consecutiveBonusActivity.Id && x.UserId.ToString() == userId)
+        //        .OrderByDescending(x => x.InsertedDate)
+        //        .FirstOrDefault();
 
-            if (lastBonus != null)
-            {
-                // Just use first day for easier setup, we just need to check the months diff
-                var lastBonusDate = new DateTime(lastBonus.Year, lastBonus.Month, 1);
-                timeSinceLastBonus = pointsMonth - lastBonusDate;
-            }
+        //    if (lastBonus != null)
+        //    {
+        //        // Just use first day for easier setup, we just need to check the months diff
+        //        var lastBonusDate = new DateTime(lastBonus.Year, lastBonus.Month, 1);
+        //        timeSinceLastBonus = pointsMonth - lastBonusDate;
+        //    }
 
-            if (lastBonus == null || timeSinceLastBonus.TotalDays > 70) // At least three months
-            {
-                var lastMonth = pointsMonth.AddMonths(-1);
-                var previousMonth = pointsMonth.AddMonths(-2);
+        //    if (lastBonus == null || timeSinceLastBonus.TotalDays > 70) // At least three months
+        //    {
+        //        var lastMonth = pointsMonth.AddMonths(-1);
+        //        var previousMonth = pointsMonth.AddMonths(-2);
 
-                // Check previous two months statements were also submitted
-                var previousTwoStatementsSubmitted = _statementsIncomeStatementRepo.GetAll()
-                    .Where(x => x.UserId.ToString() == userId && !x.AutoSubmitted)
-                    .Where(x => (x.Year == lastMonth.Year && x.Month == lastMonth.Month) || (x.Year == previousMonth.Year && x.Month == previousMonth.Month))
-                    .Count() == 2;
+        //        // Check previous two months statements were also submitted
+        //        var previousTwoStatementsSubmitted = _statementsIncomeStatementRepo.GetAll()
+        //            .Where(x => x.UserId.ToString() == userId && !x.AutoSubmitted)
+        //            .Where(x => (x.Year == lastMonth.Year && x.Month == lastMonth.Month) || (x.Year == previousMonth.Year && x.Month == previousMonth.Month))
+        //            .Count() == 2;
 
-                if (previousTwoStatementsSubmitted)
-                {
-                    UpdateUserSummaryPoints(
-                        userId,
-                        consecutiveBonusActivity,
-                        pointsMonth,
-                        isPrincipalOrAdmin);
-                }
-            }
+        //        if (previousTwoStatementsSubmitted)
+        //        {
+        //            UpdateUserSummaryPoints(
+        //                userId,
+        //                consecutiveBonusActivity,
+        //                pointsMonth,
+        //                isPrincipalOrAdmin);
+        //        }
+        //    }
             
-            return true;
-        }
+        //    return true;
+        //}
 
 
         public bool CalculatePreSchoolFees(string userId, DateTime today)

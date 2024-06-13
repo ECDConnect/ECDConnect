@@ -81,9 +81,56 @@ INSERT INTO "AspNetUsers" ("Id","RaceId","GenderId","UserName","NormalizedUserNa
 	 ('53f1384c-6d34-44e3-adb5-33d623906317',NULL,NULL,'WLSuperAdmin','WLSUPERADMIN','','',true,NULL,false,false,NULL,true,0,'AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==','H2SJ6OHCVQW25Z4HTDIM3MXQZ4D3L53A','c5a90618-996c-4f66-93bc-90273961d6fb',true,NULL,true,'2023-11-02 14:25:26.396','wlsuper','admin','WLSuper Admin','email',NULL,true,'2024-05-09 10:09:40.670',NULL,NULL,NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2023-11-02 14:25:29.747',NULL,false,'UserName'),
 	 ('710aa070-a6a1-4b3a-be08-ef9bb74792fa',NULL,NULL,'WLAdmin','WLADMIN','','',true,'',false,false,NULL,true,0,'AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==','G74EYL32F7LR2XAPBAC62NM3ANGJWVCR','384b571a-c717-47ab-8c02-777f1157b70a',false,'admin',false,'-infinity','wladmin','admin','wladmin admin','sms','',true,'2024-06-04 20:05:10.919',NULL,NULL,NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,false,NULL,NULL,NULL,'2023-06-20 22:29:42.381','2024-04-16 05:20:48.683',false,'UserName');
 
+INSERT INTO "AspNetRoles" ("Id","Name","NormalizedName","ConcurrencyStamp","TenantId","SystemName") VALUES
+	 ('effbea65-a810-4c92-a6b1-c4cc86e37586','Franchisor','FRANCHISOR','96fab2ab-98e7-4915-bad1-7dfdbbf2804d','e8f571eb-1972-4e71-a20f-347c65d059bb','Franchisor'),
+	 ('4e9648c7-404a-4303-982d-5540c9e9af87','Practitioner','PRACTITIONER','f73b526f-1afc-4232-bad7-22e8999eeac3','e8f571eb-1972-4e71-a20f-347c65d059bb','Practitioner'),
+	 ('bb5e9e65-5ba0-432b-b917-a8b85d5d8f77','Principal','PRINCIPAL','305cd106-92ea-44bd-b673-8d76d1c63809','e8f571eb-1972-4e71-a20f-347c65d059bb','Principal'),
+	 ('da7a4a20-1cb0-4560-9d35-80a7cfb651c0','Child','CHILD','9f035747-0483-4313-a237-00de1743fa30','e8f571eb-1972-4e71-a20f-347c65d059bb','Child'),
+	 ('a02d85e8-ef30-4ba4-b319-ed6af4c405d9','Coach','COACH','3ce760b8-4f11-4756-a8f5-50486627fb45','e8f571eb-1972-4e71-a20f-347c65d059bb','Coaches'),
+	 ('88c06cd9-5162-4d0b-a3a1-dbfed47f6e75','Super Admin','SUPER ADMIN','51ef4ce2-2e7e-4c2c-b2dc-d85131ecc1ff','e8f571eb-1972-4e71-a20f-347c65d059bb','Super Admin'),
+	 ('4a38da49-481b-40f6-87ce-ca7b25343f3b','Administrator','ADMINISTRATOR','97c120fa-871e-45f1-a115-e1ebabb6c28e','e8f571eb-1972-4e71-a20f-347c65d059bb','Administrator');
+
+
 INSERT INTO public."AspNetUserRoles"
 ("UserId", "RoleId", "TenantId")
-VALUES('53f1384c-6d34-44e3-adb5-33d623906317', '829323b4-165b-4fde-b8eb-b74e21c70891', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
+VALUES('53f1384c-6d34-44e3-adb5-33d623906317', '88c06cd9-5162-4d0b-a3a1-dbfed47f6e75', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
 INSERT INTO public."AspNetUserRoles"
 ("UserId", "RoleId", "TenantId")
-VALUES('710aa070-a6a1-4b3a-be08-ef9bb74792fa', 'd595accd-2ed6-459d-b0dc-ee2f4a86bdda', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
+VALUES('710aa070-a6a1-4b3a-be08-ef9bb74792fa', '4a38da49-481b-40f6-87ce-ca7b25343f3b', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
+
+update public."ContentFieldType" set "TenantId" = null;
+delete from public."DocumentType" where "TenantId" = '39077d0e-e443-4076-aaf2-978dc6805aa0';
+update public."DocumentType" set "TenantId" = null;
+update public."ProgrammeType" set "TenantId" = null;
+
+update "Tenant" 
+set "TenantTypeId" =2, 
+"SiteAddress"='xxxwhitelabel-develop-app.azurewebsites.net',
+"AdminSiteAddress"='xxxwhitelabel-develop-portal.azurewebsites.net',
+"TestSiteAddress" = 'xxxlocalhost:3005',
+"AdminTestSiteAddress" = 'xxxlocalhost:3006'
+where "ApplicationName" = 'White Label' and "Id" = '258a15e6-3736-45ea-875c-48d9377de4c8';
+
+INSERT INTO "Hierarchy" ("Id","Type","SystemType","ParentId","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+	 ('64c86747-54ce-42d4-824f-742105f3b225','Administrator','ECDLink.DataAccessLayer.Entities.ApplicationUser','00000000-0000-0000-0000-000000000000',true,'2022-01-31 07:39:31.305','0001-01-01 00:00:00',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb'),
+	 ('c6a33885-20f1-474d-aaf1-16272e5253e5','Practitioner','ECDLink.DataAccessLayer.Entities.Users.Practitioner','64c86747-54ce-42d4-824f-742105f3b225',true,'2022-01-31 07:39:31.305','0001-01-01 00:00:00',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb'),
+	 ('13f4b3ad-2fed-4b81-839b-fd7ebd70de83','Coach','ECDLink.DataAccessLayer.Entities.Users.Coach','64c86747-54ce-42d4-824f-742105f3b225',true,'2022-08-11 06:53:51.026','2022-08-11 06:53:51.026',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb'),
+	 ('1308879e-e132-49bb-8293-c0a504a5aa47','Principal','ECDLink.DataAccessLayer.Entities.Users.Principal','64c86747-54ce-42d4-824f-742105f3b225',true,'2022-08-11 06:53:51.026','2022-08-11 06:53:51.026',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb'),
+	 ('efb50945-85f2-4322-97f6-b49be02af175','Franchisor','ECDLink.DataAccessLayer.Entities.Users.Franchisor','64c86747-54ce-42d4-824f-742105f3b225',true,'2022-08-11 06:53:51.026','2022-08-11 06:53:51.026',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb'),
+	 ('2dd64cbf-cd56-4bcd-bb2b-c4ed25151da5','Child','ECDLink.DataAccessLayer.Entities.Users.Child','c6a33885-20f1-474d-aaf1-16272e5253e5',true,'2022-01-31 07:39:31.305','0001-01-01 00:00:00',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb');
+
+
+INSERT INTO "UserHierarchy" ("Id","ParentId","UserId","UserType","NamedTypePath","Hierarchy","Key", "IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+	 ('db966393-e223-44a5-a2e0-7243577d2b83','710aa070-a6a1-4b3a-be08-ef9bb74792fa','710aa070-a6a1-4b3a-be08-ef9bb74792fa','Administrator','System.Administrator.','0.1.',1,true,'2022-01-31 07:39:32.431','2022-01-31 07:39:32.431',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb');
+
+
+INSERT INTO public."TenantHasModule" ("TenantId","ModuleId") VALUES
+	 ('e8f571eb-1972-4e71-a20f-347c65d059bb','72653e65-40a2-4c57-a251-0e35797b107f'),
+	 ('e8f571eb-1972-4e71-a20f-347c65d059bb','1b78f12d-e8b5-4396-a809-47744cff7688'),
+	 ('e8f571eb-1972-4e71-a20f-347c65d059bb','f64dadd6-a118-4624-b780-5d102a69bb58'),
+	 ('e8f571eb-1972-4e71-a20f-347c65d059bb','5153ef6e-f0cf-44a4-a893-b7ef33c1cb62'),
+	 ('e8f571eb-1972-4e71-a20f-347c65d059bb','1b26bda2-0519-4a88-aa52-72b5e82aa4e9'),
+	 ('e8f571eb-1972-4e71-a20f-347c65d059bb','e790f271-b14e-42e9-8f91-665e139aff49'),
+	 ('e8f571eb-1972-4e71-a20f-347c65d059bb','5f71e5fb-9c89-4559-8c9d-878de2d0a3de');
+
+

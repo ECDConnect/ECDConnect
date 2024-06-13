@@ -13,10 +13,8 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> PushSmartSpaceVisitsData();
         Task<bool> PushPQAData();
         Task<bool> PushReAccreditationData();
-        Task IntegrationStatementsData();
         Task<bool> IntegrationUpdates();
-        Task<bool> IntegrationByTrainees();
-        Task AutoSubmitStatements();
+        Task<bool> IntegrationByTrainees();        
         Task<bool> IntegrationByNewCoach(string remoteCoachId);
         Task IntegrationLeagueData();
         Task PushChildProgressReports();

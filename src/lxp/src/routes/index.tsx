@@ -117,8 +117,6 @@ import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add'
 import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
 import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-preschool-fee';
 import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
-import { CurrentMonthSummary } from '@/pages/business/money/monthly-statements/current-month-summary';
-import { PractitionerCurrentMonthSummary } from '@/pages/coach/coach-practitioner-business/components/statements/current-month-summary';
 import { AcceptClubLeaderRole } from '@/pages/practitioner/practitioner-community/accept-club-leader-role';
 import { PractitionerCommunity } from '@/pages/practitioner/practitioner-community';
 import { SupportRoleEdit } from '@/pages/practitioner/practitioner-community/club-tab/club/club-support-edit';
@@ -255,11 +253,6 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.BUSINESS_MONTH_STATEMENTS_DETAILS}
         component={MonthStatements}
-        exact={true}
-      />
-      <Route
-        path={ROUTES.BUSINESS_CURRENT_MONTH_STATEMENTS_DETAILS}
-        component={CurrentMonthSummary}
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact />
@@ -740,11 +733,6 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS}
         component={PractitionerMonthStatements}
-      />
-      <Route
-        exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS.CURRENT_MONTH_SUMMARY}
-        component={PractitionerCurrentMonthSummary}
       />
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>

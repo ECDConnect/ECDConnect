@@ -3,11 +3,9 @@ export type ExpenseItemMinDto = {
   id: string;
   datePaid: string;
   amount: number;
-  description: string;
 };
 
 export type ExpenseItemDto = ExpenseItemMinDto & {
   notes?: string;
   photoProof?: string;
-  isOffline?: boolean;
 };

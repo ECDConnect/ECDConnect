@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notes;
+using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Entities.Users;
 using HotChocolate;
 using Microsoft.EntityFrameworkCore;
@@ -127,6 +128,9 @@ namespace ECDLink.DataAccessLayer.Entities
 
         [GraphIgnoreInput]
         public DateTime? UpdatedDate { get; set; } = DateTime.Now;
+
+        [GraphIgnoreInput]
+        public virtual ICollection<UserTrainingCourse> TrainingCourses { get; set; }
     }
 
     public interface ApplicationUserJoin

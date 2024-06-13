@@ -1,5 +1,10 @@
 import ROUTES from '@/routes/routes';
-import { numberWithSpaces } from '@/utils/statements/statements-utils';
+import {
+  formatCurrentValue,
+  getStatementExpenseTotal,
+  getStatementIncomeTotal,
+  numberWithSpaces,
+} from '@/utils/statements/statements-utils';
 import { Typography, Button, Card } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import React, { useEffect, useMemo } from 'react';
@@ -20,8 +25,6 @@ import { PractitionerBusinessParams } from '../../coach-practitioner-business.ty
 
 interface IncomeStatementProps {
   statements: IncomeStatementDto[];
-  unsubmittedIncome: IncomeItemDto[];
-  unsubmittedExpenses: ExpenseItemDto[];
   isSubmitWindowOpen: boolean;
   isThisMonthSubmitted: boolean;
   isLastMonthSubmitted: boolean;
@@ -29,11 +32,6 @@ interface IncomeStatementProps {
 
 export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   statements,
-  unsubmittedIncome,
-  unsubmittedExpenses,
-  isSubmitWindowOpen,
-  isThisMonthSubmitted,
-  isLastMonthSubmitted,
 }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -42,63 +40,63 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   );
   const { userId } = useParams<PractitionerBusinessParams>();
 
-  const lastMonthStatement = statements[statements.length - 1];
+  // const lastMonthStatement = statements[statements.length - 1];
 
-  const previousMonthRecord = !!lastMonthStatement
-    ? `${getMonthName(lastMonthStatement.month! - 1).substring(0, 3)} ${
-        lastMonthStatement.year
-      }`
-    : `-`;
+  // const previousMonthRecord = !!lastMonthStatement
+  //   ? `${getMonthName(lastMonthStatement.month! - 1).substring(0, 3)} ${
+  //       lastMonthStatement.year
+  //     }`
+  //   : `-`;
 
-  const previousMonthTotalIncome = !!lastMonthStatement
-    ? lastMonthStatement.incomeTotal
-    : 0;
+  // const previousMonthTotalIncome = !!lastMonthStatement
+  //   ? lastMonthStatement.incomeTotal
+  //   : 0;
 
-  const previousMonthTotalExpenses = !!lastMonthStatement
-    ? lastMonthStatement.expenseTotal
-    : 0;
+  // const previousMonthTotalExpenses = !!lastMonthStatement
+  //   ? lastMonthStatement.expenseTotal
+  //   : 0;
 
-  const previousMonthTotalBalance = !!lastMonthStatement
-    ? lastMonthStatement.balance
-    : 0;
+  // const previousMonthTotalBalance = !!lastMonthStatement
+  //   ? lastMonthStatement.balance
+  //   : 0;
 
-  const currentMonthRecord = useMemo(() => {
-    var date = new Date();
-    if (isThisMonthSubmitted) {
-      return format(getNextMonth(date), 'MMM yyyy');
-    }
-    if (
-      !isLastMonthSubmitted &&
-      date.getDate() <= IncomeStatementDates.SubmitEndDay
-    ) {
-      return format(getPreviousMonth(date), 'MMM yyyy');
-    }
+  // const currentMonthRecord = useMemo(() => {
+  //   var date = new Date();
+  //   if (isThisMonthSubmitted) {
+  //     return format(getNextMonth(date), 'MMM yyyy');
+  //   }
+  //   if (
+  //     !isLastMonthSubmitted &&
+  //     date.getDate() <= IncomeStatementDates.SubmitEndDay
+  //   ) {
+  //     return format(getPreviousMonth(date), 'MMM yyyy');
+  //   }
 
-    return format(date, 'MMM yyyy');
-  }, [isThisMonthSubmitted, isLastMonthSubmitted]);
+  //   return format(date, 'MMM yyyy');
+  // }, [isThisMonthSubmitted, isLastMonthSubmitted]);
 
-  const currentMonthTotalIncome = unsubmittedIncome.reduce((total, item) => {
-    return total + item.amount;
-  }, 0);
+  // const currentMonthTotalIncome = unsubmittedIncome.reduce((total, item) => {
+  //   return total + item.amount;
+  // }, 0);
 
-  const currentMonthTotalExpenses = unsubmittedExpenses.reduce(
-    (total, item) => {
-      return total + item.amount;
-    },
-    0
-  );
+  // const currentMonthTotalExpenses = unsubmittedExpenses.reduce(
+  //   (total, item) => {
+  //     return total + item.amount;
+  //   },
+  //   0
+  // );
 
-  const currentMonthTotalBalance =
-    currentMonthTotalIncome - currentMonthTotalExpenses;
+  // const currentMonthTotalBalance =
+  //   currentMonthTotalIncome - currentMonthTotalExpenses;
 
-  const formatCurrentValue = (value: number) => {
-    if (value === 0) return `R ${numberWithSpaces(String(value.toFixed(2)))}`;
+  // const formatCurrentValue = (value: number) => {
+  //   if (value === 0) return `R ${numberWithSpaces(String(value.toFixed(2)))}`;
 
-    if (value > 0) return `+ R ${numberWithSpaces(String(value.toFixed(2)))}`;
+  //   if (value > 0) return `+ R ${numberWithSpaces(String(value.toFixed(2)))}`;
 
-    if (value < 0)
-      return `- R ${numberWithSpaces(String(Math.abs(value).toFixed(2)))}`;
-  };
+  //   if (value < 0)
+  //     return `- R ${numberWithSpaces(String(Math.abs(value).toFixed(2)))}`;
+  // };
 
   const {
     setState,
@@ -121,7 +119,36 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
     }
   }, [stepIndex]);
 
+  const currentMonthStatement = statements[statements.length - 1];
+  const lastMonthStatement = statements[statements.length - 2];
+
+  const lastMonthIncomeTotal = useMemo(
+    () => getStatementIncomeTotal(lastMonthStatement),
+    [lastMonthStatement]
+  );
+
+  const currentMonthIncomeTotal = useMemo(
+    () => getStatementIncomeTotal(currentMonthStatement),
+    [currentMonthStatement]
+  );
+
+  const lastMonthExpenseTotal = useMemo(
+    () => getStatementExpenseTotal(lastMonthStatement),
+    [lastMonthStatement]
+  );
+
+  const currentMonthExpenseTotal = useMemo(
+    () => getStatementExpenseTotal(currentMonthStatement),
+    [currentMonthStatement]
+  );
+
   const renderData = useMemo(() => {
+    function getStatementTitle(
+      lastMonthStatement: IncomeStatementDto
+    ): string | undefined {
+      throw new Error('Function not implemented.');
+    }
+
     return (
       <>
         {isOnline && (
@@ -138,7 +165,9 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                 className="w-6/12"
               />
               <Typography
-                text={`${formatCurrentValue(Number(currentMonthTotalBalance))}`}
+                text={`${formatCurrentValue(
+                  currentMonthIncomeTotal - currentMonthExpenseTotal
+                )}`}
                 color={'white'}
                 type="h1"
                 className="w-8/12 text-right"
@@ -150,14 +179,14 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   <th className="w-1/3"></th>
                   <th className="text-textDark font-body">
                     <Typography
-                      text={previousMonthRecord}
+                      text={getStatementTitle(lastMonthStatement)}
                       type="body"
                       color={'textDark'}
                     />
                   </th>
                   <th className="w-1/3">
                     <Typography
-                      text={currentMonthRecord}
+                      text={getStatementTitle(currentMonthStatement)}
                       type="body"
                       color={'textDark'}
                     />
@@ -174,7 +203,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(previousMonthTotalIncome)}
+                      text={formatCurrentValue(lastMonthIncomeTotal)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -182,7 +211,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(currentMonthTotalIncome)}
+                      text={formatCurrentValue(currentMonthIncomeTotal)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -200,7 +229,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(previousMonthTotalExpenses)}
+                      text={formatCurrentValue(lastMonthExpenseTotal)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -208,7 +237,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(currentMonthTotalExpenses)}
+                      text={formatCurrentValue(currentMonthExpenseTotal)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -229,11 +258,11 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   <td className="w-1/3">
                     <Typography
                       text={formatCurrentValue(
-                        Number(previousMonthTotalBalance)
+                        lastMonthIncomeTotal - lastMonthExpenseTotal
                       )}
                       type="body"
                       color={
-                        Number(previousMonthTotalBalance!) >= 0
+                        lastMonthIncomeTotal - lastMonthExpenseTotal >= 0
                           ? 'successMain'
                           : 'errorMain'
                       }
@@ -243,11 +272,11 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   <td className="w-1/3">
                     <Typography
                       text={formatCurrentValue(
-                        Number(currentMonthTotalBalance)
+                        currentMonthIncomeTotal - currentMonthExpenseTotal
                       )}
                       type="body"
                       color={
-                        Number(currentMonthTotalBalance!) >= 0
+                        currentMonthIncomeTotal - currentMonthExpenseTotal >= 0
                           ? 'successMain'
                           : 'errorMain'
                       }
@@ -261,17 +290,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
         )}
       </>
     );
-  }, [
-    currentMonthRecord,
-    currentMonthTotalBalance,
-    currentMonthTotalExpenses,
-    currentMonthTotalIncome,
-    isOnline,
-    previousMonthRecord,
-    previousMonthTotalBalance,
-    previousMonthTotalExpenses,
-    previousMonthTotalIncome,
-  ]);
+  }, [isOnline]);
 
   return (
     <>

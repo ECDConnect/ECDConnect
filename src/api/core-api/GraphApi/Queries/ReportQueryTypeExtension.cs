@@ -1332,7 +1332,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 if ((practitioner.IsPrincipal.HasValue && (bool)practitioner.IsPrincipal.Value == true) || (practitioner.IsFundaAppAdmin.HasValue && (bool)practitioner.IsFundaAppAdmin.Value == true))
                 {
-                    var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).FirstOrDefault();
+                    var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.Value, previousMonthStart, previousMonthEnd).FirstOrDefault();
+                    var lastMonthStatementBalance = lastMonthStatement != null 
+                        ? lastMonthStatement.IncomeItems.Sum(x => x.Amount) - lastMonthStatement.ExpenseItems.Sum(x => x.Amount)
+                        : 0;
                     #region MISSING INCOME STATEMENT
                     if (lastMonthStatement == null || (!lastMonthStatement.ExpenseItems.Any() && !lastMonthStatement.IncomeItems.Any()))
                     {
@@ -1349,11 +1352,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     #region PROGRAMME LOST x IN LAST 2 MONTHS
                     var secondLastMonth = previousMonthStart.AddMonths(-1);
-                    var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), secondLastMonth, secondLastMonth).FirstOrDefault();
+                    var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId.Value, secondLastMonth, secondLastMonth).FirstOrDefault();
+
                     if (lastMonthStatement != null && secondLastMonthStatement != null)
                     {
-                        var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
-                        if (lastMonthStatement.Balance < 0 && secondLastMonthStatement.Balance < 0)
+                        var secondLastMonthStatementBalance = secondLastMonthStatement.IncomeItems.Sum(x => x.Amount) - secondLastMonthStatement.ExpenseItems.Sum(x => x.Amount);
+
+                        var balance = lastMonthStatementBalance + secondLastMonthStatementBalance;
+                        if (lastMonthStatementBalance < 0 && secondLastMonthStatementBalance < 0)
                         {
                             notification.Subject = $"Programme lost R{balance} in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
                             notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1370,9 +1376,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     #region PROGRAMME MADE A PROFIT LAST MONTH
                     if (lastMonthStatement != null)
                     {
-                        if (lastMonthStatement.Balance > 0)
+                        if (lastMonthStatementBalance > 0)
                         {
-                            notification.Subject = $"Made R{lastMonthStatement.Balance} profit in {previousMonthStart.ToString("MMM")}";
+                            notification.Subject = $"Made R{lastMonthStatementBalance} profit in {previousMonthStart.ToString("MMM")}";
                             notification.Icon = MetricsIconEnum.Success.ToString();
                             notification.Color = MetricsColorEnum.Success.ToString();
                             notification.Message = "";

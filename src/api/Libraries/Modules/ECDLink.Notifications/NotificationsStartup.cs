@@ -3,6 +3,7 @@ using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Notifications.BulkSms;
 using ECDLink.Notifications.Factories;
+using ECDLink.Notifications.Managers;
 using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Smtp;
@@ -28,6 +29,7 @@ namespace ECDLink.Notifications
             services.AddTransient<TemplateProcessor>();
             services.AddTransient<IMessageLogger<BulkSmsMessage>, SmsMessageLogger>();
             services.AddTransient<IMessageLogger<IEmailMessage>, EmailMessageLogger>();
+            services.AddTransient<MessageLogManager>();
         }
 
         public static void AddNotificationConfiguration(IApplicationBuilder app)

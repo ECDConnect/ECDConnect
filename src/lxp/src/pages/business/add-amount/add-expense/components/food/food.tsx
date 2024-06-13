@@ -94,15 +94,12 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
     setIsLoading(true);
 
     const expensesInput = {
-      Id: newGuid(),
-      IsActive: true,
-      UserId: userAuth?.id,
-      Submitted: false,
-      DatePaid: date,
-      Notes: note,
-      Amount: amount ? moneyInputFormat(amount) : 0,
-      ExpenseTypeId: expensesTypeValue?.id,
-      PhotoProof: expenseInvoice,
+      id: newGuid(),
+      datePaid: date!,
+      notes: note,
+      amount: amount ? moneyInputFormat(amount) : 0,
+      expenseTypeId: expensesTypeValue!.id,
+      photoProof: expenseInvoice,
     };
 
     onSubmit(expensesInput);

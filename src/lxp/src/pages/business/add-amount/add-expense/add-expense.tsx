@@ -22,9 +22,9 @@ import Food from './components/food/food';
 import LearningMaterials from './components/learning-materials/learning-materials';
 import AnnualMaintenance from './components/annual-maintenance/annual-maintenance';
 import OtherExpense from './components/other-expense/other';
-import { StatementsExpensesInput } from '@ecdlink/graphql';
-import { statementsThunkActions } from '@/store/statements';
+import { statementsActions } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
+import { ExpenseItemDto } from '@ecdlink/core';
 
 export const AddExpense: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -54,13 +54,8 @@ export const AddExpense: React.FC = () => {
   }, [user]);
 
   const onSubmit = useCallback(
-    (expenseItem: StatementsExpensesInput) => {
-      appDispatch(
-        statementsThunkActions.addExpenseItem({
-          input: expenseItem,
-          firstAttempt: true,
-        })
-      );
+    (expenseItem: ExpenseItemDto) => {
+      appDispatch(statementsActions.addExpenseItem(expenseItem));
     },
     [userAuth]
   );

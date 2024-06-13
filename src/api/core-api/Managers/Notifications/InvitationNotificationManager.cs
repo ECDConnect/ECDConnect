@@ -9,6 +9,7 @@ using ECDLink.Security;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Enums;
+using System;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
@@ -135,7 +136,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 }
             }
 
-            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var applicationName = tenantInfo.ApplicationName;
             var notificationProvider = _notificationProviderFactory.Create(user);
 
             await notificationProvider
@@ -147,24 +148,13 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
               .SendMessageAsync();
         }
 
-        public async Task SendPrincipalInvitationAsync(ApplicationUser user, string practitionerFirstName, string token)
+        public async Task SendPrincipalInvitationAsync(ApplicationUser principalUser, string practitionerFirstName, string encodedToken)
         {
-            var encodedToken = TokenHelper.EncodeToken(token);
-            var tenantInfo = TenantExecutionContext.Tenant;
-            var invitationEnum = TemplateTypeEnum.WLPrincipalInvitation;
-            var invitationUrl = $"{_options.Value.WLPrincipalSignup}?token={encodedToken}";
-
-            if (tenantInfo != null)
-            {
-                if (tenantInfo.TenantType == TenantType.OpenAccess)
-                {
-                    invitationEnum = TemplateTypeEnum.OAPrincipalInvitation;
-                    invitationUrl = $"{_options.Value.OAPrincipalSignup}?token={encodedToken}";
-                }
-            }
+            var invitationEnum = TemplateTypeEnum.OAPrincipalInvitation;
+            var invitationUrl = $"{_options.Value.OAPrincipalSignup}?token={encodedToken}";
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
-            var notificationProvider = _notificationProviderFactory.Create(user);
+            var notificationProvider = _notificationProviderFactory.Create(principalUser);
 
             await notificationProvider
               .SetMessageTemplate(invitationEnum)

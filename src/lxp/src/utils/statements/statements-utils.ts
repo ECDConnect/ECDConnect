@@ -1,4 +1,8 @@
-import { BaseIncomeExpenseItem, ChildDto } from '@/../../../packages/core/lib';
+import {
+  BaseIncomeExpenseItem,
+  ChildDto,
+  IncomeStatementDto,
+} from '@/../../../packages/core/lib';
 
 export const moneyInputFormat = (val: string) => {
   const formattedValue = Number(val?.split(',')?.join('').replace(/\s/g, ''));
@@ -38,3 +42,21 @@ export const formatCurrentValue = (value: number) => {
   if (value < 0)
     return `- R ${numberWithSpaces(String(Math.abs(value).toFixed(2)))}`;
 };
+
+export const getStatementIncomeTotal = (
+  statement: IncomeStatementDto | undefined
+) =>
+  statement?.incomeItems.reduce((total, item) => {
+    return total + item.amount;
+  }, 0) ?? 0;
+
+export const getStatementExpenseTotal = (
+  statement: IncomeStatementDto | undefined
+) =>
+  statement?.expenseItems.reduce((total, item) => {
+    return total + item.amount;
+  }, 0) ?? 0;
+
+export const getStatementBalance = (
+  statement: IncomeStatementDto | undefined
+) => getStatementIncomeTotal(statement) - getStatementExpenseTotal(statement);

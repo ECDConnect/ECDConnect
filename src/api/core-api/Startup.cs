@@ -15,6 +15,7 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using EcdLink.Api.CoreApi.Services.PointsEngine;
+using EcdLink.Api.CoreApi.Services.Training;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
@@ -129,6 +130,7 @@ namespace EcdLink.Api.CoreApi
             }
 
             services.AddTransient<IOpenAccessValidator<ChildOpenAccessValidator>, ChildOpenAccessValidator>();
+            services.AddTransient<IOpenAccessValidator<PrincipalOpenAccessValidator>, PrincipalOpenAccessValidator>();
 
             services.AddTransient<ITokenManager<ApplicationUser, InvitationTokenManager>, InvitationTokenManager>();
             services.AddTransient<ITokenManager<ApplicationUser, OpenAccessTokenManager>, OpenAccessTokenManager>();

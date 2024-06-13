@@ -2,6 +2,8 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Stores;
+using ECDLink.Security.Managers;
 using ECDLink.Security.Providers;
 using ECDLink.Security.Providers.Tokens;
 using ECDLink.Tenancy.EntityFramework.Extensions;
@@ -34,6 +36,9 @@ namespace EcdLink.Api.CoreApi
 
         private void SetIdentityUser(IServiceCollection services)
         {
+            services.AddTransient<IRoleStore<ApplicationIdentityRole>, ApplicationRoleStore>();
+            services.AddTransient<IUserRoleStore<ApplicationUser>, ApplicationUserRoleStore>();
+
             services.AddIdentity<ApplicationUser, ApplicationIdentityRole>(config =>
             {
                 config.Tokens.ProviderMap.Add(
@@ -50,6 +55,8 @@ namespace EcdLink.Api.CoreApi
             }).AddEntityFrameworkStores<AuthenticationDbContext>()
               .AddUserManager<ApplicationUserManager>()
               .AddRoleManager<ApplicationRoleManager>()
+              .AddUserStore<ApplicationUserRoleStore>()
+              .AddRoleStore<ApplicationRoleStore>()
               .AddDefaultTokenProviders();
 
             services.AddTransient<CustomEmailConfirmationTokenProvider<ApplicationUser>>();
