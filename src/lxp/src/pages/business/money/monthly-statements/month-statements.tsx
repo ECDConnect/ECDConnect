@@ -106,12 +106,7 @@ export const MonthStatements: React.FC = () => {
       displayOffline={!isOnline}
     >
       {!!statement ? (
-        <MonthStatementsDetails
-          incomeItems={statement.incomeItems}
-          expenseItems={statement.expenseItems}
-          month={statement.month - 1} // -1 for zero indexed javascript dates :(
-          year={statement.year}
-        />
+        <MonthStatementsDetails statement={statement} />
       ) : (
         <Typography
           type="h1"
@@ -126,7 +121,7 @@ export const MonthStatements: React.FC = () => {
             component="income-statements"
             title="Download Statement"
             outputName={`${getMonthName(
-              statement?.month || 0
+              statement!.month - 1
             )}-income-statement-report.pdf`}
             tableFooter={footer}
             tableData={pdfReportData}

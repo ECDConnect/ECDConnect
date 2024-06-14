@@ -60,3 +60,8 @@ export const getStatementExpenseTotal = (
 export const getStatementBalance = (
   statement: IncomeStatementDto | undefined
 ) => getStatementIncomeTotal(statement) - getStatementExpenseTotal(statement);
+
+export const getStatementsBalance = (statements: IncomeStatementDto[]) =>
+  statements.reduce((total, current) => {
+    return total + getStatementBalance(current);
+  }, 0);

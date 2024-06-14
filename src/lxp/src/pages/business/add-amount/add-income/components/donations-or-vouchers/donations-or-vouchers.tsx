@@ -13,7 +13,7 @@ import {
 import DatePicker from 'react-datepicker';
 import * as styles from './donations-or-vouchers.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useFormState, useWatch } from 'react-hook-form';
 import {
   DonationsOrVouchersModel,
   donationsOrVouchersSchema,
@@ -25,91 +25,69 @@ import { moneyInputFormat } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
-import { AddIncomeState } from '../../../add-amount.types';
+import { AddIncomeProps } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { BusinessTabItems } from '@/pages/business/business.types';
-import { IncomeItemDto } from '@ecdlink/core';
+import { IncomeItemDto, IncomeTypeIds, PayTypeIds } from '@ecdlink/core';
 
-export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
-  setType,
+export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
+  onBack,
   onSubmit,
+  incomeItem,
 }) => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
-  const [selectedDonations, setDonations] = useState<string[]>([]);
   const history = useHistory();
 
-  const {
-    control,
-    setValue: setPreschoolFeesValue,
-    register,
-  } = useForm<DonationsOrVouchersModel>({
+  const { control, setValue, register } = useForm<DonationsOrVouchersModel>({
     resolver: yupResolver(donationsOrVouchersSchema),
-    mode: 'onChange',
+    mode: 'onBlur',
+    defaultValues: {
+      dateReceived: incomeItem?.dateReceived,
+      description: incomeItem?.description,
+      amount: incomeItem?.amount.toString(),
+      notes: incomeItem?.notes,
+      payType: incomeItem?.payTypeId,
+    },
   });
 
-  const [donationTypesList, setDonationTypesList] = useState<
-    { label: string; value: any }[]
-  >([]);
-
-  const {
-    date: selectedDate,
-    date,
-    donationWorth,
-    donations,
-  } = useWatch({
+  const { isValid, errors } = useFormState({
     control: control,
   });
 
-  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
+  const { dateReceived, amount, payType, notes, description } = useWatch({
+    control: control,
+  });
+
   const viewTitle = 'Donation';
-  const incomeTypeValue = incomeTypes.find(
-    (item) => item.description === viewTitle
-  );
 
   const payTypes = useSelector(statementsSelectors.getPayTypes);
-  const donationsDisabled = donations?.length === 0;
-  const disabled = useMemo(() => {
-    return !date || !donationWorth || !donations || donationsDisabled;
-  }, [date, donationWorth, donations, donationsDisabled]);
 
-  const today = new Date();
-  const todayDateNumber = getDate(today);
-  const firstDateOfMonth = startOfMonth(today);
-  const firstDateOfPreviousMonth = new Date(
-    today.getFullYear(),
-    today.getMonth() - 1,
-    1
-  );
-  const lastDateOfMonth = lastDayOfMonth(today);
+  const payTypesList = payTypes?.map((p) => {
+    return {
+      label: `${p?.description}`,
+      value: p.id,
+    };
+  });
 
-  useEffect(() => {
-    const _list = payTypes
-      ?.map((p) => {
-        if (p?.description) {
-          return {
-            label: `${p?.description}`,
-            value: p.id,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
-    setDonationTypesList(_list);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const minEditDate = !!incomeItem
+    ? startOfMonth(new Date(incomeItem.dateReceived))
+    : sixtyDaysAgo;
 
-  const handleDonationsValue = (donations: string[]) => {
-    setDonations(donations);
-    setPreschoolFeesValue('donations', donations);
-  };
+  const maxEditDate = !!incomeItem
+    ? lastDayOfMonth(new Date(incomeItem.dateReceived))
+    : lastDayOfMonth(new Date());
 
   const sendIncomeUpdate = async () => {
     const incomeInput: IncomeItemDto = {
-      id: newGuid(),
-      dateReceived: date!,
-      amount: donationWorth ? moneyInputFormat(donationWorth) : 0,
-      incomeTypeId: incomeTypeValue!.id,
+      id: !!incomeItem ? incomeItem.id : newGuid(),
+      dateReceived: dateReceived!,
+      amount: moneyInputFormat(amount!),
+      incomeTypeId: IncomeTypeIds.DONATION_ID,
+      payTypeId: payType,
+      notes: notes,
+      description: description,
     };
 
     onSubmit(incomeInput);
@@ -129,7 +107,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => setType('')}
+      onBack={onBack}
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
@@ -148,16 +126,14 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
           placeholderText={`Please select a date`}
           wrapperClassName="text-center"
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
+          selected={dateReceived ? new Date(dateReceived) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-            setPreschoolFeesValue('date', date ? date.toISOString() : '');
+            setValue('dateReceived', !!date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
-          minDate={
-            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
-          }
-          maxDate={lastDateOfMonth}
+          minDate={minEditDate}
+          maxDate={maxEditDate}
         />
         <label className={classNames(styles.label, 'mt-4')}>
           {
@@ -168,35 +144,49 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
           <ButtonGroup<string>
             type={ButtonGroupTypes.Button}
             options={
-              donationTypesList?.map((type) => ({
+              payTypesList?.map((type) => ({
                 text: type.label,
                 value: type.value ?? '',
               })) || []
             }
-            onOptionSelected={(value: string | string[]) =>
-              handleDonationsValue(value as string[])
-            }
+            onOptionSelected={(value: string | string[]) => {
+              setValue('payType', value as string);
+            }}
             multiple={false}
-            selectedOptions={selectedDonations}
+            selectedOptions={!!payType ? [payType] : []}
             color="secondary"
           />
         </div>
         <FormInput<DonationsOrVouchersModel>
           label={'How much was the donation worth?'}
           visible={true}
-          nameProp={'donationWorth'}
+          nameProp={'amount'}
           register={register}
           placeholder={'e.g. R 1 000.00'}
           className="mt-4"
           type={'text'}
           textInputType={'moneyInput'}
-          prefixIcon={!!donationWorth}
+          prefixIcon={!!amount}
         />
+        {!!payType && payType !== PayTypeIds.MONEY_ID && (
+          <FormInput<DonationsOrVouchersModel>
+            label={'Short description of the item donated'}
+            visible={true}
+            nameProp={'description'}
+            register={register}
+            placeholder={
+              payType === PayTypeIds.ITEM_ID
+                ? 'e.g. 10 chairs'
+                : 'Grocery voucher for R500'
+            }
+            className="mt-4"
+          />
+        )}
         <FormInput<DonationsOrVouchersModel>
           label={'Add a note'}
           subLabel={'Optional'}
           visible={true}
-          nameProp={'note'}
+          nameProp={'notes'}
           register={register}
           placeholder={'e.g. Food donation from local shop'}
           className="mt-4"
@@ -206,7 +196,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={handleSaveStartupSupportValues}
-          disabled={disabled}
+          disabled={!isValid}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

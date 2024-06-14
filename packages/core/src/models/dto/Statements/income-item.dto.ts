@@ -7,6 +7,7 @@ export type IncomeItemMinDto = {
 };
 
 export type IncomeItemDto = IncomeItemMinDto & {
+  description?: string;
   notes?: string;
   numberOfChildrenCovered?: number;
   payTypeId?: string;

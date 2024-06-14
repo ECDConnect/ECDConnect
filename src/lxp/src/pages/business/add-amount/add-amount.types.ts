@@ -1,8 +1,9 @@
 import { ExpenseItemDto, IncomeItemDto } from '@ecdlink/core';
 
-export interface AddIncomeState {
-  setType: (arg0: string) => void;
+export interface AddIncomeProps {
+  onBack: () => void;
   onSubmit: (incomeItem: IncomeItemDto) => void;
+  incomeItem?: IncomeItemDto;
 }
 
 export interface AddExpenseState {

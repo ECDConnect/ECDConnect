@@ -8,80 +8,68 @@ import {
 import DatePicker from 'react-datepicker';
 import * as styles from './other-income.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useFormState, useWatch } from 'react-hook-form';
 import {
   OtherIncomeModel,
   otherIncomeSchema,
 } from '@/schemas/income-statements/other-income';
-import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { statementsSelectors } from '@/store/statements';
-import { useMemo } from 'react';
-import {
-  isNumber,
-  moneyInputFormat,
-} from '@/utils/statements/statements-utils';
-import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { moneyInputFormat } from '@/utils/statements/statements-utils';
+import { lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { AddIncomeState } from '../../../add-amount.types';
+import { AddIncomeProps } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { BusinessTabItems } from '@/pages/business/business.types';
-import { IncomeItemDto } from '@ecdlink/core';
+import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
 
-export const OtherIncome: React.FC<AddIncomeState> = ({
-  setType,
+export const OtherIncome: React.FC<AddIncomeProps> = ({
+  onBack,
   onSubmit,
+  incomeItem,
 }) => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
 
-  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'Other';
-  const incomeTypeValue = incomeTypes.find(
-    (item) => item.description === viewTitle
-  );
 
   const {
     control,
     setValue: setValue,
-
     register,
   } = useForm<OtherIncomeModel>({
     resolver: yupResolver(otherIncomeSchema),
-    mode: 'onChange',
+    mode: 'onBlur',
+    defaultValues: {
+      dateReceived: incomeItem?.dateReceived,
+      amount: incomeItem?.amount.toString(),
+      notes: incomeItem?.notes,
+    },
   });
 
-  const {
-    date: selectedDate,
-    date,
-    incomeAmount,
-    description,
-    note,
-  } = useWatch({
+  const { isValid, errors } = useFormState({
     control: control,
   });
 
-  const disabled = useMemo(() => {
-    return !date || !incomeAmount || !description;
-  }, [date, description, incomeAmount]);
+  const { dateReceived, amount, notes } = useWatch({
+    control: control,
+  });
 
-  const today = new Date();
-  const todayDateNumber = getDate(today);
-  const firstDateOfMonth = startOfMonth(today);
-  const firstDateOfPreviousMonth = new Date(
-    today.getFullYear(),
-    today.getMonth() - 1,
-    1
-  );
-  const lastDateOfMonth = lastDayOfMonth(today);
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+  const minEditDate = !!incomeItem
+    ? startOfMonth(new Date(incomeItem.dateReceived))
+    : sixtyDaysAgo;
+
+  const maxEditDate = !!incomeItem
+    ? lastDayOfMonth(new Date(incomeItem.dateReceived))
+    : lastDayOfMonth(new Date());
 
   const sendIncomeUpdate = async () => {
     const incomeInput: IncomeItemDto = {
-      id: newGuid(),
-      dateReceived: date!,
-      amount: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
-      incomeTypeId: incomeTypeValue!.id,
+      id: incomeItem?.id ?? newGuid(),
+      dateReceived: dateReceived!,
+      amount: moneyInputFormat(amount!),
+      incomeTypeId: IncomeTypeIds.OTHER_INCOME_ID,
     };
 
     onSubmit(incomeInput);
@@ -97,7 +85,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => setType('')}
+      onBack={onBack}
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
@@ -109,45 +97,36 @@ export const OtherIncome: React.FC<AddIncomeState> = ({
           placeholderText={`Please select a date`}
           wrapperClassName="text-center"
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
+          selected={dateReceived ? new Date(dateReceived) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-            setValue('date', date ? date.toISOString() : '');
+            setValue('dateReceived', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
-          minDate={
-            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
-          }
-          maxDate={lastDateOfMonth}
+          minDate={minEditDate}
+          maxDate={maxEditDate}
         />
         <FormInput<OtherIncomeModel>
           label={'How much do you get from this income type?'}
           visible={true}
-          nameProp={'incomeAmount'}
+          nameProp={'amount'}
           register={register}
           placeholder={'e.g. R 50.00'}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
-          prefixIcon={!!incomeAmount}
-        />
-        <FormInput<OtherIncomeModel>
-          label={'Write a short description of this income type'}
-          subLabel="Writing a clear description will help you to reuse this income type again in future."
-          visible={true}
-          nameProp={'description'}
-          register={register}
-          placeholder={'e.g. ABC grocery grant'}
-          className="mt-2"
+          prefixIcon={!!amount}
+          error={errors['amount']}
         />
         <FormInput<OtherIncomeModel>
           label={'Add a note'}
           subLabel={'Optional'}
           visible={true}
-          nameProp={'note'}
+          nameProp={'notes'}
           register={register}
           placeholder={'e.g. Small grant from local shop'}
           className="mt-2"
+          error={errors['notes']}
         />
         <Button
           type="filled"
@@ -155,9 +134,8 @@ export const OtherIncome: React.FC<AddIncomeState> = ({
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={() => {
             sendIncomeUpdate();
-            setType('');
           }}
-          disabled={disabled}
+          disabled={!isValid}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

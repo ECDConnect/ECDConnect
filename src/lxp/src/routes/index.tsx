@@ -136,6 +136,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { OASignUpOrLogin } from '@/pages/auth/oa-sign-up/oa-sign-up-or-login';
 import { OaLogin } from '@/pages/auth/oa-login/oa-login';
 import { EditRegisters } from '@/pages/classroom/attendance/edit-registers/edit-registers';
+import { UpdateIncome } from '@/pages/business/add-amount/add-income/update-income';
 import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
 
 const PublicRoutes: React.FC = () => {
@@ -236,13 +237,13 @@ const AuthRoutes: React.FC = () => {
         exact={true}
       />
       <Route
-        path={ROUTES.BUSINESS_ADD_EXPENSE}
-        component={AddExpense}
+        path={ROUTES.BUSINESS_UPDATE_INCOME}
+        component={UpdateIncome}
         exact={true}
       />
       <Route
-        path={ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST}
-        component={SubmitIncomeStatementsList}
+        path={ROUTES.BUSINESS_ADD_EXPENSE}
+        component={AddExpense}
         exact={true}
       />
       <Route

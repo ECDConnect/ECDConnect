@@ -4,11 +4,11 @@ import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import {
   ExpensesStatementsTypes,
   IncomeStatementsTypes,
-  StatementsContributionTypes,
   IncomeStatementDto,
   StatementsPayTypes,
 } from '@/../../../packages/core/lib';
 import { OverrideCache } from '@/models/sync/override-cache';
+import { differenceInMonths } from '@/utils/common/date.utils';
 
 export const StatementsActions = {
   GET_STATEMENTS: 'getIncomeStatements',
@@ -93,84 +93,6 @@ export const getAllIncomeTypes = createAsyncThunk<
   }
 );
 
-export const getAllStatementsFeeType = createAsyncThunk<
-  any[],
-  {},
-  ThunkApiType<RootState>
->(
-  'getAllStatementsFeeType',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      statements: { feeTypes: feeTypesCached },
-    } = getState();
-
-    if (!feeTypesCached) {
-      try {
-        let feeTypes: any[] | undefined;
-
-        if (userAuth?.auth_token) {
-          feeTypes = await new IncomeStatementsService(
-            userAuth?.auth_token
-          ).GetAllStatementsFeeType();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!feeTypes) {
-          return rejectWithValue('Erro getting fee types');
-        }
-
-        return feeTypes;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return feeTypesCached;
-    }
-  }
-);
-
-export const getAllStatementsContributionType = createAsyncThunk<
-  any[],
-  {},
-  ThunkApiType<RootState>
->(
-  'getAllStatementsContributionType',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      statements: { contributionTypes: contributionTypesCached },
-    } = getState();
-
-    if (!contributionTypesCached) {
-      try {
-        let contributionTypes: StatementsContributionTypes[] | undefined;
-
-        if (userAuth?.auth_token) {
-          contributionTypes = await new IncomeStatementsService(
-            userAuth?.auth_token
-          ).GetAllStatementsContributionType();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!contributionTypes) {
-          return rejectWithValue('Erro getting contribution types');
-        }
-
-        return contributionTypes;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return contributionTypesCached;
-    }
-  }
-);
-
 export const getAllPayType = createAsyncThunk<
   any[],
   {},
@@ -223,17 +145,32 @@ export const getIncomeStatements = createAsyncThunk<
   ) => {
     const {
       auth: { userAuth },
-      statements: { incomeStatementsData: cache },
+      statements: { incomeStatements: cache },
     } = getState();
 
     let oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-    if (
-      !!overrideCache ||
-      !cache.dateRefreshed ||
-      new Date(cache.dateRefreshed) < oneDayAgo
-    ) {
+    const statementsInRange = cache.filter(
+      (x) =>
+        new Date(x.year, x.month, 20) > startDate &&
+        (!endDate || new Date(x.year, x.month, 20) < endDate)
+    );
+
+    const anyStale = statementsInRange.some(
+      (x) => !x.dateRefreshed || new Date(x.dateRefreshed) < oneDayAgo
+    );
+
+    const allLoaded =
+      differenceInMonths(startDate, endDate || new Date()) ===
+      statementsInRange.length;
+
+    // If there are any unsynced statements in the range, do not fetch, just return cache to prevent overwiting local data
+    if (statementsInRange.some((x) => !x.synced)) {
+      return statementsInRange;
+    }
+
+    if (!!overrideCache || anyStale || !allLoaded) {
       try {
         let incomeStatements: IncomeStatementDto[] | undefined;
 
@@ -254,7 +191,7 @@ export const getIncomeStatements = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
-      return cache.incomeStatements;
+      return statementsInRange;
     }
   }
 );
@@ -302,13 +239,13 @@ export const upsertIncomeStatements = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      statements: { incomeStatementsData },
+      statements: { incomeStatements },
     } = getState();
 
     try {
       let promises: Promise<IncomeStatementDto>[] = [];
       if (userAuth?.auth_token) {
-        promises = incomeStatementsData.incomeStatements
+        promises = incomeStatements
           .filter((statement) => !statement.synced)
           .map(async (statement) => {
             return await new IncomeStatementsService(

@@ -352,12 +352,12 @@ export const SubmitIncomeStatements: React.FC = () => {
   );
 
   const lastMonthExpenseTotal = useMemo(
-    () => getStatementIncomeTotal(lastMonthStatement),
+    () => getStatementExpenseTotal(lastMonthStatement),
     [lastMonthStatement]
   );
 
   const currentMonthExpenseTotal = useMemo(
-    () => getStatementIncomeTotal(currentMonthStatement),
+    () => getStatementExpenseTotal(currentMonthStatement),
     [currentMonthStatement]
   );
 
@@ -507,7 +507,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                       text={formatCurrentValue(lastMonthBalance)}
                       type="body"
                       color={
-                        lastMonthBalance >= 0 ? 'successMain' : 'errorMain'
+                        lastMonthBalance >= 0 ? 'successMain' : 'secondary'
                       }
                       align={'center'}
                     />
@@ -517,7 +517,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                       text={formatCurrentValue(currentMonthBalance)}
                       type="body"
                       color={
-                        currentMonthBalance >= 0 ? 'successMain' : 'errorMain'
+                        currentMonthBalance >= 0 ? 'successMain' : 'secondary'
                       }
                       align={'center'}
                     />
@@ -530,7 +530,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
             <Button
               shape="normal"
-              color="primary"
+              color="quatenary"
               type="filled"
               icon="DocumentSearchIcon"
               onClick={() =>
@@ -552,7 +552,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           iconDirection={'left'}
           textToggle={true}
           type={'filled'}
-          color={'primary'}
+          color={'quatenary'}
           shape={'round'}
           className={`absolute bottom-14 right-0 z-10 m-3 px-3.5 py-2.5 ${
             stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''

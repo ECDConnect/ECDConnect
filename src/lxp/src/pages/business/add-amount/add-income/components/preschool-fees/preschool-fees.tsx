@@ -30,11 +30,11 @@ import StatementsWrapper from '@/pages/business/money/submit-income-statements/c
 import { useAppContext } from '@/walkthrougContext';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
-import { AddIncomeState } from '../../../add-amount.types';
+import { AddIncomeProps } from '../../../add-amount.types';
 import { moneyInputFormat } from '@/utils/statements/statements-utils';
 
-export const PreschoolFees: React.FC<AddIncomeState> = ({
-  setType,
+export const PreschoolFees: React.FC<AddIncomeProps> = ({
+  onBack,
   onSubmit,
 }) => {
   const history = useHistory();
@@ -43,10 +43,10 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({
     []
   );
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const feeTypes = useSelector(statementsSelectors.getFeeTypes);
-  const contributionTypes = useSelector(
-    statementsSelectors.getContributionTypes
-  );
+  // const feeTypes = useSelector(statementsSelectors.getFeeTypes);
+  // const contributionTypes = useSelector(
+  //   statementsSelectors.getContributionTypes
+  // );
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'Preschool Fee';
   const incomeTypeValue = incomeTypes.find(
@@ -98,19 +98,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({
   });
 
   useEffect(() => {
-    const _list = contributionTypes
-      ?.map((p) => {
-        if (p?.description) {
-          return {
-            label: `${p?.description}`,
-            value: p.id,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
-
-    setIncomeTypesList(_list);
+    setIncomeTypesList([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -134,19 +122,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({
   }, []);
 
   useEffect(() => {
-    const _list = feeTypes
-      ?.map((p) => {
-        if (p?.description) {
-          return {
-            label: `${p?.description}`,
-            value: p.id,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
-
-    setFeeTypesList(_list);
+    setFeeTypesList([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -196,8 +172,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({
     };
 
     onSubmit(incomeInput);
-
-    setType('');
+    onBack();
   };
 
   const {
@@ -240,7 +215,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => setType('')}
+      onBack={onBack}
       className="p-4"
     >
       <StatementsWrapper />

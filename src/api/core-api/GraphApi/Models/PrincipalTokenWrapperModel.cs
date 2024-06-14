@@ -2,10 +2,10 @@
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
-    public class PrincipalTokenWrapperModel
+    public class PrincipalPractitionerTokenWrapperModel
     {
         public Guid AddedByUserId { get; set; }
-        public Guid PrincipalUserId { get; set; }
+        public Guid AddedToUserId { get; set; }
         public string Token { get; set; }
     }
 }
