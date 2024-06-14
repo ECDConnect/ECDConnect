@@ -287,11 +287,12 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         <Button
           icon="ViewGridAddIcon"
           type={'outlined'}
-          color={'primary'}
+          color={'quatenary'}
           text="Add another class"
           className="w-full"
           disabled={!isFormValid()}
           onClick={addAnotherClass}
+          textColor="quatenary"
         />
       </div>
 
