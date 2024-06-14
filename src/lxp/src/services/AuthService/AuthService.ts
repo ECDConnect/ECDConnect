@@ -252,13 +252,19 @@ class AuthService {
   }
 
   async UpdateOaPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
-    return await api(baseEndPoint).post(
+    const response = await api(baseEndPoint).post(
       APIs.updateOAPractitioner,
       JSON.stringify(body),
       {
         headers: headers,
       }
     );
+
+    const dataResponse = getDataResponse<boolean>(response);
+
+    if (dataResponse.dataError) return false;
+
+    return dataResponse?.data;
   }
 }
 

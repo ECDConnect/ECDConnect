@@ -28,6 +28,7 @@ import { useState } from 'react';
 import { FieldError, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import { VerifyPhoneNumberAuthCode } from '../verify-phone-number';
+import { error } from 'console';
 
 interface CreateUserFormProps {
   closeAction?: (item: boolean) => void;
@@ -51,6 +52,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isValidPhoneNumber, setIsValidPhoneNumber] = useState(true);
   const [messageError, setMessageError] = useState('');
+  const [phoneMessageError, setPhoneMessageError] = useState('');
   const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
   const usernameMessageErrorText = `Username already exists! Try using your email address, phone number, or add a number/letter`;
   const [isFromAuthCodeScreen, setIsFromAuthCodeScreen] = useState(false);
@@ -59,12 +61,14 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     register: passwordRegister,
     getValues: passwordGetValues,
     watch,
+    formState,
   } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
     mode: 'onChange',
   });
   const { password } = watch();
+  const { errors } = formState;
 
   const handleCreateUser = async () => {
     const registerOpenAccessUserInput: RegisterRequestModel = {
@@ -75,10 +79,13 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     };
     if (isFromAuthCodeScreen && isOpenAccess) {
       setIsLoading(true);
-      const userUpdated = await new AuthService()?.UpdateOaPractitioner(
-        Config?.authApi,
-        registerOpenAccessUserInput
-      );
+      const userUpdated = await new AuthService()
+        ?.UpdateOaPractitioner(Config?.authApi, registerOpenAccessUserInput)
+        .catch((error) => {
+          setPhoneMessageError('Phone number already in use!');
+          setIsLoading(false);
+          return;
+        });
       if (userUpdated) {
         setIsLoading(false);
         setOpenVerifyPhoneNumber(true);
@@ -235,9 +242,22 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
               placeholder="e.g 0123456789"
               onChange={(e) => {
                 handleCellphoneChange(e);
+                setPhoneMessageError('');
               }}
+              error={
+                (phoneMessageError as unknown as FieldError) ||
+                (!isValidPhoneNumber && phoneNumber)
+              }
               type="number"
             />
+            {phoneMessageError && (
+              <Typography
+                type={'help'}
+                text={phoneMessageError}
+                className={'mt-1 text-sm font-normal'}
+                color={'errorMain'}
+              />
+            )}
             {!isValidPhoneNumber && phoneNumber && (
               <Typography
                 type="help"
