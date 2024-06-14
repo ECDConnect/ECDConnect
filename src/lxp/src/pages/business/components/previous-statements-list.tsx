@@ -5,34 +5,31 @@ import {
   StackedList,
   BannerWrapper,
 } from '@ecdlink/ui';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   formatCurrency,
-  getStatementBalance,
   getStatementsBalance,
 } from '@/utils/statements/statements-utils';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { IncomeStatementDto } from '@ecdlink/core';
-import { useAppDispatch } from '@/store';
-import { statementsThunkActions } from '@/store/statements';
 
 export type PreviousStatementsListProps = {
   statements: IncomeStatementDto[];
   onBack: () => void;
   onActionClick: (statementId: string) => void;
+  fetchStatementsForYear: (year: number) => void;
 };
 
 export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
   statements,
   onBack,
   onActionClick,
+  fetchStatementsForYear,
 }) => {
   const { isOnline } = useOnlineStatus();
-  const appDispatch = useAppDispatch();
 
   const [years, setYears] = useState<number[]>([new Date().getFullYear()]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const groupedStatements = useMemo(() => {
     return years.map((year) => {
@@ -55,18 +52,6 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
       };
     });
   }, [years, statements, onActionClick]);
-
-  const fetchStatementsForYear = useCallback((year: number) => {
-    setIsLoading(true);
-    appDispatch(
-      statementsThunkActions.getIncomeStatements({
-        startDate: new Date(year, 0, 1, 12, 0, 0),
-        endDate: new Date(year, 11, 31, 12, 0, 0),
-      })
-    ).unwrap();
-
-    setIsLoading(false);
-  }, []);
 
   return (
     <BannerWrapper

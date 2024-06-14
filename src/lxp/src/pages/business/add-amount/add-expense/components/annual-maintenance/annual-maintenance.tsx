@@ -12,32 +12,27 @@ import {
 import DatePicker from 'react-datepicker';
 import * as styles from './annual-maintenance.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   ExpensesModel,
   expensesSchema,
 } from '@/schemas/expense-statements/expenses';
-import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { statementsSelectors } from '@/store/statements';
-import {
-  isNumber,
-  moneyInputFormat,
-} from '@/utils/statements/statements-utils';
-import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { moneyInputFormat } from '@/utils/statements/statements-utils';
+import { lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { AddExpenseState } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import { ExpenseTypeIds } from '@ecdlink/core';
 
 export const AnnualMaintenance: React.FC<AddExpenseState> = ({
-  setType,
+  onBack,
   onSubmit,
+  expenseItem,
 }) => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const {
     trigger,
@@ -47,80 +42,78 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
   } = useForm<ExpensesModel>({
     resolver: yupResolver(expensesSchema),
     mode: 'onChange',
+    defaultValues: !!expenseItem
+      ? {
+          datePaid: expenseItem?.datePaid,
+          photoProof: expenseItem?.photoProof,
+          amount: expenseItem?.amount.toString(),
+          notes: expenseItem?.notes,
+        }
+      : undefined,
   });
 
-  const {
-    date: selectedDate,
-    date,
-    expenseInvoice,
-    amount,
-    note,
-  } = useWatch({
+  const { datePaid, amount, photoProof, notes } = useWatch({
+    control,
+  });
+
+  const { isValid, errors } = useFormState({
     control: control,
   });
 
-  const isNum = isNumber(amount!);
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const disabled = useMemo(() => {
-    return !date || !amount;
-  }, [amount, date]);
   const acceptedFormats = ['jpg', 'jpeg'];
-  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
-  const viewTitle = 'Maintenance';
-  const expensesTypeValue = expensesTypes.find(
-    (item) => item.description === viewTitle
-  );
 
-  const today = new Date();
-  const todayDateNumber = getDate(today);
-  const firstDateOfMonth = startOfMonth(today);
-  const firstDateOfPreviousMonth = new Date(
-    today.getFullYear(),
-    today.getMonth() - 1,
-    1
-  );
-  const lastDateOfMonth = lastDayOfMonth(today);
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+  const minEditDate = !!expenseItem
+    ? startOfMonth(new Date(expenseItem.datePaid))
+    : sixtyDaysAgo;
+
+  const maxEditDate = !!expenseItem
+    ? lastDayOfMonth(new Date(expenseItem.datePaid))
+    : lastDayOfMonth(new Date());
 
   const setPhotoUrl = (imageUrl: string) => {
-    setFormValue('expenseInvoice', imageUrl);
+    setFormValue('photoProof', imageUrl);
     setRegistrationFormPhotoUrl(imageUrl);
     trigger();
     setPhotoActionBarVisible(false);
   };
 
-  const sendIncomeUpdate = async () => {
+  const sendExpenseUpdate = async () => {
     setIsLoading(true);
 
     const expensesInput = {
-      id: newGuid(),
-      datePaid: date!,
-      notes: note,
-      amount: amount ? moneyInputFormat(amount) : 0,
-      expenseTypeId: expensesTypeValue!.id,
-      photoProof: expenseInvoice,
+      id: !!expenseItem ? expenseItem.id : newGuid(),
+      datePaid: datePaid!,
+      notes: notes,
+      amount: moneyInputFormat(amount!),
+      expenseTypeId: ExpenseTypeIds.MAINTENANCE_ID,
+      photoProof: photoProof,
     };
 
-    onSubmit(expensesInput);
-
-    await history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.MONEY,
-    });
+    await onSubmit(expensesInput);
 
     setIsLoading(false);
+
+    history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
   };
 
   return (
     <BannerWrapper
-      title={`Add annual maintenance & pur...`}
+      title={`Add annual maintenance & purchases`}
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => setType('')}
+      onBack={onBack}
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
@@ -132,7 +125,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
         <Alert
           type={'info'}
           title={
-            'Costs to maintain or improve your business. This includes building, painting, and buying items like tables and chairs.'
+            'Costs to maintain or improve your business (e.g. building, painting, and buying items like tables and chairs).'
           }
           className="mt-4 mb-4"
         />
@@ -143,16 +136,14 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
           placeholderText={`Please select a date`}
           wrapperClassName="text-center"
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
+          selected={datePaid ? new Date(datePaid) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-            setFormValue('date', date ? date.toISOString() : '');
+            setFormValue('datePaid', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
-          minDate={
-            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
-          }
-          maxDate={lastDateOfMonth}
+          minDate={minEditDate}
+          maxDate={maxEditDate}
         />
         <FormInput<ExpensesModel>
           label={'How much did you pay?'}
@@ -164,12 +155,13 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
           type={'text'}
           textInputType={'moneyInput'}
           prefixIcon={!!amount}
+          error={errors['amount']}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}
           subLabel={'Optional'}
           visible={true}
-          nameProp={'note'}
+          nameProp={'notes'}
           register={register}
           placeholder={'e.g. Paint for front gate'}
           className="mt-2"
@@ -178,15 +170,15 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
           acceptedFormats={acceptedFormats}
           label={`Upload a photo of invoice or receipt`}
           subLabel={'Optional'}
-          nameProp="expenseInvoice"
+          nameProp="photoProof"
           icon="CameraIcon"
-          iconContainerColor={'tertiary'}
+          iconContainerColor={'secondary'}
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}
           overrideOnClick={() => setPhotoActionBarVisible(true)}
           onValueChange={(imageString: string) => {
-            setFormValue('expenseInvoice', imageString);
+            setFormValue('photoProof', imageString);
             trigger();
           }}
         ></ImageInput>
@@ -202,7 +194,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
             onDelete={
               registrationFormPhotoUrl
                 ? () => {
-                    setFormValue('expenseInvoice', '');
+                    setFormValue('photoProof', '');
                     setRegistrationFormPhotoUrl(undefined);
                     setPhotoActionBarVisible(false);
                   }
@@ -212,10 +204,10 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
         </Dialog>
         <Button
           type="filled"
-          color="primary"
+          color="quatenary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={sendIncomeUpdate}
-          disabled={disabled || !isNum}
+          onClick={sendExpenseUpdate}
+          disabled={!isValid}
           isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}

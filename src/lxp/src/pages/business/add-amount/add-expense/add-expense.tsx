@@ -63,19 +63,25 @@ export const AddExpense: React.FC = () => {
   const incomeType = (type?: string) => {
     switch (type) {
       case 'Rent':
-        return <Rent setType={setType} onSubmit={onSubmit} />;
+        return <Rent onBack={() => setType('')} onSubmit={onSubmit} />;
       case 'Utilities':
-        return <Utilities setType={setType} onSubmit={onSubmit} />;
+        return <Utilities onBack={() => setType('')} onSubmit={onSubmit} />;
       case 'SalaryAndWages':
-        return <SalaryAndWages setType={setType} onSubmit={onSubmit} />;
+        return (
+          <SalaryAndWages onBack={() => setType('')} onSubmit={onSubmit} />
+        );
       case 'Food':
-        return <Food setType={setType} onSubmit={onSubmit} />;
+        return <Food onBack={() => setType('')} onSubmit={onSubmit} />;
       case 'LearningMaterials':
-        return <LearningMaterials setType={setType} onSubmit={onSubmit} />;
+        return (
+          <LearningMaterials onBack={() => setType('')} onSubmit={onSubmit} />
+        );
       case 'AnnualMaintenance':
-        return <AnnualMaintenance setType={setType} onSubmit={onSubmit} />;
+        return (
+          <AnnualMaintenance onBack={() => setType('')} onSubmit={onSubmit} />
+        );
       case 'Other':
-        return <OtherExpense setType={setType} onSubmit={onSubmit} />;
+        return <OtherExpense onBack={() => setType('')} onSubmit={onSubmit} />;
       default:
         break;
     }

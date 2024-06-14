@@ -12,9 +12,7 @@ import {
 } from '@/utils/statements/statements-utils';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import {
-  ExpenseItemDto,
   ExpenseTypeIds,
-  IncomeItemDto,
   IncomeStatementDto,
   IncomeTypeIds,
 } from '@ecdlink/core';
@@ -47,8 +45,6 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
     useState(false);
   const [showUtilitiesDetails, setShowUtilitiesDetails] = useState(false);
   const [showSalaryDetails, setShowSalaryDetails] = useState(false);
-
-  const today = new Date();
 
   // Totals
   const totalIncome = sumIncomeOrExpenseItems(statement.incomeItems);
@@ -404,6 +400,8 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={rent}
           statementTitle="Rent"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
+          isEditable={!statement.downloaded}
         />
       </Dialog>
       <Dialog
@@ -416,6 +414,8 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={food}
           statementTitle="Food"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
+          isEditable={!statement.downloaded}
         />
       </Dialog>
       <Dialog
@@ -428,6 +428,8 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={learningMaterials}
           statementTitle="Learning materials"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
+          isEditable={!statement.downloaded}
         />
       </Dialog>
       <Dialog
@@ -440,6 +442,8 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={maintenance}
           statementTitle="Maintenance"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
+          isEditable={!statement.downloaded}
         />
       </Dialog>
       <Dialog
@@ -452,6 +456,8 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={otherExpenseValues}
           statementTitle="Other Expenses"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
+          isEditable={!statement.downloaded}
         />
       </Dialog>
       <Dialog
@@ -464,6 +470,8 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={utilities}
           statementTitle="Utilities"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
+          isEditable={!statement.downloaded}
         />
       </Dialog>
       <Dialog
@@ -476,6 +484,8 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={salary}
           statementTitle="Salary"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
+          isEditable={!statement.downloaded}
         />
       </Dialog>
     </>

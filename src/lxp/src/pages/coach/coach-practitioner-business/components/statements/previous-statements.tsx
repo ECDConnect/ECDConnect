@@ -32,6 +32,7 @@ export const PractitionerPreviousStatements: React.FC = () => {
           { statementId: statementId }
         )
       }
+      fetchStatementsForYear={(year) => {}} // TODO - trigger fetch for more statments
     />
   );
 };

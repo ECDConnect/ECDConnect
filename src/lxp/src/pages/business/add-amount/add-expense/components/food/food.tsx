@@ -12,29 +12,27 @@ import {
 import DatePicker from 'react-datepicker';
 import * as styles from './food.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   ExpensesModel,
   expensesSchema,
 } from '@/schemas/expense-statements/expenses';
-import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
-import { authSelectors } from '@/store/auth';
-import {
-  isNumber,
-  moneyInputFormat,
-} from '@/utils/statements/statements-utils';
-import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { moneyInputFormat } from '@/utils/statements/statements-utils';
+import { lastDayOfMonth, startOfMonth } from 'date-fns';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { AddExpenseState } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import { ExpenseTypeIds } from '@ecdlink/core';
 
-export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
+export const Food: React.FC<AddExpenseState> = ({
+  onBack,
+  onSubmit,
+  expenseItem,
+}) => {
   const history = useHistory();
   const {
     trigger,
@@ -44,47 +42,45 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
   } = useForm<ExpensesModel>({
     resolver: yupResolver(expensesSchema),
     mode: 'onChange',
+    defaultValues: !!expenseItem
+      ? {
+          datePaid: expenseItem?.datePaid,
+          photoProof: expenseItem?.photoProof,
+          amount: expenseItem?.amount.toString(),
+          notes: expenseItem?.notes,
+        }
+      : undefined,
   });
 
-  const {
-    date: selectedDate,
-    date,
-    expenseInvoice,
-    amount,
-    note,
-  } = useWatch({
+  const { datePaid, photoProof, amount, notes } = useWatch({
     control: control,
   });
+
+  const { isValid, errors } = useFormState({
+    control: control,
+  });
+
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const isNum = isNumber(amount!);
-  const disabled = useMemo(() => {
-    return !date || !amount;
-  }, [amount, date]);
   const acceptedFormats = ['jpg', 'jpeg'];
 
-  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
-  const viewTitle = 'Food';
-  const expensesTypeValue = expensesTypes.find(
-    (item) => item.description === viewTitle
-  );
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
-  const today = new Date();
-  const todayDateNumber = getDate(today);
-  const firstDateOfMonth = startOfMonth(today);
-  const firstDateOfPreviousMonth = new Date(
-    today.getFullYear(),
-    today.getMonth() - 1,
-    1
-  );
-  const lastDateOfMonth = lastDayOfMonth(today);
+  const minEditDate = !!expenseItem
+    ? startOfMonth(new Date(expenseItem.datePaid))
+    : sixtyDaysAgo;
+
+  const maxEditDate = !!expenseItem
+    ? lastDayOfMonth(new Date(expenseItem.datePaid))
+    : lastDayOfMonth(new Date());
 
   const setPhotoUrl = (imageUrl: string) => {
-    setFormValue('expenseInvoice', imageUrl);
+    setFormValue('photoProof', imageUrl);
     setRegistrationFormPhotoUrl(imageUrl);
     trigger();
     setPhotoActionBarVisible(false);
@@ -94,12 +90,12 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
     setIsLoading(true);
 
     const expensesInput = {
-      id: newGuid(),
-      datePaid: date!,
-      notes: note,
-      amount: amount ? moneyInputFormat(amount) : 0,
-      expenseTypeId: expensesTypeValue!.id,
-      photoProof: expenseInvoice,
+      id: !!expenseItem ? expenseItem.id : newGuid(),
+      datePaid: datePaid!,
+      notes: notes,
+      amount: moneyInputFormat(amount!),
+      expenseTypeId: ExpenseTypeIds.FOOD_EXPENSE_ID,
+      photoProof: photoProof,
     };
 
     onSubmit(expensesInput);
@@ -116,11 +112,11 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => setType('')}
+      onBack={onBack}
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={viewTitle} />
+        <Typography type="h2" color="textMid" text="Food" />
         <Alert
           type={'info'}
           title={'Cost of meals and snacks for children.'}
@@ -133,16 +129,14 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
           placeholderText={`Please select a date`}
           wrapperClassName="text-center"
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
+          selected={datePaid ? new Date(datePaid) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-            setFormValue('date', date ? date.toISOString() : '');
+            setFormValue('datePaid', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
-          minDate={
-            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
-          }
-          maxDate={lastDateOfMonth}
+          minDate={minEditDate}
+          maxDate={maxEditDate}
         />
         <FormInput<ExpensesModel>
           label={'How much did you pay?'}
@@ -154,12 +148,13 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
           type={'text'}
           textInputType={'moneyInput'}
           prefixIcon={!!amount}
+          error={errors['amount']}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}
           subLabel={'Optional'}
           visible={true}
-          nameProp={'note'}
+          nameProp={'notes'}
           register={register}
           placeholder={'e.g. Vegetables for the week'}
           className="mt-2"
@@ -168,15 +163,15 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
           acceptedFormats={acceptedFormats}
           label={`Upload a photo of invoice or receipt`}
           subLabel={'Optional'}
-          nameProp="expenseInvoice"
+          nameProp="photoProof"
           icon="CameraIcon"
-          iconContainerColor={'tertiary'}
+          iconContainerColor={'secondary'}
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}
           overrideOnClick={() => setPhotoActionBarVisible(true)}
           onValueChange={(imageString: string) => {
-            setFormValue('expenseInvoice', imageString);
+            setFormValue('photoProof', imageString);
             trigger();
           }}
         ></ImageInput>
@@ -192,7 +187,7 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
             onDelete={
               registrationFormPhotoUrl
                 ? () => {
-                    setFormValue('expenseInvoice', '');
+                    setFormValue('photoProof', '');
                     setRegistrationFormPhotoUrl(undefined);
                     setPhotoActionBarVisible(false);
                   }
@@ -202,10 +197,10 @@ export const Food: React.FC<AddExpenseState> = ({ setType, onSubmit }) => {
         </Dialog>
         <Button
           type="filled"
-          color="primary"
+          color="quatenary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={sendIncomeUpdate}
-          disabled={disabled || !isNum}
+          disabled={!isValid}
           isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}

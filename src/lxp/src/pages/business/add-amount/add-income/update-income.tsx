@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useAppDispatch } from '@store';
 import * as styles from './add-income.styles';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
@@ -16,6 +16,7 @@ export type UpdateIncomeState = {
 };
 
 export const UpdateIncome: React.FC = () => {
+  const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
 
@@ -39,21 +40,21 @@ export const UpdateIncome: React.FC = () => {
     <div className={styles.container}>
       {incomeItem.incomeTypeId === IncomeTypeIds.DBE_SUBSIDY_ID && (
         <DbeSubsidy
-          onBack={() => {}}
+          onBack={() => history.goBack()}
           onSubmit={onSubmit}
           incomeItem={incomeItem}
         />
       )}
       {incomeItem.incomeTypeId === IncomeTypeIds.DONATION_ID && (
         <DonationsOrVouchers
-          onBack={() => {}}
+          onBack={() => history.goBack()}
           onSubmit={onSubmit}
           incomeItem={incomeItem}
         />
       )}
       {incomeItem.incomeTypeId === IncomeTypeIds.OTHER_INCOME_ID && (
         <OtherIncome
-          onBack={() => {}}
+          onBack={() => history.goBack()}
           onSubmit={onSubmit}
           incomeItem={incomeItem}
         />

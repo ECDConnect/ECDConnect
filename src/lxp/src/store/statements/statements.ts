@@ -12,6 +12,7 @@ import {
   getIncomeStatements,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 const initialState: StatementsState = {
   expensesTypes: undefined,
@@ -41,24 +42,40 @@ const statementsSlice = createSlice({
       ];
     },
     addIncomeItem: (state, action: PayloadAction<IncomeItemDto>) => {
-      // TODO - need to add logic to create a statement if one does not exist for the given date
       const dateReceived = new Date(action.payload.dateReceived);
       const receivedMonth = dateReceived.getMonth() + 1;
       const receivedYear = dateReceived.getFullYear();
-      for (let i = 0; i < state.incomeStatements.length; i++) {
-        if (
-          state.incomeStatements[i].month === receivedMonth &&
-          state.incomeStatements[i].year === receivedYear
-        ) {
-          state.incomeStatements[i] = {
-            ...state.incomeStatements[i],
-            incomeItems: [
-              ...state.incomeStatements[i].incomeItems,
-              action.payload,
-            ],
+
+      const updatedStatement = state.incomeStatements.find(
+        (x) => x.month === receivedMonth && x.year === receivedYear
+      );
+
+      if (!updatedStatement) {
+        // No statement for the month yet, so add one
+        state.incomeStatements = [
+          ...state.incomeStatements,
+          {
+            id: newGuid(),
+            contactedByCoach: false,
+            year: receivedYear,
+            month: receivedMonth,
+            downloaded: false,
             synced: false,
-          };
-        }
+            dateRefreshed: undefined,
+            incomeItems: [action.payload],
+            expenseItems: [],
+          },
+        ];
+      } else {
+        // Add item to existing statement
+        state.incomeStatements = [
+          ...state.incomeStatements.filter((x) => x.id !== updatedStatement.id),
+          {
+            ...updatedStatement,
+            synced: false,
+            incomeItems: [...updatedStatement.incomeItems, action.payload],
+          },
+        ];
       }
     },
     updateIncomeItem: (
@@ -88,28 +105,73 @@ const statementsSlice = createSlice({
       ];
     },
     addExpenseItem: (state, action: PayloadAction<ExpenseItemDto>) => {
-      const dateReceived = new Date(action.payload.datePaid);
-      const receivedMonth = dateReceived.getMonth() + 1;
-      const receivedYear = dateReceived.getFullYear();
-      for (let i = 0; i < state.incomeStatements.length; i++) {
-        if (
-          state.incomeStatements[i].month === receivedMonth &&
-          state.incomeStatements[i].year === receivedYear
-        ) {
-          state.incomeStatements[i] = {
-            ...state.incomeStatements[i],
-            expenseItems: [
-              ...state.incomeStatements[i].expenseItems,
-              action.payload,
-            ],
+      const datePaid = new Date(action.payload.datePaid);
+      const paidMonth = datePaid.getMonth() + 1;
+      const paidYear = datePaid.getFullYear();
+
+      const updatedStatement = state.incomeStatements.find(
+        (x) => x.month === paidMonth && x.year === paidYear
+      );
+
+      if (!updatedStatement) {
+        // No statement for the month yet, so add one
+        state.incomeStatements = [
+          ...state.incomeStatements,
+          {
+            id: newGuid(),
+            contactedByCoach: false,
+            year: paidYear,
+            month: paidMonth,
+            downloaded: false,
             synced: false,
-          };
-        }
+            dateRefreshed: undefined,
+            incomeItems: [],
+            expenseItems: [action.payload],
+          },
+        ];
+      } else {
+        // Add item to existing statement
+        state.incomeStatements = [
+          ...state.incomeStatements.filter((x) => x.id !== updatedStatement.id),
+          {
+            ...updatedStatement,
+            synced: false,
+            expenseItems: [...updatedStatement.expenseItems, action.payload],
+          },
+        ];
       }
+    },
+    updateExpenseItem: (
+      state,
+      action: PayloadAction<{
+        statementId: string;
+        expenseItem: ExpenseItemDto;
+      }>
+    ) => {
+      const updatedStatement = state.incomeStatements.find(
+        (x) => x.id === action.payload.statementId
+      );
+      if (!updatedStatement) {
+        return;
+      }
+      state.incomeStatements = [
+        ...state.incomeStatements.filter(
+          (x) => x.id !== action.payload.statementId
+        ),
+        {
+          ...updatedStatement,
+          synced: false,
+          expenseItems: [
+            ...updatedStatement.expenseItems.filter(
+              (x) => x.id !== action.payload.expenseItem.id
+            ),
+            action.payload.expenseItem,
+          ],
+        },
+      ];
     },
   },
   extraReducers: (builder) => {
-    //setThunkActionStatus(builder, submitIncomeStatement);
     builder.addCase(getAllExpensesTypes.fulfilled, (state, action) => {
       state.expensesTypes = action.payload;
     });
@@ -134,7 +196,6 @@ const statementsSlice = createSlice({
             dateRefreshed: new Date().toString(),
           })),
         ];
-        console.log('state.incomeStatements', state.incomeStatements);
       }
     });
   },

@@ -151,6 +151,7 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
           type={'text'}
           textInputType={'moneyInput'}
           prefixIcon={!!amount}
+          error={errors['amount']}
         />
         <FormInput<DbeSubsidyModel>
           label={'Add a note'}

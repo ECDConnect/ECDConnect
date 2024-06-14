@@ -9,13 +9,18 @@ import {
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { format } from 'date-fns';
 import { ExpenseDetailsListProps } from './expense-details-list.types';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
 
 export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
   hideDetails,
   statementTitle,
   expenseItems,
   statementMonth,
+  statementId,
+  isEditable,
 }) => {
+  const history = useHistory();
   const { isOnline } = useOnlineStatus();
 
   const incomeListDetailsItems = expenseItems?.map((item) => {
@@ -26,7 +31,15 @@ export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => {
+        if (!isEditable) {
+          return;
+        }
+        history.push(ROUTES.BUSINESS_UPDATE_EXPENSE, {
+          statementId: statementId,
+          expenseItem: item,
+        });
+      },
       classNames: 'bg-uiBg',
       subItem: `R ${numberWithSpaces(String(item?.amount!.toFixed(2)))}`,
       notRounded: true,
