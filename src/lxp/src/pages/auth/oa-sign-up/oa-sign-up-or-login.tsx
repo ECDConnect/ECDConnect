@@ -21,7 +21,7 @@ import { UserService } from '@/services/UserService';
 import { useTenant } from '@/hooks/useTenant';
 import { OAAgreements } from './components/oa-agreements/oa-agreements';
 import ROUTES from '@/routes/routes';
-import Banner1 from '../../../assets/banner-ss.jpg';
+import Banner1 from '../../../assets/banner-ss2.svg';
 import Banner3 from '../../../assets/banner2-ss-svg.svg';
 
 const token = new URLSearchParams(window.location.search).get('token');
