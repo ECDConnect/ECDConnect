@@ -42,6 +42,7 @@ import { useNotificationService } from '@/hooks/useNotificationService';
 import { notificationActions } from '@/store/notifications';
 import { PractitionerSignature } from '../components/practitioner-signature/practitioner-signature';
 import { SelectPractitionerRole } from '../components/select-practitioner-role/select-practitioner-role';
+import { PreschoolCodeCheck } from '../components/preschool-code-check/preschool-code-check';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -52,11 +53,12 @@ export const SetupPrincipal: React.FC = () => {
   const { syncClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
-  const classroom = useSelector(classroomsSelectors.getClassroom);
   const user = useSelector(userSelectors.getUser);
+  const classroom = useSelector(classroomsSelectors?.getClassroom);
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [isNotPrincipal, setIsNotPrincipal] = useState(false);
   const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
@@ -106,7 +108,7 @@ export const SetupPrincipal: React.FC = () => {
   }, [page, previousPage]);
 
   const onAllStepsComplete = async () => {
-    if (isNotPrincipal === true) {
+    if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
@@ -157,13 +159,21 @@ export const SetupPrincipal: React.FC = () => {
 
     // Update the principal data
     if (userAuth?.auth_token && user?.id) {
+      if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+        history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+        return;
+      }
       await new PractitionerService(
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);
 
       await appDispatch(
-        practitionerThunkActions.updatePractitionerShareInfo({
-          practitionerId: user.id,
+        practitionerThunkActions?.getPractitionerById({ id: user?.id! })
+      );
+
+      await appDispatch(
+        practitionerThunkActions.getPractitionerByUserId({
+          userId: user?.id || '',
         })
       );
 
@@ -187,15 +197,33 @@ export const SetupPrincipal: React.FC = () => {
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
         principalPractitioners.forEach(async (principalPractitioner) => {
-          const input: MutationAddPractitionerToPrincipalArgs = {
-            userId: user?.id,
-            idNumber: principalPractitioner.idNumber,
-            firstName: principalPractitioner.firstName,
-            lastName: principalPractitioner.surname,
-          };
-          await new PractitionerService(
-            userAuth?.auth_token
-          ).AddPractitionerToPrincipal(input);
+          if (
+            !principalPractitioner?.userId &&
+            principalPractitioner?.phoneNumber
+          ) {
+            const principalInvite = await new PractitionerService(
+              userAuth?.auth_token!
+            )
+              .sendPractitionerInviteToPreschool(
+                principalPractitioner?.phoneNumber,
+                classroom?.preschoolCode!,
+                user?.id!
+              )
+              .catch((error) => {
+                console.log(error);
+                return;
+              });
+          } else {
+            const input: MutationAddPractitionerToPrincipalArgs = {
+              userId: user?.id,
+              idNumber: principalPractitioner.idNumber,
+              firstName: principalPractitioner.firstName,
+              lastName: principalPractitioner.surname,
+            };
+            await new PractitionerService(
+              userAuth?.auth_token
+            ).AddPractitionerToPrincipal(input);
+          }
         });
         await appDispatch(
           practitionerThunkActions.getAllPractitioners({})
@@ -279,7 +307,9 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.SETUP_PROGRAMME:
-        return (
+        return isNotPrincipal ? (
+          <PreschoolCodeCheck onNext={setPage} />
+        ) : (
           <AddProgrammeForm
             onNext={setPage}
             setIsNotPrincipal={setIsNotPrincipal}
@@ -412,11 +442,7 @@ export const SetupPrincipal: React.FC = () => {
             ? ''
             : label
         }
-        onBack={
-          !isFundaAppAdmin && isNotPrincipal
-            ? () => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)
-            : onBack
-        }
+        onBack={onBack}
         onClose={exitPrompt}
         backgroundColour={'white'}
         className={'relative'}

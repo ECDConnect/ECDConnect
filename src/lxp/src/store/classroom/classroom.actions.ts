@@ -154,6 +154,7 @@ export const upsertClassroom = createAsyncThunk<
           PreschoolFeeAmount: classroom.preschoolFeeAmount || 0,
           PreschoolFeeAmountLastUpdateDate:
             classroom.preschoolFeeAmountLastUpdateDate,
+          PreschoolCode: classroom?.preschoolCode,
         };
 
         const result = await new ClassroomService(

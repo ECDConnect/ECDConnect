@@ -9,6 +9,7 @@ export interface AddPractitionerModel {
   firstName: string;
   surname: string;
   preferId: boolean;
+  phoneNumber?: string;
 }
 
 export const initialAddPractitionerValues: AddPractitionerModel = {
@@ -17,6 +18,7 @@ export const initialAddPractitionerValues: AddPractitionerModel = {
   preferId: true,
   idNumber: '',
   passport: '',
+  phoneNumber: '',
 };
 
 export const setupPractitioner = Yup.object().shape({

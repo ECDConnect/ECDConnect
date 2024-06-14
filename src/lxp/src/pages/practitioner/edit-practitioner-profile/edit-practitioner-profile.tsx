@@ -109,7 +109,10 @@ export const EditPractitionerProfile: React.FC = () => {
           await new PractitionerService(
             userAuth.auth_token
           ).UpdatePractitionerRegistered(user.id, true);
-
+          if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+            history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+            return;
+          }
           await new PractitionerService(
             userAuth.auth_token
           ).UpdatePractitionerProgress(user.id, 2.0);
@@ -183,7 +186,7 @@ export const EditPractitionerProfile: React.FC = () => {
           }
           actionButtons={[
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Exit',
               onClick: () => {
                 onSubmit();
@@ -194,12 +197,12 @@ export const EditPractitionerProfile: React.FC = () => {
               leadingIcon: 'LoginIcon',
             },
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Continue editing',
               onClick: () => {
                 onCancel();
               },
-              textColour: 'primary',
+              textColour: 'quatenary',
               type: 'outlined',
               leadingIcon: 'PencilIcon',
             },

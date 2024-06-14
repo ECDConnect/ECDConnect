@@ -1,4 +1,9 @@
-import { useTheme } from '@ecdlink/core';
+import {
+  NOTIFICATION,
+  useNotifications,
+  useSnackbar,
+  useTheme,
+} from '@ecdlink/core';
 import {
   FileTypeEnum,
   PractitionerColleagues,
@@ -16,6 +21,7 @@ import {
   StackedList,
   Typography,
   Alert,
+  Card,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -48,6 +54,7 @@ import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
+  const { showMessage } = useSnackbar();
 
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -68,6 +75,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+
   const isPrincipal = practitioner?.isPrincipal === true;
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
     useDocuments();
@@ -192,20 +200,22 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   useEffect(() => {
     if (otherColleagues && user?.firstName) {
       const filteredColleagues = otherColleagues?.filter(
-        (item) => !item?.name.includes(user?.firstName)
+        (item) =>
+          !item?.name?.includes(user?.firstName) ||
+          item?.username?.includes(user?.userName)
       );
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
-        name: item?.name.split(' ')[0],
+        name: item?.name?.split(' ')[0] || item?.username,
         title: item?.title,
       }));
       setOtherColleaguesFiltered(firstNameFilteredColleagues);
     }
-  }, [otherColleagues, user?.firstName]);
+  }, [otherColleagues, user?.firstName, user?.userName]);
 
   const getStackedListItems = () => {
     const stackedActionList: ActionListDataItem[] = [
       {
-        title: 'Programme name',
+        title: 'Preschool name',
         subTitle:
           classroomForPractitionerAnyType?.id &&
           practitioner?.isPrincipal !== true &&
@@ -237,26 +247,20 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
     ];
 
-    if (
-      (practitioner?.isRegistered !== null ||
-        practitioner?.isLeaving !== null) &&
-      !missingProgramme
-    ) {
-      stackedActionList.push(
-        {
-          title: 'Location',
-          subTitle: classroom?.siteAddress?.addressLine1,
-          switchTextStyles: true,
-          actionName: isPrincipal ? 'Add/Edit' : '',
-          actionIcon: 'PlusIcon',
-          onActionClick: () => setShowEditAddress(true),
+    if (classroomGroups.length > 0 && !missingProgramme) {
+      stackedActionList.push({
+        title: 'Classes',
+        subTitle: classroomGroups
+          ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+          .map((x) => x.name)
+          .join(', '),
+        switchTextStyles: true,
+        actionName: isPrincipal ? 'Edit' : 'View',
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
+        onActionClick: () => {
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
         },
-        {
-          title: 'Type of ECD service',
-          subTitle: 'TODO',
-          switchTextStyles: true,
-        }
-      );
+      });
     }
 
     if (
@@ -289,43 +293,42 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       });
     }
 
-    if (classroomGroups.length > 0 && !missingProgramme) {
+    if (
+      (practitioner?.isRegistered !== null ||
+        practitioner?.isLeaving !== null) &&
+      !missingProgramme
+    ) {
       stackedActionList.push({
-        title: 'Classes',
-        subTitle: classroomGroups
-          ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
-          .map((x) => x.name)
-          .join(', '),
+        title: 'Location',
+        subTitle: classroom?.siteAddress?.addressLine1,
         switchTextStyles: true,
-        actionName: isPrincipal ? 'Edit' : 'View',
-        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
-        },
+        actionName: isPrincipal ? 'Add/Edit' : '',
+        actionIcon: 'PlusIcon',
+        onActionClick: () => setShowEditAddress(true),
       });
     }
 
-    if (!!classroom && (isPrincipal || practitioner?.isFundaAppAdmin)) {
-      const feeUpdatedThisYear =
-        !!classroom?.preschoolFeeAmountLastUpdateDate &&
-        new Date(classroom.preschoolFeeAmountLastUpdateDate).getFullYear() ===
-          new Date().getFullYear();
+    // if (!!classroom && (isPrincipal || practitioner?.isFundaAppAdmin)) {
+    //   const feeUpdatedThisYear =
+    //     !!classroom?.preschoolFeeAmountLastUpdateDate &&
+    //     new Date(classroom.preschoolFeeAmountLastUpdateDate).getFullYear() ===
+    //       new Date().getFullYear();
 
-      stackedActionList.push({
-        title: 'Monthly preschool fee',
-        subTitle: !!classroom.preschoolFeeAmount
-          ? `R ${classroom.preschoolFeeAmount}`
-          : feeUpdatedThisYear
-          ? 'No fee'
-          : 'Add the preschool fee',
-        switchTextStyles: true,
-        actionName: !!classroom.preschoolFeeAmount ? 'Edit' : 'Add',
-        actionIcon: !!classroom.preschoolFeeAmount ? 'PencilIcon' : 'PlusIcon',
-        onActionClick: () => {
-          history.push(ROUTES.CLASSROOM.UPDATE_FEE);
-        },
-      });
-    }
+    //   stackedActionList.push({
+    //     title: 'Monthly preschool fee',
+    //     subTitle: !!classroom.preschoolFeeAmount
+    //       ? `R ${classroom.preschoolFeeAmount}`
+    //       : feeUpdatedThisYear
+    //       ? 'No fee'
+    //       : 'Add the preschool fee',
+    //     switchTextStyles: true,
+    //     actionName: !!classroom.preschoolFeeAmount ? 'Edit' : 'Add',
+    //     actionIcon: !!classroom.preschoolFeeAmount ? 'PencilIcon' : 'PlusIcon',
+    //     onActionClick: () => {
+    //       history.push(ROUTES.CLASSROOM.UPDATE_FEE);
+    //     },
+    //   });
+    // }
 
     setListItems(stackedActionList);
   };
@@ -425,6 +428,53 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           type={'ActionList'}
         ></StackedList>
       </BannerWrapper>
+      <div className="mb-28 flex w-full justify-center">
+        <Card
+          className={'bg-adminBackground mt-4	 w-11/12 rounded-xl shadow-lg'}
+        >
+          <div className={'mt-6 ml-4'}>
+            <Typography
+              type={'h1'}
+              color="textDark"
+              text={`Copy the code to invite practitioners`}
+              className={'mt-6 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`You can invite new practitioners to your preschool by sharing the code: AngelsDaycare001`}
+              className={'mt-4 ml-4'}
+            />
+            <div className="flex justify-center">
+              <Button
+                type="filled"
+                color="quatenary"
+                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                onClick={() => {
+                  //TODO: what if copy fails?
+                  navigator?.clipboard?.writeText &&
+                    navigator?.clipboard?.writeText(classroom?.preschoolCode!);
+                  showMessage({
+                    message: 'Preschool code copied!',
+                    type: 'success',
+                  });
+                }}
+              >
+                {renderIcon(
+                  'ArrowCircleRightIcon',
+                  'w-5 h-5 color-white text-white mr-1'
+                )}
+                <Typography
+                  type="body"
+                  className="mr-4"
+                  color="white"
+                  text={'Copy preschool code'}
+                ></Typography>
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
       <Dialog
         fullScreen
         visible={showEditAddress}
@@ -447,7 +497,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             <Typography
               type="body"
               color="textDark"
-              text={'Programme Name'}
+              text={'Preschool'}
               weight="bold"
             ></Typography>
             <div onClick={closeEditField}>

@@ -32,6 +32,7 @@ export const PractitionerShareDetails = ({
   const [firstName, setFirstName] = useState('');
   const [error, setError] = useState('');
   const user = useSelector(userSelectors.getUser);
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleIdAndpassport = (visible: boolean) => {
     const flag = !visible;
@@ -53,6 +54,7 @@ export const PractitionerShareDetails = ({
   }, [idNumber, idFieldVisible]);
 
   const savePractitionerUserData = async () => {
+    setIsLoading(true);
     const copy = cloneDeep(user);
     if (copy) {
       copy.firstName = firstName?.replace(/['"]+/g, '');
@@ -61,7 +63,7 @@ export const PractitionerShareDetails = ({
       await appDispatch(userActions.updateUser(copy));
       await appDispatch(userThunkActions.updateUser(copy));
     }
-
+    setIsLoading(false);
     onNext();
   };
 
@@ -175,6 +177,7 @@ export const PractitionerShareDetails = ({
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"
+            isLoading={isLoading}
             disabled={!idNumber || Boolean(error) || !firstName}
             onClick={savePractitionerUserData}
           />

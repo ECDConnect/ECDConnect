@@ -89,6 +89,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   useEffect(() => {
     const _list = practitioners
+      ?.filter((item) => item?.userId)
       ?.map((p) => {
         if ((p.firstName && p.surname) || p?.idNumber) {
           return {
@@ -146,8 +147,13 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         }),
       };
 
-      appDispatch(classroomsActions.createClassroomGroup(classroomGroupModel));
-      appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({}));
+      await appDispatch(
+        classroomsActions.createClassroomGroup(classroomGroupModel)
+      );
+      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroupProgrammes({})
+      );
     }
   };
 
@@ -294,7 +300,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
           size="normal"
           className="w-full"
           type="filled"
-          color="primary"
+          color="quatenary"
           text="Save"
           textColor="white"
           icon="SaveIcon"

@@ -224,66 +224,66 @@ export const PractitionerAbout: React.FC = () => {
     });
   };
 
-  const getPhotoOnProgressReportItem = (): ActionListDataItem => {
-    var item: ActionListDataItem = {
-      title: `Photo on ${reportingPeriod.monthName} progress report`,
-      subTitle: '',
-      switchTextStyles: true,
-      actionName: '',
-      actionIcon: '',
-      buttonType: 'filled',
-      onActionClick: () => {},
-    };
-    const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
-    const hasAnswered =
-      !!practitioner?.usePhotoInReport &&
-      practitioner?.usePhotoInReport.startsWith(prefix);
-    const answer = hasAnswered
-      ? practitioner?.usePhotoInReport?.endsWith('-yes')
-        ? 'yes'
-        : 'no'
-      : undefined;
-    if (!hasAnswered && !hasCreatedReportForCurrentPeriod) {
-      item = {
-        ...item,
-        subTitle: `Add your photo to ${reportingPeriod.monthName} report`,
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
-        onActionClick: () => {
-          promptPhotoReportPermission();
-        },
-      };
-    }
-    if (hasAnswered && !hasCreatedReportForCurrentPeriod) {
-      item = {
-        ...item,
-        subTitle:
-          answer === 'yes'
-            ? `Photo added to ${reportingPeriod.monthName} report`
-            : `Photo not added to ${reportingPeriod.monthName} report`,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        onActionClick: () => {
-          promptPhotoReportPermission();
-        },
-      };
-    }
-    if (hasAnswered && hasCreatedReportForCurrentPeriod) {
-      item = {
-        ...item,
-        subTitle:
-          answer === 'yes'
-            ? `Photo added to ${reportingPeriod.monthName} report`
-            : `Photo not added to ${reportingPeriod.monthName} report`,
-        actionName: 'View',
-        actionIcon: 'EyeIcon',
-        onActionClick: () => {
-          handleUsingPhotoInReports(answer === 'yes');
-        },
-      };
-    }
-    return item;
-  };
+  // const getPhotoOnProgressReportItem = (): ActionListDataItem => {
+  //   var item: ActionListDataItem = {
+  //     title: `Photo on ${reportingPeriod.monthName} progress report`,
+  //     subTitle: '',
+  //     switchTextStyles: true,
+  //     actionName: '',
+  //     actionIcon: '',
+  //     buttonType: 'filled',
+  //     onActionClick: () => {},
+  //   };
+  //   const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
+  //   const hasAnswered =
+  //     !!practitioner?.usePhotoInReport &&
+  //     practitioner?.usePhotoInReport.startsWith(prefix);
+  //   const answer = hasAnswered
+  //     ? practitioner?.usePhotoInReport?.endsWith('-yes')
+  //       ? 'yes'
+  //       : 'no'
+  //     : undefined;
+  //   if (!hasAnswered && !hasCreatedReportForCurrentPeriod) {
+  //     item = {
+  //       ...item,
+  //       subTitle: `Add your photo to ${reportingPeriod.monthName} report`,
+  //       actionName: 'Add',
+  //       actionIcon: 'PlusIcon',
+  //       onActionClick: () => {
+  //         promptPhotoReportPermission();
+  //       },
+  //     };
+  //   }
+  //   if (hasAnswered && !hasCreatedReportForCurrentPeriod) {
+  //     item = {
+  //       ...item,
+  //       subTitle:
+  //         answer === 'yes'
+  //           ? `Photo added to ${reportingPeriod.monthName} report`
+  //           : `Photo not added to ${reportingPeriod.monthName} report`,
+  //       actionName: 'Edit',
+  //       actionIcon: 'PencilIcon',
+  //       onActionClick: () => {
+  //         promptPhotoReportPermission();
+  //       },
+  //     };
+  //   }
+  //   if (hasAnswered && hasCreatedReportForCurrentPeriod) {
+  //     item = {
+  //       ...item,
+  //       subTitle:
+  //         answer === 'yes'
+  //           ? `Photo added to ${reportingPeriod.monthName} report`
+  //           : `Photo not added to ${reportingPeriod.monthName} report`,
+  //       actionName: 'View',
+  //       actionIcon: 'EyeIcon',
+  //       onActionClick: () => {
+  //         handleUsingPhotoInReports(answer === 'yes');
+  //       },
+  //     };
+  //   }
+  //   return item;
+  // };
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
@@ -293,7 +293,7 @@ export const PractitionerAbout: React.FC = () => {
         switchTextStyles: true,
         actionName: currentUser?.phoneNumber ? 'Edit' : 'Add',
         actionIcon: currentUser?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
+        buttonType: 'filled',
         onActionClick: () => {
           setEditiCellPhoneNumber(true);
         },
@@ -304,50 +304,12 @@ export const PractitionerAbout: React.FC = () => {
         switchTextStyles: true,
         actionName: currentUser?.email ? 'Edit' : 'Add',
         actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        buttonType: 'filled',
         onActionClick: () => {
           setEditEmail(true);
         },
       },
-      {
-        title: 'Your SmartStart club',
-        subTitle: 'N/A',
-        switchTextStyles: true,
-      },
-      {
-        title: 'Your SmartStart coach',
-        subTitle: coach?.user?.fullName || 'N/A',
-        switchTextStyles: true,
-      },
-      {
-        title: 'Next of kin',
-        subTitle: currentUser?.emergencyContactFirstName || 'Add next of kin',
-        switchTextStyles: true,
-        actionName: currentUser?.emergencyContactFirstName ? 'Edit' : 'Add',
-        actionIcon: currentUser?.emergencyContactFirstName
-          ? 'PencilIcon'
-          : 'PlusIcon',
-        buttonType: currentUser?.emergencyContactFirstName
-          ? 'outlined'
-          : 'filled',
-        onActionClick: () => {
-          setAddNextToKin(true);
-        },
-      },
-      {
-        title: 'Signature',
-        subTitle: practitioner?.signingSignature
-          ? 'Replace your signature'
-          : 'Add your signature',
-        switchTextStyles: true,
-        actionName: practitioner?.signingSignature ? 'Edit' : 'Add',
-        actionIcon: practitioner?.signingSignature ? 'PencilIcon' : 'PlusIcon',
-        buttonType: 'filled',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ABOUT.SIGNATURE);
-        },
-      },
-      getPhotoOnProgressReportItem(),
+      // getPhotoOnProgressReportItem(),
     ];
 
     setListItems(list);

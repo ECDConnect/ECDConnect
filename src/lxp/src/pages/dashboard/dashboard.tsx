@@ -73,17 +73,20 @@ import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
 import { BusinessTabItems } from '../business/business.types';
 import { useTenant } from '@/hooks/useTenant';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 
 const { version } = require('../../../package.json');
 
 export interface DashboardRouteState {
   isFromTraineeFlow?: boolean;
   isFromLogin?: boolean;
+  isFromCompleteProfile?: boolean;
 }
 
 export const Dashboard: React.FC = () => {
   const location = useLocation<DashboardRouteState>();
   const isFromLogin = location?.state?.isFromLogin;
+  const isFromCompleteProfile = location?.state?.isFromCompleteProfile;
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const isWhiteLabel = tenant?.isWhiteLabel;
@@ -233,6 +236,50 @@ export const Dashboard: React.FC = () => {
       });
     }
   }, [pointsSummaryData]);
+
+  const handleDialog = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+            textAlignment="right"
+            customDetailText={
+              <Typography
+                type="h4"
+                className="mb-7 mt-4"
+                text={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+                color="black"
+                align="center"
+              />
+            }
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => onSubmit(),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+            customIcon={
+              <div className="mb-2 flex w-full justify-center">
+                <Cebisa />
+              </div>
+            }
+          />
+        );
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (isFromCompleteProfile && !practitioner?.isPrincipal) {
+      handleDialog();
+    }
+  }, []);
 
   const { userProfilePicture } = useDocuments();
 

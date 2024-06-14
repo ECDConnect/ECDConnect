@@ -152,33 +152,34 @@ export const PractitionerProfile: React.FC = () => {
       userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${user?.firstName} ${user?.surname}`.slice(0, 25),
+        title: 'About me',
         titleStyle,
-        subTitle: 'About me',
+        subTitle: 'Login, contact details',
         subTitleStyle,
         menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         iconColor: 'white',
         showIcon: profilePc === undefined,
+        backgroundColor: 'quatenaryBg',
         onActionClick: () => {
           history.push(ROUTES.PRACTITIONER.ABOUT.ROOT);
         },
       },
-      {
-        title: 'Account',
-        titleStyle,
-        subTitleStyle,
-        subTitle: 'Password',
-        menuIcon: 'ShieldCheckIcon',
-        menuIconClassName: 'text-white',
-        iconBackgroundColor: 'tertiary',
-        showIcon: true,
-        iconColor: 'white',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ACCOUNT);
-        },
-      },
+      // {
+      //   title: 'Account',
+      //   titleStyle,
+      //   subTitleStyle,
+      //   subTitle: 'Password',
+      //   menuIcon: 'ShieldCheckIcon',
+      //   menuIconClassName: 'text-white',
+      //   iconBackgroundColor: 'tertiary',
+      //   showIcon: true,
+      //   iconColor: 'white',
+      //   onActionClick: () => {
+      //     history.push(ROUTES.PRACTITIONER.ACCOUNT);
+      //   },
+      // },
       {
         title: NavigationNames.Logout,
         titleStyle,
@@ -187,6 +188,7 @@ export const PractitionerProfile: React.FC = () => {
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
         iconBackgroundColor: 'tertiary',
+        backgroundColor: 'tertiaryAccent2',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -232,7 +234,7 @@ export const PractitionerProfile: React.FC = () => {
       });
 
       stackedMenuList?.splice(1, 0, {
-        title: 'Programme information',
+        title: 'Preschool',
         titleStyle,
         subTitle:
           classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
@@ -242,7 +244,8 @@ export const PractitionerProfile: React.FC = () => {
         menuIconUrl: classroomImage?.file,
         menuIcon: 'HeartIcon',
         menuIconClassName: 'text-white',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'secondary',
+        backgroundColor: 'secondaryAccent2',
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {

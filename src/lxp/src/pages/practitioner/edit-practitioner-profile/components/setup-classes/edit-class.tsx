@@ -78,7 +78,10 @@ export const EditClass = ({
       .filter(Boolean) as { label: string; value: any }[];
 
     _list.push({
-      label: currentPractitioner?.user?.fullName || '',
+      label:
+        currentPractitioner?.user?.fullName ||
+        currentPractitioner?.user?.firstName ||
+        '',
       value: currentPractitioner?.userId,
     });
 
@@ -216,30 +219,6 @@ export const EditClass = ({
             )}
           />
         </div>
-        {/* {programmeType?.enumId === ProgrammeTypeEnum.Playgroup && (
-          <div>
-            <span>
-              Do children attend this class for half the day or the full day?
-            </span>
-            <div className="mt-2">
-              <Controller
-                name={'isFullDay'}
-                control={control}
-                render={({ field: { onChange, value, ref } }) => (
-                  <ButtonGroup<boolean>
-                    inputRef={ref}
-                    options={isFullDayOptions}
-                    onOptionSelected={onChange}
-                    selectedOptions={value}
-                    color="secondary"
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full'}
-                  />
-                )}
-              />
-            </div>
-          </div>
-        )} */}
 
         <div>
           <span>{`Does ${classToEdit.name} class meet everyday?`}</span>

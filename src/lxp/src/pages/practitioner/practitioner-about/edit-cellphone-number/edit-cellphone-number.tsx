@@ -1,18 +1,8 @@
-import {
-  FormInput,
-  Button,
-  BannerWrapper,
-  Typography,
-  ButtonGroup,
-  ButtonGroupTypes,
-} from '@ecdlink/ui';
+import { FormInput, Button, BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  EditCellPhoneNUmberProps,
-  yesNoOptions,
-} from './edit-cellphone-number.types';
+import { EditCellPhoneNUmberProps } from './edit-cellphone-number.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   EditCellphoneModel,
@@ -50,6 +40,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     getValues: getPractitionerInfoFormValues,
     register: practitionerInfoFormRegister,
     control: practitionerInfoFormControl,
+    setValue: setPractitionerInfoFormValues,
     watch,
     clearErrors,
   } = useForm<EditCellphoneModel>({
@@ -82,11 +73,10 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   };
 
   useEffect(() => {
-    if (user?.whatsappNumber) {
-      setIsWhatsappNumber(false);
+    if (user?.phoneNumber) {
+      setPractitionerInfoFormValues('cellphone', user?.phoneNumber);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setPractitionerInfoFormValues, user?.phoneNumber]);
 
   return (
     <div>
@@ -118,49 +108,17 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 placeholder="+27735279059"
                 className="w-full"
                 register={practitionerInfoFormRegister}
+                value={cellphone}
                 type={'number'}
                 error={!!errors.cellphone ? errors.cellphone : undefined}
               />
-              <div className="mt-4 w-11/12">
-                <Typography
-                  type="h4"
-                  color={'textMid'}
-                  text={'Do you use this cellphone number for WhatsApp?'}
-                  className="z-50 w-11/12 pt-2"
-                />
-              </div>
-              <div>
-                <ButtonGroup<boolean>
-                  options={yesNoOptions}
-                  onOptionSelected={(value: boolean | boolean[]) => {
-                    clearErrors();
-                    setIsWhatsappNumber(value as boolean);
-                  }}
-                  color="secondary"
-                  type={ButtonGroupTypes.Button}
-                  className={'w-full'}
-                  selectedOptions={isWhatsappNumber}
-                />
-              </div>
-              {!isWhatsappNumber && (
-                <FormInput<EditCellphoneModel>
-                  label={'What phone number do you use for WhatsApp?'}
-                  hint={'Optional. Leave blank if you do not use WhatsApp.'}
-                  placeholder="073 527 9059"
-                  type={'number'}
-                  nameProp={'whatsapp'}
-                  className="w-full"
-                  register={practitionerInfoFormRegister}
-                  error={!!errors.whatsapp ? errors.whatsapp : undefined}
-                />
-              )}
             </div>
             <div className="mt-4 -mb-4 h-full w-full self-end">
               <Button
                 size="normal"
                 className="mb-4 w-full"
                 type="filled"
-                color="primary"
+                color="quatenary"
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"

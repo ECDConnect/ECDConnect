@@ -1,4 +1,4 @@
-import { ProgrammeTypeDto } from '@ecdlink/core';
+import { ProgrammeTypeDto, generateUniqueCode } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -165,6 +165,8 @@ export const AddProgrammeForm: React.FC<{
     programme: EditProgrammeModel,
     classroomId: string
   ) => {
+    const uniquePreschoolCode = generateUniqueCode(6);
+
     const classroomInputModel: ClassroomDto = {
       id: classroomId,
       name: programme?.name ?? '',
@@ -192,6 +194,7 @@ export const AddProgrammeForm: React.FC<{
         postalCode: '',
         ward: '',
       },
+      preschoolCode: uniquePreschoolCode,
     };
 
     // TODO
@@ -204,6 +207,8 @@ export const AddProgrammeForm: React.FC<{
     programme: EditProgrammeModel,
     classroomId: string
   ) => {
+    const uniquePreschoolCode = generateUniqueCode(6);
+
     const classroomInputModel: ClassroomDto = {
       id: classroomId,
       name: programme?.name ?? '',
@@ -226,6 +231,7 @@ export const AddProgrammeForm: React.FC<{
         surname: user?.surname!,
         userId: user?.id!,
       },
+      preschoolCode: uniquePreschoolCode,
     };
 
     // This won't actually call the BE

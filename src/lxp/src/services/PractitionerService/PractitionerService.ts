@@ -478,6 +478,7 @@ class PractitionerService {
               fullName
               firstName
               surname
+              userName
               id
               email
               phoneNumber
@@ -548,6 +549,15 @@ class PractitionerService {
                 usePhotoInReport
                 isCompletedBusinessWalkThrough
               }
+                userPermissions {
+                id
+                isActive
+                permissionId
+               permission {
+                id
+                name
+               }
+            }
             }
             note
           }
@@ -1534,6 +1544,57 @@ class PractitionerService {
     }
 
     return response.data.data.updatePractitionerBusinessWalkthrough;
+  }
+
+  async practitionerInvitePrincipal(
+    principalPhoneNumber: string,
+    practitionerUserId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation SendPrincipalInviteToApplication($principalPhoneNumber: String, $practitionerUserId: UUID!) {
+  sendPrincipalInviteToApplication(principalPhoneNumber: $principalPhoneNumber, practitionerUserId: $practitionerUserId)
+}
+      `,
+      variables: {
+        principalPhoneNumber,
+        practitionerUserId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Invite principal Failed - Server connection error');
+    }
+
+    return response.data.data.sendPrincipalInviteToApplication;
+  }
+
+  async sendPractitionerInviteToPreschool(
+    practitionerPhoneNumber: string,
+    preSchoolNameCode: string,
+    principalUserId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation SendPractitionerInviteToPreSchool($practitionerPhoneNumber: String!, $preSchoolNameCode: String!, $principalUserId: UUID!) {
+    sendPractitionerInviteToPreSchool(practitionerPhoneNumber: $practitionerPhoneNumber, preSchoolNameCode: $preSchoolNameCode, principalUserId: $principalUserId) {
+    }
+}
+      `,
+      variables: {
+        practitionerPhoneNumber,
+        preSchoolNameCode,
+        principalUserId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Invite principal Failed - Server connection error');
+    }
+
+    return response.data.data.sendPrincipalInviteToApplication;
   }
 }
 
