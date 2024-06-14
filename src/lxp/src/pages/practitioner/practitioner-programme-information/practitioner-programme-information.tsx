@@ -1,5 +1,6 @@
 import {
   NOTIFICATION,
+  useDialog,
   useNotifications,
   useSnackbar,
   useTheme,
@@ -51,10 +52,17 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { EditAddress } from './edit-address/edit-address';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { useTenant } from '@/hooks/useTenant';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
+  const dialog = useDialog();
   const { showMessage } = useSnackbar();
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
+  const isTrialPeriod = useIsTrialPeriod();
 
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -192,6 +200,16 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     return practitionerColleagues;
   };
 
+  const showTrialPeriodCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+      },
+    });
+  };
+
   useEffect(() => {
     getPractitionerColleagues();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -227,19 +245,28 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             : 'None',
         switchTextStyles: true,
         actionName:
-          practitioner?.isRegistered && practitioner?.isPrincipal !== true
+          practitioner?.isRegistered &&
+          practitioner?.isPrincipal !== true &&
+          !isTrialPeriod
             ? ''
+            : isTrialPeriod
+            ? 'Add'
             : 'Edit',
-        actionIcon: 'PencilIcon',
+        actionIcon: isTrialPeriod ? 'PlusIcon' : 'PencilIcon',
         onActionClick:
-          practitioner?.isRegistered !== null ||
-          practitioner?.isLeaving !== null
+          (practitioner?.isRegistered !== null ||
+            practitioner?.isLeaving !== null) &&
+          !isTrialPeriod
             ? classroomForPractitionerAnyType?.id &&
               practitioner?.isPrincipal !== true
               ? () => {}
               : () => setEditFieldVisible(true)
             : practitioner?.isPrincipal !== true
-            ? () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+            ? isTrialPeriod
+              ? () => showTrialPeriodCompleteProfileBlockingDialog()
+              : () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+            : isTrialPeriod
+            ? () => showTrialPeriodCompleteProfileBlockingDialog()
             : () => {
                 history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
                 return;
@@ -247,27 +274,39 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
     ];
 
-    if (classroomGroups.length > 0 && !missingProgramme) {
+    if ((classroomGroups.length > 0 && !missingProgramme) || isTrialPeriod) {
       stackedActionList.push({
         title: 'Classes',
-        subTitle: classroomGroups
-          ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
-          .map((x) => x.name)
-          .join(', '),
+        subTitle:
+          classroomGroups
+            ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+            .map((x) => x.name)
+            .join(', ') || 'None',
         switchTextStyles: true,
-        actionName: isPrincipal ? 'Edit' : 'View',
-        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
-        },
+        actionName: isPrincipal
+          ? 'Edit'
+          : classroomGroups.length === 0 && isTrialPeriod
+          ? 'Add'
+          : 'View',
+        actionIcon: isPrincipal
+          ? 'PencilIcon'
+          : classroomGroups.length === 0 && isTrialPeriod
+          ? 'PlusIcon'
+          : 'EyeIcon',
+        onActionClick: isTrialPeriod
+          ? () => showTrialPeriodCompleteProfileBlockingDialog()
+          : () => {
+              history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+            },
       });
     }
 
     if (
-      (practitioner?.isRegistered !== null ||
+      ((practitioner?.isRegistered !== null ||
         isPrincipal !== false ||
         practitioner?.isLeaving !== null) &&
-      !missingProgramme
+        !missingProgramme) ||
+      isTrialPeriod
     ) {
       if (isPrincipal) {
         practitionersList?.push(practitioner);
@@ -276,7 +315,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         title: 'Other practitioners on site',
         subTitle: isPrincipal
           ? practitionersList?.map((x) => x?.user?.firstName).join(', ')
-          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
+          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', ') ||
+            'None',
         switchTextStyles: true,
         actionName:
           practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0
@@ -284,12 +324,18 @@ export const PractitionerProgrammeInformation: React.FC = () => {
               ? 'Edit'
               : 'View'
             : 'Add',
-        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
-        onActionClick: () => {
-          history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
-            returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
-          });
-        },
+        actionIcon: isPrincipal
+          ? 'PencilIcon'
+          : isTrialPeriod
+          ? 'PlusIcon'
+          : 'EyeIcon',
+        onActionClick: isTrialPeriod
+          ? () => showTrialPeriodCompleteProfileBlockingDialog()
+          : () => {
+              history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+                returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+              });
+            },
       });
     }
 
@@ -399,7 +445,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           </div>
         )}
 
-        {!isPrincipal && missingProgramme && (
+        {!isPrincipal && missingProgramme && !isOpenAccess && (
           <div className="flex justify-center">
             <Alert
               type="error"
