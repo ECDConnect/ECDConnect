@@ -148,7 +148,7 @@ export const upsertClassroom = createAsyncThunk<
           NumberOfAssistants: classroom.numberOfPractitioners,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
           IsActive: true, // All classrooms/groups on FE will be active
-          SiteAddress: classroom?.siteAddress
+          SiteAddress: classroom?.siteAddress?.addressLine1
             ? mapSiteAddress(classroom.siteAddress)
             : null,
           PreschoolFeeAmount: classroom.preschoolFeeAmount || 0,

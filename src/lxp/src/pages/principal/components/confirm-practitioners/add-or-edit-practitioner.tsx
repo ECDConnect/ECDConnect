@@ -406,7 +406,7 @@ export const AddOrEditPractitioner = ({
               <Alert
                 type={'warning'}
                 title={
-                  'Oh dear! It looks like you practitioner has not joined AppName yet.'
+                  'Oh dear! It looks like your practitioner has not joined AppName yet.'
                 }
                 list={[
                   'Enter their cellphone number below to send them an invitation.',
@@ -465,27 +465,28 @@ export const AddOrEditPractitioner = ({
             />
           </div>
         )}
-
-        {isValidPractitioner === true &&
-          !addNote &&
-          permissions.map((item, index) => (
-            <CheckboxGroup
-              id={item.id}
-              key={item.id}
-              title={item?.normalizedName}
-              checked={permissionsAdded?.some((option) => option === item.id)}
-              value={item.id}
-              onChange={(event) => {
-                updateArray(event, item?.id!);
-              }}
-              className="mb-1"
-              icon={
-                <UserIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
-              }
-              isIconFullWidth
-              checkboxColor="primary"
-            />
-          ))}
+        <div>
+          {isValidPractitioner === true &&
+            !addNote &&
+            permissions.map((item, index) => (
+              <CheckboxGroup
+                id={item.id}
+                key={item.id}
+                title={item?.normalizedName}
+                checked={permissionsAdded?.some((option) => option === item.id)}
+                value={item.id}
+                onChange={(event) => {
+                  updateArray(event, item?.id!);
+                }}
+                icon={
+                  <UserIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+                }
+                className="mb-2"
+                isIconFullWidth
+                checkboxColor="primary"
+              />
+            ))}
+        </div>
       </div>
       <div className="-mb-4 self-end">
         <Button

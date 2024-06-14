@@ -380,7 +380,7 @@ export const AddPractitioner = ({
                     <Alert
                       type={'warning'}
                       title={
-                        'Oh dear! It looks like you practitioner has not joined AppName yet.'
+                        'Oh dear! It looks like your practitioner has not joined AppName yet.'
                       }
                       list={[
                         'Enter their cellphone number below to send them an invitation.',
