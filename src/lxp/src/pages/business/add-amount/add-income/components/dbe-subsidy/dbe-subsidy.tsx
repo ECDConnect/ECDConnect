@@ -7,79 +7,74 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import * as styles from './dsd-subsidy.styles';
+import * as styles from './dbe-subsidy.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm, useWatch } from 'react-hook-form';
-import {
-  DsdSubsidyModel,
-  dsdSubsidySchema,
-} from '@/schemas/income-statements/dsd-subsidy';
-import { statementsSelectors } from '@/store/statements';
-import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { useMemo } from 'react';
-import {
-  isNumber,
-  moneyInputFormat,
-} from '@/utils/statements/statements-utils';
-import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { useForm, useFormState, useWatch } from 'react-hook-form';
+import { moneyInputFormat } from '@/utils/statements/statements-utils';
+import { lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { AddIncomeState } from '../../../add-amount.types';
+import { AddIncomeProps } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { BusinessTabItems } from '@/pages/business/business.types';
-import { IncomeItemDto } from '@ecdlink/core';
+import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
+import {
+  DbeSubsidyModel,
+  dbeSubsidySchema,
+} from '@/schemas/income-statements/dbe-subsidy';
 
-export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
+export const DbeSubsidy: React.FC<AddIncomeProps> = ({
+  onBack,
+  onSubmit,
+  incomeItem,
+}) => {
   const history = useHistory();
 
-  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'DBE Subsidy';
-  const incomeTypeValue = incomeTypes.find(
-    (item) => item.description === viewTitle
-  );
 
   const {
     control,
     setValue: setPreschoolFeesValue,
     register,
-  } = useForm<DsdSubsidyModel>({
-    resolver: yupResolver(dsdSubsidySchema),
+  } = useForm<DbeSubsidyModel>({
+    resolver: yupResolver(dbeSubsidySchema),
     mode: 'onChange',
+    defaultValues: {
+      dateReceived: incomeItem?.dateReceived,
+      numberOfChildrenSupported:
+        incomeItem?.numberOfChildrenCovered?.toString(),
+      amount: incomeItem?.amount.toString(),
+      notes: incomeItem?.notes,
+    },
   });
 
-  const {
-    date: selectedDate,
-    date,
-    childrenNumber,
-    subsidyAmount,
-    note,
-  } = useWatch({
+  const { dateReceived, numberOfChildrenSupported, amount, notes } = useWatch({
     control: control,
   });
 
-  const disabled = useMemo(() => {
-    return !date || !childrenNumber || !subsidyAmount;
-  }, [childrenNumber, date, subsidyAmount]);
+  const { isValid, errors } = useFormState({
+    control: control,
+  });
 
-  const today = new Date();
-  const todayDateNumber = getDate(today);
-  const firstDateOfMonth = startOfMonth(today);
-  const firstDateOfPreviousMonth = new Date(
-    today.getFullYear(),
-    today.getMonth() - 1,
-    1
-  );
-  const lastDateOfMonth = lastDayOfMonth(today);
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+  const minEditDate = !!incomeItem
+    ? startOfMonth(new Date(incomeItem.dateReceived))
+    : sixtyDaysAgo;
+
+  const maxEditDate = !!incomeItem
+    ? lastDayOfMonth(new Date(incomeItem.dateReceived))
+    : lastDayOfMonth(new Date());
 
   const sendIncomeUpdate = async () => {
     const incomeInput: IncomeItemDto = {
-      id: newGuid(),
-      dateReceived: date!,
-      amount: subsidyAmount ? moneyInputFormat(subsidyAmount) : 0,
-      numberOfChildrenCovered: childrenNumber,
-      incomeTypeId: incomeTypeValue!.id,
+      id: !!incomeItem ? incomeItem.id : newGuid(),
+      dateReceived: dateReceived!,
+      amount: moneyInputFormat(amount!),
+      numberOfChildrenCovered: Number(numberOfChildrenSupported),
+      incomeTypeId: IncomeTypeIds.DBE_SUBSIDY_ID,
+      notes: notes,
     };
 
     onSubmit(incomeInput);
@@ -101,7 +96,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => setType('')}
+      onBack={onBack}
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
@@ -120,21 +115,22 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
           placeholderText={`Please select a date`}
           wrapperClassName="text-center"
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
+          selected={dateReceived ? new Date(dateReceived) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-            setPreschoolFeesValue('date', date ? date.toISOString() : '');
+            setPreschoolFeesValue(
+              'dateReceived',
+              date ? date.toISOString() : ''
+            );
           }}
           dateFormat="EEE, dd MMM yyyy"
-          minDate={
-            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
-          }
-          maxDate={lastDateOfMonth}
+          minDate={minEditDate}
+          maxDate={maxEditDate}
         />
-        <FormInput<DsdSubsidyModel>
+        <FormInput<DbeSubsidyModel>
           label={'How many children do you receive this amount for?'}
           visible={true}
-          nameProp={'childrenNumber'}
+          nameProp={'numberOfChildrenSupported'}
           register={register}
           placeholder={'e.g. 20'}
           className="mt-2"
@@ -145,22 +141,22 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
             }
           }}
         />
-        <FormInput<DsdSubsidyModel>
+        <FormInput<DbeSubsidyModel>
           label={'How much did you receive from the DBE subsidy?'}
           visible={true}
-          nameProp={'subsidyAmount'}
+          nameProp={'amount'}
           register={register}
           placeholder={'e.g. R 1 000.00'}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
-          prefixIcon={!!subsidyAmount}
+          prefixIcon={!!amount}
         />
-        <FormInput<DsdSubsidyModel>
+        <FormInput<DbeSubsidyModel>
           label={'Add a note'}
           subLabel={'Optional'}
           visible={true}
-          nameProp={'note'}
+          nameProp={'notes'}
           register={register}
           placeholder={'e.g. Paid 2 days late'}
           className="mt-2"
@@ -170,7 +166,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={handleSaveStartupSupportValues}
-          disabled={disabled}
+          disabled={!isValid}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography
@@ -185,4 +181,4 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
   );
 };
 
-export default DsdSubsidy;
+export default DbeSubsidy;

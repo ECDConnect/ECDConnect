@@ -1,9 +1,4 @@
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-  PractitionerDto,
-} from '@ecdlink/core';
+import { IncomeStatementDto, PractitionerDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';

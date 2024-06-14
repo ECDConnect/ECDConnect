@@ -26,6 +26,7 @@ class ClassroomService {
             numberOfOtherAssistants
             preschoolFeeAmount
             preschoolFeeAmountLastUpdateDate
+            preschoolCode
             siteAddress {
               id
               name
@@ -163,6 +164,54 @@ class ClassroomService {
     }
 
     return response.data.data.updatePreschoolFeeForClassroom;
+  }
+
+  async getClassroomForPreschoolCode(
+    preSchoolCode: string
+  ): Promise<ClassroomDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { validatePreSchoolCode: ClassroomDto };
+      errors?: {};
+    }>(``, {
+      query: `query ValidatePreSchoolCode($preSchoolCode: String!) {
+                validatePreSchoolCode(preSchoolCode: $preSchoolCode) {
+                              id
+            name
+            userId
+            numberOfAssistants
+            numberOfOtherAssistants
+            preschoolFeeAmount
+            preschoolFeeAmountLastUpdateDate
+            siteAddress {
+              id
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
+            user {
+  principalObjectData {
+     principalHierarchy
+}
+}
+                }
+              }
+      `,
+      variables: {
+        preSchoolCode,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Validate preschool code Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.validatePreSchoolCode;
   }
 }
 

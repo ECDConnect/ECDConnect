@@ -1,7 +1,6 @@
 import { useDialog } from '@ecdlink/core';
 import {
   Alert,
-  ActionModal,
   BannerWrapper,
   DialogPosition,
   MenuListDataItem,
@@ -34,6 +33,7 @@ import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { PractitionerProfileRouteState } from './practitioner-profile.types';
 import { NavigationNames } from '@/pages/navigation';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
+import { useTenant } from '@/hooks/useTenant';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -57,7 +57,8 @@ export const PractitionerProfile: React.FC = () => {
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
     !isPrincipal;
-
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
   const location = useLocation<PractitionerProfileRouteState>();
 
   const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
@@ -138,7 +139,9 @@ export const PractitionerProfile: React.FC = () => {
       blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return <JoinOrAddPreschoolModal onSubmit={onSubmit} />;
+        return (
+          <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod={false} />
+        );
       },
     });
   };
@@ -152,33 +155,34 @@ export const PractitionerProfile: React.FC = () => {
       userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${user?.firstName} ${user?.surname}`.slice(0, 25),
+        title: 'About me',
         titleStyle,
-        subTitle: 'About me',
+        subTitle: 'Login, contact details',
         subTitleStyle,
         menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         iconColor: 'white',
         showIcon: profilePc === undefined,
+        backgroundColor: 'quatenaryBg',
         onActionClick: () => {
           history.push(ROUTES.PRACTITIONER.ABOUT.ROOT);
         },
       },
-      {
-        title: 'Account',
-        titleStyle,
-        subTitleStyle,
-        subTitle: 'Password',
-        menuIcon: 'ShieldCheckIcon',
-        menuIconClassName: 'text-white',
-        iconBackgroundColor: 'tertiary',
-        showIcon: true,
-        iconColor: 'white',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ACCOUNT);
-        },
-      },
+      // {
+      //   title: 'Account',
+      //   titleStyle,
+      //   subTitleStyle,
+      //   subTitle: 'Password',
+      //   menuIcon: 'ShieldCheckIcon',
+      //   menuIconClassName: 'text-white',
+      //   iconBackgroundColor: 'tertiary',
+      //   showIcon: true,
+      //   iconColor: 'white',
+      //   onActionClick: () => {
+      //     history.push(ROUTES.PRACTITIONER.ACCOUNT);
+      //   },
+      // },
       {
         title: NavigationNames.Logout,
         titleStyle,
@@ -187,6 +191,7 @@ export const PractitionerProfile: React.FC = () => {
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
         iconBackgroundColor: 'tertiary',
+        backgroundColor: 'tertiaryAccent2',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -232,7 +237,7 @@ export const PractitionerProfile: React.FC = () => {
       });
 
       stackedMenuList?.splice(1, 0, {
-        title: 'Programme information',
+        title: 'Preschool',
         titleStyle,
         subTitle:
           classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
@@ -242,20 +247,22 @@ export const PractitionerProfile: React.FC = () => {
         menuIconUrl: classroomImage?.file,
         menuIcon: 'HeartIcon',
         menuIconClassName: 'text-white',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'secondary',
+        backgroundColor: 'secondaryAccent2',
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
           if (
             (classroom && classroom.id) ||
-            (classroomGroups && !missingProgramme)
+            (classroomGroups && !missingProgramme) ||
+            isOpenAccess
           ) {
             if (isOnline) {
               history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
             } else {
               showOnlineOnly();
             }
-          } else {
+          } else if (!isOpenAccess) {
             showCompleteProfileBlockingDialog();
           }
         },

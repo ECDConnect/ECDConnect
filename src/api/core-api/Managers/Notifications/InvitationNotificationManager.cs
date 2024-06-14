@@ -8,8 +8,6 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
-using ECDLink.Tenancy.Enums;
-using System;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
@@ -28,22 +26,8 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         public async Task SendInvitationAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
-            var tenantInfo = TenantExecutionContext.Tenant;
             var invitationEnum = TemplateTypeEnum.Invitation;
             var invitationUrl = $"{_options.Value.Signup}?token={encodedToken}";
-
-            if (tenantInfo != null)
-            {
-                if (tenantInfo.TenantType == TenantType.WhiteLabel)
-                {
-                    invitationEnum = TemplateTypeEnum.WLInvitation;
-                    invitationUrl = $"{_options.Value.WLSignup}?token={encodedToken}";
-                } else if (tenantInfo.TenantType == TenantType.OpenAccess)
-                {
-                    invitationEnum = TemplateTypeEnum.OAInvitation;
-                    invitationUrl = $"{_options.Value.OASignup}?token={encodedToken}";
-                }
-            }
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
@@ -124,18 +108,9 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         {
             var encodedToken = TokenHelper.EncodeToken(token);
             var tenantInfo = TenantExecutionContext.Tenant;
-            var invitationEnum = TemplateTypeEnum.WLPreSchoolInvitation;
-            var invitationUrl = $"{_options.Value.WLPreSchoolInvitation}?token={encodedToken}";
-
-            if (tenantInfo != null)
-            {
-                if (tenantInfo.TenantType == TenantType.OpenAccess)
-                {
-                    invitationEnum = TemplateTypeEnum.OAPreSchoolInvitation;
-                    invitationUrl = $"{_options.Value.OAPreSchoolInvitation}?token={encodedToken}";
-                }
-            }
-
+            var invitationEnum = TemplateTypeEnum.PreSchoolInvitation;
+            var invitationUrl = $"{_options.Value.PreSchoolInvitation}?token={encodedToken}";
+            
             var applicationName = tenantInfo.ApplicationName;
             var notificationProvider = _notificationProviderFactory.Create(user);
 
@@ -150,8 +125,8 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
 
         public async Task SendPrincipalInvitationAsync(ApplicationUser principalUser, string practitionerFirstName, string encodedToken)
         {
-            var invitationEnum = TemplateTypeEnum.OAPrincipalInvitation;
-            var invitationUrl = $"{_options.Value.OAPrincipalSignup}?token={encodedToken}";
+            var invitationEnum = TemplateTypeEnum.PrincipalInvitation;
+            var invitationUrl = $"{_options.Value.PrincipalSignup}?token={encodedToken}";
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var notificationProvider = _notificationProviderFactory.Create(principalUser);

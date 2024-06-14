@@ -1,5 +1,4 @@
 ﻿using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.Core.Extensions;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
@@ -11,6 +10,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public DateTime DateReceived { get; set; }
         public double Amount { get; set; }
         public Guid? ChildUserId { get; set; }
+        public string Description { get; set; }
         public string Notes { get; set; }
 
         /// <summary>
@@ -33,6 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             NumberOfChildrenCovered = income.NumberOfChildrenCovered;
             PayTypeId = income.PayTypeId;
             PhotoProof = income.PhotoProof;
+            Description = income.Description;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECDLink.Security.Api.Constants;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
 {
@@ -7,7 +8,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public string ConnectUsage { get; set; }
         public string ConnectUsageColor { get; set; }
 
-        public AppUsageModel(bool isActive, bool isRegistered, DateTime lastSeenDate, DateTime? updatedDate, DateTime? invitationDate)
+        public AppUsageModel(bool isActive, bool isRegistered, DateTime lastSeenDate, DateTime? updatedDate, DateTime? invitationDate, int? notificationResult)
         {
             if (isActive == false)
             {
@@ -18,6 +19,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
 
             if (isRegistered == false)
             {
+                ConnectUsage = Constants.PortalSettings.usage_invitation_expired;
+                ConnectUsageColor = Constants.PortalSettings.usage_red;
+
                 if (invitationDate.HasValue)
                 {
                     var expiredDate = invitationDate.Value.AddDays(30);
@@ -33,10 +37,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
                         // User has not registered yet, invite is expired - red
                         ConnectUsageColor = Constants.PortalSettings.usage_red;
                     }
+
+                    // if notification failure, then we override active/inactive status
+                    if (notificationResult.HasValue && notificationResult.Value != 0)
+                    {
+                        switch (notificationResult.Value)
+                        {
+                            case NotificationsConstants.FAILED_AUTHENTICATION:
+                                ConnectUsage = Constants.PortalSettings.sms_failed_authentication;
+                                break;
+                            case NotificationsConstants.FAILED_CONNECTION:
+                                ConnectUsage = Constants.PortalSettings.sms_failed_connection;
+                                break;
+                            case NotificationsConstants.FAILED_INSUFFICIENT_CREDITS:
+                                ConnectUsage = Constants.PortalSettings.sms_failed_insufficient_credits;
+                                break;
+                            case NotificationsConstants.FAILED_OPTED_OUT:
+                                ConnectUsage = Constants.PortalSettings.sms_failed_opted_out;
+                                break;
+                        }
+                        ConnectUsageColor = Constants.PortalSettings.usage_red;
+                    }
                 }
 
-                ConnectUsage = Constants.PortalSettings.usage_invitation_expired;
-                ConnectUsageColor = Constants.PortalSettings.usage_red;
                 return;
             }
             

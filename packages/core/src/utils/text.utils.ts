@@ -91,3 +91,14 @@ export function addPhoneNumberMask(phoneNumber: string): string {
 
   return `${part1} ${part2} ${part3}`;
 }
+
+export function generateUniqueCode(length: number) {
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let uniqueCode = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    uniqueCode += characters[randomIndex];
+  }
+  return uniqueCode;
+}

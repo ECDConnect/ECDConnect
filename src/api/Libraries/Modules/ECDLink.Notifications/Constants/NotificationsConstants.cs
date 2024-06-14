@@ -14,6 +14,5 @@ namespace ECDLink.Security.Api.Constants
 
         public const string BULKSMS_AUTH = "Authentication Failed";
         public const string BULKSMS_CREDITS = "Insufficient Credits";
-
     }
 }

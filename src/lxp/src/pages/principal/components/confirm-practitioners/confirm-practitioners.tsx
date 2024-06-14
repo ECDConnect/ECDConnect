@@ -73,7 +73,7 @@ export default function ConfirmPractitioners({
         if (item?.userId !== user?.id)
           listItems.push(
             createStackItem({
-              firstName: item?.user?.firstName ?? '',
+              firstName: item?.user?.firstName || item?.user?.userName || '',
               surname: item?.user?.surname ?? '',
               idNumber: item?.user?.idNumber ?? '',
               userId: item?.user?.id ?? '',
@@ -81,6 +81,7 @@ export default function ConfirmPractitioners({
               preferId: !!item?.user?.idNumber,
               isRegistered: Boolean(item?.isRegistered),
               isTrainee: Boolean(item?.isTrainee),
+              phoneNumber: item?.user?.phoneNumber || '',
             })
           );
 
@@ -101,6 +102,7 @@ export default function ConfirmPractitioners({
           preferId: !!item?.user?.idNumber,
           isRegistered: Boolean(item?.isRegistered),
           isTrainee: Boolean(item?.isTrainee),
+          phoneNumber: item?.user?.phoneNumber || '',
         });
       });
 
@@ -111,7 +113,14 @@ export default function ConfirmPractitioners({
       setPrincipalPractitioners(principalFilteredList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFundaAppAdmin, isSmartLinkImported, practitioners, user?.idNumber]);
+  }, [
+    isFundaAppAdmin,
+    isSmartLinkImported,
+    listItems,
+    practitioners,
+    user?.id,
+    user?.idNumber,
+  ]);
 
   useEffect(() => {
     if (practitionersForPrincipal?.length) {
@@ -171,14 +180,14 @@ export default function ConfirmPractitioners({
   const createStackItem = useCallback(
     (data: RegisterPractitioner): StackListItems => {
       return {
-        title: `${data.firstName} ${data.surname}`,
+        title: data.firstName
+          ? `${data.firstName} ${data.surname}`
+          : data?.phoneNumber || '',
         idNumber: data.idNumber ?? data.passport,
-        subTitle: data.isRegistered ? 'Practitioner' : 'Not on Funda App',
+        subTitle: 'Practitioner',
         titleStyle:
           'text-textDark font-body text-base font-semibold leading-snug ',
-        subTitleStyle: `${
-          data.isRegistered ? 'text-textMid' : 'text-alertDark'
-        } font-body text-sm leading-5 `,
+        subTitleStyle: 'text-textMid',
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         buttonType: 'filled',
@@ -284,9 +293,9 @@ export default function ConfirmPractitioners({
                 className="mb-4 w-full"
                 type="filled"
                 color="quatenary"
-                text="Confirm"
+                text="Save & send invitations"
                 textColor="white"
-                icon="CheckCircleIcon"
+                icon="UploadIcon"
                 onClick={handleConfirmPractitionerSubmit}
               />
             </div>
@@ -298,6 +307,8 @@ export default function ConfirmPractitioners({
             onSubmit={handleAddOrEditPractitionerSubmit}
             formData={editPractitioner}
             listItems={listItems}
+            setListItems={setListItems}
+            setConfirmPractitionerPage={setConfirmPractitionerPage}
           />
         );
       case ConfirmPractitionersSteps.ADD_PRACTITIONER:

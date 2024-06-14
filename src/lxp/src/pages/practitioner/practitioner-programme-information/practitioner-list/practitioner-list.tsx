@@ -74,8 +74,9 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
       const filteredColleagues = otherColleagues?.filter(
         (item) => !item?.name?.includes(user?.firstName)
       );
+
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
-        name: item?.name.split(' ')[0],
+        name: item?.name?.split(' ')[0] || item?.nickName,
         title: item?.title,
         classroomNames: item?.classroomNames,
         contactNumber: item?.contactNumber,
@@ -128,12 +129,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
     practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
       ? [practitioner, ...(practitioners || [])].map((item) => {
           return {
-            title: item?.user?.fullName ? item?.user?.fullName : '',
-            subTitle: item?.isPrincipal
-              ? 'Principal / owner'
-              : item?.user?.roles
-              ? item?.user?.roles[0]?.name
-              : '',
+            title: item?.user?.fullName || item?.user?.userName || '',
+            subTitle: item?.isPrincipal ? 'Principal / owner' : 'Practitioner',
             switchTextStyles: true,
             actionName: !!practitioners && practitioners.length ? 'Remove' : '',
             actionIcon: 'PencilIcon',
@@ -219,34 +216,13 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
               <Button
                 size="small"
                 type="filled"
-                color="primary"
+                color="quatenary"
                 text="Add practitioner"
                 textColor="white"
                 icon="PlusIcon"
                 className="mt-8"
                 onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
               />
-            </div>
-            <div className="mb-8 flex justify-center">
-              <Button
-                type="outlined"
-                color="primary"
-                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                onClick={() =>
-                  history.push('/principal/practitioner-reassign-class')
-                }
-              >
-                {renderIcon(
-                  'PencilAltIcon',
-                  'w-5 h-5 color-primary text-primary mr-1'
-                )}
-                <Typography
-                  type="body"
-                  className="mr-4"
-                  color="primary"
-                  text={'Record absence/leave'}
-                ></Typography>
-              </Button>
             </div>
           </div>
         )}

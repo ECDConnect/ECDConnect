@@ -14,9 +14,7 @@ import { analyticsActions } from '@store/analytics';
 import * as styles from './add-income.styles';
 import ROUTES from '@routes/routes';
 import PreschoolFees from './components/preschool-fees/preschool-fees';
-import StartupSupport from './components/startup-support/startup-support';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
-import DsdSubsidy from './components/dsd-subsidy/dsd-subsidy';
 import OtherIncome from './components/other-income/other-income';
 import StatementsWrapper from '../../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
@@ -24,6 +22,7 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { statementsActions } from '@/store/statements';
 import { IncomeItemDto } from '@ecdlink/core';
+import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
 
 export const AddIncome: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -55,15 +54,15 @@ export const AddIncome: React.FC = () => {
   const incomeType = (type?: string) => {
     switch (type) {
       case 'PreschoolFees':
-        return <PreschoolFees setType={setType} onSubmit={onSubmit} />;
-      case 'StartupSupport':
-        return <StartupSupport setType={setType} onSubmit={onSubmit} />;
-      case 'DonationsOrvouchers':
-        return <DonationsOrVouchers setType={setType} onSubmit={onSubmit} />;
+        return <PreschoolFees onBack={() => setType('')} onSubmit={onSubmit} />;
       case 'DsdSubsidy':
-        return <DsdSubsidy setType={setType} onSubmit={onSubmit} />;
+        return <DbeSubsidy onBack={() => setType('')} onSubmit={onSubmit} />;
+      case 'DonationsOrvouchers':
+        return (
+          <DonationsOrVouchers onBack={() => setType('')} onSubmit={onSubmit} />
+        );
       case 'OtherIncome':
-        return <OtherIncome setType={setType} onSubmit={onSubmit} />;
+        return <OtherIncome onBack={() => setType('')} onSubmit={onSubmit} />;
       default:
         break;
     }
@@ -82,17 +81,6 @@ export const AddIncome: React.FC = () => {
         setType('PreschoolFees');
         nextStep();
       },
-    },
-    {
-      title: 'Start-up support',
-      titleStyle: 'text-textDark font-semibold',
-      subTitle: 'Organised by SmartStart',
-      subTitleStyle: 'text-textMid',
-      actionName: 'Add',
-      actionIcon: 'PlusIcon',
-      buttonType: 'filled',
-      onActionClick: () =>
-        state?.stepIndex === 4 ? null : setType('StartupSupport'),
     },
     {
       title: 'Donations or vouchers',

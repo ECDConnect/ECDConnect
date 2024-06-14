@@ -389,55 +389,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             // Practitioner Type search
             if (practitionerTypeSearch != null && practitionerTypeSearch.Any())
             {
-                if (practitionerTypeSearch.Contains("Practitioner"))
+                if (practitionerTypeSearch.Count < 2)
                 {
-                    practitionerQuery = practitionerQuery.Where(x => x.IsPrincipal.HasValue && !x.IsPrincipal.Value);
+                    if (practitionerTypeSearch.Contains("Principal"))
+                    {
+                        practitionerQuery = practitionerQuery.Where(x => x.IsPrincipal.HasValue && x.IsPrincipal.Value);
+                    }
+                    if (practitionerTypeSearch.Contains("Practitioner"))
+                    {
+                        practitionerQuery = practitionerQuery.Where(x => x.IsPrincipal.HasValue && !x.IsPrincipal.Value);
+                    }
                 }
-                if (practitionerTypeSearch.Contains("Principal"))
-                {
-                    practitionerQuery = practitionerQuery.Where(x => x.IsPrincipal.HasValue && x.IsPrincipal.Value);
-                }
-            }
-
-            // Some connect status search items
-            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
-            {
-                practitionerQuery = practitionerQuery.Where(x => x.User.IsActive == false);
-            }
-
-            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
-            {
-                practitionerQuery = practitionerQuery.Where(x =>
-                    x.IsRegistered.HasValue && x.IsRegistered.Value
-                    && x.User.IsActive
-                    && x.User.InsertedDate.HasValue
-                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
-                    && x.User.LastSeen.Date >= sixMonthsAgo);
-            }
-
-            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
-            {
-                practitionerQuery = practitionerQuery.Where(x =>
-                    x.IsRegistered.HasValue && x.IsRegistered.Value
-                    && x.User.IsActive
-                    && x.User.InsertedDate.HasValue
-                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
-                    && x.User.LastSeen.Date <= sixMonthsAgo);
             }
 
             var userIds = practitionerQuery.Select(x => x.UserId.Value).ToList();
             var invitations = shortenUrlEntityRepo.GetAll()
                 .Where(x =>
                     userIds.Contains(x.UserId.Value)
-                    && (x.MessageType == TemplateTypeConstants.Invitation || x.MessageType == TemplateTypeConstants.WLInvitation)
+                    && (x.MessageType == TemplateTypeConstants.Invitation)
                     && x.IsActive
                     && x.Clicked == 0)
-                .Select(x => new { x.UserId, x.InsertedDate })
+                .Select(x => new { x.UserId, x.InsertedDate, x.NotificationResult })
                 .OrderByDescending(x => x.InsertedDate)
-                .GroupBy(x => x.UserId)
-                .ToDictionary(x => x.Key, x => x.First().InsertedDate);
+                .GroupBy(x => x.UserId);
 
-            var practitionerModels = practitionerQuery
+            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.First().InsertedDate);
+            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.First().NotificationResult);
+
+             var practitionerModels = practitionerQuery
                 .Select(item => new PortalPractitionerModel
                 {
                     Id = item.Id,
@@ -445,12 +424,63 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     UserId = item.UserId,
                     IsPrincipal = item.IsPrincipal,
                     IsFundaAppAdmin = item.IsFundaAppAdmin,
-                    InsertedDate = item.InsertedDate,
-                    User = new PortalPractitionerUserModel(item.User, (item.IsRegistered == null ? false : (bool)item.IsRegistered), invitations.ContainsKey(item.UserId) ? invitations[item.UserId] : null)
+                    InsertedDate = item.InsertedDate.Date,
+                    User = new PortalPractitionerUserModel(item.User, 
+                                                           (item.IsRegistered == null ? false : (bool)item.IsRegistered), 
+                                                           invitationDates.ContainsKey(item.UserId) ? invitationDates[item.UserId] : null,
+                                                           invitationNotifications.ContainsKey(item.UserId) ? invitationNotifications[item.UserId] : null)
                 })
                 .ToList();
 
-            return practitionerModels;
+            List<PortalPractitionerModel> filteredUsers = new List<PortalPractitionerModel>();
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x =>
+                    x.IsRegistered
+                    && x.User.IsActive
+                    && x.User.InsertedDate.HasValue
+                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
+                    && x.User.LastSeen.Date >= sixMonthsAgo));
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x =>
+                    x.IsRegistered
+                    && x.User.IsActive
+                    && x.User.InsertedDate.HasValue
+                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
+                    && x.User.LastSeen.Date <= sixMonthsAgo));
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x => x.User.IsActive == false).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.sms_failed_authentication))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.sms_failed_connection))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.sms_failed_insufficient_credits))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.sms_failed_opted_out))
+            {
+                filteredUsers.AddRange(practitionerModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+
+            return connectUsageSearch.Any() ? filteredUsers.DistinctBy(x => x.Id).ToList() : practitionerModels;
         }
     }
 }

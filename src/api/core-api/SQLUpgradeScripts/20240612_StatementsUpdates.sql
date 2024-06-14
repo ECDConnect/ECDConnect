@@ -12,11 +12,11 @@ ALTER TABLE public."StatementsIncomeStatement" DROP column "RelatedDocumentId";
 
 ALTER TABLE public."StatementsIncome" DROP column "UserId";
 ALTER TABLE public."StatementsIncome" DROP column "Submitted";
-ALTER TABLE public."StatementsIncome" DROP column "Description";
 ALTER TABLE public."StatementsIncome" DROP column "AmountExpected";
 ALTER TABLE public."StatementsIncome" DROP column "ContributionTypeId";
 ALTER TABLE public."StatementsIncome" DROP column "FeeTypeId";
 ALTER TABLE public."StatementsIncome" DROP column "IncomeStatementId";
+ALTER TABLE public."StatementsIncome" DROP column "ChildCoverAmount";
 
 
 

@@ -66,7 +66,9 @@ export class IncompletePractitionerInformationNotificationValidator
         practitionerState?.practitioner?.progress === 0;
       const showNotificationForPrincipalFlow =
         (hasPrincipalRole && notRegistered && !addedByPrincipal) ||
-        (!addedByPrincipal && practitionerState?.practitioner?.progress === 0);
+        (!addedByPrincipal &&
+          practitionerState?.practitioner?.progress === 0) ||
+        practitionerState?.practitioner?.progress === 1.0;
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (isTrainee) {
@@ -123,8 +125,15 @@ export class IncompletePractitionerInformationNotificationValidator
         return [
           {
             reference: `practitioner-profile`,
-            title: 'Join or add a preschool!',
-            message: 'Set up your preschool or connect with your principal.',
+            // Check if user skip the link to a principal step
+            title:
+              practitionerState?.practitioner?.progress === 1.0
+                ? 'Join your preschool team!'
+                : 'Join or add a preschool!',
+            message:
+              practitionerState?.practitioner?.progress === 1.0
+                ? 'Ask your principal to sign up for AppName and add you to the preschool, or fill in your preschool code now.'
+                : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
             priority: NotificationPriority.highest,
             viewOnDashboard: true,
@@ -144,8 +153,14 @@ export class IncompletePractitionerInformationNotificationValidator
         return [
           {
             reference: `practitioner-profile`,
-            title: 'Join or add a preschool!',
-            message: 'Set up your preschool or connect with your principal.',
+            title:
+              practitionerState?.practitioner?.progress === 1.0
+                ? 'Join your preschool team!'
+                : 'Join or add a preschool!',
+            message:
+              practitionerState?.practitioner?.progress === 1.0
+                ? 'Ask your principal to sign up for AppName and add you to the preschool, or fill in your preschool code now.'
+                : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
             priority: NotificationPriority.lower,
             viewOnDashboard: true,

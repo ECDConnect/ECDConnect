@@ -3,8 +3,6 @@ import {
   Config,
   ReportTableDataDto,
   IncomeStatementsTypes,
-  StatementsFeeTypes,
-  StatementsContributionTypes,
   StatementsPayTypes,
   IncomeStatementDto,
 } from '@ecdlink/core';
@@ -33,46 +31,6 @@ class IncomeStatementsService {
     }
 
     return response.data.data.GetAllStatementsIncomeType;
-  }
-
-  async GetAllStatementsFeeType(): Promise<StatementsFeeTypes[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `query GetAllStatementsFeeType() {
-          GetAllStatementsFeeType() {
-            id description insertedDate notes
-          }
-        }`,
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get all statements fee types Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.GetAllStatementsFeeType;
-  }
-
-  async GetAllStatementsContributionType(): Promise<
-    StatementsContributionTypes[]
-  > {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `query GetAllStatementsContributionType() {
-          GetAllStatementsContributionType() {
-            id description insertedDate notes
-          }
-        }`,
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get all statements contribution types Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.GetAllStatementsContributionType;
   }
 
   async GetAllStatementsPayType(): Promise<StatementsPayTypes[]> {
@@ -118,6 +76,7 @@ class IncomeStatementsService {
               numberOfChildrenCovered
               payTypeId
               photoProof
+              description
             } 
             expenseItems {
               expenseTypeId
@@ -152,7 +111,7 @@ class IncomeStatementsService {
       data: { updateIncomeStatement: IncomeStatementDto };
       errors?: {};
     }>(``, {
-      query: `mutation UpdateIncomeStatement($input: UpdateStatementModelInput) {      
+      query: `mutation UpdateIncomeStatement($input: IncomeStatementModelInput) {      
           updateIncomeStatement(input: $input) {
             id 
             month
@@ -164,7 +123,7 @@ class IncomeStatementsService {
               amount
               childUserId
               notes
-              childCoverAmount
+              numberOfChildrenCovered
               payTypeId
               photoProof
             } 
@@ -179,7 +138,15 @@ class IncomeStatementsService {
           } 
         }`,
       variables: {
-        input,
+        input: {
+          id: input.id,
+          month: input.month,
+          year: input.year,
+          incomeItems: input.incomeItems,
+          expenseItems: input.expenseItems,
+          contactedByCoach: input.contactedByCoach,
+          downloaded: input.downloaded,
+        },
       },
     });
 

@@ -73,19 +73,24 @@ import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
 import { BusinessTabItems } from '../business/business.types';
 import { useTenant } from '@/hooks/useTenant';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { differenceInDays } from 'date-fns';
 
 const { version } = require('../../../package.json');
 
 export interface DashboardRouteState {
   isFromTraineeFlow?: boolean;
   isFromLogin?: boolean;
+  isFromCompleteProfile?: boolean;
 }
 
 export const Dashboard: React.FC = () => {
   const location = useLocation<DashboardRouteState>();
   const isFromLogin = location?.state?.isFromLogin;
+  const isFromCompleteProfile = location?.state?.isFromCompleteProfile;
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
   const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
@@ -234,6 +239,94 @@ export const Dashboard: React.FC = () => {
     }
   }, [pointsSummaryData]);
 
+  const handleDialog = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+            textAlignment="right"
+            customDetailText={
+              <Typography
+                type="h4"
+                className="mb-7 mt-4"
+                text={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+                color="black"
+                align="center"
+              />
+            }
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => onSubmit(),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+            customIcon={
+              <div className="mb-2 flex w-full justify-center">
+                <Cebisa />
+              </div>
+            }
+          />
+        );
+      },
+    });
+  };
+
+  const handle30DaysExpired = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            title={`Share more information to keep using ${appName}`}
+            detailText={`Don't worry, AppName will continue to be completely free. We manage your information responsibly.`}
+            actionButtons={[
+              {
+                text: 'Join or set up a preschool',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
+                },
+                leadingIcon: 'ArrowCircleRightIcon',
+              },
+            ]}
+            icon={'QuestionMarkCircleIcon'}
+            iconClassName="w-96 h-96"
+            className="bg-white"
+            iconColor="infoMain"
+          />
+        );
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (practitioner?.startDate) {
+      const diffDays = differenceInDays(
+        new Date(practitioner?.startDate),
+        new Date()
+      );
+
+      if (diffDays > 30 && !classroom?.name) {
+        handle30DaysExpired();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFromCompleteProfile && !practitioner?.isPrincipal) {
+      handleDialog();
+    }
+  }, []);
+
   const { userProfilePicture } = useDocuments();
 
   useEffect(() => {
@@ -322,12 +415,6 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
     await appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap();
     await appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap();
-    await appDispatch(
-      statementsThunkActions.getAllStatementsFeeType({})
-    ).unwrap();
-    await appDispatch(
-      statementsThunkActions.getAllStatementsContributionType({})
-    ).unwrap();
     await appDispatch(statementsThunkActions.getAllPayType({})).unwrap();
 
     await appDispatch(
@@ -417,7 +504,7 @@ export const Dashboard: React.FC = () => {
       blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return <JoinOrAddPreschoolModal onSubmit={onSubmit} />;
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
       },
     });
   };

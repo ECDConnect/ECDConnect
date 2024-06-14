@@ -5,14 +5,17 @@ import {
   StackedList,
   BannerWrapper,
 } from '@ecdlink/ui';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   formatCurrency,
   getStatementBalance,
+  getStatementsBalance,
 } from '@/utils/statements/statements-utils';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { IncomeStatementDto } from '@ecdlink/core';
+import { useAppDispatch } from '@/store';
+import { statementsThunkActions } from '@/store/statements';
 
 export type PreviousStatementsListProps = {
   statements: IncomeStatementDto[];
@@ -26,19 +29,20 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
   onActionClick,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
 
-  const statementsBalance = statements.reduce(function (
-    total: number,
-    current
-  ) {
-    return total + getStatementBalance(current);
-  },
-  0);
+  const [years, setYears] = useState<number[]>([new Date().getFullYear()]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const prevStatementsItems = useMemo(() => {
-    return [
-      ...statements.map((item) => {
-        return {
+  const groupedStatements = useMemo(() => {
+    return years.map((year) => {
+      const statementsForYear = statements.filter((s) => s.year === year);
+      const balanceForYear = getStatementsBalance(statementsForYear);
+
+      return {
+        year: year,
+        balance: balanceForYear,
+        statements: statementsForYear.map((item) => ({
           title: `${getMonthName(item.month - 1)} ${item.year}`,
           titleStyle: 'text-textDark font-semibold text-base leading-snug',
           subTitleStyle:
@@ -47,10 +51,22 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
           onActionClick: () => onActionClick(item.id),
           classNames: 'bg-uiBg',
           notRounded: true,
-        };
-      }),
-    ];
-  }, [statements, onActionClick]);
+        })),
+      };
+    });
+  }, [years, statements, onActionClick]);
+
+  const fetchStatementsForYear = useCallback((year: number) => {
+    setIsLoading(true);
+    appDispatch(
+      statementsThunkActions.getIncomeStatements({
+        startDate: new Date(year, 0, 1, 12, 0, 0),
+        endDate: new Date(year, 11, 31, 12, 0, 0),
+      })
+    ).unwrap();
+
+    setIsLoading(false);
+  }, []);
 
   return (
     <BannerWrapper
@@ -69,38 +85,53 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
           color="textDark"
           text={'Choose a statement to view and download'}
         />
-        {prevStatementsItems && (
-          <StackedList
-            className="mt-4 flex w-full flex-col gap-1"
-            type="MenuList"
-            listItems={prevStatementsItems}
-          />
-        )}
-        <Card
-          className={`bg-${
-            statementsBalance > 0 ? 'successMain' : 'tertiary'
-          } mt-2 flex items-center justify-between p-4`}
-          shadowSize={'md'}
-        >
-          <Typography
-            text={statementsBalance > 0 ? 'Profit' : 'Loss'}
-            type="body"
-            color={'white'}
-            className="w-9/12"
-          />
-          <Typography
-            text={`R ${formatCurrency(statementsBalance)}`}
-            color={'white'}
-            type="h4"
-            className="mr-4 w-5/12 text-right"
-          />
-        </Card>
+        {groupedStatements.map((yearSummary) => {
+          return (
+            <div className="mt-5">
+              <Typography
+                type="h2"
+                weight="bold"
+                color="textDark"
+                text={`${yearSummary.year}`}
+              />
+              <StackedList
+                className="mt-4 flex w-full flex-col gap-1"
+                type="MenuList"
+                listItems={yearSummary.statements}
+              />
+              <Card
+                className={`bg-${
+                  yearSummary.balance > 0 ? 'successMain' : 'secondary'
+                } mt-2 flex items-center justify-between p-4`}
+                shadowSize={'md'}
+              >
+                <Typography
+                  text={yearSummary.balance > 0 ? 'Profit' : 'Loss'}
+                  type="body"
+                  color={'white'}
+                  className="w-9/12"
+                />
+                <Typography
+                  text={`R ${formatCurrency(yearSummary.balance)}`}
+                  color={'white'}
+                  type="h4"
+                  className="mr-4 w-5/12 text-right"
+                />
+              </Card>
+            </div>
+          );
+        })}
+        {/* TODO - hide button if lowest year does not have all 12 statements (They probably wouldn't have data from before then anyway?) */}
         <Button
           shape="normal"
-          color="primary"
+          color="quatenary"
           type="filled"
           icon="DocumentSearchIcon"
-          onClick={() => {}}
+          onClick={() => {
+            const newYear = years[years.length - 1] - 1;
+            setYears([...years, newYear]);
+            fetchStatementsForYear(newYear);
+          }}
           className="mt-6 rounded-2xl"
         >
           <Typography type="help" color="white" text="See more statements" />

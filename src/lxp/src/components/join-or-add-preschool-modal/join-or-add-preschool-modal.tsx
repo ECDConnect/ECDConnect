@@ -9,10 +9,11 @@ import ROUTES from '@/routes/routes';
 
 interface JoinOrAddPreschoolModalProps {
   onSubmit: () => void;
+  isTrialPeriod: boolean;
 }
 export const JoinOrAddPreschoolModal: React.FC<
   JoinOrAddPreschoolModalProps
-> = ({ onSubmit }) => {
+> = ({ onSubmit, isTrialPeriod }) => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const history = useHistory();
@@ -44,10 +45,18 @@ export const JoinOrAddPreschoolModal: React.FC<
       icon="XCircleIcon"
       iconBorderColor="errorBg"
       iconColor="errorMain"
-      title="Join or add a preschool!"
-      paragraphs={[
-        `To use ${appName}, please set up your preschool or connect with your principal.`,
-      ]}
+      title={
+        isTrialPeriod ? 'Set up your preschool!' : 'Join or add a preschool!'
+      }
+      paragraphs={
+        isTrialPeriod
+          ? [
+              'To add practitioners, please share some details about yourself and your preschool.',
+            ]
+          : [
+              `To use ${appName}, please set up your preschool or connect with your principal.`,
+            ]
+      }
       actionButtons={[
         {
           colour: 'quatenary',
@@ -58,7 +67,7 @@ export const JoinOrAddPreschoolModal: React.FC<
           onClick: async () => {
             onSubmit();
             handleOnlineCallback(() =>
-              history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+              history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)
             );
           },
         },

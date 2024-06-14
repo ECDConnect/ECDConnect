@@ -12,13 +12,18 @@ import { getMonthName } from '@/utils/classroom/attendance/track-attendance-util
 import { childrenSelectors } from '@/store/children';
 import { IncomeDetailsListProps } from './income-details-list.types';
 import { format } from 'date-fns';
+import { useHistory } from 'react-router-dom';
+import ROUTES from '@/routes/routes';
 
 export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
   hideDetails,
   statementTitle,
+  isEditable,
   incomeItems,
   statementMonth,
+  statementId,
 }) => {
+  const history = useHistory();
   const children = useSelector(childrenSelectors.getChildren);
   const { isOnline } = useOnlineStatus();
 
@@ -32,7 +37,15 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => {
+        if (!isEditable) {
+          return;
+        }
+        history.push(ROUTES.BUSINESS_UPDATE_INCOME, {
+          statementId: statementId,
+          incomeItem: item,
+        });
+      },
       classNames: 'bg-uiBg',
       subItem: `R ${numberWithSpaces(String(item?.amount!.toFixed(2)))}`,
       notRounded: true,
