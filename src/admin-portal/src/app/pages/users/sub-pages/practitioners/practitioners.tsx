@@ -63,6 +63,10 @@ export const wlSortByConnectUsage: SearchDropDownOption<string>[] = [
   ConnectUsage?.InvitationExpired,
   ConnectUsage?.LastOnlineOver6Months,
   ConnectUsage?.LastOnlineWithinPast6Months,
+  ConnectUsage?.SmsFailedAuthentication,
+  ConnectUsage?.SmsFailedConnection,
+  ConnectUsage?.SmsFailedInsufficientCredits,
+  ConnectUsage?.SmsFailedOptedOut,
   ConnectUsage?.Removed,
 ].map((item) => ({
   id: item,
@@ -117,7 +121,7 @@ export default function Practitioners() {
   // INFO: It’s being filtered by phoneNumber, because if the user doesn’t have the phoneNumber field filled, it’s breaking the sendInvitation mutation
   const userIdsToSendInvitation = selectedUsers
     ?.filter((item) => !item?.isRegistered && item?.user?.phoneNumber)
-    ?.map((item) => item?.id);
+    ?.map((item) => item?.userId);
 
   const [sendInvitations, { loading: invitationsLoading }] = useMutation(
     sentInviteToMultipleUsers,
@@ -291,9 +295,10 @@ export default function Practitioners() {
 
       const filteredByDateData = copyItems?.filter((d) => {
         return (
-          new Date(d?.insertedDate).getTime() >=
+          new Date(d?.user.insertedDate).getTime() >=
             new Date(startDate)?.getTime() &&
-          new Date(d?.insertedDate).getTime() <= new Date(endDate)?.getTime()
+          new Date(d?.user.insertedDate).getTime() <=
+            new Date(endDate)?.getTime()
         );
       });
 
@@ -508,7 +513,7 @@ export default function Practitioners() {
   const deactivateUser = useCallback(() => {
     deactivateUsers({
       variables: {
-        ids: selectedUsers?.map((item) => item?.id),
+        ids: selectedUsers?.map((item) => item?.userId),
       },
     })
       .then((res) => {

@@ -5,8 +5,7 @@ import {
   ClockIcon,
   XCircleIcon,
 } from '@heroicons/react/solid';
-
-import { ConnectUsageName } from '../../constants/health-care-worker';
+import { ConnectUsageName } from './app-usage.types';
 
 const ColumnStatusIndicator = ({ icon, iconColor, text }) => (
   <div className="flex items-center gap-0.5">
@@ -24,6 +23,22 @@ export const columnColor = (value?: string, valueColor?: string) => {
       color: 'text-' + valueColor,
     },
     [ConnectUsageName?.InvitationExpired]: {
+      icon: XCircleIcon,
+      color: 'text-' + valueColor,
+    },
+    [ConnectUsageName?.SmsFailedAuthentication]: {
+      icon: XCircleIcon,
+      color: 'text-' + valueColor,
+    },
+    [ConnectUsageName?.SmsFailedConnection]: {
+      icon: XCircleIcon,
+      color: 'text-' + valueColor,
+    },
+    [ConnectUsageName?.SmsFailedInsufficientCredits]: {
+      icon: XCircleIcon,
+      color: 'text-' + valueColor,
+    },
+    [ConnectUsageName?.SmsFailedOptedOut]: {
       icon: XCircleIcon,
       color: 'text-' + valueColor,
     },
