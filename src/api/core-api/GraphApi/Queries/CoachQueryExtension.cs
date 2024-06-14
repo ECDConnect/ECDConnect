@@ -295,31 +295,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                         || EF.Functions.ILike(h.User.Email, $"%{search}%"));
             }
-
-            // Some connect status search items
-            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
-            {
-                coachQuery = coachQuery.Where(x => x.User.IsActive == false);
-            }
-
-            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
-            {
-                coachQuery = coachQuery.Where(x =>
-                    x.User.IsActive
-                    && x.User.InsertedDate.HasValue
-                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
-                    && x.User.LastSeen.Date >= sixMonthsAgo);
-            }
-
-            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
-            {
-                coachQuery = coachQuery.Where(x =>
-                    x.User.IsActive
-                    && x.User.InsertedDate.HasValue
-                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
-                    && x.User.LastSeen.Date <= sixMonthsAgo);
-            }
-
+            
             var userIds = coachQuery.Select(x => x.UserId.Value).ToList();
             var invitations = shortenUrlEntityRepo.GetAll()
                 .Where(x =>
@@ -341,7 +317,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     Id = item.Id,
                     IsRegistered = (item.IsRegistered == null ? false : (bool)item.IsRegistered),
                     UserId = item.UserId,
-                    InsertedDate = item.InsertedDate,
+                    InsertedDate = item.InsertedDate.Date,
                     User = new PortalCoachUserModel(item.User,
                                                     (item.IsRegistered == null ? false : (bool)item.IsRegistered),
                                                     invitationDates.ContainsKey(item.UserId) ? invitationDates[item.UserId] : null,
@@ -349,7 +325,54 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 })
                 .ToList();
 
-            return coachModels;
+            List<PortalCoachModel> filteredUsers = new List<PortalCoachModel>();
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
+            {
+                filteredUsers.AddRange(coachModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
+            {
+                filteredUsers.AddRange(coachModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+            {
+                filteredUsers.AddRange(coachModels.Where(x =>
+                    x.IsRegistered
+                    && x.User.IsActive
+                    && x.User.InsertedDate.HasValue
+                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
+                    && x.User.LastSeen.Date >= sixMonthsAgo));
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
+            {
+                filteredUsers.AddRange(coachModels.Where(x =>
+                    x.IsRegistered
+                    && x.User.IsActive
+                    && x.User.InsertedDate.HasValue
+                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
+                    && x.User.LastSeen.Date <= sixMonthsAgo));
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+            {
+                filteredUsers.AddRange(coachModels.Where(x => x.User.IsActive == false).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.sms_failed_authentication))
+            {
+                filteredUsers.AddRange(coachModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.sms_failed_connection))
+            {
+                filteredUsers.AddRange(coachModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.sms_failed_insufficient_credits))
+            {
+                filteredUsers.AddRange(coachModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.sms_failed_opted_out))
+            {
+                filteredUsers.AddRange(coachModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            return connectUsageSearch.Any() ? filteredUsers.DistinctBy(x => x.Id).ToList() : coachModels;
         }
     }
 }

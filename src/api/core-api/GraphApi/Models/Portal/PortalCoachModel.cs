@@ -20,7 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         {
             Id = user.Id;
             IdNumber = user.IdNumber;
-            InsertedDate = user.InsertedDate;
+            InsertedDate = user.InsertedDate.Value.Date;
             LastSeen = user.LastSeen;
             FirstName = user.FirstName;
             Surname = user.Surname;

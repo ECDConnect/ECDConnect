@@ -53,6 +53,10 @@ export const SortByConnectUsage: SearchDropDownOption<string>[] = [
   ConnectUsage?.InvitationExpired,
   ConnectUsage?.LastOnlineOver6Months,
   ConnectUsage?.LastOnlineWithinPast6Months,
+  ConnectUsage?.SmsFailedAuthentication,
+  ConnectUsage?.SmsFailedConnection,
+  ConnectUsage?.SmsFailedInsufficientCredits,
+  ConnectUsage?.SmsFailedOptedOut,
   ConnectUsage?.Removed,
 ].map((item) => ({
   id: item,
@@ -243,9 +247,10 @@ export default function Coaches() {
 
       const filteredByDateData = copyItems?.filter((d) => {
         return (
-          new Date(d?.insertedDate).getTime() >=
+          new Date(d.user?.insertedDate).getTime() >=
             new Date(startDate)?.getTime() &&
-          new Date(d?.insertedDate).getTime() <= new Date(endDate)?.getTime()
+          new Date(d?.user.insertedDate).getTime() <=
+            new Date(endDate)?.getTime()
         );
       });
 
@@ -286,7 +291,6 @@ export default function Coaches() {
           }
         }
       }
-
       setTableData(copyItems);
     }
   }, [data, endDate, startDate, statusFilter]);
@@ -433,7 +437,7 @@ export default function Coaches() {
   const deactivateUser = useCallback(() => {
     deactivateUsers({
       variables: {
-        ids: selectedUsers?.map((item) => item?.id),
+        ids: selectedUsers?.map((item) => item?.userId),
       },
     })
       .then((res) => {

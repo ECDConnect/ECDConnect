@@ -44,16 +44,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
                         switch (notificationResult.Value)
                         {
                             case NotificationsConstants.FAILED_AUTHENTICATION:
-                                ConnectUsage = NotificationsConstants.SMS_FAILED_AUTHENTICATION;
+                                ConnectUsage = Constants.PortalSettings.sms_failed_authentication;
                                 break;
                             case NotificationsConstants.FAILED_CONNECTION:
-                                ConnectUsage = NotificationsConstants.SMS_FAILED_CONNECTION;
+                                ConnectUsage = Constants.PortalSettings.sms_failed_connection;
                                 break;
                             case NotificationsConstants.FAILED_INSUFFICIENT_CREDITS:
-                                ConnectUsage = NotificationsConstants.SMS_FAILED_INSUFFICIENT_CREDITS;
+                                ConnectUsage = Constants.PortalSettings.sms_failed_insufficient_credits;
                                 break;
                             case NotificationsConstants.FAILED_OPTED_OUT:
-                                ConnectUsage = NotificationsConstants.SMS_FAILED_OPTED_OUT;
+                                ConnectUsage = Constants.PortalSettings.sms_failed_opted_out;
                                 break;
                         }
                         ConnectUsageColor = Constants.PortalSettings.usage_red;

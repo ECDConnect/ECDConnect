@@ -8,8 +8,6 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
-using ECDLink.Tenancy.Enums;
-using System;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
