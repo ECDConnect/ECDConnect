@@ -211,7 +211,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
               <img
                 src={chosenTheme?.imageUrl}
                 alt="theme"
-                className="h-8 w-8"
+                className="ml-4 h-8 w-8"
               />
             )}
             {dailyProgramme && theme?.dailyProgrammes?.length ? (

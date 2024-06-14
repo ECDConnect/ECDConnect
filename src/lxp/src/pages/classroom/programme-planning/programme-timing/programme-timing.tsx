@@ -1,13 +1,13 @@
-import { LanguageDto, useDialog, getFirstFriday } from '@ecdlink/core';
+import { LanguageDto, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
   AlertProps,
   BannerWrapper,
   Button,
+  DatePicker,
   DialogPosition,
   Dropdown,
-  StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -24,27 +24,27 @@ import {
 import { staticDataSelectors } from '@store/static-data';
 import { getDateRangeText } from '@utils/classroom/programme-planning/programmes.utils';
 import { ProgrammeTimingRouteState } from './programme-timing.types';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ROUTES from '@routes/routes';
 import { useAppDispatch } from '@/store';
 import { programmeThunkActions } from '@/store/programme';
 import { format } from 'date-fns';
-import { practitionerSelectors } from '@/store/practitioner';
-import walktroughImage from '../../../../assets/walktroughImage.png';
 import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
 import { classroomsSelectors } from '@/store/classroom';
 import {
   ClassDashboardRouteState,
   TabsItems,
 } from '../../class-dashboard/class-dashboard.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ProgrammeActions } from '@/store/programme/programme.actions';
+import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
   const { state } = useLocation<ProgrammeTimingRouteState>();
 
   useEffect(() => {
-    if (!state?.theme || !state?.classroomGroupId) {
+    if (!state?.classroomGroupId) {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.ACTIVITES,
       } as ClassDashboardRouteState);
@@ -68,19 +68,20 @@ const ProgrammeTiming: React.FC = () => {
   const [alertState, setAlertState] = useState<AlertProps>();
   const selectedTheme = state?.theme;
   const [isFormValid, setIsFormValid] = useState(false);
+
+  const { isLoading } = useThunkFetchCall(
+    'programmeData',
+    ProgrammeActions.UPDATE_PROGRAMMES
+  );
+
+  const dialog = useDialog();
+
   const { getValues, setValue, control } = useForm<ProgrammeTimingModel>({
     resolver: yupResolver(programmeTimingSchema),
     mode: 'onChange',
   });
-  const dialog = useDialog();
+
   const appDispatch = useAppDispatch();
-  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
-  const isPrincipal = practitioner?.isPrincipal;
-  const practitioners = useSelector(
-    practitionerSelectors.getPractitioners
-  )?.filter((x) => {
-    return x.user?.id !== practitioner?.user?.id;
-  });
 
   const {
     date: selectedDate,
@@ -98,6 +99,48 @@ const ProgrammeTiming: React.FC = () => {
     history.goBack();
   };
 
+  const onSuccess = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => (
+        <ActionModal
+          customIcon={<Robot className="mb-3 h-24 w-24" />}
+          title={`Great, I have set up your ${selectedTheme.name} programme!`}
+          detailText={`All your activities have been planned for ${getDateRangeText(
+            selectedDate?.toString(),
+            endDate?.toString()
+          )}!`}
+          actionButtons={[
+            {
+              colour: 'quatenary',
+              textColour: 'white',
+              onClick: () => {
+                onClose();
+                history.push(
+                  ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.replace(
+                    ':classroomGroupId',
+                    state.classroomGroupId
+                  )
+                );
+              },
+              leadingIcon: 'ClipboardListIcon',
+              type: 'filled',
+              text: 'See programme',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [
+    dialog,
+    endDate,
+    history,
+    selectedDate,
+    selectedTheme.name,
+    state.classroomGroupId,
+  ]);
+
   const handleSave = async () => {
     const formValue = getValues();
     const validatedDate = validateStartDate(new Date(formValue.date));
@@ -111,77 +154,10 @@ const ProgrammeTiming: React.FC = () => {
     );
 
     if (isOnline) {
-      try {
-        appDispatch(programmeThunkActions.updateProgrammes({}));
-      } catch (err) {
-        console.log(err);
-      }
+      appDispatch(programmeThunkActions.updateProgrammes({}));
     }
 
-    handleDialog();
-  };
-
-  const handleDialogClick = useCallback(() => {
-    var friday = getFirstFriday(new Date());
-
-    if (isPrincipal && practitioners?.length! >= 1) {
-      history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: 3,
-        programmeStartDate: friday,
-      });
-    } else {
-      history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: 2,
-        programmeStartDate: friday,
-      });
-    }
-  }, [isPrincipal, practitioners, history]);
-
-  const handleDialog = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            customIcon={
-              <div className="flex">
-                <img src={walktroughImage} alt="profile" className="mb-2" />
-              </div>
-            }
-            importantText={
-              `Great, I have set up your ` +
-              selectedTheme?.name +
-              ` programme! Start planning your Mahala Fridays`
-            }
-            detailText={`Activities for Monday to Thursday are planned! Choose your own activities for Fridays.`}
-            textAlignment="center"
-            actionButtons={[
-              {
-                text: 'Plan Fridays',
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: () => {
-                  handleDialogClick();
-                  onCancel();
-                },
-                leadingIcon: 'ClipboardListIcon',
-              },
-              {
-                text: 'Close',
-                textColour: 'primary',
-                colour: 'primary',
-                type: 'outlined',
-                onClick: () => {
-                  onCancel();
-                },
-                leadingIcon: 'XIcon',
-              },
-            ]}
-          />
-        );
-      },
-    });
+    onSuccess();
   };
 
   useEffect(() => {
@@ -213,23 +189,18 @@ const ProgrammeTiming: React.FC = () => {
     (date) => {
       const overlappingProgramme = getConflictingProgramme(
         new Date(selectedDate!),
-        new Date(date)
+        new Date(date),
+        classroomGroup?.id!
       );
 
       if (overlappingProgramme) {
         setAlertState({
-          title: 'This start date causes conflicts',
+          title: `You already have activities planned for the ${classroomGroup?.name} class on these dates`,
           list: [
-            `This programme (${
-              selectedTheme?.name || 'No theme'
-            }) will run from <b>${getDateRangeText(
-              new Date(selectedDate!).toString(),
-              new Date(date).toString()
-            )}</b>`,
-            `If you continue with this start date you will lose your plans for <b>${getDateRangeText(
+            `If you continue with these dates, you will lose your plans for ${getDateRangeText(
               overlappingProgramme.startDate,
               overlappingProgramme.endDate
-            )}</b> (${overlappingProgramme.name})`,
+            )} (${overlappingProgramme.name}).`,
           ],
           type: 'warning',
         });
@@ -281,59 +252,56 @@ const ProgrammeTiming: React.FC = () => {
         color="textDark"
       />
       <>
-        <div className="mt-3 flex">
-          <StatusChip
-            backgroundColour="infoDark"
-            borderColour="transparent"
-            textColour="white"
+        <div className="mt-3 flex items-center gap-2">
+          <img
+            src={selectedTheme.imageUrl}
+            alt="Theme icon"
+            className="w-9 rounded-full"
+          />
+          <Typography
+            type="h4"
             text={selectedTheme?.name || 'No theme'}
+            color="textDark"
           />
         </div>
-        {!selectedTheme ? (
+        {!selectedTheme && (
           <Alert
             className="mt-4"
             title={'Programmes without a theme run until the end of the week.'}
             message="Choose your start date, you will have to select activities for each day until the end of the week."
             type={'info'}
           />
-        ) : (
-          <Alert
-            className="mt-4"
-            title="Themed programmes run for 20 days."
-            message="Activities for Monday to Thursday are planned. Fridays are mahala days, so get creative and choose your own activities!"
-            type={'info'}
-          />
         )}
-
         <div id="walkthrough-theme-timing">
           <Typography
             className="mt-4"
-            type="body"
+            type="h4"
             text="When would you like to start this programme?"
           />
 
           <DatePicker
+            disabledKeyboardNavigation
             placeholderText={`Please select a date`}
             className="border-uiLight text-textMid w-full rounded-md"
             selected={selectedDate ? new Date(selectedDate) : undefined}
-            onChange={(date: Date) => {
+            onChange={(date) => {
               setValue('date', date ? date.toString() : '');
             }}
             dateFormat="EEE, dd MMM yyyy"
             minDate={new Date()}
           />
-
           <Typography
             className="mt-4"
-            type="body"
+            type="h4"
             text="When would you like to end this programme?"
           />
           <DatePicker
+            disabledKeyboardNavigation
             disabled={selectedDate == null}
             placeholderText={`Please select a date`}
             className="border-uiLight text-textMid w-full rounded-md"
             selected={endDate ? new Date(endDate) : undefined}
-            onChange={(date: Date) => {
+            onChange={(date) => {
               setValue('endDate', date ? date.toString() : '');
               setAlert(date);
             }}
@@ -347,11 +315,11 @@ const ProgrammeTiming: React.FC = () => {
         <div id="walkthrough-classroom-language" className="mb-4">
           <Typography
             className="mt-4"
-            type="body"
+            type="h4"
             text="What is your preferred classroom language?"
           />
           <Typography
-            type="body"
+            type="help"
             text="You can change languages while you plan. When your chosen language isn’t available, activities or stories will be shown in English."
             color={'textLight'}
           />
@@ -380,7 +348,8 @@ const ProgrammeTiming: React.FC = () => {
         <Button
           type="filled"
           color="quatenary"
-          disabled={!isFormValid}
+          disabled={!isFormValid || isLoading}
+          isLoading={isLoading}
           onClick={handleSave}
           icon="SaveIcon"
           text="Save"
