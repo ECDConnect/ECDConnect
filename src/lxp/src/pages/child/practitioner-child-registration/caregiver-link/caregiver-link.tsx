@@ -144,6 +144,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     await copyToClip(childRegistrationDetails.caregiverRegistrationUrl);
     setLoadingLink(false);
     dialog({
+      color: 'bg-white',
       render: (onSubmit, onCancel) => {
         if (!!practitionerId) {
           return (
@@ -255,32 +256,27 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
       <Typography
-        type="unspecified"
-        weight="normal"
-        fontSize="16"
+        type="h4"
+        color="textDark"
         text="Send registration form to caregiver or upload paper registration form"
       />
       <Typography
-        type="unspecified"
+        type="body"
         className="mt-4"
-        weight="normal"
         color="textMid"
-        fontSize="16"
         text="If the caregiver has a smartphone, you can send the registration form to the caregiver to complete."
       />
       <Typography
-        type="unspecified"
+        type="body"
         className="mt-4"
-        weight="normal"
         color="textMid"
-        fontSize="16"
         text={`You can always access the link again on ${childDetails.firstName}'s profile.`}
       />
 
       <Button
         id="gtm-share-caregiver"
         type="filled"
-        color="primary"
+        color="quatenary"
         className="mt-4"
         text="Copy link to send to caregiver"
         textColor="white"
@@ -294,19 +290,18 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
       <Divider title="OR" dividerType="solid" className="my-4" />
 
       <Typography
-        type="unspecified"
-        weight="normal"
-        fontSize="16"
-        text="If the caregiver has already filled in a paper version of the child registration form, upload a photo of the form and fill in the details."
+        type="h4"
+        color="textDark"
+        text="You can complete the registration if the caregiver cannot fill it in on their phone."
       />
 
       <Button
         type="outlined"
         className="mt-4"
-        color="primary"
-        text="Upload paper registration form"
-        textColor="primary"
-        icon="UploadIcon"
+        color="quatenary"
+        text="Fill in child’s registration form"
+        textColor="quatenary"
+        icon="DocumentDuplicateIcon"
         iconPosition="start"
         isLoading={loadingManualUpload}
         disabled={loadingManualUpload}
