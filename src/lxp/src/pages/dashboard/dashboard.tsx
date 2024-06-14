@@ -315,7 +315,7 @@ export const Dashboard: React.FC = () => {
         new Date()
       );
 
-      if (diffDays === 0 && !classroom?.name) {
+      if (diffDays > 30 && !classroom?.name) {
         handle30DaysExpired();
       }
     }
