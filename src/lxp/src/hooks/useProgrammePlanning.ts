@@ -2,15 +2,20 @@ import {
   DailyProgrammeDto,
   ProgrammeDto,
   ProgrammeThemeDto,
+  getBusinessDaysOfWeek,
   sortDateFunction,
 } from '@ecdlink/core';
 import {
   addDays,
+  addWeeks,
   differenceInBusinessDays,
   formatISO,
   isAfter,
   isFriday,
+  isSameDay,
   isWeekend,
+  parseISO,
+  subWeeks,
 } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -291,11 +296,113 @@ export const useProgrammePlanning = () => {
     }
   };
 
+  const findDailyProgrammesByDate = (
+    programmes: ProgrammeDto[],
+    dates: Date[]
+  ) => {
+    return dates.map((date) => {
+      for (const programme of programmes) {
+        const match = programme.dailyProgrammes.find((dp) =>
+          isSameDay(parseISO(dp.dayDate), date)
+        );
+        if (match) {
+          return { date, dailyProgramme: match };
+        }
+      }
+      return { date, dailyProgramme: null }; // No match found
+    });
+  };
+
+  const checkIfWholeWeekIsPlanned = (
+    selectedDate: Date,
+    classroomGroupId: string
+  ) => {
+    const classroomGroupProgrammes = programmes.filter(
+      (programme) => programme.classroomGroupId === classroomGroupId
+    );
+
+    const businessDaysOfWeek = getBusinessDaysOfWeek(selectedDate).filter(
+      (day) => !holiday.isHoliday(day)
+    );
+
+    const dailyProgrammesByDate = findDailyProgrammesByDate(
+      classroomGroupProgrammes,
+      businessDaysOfWeek
+    );
+
+    const dailyProgrammesUnplanned = dailyProgrammesByDate.filter(
+      ({ dailyProgramme }) =>
+        !dailyProgramme?.smallGroupActivityId ||
+        !dailyProgramme?.storyActivityId ||
+        !dailyProgramme?.largeGroupActivityId
+    );
+
+    return {
+      dailyProgrammesByDate,
+      dailyProgrammesUnplanned,
+      isWholeWeekPlanned: dailyProgrammesByDate.every(
+        ({ dailyProgramme }) =>
+          !!dailyProgramme?.smallGroupActivityId &&
+          !!dailyProgramme?.storyActivityId &&
+          !!dailyProgramme?.largeGroupActivityId
+      ),
+    };
+  };
+
+  const getPlannedWeeksCount = (
+    currentDate: Date,
+    classroomGroupId: string
+  ) => {
+    let plannedWeeksCount = 0;
+    const weeksStartDates: Date[] = [];
+
+    const checkWeeks = (date: Date, direction: 'forward' | 'backward') => {
+      let currentWeekStartDate = date;
+      while (true) {
+        const { isWholeWeekPlanned } = checkIfWholeWeekIsPlanned(
+          currentWeekStartDate,
+          classroomGroupId
+        );
+        if (!isWholeWeekPlanned) {
+          break;
+        }
+
+        plannedWeeksCount++;
+        weeksStartDates.push(currentWeekStartDate);
+        currentWeekStartDate =
+          direction === 'forward'
+            ? addWeeks(currentWeekStartDate, 1)
+            : subWeeks(currentWeekStartDate, 1);
+      }
+    };
+
+    // Check the current week
+    const { isWholeWeekPlanned: isCurrentWeekPlanned } =
+      checkIfWholeWeekIsPlanned(currentDate, classroomGroupId);
+
+    if (isCurrentWeekPlanned) {
+      plannedWeeksCount++;
+      weeksStartDates.push(currentDate);
+    } else {
+      return { plannedWeeksCount, weeksStartDates };
+    }
+
+    // Check future weeks
+    checkWeeks(addWeeks(currentDate, 1), 'forward');
+
+    // Check past weeks
+    checkWeeks(subWeeks(currentDate, 1), 'backward');
+
+    return { plannedWeeksCount, weeksStartDates };
+  };
+
   return {
     createProgramme,
     getConflictingProgramme,
     validateStartDate,
     getThemedProgrammeEndDate,
     getNoThemedProgrammeEndDate,
+    checkIfWholeWeekIsPlanned,
+    getPlannedWeeksCount,
   };
 };

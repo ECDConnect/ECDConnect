@@ -48,12 +48,17 @@ import {
 } from '@/store/content/programme-theme';
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
-import { isSameWeek, isWeekend, nextMonday } from 'date-fns';
+import {
+  addWeeks,
+  isSameWeek,
+  isThisWeek,
+  isWeekend,
+  nextMonday,
+} from 'date-fns';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 import { userSelectors } from '@/store/user';
-import format from 'date-fns/format';
 import { ReactComponent as NoProgressEmoticon } from '@/assets/ECD_Connect_emoji4.svg';
 import { ProgrammeThemeRouteState } from '../../../programme-theme/programme-theme.types';
 import { ProgrammeDashboardRouteParams } from '../../programme-dashboard.types';
@@ -68,13 +73,18 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+
   const programmeRoutine = useSelector(
     programmeRoutineSelectors.getProgrammeRoutineById(1)
   );
   const programmeWeeks = getProgrammeWeeks(programme);
+
   const appDispatch = useAppDispatch();
+
   const dialog = useDialog();
+
   const currentDate = new Date();
+
   const { getCurrentProgrammeRecommendedActivities } =
     useProgrammePlanningRecommendations();
   const recommendedActivities =
@@ -87,23 +97,43 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
     !currentDailyProgramme?.storyActivityId;
+
   const { isHoliday } = useHolidays();
   const [isCurrentDayHoliday, setIsCurrentDayHoliday] = useState(false);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
 
   const chosedTheme = themes?.find((item) => item?.name === programme?.name);
 
-  const { createProgramme } = useProgrammePlanning();
-  const [selectedActitivy, setSelectedActivity] = useState(0);
+  const { createProgramme, checkIfWholeWeekIsPlanned, getPlannedWeeksCount } =
+    useProgrammePlanning();
+
+  const { isWholeWeekPlanned } = checkIfWholeWeekIsPlanned(
+    selectedDate!,
+    classroomGroupId
+  );
+  const {
+    isWholeWeekPlanned: isWholeNextWeekPlanned,
+    dailyProgrammesByDate: nextWeekDailyProgrammesByDate,
+  } = checkIfWholeWeekIsPlanned(addWeeks(selectedDate!, 1), classroomGroupId);
+  const { plannedWeeksCount, weeksStartDates } = getPlannedWeeksCount(
+    selectedDate!,
+    classroomGroupId
+  );
+
+  const [selectedActivity, setSelectedActivity] = useState(0);
   const [routineItemSet, setRoutineItemSet] =
     useState<ProgrammeRoutineItemDto>();
   const [triggerSaveActivity, setTriggerSaveActivity] = useState(false);
+
   const isWeekendDay = isWeekend(new Date(selectedDate!));
+
   const nextProgrammes = useSelector(
     programmeSelectors.getProgrammesAfterDate(selectedDate!)
   );
   const userData = useSelector(userSelectors.getUser);
+
   const [celebrateMessage, setCelebrateMessage] = useState('');
+  const [hideCelebrateMessage, setHideCelebrateMessage] = useState(false);
   const [skillMixMessage, setSkillMixMessage] = useState('');
   const [improveProgrammeMessage, setImproveProgrammeMessage] = useState('');
   const plannedActivities = getAllGroupActivityIds(programme!);
@@ -348,10 +378,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       if (routineItemSet) {
         switch (routineItemSet.name) {
           case DailyRoutineItemType.largeGroup:
-            currentDayCopy.largeGroupActivityId = selectedActitivy;
+            currentDayCopy.largeGroupActivityId = selectedActivity;
             break;
           case DailyRoutineItemType.smallGroup:
-            currentDayCopy.smallGroupActivityId = selectedActitivy;
+            currentDayCopy.smallGroupActivityId = selectedActivity;
             break;
         }
       }
@@ -378,20 +408,19 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   useEffect(() => {
     // Celebrate message
-    if (programmeWeeks && programmeWeeks.length >= 4 && selectedDate) {
-      var lastWeek = programmeWeeks[programmeWeeks.length - 1];
-      if (
-        format(lastWeek.endDate, 'dd MMM yyyy') ===
-        format(selectedDate, 'dd MMM yyyy')
-      ) {
-        var message =
-          'Wow, great job ' +
-          userData?.firstName +
-          '! You have planned for ' +
-          programmeWeeks.length +
-          ' weeks in a row. Keep it up!';
-        setCelebrateMessage(message);
-      }
+    if (
+      plannedWeeksCount > 1 &&
+      weeksStartDates?.some((date) => isThisWeek(date))
+    ) {
+      setCelebrateMessage(
+        `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
+      );
+    } else if (selectedDate && isThisWeek(selectedDate) && isWholeWeekPlanned) {
+      setCelebrateMessage(
+        `Great job ${userData?.firstName}! Your whole week is planned.`
+      );
+    } else {
+      setCelebrateMessage('');
     }
 
     if (plannedActivities) {
@@ -413,14 +442,13 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       }
     }
   }, [
-    programmeWeeks,
-    setCelebrateMessage,
-    userData,
+    isWholeWeekPlanned,
     plannedActivities,
-    setSkillMixMessage,
-    setImproveProgrammeMessage,
+    plannedWeeksCount,
+    recommendedActivities.length,
     selectedDate,
-    recommendedActivities,
+    userData?.firstName,
+    weeksStartDates,
   ]);
 
   const onEditActivityItem = (
@@ -619,14 +647,36 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
               })}
             </div>
           ))}
-
-        {celebrateMessage && (
+        {celebrateMessage && !hideCelebrateMessage && (
           <CustomSuccessCard
-            className="my-4"
+            className="mb-4"
             customIcon={<CelebrateIcon className="h-14	w-14" />}
             text={celebrateMessage}
-            textColour="successDark"
-            color="successBg"
+            textColour="white"
+            color="successMain"
+            onClose={() => setHideCelebrateMessage(true)}
+            button={
+              !isWholeNextWeekPlanned
+                ? {
+                    color: 'quatenary',
+                    type: 'filled',
+                    text: 'Plan next week',
+                    className: 'mt-2 w-max',
+                    icon: 'ClipboardListIcon',
+                    size: 'small',
+                    textColor: 'white',
+                    onClick: () => {
+                      setSelectedDate?.(
+                        nextWeekDailyProgrammesByDate?.find(
+                          (day) =>
+                            !day.dailyProgramme?.largeGroupActivityId ||
+                            !day.dailyProgramme?.smallGroupActivityId
+                        )?.date
+                      );
+                    },
+                  }
+                : undefined
+            }
           />
         )}
         {skillMixMessage && (

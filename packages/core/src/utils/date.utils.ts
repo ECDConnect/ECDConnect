@@ -1,9 +1,15 @@
 import {
   addMonths,
+  addWeeks,
   addYears,
   differenceInDays,
   differenceInMonths,
   differenceInYears,
+  eachDayOfInterval,
+  endOfWeek,
+  isWeekend,
+  isWithinInterval,
+  startOfWeek,
 } from 'date-fns';
 
 export function getWeeksDiff(startDate: Date, endDate: Date) {
@@ -186,4 +192,33 @@ export const getNextMonth = (date: Date): Date => {
 
   // Create a new Date object for the first day of the previous month
   return new Date(nextYear, nextMonth, 1);
+};
+
+/**
+ * Function to get the business days of a week given a start date.
+ * @param {Date} startDate - The initial date.
+ * @returns {Date[]} - An array of business days.
+ */
+export const getBusinessDaysOfWeek = (startDate: Date) => {
+  // Get the first and last day of the week based on the initial date
+  const startOfWeekDate = startOfWeek(startDate, { weekStartsOn: 1 }); // Week starting on Monday
+  const endOfWeekDate = endOfWeek(startDate, { weekStartsOn: 1 });
+
+  // Get all days of the week
+  const allDays = eachDayOfInterval({
+    start: startOfWeekDate,
+    end: endOfWeekDate,
+  });
+
+  // Filter to get only the business days
+  const businessDays = allDays.filter((day) => !isWeekend(day));
+
+  return businessDays;
+};
+
+export const isNextWeek = (date: Date) => {
+  const startOfNextWeek = startOfWeek(addWeeks(new Date(), 1));
+  const endOfNextWeek = endOfWeek(addWeeks(new Date(), 1));
+
+  return isWithinInterval(date, { start: startOfNextWeek, end: endOfNextWeek });
 };
