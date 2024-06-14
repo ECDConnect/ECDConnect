@@ -322,12 +322,6 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
     await appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap();
     await appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap();
-    await appDispatch(
-      statementsThunkActions.getAllStatementsFeeType({})
-    ).unwrap();
-    await appDispatch(
-      statementsThunkActions.getAllStatementsContributionType({})
-    ).unwrap();
     await appDispatch(statementsThunkActions.getAllPayType({})).unwrap();
 
     await appDispatch(

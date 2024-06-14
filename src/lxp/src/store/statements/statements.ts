@@ -2,7 +2,6 @@ import {
   ExpenseItemDto,
   IncomeItemDto,
   IncomeStatementDto,
-  IncomeStatementsDto,
 } from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
@@ -10,28 +9,15 @@ import {
   getAllExpensesTypes,
   getAllIncomeTypes,
   getAllPayType,
-  getAllStatementsContributionType,
-  getAllStatementsFeeType,
   getIncomeStatements,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
-import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
-import { s } from 'msw/lib/glossary-297d38ba';
 
 const initialState: StatementsState = {
   expensesTypes: undefined,
   incomeTypes: undefined,
-  feeTypes: undefined,
-  contributionTypes: undefined,
   payTypes: undefined,
-  incomeStatementsData: {
-    incomeStatements: [],
-    dateRefreshed: undefined,
-  },
-  //unSubmittedIncomeItems: [],
-  //unSubmittedExpenseItems: [],
-  //unsyncedIncomeItems: [],
-  //unsyncedExpenseItems: [],
+  incomeStatements: [],
 };
 
 const statementsSlice = createSlice({
@@ -41,44 +27,33 @@ const statementsSlice = createSlice({
     resetStatementsState: (state) => {
       state.expensesTypes = initialState.expensesTypes;
       state.incomeTypes = initialState.incomeTypes;
-      state.feeTypes = initialState.feeTypes;
-      state.contributionTypes = initialState.contributionTypes;
-      state.incomeStatementsData = initialState.incomeStatementsData;
-      // state.unSubmittedIncomeItems = initialState.unSubmittedIncomeItems;
-      // state.unSubmittedExpenseItems = initialState.unSubmittedExpenseItems;
+      state.incomeStatements = initialState.incomeStatements;
       state.payTypes = initialState.payTypes;
     },
     createStatement: (state, action: PayloadAction<IncomeStatementDto>) => {
-      console.log('creating statement');
-      state.incomeStatementsData = {
-        ...state.incomeStatementsData,
-        incomeStatements: [
-          ...state.incomeStatementsData.incomeStatements,
-          {
-            ...action.payload,
-            synced: false,
-          },
-        ],
-      };
+      state.incomeStatements = [
+        ...state.incomeStatements,
+        {
+          ...action.payload,
+          synced: false,
+          dateRefreshed: new Date().toString(),
+        },
+      ];
     },
     addIncomeItem: (state, action: PayloadAction<IncomeItemDto>) => {
+      // TODO - need to add logic to create a statement if one does not exist for the given date
       const dateReceived = new Date(action.payload.dateReceived);
       const receivedMonth = dateReceived.getMonth() + 1;
       const receivedYear = dateReceived.getFullYear();
-      for (
-        let i = 0;
-        i < state.incomeStatementsData.incomeStatements.length;
-        i++
-      ) {
+      for (let i = 0; i < state.incomeStatements.length; i++) {
         if (
-          state.incomeStatementsData.incomeStatements[i].month ===
-            receivedMonth &&
-          state.incomeStatementsData.incomeStatements[i].year === receivedYear
+          state.incomeStatements[i].month === receivedMonth &&
+          state.incomeStatements[i].year === receivedYear
         ) {
-          state.incomeStatementsData.incomeStatements[i] = {
-            ...state.incomeStatementsData.incomeStatements[i],
+          state.incomeStatements[i] = {
+            ...state.incomeStatements[i],
             incomeItems: [
-              ...state.incomeStatementsData.incomeStatements[i].incomeItems,
+              ...state.incomeStatements[i].incomeItems,
               action.payload,
             ],
             synced: false,
@@ -86,24 +61,45 @@ const statementsSlice = createSlice({
         }
       }
     },
+    updateIncomeItem: (
+      state,
+      action: PayloadAction<{ statementId: string; incomeItem: IncomeItemDto }>
+    ) => {
+      const updatedStatement = state.incomeStatements.find(
+        (x) => x.id === action.payload.statementId
+      );
+      if (!updatedStatement) {
+        return;
+      }
+      state.incomeStatements = [
+        ...state.incomeStatements.filter(
+          (x) => x.id !== action.payload.statementId
+        ),
+        {
+          ...updatedStatement,
+          synced: false,
+          incomeItems: [
+            ...updatedStatement.incomeItems.filter(
+              (x) => x.id !== action.payload.incomeItem.id
+            ),
+            action.payload.incomeItem,
+          ],
+        },
+      ];
+    },
     addExpenseItem: (state, action: PayloadAction<ExpenseItemDto>) => {
       const dateReceived = new Date(action.payload.datePaid);
       const receivedMonth = dateReceived.getMonth() + 1;
       const receivedYear = dateReceived.getFullYear();
-      for (
-        let i = 0;
-        i < state.incomeStatementsData.incomeStatements.length;
-        i++
-      ) {
+      for (let i = 0; i < state.incomeStatements.length; i++) {
         if (
-          state.incomeStatementsData.incomeStatements[i].month ===
-            receivedMonth &&
-          state.incomeStatementsData.incomeStatements[i].year === receivedYear
+          state.incomeStatements[i].month === receivedMonth &&
+          state.incomeStatements[i].year === receivedYear
         ) {
-          state.incomeStatementsData.incomeStatements[i] = {
-            ...state.incomeStatementsData.incomeStatements[i],
+          state.incomeStatements[i] = {
+            ...state.incomeStatements[i],
             expenseItems: [
-              ...state.incomeStatementsData.incomeStatements[i].expenseItems,
+              ...state.incomeStatements[i].expenseItems,
               action.payload,
             ],
             synced: false,
@@ -120,27 +116,25 @@ const statementsSlice = createSlice({
     builder.addCase(getAllIncomeTypes.fulfilled, (state, action) => {
       state.incomeTypes = action.payload;
     });
-    builder.addCase(getAllStatementsFeeType.fulfilled, (state, action) => {
-      state.feeTypes = action.payload;
-    });
-    builder.addCase(
-      getAllStatementsContributionType.fulfilled,
-      (state, action) => {
-        state.contributionTypes = action.payload;
-      }
-    );
     builder.addCase(getAllPayType.fulfilled, (state, action) => {
       state.payTypes = action.payload;
     });
     builder.addCase(getIncomeStatements.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.incomeStatementsData = {
-          incomeStatements: action.payload.map((statement) => ({
-            ...statement,
+      if (action.payload && action.payload.length) {
+        state.incomeStatements = [
+          ...state.incomeStatements.filter(
+            (x) =>
+              new Date(x.year, x.month, 20) < action.meta.arg.startDate ||
+              (!!action.meta.arg.endDate &&
+                new Date(x.year, x.month, 20) > action.meta.arg.endDate)
+          ),
+          ...action.payload.map((item) => ({
+            ...item,
             synced: true,
+            dateRefreshed: new Date().toString(),
           })),
-          dateRefreshed: new Date().toDateString(),
-        };
+        ];
+        console.log('state.incomeStatements', state.incomeStatements);
       }
     });
   },

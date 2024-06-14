@@ -1,6 +1,6 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -14,18 +14,13 @@ using ECDLink.Core.Extensions;
 using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
 using HotChocolate;
 using EcdLink.Api.CoreApi.Managers;
-using ECDLink.DataAccessLayer.Entities;
-using Microsoft.AspNetCore.Identity;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.DataAccessLayer.Hierarchy;
-using DinkToPdf;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
-using System.Threading.Tasks;
 using ECDLink.DataAccessLayer.Managers;
 using DinkToPdf.Contracts;
-using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 
 namespace ECDLink.Core.Services
 {
@@ -66,7 +61,7 @@ namespace ECDLink.Core.Services
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);       
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
@@ -145,7 +140,8 @@ namespace ECDLink.Core.Services
                     DateReceived = x.DateReceived,
                     IncomeTypeId = x.IncomeTypeId,
                     Notes = x.Notes,
-                    PayTypeId = x.PayTypeId
+                    PayTypeId = x.PayTypeId,
+                    Description = x.Description
 
                 }).ToList(),
                 ExpenseItems = input.ExpenseItems.Select(x => new StatementsExpenses
@@ -178,7 +174,11 @@ namespace ECDLink.Core.Services
             #region Update Income Items
 
             // Deletes
-            exisitingStatement.IncomeItems = exisitingStatement.IncomeItems.Where(x => input.IncomeItems.Any(y => y.Id == x.Id)).ToList();
+            var removedItems = exisitingStatement.IncomeItems.Where(x => !input.IncomeItems.Any(y => y.Id == x.Id)).ToList();
+            foreach (var item in removedItems)
+            {
+                _statementsIncomeRepo.Delete(item.Id);
+            }
 
             // Updates
             foreach (var item in exisitingStatement.IncomeItems)
@@ -186,30 +186,64 @@ namespace ECDLink.Core.Services
                 var inputItem = input.IncomeItems.FirstOrDefault(x => x.Id == item.Id);
                 if (inputItem == null)
                 {
-                    continue; 
+                    continue;
                 }
 
-                if (item.Amount != inputItem.Amount) item.Amount = inputItem.Amount;
-                if (item.Notes != inputItem.Notes)item.Notes = inputItem.Notes;
-                if (item.NumberOfChildrenCovered != inputItem.NumberOfChildrenCovered) item.NumberOfChildrenCovered = inputItem.NumberOfChildrenCovered;
-                if (item.PhotoProof != inputItem.PhotoProof) item.PhotoProof = inputItem.PhotoProof;
-                if (item.ChildUserId != inputItem.ChildUserId) item.ChildUserId = inputItem.ChildUserId;
-                if (item.DateReceived != inputItem.DateReceived) item.DateReceived = inputItem.DateReceived;
-                if (item.PayTypeId != inputItem.PayTypeId) item.PayTypeId = inputItem.PayTypeId;
+                var updated = false;
 
-                // Can't actually edit which child
-                //if (item.ChildUserId != inputItem.ChildUserId)
-                //{
-                //    item.ChildUserId = inputItem.ChildUserId;
-                //}
+                if (item.Amount != inputItem.Amount)
+                {
+                    item.Amount = inputItem.Amount;
+                    updated = true;
+                }
+                if (item.Notes != inputItem.Notes)
+                {
+                    item.Notes = inputItem.Notes;
+                    updated = true;
+                }
+                if (item.NumberOfChildrenCovered != inputItem.NumberOfChildrenCovered)
+                {
+                    item.NumberOfChildrenCovered = inputItem.NumberOfChildrenCovered;
+                    updated = true;
+                }
+                if (item.PhotoProof != inputItem.PhotoProof)
+                {
+                    item.PhotoProof = inputItem.PhotoProof;
+                    updated = true;
+                }
+                if (item.ChildUserId != inputItem.ChildUserId)
+                {
+                    item.ChildUserId = inputItem.ChildUserId;
+                    updated = true;
+                }
+                if (item.DateReceived != inputItem.DateReceived)
+                {
+                    item.DateReceived = inputItem.DateReceived;
+                    updated = true;
+                }
+                if (item.PayTypeId != inputItem.PayTypeId)
+                {
+                    item.PayTypeId = inputItem.PayTypeId;
+                    updated = true;
+                }
+                if (item.Description != inputItem.Description)
+                {
+                    item.Description = inputItem.Description;
+                    updated = true;
+                }
 
+                if (updated)
+                {
+                    _statementsIncomeRepo.Update(item);
+                }
             }
 
             // Additions
             var newItems = input.IncomeItems.Where(x => !exisitingStatement.IncomeItems.Any(y => y.Id == x.Id)).ToList();
             foreach (var newItem in newItems)
             {
-                exisitingStatement.IncomeItems.Add(new StatementsIncome { 
+                _statementsIncomeRepo.Insert(new StatementsIncome
+                {
                     Id = newItem.Id,
                     Amount = newItem.Amount,
                     NumberOfChildrenCovered = newItem.NumberOfChildrenCovered,
@@ -219,6 +253,7 @@ namespace ECDLink.Core.Services
                     IncomeTypeId = newItem.IncomeTypeId,
                     Notes = newItem.Notes,
                     PayTypeId = newItem.PayTypeId,
+                    StatementsIncomeStatementId = exisitingStatement.Id
                 });
             }
 
@@ -226,7 +261,11 @@ namespace ECDLink.Core.Services
 
             #region Update Expense Items
             // Deletes
-            exisitingStatement.ExpenseItems = exisitingStatement.ExpenseItems.Where(x => input.ExpenseItems.Any(y => y.Id == x.Id)).ToList();
+            var removedExpenses = exisitingStatement.ExpenseItems.Where(x => input.ExpenseItems.Any(y => y.Id == x.Id)).ToList();
+            foreach (var item in removedItems)
+            {
+                _statementsExpensesRepo.Delete(item.Id);
+            }
 
             // Updates
             foreach (var item in exisitingStatement.ExpenseItems)
@@ -237,16 +276,40 @@ namespace ECDLink.Core.Services
                     continue;
                 }
 
-                if (item.Amount != inputItem.Amount) item.Amount = inputItem.Amount;
-                if (item.Notes != inputItem.Notes) item.Notes = inputItem.Notes;
-                if (item.PhotoProof != inputItem.PhotoProof) item.PhotoProof = inputItem.PhotoProof;
+                var updated = false;
+
+                if (item.Amount != inputItem.Amount)
+                {
+                    item.Amount = inputItem.Amount;
+                    updated = true;
+                }
+                if (item.Notes != inputItem.Notes)
+                {
+                    item.Notes = inputItem.Notes;
+                    updated = true;
+                }
+                if (item.PhotoProof != inputItem.PhotoProof)
+                {
+                    item.PhotoProof = inputItem.PhotoProof;
+                    updated = true;
+                }
+                if (item.DatePaid.Date != inputItem.DatePaid.Date)
+                {
+                    item.DatePaid = inputItem.DatePaid;
+                    updated = true;
+                }
+
+                if (updated)
+                {
+                    _statementsExpensesRepo.Update(item);
+                }
             }
 
             // Additions
             var newExpenses = input.ExpenseItems.Where(x => !exisitingStatement.ExpenseItems.Any(y => y.Id == x.Id)).ToList();
             foreach (var newItem in newExpenses)
             {
-                exisitingStatement.ExpenseItems.Add(new StatementsExpenses
+                _statementsExpensesRepo.Insert(new StatementsExpenses
                 {
                     Id = newItem.Id,
                     Amount = newItem.Amount,
@@ -254,38 +317,14 @@ namespace ECDLink.Core.Services
                     Notes = newItem.Notes,
                     ExpenseTypeId = newItem.ExpenseTypeId,
                     DatePaid = newItem.DatePaid,
+                    StatementsIncomeStatementId = exisitingStatement.Id
                 });
             }
             #endregion
 
 
-            return _statementsRepo.Update(exisitingStatement);
+            return exisitingStatement;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         #region PDF STUFF
 
@@ -569,27 +608,15 @@ namespace ECDLink.Core.Services
 
 
             // Preschool fees: Monetary contributions
-            var monetaryFeeIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == preschoolFeeId && x.ContributionTypeId == moneyId);
-            tables.Add(new IncomeExpensePDFTableModel {
+            var monetaryFeeIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == preschoolFeeId);
+            tables.Add(new IncomeExpensePDFTableModel
+            {
                 TableName = IncomeExpensePDF.MONETARY_CONTRIBUTIONS,
                 Type = IncomeExpensePDF.INCOME,
                 Headers = GetIncomePDFHeader(true, true, false, false, false),
                 Data = MapIncomeToPdfData(monetaryFeeIncome, childNamesById),
                 Total = monetaryFeeIncome.Select(x => x.Amount).Sum(),
             });
-
-            // Preschool fees: Non-monetary contributions
-            var nonMonetaryFeeIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == preschoolFeeId && x.ContributionTypeId != moneyId);
-            if (nonMonetaryFeeIncome.Any())
-            {
-                tables.Add(new IncomeExpensePDFTableModel
-                {
-                    TableName = IncomeExpensePDF.NON_MONETARY_CONTRIBUTIONS,
-                    Type = IncomeExpensePDF.INCOME,
-                    Headers = GetIncomePDFHeader(true, false, false, false, false),
-                    Data = MapIncomeToPdfData(nonMonetaryFeeIncome, childNamesById),
-                });
-            }
 
             // Subsidies, donations, contributions
             var subsidyAndDonationIncome = statement.IncomeItems.Where(x => x.IncomeTypeId != preschoolFeeId && x.IncomeTypeId != otherId);
@@ -730,8 +757,8 @@ namespace ECDLink.Core.Services
                 result.Date = income.DateReceived;
                 result.Amount = income.Amount;
                 result.PhotoProof = income.PhotoProof;
-                result.Child = income.ChildUserId.HasValue && childNamesById.ContainsKey(income.ChildUserId.ToString()) 
-                    ? childNamesById[income.ChildUserId.ToString()] 
+                result.Child = income.ChildUserId.HasValue && childNamesById.ContainsKey(income.ChildUserId.ToString())
+                    ? childNamesById[income.ChildUserId.ToString()]
                     : "Unknown";
                 results.Add(result);
             }

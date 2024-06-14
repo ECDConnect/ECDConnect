@@ -5,4 +5,6 @@ export interface IncomeDetailsListProps {
   statementTitle: string;
   incomeItems: IncomeItemMinDto[];
   statementMonth: number;
+  isEditable: boolean;
+  statementId: string;
 }

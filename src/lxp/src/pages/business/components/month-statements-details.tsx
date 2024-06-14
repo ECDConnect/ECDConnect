@@ -15,29 +15,24 @@ import {
   ExpenseItemDto,
   ExpenseTypeIds,
   IncomeItemDto,
+  IncomeStatementDto,
   IncomeTypeIds,
 } from '@ecdlink/core';
 import { IncomeDetailsList } from './income-details-list.tsx/income-details-list';
 import { ExpenseDetailsList } from './expense-details-list.tsx/expense-details-list';
 
 export type MonthStatementsDetailsProps = {
-  incomeItems: IncomeItemDto[];
-  expenseItems: ExpenseItemDto[];
-  month: number;
-  year: number;
+  statement: IncomeStatementDto;
 };
 
 export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
-  incomeItems,
-  expenseItems,
-  month,
-  year,
+  statement,
 }) => {
-  const statementTitle = `${getMonthName(month)} ${year}`;
+  const statementTitle = `${getMonthName(statement.month - 1)} ${
+    statement.year
+  }`;
 
   const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
-  const [showStartupSupportDetails, setShowStartupSupportDetails] =
-    useState(false);
   const [showDonationsOrVouchersDetails, setShowDonationsOrVouchersDetails] =
     useState(false);
   const [showDbeSubsidyDetails, setShowDbeSubsidyDetails] = useState(false);
@@ -56,95 +51,89 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
   const today = new Date();
 
   // Totals
-  const totalIncome = sumIncomeOrExpenseItems(incomeItems);
-  const totalExpenses = sumIncomeOrExpenseItems(expenseItems);
+  const totalIncome = sumIncomeOrExpenseItems(statement.incomeItems);
+  const totalExpenses = sumIncomeOrExpenseItems(statement.expenseItems);
   const totalBalance = totalIncome - totalExpenses;
 
   // Income values
   const preschoolFees = useMemo(
     () =>
-      incomeItems.filter(
+      statement.incomeItems.filter(
         (x) => x.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID
       ) || [],
-    [incomeItems]
-  );
-  const startupSupport = useMemo(
-    () =>
-      incomeItems.filter(
-        (x) => x.incomeTypeId === IncomeTypeIds.STARTUP_SUPPORT_ID
-      ) || [],
-    [incomeItems]
+    [statement]
   );
   const donationsOrVouchers = useMemo(
     () =>
-      incomeItems.filter((x) => x.incomeTypeId === IncomeTypeIds.DONATION_ID) ||
-      [],
-    [incomeItems]
+      statement.incomeItems.filter(
+        (x) => x.incomeTypeId === IncomeTypeIds.DONATION_ID
+      ) || [],
+    [statement]
   );
   const dbeSubsidy = useMemo(
     () =>
-      incomeItems.filter(
+      statement.incomeItems.filter(
         (x) => x.incomeTypeId === IncomeTypeIds.DBE_SUBSIDY_ID
       ) || [],
-    [incomeItems]
+    [statement]
   );
   const otherIncomeValues = useMemo(
     () =>
-      incomeItems.filter(
+      statement.incomeItems.filter(
         (x) => x.incomeTypeId === IncomeTypeIds.OTHER_INCOME_ID
       ) || [],
-    [incomeItems]
+    [statement]
   );
 
   // Expense values
   const rent = useMemo(
     () =>
-      expenseItems.filter(
+      statement.expenseItems.filter(
         (x) => x.expenseTypeId === ExpenseTypeIds.RENT_EXPENSE_ID
       ) || [],
-    [expenseItems]
+    [statement]
   );
   const food = useMemo(
     () =>
-      expenseItems.filter(
+      statement.expenseItems.filter(
         (x) => x.expenseTypeId === ExpenseTypeIds.FOOD_EXPENSE_ID
       ) || [],
-    [expenseItems]
+    [statement]
   );
   const learningMaterials = useMemo(
     () =>
-      expenseItems.filter(
+      statement.expenseItems.filter(
         (x) => x.expenseTypeId === ExpenseTypeIds.LEARNING_MATERIALS_ID
       ) || [],
-    [expenseItems]
+    [statement]
   );
   const maintenance = useMemo(
     () =>
-      expenseItems.filter(
+      statement.expenseItems.filter(
         (x) => x.expenseTypeId === ExpenseTypeIds.MAINTENANCE_ID
       ) || [],
-    [expenseItems]
+    [statement]
   );
   const otherExpenseValues = useMemo(
     () =>
-      expenseItems.filter(
+      statement.expenseItems.filter(
         (x) => x.expenseTypeId === ExpenseTypeIds.OTHER_EXPENSE_ID
       ) || [],
-    [expenseItems]
+    [statement]
   );
   const utilities = useMemo(
     () =>
-      expenseItems.filter(
+      statement.expenseItems.filter(
         (x) => x.expenseTypeId === ExpenseTypeIds.UTILITIES_EXPENSE_ID
       ) || [],
-    [expenseItems]
+    [statement]
   );
   const salary = useMemo(
     () =>
-      expenseItems.filter(
+      statement.expenseItems.filter(
         (x) => x.expenseTypeId === ExpenseTypeIds.SALARY_EXPENSE_ID
       ) || [],
-    [expenseItems]
+    [statement]
   );
 
   const incomeItemsList = [
@@ -157,17 +146,6 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       onActionClick: () => setShowPreschoolDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${sumIncomeOrExpenseItems(preschoolFees)}`,
-      notRounded: true,
-    },
-    {
-      title: 'Start-up support',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      text: '1',
-      onActionClick: () => setShowStartupSupportDetails(true),
-      classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(startupSupport)}`,
       notRounded: true,
     },
     {
@@ -323,7 +301,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           listItems={expenseItemsList}
         />
         <Card
-          className="bg-tertiary mt-2 flex items-center justify-between p-4"
+          className="bg-secondary mt-2 flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography
@@ -364,23 +342,14 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
         visible={showPreschoolDetails}
         position={DialogPosition.Full}
       >
+        {/* TODO if editable this needs to redirect to the edit preschool fees list  */}
         <IncomeDetailsList
           hideDetails={() => setShowPreschoolDetails(false)}
           incomeItems={preschoolFees}
           statementTitle="Preschool fees"
-          statementMonth={month}
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showStartupSupportDetails}
-        position={DialogPosition.Full}
-      >
-        <IncomeDetailsList
-          hideDetails={() => setShowStartupSupportDetails(false)}
-          incomeItems={startupSupport}
-          statementTitle="Startup support"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
+          isEditable={!statement.downloaded}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -392,7 +361,9 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowDonationsOrVouchersDetails(false)}
           incomeItems={donationsOrVouchers}
           statementTitle="Donations or vouchers"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
+          isEditable={!statement.downloaded}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -404,7 +375,9 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowDbeSubsidyDetails(false)}
           incomeItems={dbeSubsidy}
           statementTitle="DBE Subsidy"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
+          isEditable={!statement.downloaded}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -416,7 +389,9 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowOtherIncomeDetails(false)}
           incomeItems={otherIncomeValues}
           statementTitle="Other income"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
+          isEditable={!statement.downloaded}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -428,7 +403,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowRentDetails(false)}
           expenseItems={rent}
           statementTitle="Rent"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
         />
       </Dialog>
       <Dialog
@@ -440,7 +415,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowFoodDetails(false)}
           expenseItems={food}
           statementTitle="Food"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
         />
       </Dialog>
       <Dialog
@@ -452,7 +427,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowLearningMaterialsDetails(false)}
           expenseItems={learningMaterials}
           statementTitle="Learning materials"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
         />
       </Dialog>
       <Dialog
@@ -464,7 +439,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowMaintenaceDetails(false)}
           expenseItems={maintenance}
           statementTitle="Maintenance"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
         />
       </Dialog>
       <Dialog
@@ -476,7 +451,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowOtherExpensesDetails(false)}
           expenseItems={otherExpenseValues}
           statementTitle="Other Expenses"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
         />
       </Dialog>
       <Dialog
@@ -488,7 +463,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowUtilitiesDetails(false)}
           expenseItems={utilities}
           statementTitle="Utilities"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
         />
       </Dialog>
       <Dialog
@@ -500,7 +475,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           hideDetails={() => setShowSalaryDetails(false)}
           expenseItems={salary}
           statementTitle="Salary"
-          statementMonth={month}
+          statementMonth={statement.month - 1}
         />
       </Dialog>
     </>

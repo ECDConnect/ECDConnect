@@ -20,7 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
          where TKey : IEquatable<TKey>
     {
         public string Notes { get; set; }
-        public string ContributionTypeId { get; set; }
+        public string Description { get; set; }
         public string PayTypeId { get; set; }
         public string IncomeTypeId { get; set; }
         public double Amount { get; set; }
