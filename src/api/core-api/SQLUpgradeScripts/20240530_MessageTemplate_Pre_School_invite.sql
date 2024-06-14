@@ -4,11 +4,11 @@
 --WL
 INSERT INTO public."MessageTemplate"
 ("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
-VALUES('b67faf9a-748b-4cb6-9dba-18eebed9dd09', true, current_date, current_date, '', 'sms', 'wl-pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
+VALUES('5c84abcd-5309-421d-a7ec-07e58dbcd4ca', true, current_date, current_date, '', 'sms', 'wl-pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
 --OA
 INSERT INTO public."MessageTemplate"
 ("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
-VALUES('b67faf9a-748b-4cb6-9dba-18eebed9dd09', true, current_date, current_date, '', 'sms', 'oa-pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
+VALUES('78e369f6-e89d-4fe1-bd0b-51cc9f4dfc7c', true, current_date, current_date, '', 'sms', 'oa-pre-school-invitation', '[[FirstName]] has invited you to join [[PreSchoolName]] on [[ApplicationName]].  Your assistant in brighter beginnings!  Check it out: [[InvitationLink:shorturl]]', null, null, null, null, null, null, 0, null);
 
 -- principal invite 
 --OA

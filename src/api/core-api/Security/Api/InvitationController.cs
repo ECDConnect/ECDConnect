@@ -491,7 +491,7 @@ namespace ECDLink.Security.Api
                     Error = "Invalid token"
                 });
             }
-            _shortUrlManager.RemoveShortUrl(appUser.Id, TemplateTypeConstants.OAPrincipalInvitation);
+            _shortUrlManager.RemoveShortUrl(appUser.Id, TemplateTypeConstants.PrincipalInvitation);
 
             return Ok(appUser.Id);
         }

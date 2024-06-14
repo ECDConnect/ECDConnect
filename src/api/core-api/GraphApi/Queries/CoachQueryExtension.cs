@@ -327,10 +327,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     && (x.MessageType == TemplateTypeConstants.Invitation)
                     && x.IsActive
                     && x.Clicked == 0)
-                .Select(x => new { x.UserId, x.InsertedDate })
+                .Select(x => new { x.UserId, x.InsertedDate, x.NotificationResult })
                 .OrderByDescending(x => x.InsertedDate)
-                .GroupBy(x => x.UserId)
-                .ToDictionary(x => x.Key, x => x.First().InsertedDate);
+                .GroupBy(x => x.UserId);
+
+
+            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.First().InsertedDate);
+            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.First().NotificationResult);
 
             var coachModels = coachQuery
                 .Select(item => new PortalCoachModel
@@ -339,7 +342,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     IsRegistered = (item.IsRegistered == null ? false : (bool)item.IsRegistered),
                     UserId = item.UserId,
                     InsertedDate = item.InsertedDate,
-                    User = new PortalCoachUserModel(item.User, (item.IsRegistered == null ? false : (bool)item.IsRegistered), invitations.ContainsKey(item.UserId) ? invitations[item.UserId] : null)
+                    User = new PortalCoachUserModel(item.User,
+                                                    (item.IsRegistered == null ? false : (bool)item.IsRegistered),
+                                                    invitationDates.ContainsKey(item.UserId) ? invitationDates[item.UserId] : null,
+                                                    invitationNotifications.ContainsKey(item.UserId) ? invitationNotifications[item.UserId] : null)
                 })
                 .ToList();
 

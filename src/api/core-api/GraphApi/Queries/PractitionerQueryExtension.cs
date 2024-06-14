@@ -429,15 +429,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var invitations = shortenUrlEntityRepo.GetAll()
                 .Where(x =>
                     userIds.Contains(x.UserId.Value)
-                    && (x.MessageType == TemplateTypeConstants.Invitation || x.MessageType == TemplateTypeConstants.WLInvitation)
+                    && (x.MessageType == TemplateTypeConstants.Invitation)
                     && x.IsActive
                     && x.Clicked == 0)
-                .Select(x => new { x.UserId, x.InsertedDate })
+                .Select(x => new { x.UserId, x.InsertedDate, x.NotificationResult })
                 .OrderByDescending(x => x.InsertedDate)
-                .GroupBy(x => x.UserId)
-                .ToDictionary(x => x.Key, x => x.First().InsertedDate);
+                .GroupBy(x => x.UserId);
 
-            var practitionerModels = practitionerQuery
+            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.First().InsertedDate);
+            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.First().NotificationResult);
+
+             var practitionerModels = practitionerQuery
                 .Select(item => new PortalPractitionerModel
                 {
                     Id = item.Id,
@@ -446,7 +448,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     IsPrincipal = item.IsPrincipal,
                     IsFundaAppAdmin = item.IsFundaAppAdmin,
                     InsertedDate = item.InsertedDate,
-                    User = new PortalPractitionerUserModel(item.User, (item.IsRegistered == null ? false : (bool)item.IsRegistered), invitations.ContainsKey(item.UserId) ? invitations[item.UserId] : null)
+                    User = new PortalPractitionerUserModel(item.User, 
+                                                           (item.IsRegistered == null ? false : (bool)item.IsRegistered), 
+                                                           invitationDates.ContainsKey(item.UserId) ? invitationDates[item.UserId] : null,
+                                                           invitationNotifications.ContainsKey(item.UserId) ? invitationNotifications[item.UserId] : null)
                 })
                 .ToList();
 

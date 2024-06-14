@@ -15,8 +15,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
     public class PortalCoachUserModel : AppUsageModel
     {
 
-        public PortalCoachUserModel(ApplicationUser user, bool isRegistered, DateTime? invitationDate)
-            : base(user.IsActive, isRegistered, user.LastSeen, user.UpdatedDate, invitationDate)
+        public PortalCoachUserModel(ApplicationUser user, bool isRegistered, DateTime? invitationDate, int? notificationResult)
+            : base(user.IsActive, isRegistered, user.LastSeen, user.UpdatedDate, invitationDate, notificationResult)
         {
             Id = user.Id;
             IdNumber = user.IdNumber;
