@@ -162,7 +162,7 @@ const PublicRoutes: React.FC = () => {
       />
       <Route
         path={ROUTES.OA_SIGN_UP_OR_LOGIN}
-        component={OASignUpOrLogin}
+        component={isOpenAccess ? OASignUpOrLogin : SignUp}
         exact={true}
       />
       <Route
