@@ -159,12 +159,11 @@ export const ChildRegistration: React.FC = () => {
                   ? `${existingChild?.user.firstName}'s registration is complete, great job!`
                   : `This child's registration is complete, great job!`
               }
-              detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
               actionButtons={[
                 {
-                  colour: 'primary',
+                  colour: 'quatenary',
                   text: 'Close',
-                  textColour: 'primary',
+                  textColour: 'quatenary',
                   type: 'outlined',
                   leadingIcon: 'XCircleIcon',
                   onClick: () => {

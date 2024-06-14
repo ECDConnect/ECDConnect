@@ -177,10 +177,14 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
     const idSubString = childIdField.replaceAll(' ', '');
 
-    setChildInformationFormValue(
-      'dobYear',
-      +('20' + idSubString.substring(0, 2))
-    );
+    const yearPrefix =
+      parseInt(idSubString.substring(0, 2), 10) >
+      parseInt(new Date().getFullYear().toString().substring(2, 4), 10)
+        ? '19'
+        : '20';
+    const year = yearPrefix + idSubString.substring(0, 2);
+
+    setChildInformationFormValue('dobYear', +year);
     setChildInformationFormValue('dobMonth', +idSubString.substring(2, 4));
     setChildInformationFormValue('dobDay', +idSubString.substring(4, 6));
   };
