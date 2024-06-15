@@ -124,7 +124,7 @@ export const CoachProfile: React.FC = () => {
                   actionButtons={[
                     {
                       text: 'Yes, log out',
-                      colour: 'primary',
+                      colour: 'quatenary',
                       onClick: async () => {
                         await handleSync();
                         onSubmit();
@@ -135,8 +135,8 @@ export const CoachProfile: React.FC = () => {
                     },
                     {
                       text: 'No, cancel',
-                      textColour: 'primary',
-                      colour: 'white',
+                      textColour: 'quatenary',
+                      colour: 'quatenary',
                       type: 'outlined',
                       onClick: () => onClose && onClose(),
                       leadingIcon: 'XCircleIcon',
