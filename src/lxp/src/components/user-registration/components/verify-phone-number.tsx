@@ -30,7 +30,7 @@ interface VerifyPhoneNumberProps {
   phoneNumber?: string;
   username: string;
   setIsFromAuthCodeScreen?: (item: boolean) => void;
-  password: string;
+  password?: string;
 }
 
 export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
@@ -78,7 +78,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
         return;
       });
 
-    if (confirmAuthToken) {
+    if (confirmAuthToken && password) {
       setNotification({
         title: `Auth code confirmed`,
         variant: NOTIFICATION.SUCCESS,
