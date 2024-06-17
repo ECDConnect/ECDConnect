@@ -12,7 +12,7 @@ import {
   Alert,
 } from '@ecdlink/ui/';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import ActivityCard from '../activity-card/activity-card';
 import { staticDataSelectors } from '@store/static-data';
@@ -36,16 +36,17 @@ import { progressTrackingSelectors } from '@store/progress-tracking';
 import {
   getDateRangeText,
   getRoutineItemType,
-  getSelectedActivityWarningText,
 } from '@utils/classroom/programme-planning/programmes.utils';
 import { programmeSelectors } from '@store/programme';
 import { EmptyActivities } from '../../components/empty-activity-filter-result/empty-activity-filter-result';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../constants/ActivitySearch';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { format, isSameDay, isSameWeek, parseISO } from 'date-fns';
 
 const ActivitySearch: React.FC<ActivitySearchProps> = ({
   title,
   subtitle,
+  date,
   routineItem,
   recommendedActivity,
   preSelectedActivityId,
@@ -88,7 +89,31 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     useState<SearchDropDownOption<ProgressTrackingSubCategoryDto>[]>();
 
   const [pageSize, setPageSize] = useState(ACTIVITY_PAGE_SIZE);
-  const [activityWarningText, setActivityWarningText] = useState('');
+
+  const duplicatedDailyProgramme = useMemo(() => {
+    if (!selectedActivityId) return;
+
+    return programme?.dailyProgrammes?.find((day) => {
+      return (
+        !isSameDay(parseISO(day.dayDate), date) &&
+        isSameWeek(parseISO(day.dayDate), date) &&
+        (day.storyActivityId === selectedActivityId ||
+          day.smallGroupActivityId === selectedActivityId ||
+          day.largeGroupActivityId === selectedActivityId)
+      );
+    });
+  }, [date, programme?.dailyProgrammes, selectedActivityId]);
+
+  const duplicatedActivity = useMemo(() => {
+    if (!duplicatedDailyProgramme) return;
+
+    return filteredActivities.find(
+      (activity) =>
+        activity.id === duplicatedDailyProgramme?.storyActivityId ||
+        activity.id === duplicatedDailyProgramme?.smallGroupActivityId ||
+        activity
+    );
+  }, [duplicatedDailyProgramme, filteredActivities]);
 
   const themeDropDownOptions: SearchDropDownOption<number>[] = useMemo(
     () =>
@@ -294,14 +319,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
       },
     };
 
-  const setSelectedWarningTextHandler = useCallback(
-    (activity, programme) => {
-      const warningText = getSelectedActivityWarningText(activity, programme);
-      setActivityWarningText(warningText!);
-    },
-    [setActivityWarningText]
-  );
-
   return (
     <>
       <BannerWrapper
@@ -435,14 +452,8 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 key={`activity-search-filtered-card-${activity.id}`}
                 activity={activity}
                 selected={isSelected}
-                // warningText={
-                //   isSelected
-                //     ? getSelectedActivityWarningText(activity, programme)
-                //     : ''
-                // }
                 onSelected={() => {
                   setSelectedActivityId(activity.id);
-                  setSelectedWarningTextHandler(activity, programme);
                 }}
                 onDeselection={() => {
                   setSelectedActivityId(undefined);
@@ -455,31 +466,36 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             <>
               <Button
                 size="normal"
-                className="mb-4 mt-3 w-full"
+                className="my-4 w-full"
                 type="outlined"
-                color="primary"
+                color="quatenary"
                 text="See more activities"
-                textColor="primary"
+                textColor="quatenary"
                 icon="EyeIcon"
                 onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
               />
             </>
           )}
-
-          {!!activityWarningText && (
+          <Divider className="my-4" dividerType="dashed" />
+          {duplicatedActivity && (
             <Alert
+              className="mb-4"
               type="warning"
-              message={activityWarningText}
-              variant="flat"
-              className={'mt-5 mb-3'}
+              title={`You are already doing the activity “${
+                duplicatedActivity.name
+              }” on ${format(
+                parseISO(duplicatedDailyProgramme?.dayDate!),
+                'EEEE, d MMM'
+              )}.`}
+              list={[
+                'Remember to include many different activities in your programme!',
+              ]}
             />
           )}
-
-          <Divider className="my-2" />
           <Button
             type="filled"
-            className="mb-32 w-full"
-            color="primary"
+            className="mb-32 mt-auto w-full"
+            color="quatenary"
             icon="SaveIcon"
             text={submitButtonText}
             textColor="white"
