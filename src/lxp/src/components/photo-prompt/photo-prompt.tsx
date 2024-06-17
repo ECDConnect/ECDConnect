@@ -75,12 +75,14 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
       icon: renderIcon('PhotographIcon', styles.iconStyle),
       title: 'Gallery',
       value: 'gallery',
+      actionColour: 'secondary',
     });
 
     actionsList.push({
       icon: renderIcon('CameraIcon', styles.iconStyle),
       title: 'Camera',
       value: 'camera',
+      actionColour: 'secondary',
     });
 
     if (!hideEmojiOption) {
