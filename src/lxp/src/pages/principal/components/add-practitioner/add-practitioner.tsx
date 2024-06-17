@@ -8,6 +8,7 @@ import {
   Typography,
   SA_CELL_REGEX,
   CheckboxGroup,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
@@ -90,9 +91,11 @@ export const AddPractitioner = ({
     let _practitioner: UserDto = {} as UserDto;
 
     if (userAuth && idNumber) {
+      setIsloading(true);
       _practitioner = await new PractitionerService(
         userAuth.auth_token
       ).getPractitionerByIdNumber(idNumber);
+      setIsloading(false);
     }
 
     if (userAuth && passport) {
@@ -100,6 +103,7 @@ export const AddPractitioner = ({
         userAuth.auth_token
       ).getPractitionerByIdNumber(passport);
     }
+
     return _practitioner;
   };
 
@@ -134,16 +138,17 @@ export const AddPractitioner = ({
         if (p?.appUser?.practitionerObjectData?.isRegistered === true) {
           setIsPractitionerRegistered(true);
         }
-        setIsValidPractitioner(!!p?.appUser?.idNumber);
+        setIsValidPractitioner(
+          !!p?.appUser?.idNumber || !!p?.appUser?.userName
+        );
         setNewPractitioner({
-          firstName: p?.appUser?.firstName,
+          firstName: p?.appUser?.firstName || p?.appUser?.userName,
           surname: p?.appUser?.surname,
           idNumber: p?.appUser?.idNumber,
           userId: p?.appUser?.id,
           userPermissions: p?.appUser?.userPermissions,
         });
       });
-      setIsloading(false);
     }
   };
 
@@ -500,6 +505,14 @@ export const AddPractitioner = ({
                   />
                 ))}
             </div>
+            {isLoading && (
+              <LoadingSpinner
+                size="medium"
+                spinnerColor={'quatenary'}
+                backgroundColor={'uiLight'}
+                className="my-8 w-full"
+              />
+            )}
             <div className="-mb-4 mt-4 h-full w-11/12 self-end">
               <Button
                 size="normal"

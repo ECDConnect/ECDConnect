@@ -132,7 +132,7 @@ export const AddOrEditPractitioner = ({
           !!p?.appUser?.idNumber || !!p?.appUser?.userName
         );
         setNewPractitioner({
-          firstName: p?.appUser?.firstName,
+          firstName: p?.appUser?.firstName || p?.appUser?.userName,
           surname: p?.appUser?.surname,
           idNumber: p?.appUser?.idNumber,
           userId: p?.appUser?.id,
