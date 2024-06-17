@@ -253,6 +253,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             ? 'Add'
             : 'Edit',
         actionIcon: isTrialPeriod ? 'PlusIcon' : 'PencilIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
         onActionClick:
           (practitioner?.isRegistered !== null ||
             practitioner?.isLeaving !== null) &&
@@ -293,6 +295,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           : classroomGroups.length === 0 && isTrialPeriod
           ? 'PlusIcon'
           : 'EyeIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
         onActionClick: isTrialPeriod
           ? () => showTrialPeriodCompleteProfileBlockingDialog()
           : () => {
@@ -329,6 +333,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           : isTrialPeriod
           ? 'PlusIcon'
           : 'EyeIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
         onActionClick: isTrialPeriod
           ? () => showTrialPeriodCompleteProfileBlockingDialog()
           : () => {
@@ -350,6 +356,14 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         switchTextStyles: true,
         actionName: isPrincipal ? 'Add/Edit' : '',
         actionIcon: 'PlusIcon',
+        buttonColor:
+          isTrialPeriod || !classroom?.siteAddress?.addressLine1
+            ? 'quatenary'
+            : undefined,
+        textColor:
+          isTrialPeriod || !classroom?.siteAddress?.addressLine1
+            ? 'white'
+            : undefined,
         onActionClick: () => setShowEditAddress(true),
       });
     }
