@@ -20,6 +20,8 @@ import {
   practitionerSelectors,
 } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
+import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
+import { ReactComponent as BookAndApple } from '@/assets//icon/book_and_apple_1.svg';
 
 export const SelectPractitionerRole = ({
   onNext,
@@ -58,10 +60,14 @@ export const SelectPractitionerRole = ({
   const listItems: MenuListDataItem[] = [
     {
       title: `Principal`,
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      titleStyle: 'text-textMid font-h4',
       subTitle: 'I run a preschool',
       subTitleStyle: 'text-sm font-h1 font-normal text-textMid',
-      menuIcon: 'HomeIcon',
+      customIcon: (
+        <div className="bg-quatenary mr-2 rounded-full p-3">
+          <Kindgarden className="h-8 w-8" />
+        </div>
+      ),
       iconBackgroundColor: 'quatenary',
       iconColor: 'white',
       showIcon: true,
@@ -80,10 +86,14 @@ export const SelectPractitionerRole = ({
     },
     {
       title: `Practitioner`,
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      titleStyle: 'text-textMid font-h4',
       subTitle: 'I teach at a preschool that has a principal',
       subTitleStyle: 'text-sm font-h1 font-normal text-textMid',
-      menuIcon: 'LightBulbIcon',
+      customIcon: (
+        <div className="bg-secondary mr-2 rounded-full p-3">
+          <BookAndApple className="bg-secondary h-8 w-8" />
+        </div>
+      ),
       iconBackgroundColor: 'secondary',
       iconColor: 'white',
       showIcon: true,
@@ -129,7 +139,7 @@ export const SelectPractitionerRole = ({
         </div>
 
         <Typography
-          color="textMid"
+          color="textDark"
           text={`I am a...`}
           type={'h3'}
           className="my-4"
