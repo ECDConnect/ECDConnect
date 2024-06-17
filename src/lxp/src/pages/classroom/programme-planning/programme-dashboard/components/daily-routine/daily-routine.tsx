@@ -54,6 +54,7 @@ import {
   isThisWeek,
   isWeekend,
   nextMonday,
+  parseISO,
 } from 'date-fns';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
@@ -464,6 +465,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             subtitle={`${new Date(
               currentDailyProgramme?.dayDate || new Date()
             ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}`}
+            date={day?.dayDate ? parseISO(day.dayDate) : new Date()}
             programmeId={programme?.id}
             preSelectedActivityId={
               routineItem.name === DailyRoutineItemType.largeGroup

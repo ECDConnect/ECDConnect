@@ -14,6 +14,9 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
   nextProgrammeDaysWithoutActivity,
   setSelectedDate,
 }) => {
+  // TODO: Implement permission check (W3)
+  const hasPermissionToEdit = true;
+
   return (
     <div className={'flex flex-auto flex-col items-center justify-center'}>
       <div>
@@ -46,28 +49,30 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
         color={'textMid'}
         fontSize="14"
       />
-      <div className={'pt-2'}>
-        <Button
-          color={'primary'}
-          type={'outlined'}
-          onClick={() =>
-            setSelectedDate && nextProgrammeDaysWithoutActivity?.length
-              ? setSelectedDate(
-                  new Date(nextProgrammeDaysWithoutActivity?.[0]?.dayDate!)
-                )
-              : setSelectedDate && setSelectedDate(nextMonday(new Date(date)))
-          }
-          className={'mt-4 mb-4 w-full'}
-        >
-          {renderIcon('ClipboardListIcon', `w-5 h-5 text-primary`)}
-          <Typography
+      {hasPermissionToEdit && (
+        <div className={'pt-2'}>
+          <Button
             color={'primary'}
-            type={'help'}
-            weight={'normal'}
-            text={'Start planning'}
-          />
-        </Button>
-      </div>
+            type={'outlined'}
+            onClick={() =>
+              setSelectedDate && nextProgrammeDaysWithoutActivity?.length
+                ? setSelectedDate(
+                    new Date(nextProgrammeDaysWithoutActivity?.[0]?.dayDate!)
+                  )
+                : setSelectedDate && setSelectedDate(nextMonday(new Date(date)))
+            }
+            className={'mt-4 mb-4 w-full'}
+          >
+            {renderIcon('ClipboardListIcon', `w-5 h-5 text-primary`)}
+            <Typography
+              color={'primary'}
+              type={'help'}
+              weight={'normal'}
+              text={'Start planning'}
+            />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

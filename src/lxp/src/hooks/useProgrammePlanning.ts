@@ -321,7 +321,7 @@ export const useProgrammePlanning = () => {
       (programme) => programme.classroomGroupId === classroomGroupId
     );
 
-    const businessDaysOfWeek = getBusinessDaysOfWeek(selectedDate).filter(
+    const businessDaysOfWeek = getBusinessDaysOfWeek(selectedDate)?.filter(
       (day) => !holiday.isHoliday(day)
     );
 
