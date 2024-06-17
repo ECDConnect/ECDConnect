@@ -17,7 +17,10 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({
   onClickItem,
 }) => {
   const getIcon = (iconType: string) => {
-    return renderIcon(iconType, styles.actionIcon);
+    return renderIcon(
+      iconType,
+      item?.textColor ? `h-4 w-4 text-${item?.textColor}` : styles.actionIcon
+    );
   };
 
   const buttonType = item.buttonType ?? 'filled';
@@ -72,11 +75,18 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({
             }}
           >
             {item.actionName && (
-              <Button type={buttonType} color="secondaryAccent2" size="small">
+              <Button
+                type={buttonType}
+                color={item?.buttonColor || 'secondaryAccent2'}
+                className={
+                  `${item?.buttonColor}` ? `bg-${item.buttonColor}` : ''
+                }
+                size="small"
+              >
                 <Typography
                   className={'mr-1'}
                   type={'buttonSmall'}
-                  color={'secondary'}
+                  color={item?.textColor ? item?.textColor : 'secondary'}
                   text={item.actionName}
                 ></Typography>
                 {item.actionIcon && getIcon(item.actionIcon)}
