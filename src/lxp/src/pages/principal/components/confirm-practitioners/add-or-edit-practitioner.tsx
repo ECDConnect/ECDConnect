@@ -23,18 +23,23 @@ import {
   ConfirmPractitionersSteps,
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
-import { UserIcon } from '@heroicons/react/solid';
+import {
+  UserIcon,
+  ClipboardCheckIcon,
+  PresentationChartLineIcon,
+  AcademicCapIcon,
+  UserAddIcon,
+} from '@heroicons/react/solid';
 import {
   AddPractitinerInitialState,
   AddNewPractitionerModel,
+  PermissionsNames,
 } from '../add-practitioner/add-practitioner.types';
-import { practitionerSelectors } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { StackListItems } from './confirm-practitioners';
-import { userSelectors } from '@/store/user';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -56,7 +61,7 @@ export const AddOrEditPractitioner = ({
   const {
     register,
     control,
-    formState: { errors, isValid },
+    formState: { errors },
     getValues,
     setValue,
     reset,
@@ -69,13 +74,12 @@ export const AddOrEditPractitioner = ({
   const [isValidPractitioner, setIsValidPractitioner] = useState<boolean>();
   const [isPractitionerRegistered, setIsPractitionerRegistered] =
     useState<boolean>();
-  const user = useSelector(userSelectors.getUser);
+
   const [isPrincipal, setIsPrincipal] = useState<boolean>(false);
   const [newPractitioner, setNewPractitioner] =
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
   const [addNote, setAddNote] = useState();
   const [isEdit, setIsEdit] = useState(false);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const permissions = useSelector(staticDataSelectors.getPermissions);
   const [practitionerPhoneNumber, setPractitionerPhoneNumber] = useState('');
   const [error, setError] = useState('');
@@ -87,6 +91,7 @@ export const AddOrEditPractitioner = ({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
+  const [searched, setSearched] = useState(false);
 
   const getPractitionerDetailsByIdNumber = useCallback(async () => {
     // Check if the practitioner exists
@@ -140,6 +145,7 @@ export const AddOrEditPractitioner = ({
           userPermissions: p?.appUser?.userPermissions,
         });
       });
+      setSearched(true);
     }
   };
 
@@ -184,9 +190,9 @@ export const AddOrEditPractitioner = ({
         permissionIds: permissionsAdded,
       };
 
-      const updatePermissions = await new PermissionsService(
-        userAuth?.auth_token!
-      ).UpdateUserPermission(updatePermissionInput);
+      await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
+        updatePermissionInput
+      );
     }
 
     onSubmit({
@@ -266,6 +272,40 @@ export const AddOrEditPractitioner = ({
     }
   }
 
+  const renderPermissionIcon = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return (
+          <ClipboardCheckIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.create_progress_reports:
+        return (
+          <PresentationChartLineIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.plan_classroom_actitivies:
+        return (
+          <AcademicCapIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      default:
+        return (
+          <UserAddIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+    }
+  };
+
+  const renderPermissionName = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return 'Take attendance for their class(es)';
+      case PermissionsNames.create_progress_reports:
+        return 'Create progress reports to share with caregivers';
+      case PermissionsNames.plan_classroom_actitivies:
+        return 'Plan their own classroom activities';
+      default:
+        return 'Add, edit, or remove children from Angels Daycare';
+    }
+  };
+
   return (
     <div className="wrapper-with-sticky-button">
       <div className="mt-4 flex flex-col gap-4">
@@ -288,6 +328,7 @@ export const AddOrEditPractitioner = ({
                 placeholder={'E.g. 7601010338089'}
                 className="mr-2 w-full pb-2"
                 disabled={isEdit}
+                onKeyDown={() => setSearched(false)}
               />
             </div>
           )}
@@ -301,6 +342,7 @@ export const AddOrEditPractitioner = ({
                 placeholder={'e.g. Nothando_123'}
                 className="mr-2 w-full pb-2"
                 disabled={isEdit}
+                onKeyDown={() => setSearched(false)}
               />
             </div>
           )}
@@ -315,6 +357,7 @@ export const AddOrEditPractitioner = ({
                   register={register}
                   className="mr-2 w-full pb-2"
                   disabled={isEdit}
+                  onKeyDown={() => setSearched(false)}
                 />
               </div>
             )}
@@ -343,7 +386,7 @@ export const AddOrEditPractitioner = ({
               />
             )}
           </div>
-          {!isEdit && (
+          {!isEdit && !isLoading && (idNumber || passport) && !searched && (
             <div>
               <Button
                 size="normal"
@@ -472,15 +515,13 @@ export const AddOrEditPractitioner = ({
               <CheckboxGroup
                 id={item.id}
                 key={item.id}
-                title={item?.normalizedName}
+                title={renderPermissionName(item?.name)}
                 checked={permissionsAdded?.some((option) => option === item.id)}
                 value={item.id}
                 onChange={(event) => {
                   updateArray(event, item?.id!);
                 }}
-                icon={
-                  <UserIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
-                }
+                icon={renderPermissionIcon(item?.name)}
                 className="mb-2"
                 isIconFullWidth
                 checkboxColor="primary"
