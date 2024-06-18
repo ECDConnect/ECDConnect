@@ -214,13 +214,13 @@ export const PasswordReset: React.FC = () => {
                 <Button
                   className={styles.goBackButton}
                   type="outlined"
-                  color="primary"
+                  color="quatenary"
                   onClick={goBack}
                 >
                   {renderIcon('ArrowCircleLeftIcon', styles.buttonIcon)}
                   <Typography
                     type="help"
-                    color="primary"
+                    color="quatenary"
                     text={'Back to log in'}
                   ></Typography>
                 </Button>
