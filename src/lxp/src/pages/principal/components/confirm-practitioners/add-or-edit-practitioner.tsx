@@ -305,10 +305,6 @@ export const AddOrEditPractitioner = ({
         return 'Add, edit, or remove children from Angels Daycare';
     }
   };
-  console.log((!!idNumber || !!passport) && !searched);
-  console.log(!!idNumber || !!passport);
-  console.log({ idNumber });
-  console.log({ passport });
 
   return (
     <div className="wrapper-with-sticky-button">
