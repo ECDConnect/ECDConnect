@@ -191,3 +191,14 @@ export const GetAllPortalPractitioners = gql`
     }
   }
 `;
+
+export const PractitionersTemplate = gql`
+  query {
+    practitionerTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
+  }
+`;

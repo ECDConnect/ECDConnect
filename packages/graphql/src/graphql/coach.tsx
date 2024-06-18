@@ -115,3 +115,14 @@ export const GetAllPortalCoaches = gql`
     }
   }
 `;
+
+export const CoachesTemplate = gql`
+  query {
+    coachTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
+  }
+`;
