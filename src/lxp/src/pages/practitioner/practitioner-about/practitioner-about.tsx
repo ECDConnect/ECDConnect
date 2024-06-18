@@ -97,7 +97,7 @@ export const PractitionerAbout: React.FC = () => {
       reportingPeriod.reportingDate
     )
   );
-  console.log({ user });
+
   const avatar =
     userProfilePicture?.file ||
     user?.profileImageUrl ||
@@ -389,7 +389,7 @@ export const PractitionerAbout: React.FC = () => {
 
     await savePractitionerUserData(imageBaseString);
   };
-  console.log(practitionerAboutFormGetValues()?.cellphone);
+
   const savePractitionerUserData = (imageBaseString: string = '') => {
     const practitionerForm = practitionerAboutFormGetValues();
     const copy = cloneDeep(user);
