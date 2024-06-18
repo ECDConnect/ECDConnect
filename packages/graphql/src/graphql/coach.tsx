@@ -126,3 +126,16 @@ export const CoachesTemplate = gql`
     }
   }
 `;
+
+export const UploadCoaches = gql`
+  mutation ($file: String) {
+    importCoaches(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers
+    }
+  }
+`;

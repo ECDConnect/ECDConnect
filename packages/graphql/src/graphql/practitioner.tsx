@@ -202,3 +202,16 @@ export const PractitionersTemplate = gql`
     }
   }
 `;
+
+export const UploadPractitioners = gql`
+  mutation ($file: String) {
+    importPractitioners(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers
+    }
+  }
+`;
