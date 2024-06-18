@@ -70,8 +70,6 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     }
   }, []);
 
-  console.log({ oldUserNumber });
-
   const savePractitionerUserData = () => {
     const practitionerForm = getPractitionerInfoFormValues();
     const copy = cloneDeep(user);
@@ -112,7 +110,6 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 
   useEffect(() => {
     if (user?.phoneNumber) {
-      console.log('oiii');
       setPractitionerInfoFormValues('cellphone', user?.phoneNumber);
     }
   }, [setPractitionerInfoFormValues, user?.phoneNumber]);
@@ -122,11 +119,10 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     const resendAuthCode = await new AuthService().SendOAAuthCode(
       user?.userName!
     );
-    console.log({ resendAuthCode });
+
     setOpenVerifyPhoneNumber(true);
   };
 
-  console.log({ cellphone });
   return (
     <div>
       <BannerWrapper

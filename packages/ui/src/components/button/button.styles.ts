@@ -48,7 +48,7 @@ export const getButtonClassName = (
       className = classNames(
         outline,
         disabled
-          ? disabledOutline
+          ? `shadow-sm text-sm font-semibold text-uiLight bg-white border-${color} opacity-50`
           : `border-${color} text-${color} bg-${
               background === 'filled' ? 'white' : 'transparent'
             }`
