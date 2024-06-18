@@ -16,3 +16,10 @@ export const AddPractitinerInitialState = {
   userId: '',
   username: '',
 };
+
+export const PermissionsNames = {
+  take_attendance: 'take_attendance',
+  create_progress_reports: 'create_progress_reports',
+  plan_classroom_actitivies: 'plan_classroom_actitivies',
+  manage_children: 'manage_children',
+};
