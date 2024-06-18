@@ -191,3 +191,27 @@ export const GetAllPortalPractitioners = gql`
     }
   }
 `;
+
+export const PractitionersTemplate = gql`
+  query {
+    practitionerTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
+  }
+`;
+
+export const UploadPractitioners = gql`
+  mutation ($file: String) {
+    importPractitioners(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers
+    }
+  }
+`;

@@ -4,8 +4,10 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Abstractrions.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
@@ -28,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -373,6 +376,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 filteredUsers.AddRange(coachModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
             }
             return connectUsageSearch.Any() ? filteredUsers.DistinctBy(x => x.Id).ToList() : coachModels;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public async Task<FileModel> CoachTemplateGenerator(
+          [Service] IFileGenerationService fileService)
+        {
+            var fieldDefinitionSheet = $"Field Definition";
+            var fieldDefinitionList = new List<List<string>>
+            {
+                new List<string> {"Column", "Type Description"},
+                new List<string> {"Type of identification", "Text, (Must be: 'id' or 'passport')"},
+                new List<string> {"ID number", "Number, (required if type of identification is 'id'; must be 13 digits)"},
+                new List<string> {"Passport", "Text, (required if type of identification is 'passport')"},
+                new List<string> {"First name", "Text, (required)"},
+                new List<string> {"Surname", "Text, (required)"},
+                new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
+            };
+
+            var templateHeaderSheet = $"Coach Template";
+            var templateHeaders = new List<List<string>>()
+            {
+                new List<string> {
+                    "Type of identification",
+                    "ID number",
+                    "Passport",
+                    "First name",
+                    "Surname",
+                    "Cellphone number"
+                }
+            };
+
+            var spreadSheets = new Dictionary<string, List<List<string>>>() {
+                { templateHeaderSheet, templateHeaders },
+                { fieldDefinitionSheet, fieldDefinitionList }
+            };
+
+            var fileName = templateHeaderSheet.Replace(" ", "_");
+            return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
     }
 }
