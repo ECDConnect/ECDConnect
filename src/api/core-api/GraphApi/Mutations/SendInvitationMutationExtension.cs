@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class SendInvitationMutationExtension
     {
-       // [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+       [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<bool> SendInviteToApplication(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,

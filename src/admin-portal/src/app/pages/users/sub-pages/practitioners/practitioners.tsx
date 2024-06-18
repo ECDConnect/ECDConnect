@@ -681,7 +681,6 @@ export default function Practitioners() {
                 placeholder: ColumnNames.Usage,
                 multiple: true,
                 info: { name: ColumnNames.Usage + ':' },
-                hideFilter: tenant.isOpenAccess,
               },
               {
                 dateFormat: 'd MMM yyyy',
@@ -689,7 +688,9 @@ export default function Practitioners() {
                 isFullWidth: false,
                 colour: !!startDate ? 'secondary' : 'adminPortalBg',
                 textColour: !!startDate ? 'white' : 'textMid',
-                placeholderText: 'Date invited',
+                placeholderText: tenant.isWhiteLabel
+                  ? 'Date invited'
+                  : 'Date added',
                 type: 'date-picker',
                 showChevronIcon: true,
                 chevronIconColour: !!startDate ? 'white' : 'primary',
