@@ -140,7 +140,7 @@ export class IncompletePractitionerInformationNotificationValidator
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',
             color: 'primary',
-            actionText: 'Complete your profile',
+            actionText: 'Get started',
             viewType: 'Hub',
             routeConfig: {
               route: ROUTES.PRINCIPAL.SETUP_PROFILE,
