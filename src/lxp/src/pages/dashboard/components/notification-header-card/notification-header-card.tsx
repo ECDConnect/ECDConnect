@@ -20,7 +20,7 @@ export const NotificationHeaderCard: React.FC<NotificationHeaderCardProps> = ({
         <Typography
           type={'body'}
           text={message}
-          color={'textLight'}
+          color={'textMid'}
           className={styles.text}
         />
         {!!actionText && (
