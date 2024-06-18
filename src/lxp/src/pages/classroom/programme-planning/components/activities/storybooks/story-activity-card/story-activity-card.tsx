@@ -22,6 +22,7 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
   className,
   onCleared,
   onStoryCleared,
+  hideRadio,
 }) => {
   const [displayDetails, setDisplayDetails] = useState(false);
   const handleDetailsClick = () => {
@@ -59,16 +60,27 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
             <>
               <div className={selected ? 'bg-secondaryAccent2' : 'bg-uiBg'}>
                 <div className="flex max-h-20 items-center justify-between gap-2">
-                  <Radio
-                    isActivity={true}
-                    description={limitStringLength(
-                      material.charAt(0).toUpperCase() + material.slice(1),
-                      50
-                    )}
-                    checked={selected}
-                    onChange={() => onSelected()}
-                    className={'truncate border-0'}
-                  />
+                  {hideRadio ? (
+                    <Typography
+                      type="help"
+                      color="textMid"
+                      text={limitStringLength(
+                        material.charAt(0).toUpperCase() + material.slice(1),
+                        50
+                      )}
+                    />
+                  ) : (
+                    <Radio
+                      isActivity={true}
+                      description={limitStringLength(
+                        material.charAt(0).toUpperCase() + material.slice(1),
+                        50
+                      )}
+                      checked={selected}
+                      onChange={() => onSelected()}
+                      className={'truncate border-0'}
+                    />
+                  )}
                   <div onClick={handleDetailsClick} className={'mb-2'}>
                     {renderIcon(
                       'InformationCircleIcon',
