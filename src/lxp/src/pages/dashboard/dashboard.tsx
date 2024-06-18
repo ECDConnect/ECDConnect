@@ -75,6 +75,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { differenceInDays } from 'date-fns';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 const { version } = require('../../../package.json');
 
@@ -127,6 +128,7 @@ export const Dashboard: React.FC = () => {
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
     !isPrincipal;
+  const isTrialPeriod = useIsTrialPeriod();
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -667,7 +669,7 @@ export const Dashboard: React.FC = () => {
             },
           ],
     },
-    ...(isPrincipal || isFundaAppAdmin
+    ...(isPrincipal || isFundaAppAdmin || isTrialPeriod
       ? [
           {
             name: NavigationNames.Business.Business,
@@ -832,7 +834,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (!isCoach && !isPrincipal && isPractitioner) {
+  if (!isCoach && !isPrincipal && isPractitioner && !isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Community.Community,
       titleIcon: styles.communityIconName,
@@ -844,7 +846,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin) {
+  if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
       titleIcon: styles.businessIconName,
@@ -965,7 +967,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToBusiness = () => {
-    if (isPrincipal || isFundaAppAdmin) {
+    if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
       history.push(ROUTES.BUSINESS);
       return;
     }
