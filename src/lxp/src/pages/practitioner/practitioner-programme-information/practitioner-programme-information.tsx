@@ -441,7 +441,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             <Alert
               type="info"
               title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
-              list={[`Edit your profile to accept or disagree. `]}
+              list={[`Connect with your principal & manage your classes.`]}
               className={'mt-4 w-11/12'}
               button={
                 <Button

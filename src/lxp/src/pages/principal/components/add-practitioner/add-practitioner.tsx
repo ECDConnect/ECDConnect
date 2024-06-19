@@ -9,6 +9,8 @@ import {
   SA_CELL_REGEX,
   CheckboxGroup,
   LoadingSpinner,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
@@ -46,6 +48,7 @@ import { practitionerThunkActions } from '@/store/practitioner';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
+import { HelpForm } from '@/components/help-form/help-form';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -86,6 +89,8 @@ export const AddPractitioner = ({
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
   const [isLoading, setIsloading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [openHelp, setOpenHelp] = useState(false);
+  const [isOwnUserId, setisOwnUserId] = useState(false);
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -97,6 +102,11 @@ export const AddPractitioner = ({
   const getPractitionerDetailsByIdNumber = async () => {
     // Check if the practitioner exists
     let _practitioner: UserDto = {} as UserDto;
+
+    if (idNumber === user?.idNumber || passport === user?.idNumber) {
+      setisOwnUserId(true);
+      return;
+    }
 
     if (userAuth && idNumber) {
       setIsloading(true);
@@ -156,8 +166,8 @@ export const AddPractitioner = ({
           userId: p?.appUser?.id,
           userPermissions: p?.appUser?.userPermissions,
         });
+        setSearched(true);
       });
-      setSearched(true);
     }
   };
 
@@ -307,7 +317,7 @@ export const AddPractitioner = ({
           <div className="flex w-full flex-wrap justify-center">
             <div className="mt-4 flex w-11/12 flex-col gap-4">
               <div>
-                {preferId && !isOpenAccess && (
+                {preferId && (
                   <div className="mt-4 flex items-center justify-between">
                     <FormInput<AddPractitionerModel>
                       label={'Practitioner ID number'}
@@ -316,19 +326,6 @@ export const AddPractitioner = ({
                       register={register}
                       error={errors['idNumber']}
                       placeholder={'E.g. 7601010338089'}
-                      className="mr-2 w-full pb-2"
-                      onKeyDown={() => setSearched(false)}
-                    />
-                  </div>
-                )}
-                {preferId && isOpenAccess && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <FormInput<AddPractitionerModel>
-                      label={'Practitioner username'}
-                      visible={true}
-                      nameProp={'idNumber'}
-                      register={register}
-                      placeholder={'e.g. Nothando_123'}
                       className="mr-2 w-full pb-2"
                       onKeyDown={() => setSearched(false)}
                     />
@@ -348,7 +345,7 @@ export const AddPractitioner = ({
                       />
                     </div>
                   )}
-                  {!preferId && !isOpenAccess && (
+                  {!preferId && (
                     <Button
                       className={'mt-3 mb-2'}
                       type="outlined"
@@ -359,7 +356,7 @@ export const AddPractitioner = ({
                       onClick={() => setValue('preferId', true)}
                     />
                   )}
-                  {preferId && !isOpenAccess && (
+                  {preferId && (
                     <Button
                       className={'mt-3 mb-2'}
                       type="outlined"
@@ -447,6 +444,33 @@ export const AddPractitioner = ({
                   )}
                 </>
               )}
+
+              {isValidPractitioner === false &&
+                !isOpenAccess &&
+                !isOwnUserId && (
+                  <>
+                    <div className="mb-8">
+                      <Alert
+                        type={'error'}
+                        title={`Oops, practitioner not found! Only ${appName} practitioners can be added.`}
+                        list={[
+                          `Check the practitioner ID and try again. Only ${appName} practitioners can be added.`,
+                          `You can add a different practitioner or exit.`,
+                        ]}
+                        button={
+                          <Button
+                            text="Get help"
+                            icon="ClipboardListIcon"
+                            type={'filled'}
+                            color={'quatenary'}
+                            textColor={'white'}
+                            onClick={() => setOpenHelp(true)}
+                          />
+                        }
+                      />
+                    </div>
+                  </>
+                )}
               {isValidPractitioner === true && !isPrincipal && (
                 <div className="mb-8">
                   <Alert type={'success'} title={'Practitioner found!'} />
@@ -579,6 +603,14 @@ export const AddPractitioner = ({
           </div>
         </div>
       </BannerWrapper>
+      <Dialog
+        visible={openHelp}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <HelpForm closeAction={setOpenHelp} />
+      </Dialog>
     </div>
   );
 };
