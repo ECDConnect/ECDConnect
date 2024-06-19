@@ -44,6 +44,7 @@ import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { StackListItems } from './confirm-practitioners';
 import { HelpForm } from '@/components/help-form/help-form';
 import { userSelectors } from '@/store/user';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -80,6 +81,7 @@ export const AddOrEditPractitioner = ({
   const [isPractitionerRegistered, setIsPractitionerRegistered] =
     useState<boolean>();
   const user = useSelector(userSelectors.getUser);
+  const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const [isPrincipal, setIsPrincipal] = useState<boolean>(false);
   const [newPractitioner, setNewPractitioner] =
@@ -315,7 +317,7 @@ export const AddOrEditPractitioner = ({
       case PermissionsNames.plan_classroom_actitivies:
         return 'Plan their own classroom activities';
       default:
-        return 'Add, edit, or remove children from Angels Daycare';
+        return `Add, edit, or remove children from ${classroom?.name}`;
     }
   };
 

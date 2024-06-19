@@ -503,7 +503,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
               <Typography
                 type={'body'}
                 color="textMid"
-                text={`You can invite new practitioners to your preschool by sharing the code: AngelsDaycare001`}
+                text={`You can invite new practitioners to your preschool by sharing the code: ${classroom?.preschoolCode}`}
                 className={'mt-4 ml-4'}
               />
               <div className="flex justify-center">
