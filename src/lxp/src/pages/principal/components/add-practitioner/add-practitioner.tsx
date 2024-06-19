@@ -300,7 +300,7 @@ export const AddPractitioner = ({
       case PermissionsNames.plan_classroom_actitivies:
         return 'Plan their own classroom activities';
       default:
-        return 'Add, edit, or remove children from Angels Daycare';
+        return `Add, edit, or remove children from ${classroom?.name}`;
     }
   };
 
