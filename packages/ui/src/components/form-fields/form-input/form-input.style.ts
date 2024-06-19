@@ -13,6 +13,8 @@ export const portalDisabledInputStyle =
   'font-h1 bg-adminPortalBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textLight py-3 placeholder-textLight font-h1';
 export const defaultMoneyInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark items-center py-3 pl-5 placeholder-textLight font-h1';
+export const disabledMoneyInputStyle =
+  'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textLight items-center py-3 pl-5 placeholder-textLight font-h1';
 export const label =
   'block text-base leading-snug font-body font-semibold text-textDark';
 export const disabledLabel =

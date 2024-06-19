@@ -19,6 +19,7 @@ export interface GeneratePdfReportButtonProps {
   signature: string;
   downloadDate: string;
   numberOfChildren: number;
+  onClick?: () => void;
 }
 
 const GeneratePdfReportButton = ({
@@ -37,6 +38,7 @@ const GeneratePdfReportButton = ({
   signature,
   downloadDate,
   numberOfChildren,
+  onClick,
 }: GeneratePdfReportButtonProps) => {
   const { generateReport } = useGeneratePdfReport();
   return (
@@ -46,7 +48,10 @@ const GeneratePdfReportButton = ({
       type="filled"
       color="quatenary"
       className={'w-full'}
-      onClick={() =>
+      onClick={() => {
+        if (!!onClick) {
+          onClick();
+        }
         generateReport(
           tableData ?? [],
           signature,
@@ -61,8 +66,8 @@ const GeneratePdfReportButton = ({
           [tableFooter],
           tableFootStyles,
           pageOriantations
-        )
-      }
+        );
+      }}
     >
       {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
       <Typography

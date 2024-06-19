@@ -1,7 +1,7 @@
 import { Colours, classNames } from '@ecdlink/ui';
 
 export const wrapper =
-  'w-full rounded-lg drop-shadowflex flex-col justify-between items-start  shadow';
+  'w-full rounded-lg flex-col justify-between items-start bg-uiBg';
 export const content = 'flex flex-row p-4';
 
 export const checkboxInput = 'h-4 w-4 rounded focus:ring-primary';

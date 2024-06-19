@@ -4,6 +4,7 @@ import {
   renderIcon,
   Button,
   FormInput,
+  Alert,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import * as styles from './other-income.styles';
@@ -14,21 +15,18 @@ import {
   otherIncomeSchema,
 } from '@/schemas/income-statements/other-income';
 import { moneyInputFormat } from '@/utils/statements/statements-utils';
-import { lastDayOfMonth, startOfMonth } from 'date-fns';
-import { useHistory } from 'react-router';
-import ROUTES from '@/routes/routes';
+import { isBefore, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { AddIncomeProps } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
-import { BusinessTabItems } from '@/pages/business/business.types';
 import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import { statementsSelectors } from '@/store/statements';
 
 export const OtherIncome: React.FC<AddIncomeProps> = ({
   onBack,
   onSubmit,
   incomeItem,
 }) => {
-  const history = useHistory();
-
   const viewTitle = 'Other';
 
   const {
@@ -73,11 +71,19 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
     };
 
     onSubmit(incomeInput);
-
-    await history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.MONEY,
-    });
   };
+
+  const statementDate = !!dateReceived ? new Date(dateReceived) : new Date();
+  const statement = useSelector(
+    statementsSelectors.getStatementForMonth(
+      statementDate.getFullYear(),
+      statementDate.getMonth() + 1
+    )
+  );
+
+  const disabled =
+    !!statement?.downloaded ||
+    (!!incomeItem && isBefore(new Date(incomeItem.dateReceived), sixtyDaysAgo));
 
   return (
     <BannerWrapper
@@ -89,14 +95,23 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={viewTitle} />
+        <Typography type="h2" color="primary" text={viewTitle} />
+        {disabled && (
+          <Alert
+            type={'warning'}
+            title={
+              'You can only view this item. You cannot edit it because you have downloaded the statement, or the statement is more than 60 days old.'
+            }
+            className="mt-6"
+          />
+        )}
         <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
           When did you get this income?
         </label>
         <DatePicker
           placeholderText={`Please select a date`}
           wrapperClassName="text-center"
-          className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
+          className="bg-uiBg text-primary mx-auto w-full rounded-md border-none"
           selected={dateReceived ? new Date(dateReceived) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -105,18 +120,21 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
           dateFormat="EEE, dd MMM yyyy"
           minDate={minEditDate}
           maxDate={maxEditDate}
+          disabled={disabled}
         />
         <FormInput<OtherIncomeModel>
           label={'How much do you get from this income type?'}
           visible={true}
           nameProp={'amount'}
           register={register}
-          placeholder={'e.g. R 50.00'}
+          placeholder={!disabled ? 'e.g. R 50.00' : ''}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
           prefixIcon={!!amount}
           error={errors['amount']}
+          disabled={disabled}
+          value={amount}
         />
         <FormInput<OtherIncomeModel>
           label={'Add a note'}
@@ -124,27 +142,48 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
           visible={true}
           nameProp={'notes'}
           register={register}
-          placeholder={'e.g. Small grant from local shop'}
+          placeholder={!disabled ? 'e.g. Small grant from local shop' : ''}
           className="mt-2"
           error={errors['notes']}
+          disabled={disabled}
         />
-        <Button
-          type="filled"
-          color="primary"
-          className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {
-            sendIncomeUpdate();
-          }}
-          disabled={!isValid}
-        >
-          {renderIcon('SaveIcon', styles.buttonIcon)}
-          <Typography
-            type="help"
-            className="mr-2"
-            color="white"
-            text={'Save'}
-          ></Typography>
-        </Button>
+        {!disabled && (
+          <Button
+            type="filled"
+            color="primary"
+            className={'mx-auto mt-8 w-full rounded-2xl'}
+            onClick={() => {
+              sendIncomeUpdate();
+            }}
+            disabled={!isValid || disabled}
+          >
+            {renderIcon('SaveIcon', styles.buttonIcon)}
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
+          </Button>
+        )}
+        {disabled && (
+          <Button
+            type="outlined"
+            color="quatenary"
+            className={'mx-auto mt-8 w-full rounded-2xl'}
+            onClick={() => {
+              onBack();
+            }}
+          >
+            {renderIcon('XIcon', 'h-4 w-4 text-quatenary mr-2')}
+            <Typography
+              type="body"
+              className="mr-2"
+              color="quatenary"
+              text={'Close'}
+            ></Typography>
+          </Button>
+        )}
       </div>
     </BannerWrapper>
   );

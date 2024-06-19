@@ -38,9 +38,6 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
       onActionClick: () => {
-        if (!isEditable) {
-          return;
-        }
         history.push(ROUTES.BUSINESS_UPDATE_INCOME, {
           statementId: statementId,
           incomeItem: item,
@@ -86,7 +83,7 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
           />
         )}
         <Card
-          className="bg-secondary flex items-center justify-between p-4"
+          className="bg-tertiary flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography

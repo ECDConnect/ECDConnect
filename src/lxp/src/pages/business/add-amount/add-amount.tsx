@@ -5,6 +5,7 @@ import {
   renderIcon,
   Button,
   Alert,
+  StackedList,
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import ROUTES from '@routes/routes';
@@ -16,13 +17,14 @@ import { BusinessTabItems } from '../business.types';
 export const AddAmount: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
 
-  const { setState, state } = useAppContext();
+  // TODO - Fix walkthrough
+  //const { setState, state } = useAppContext();
 
-  const nextStep = () => {
-    setState({ stepIndex: 3 });
-  };
-  const stateStepIndex1 = state?.stepIndex === 1 && state?.run === true;
-  const stateStepIndex2 = state?.stepIndex === 2 && state?.run === true;
+  // const nextStep = () => {
+  //   setState({ stepIndex: 3 });
+  // };
+  // const stateStepIndex1 = state?.stepIndex === 1 && state?.run === true;
+  // const stateStepIndex2 = state?.stepIndex === 2 && state?.run === true;
 
   return (
     <BannerWrapper
@@ -39,14 +41,40 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
     >
       <StatementsWrapper />
       <div id="createStatements">
-        <div className="mb-3 flex w-full flex-wrap justify-center">
+        <div className="mb-3 flex w-full flex-wrap">
           <Typography
             type="h2"
             color="textMid"
             text={'What would you like to record?'}
             className="mt-4"
           />
-          <div className="flex gap-2">
+        </div>
+        <div className="flex gap-2">
+          <StackedList
+            className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+            type="TitleList"
+            listItems={[
+              {
+                title: 'Income (money in)',
+                titleIcon: 'ArrowCircleLeftIcon',
+                description: 'Preschool fees, donations, DBE subsidyu & others',
+                titleIconClassName: 'bg-tertiary text-white',
+                onActionClick: () => history.push(ROUTES.BUSINESS_ADD_INCOME),
+                classNames: 'bg-successBg',
+              },
+              {
+                title: 'Expense (money out)',
+                titleIcon: 'ArrowCircleRightIcon',
+                description:
+                  'Rent, utilities, food, educational supplies & others',
+                titleIconClassName: 'bg-secondary text-white',
+                onActionClick: () => history.push(ROUTES.BUSINESS_ADD_EXPENSE),
+                classNames: 'bg-secondaryAccent2',
+              },
+            ]}
+          />
+        </div>
+        {/* <div className="flex gap-2">
             <div>
               <Button
                 type="filled"
@@ -86,10 +114,9 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
                 className={'w-full whitespace-nowrap'}
               ></Typography>
             </Button>
-          </div>
-        </div>
+          </div> */}
       </div>
-      <Alert
+      {/* <Alert
         type={'info'}
         title={'What are income & expenses?'}
         list={[
@@ -97,7 +124,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
           '<b>Expenses</b> are the costs that you pay to run your business. In an early learning programme, this would be food, rent, educational supplies and others. ',
         ]}
         className="mt-6"
-      />
+      /> */}
     </BannerWrapper>
   );
 };

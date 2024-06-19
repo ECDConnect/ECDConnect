@@ -7,6 +7,7 @@ import {
   ImageInput,
   Dialog,
   DialogPosition,
+  Alert,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import * as styles from './other.styles';
@@ -19,20 +20,18 @@ import {
   expensesSchema,
 } from '@/schemas/expense-statements/expenses';
 import { moneyInputFormat } from '@/utils/statements/statements-utils';
-import { lastDayOfMonth, startOfMonth } from 'date-fns';
-import { useHistory } from 'react-router';
-import ROUTES from '@/routes/routes';
+import { isBefore, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { AddExpenseState } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
-import { BusinessTabItems } from '@/pages/business/business.types';
 import { ExpenseTypeIds } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import { statementsSelectors } from '@/store/statements';
 
 export const OtherExpense: React.FC<AddExpenseState> = ({
   onBack,
   onSubmit,
   expenseItem,
 }) => {
-  const history = useHistory();
   const {
     trigger,
     control,
@@ -63,7 +62,6 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
-  const [isLoading, setIsLoading] = useState(false);
 
   const acceptedFormats = ['jpg', 'jpeg'];
 
@@ -85,9 +83,7 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
     setPhotoActionBarVisible(false);
   };
 
-  const sendIncomeUpdate = async () => {
-    setIsLoading(true);
-
+  const sendExpenseUpdate = async () => {
     const expensesInput = {
       id: !!expenseItem ? expenseItem.id : newGuid(),
       datePaid: datePaid!,
@@ -98,12 +94,19 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
     };
 
     onSubmit(expensesInput);
-
-    await history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.MONEY,
-    });
-    setIsLoading(false);
   };
+
+  const statementDate = !!datePaid ? new Date(datePaid) : new Date();
+  const statement = useSelector(
+    statementsSelectors.getStatementForMonth(
+      statementDate.getFullYear(),
+      statementDate.getMonth() + 1
+    )
+  );
+
+  const disabled =
+    !!statement?.downloaded ||
+    (!!expenseItem && isBefore(new Date(expenseItem.datePaid), sixtyDaysAgo));
 
   return (
     <BannerWrapper
@@ -115,7 +118,16 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={'Other expense'} />
+        <Typography type="h2" color="primary" text={'Other expense'} />
+        {disabled && (
+          <Alert
+            type={'warning'}
+            title={
+              'You can only view this item. You cannot edit it because you have downloaded the statement, or the statement is more than 60 days old.'
+            }
+            className="mt-6"
+          />
+        )}
         <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
           When did you pay?
         </label>
@@ -131,18 +143,21 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
           dateFormat="EEE, dd MMM yyyy"
           minDate={minEditDate}
           maxDate={maxEditDate}
+          disabled={disabled}
         />
         <FormInput<ExpensesModel>
           label={'How much did you pay?'}
           visible={true}
           nameProp={'amount'}
           register={register}
-          placeholder={'e.g. R 200.00'}
+          placeholder={!disabled ? 'e.g. R 200.00' : ''}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
           prefixIcon={!!amount}
           error={errors['amount']}
+          disabled={disabled}
+          value={amount}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}
@@ -150,8 +165,9 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
           visible={true}
           nameProp={'notes'}
           register={register}
-          placeholder={'e.g. Level 2 training'}
+          placeholder={!disabled ? 'e.g. Level 2 training' : ''}
           className="mt-2"
+          disabled={disabled}
         />
         <ImageInput<ExpensesModel>
           acceptedFormats={acceptedFormats}
@@ -168,7 +184,8 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
             setFormValue('photoProof', imageString);
             trigger();
           }}
-        ></ImageInput>
+          disabled={disabled}
+        />
         <Dialog
           visible={photoActionBarVisible}
           position={DialogPosition.Bottom}
@@ -187,24 +204,43 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
                   }
                 : undefined
             }
-          ></PhotoPrompt>
+          />
         </Dialog>
-        <Button
-          type="filled"
-          color="quatenary"
-          className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={sendIncomeUpdate}
-          disabled={!isValid}
-          isLoading={isLoading}
-        >
-          {renderIcon('SaveIcon', styles.buttonIcon)}
-          <Typography
-            type="help"
-            className="mr-2"
-            color="white"
-            text={'Save'}
-          ></Typography>
-        </Button>
+        {!disabled && (
+          <Button
+            type="filled"
+            color="quatenary"
+            className={'mx-auto mt-8 w-full rounded-2xl'}
+            onClick={sendExpenseUpdate}
+            disabled={!isValid}
+          >
+            {renderIcon('SaveIcon', styles.buttonIcon)}
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
+          </Button>
+        )}
+        {disabled && (
+          <Button
+            type="outlined"
+            color="quatenary"
+            className={'mx-auto mt-8 w-full rounded-2xl'}
+            onClick={() => {
+              onBack();
+            }}
+          >
+            {renderIcon('XIcon', 'h-4 w-4 text-quatenary mr-2')}
+            <Typography
+              type="body"
+              className="mr-2"
+              color="quatenary"
+              text={'Close'}
+            ></Typography>
+          </Button>
+        )}
       </div>
     </BannerWrapper>
   );

@@ -2,7 +2,7 @@ import ROUTES from '@/routes/routes';
 import React, { useState, useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import { statementsActions, statementsSelectors } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { MonthStatementsDetails } from '../../components/month-statements-details';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -106,7 +106,37 @@ export const MonthStatements: React.FC = () => {
       displayOffline={!isOnline}
     >
       {!!statement ? (
-        <MonthStatementsDetails statement={statement} />
+        <>
+          <MonthStatementsDetails statement={statement} />
+          <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+            {!!pdfReportData && (
+              <GeneratePdfReportButton
+                component="income-statements"
+                title="Download Statement"
+                outputName={`${getMonthName(
+                  statement!.month - 1
+                )}-income-statement-report.pdf`}
+                tableFooter={footer}
+                tableData={pdfReportData}
+                content={tableTopContent}
+                tableHeadStyles={tableHeadStyles}
+                tableFootStyles={tableFootStyles}
+                tableStyles={tableStyles}
+                pageOriantations={'portrait'}
+                signature={signature}
+                numberOfChildren={children?.length || 0}
+                downloadDate={new Date().toDateString()} // TODO: Should this be the date the statement was submitted?
+                onClick={() =>
+                  appDispatch(
+                    statementsActions.markStatementAsDownloaded({
+                      statementId: statement.id,
+                    })
+                  )
+                }
+              />
+            )}
+          </div>
+        </>
       ) : (
         <Typography
           type="h1"
@@ -115,27 +145,6 @@ export const MonthStatements: React.FC = () => {
           text={'Statement not found'}
         />
       )}
-      <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-        {!!pdfReportData && (
-          <GeneratePdfReportButton
-            component="income-statements"
-            title="Download Statement"
-            outputName={`${getMonthName(
-              statement!.month - 1
-            )}-income-statement-report.pdf`}
-            tableFooter={footer}
-            tableData={pdfReportData}
-            content={tableTopContent}
-            tableHeadStyles={tableHeadStyles}
-            tableFootStyles={tableFootStyles}
-            tableStyles={tableStyles}
-            pageOriantations={'portrait'}
-            signature={signature}
-            numberOfChildren={children?.length || 0}
-            downloadDate={new Date().toDateString()} // TODO: Should this be the date the statement was submitted?
-          />
-        )}
-      </div>
     </BannerWrapper>
   );
 };

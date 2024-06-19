@@ -25,6 +25,7 @@ import OtherExpense from './components/other-expense/other';
 import { statementsActions } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { ExpenseItemDto } from '@ecdlink/core';
+import { BusinessTabItems } from '../../business.types';
 
 export const AddExpense: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -56,6 +57,9 @@ export const AddExpense: React.FC = () => {
   const onSubmit = useCallback(
     (expenseItem: ExpenseItemDto) => {
       appDispatch(statementsActions.addExpenseItem(expenseItem));
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.MONEY,
+      });
     },
     [userAuth]
   );
@@ -97,6 +101,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('Rent'),
       },
       {
@@ -107,6 +113,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('Utilities'),
       },
       {
@@ -117,6 +125,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('SalaryAndWages'),
       },
       {
@@ -127,6 +137,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('Food'),
       },
       {
@@ -137,6 +149,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('LearningMaterials'),
       },
       {
@@ -147,6 +161,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('AnnualMaintenance'),
       },
       {
@@ -157,6 +173,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('Other'),
       },
     ];

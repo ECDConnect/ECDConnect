@@ -4,11 +4,10 @@ import { useAppDispatch } from '@store';
 import * as styles from './add-income.styles';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
 import OtherIncome from './components/other-income/other-income';
-import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import { statementsActions } from '@/store/statements';
 import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
+import EditPreschoolFees from './components/preschool-fees/edit-preschool-fees';
 
 export type UpdateIncomeState = {
   statementId: string;
@@ -17,24 +16,20 @@ export type UpdateIncomeState = {
 
 export const UpdateIncome: React.FC = () => {
   const history = useHistory();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
 
   const location = useLocation<UpdateIncomeState>();
   const statementId = location.state.statementId;
   const incomeItem = location.state.incomeItem;
 
-  const onSubmit = useCallback(
-    (updatedItem: IncomeItemDto) => {
-      appDispatch(
-        statementsActions.updateIncomeItem({
-          statementId,
-          incomeItem: updatedItem,
-        })
-      );
-    },
-    [userAuth]
-  );
+  const onSubmit = useCallback((updatedItem: IncomeItemDto) => {
+    appDispatch(
+      statementsActions.addOrUpdateIncomeItems({
+        statementId,
+        incomeItems: [updatedItem],
+      })
+    );
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -59,7 +54,12 @@ export const UpdateIncome: React.FC = () => {
           incomeItem={incomeItem}
         />
       )}
-      {/* Preschool fees have a combined edit component */}
+      {incomeItem.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID && (
+        <EditPreschoolFees
+          onBack={() => history.goBack()}
+          incomeItem={incomeItem}
+        />
+      )}
     </div>
   );
 };

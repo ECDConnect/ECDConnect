@@ -32,9 +32,6 @@ export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
       onActionClick: () => {
-        if (!isEditable) {
-          return;
-        }
         history.push(ROUTES.BUSINESS_UPDATE_EXPENSE, {
           statementId: statementId,
           expenseItem: item,

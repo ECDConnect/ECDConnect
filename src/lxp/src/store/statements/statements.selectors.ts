@@ -4,6 +4,7 @@ import {
   IncomeStatementsTypes,
   StatementsPayTypes,
 } from '@/../../../packages/core/lib';
+import { IncomeTypeIds } from '@ecdlink/core';
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
 
@@ -28,5 +29,30 @@ export const getStatementById = (statementId: string) =>
     (state: RootState) => state.statements.incomeStatements,
     (statements: IncomeStatementDto[]) => {
       return statements.find((x) => x.id === statementId);
+    }
+  );
+
+export const getStatementForMonth = (year: number, month: number) =>
+  createSelector(
+    (state: RootState) => state.statements.incomeStatements,
+    (statements: IncomeStatementDto[]) =>
+      statements.find(
+        (statement) => statement.year === year && statement.month === month
+      )
+  );
+
+export const getPreschoolFeesForMonth = (year: number, month: number) =>
+  createSelector(
+    getStatementForMonth(year, month),
+    (statement: IncomeStatementDto | undefined) => {
+      return {
+        statementId: statement?.id,
+        downloaded: statement?.downloaded,
+        fees: !!statement
+          ? statement.incomeItems.filter(
+              (item) => item.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID
+            )
+          : [],
+      };
     }
   );

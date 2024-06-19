@@ -41,65 +41,83 @@ const statementsSlice = createSlice({
         },
       ];
     },
-    addIncomeItem: (state, action: PayloadAction<IncomeItemDto>) => {
-      const dateReceived = new Date(action.payload.dateReceived);
-      const receivedMonth = dateReceived.getMonth() + 1;
-      const receivedYear = dateReceived.getFullYear();
-
-      const updatedStatement = state.incomeStatements.find(
-        (x) => x.month === receivedMonth && x.year === receivedYear
-      );
-
-      if (!updatedStatement) {
-        // No statement for the month yet, so add one
-        state.incomeStatements = [
-          ...state.incomeStatements,
-          {
-            id: newGuid(),
-            contactedByCoach: false,
-            year: receivedYear,
-            month: receivedMonth,
-            downloaded: false,
-            synced: false,
-            dateRefreshed: undefined,
-            incomeItems: [action.payload],
-            expenseItems: [],
-          },
-        ];
-      } else {
-        // Add item to existing statement
-        state.incomeStatements = [
-          ...state.incomeStatements.filter((x) => x.id !== updatedStatement.id),
-          {
-            ...updatedStatement,
-            synced: false,
-            incomeItems: [...updatedStatement.incomeItems, action.payload],
-          },
-        ];
-      }
-    },
-    updateIncomeItem: (
+    markStatementAsDownloaded: (
       state,
-      action: PayloadAction<{ statementId: string; incomeItem: IncomeItemDto }>
+      action: PayloadAction<{ statementId: string }>
     ) => {
-      const updatedStatement = state.incomeStatements.find(
-        (x) => x.id === action.payload.statementId
+      const { statementId } = action.payload;
+
+      // Get by statement Id or the month/year of the income item
+      let updatedStatement = state.incomeStatements.find(
+        (x) => x.id === statementId
       );
+
       if (!updatedStatement) {
         return;
       }
+
       state.incomeStatements = [
-        ...state.incomeStatements.filter(
-          (x) => x.id !== action.payload.statementId
-        ),
+        ...state.incomeStatements.filter((x) => x.id !== statementId),
+        {
+          ...updatedStatement,
+          synced: false,
+          downloaded: true,
+        },
+      ];
+    },
+    addOrUpdateIncomeItems: (
+      state,
+      action: PayloadAction<{
+        statementId?: string;
+        incomeItems: IncomeItemDto[];
+      }>
+    ) => {
+      const { incomeItems, statementId } = action.payload;
+
+      if (!incomeItems.length) {
+        return;
+      }
+
+      const dateReceived = new Date(incomeItems[0].dateReceived);
+      const receivedMonth = dateReceived.getMonth() + 1;
+      const receivedYear = dateReceived.getFullYear();
+
+      // Get by statement Id or the month/year of the income item
+      let updatedStatement = !!statementId
+        ? state.incomeStatements.find((x) => x.id === statementId)
+        : state.incomeStatements.find(
+            (x) => x.month === receivedMonth && x.year === receivedYear
+          );
+
+      // If nothing found, then create one
+      if (!updatedStatement) {
+        const date = new Date(incomeItems[0].dateReceived);
+        updatedStatement = {
+          id: newGuid(),
+          month: receivedMonth,
+          year: receivedYear,
+          contactedByCoach: false,
+          downloaded: false,
+          incomeItems: [],
+          expenseItems: [],
+          synced: false,
+          dateRefreshed: undefined,
+        };
+      }
+
+      state.incomeStatements = [
+        ...state.incomeStatements.filter((x) => x.id !== statementId),
         {
           ...updatedStatement,
           synced: false,
           incomeItems: [
             ...updatedStatement.incomeItems.filter(
-              (x) => x.id !== action.payload.incomeItem.id
+              (x) =>
+                !action.payload.incomeItems.some(
+                  (updatedItem) => updatedItem.id === x.id
+                )
             ),
-            action.payload.incomeItem,
+            ...incomeItems,
           ],
         },
       ];

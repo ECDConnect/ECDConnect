@@ -11,27 +11,22 @@ import * as styles from './dbe-subsidy.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { moneyInputFormat } from '@/utils/statements/statements-utils';
-import { lastDayOfMonth, startOfMonth } from 'date-fns';
-import { useHistory } from 'react-router';
-import ROUTES from '@/routes/routes';
+import { isBefore, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { AddIncomeProps } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
-import { BusinessTabItems } from '@/pages/business/business.types';
 import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
 import {
   DbeSubsidyModel,
   dbeSubsidySchema,
 } from '@/schemas/income-statements/dbe-subsidy';
+import { useSelector } from 'react-redux';
+import { statementsSelectors } from '@/store/statements';
 
 export const DbeSubsidy: React.FC<AddIncomeProps> = ({
   onBack,
   onSubmit,
   incomeItem,
 }) => {
-  const history = useHistory();
-
-  const viewTitle = 'DBE Subsidy';
-
   const {
     control,
     setValue: setPreschoolFeesValue,
@@ -78,17 +73,21 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
     };
 
     onSubmit(incomeInput);
-
-    await history.push(ROUTES.BUSINESS, {
-      activeTabIndex: BusinessTabItems.MONEY,
-    });
-  };
-
-  const handleSaveStartupSupportValues = () => {
-    sendIncomeUpdate();
   };
 
   const numberInputInvalidChars = ['-', '+', 'e'];
+
+  const statementDate = !!dateReceived ? new Date(dateReceived) : new Date();
+  const statement = useSelector(
+    statementsSelectors.getStatementForMonth(
+      statementDate.getFullYear(),
+      statementDate.getMonth() + 1
+    )
+  );
+
+  const disabled =
+    !!statement?.downloaded ||
+    (!!incomeItem && isBefore(new Date(incomeItem.dateReceived), sixtyDaysAgo));
 
   return (
     <BannerWrapper
@@ -100,7 +99,16 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={viewTitle} />
+        <Typography type="h2" color="primary" text={'DBE Subsidy'} />
+        {disabled && (
+          <Alert
+            type={'warning'}
+            title={
+              'You can only view this item. You cannot edit it because you have downloaded the statement, or the statement is more than 60 days old.'
+            }
+            className="mt-6"
+          />
+        )}
         <Alert
           type={'info'}
           title={
@@ -114,7 +122,7 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
         <DatePicker
           placeholderText={`Please select a date`}
           wrapperClassName="text-center"
-          className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
+          className="bg-uiBg text-primary mx-auto w-full rounded-md border-none"
           selected={dateReceived ? new Date(dateReceived) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -126,6 +134,7 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
           dateFormat="EEE, dd MMM yyyy"
           minDate={minEditDate}
           maxDate={maxEditDate}
+          disabled={disabled}
         />
         <FormInput<DbeSubsidyModel>
           label={'How many children do you receive this amount for?'}
@@ -140,18 +149,21 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
               e.preventDefault();
             }
           }}
+          disabled={disabled}
         />
         <FormInput<DbeSubsidyModel>
           label={'How much did you receive from the DBE subsidy?'}
           visible={true}
           nameProp={'amount'}
           register={register}
-          placeholder={'e.g. R 1 000.00'}
+          placeholder={!disabled ? 'e.g. R 1 000.00' : ''}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
           prefixIcon={!!amount}
           error={errors['amount']}
+          disabled={disabled}
+          value={amount}
         />
         <FormInput<DbeSubsidyModel>
           label={'Add a note'}
@@ -159,24 +171,47 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
           visible={true}
           nameProp={'notes'}
           register={register}
-          placeholder={'e.g. Paid 2 days late'}
+          placeholder={!disabled ? 'e.g. Paid 2 days late' : ''}
           className="mt-2"
+          disabled={disabled}
         />
-        <Button
-          type="filled"
-          color="primary"
-          className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={handleSaveStartupSupportValues}
-          disabled={!isValid}
-        >
-          {renderIcon('SaveIcon', styles.buttonIcon)}
-          <Typography
-            type="help"
-            className="mr-2"
-            color="white"
-            text={'Save'}
-          ></Typography>
-        </Button>
+        {!disabled && (
+          <Button
+            type="filled"
+            color="primary"
+            className={'mx-auto mt-8 w-full rounded-2xl'}
+            onClick={() => {
+              sendIncomeUpdate();
+            }}
+            disabled={!isValid || disabled}
+          >
+            {renderIcon('SaveIcon', styles.buttonIcon)}
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
+          </Button>
+        )}
+        {disabled && (
+          <Button
+            type="outlined"
+            color="quatenary"
+            className={'mx-auto mt-8 w-full rounded-2xl'}
+            onClick={() => {
+              onBack();
+            }}
+          >
+            {renderIcon('XIcon', 'h-4 w-4 text-quatenary mr-2')}
+            <Typography
+              type="body"
+              className="mr-2"
+              color="quatenary"
+              text={'Close'}
+            ></Typography>
+          </Button>
+        )}
       </div>
     </BannerWrapper>
   );

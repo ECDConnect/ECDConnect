@@ -168,6 +168,11 @@ namespace ECDLink.Core.Services
             }
 
             // set downloaded field
+            if (input.Downloaded != exisitingStatement.Downloaded)
+            {
+                exisitingStatement.Downloaded = input.Downloaded;
+                _statementsRepo.Update(exisitingStatement);
+            }
 
             // If not downloaded, update income/expenses
 

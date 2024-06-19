@@ -11,3 +11,8 @@ export interface AddExpenseState {
   onSubmit: (incomeItem: ExpenseItemDto) => void;
   expenseItem?: ExpenseItemDto;
 }
+
+export interface AddPreschoolFeesProps {
+  onBack: () => void;
+  incomeItem?: IncomeItemDto;
+}

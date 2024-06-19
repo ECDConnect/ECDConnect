@@ -338,7 +338,6 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
         visible={showPreschoolDetails}
         position={DialogPosition.Full}
       >
-        {/* TODO if editable this needs to redirect to the edit preschool fees list  */}
         <IncomeDetailsList
           hideDetails={() => setShowPreschoolDetails(false)}
           incomeItems={preschoolFees}
