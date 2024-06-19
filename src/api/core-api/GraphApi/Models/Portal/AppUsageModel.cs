@@ -62,9 +62,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
                             ConnectUsageColor = Constants.PortalSettings.usage_red;
                         }
                     }
+                    return;
                 }
-
-                return;
             }
             
             ConnectUsage = "Online: " + lastSeenDate.ToString("dd/MM/yyyy");
