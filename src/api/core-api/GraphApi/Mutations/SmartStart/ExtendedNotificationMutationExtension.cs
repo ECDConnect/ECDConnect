@@ -1,8 +1,8 @@
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -38,7 +38,20 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
   [Service] INotificationService notificationService, string userId, string programmeName)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName } });
+            var replacements = new List<TagsReplacements>
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = programmeName
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "ApplicationName",
+                    ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                }
+            };
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements);
         }
         public async Task<bool> SendDemotedAsPrincipalFAAProgrammeNotification(
 [Service] ApplicationUserManager userManager,

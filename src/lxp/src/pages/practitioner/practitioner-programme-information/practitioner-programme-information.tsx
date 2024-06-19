@@ -488,53 +488,57 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           type={'ActionList'}
         ></StackedList>
       </BannerWrapper>
-      <div className="mb-28 flex w-full justify-center">
-        <Card
-          className={'bg-adminBackground mt-4	 w-11/12 rounded-xl shadow-lg'}
-        >
-          <div className={'mt-6 ml-4'}>
-            <Typography
-              type={'h1'}
-              color="textDark"
-              text={`Copy the code to invite practitioners`}
-              className={'mt-6 ml-4'}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`You can invite new practitioners to your preschool by sharing the code: AngelsDaycare001`}
-              className={'mt-4 ml-4'}
-            />
-            <div className="flex justify-center">
-              <Button
-                type="filled"
-                color="quatenary"
-                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                onClick={() => {
-                  //TODO: what if copy fails?
-                  navigator?.clipboard?.writeText &&
-                    navigator?.clipboard?.writeText(classroom?.preschoolCode!);
-                  showMessage({
-                    message: 'Preschool code copied!',
-                    type: 'success',
-                  });
-                }}
-              >
-                {renderIcon(
-                  'ArrowCircleRightIcon',
-                  'w-5 h-5 color-white text-white mr-1'
-                )}
-                <Typography
-                  type="body"
-                  className="mr-4"
-                  color="white"
-                  text={'Copy preschool code'}
-                ></Typography>
-              </Button>
+      {practitioner?.isPrincipal && (
+        <div className="mb-28 flex w-full justify-center">
+          <Card
+            className={'bg-adminBackground mt-4	 w-11/12 rounded-xl shadow-lg'}
+          >
+            <div className={'mt-6 ml-4'}>
+              <Typography
+                type={'h1'}
+                color="textDark"
+                text={`Copy the code to invite practitioners`}
+                className={'mt-6 ml-4'}
+              />
+              <Typography
+                type={'body'}
+                color="textMid"
+                text={`You can invite new practitioners to your preschool by sharing the code: AngelsDaycare001`}
+                className={'mt-4 ml-4'}
+              />
+              <div className="flex justify-center">
+                <Button
+                  type="filled"
+                  color="quatenary"
+                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                  onClick={() => {
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        classroom?.preschoolCode!
+                      );
+                    showMessage({
+                      message: 'Preschool code copied!',
+                      type: 'success',
+                    });
+                  }}
+                >
+                  {renderIcon(
+                    'ArrowCircleRightIcon',
+                    'w-5 h-5 color-white text-white mr-1'
+                  )}
+                  <Typography
+                    type="body"
+                    className="mr-4"
+                    color="white"
+                    text={'Copy preschool code'}
+                  ></Typography>
+                </Button>
+              </div>
             </div>
-          </div>
-        </Card>
-      </div>
+          </Card>
+        </div>
+      )}
       <Dialog
         fullScreen
         visible={showEditAddress}

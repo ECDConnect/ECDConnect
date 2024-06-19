@@ -341,6 +341,7 @@ class PractitionerService {
               firstName
               surname
               fullName
+              userName
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs

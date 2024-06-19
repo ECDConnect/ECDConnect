@@ -1,4 +1,11 @@
-import { FormInput, Button, BannerWrapper, Typography } from '@ecdlink/ui';
+import {
+  FormInput,
+  Button,
+  BannerWrapper,
+  Typography,
+  Dialog,
+  DialogPosition,
+} from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -12,6 +19,8 @@ import {
 import { useAppDispatch } from '@store';
 import { userActions, userThunkActions } from '@store/user';
 import { cloneDeep } from 'lodash';
+import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
+import { AuthService } from '@/services/AuthService';
 
 export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   setEditiCellPhoneNumber,
@@ -20,6 +29,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const [isWhatsappNumber, setIsWhatsappNumber] = useState(true);
+  const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -52,6 +62,13 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 
   const { errors } = useFormState({ control: practitionerInfoFormControl });
   const { whatsapp, cellphone } = watch();
+  const [oldUserNumber, setOldUserNumber] = useState('');
+
+  useEffect(() => {
+    if (user?.phoneNumber) {
+      setOldUserNumber(user?.phoneNumber);
+    }
+  }, []);
 
   const savePractitionerUserData = () => {
     const practitionerForm = getPractitionerInfoFormValues();
@@ -72,11 +89,39 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     }
   };
 
+  const saveOldPractitionerUserData = () => {
+    const practitionerForm = getPractitionerInfoFormValues();
+    const copy = cloneDeep(user);
+    if (copy) {
+      copy.firstName = practitionerForm.name;
+      copy.surname = practitionerForm.surname;
+      copy.phoneNumber = oldUserNumber;
+      copy.email = practitionerForm.email!;
+      if (isWhatsappNumber) {
+        copy.whatsappNumber = undefined;
+      } else {
+        copy.whatsappNumber = practitionerForm?.whatsapp;
+      }
+
+      appDispatch(userActions.updateUser(copy));
+      appDispatch(userThunkActions.updateUser(copy));
+    }
+  };
+
   useEffect(() => {
     if (user?.phoneNumber) {
       setPractitionerInfoFormValues('cellphone', user?.phoneNumber);
     }
   }, [setPractitionerInfoFormValues, user?.phoneNumber]);
+
+  const handleSaveNewPhone = async () => {
+    await savePractitionerUserData();
+    const resendAuthCode = await new AuthService().SendOAAuthCode(
+      user?.userName!
+    );
+
+    setOpenVerifyPhoneNumber(true);
+  };
 
   return (
     <div>
@@ -127,14 +172,30 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                   (!!isWhatsappNumber ? !cellphone : !whatsapp || !cellphone)
                 }
                 onClick={() => {
-                  savePractitionerUserData();
-                  setEditiCellPhoneNumber(false);
+                  handleSaveNewPhone();
+                  // savePractitionerUserData();
+                  // setEditiCellPhoneNumber(false);
                 }}
               />
             </div>
           </div>
         </div>
       </div>
+      <Dialog
+        visible={openVerifyPhoneNumber}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <VerifyPhoneNumberAuthCode
+          closeAction={setOpenVerifyPhoneNumber}
+          username={user?.userName!}
+          savePractitionerUserData={savePractitionerUserData}
+          isFromEditCellPhone={true}
+          saveOldPractitionerUserData={saveOldPractitionerUserData}
+          setEditiCellPhoneNumber={setEditiCellPhoneNumber}
+        />
+      </Dialog>
     </div>
   );
 };

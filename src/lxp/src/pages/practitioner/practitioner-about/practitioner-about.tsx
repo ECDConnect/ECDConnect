@@ -496,6 +496,7 @@ export const PractitionerAbout: React.FC = () => {
             onDelete={
               userProfilePicture || avatar ? deleteProfilePicture : undefined
             }
+            isProfileEmojis={true}
           ></PhotoPrompt>
         </div>
       </Dialog>

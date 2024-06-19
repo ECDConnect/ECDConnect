@@ -30,9 +30,16 @@ import ROUTES from '@/routes/routes';
 import {
   AddPractitinerInitialState,
   AddNewPractitionerModel,
+  PermissionsNames,
 } from './add-practitioner.types';
 import { userSelectors } from '@store/user';
-import { SearchIcon, UserIcon } from '@heroicons/react/solid';
+import {
+  SearchIcon,
+  UserAddIcon,
+  ClipboardCheckIcon,
+  AcademicCapIcon,
+  PresentationChartLineIcon,
+} from '@heroicons/react/solid';
 import { classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { practitionerThunkActions } from '@/store/practitioner';
@@ -78,6 +85,7 @@ export const AddPractitioner = ({
   const permissions = useSelector(staticDataSelectors.getPermissions);
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
   const [isLoading, setIsloading] = useState(false);
+  const [searched, setSearched] = useState(false);
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -149,6 +157,7 @@ export const AddPractitioner = ({
           userPermissions: p?.appUser?.userPermissions,
         });
       });
+      setSearched(true);
     }
   };
 
@@ -251,6 +260,40 @@ export const AddPractitioner = ({
     }
   }
 
+  const renderPermissionIcon = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return (
+          <ClipboardCheckIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.create_progress_reports:
+        return (
+          <PresentationChartLineIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.plan_classroom_actitivies:
+        return (
+          <AcademicCapIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      default:
+        return (
+          <UserAddIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+    }
+  };
+
+  const renderPermissionName = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return 'Take attendance for their class(es)';
+      case PermissionsNames.create_progress_reports:
+        return 'Create progress reports to share with caregivers';
+      case PermissionsNames.plan_classroom_actitivies:
+        return 'Plan their own classroom activities';
+      default:
+        return 'Add, edit, or remove children from Angels Daycare';
+    }
+  };
+
   return (
     <div>
       <BannerWrapper
@@ -274,15 +317,8 @@ export const AddPractitioner = ({
                       error={errors['idNumber']}
                       placeholder={'E.g. 7601010338089'}
                       className="mr-2 w-full pb-2"
+                      onKeyDown={() => setSearched(false)}
                     />
-                    <div
-                      className={
-                        'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
-                      }
-                      onClick={handleSearch}
-                    >
-                      <SearchIcon className={'w-4 cursor-pointer text-white'} />
-                    </div>
                   </div>
                 )}
                 {preferId && isOpenAccess && (
@@ -294,15 +330,8 @@ export const AddPractitioner = ({
                       register={register}
                       placeholder={'e.g. Nothando_123'}
                       className="mr-2 w-full pb-2"
+                      onKeyDown={() => setSearched(false)}
                     />
-                    <div
-                      className={
-                        'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
-                      }
-                      onClick={handleSearch}
-                    >
-                      <SearchIcon className={'w-4 cursor-pointer text-white'} />
-                    </div>
                   </div>
                 )}
                 <div>
@@ -315,17 +344,8 @@ export const AddPractitioner = ({
                         error={errors['passport']}
                         register={register}
                         className="mr-2 w-full pb-2"
+                        onKeyDown={() => setSearched(false)}
                       />
-                      <div
-                        className={
-                          'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
-                        }
-                        onClick={handleSearch}
-                      >
-                        <SearchIcon
-                          className={'w-4 cursor-pointer text-white'}
-                        />
-                      </div>
                     </div>
                   )}
                   {!preferId && !isOpenAccess && (
@@ -352,6 +372,19 @@ export const AddPractitioner = ({
                   )}
                 </div>
               </div>
+              {!isLoading && (idNumber || passport) && !searched && (
+                <Button
+                  size="normal"
+                  className="mb-4 w-full"
+                  type="filled"
+                  color="quatenary"
+                  text="Search for practitioner"
+                  textColor="white"
+                  icon="SearchIcon"
+                  onClick={handleSearch}
+                  disabled={!idNumber && !passport}
+                />
+              )}
               {(addNote || isPrincipal) && (
                 <div>
                   <Alert
@@ -479,29 +512,28 @@ export const AddPractitioner = ({
                   />
                 </div>
               )}
-
-              {isValidPractitioner === true &&
-                !addNote &&
-                permissions.map((item, index) => (
-                  <CheckboxGroup
-                    id={item.id}
-                    key={item.id}
-                    title={item?.normalizedName}
-                    checked={permissionsAdded?.some(
-                      (option) => option === item.id
-                    )}
-                    value={item.id}
-                    onChange={(event) => {
-                      updateArray(event, item?.id!);
-                    }}
-                    className="mb-1"
-                    icon={
-                      <UserIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
-                    }
-                    isIconFullWidth
-                    checkboxColor="primary"
-                  />
-                ))}
+              <div>
+                {isValidPractitioner === true &&
+                  !addNote &&
+                  permissions.map((item, index) => (
+                    <CheckboxGroup
+                      id={item.id}
+                      key={item.id}
+                      title={renderPermissionName(item?.name)}
+                      checked={permissionsAdded?.some(
+                        (option) => option === item.id
+                      )}
+                      value={item.id}
+                      onChange={(event) => {
+                        updateArray(event, item?.id!);
+                      }}
+                      className="mb-1"
+                      icon={renderPermissionIcon(item?.name)}
+                      isIconFullWidth
+                      checkboxColor="primary"
+                    />
+                  ))}
+              </div>
             </div>
             {isLoading && (
               <LoadingSpinner

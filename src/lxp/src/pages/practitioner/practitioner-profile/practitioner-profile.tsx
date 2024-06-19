@@ -210,32 +210,6 @@ export const PractitionerProfile: React.FC = () => {
     ];
 
     if (!isTrainee) {
-      stackedMenuList.splice(2, 0, {
-        title: 'Sync App Data',
-        titleStyle,
-        subTitleStyle,
-        subTitle: lastDataSyncDate,
-        menuIcon: 'RefreshIcon',
-        iconColor: 'white',
-        iconBackgroundColor: 'tertiary',
-        showIcon: true,
-        onActionClick: () => {
-          dialog({
-            position: DialogPosition.Bottom,
-            blocking: true,
-            render: (onSubmit, onCancel) => {
-              return (
-                <OfflineSyncModal
-                  isManual
-                  onSubmit={onSubmit}
-                  onCancel={onCancel}
-                ></OfflineSyncModal>
-              );
-            },
-          });
-        },
-      });
-
       stackedMenuList?.splice(1, 0, {
         title: 'Preschool',
         titleStyle,
