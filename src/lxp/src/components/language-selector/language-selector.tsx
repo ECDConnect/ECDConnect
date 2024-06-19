@@ -85,7 +85,7 @@ export const LanguageSelector = ({
         onChange={(item) => {
           setLanguage(item);
         }}
-        className="w-full"
+        className="w-auto"
       />
     </div>
   );

@@ -42,7 +42,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
         className={classNames(
           className,
           `relative mt-4 flex flex-col ${
-            selected ? 'border-secondary border-2' : ''
+            selected && isRadioEnabled() ? 'border-secondary border-2' : ''
           }`
         )}
         shadowSize={!isRadioEnabled() ? 'none' : 'lg'}
@@ -50,7 +50,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
       >
         <div
           className={
-            selected
+            selected && isRadioEnabled()
               ? 'bg-secondaryAccent2 rounded-lg p-4'
               : 'bg-uiBg rounded-lg p-4'
           }
@@ -66,7 +66,13 @@ const StoryCard: React.FC<StoryCardProps> = ({
           <div>
             {languages && languages.length > 0 && (
               <>
-                <div className={selected ? 'bg-secondaryAccent2' : 'bg-uiBg'}>
+                <div
+                  className={
+                    selected && isRadioEnabled()
+                      ? 'bg-secondaryAccent2'
+                      : 'bg-uiBg'
+                  }
+                >
                   <div className="flex max-h-20 items-center justify-between gap-2">
                     {radioEnabled || radioEnabled !== false ? (
                       <Radio
@@ -78,9 +84,9 @@ const StoryCard: React.FC<StoryCardProps> = ({
                       />
                     ) : (
                       <Typography
-                        type={'small'}
+                        type={'help'}
+                        color="textMid"
                         text={languageList}
-                        className={'px-4'}
                       />
                     )}
                     <div onClick={handleDetailsClick} className={'mb-2'}>
@@ -95,9 +101,11 @@ const StoryCard: React.FC<StoryCardProps> = ({
             )}
           </div>
           <StatusChip
-            backgroundColour={selected ? 'infoBb' : 'primaryAccent2'}
-            borderColour={selected ? 'infoBb' : 'primaryAccent2'}
-            textColour={selected ? 'white' : 'primary'}
+            backgroundColour={
+              selected && isRadioEnabled() ? 'infoBb' : 'quatenary'
+            }
+            borderColour={selected && isRadioEnabled() ? 'infoBb' : 'quatenary'}
+            textColour={selected && isRadioEnabled() ? 'white' : 'primary'}
             textType={'help'}
             text={type}
             className={'flex w-1/3 justify-center'}
