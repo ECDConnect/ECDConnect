@@ -2,8 +2,6 @@ import {
   EditClassModel,
   editClassroomSchema,
 } from '@/schemas/practitioner/edit-class';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
-import { ClassProgrammeDto } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import {
@@ -25,7 +23,7 @@ import {
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { buttonDays, isFullDayOptions } from './setup-classes.types';
+import { buttonDays } from './setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
@@ -47,7 +45,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const {
     setValue: setClassFormValue,
     getValues: getClassFormValues,
-    formState: classFormState,
     register: classFormRegister,
     reset: resetClassForm,
     control: classFormControl,
@@ -65,7 +62,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   });
 
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
-  // const { isValid } = classFormState;
 
   const { name, meetEveryday } = useWatch({
     control: classFormControl,
@@ -123,7 +119,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     return meetingDays && meetingDays?.length > 1;
   };
 
-  console.log(isFormValid());
   const saveClassData = async () => {
     const data = getClassFormValues();
     const today = new Date().toISOString();
