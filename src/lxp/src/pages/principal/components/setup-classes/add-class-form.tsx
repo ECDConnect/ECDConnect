@@ -65,7 +65,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   });
 
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
-  const { isValid } = classFormState;
+  // const { isValid } = classFormState;
 
   const { name, meetEveryday } = useWatch({
     control: classFormControl,
@@ -120,9 +120,10 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   const isFormValid = () => {
     const meetingDays = getClassFormValues().meetingDays;
-    return isValid && meetingDays && meetingDays?.length > 1;
+    return meetingDays && meetingDays?.length > 1;
   };
 
+  console.log(isFormValid());
   const saveClassData = async () => {
     const data = getClassFormValues();
     const today = new Date().toISOString();
@@ -131,7 +132,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       const classroomGroupModel: ClassroomGroupDto = {
         id: classroomGroupId,
         classroomId: classroom?.id ?? '',
-        name: data?.name ?? '',
+        name: data?.name || `Class ${classCount}`,
         userId: data?.practitionerId!,
         learners: [],
         classProgrammes: data.meetingDays.map((x) => {
@@ -205,30 +206,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
             )}
           />
         </div>
-        {/* {programmeType?.enumId === ProgrammeTypeEnum.Playgroup && (
-          <div>
-            <span>
-              Do children attend this class for half the day or the full day?
-            </span>
-            <div className="mt-2">
-              <Controller
-                name={'isFullDay'}
-                control={classFormControl}
-                render={({ field: { onChange, value, ref } }) => (
-                  <ButtonGroup<boolean>
-                    inputRef={ref}
-                    options={isFullDayOptions}
-                    onOptionSelected={onChange}
-                    selectedOptions={value}
-                    color="secondary"
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full'}
-                  />
-                )}
-              />
-            </div>
-          </div>
-        )} */}
 
         <div>
           <span>{`Does ${

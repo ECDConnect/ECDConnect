@@ -76,17 +76,28 @@ export const SetupPrincipal: React.FC = () => {
   );
 
   const previousPage = usePrevious(page);
+  const subTitleRules =
+    confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+    confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER ||
+    page === PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE ||
+    classesPage === ConfirmClassesSteps.ADD_CLASS ||
+    classesPage === ConfirmClassesSteps.EDIT_CLASS;
+
+  const showBgRules =
+    confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER ||
+    (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
+      classesPage === ConfirmClassesSteps.ADD_CLASS) ||
+    (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
+      classesPage === ConfirmClassesSteps.EDIT_CLASS) ||
+    confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER;
 
   const { stopService } = useNotificationService();
 
   useEffect(() => {
     if (previousPage === page) return;
 
-    if (
-      previousPage === PractitionerSetupSteps.SETUP_PROGRAMME &&
-      page === PractitionerSetupSteps.ADD_PHOTO
-    ) {
-      return setLabel('step 2 of 2');
+    if (page === PractitionerSetupSteps.ADD_PHOTO) {
+      return setLabel('step 4 of 4');
     }
 
     if (
@@ -96,16 +107,25 @@ export const SetupPrincipal: React.FC = () => {
       setIsFundaAppAdmin(false);
     }
 
+    if (page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS) {
+      setLabel('Step 2 of 4');
+    }
+
+    if (page === PractitionerSetupSteps.SETUP_PROGRAMME) {
+      setLabel('Step 1 of 4');
+    }
+
     if (page === PractitionerSetupSteps.WELCOME) {
       setLabel('Welcome');
-    } else {
-      setLabel(
-        `step ${page} of ${
-          Object.values(PractitionerSetupSteps).filter(Number).length
-        }`
-      );
     }
-  }, [page, previousPage]);
+
+    if (
+      classesPage === ConfirmClassesSteps.CONFIRM_CLASSES &&
+      page === PractitionerSetupSteps.CONFIRM_CLASSES
+    ) {
+      return setLabel('step 3 of 4');
+    }
+  }, [classesPage, page, previousPage]);
 
   const onAllStepsComplete = async () => {
     if (isNotPrincipal === true && practitioner?.progress !== 1) {
@@ -387,7 +407,7 @@ export const SetupPrincipal: React.FC = () => {
         return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
 
       case PractitionerSetupSteps.ADD_PHOTO:
-        return setPage(PractitionerSetupSteps.ADD_SIGNATURE);
+        return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
 
       case PractitionerSetupSteps.WELCOME:
       default:
@@ -418,26 +438,9 @@ export const SetupPrincipal: React.FC = () => {
       <BannerWrapper
         size={'large'}
         renderBorder={true}
-        showBackground={
-          confirmPractitionerPage ===
-            ConfirmPractitionersSteps.ADD_PRACTITIONER ||
-          (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
-            classesPage === ConfirmClassesSteps.ADD_CLASS) ||
-          confirmPractitionerPage ===
-            ConfirmPractitionersSteps.EDIT_PRACTITIONER
-            ? false
-            : true
-        }
+        showBackground={showBgRules ? false : true}
         title={renderBannerWrapperTitle}
-        subTitle={
-          confirmPractitionerPage ===
-            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
-          confirmPractitionerPage ===
-            ConfirmPractitionersSteps.ADD_PRACTITIONER ||
-          PractitionerSetupSteps.SETUP_PROGRAMME
-            ? ''
-            : label
-        }
+        subTitle={subTitleRules ? '' : label}
         onBack={onBack}
         onClose={exitPrompt}
         backgroundColour={'white'}

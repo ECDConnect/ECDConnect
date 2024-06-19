@@ -199,7 +199,7 @@ export const AddProgrammeForm: React.FC<{
 
     // TODO
     appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
+    // appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
     // Should this upsert the classroom ???
   };
 
