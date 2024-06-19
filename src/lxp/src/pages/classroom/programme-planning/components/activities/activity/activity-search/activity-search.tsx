@@ -62,8 +62,12 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     progressTrackingSelectors.getProgressTrackingSubCategories
   );
 
-  const allActivities = useSelector(
+  const activitiesByType = useSelector(
     activitySelectors.getActivitiesByType(title)
+  );
+
+  const allActivities = activitiesByType.filter(
+    (activity) => activity.id !== recommendedActivity?.activity?.id
   );
 
   const programme = useSelector(
@@ -242,7 +246,11 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
       const result = await dispatch(
         activityThunkActions.getActivities({ locale })
       ).unwrap();
-      setActivities(filterActivitiesByType(title, result));
+      setActivities(
+        filterActivitiesByType(title, result)?.filter(
+          (activity) => activity.id !== recommendedActivity?.activity?.id
+        ) || []
+      );
     };
 
     if (selectedLanguageFilterOptions.length > 0) {
@@ -356,7 +364,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             selectedOptions={selectedThemeFilterOptions}
             onChange={onThemeFilterChange}
             placeholder={'Theme'}
-            color={'uiMidDark'}
+            color={'quatenary'}
             info={{
               name: `Filter by: ${filterInfo?.filterName}`,
               hint: filterInfo?.filterHint || '',
@@ -373,7 +381,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             onChange={onLanguageFilterChange}
             placeholder={'Language'}
             multiple={false}
-            color={'uiMidDark'}
+            color={'quatenary'}
             info={{
               name: `language:`,
             }}
@@ -388,7 +396,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             onChange={onSkillsFilterChanged}
             placeholder={'Skills'}
             multiple={false}
-            color={'uiMidDark'}
+            color={'quatenary'}
             info={{
               name: `Skills:`,
             }}
@@ -396,44 +404,38 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
         </SearchHeader>
         <div className="bg-white px-4 pt-2 pb-8">
           <Typography
-            type="h3"
+            type="h2"
             text={`Choose a ${title} activity`}
-            className={'mt-4'}
+            className={'my-4'}
+            color="textDark"
           />
-          {recommendedActivity && !hasActiveFilters && (
-            <div className={'flex flex-col items-center justify-start'}>
-              {
-                <ActivityCard
-                  key={`search-header-activity-${recommendedActivity.activity?.id}`}
-                  activity={recommendedActivity.activity}
-                  selected={
-                    selectedActivityId === recommendedActivity.activity?.id
-                  }
-                  recommended
-                  recommendedText={`Recommended because you do not have enough <b>${
-                    recommendedActivity?.subCategory?.name
-                  }</b> activities planned for ${getDateRangeText(
-                    programme?.startDate,
-                    programme?.endDate
-                  )}`}
-                  onSelected={() => {
-                    setSelectedActivityId(recommendedActivity.activity?.id);
-                    setSearchTextActive(false);
-                    applyFilters(activities);
-                  }}
-                  onDeselection={() => {
-                    setSelectedActivityId(undefined);
-                    setSearchTextActive(false);
-                    applyFilters(activities);
-                  }}
-                />
+          {recommendedActivity && (
+            <ActivityCard
+              key={`search-header-activity-${recommendedActivity.activity?.id}`}
+              activity={recommendedActivity.activity}
+              selected={selectedActivityId === recommendedActivity.activity?.id}
+              recommended
+              recommendedText={
+                recommendedActivity?.subCategory
+                  ? `Recommended because you do not have enough <b>${
+                      recommendedActivity?.subCategory?.name
+                    }</b> activities planned for ${getDateRangeText(
+                      programme?.startDate,
+                      programme?.endDate
+                    )}`
+                  : ''
               }
-              <Typography
-                type="body"
-                text="Other activities"
-                className={'mt-4'}
-              />
-            </div>
+              onSelected={() => {
+                setSelectedActivityId(recommendedActivity.activity?.id);
+                setSearchTextActive(false);
+                applyFilters(activities);
+              }}
+              onDeselection={() => {
+                setSelectedActivityId(undefined);
+                setSearchTextActive(false);
+                applyFilters(activities);
+              }}
+            />
           )}
 
           {hasActiveFilters && filteredActivities.length === 0 && (

@@ -7,9 +7,10 @@ import { useSelector } from 'react-redux';
 import { activitySelectors } from '@store/content/activity';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { getAllGroupActivityIds } from '@utils/classroom/programme-planning/programmes.utils';
+import { getDay, isBefore, parseISO } from 'date-fns';
 
 export type RecommendedActivity = {
-  subCategory: ProgressTrackingSubCategoryDto;
+  subCategory?: ProgressTrackingSubCategoryDto;
   activity: ActivityDto;
 };
 
@@ -19,14 +20,54 @@ export const useProgrammePlanningRecommendations = () => {
     progressTrackingSelectors.getProgressTrackingSubCategories
   );
 
-  const getCurrentProgrammeRecommendedActivities = (
+  const getCurrentProgrammeRecommendedActivitiesByThemeActivity = (
+    programme?: ProgrammeDto,
+    selectedDate?: Date
+  ): RecommendedActivity[] => {
+    if (!programme || !selectedDate) return [];
+
+    const plannedActivities = getAllGroupActivityIds(programme);
+
+    // at least 10 small group & large group activities planned
+    if (plannedActivities.length < 10) return [];
+
+    const filteredDailyProgrammes = programme?.dailyProgrammes?.filter(
+      (day) => {
+        const dayDate = parseISO(day.dayDate.replace('Z', ''));
+
+        return (
+          isBefore(dayDate, selectedDate) &&
+          getDay(dayDate) === getDay(selectedDate)
+        );
+      }
+    );
+
+    if (filteredDailyProgrammes?.length) {
+      const filteredActivities = getAllGroupActivityIds({
+        ...programme,
+        dailyProgrammes: filteredDailyProgrammes,
+      });
+
+      const selectedActivities = activities?.filter((x) =>
+        filteredActivities?.includes(x.id)
+      );
+
+      return selectedActivities?.map((activity) => ({
+        activity,
+      }));
+    }
+
+    return [];
+  };
+
+  const getCurrentProgrammeRecommendedActivitiesBySubcategory = (
     programme?: ProgrammeDto
   ): RecommendedActivity[] => {
     if (!programme) return [];
 
     const plannedActivities = getAllGroupActivityIds(programme);
 
-    // LETS MAKE SURE WE HAVE 10x ACTIVITIES SELECTED
+    // at least 10 small group & large group activities planned
     if (plannedActivities.length >= 10) {
       const selectedActivities = activities.filter((x) =>
         plannedActivities?.includes(x.id)
@@ -65,6 +106,23 @@ export const useProgrammePlanningRecommendations = () => {
     }
 
     return [];
+  };
+
+  const getCurrentProgrammeRecommendedActivities = (
+    programme?: ProgrammeDto,
+    selectedDate?: Date
+  ): RecommendedActivity[] => {
+    const recommendedActivitiesByThemeActivity =
+      getCurrentProgrammeRecommendedActivitiesByThemeActivity(
+        programme,
+        selectedDate
+      );
+
+    if (recommendedActivitiesByThemeActivity.length) {
+      return recommendedActivitiesByThemeActivity;
+    }
+
+    return getCurrentProgrammeRecommendedActivitiesBySubcategory(programme);
   };
 
   const getAdditionalRecommendedSubCategories = (

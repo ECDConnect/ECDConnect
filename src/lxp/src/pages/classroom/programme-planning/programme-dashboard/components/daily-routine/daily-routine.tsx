@@ -88,8 +88,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   const { getCurrentProgrammeRecommendedActivities } =
     useProgrammePlanningRecommendations();
-  const recommendedActivities =
-    getCurrentProgrammeRecommendedActivities(programme);
+  const recommendedActivities = getCurrentProgrammeRecommendedActivities(
+    programme,
+    selectedDate
+  );
+
   // const { getAdditionalRecommendedSubCategories } =
   //   useProgrammePlanningRecommendations();
   // const additionalRecommendedActivities =
