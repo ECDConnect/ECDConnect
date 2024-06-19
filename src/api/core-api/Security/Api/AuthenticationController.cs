@@ -484,14 +484,6 @@ namespace ECDLink.Security.Api
                     Error = "Password unavailable"
                 });
             }
-            if (string.IsNullOrEmpty(input.PhoneNumber))
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 3,
-                    Error = "Phone number unavailable"
-                });
-            }
 
             var user = await _securityManager.GetUserByNameAsync(input.Username);
 
@@ -499,7 +491,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 4,
+                    ErrorCode = 3,
                     Error = "User not found with username"
                 });
             }
@@ -509,7 +501,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 5,
+                    ErrorCode = 4,
                     Error = "Password insecure"
                 });
             }
@@ -524,7 +516,7 @@ namespace ECDLink.Security.Api
                 {
                     return BadRequest(new FailedVerificationModel
                     {
-                        ErrorCode = 6,
+                        ErrorCode = 5,
                         Error = "Invalid phone number"
                     });
                 }
@@ -551,7 +543,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 7,
+                    ErrorCode = 6,
                     Error = "Generate of token failure"
                 });
             }
