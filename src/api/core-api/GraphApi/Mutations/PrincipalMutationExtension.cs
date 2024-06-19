@@ -13,6 +13,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Types;
@@ -98,8 +99,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         userManager.UpdateAsync(user);
 
                         string programmeName = principalClassRoom != null ? principalClassRoom.Name : "Programme";
+                        var replacements = new List<TagsReplacements>
+                        {
+                            new TagsReplacements()
+                            {
+                                FindValue = "ProgrammeName",
+                                ReplacementValue = programmeName
+                            },
+                            new TagsReplacements()
+                            {
+                                FindValue = "ApplicationName",
+                                ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                            }
+                        };
                         //send message of invitation
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName }  });
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
 
                         return practitioner;
                     }
