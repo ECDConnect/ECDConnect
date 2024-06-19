@@ -426,7 +426,8 @@ export const SetupPrincipal: React.FC = () => {
     if (
       page === PractitionerSetupSteps.SETUP_PROGRAMME ||
       page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS ||
-      page === PractitionerSetupSteps.CONFIRM_CLASSES
+      page === PractitionerSetupSteps.CONFIRM_CLASSES ||
+      page === PractitionerSetupSteps.ADD_PHOTO
     ) {
       return 'Preschool information';
     }
