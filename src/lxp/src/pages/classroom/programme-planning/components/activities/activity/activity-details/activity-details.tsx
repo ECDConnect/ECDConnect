@@ -73,18 +73,18 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
           (isSelected ? (
             <Button
               type={'filled'}
-              color={'primary'}
+              color={'quatenary'}
               className={'mt-2 mb-4 w-full'}
               textColor={'white'}
               text={`Change activity`}
-              icon={'SwitchVerticalIcon'}
+              icon={'RefreshIcon'}
               iconPosition={'start'}
               onClick={handleActivityChanged}
             />
           ) : (
             <Button
               type={'filled'}
-              color={'primary'}
+              color={'quatenary'}
               className={'mt-2 mb-4 w-full'}
               textColor={'white'}
               text={'Choose this activity'}
@@ -166,11 +166,11 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
           (isSelected ? (
             <Button
               type={'filled'}
-              color={'primary'}
+              color={'quatenary'}
               className={'mt-2 w-full'}
               textColor={'white'}
               text={`Change activity`}
-              icon={'SwitchVerticalIcon'}
+              icon={'RefreshIcon'}
               iconPosition={'start'}
               onClick={onActivityChanged}
             />
