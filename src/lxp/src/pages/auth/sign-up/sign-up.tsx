@@ -55,6 +55,7 @@ export const SignUp: React.FC = () => {
     handleSubmit,
     control,
     clearErrors,
+    trigger,
   } = useForm<SignUpModel>({
     resolver: yupResolver(signUpSchema),
     defaultValues: initialRegisterValues,
@@ -300,6 +301,7 @@ export const SignUp: React.FC = () => {
               );
               clearErrors('termsAndConditionsAccepted');
               setPermissionsErrorMessage('');
+              trigger();
             }}
           >
             <Checkbox<SignUpModel>
@@ -352,6 +354,7 @@ export const SignUp: React.FC = () => {
               );
               clearErrors('dataPermissionAgreementAccepted');
               setPermissionsErrorMessage('');
+              trigger();
             }}
           >
             <Checkbox<SignUpModel>
