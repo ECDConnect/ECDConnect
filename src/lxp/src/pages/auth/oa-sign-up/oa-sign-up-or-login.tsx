@@ -59,7 +59,7 @@ export const OASignUpOrLogin: React.FC = () => {
         await resetAuth();
       }
 
-      await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
+      await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps

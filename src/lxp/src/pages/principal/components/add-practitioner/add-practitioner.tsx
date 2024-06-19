@@ -417,9 +417,7 @@ export const AddPractitioner = ({
                   <div className="mb-8">
                     <Alert
                       type={'warning'}
-                      title={
-                        'Oh dear! It looks like your practitioner has not joined AppName yet.'
-                      }
+                      title={`Oh dear! It looks like your practitioner has not joined ${appName} yet.`}
                       list={[
                         'Enter their cellphone number below to send them an invitation.',
                       ]}
@@ -509,7 +507,7 @@ export const AddPractitioner = ({
                   />
                   <Typography
                     type={'body'}
-                    text={`You can edit this in future by going to the Classroom then Practitioners tab.}`}
+                    text={`You can edit this in future by going to the Classroom then Practitioners tab.`}
                     color={'textMid'}
                   />
                 </div>

@@ -168,10 +168,6 @@ export const SetupPrincipal: React.FC = () => {
       ).PromotePractitionerToPrincipal(user?.id);
 
       await appDispatch(
-        practitionerThunkActions?.getPractitionerById({ id: user?.id! })
-      );
-
-      await appDispatch(
         practitionerThunkActions.getPractitionerByUserId({
           userId: user?.id || '',
         })
