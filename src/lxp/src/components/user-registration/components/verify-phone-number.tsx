@@ -64,7 +64,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
     appDispatch(authActions.setUserExpired());
     await appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
-    history.push(ROUTES.DASHBOARD);
+    history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
   const handleConfirmAuthCode = async () => {
