@@ -90,7 +90,7 @@ export const SignUp: React.FC = () => {
         await resetAuth();
       }
 
-      await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
+      await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -331,7 +331,7 @@ export const SignUp: React.FC = () => {
               onClick={() => {
                 displayArticle(
                   ContentConsentTypeEnum.TermsAndConditions,
-                  'Consent & Commitment Agreement'
+                  'Terms and Conditions'
                 );
               }}
             />

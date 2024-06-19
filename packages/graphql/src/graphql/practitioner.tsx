@@ -96,6 +96,17 @@ export const GetPractitionerById = gql`
       attendedChildProgress
       usePhotoInReport
       isCompletedBusinessWalkThrough
+      isNewInClub
+      clubId
+      clubName
+      permissions {
+        id
+        isActive
+        permissionId
+        permissionName
+        permissionNormalizedName
+        permissionGrouping
+      }
     }
   }
 `;

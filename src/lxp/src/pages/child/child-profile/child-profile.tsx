@@ -74,6 +74,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import ChildWrapper from './components/child-wrapper/ChildWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import walkthroughImage from '../../../assets/walktroughImage.png';
+import { useTenant } from '@/hooks/useTenant';
 import {
   getStorageItem,
   setStorageItem,
@@ -121,8 +122,9 @@ export const ChildProfile: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const progressTrainingDone = practitioner?.attendedChildProgress || false;
   const isPrincipal = practitioner?.isPrincipal;
-
   const child = useSelector(childrenSelectors.getChildById(childId));
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
 
   const practitioners = useSelector(
     practitionerSelectors.getPractitioners
@@ -138,7 +140,7 @@ export const ChildProfile: React.FC = () => {
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
 
-  const classProgrammes = classroomGroup!.classProgrammes?.filter(
+  const classProgrammes = classroomGroup?.classProgrammes?.filter(
     (x) => x?.isActive
   );
 
@@ -258,7 +260,7 @@ export const ChildProfile: React.FC = () => {
               <img src={walkthroughImage} alt="profile" className="mb-2" />
             </div>
           }
-          importantText={`Welcome to the child profile on Funda App!`}
+          importantText={`Welcome to the child profile on ${appName}!`}
           detailText={'Can I show you how to use this section?'}
           actionButtons={[
             {
@@ -414,7 +416,7 @@ export const ChildProfile: React.FC = () => {
       childUserId,
       attendance,
       classroomGroupCacheId,
-      classProgrammes
+      classProgrammes || []
     );
 
     // Check when the child was register and determine wether attendance should have been recorded
