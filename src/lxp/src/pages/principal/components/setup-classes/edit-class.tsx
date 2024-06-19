@@ -1,5 +1,3 @@
-import { ClassProgrammeDto } from '@ecdlink/core';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import {
   Typography,
   FormInput,
@@ -25,10 +23,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { practitionerSelectors } from '@/store/practitioner';
-import {
-  isFullDayOptions,
-  buttonDays,
-} from '../setup-classes/setup-classes.types';
+import { buttonDays } from '../setup-classes/setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
 import { userSelectors } from '@/store/user';
 
@@ -303,7 +298,7 @@ export const EditClass = ({
           size="normal"
           className="w-full"
           type="filled"
-          color="primary"
+          color="quatenary"
           text="Save"
           textColor="white"
           icon="SaveIcon"
@@ -315,8 +310,9 @@ export const EditClass = ({
         <Button
           icon="ViewGridAddIcon"
           type={'outlined'}
-          color={'primary'}
+          color={'quatenary'}
           text="Delete Class"
+          textColor="quatenary"
           className="w-full"
           disabled={!isFormValid()}
           onClick={() => {
