@@ -173,8 +173,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             practitionerRecord.Id = practitioner.Id;
             practitionerRecord.UserId = practitioner.UserId.Value;
-            practitionerRecord.User = practitioner.User;
-            practitionerRecord.SiteAddress = practitioner.SiteAddress;
             practitionerRecord.IsPrincipal = practitioner.IsPrincipal;
             practitionerRecord.IsRegistered = practitioner.IsRegistered;
             practitionerRecord.PrincipalHierarchy = practitioner.PrincipalHierarchy;
@@ -203,12 +201,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.StipendType = practitioner.StipendType;
             practitionerRecord.Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList();
 
+            ApplicationUser practitionerUser = _userManager.FindByIdAsync(practitioner.UserId).Result;
+            if (practitionerUser != null) {
+                 practitionerRecord.User = practitionerUser;
+            }
             ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
             if (practitionerRecord != null)
             {
                 practitionerRecord.ClubId = clubMember?.Club?.Id;
                 practitionerRecord.ClubName = clubMember?.Club?.Name;
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
+            }
+            if (practitioner.SiteAddressId != null) {
+                SiteAddress address = _addressRepo.GetById((Guid)practitioner.SiteAddressId);
+                if (address != null) {
+                    practitionerRecord.SiteAddress = address;
+                }
             }
             return practitionerRecord;
         }

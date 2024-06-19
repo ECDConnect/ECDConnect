@@ -274,6 +274,34 @@ export const getLanguages = createAsyncThunk<
   }
 );
 
+export const getOpenLanguages = createAsyncThunk<
+  LanguageDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>('getLanguages', async (_, { getState, rejectWithValue }) => {
+  const {
+    staticData: { languages: languagesCache },
+  } = getState();
+
+  if (!languagesCache) {
+    try {
+      let languages: LanguageDto[] | undefined;
+      languages = await new LanguageService('').getOpenLanguages();
+
+      if (!languages) {
+        return rejectWithValue('Error Languages');
+      }
+
+      return languages;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  } else {
+    return languagesCache;
+  }
+});
+
 export const getProvinces = createAsyncThunk<
   ProvinceDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types

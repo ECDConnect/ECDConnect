@@ -3,7 +3,7 @@ import {
   getAvatarColor,
   StoryBookDto,
   LanguageDto,
-  useDialog,
+  useSessionStorage,
 } from '@ecdlink/core/';
 import {
   Alert,
@@ -16,7 +16,7 @@ import {
   URL,
   stripPTag,
 } from '@ecdlink/ui/';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
@@ -32,10 +32,11 @@ import { staticDataSelectors } from '@/store/static-data';
 import { ContentStoryBookService } from '@/services/ContentStoryBookService';
 import { authSelectors } from '@store/auth';
 import { ContentActivityService } from '@/services/ContentActivityService';
+import { LanguageCode } from '@/i18n/types';
 
 const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   storyBookId,
-  activityId,
+  activityId: activityIdFromProp,
   viewType,
   disabled,
   onStoryBookSelected,
@@ -45,6 +46,11 @@ const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   onBack,
   selected,
 }) => {
+  const [activityIdFromSessionStorage, setSessionActivityId] =
+    useSessionStorage('storyActivityDetailsActivityId');
+
+  const activityId = activityIdFromProp || Number(activityIdFromSessionStorage);
+
   const { isOnline } = useOnlineStatus();
   const activityDetail = useSelector(
     activitySelectors.getActivityById(activityId)
@@ -56,6 +62,15 @@ const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   const title =
     viewType === 'StoryBook' ? storyBook?.name : activityDetail?.name;
   const subTitle = viewType === 'StoryBook' ? 'Story' : 'Story Activity';
+
+  // TODO: Implement permission check (W3)
+  const hasPermissionToEdit = true;
+
+  useEffect(() => {
+    if (activityIdFromProp) {
+      setSessionActivityId(String(activityIdFromProp));
+    }
+  }, [activityIdFromProp, setSessionActivityId]);
 
   if (viewType === 'StoryBook' && !storyBook) return <></>;
   if (viewType === 'StoryActivity' && !activityDetail) return <></>;
@@ -69,22 +84,31 @@ const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
       subTitle={subTitle}
       color={'primary'}
       backgroundColour="white"
-      onBack={onBack}
+      onBack={() => {
+        setSessionActivityId(undefined);
+        onBack();
+      }}
       displayOffline={!isOnline}
     >
       {viewType === 'StoryBook' ? (
         <StoryBookDetails
-          disabled={disabled}
+          disabled={disabled || !hasPermissionToEdit}
           storyBook={storyBook as StoryBookDto}
-          onStorySelected={onStoryBookSelected}
-          onStorySwitched={onStoryBookSwitched}
+          onStorySelected={() => {
+            setSessionActivityId(undefined);
+            onStoryBookSelected?.();
+          }}
+          onStorySwitched={() => {
+            setSessionActivityId(undefined);
+            onStoryBookSelected?.();
+          }}
           onActivitySwitched={onActivitySwitched}
           isSelected={selected}
           linkedActivity={activityDetail}
         />
       ) : (
         <StorybookActivityDetails
-          disabled={disabled}
+          disabled={disabled || !hasPermissionToEdit}
           activity={activityDetail as ActivityDto}
           onActivitySelected={onActivitySelected}
           onActivitySwitched={onActivitySwitched}
@@ -123,12 +147,19 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
       +a.part >= +b.part ? 1 : -1
     )
   );
+  const [language, setLanguage] = useState({ locale: 'en-za' });
   const { isOnline } = useOnlineStatus();
   const authUser = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const defaultLanguage = languages?.find(
     (item: LanguageDto) => item?.locale === 'en-za'
   );
+
+  const availableLanguages: LanguageCode[] = storyBook?.availableLanguages
+    ? storyBook.availableLanguages?.map((item) => {
+        return item?.locale as LanguageCode;
+      })
+    : [language.locale as LanguageCode];
 
   const onBookLocationClicked = (bookLocation: string) => {
     const _strippedHtml = stripPTag(bookLocation);
@@ -166,13 +197,15 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   return (
     <div className={'flex flex-col bg-white'}>
       <div className={'flex flex-col items-start justify-start'}>
-        <LanguageSelector
-          currentLocale={'en-za'}
-          availableLanguages={
-            storyBook?.availableLanguages || [defaultLanguage]
-          }
-          selectLanguage={getDataByLanguage}
-        />
+        <div className="bg-uiBg w-full">
+          <LanguageSelector
+            labelClassName="text-textDark mr-2"
+            currentLocale={'en-za'}
+            availableLanguages={availableLanguages || [defaultLanguage]}
+            selectLanguage={getDataByLanguage}
+          />
+        </div>
+
         {isOnlineOnlyAlert && (
           <div className="absolute  z-10 flex h-full items-center ">
             <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
@@ -184,28 +217,21 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
           </div>
         )}
         <div className={'items-stetch flex w-full flex-col justify-start p-4'}>
-          <Typography
-            text={currentStoryBook.name}
-            type={'h1'}
-            color={'textDark'}
-            className={'mt-2'}
-          />
           <div
             className={
               'align-center flex flex-row items-center justify-between'
             }
           >
             <Typography
-              text={`Author: ${currentStoryBook.author}`}
-              type={'h4'}
+              text={currentStoryBook.name}
+              type={'h1'}
               color={'textDark'}
-              className={'mt-2'}
             />
             <StatusChip
-              backgroundColour={'primaryAccent2'}
-              borderColour={'primaryAccent2'}
+              backgroundColour={'quatenary'}
+              borderColour={'quatenary'}
               textColour={'primary'}
-              textType={'help'}
+              textType={'body'}
               text={currentStoryBook.type}
             />
           </div>
@@ -213,18 +239,18 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
             (isSelected ? (
               <Button
                 type={'filled'}
-                color={'primary'}
+                color={'quatenary'}
                 className={'mt-6 w-full'}
                 textColor={'white'}
-                text={`Change story ${linkedActivity ? 'and activity' : ''}`}
-                icon={'SwitchVerticalIcon'}
+                text={`Change story & activity`}
+                icon={'RefreshIcon'}
                 iconPosition={'start'}
                 onClick={onStorySwitched}
               />
             ) : (
               <Button
                 type={'filled'}
-                color={'primary'}
+                color={'quatenary'}
                 className={'mt-6 w-full'}
                 textColor={'white'}
                 text={'Choose this story'}
@@ -233,16 +259,17 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 onClick={onStorySelected}
               />
             ))}
-          <Divider dividerType="dashed" className={'mt-4'} />
+          <Divider dividerType="dashed" className={'mt-4 mb-2'} />
           {linkedActivity && (
-            <div className={'flex flex-col'}>
-              <Typography type={'body'} text={'Linked activity'} />
+            <>
+              <Typography type={'h3'} text={'Story activity chosen'} />
               <StoryActivityCard
+                hideRadio
                 title={linkedActivity.name}
                 activityId={linkedActivity.id}
                 material={linkedActivity.materials}
                 hideDetails={true}
-                selected={true}
+                selected={false}
                 buttonIcon={'SwitchVerticalIcon'}
                 buttonText={'Change activity'}
                 onSelected={() =>
@@ -252,51 +279,66 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 }
                 onCleared={() => {}}
               />
-            </div>
+            </>
           )}
         </div>
 
         {currentStoryBook?.type !== StoryBookTypes.other && (
-          <div className={'bg-white p-4'}>
+          <div className={'bg-white px-4'}>
             {currentStoryBook?.type === StoryBookTypes.storyBook && (
               <>
                 <Typography
                   text={'Where can you find a copy of this story book'}
-                  type={'unspecified'}
-                  weight={'bold'}
+                  type={'h4'}
+                  color="textDark"
                 />
-                <ul className={'ml-4 mt-4 list-disc'}>
+                <ul className={'text-textMid ml-4 mt-4 list-disc'}>
                   <li>
                     <Typography
                       text={currentStoryBook.bookLocation}
-                      type={'unspecified'}
-                      underline
-                      color={
-                        stripPTag(currentStoryBook.bookLocation).match(URL)
-                          ? 'infoBb'
-                          : 'black'
-                      }
+                      type={'body'}
+                      color="textMid"
                       onClick={() => {
                         onBookLocationClicked(currentStoryBook.bookLocation);
                       }}
-                      fontSize={'14'}
                     />
                   </li>
                 </ul>
-                <Typography
-                  text={'Key words:'}
-                  type={'unspecified'}
-                  className={'bold mt-4'}
-                />
-                <div className={'flex flex-row flex-wrap'}>
+                <Divider dividerType="dashed" className="my-4" />
+                {currentStoryBook.author && (
+                  <Typography
+                    text={`<b class='text-textDark'>Author: </b><span class='text-textMid'>${currentStoryBook.author}</span>`}
+                    type={'markdown'}
+                    color="textDark"
+                  />
+                )}
+                {/* TODO: add translator (w38) */}
+                {/* {currentStoryBook.author && (
+                  <Typography
+                    text={`<b class='text-textDark'>Author: </b><span class='text-textMid'>${currentStoryBook.author}</span>`}
+                    type={'markdown'}
+                    color='textDark'
+                  />
+                )} */}
+                {currentStoryBook.illustrator && (
+                  <Typography
+                    text={`<b class='text-textDark'>Illustrator: </b><span class='text-textMid'>${currentStoryBook.illustrator}</span>`}
+                    type={'markdown'}
+                    color="textDark"
+                  />
+                )}
+                <Divider dividerType="dashed" className="my-4" />
+                <Typography text={'Key words'} type={'h3'} color="textDark" />
+                <div className={'mb-4 flex flex-row flex-wrap'}>
                   {currentStoryBook.keywords.split(',')?.map((keyword) => (
                     <StatusChip
                       key={keyword}
                       text={keyword}
-                      className={'mr-2 mt-4'}
+                      className={'mr-2 mt-2'}
                       textColour={'secondary'}
                       backgroundColour={'secondaryAccent2'}
                       borderColour={'secondaryAccent2'}
+                      textType="help"
                     />
                   ))}
                 </div>
@@ -472,84 +514,91 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
           {currentStoryBook &&
             currentStoryBookParts &&
             currentStoryBookParts.sort((a, b) => a.id - b.id) &&
-            currentStoryBookParts?.map((bookPart) => (
-              <div
-                key={bookPart.id}
-                className={
-                  'bg-uiBg mt-4 flex w-full flex-col items-stretch justify-start py-4'
-                }
-              >
-                <div className={'flex flex-row items-start justify-start'}>
-                  <div className={'mr-4 flex w-1/12 flex-row justify-center'}>
+            currentStoryBookParts?.map((bookPart) => {
+              return (
+                <div
+                  key={bookPart.id}
+                  className={
+                    'bg-uiBg mt-4 flex w-full flex-col items-stretch justify-start pb-6'
+                  }
+                >
+                  <div
+                    className={
+                      'relative flex flex-row items-start justify-start'
+                    }
+                  >
                     <div
                       className={
-                        'flex h-10 w-14 flex-shrink-0 flex-col items-center justify-center rounded-full'
+                        'relative z-10 mr-4 flex h-8 w-8 flex-shrink-0 flex-col items-center justify-center rounded-full'
                       }
                       style={{ backgroundColor: getAvatarColor() }}
                     >
                       <Typography
-                        type={'markdown'}
-                        fontSize={'16'}
+                        type="h3"
                         color={'white'}
                         text={bookPart.part}
                       />
                     </div>
-                  </div>
 
-                  <div className={'flex w-11/12 flex-col'}>
-                    <Typography
-                      type={'h4'}
-                      fontSize={'14'}
-                      text={bookPart.partText}
-                    />
-                  </div>
-                </div>
-
-                {bookPart.storyBookPartQuestions?.map((question) => (
-                  <div
-                    className={'mt-2 flex flex-row items-start'}
-                    key={question.id}
-                  >
-                    <div className={'mr-4 flex w-1/12 flex-row justify-center'}>
-                      <RoundIcon
-                        size={{ h: '7', w: '7' }}
-                        icon={'PhotographIcon'}
-                        iconSize={{ h: '5', w: '5' }}
-                        className={'bg-primary text-white'}
-                      />
-                    </div>
                     <div className={'flex w-11/12 flex-col'}>
                       <Typography
-                        type={'markdown'}
-                        fontSize={'14'}
-                        color={'textMid'}
-                        text={question.question}
+                        type={'h4'}
+                        color="textDark"
+                        text={bookPart.partText}
                       />
                     </div>
                   </div>
-                ))}
-              </div>
-            ))}
+
+                  {bookPart.storyBookPartQuestions?.map((question) => (
+                    <div
+                      className={'mt-2 flex flex-row items-start'}
+                      key={question.id}
+                    >
+                      <div
+                        className={'mr-4 flex w-1/12 flex-row justify-center'}
+                      >
+                        <RoundIcon
+                          size={{ h: '8', w: '8' }}
+                          icon={'PhotographIcon'}
+                          iconSize={{ h: '5', w: '5' }}
+                          className={'bg-primary text-white'}
+                        />
+                      </div>
+                      <div className={'flex w-11/12 flex-col'}>
+                        <Typography
+                          type={'unspecified'}
+                          fontSize={'14'}
+                          color={'textMid'}
+                          text={question.question}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
         </div>
         <div
-          className={'mb-20 flex w-full flex-col items-start justify-start p-4'}
+          className={
+            'mb-4 mt-8 flex w-full flex-col items-start justify-start px-4'
+          }
         >
           {!disabled &&
             (isSelected ? (
               <Button
                 type={'filled'}
-                color={'primary'}
+                color={'quatenary'}
                 className={'mt-2 w-full'}
                 textColor={'white'}
-                text={`Change story ${linkedActivity ? 'and activity' : ''}`}
-                icon={'SwitchVerticalIcon'}
+                text={'Change story & activity'}
+                icon={'RefreshIcon'}
                 iconPosition={'start'}
                 onClick={onStorySwitched}
               />
             ) : (
               <Button
                 type={'filled'}
-                color={'primary'}
+                color={'quatenary'}
                 className={'mt-2 w-full'}
                 textColor={'white'}
                 text={'Choose this story'}
@@ -623,14 +672,23 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
     }
   };
 
+  const availableLanguages: LanguageCode[] = activity?.availableLanguages
+    ? activity.availableLanguages?.map((item) => {
+        return item?.locale as LanguageCode;
+      })
+    : [defaultLanguage?.locale as LanguageCode];
+
   return (
     <div className={'flex flex-col'}>
       <div className={'flex flex-col pb-24'}>
-        <LanguageSelector
-          currentLocale={'en-za'}
-          availableLanguages={activity?.availableLanguages || [defaultLanguage]}
-          selectLanguage={getDataByLanguage}
-        />
+        <div className="bg-uiBg w-full">
+          <LanguageSelector
+            labelClassName="text-textDark mr-2"
+            currentLocale={'en-za'}
+            availableLanguages={availableLanguages || [defaultLanguage]}
+            selectLanguage={getDataByLanguage}
+          />
+        </div>
         {isOnlineOnlyAlert && (
           <div className="absolute  z-10 flex h-full items-center ">
             <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
@@ -641,9 +699,8 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
             <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
           </div>
         )}
-        <Divider />
         <Typography
-          className="mt-2 px-4"
+          className="mt-6 px-4"
           text={currentActivity.name}
           type={'h1'}
           color={'primary'}
@@ -660,10 +717,10 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
               <Button
                 type={'filled'}
                 className={'mt-4 w-full'}
-                color={'primary'}
+                color={'quatenary'}
                 textColor={'white'}
                 text={'Change activity'}
-                icon={'SwitchVerticalIcon'}
+                icon={'RefreshIcon'}
                 iconPosition={'start'}
                 onClick={handleActivitySwitched}
               />
@@ -672,7 +729,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
             <Button
               type={'filled'}
               className={'mx-4 mt-4'}
-              color={'primary'}
+              color={'quatenary'}
               textColor={'white'}
               text={'Choose this activity'}
               icon={'CheckCircleIcon'}
@@ -695,7 +752,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
               storyBookId={linkedStory.id}
               type={linkedStory.type}
               languages={linkedStory.availableLanguages}
-              selected={false}
+              selected={isSelected}
               hideDetails={true}
               buttonIcon={'SwitchVerticalIcon'}
               buttonText={'Change story'}
@@ -731,10 +788,10 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
               <Button
                 type={'filled'}
                 className={'mt-4 w-full'}
-                color={'primary'}
+                color={'quatenary'}
                 textColor={'white'}
                 text={'Change activity'}
-                icon={'SwitchVerticalIcon'}
+                icon={'RefreshIcon'}
                 iconPosition={'start'}
                 onClick={handleActivitySwitched}
               />
@@ -743,7 +800,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
             <Button
               type={'filled'}
               className={'mx-4 mt-4'}
-              color={'primary'}
+              color={'quatenary'}
               textColor={'white'}
               text={'Choose this activity'}
               icon={'CheckCircleIcon'}

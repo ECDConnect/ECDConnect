@@ -7,6 +7,7 @@ import { staticDataSelectors } from '@/store/static-data';
 import { WalkthroughModalProps } from './types';
 import { useTranslation } from 'react-i18next';
 import { LanguageDto } from '@ecdlink/core';
+import { LanguageCode } from '@/i18n/types';
 
 export const WalkthroughModal = ({
   onStart,
@@ -22,7 +23,7 @@ export const WalkthroughModal = ({
     () =>
       availableLanguages?.length
         ? languages?.filter((language) =>
-            availableLanguages.some((item) => item.id === language.id)
+            availableLanguages?.includes(language.locale as LanguageCode)
           )
         : languages,
     [languages, availableLanguages]

@@ -496,7 +496,7 @@ export const AddOrEditPractitioner = ({
           </>
         )}
 
-        {isValidPractitioner === false && !isOpenAccess && (
+        {isValidPractitioner === false && !isOpenAccess && !isOwnUserId && (
           <>
             <div className="mb-8">
               <Alert
@@ -545,7 +545,7 @@ export const AddOrEditPractitioner = ({
             />
             <Typography
               type={'body'}
-              text={`You can edit this in future by going to the Classroom then Practitioners tab.}`}
+              text={`You can edit this in future by going to the Classroom then Practitioners tab.`}
               color={'textMid'}
             />
           </div>

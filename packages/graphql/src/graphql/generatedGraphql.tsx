@@ -9542,9 +9542,9 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
 };
 
 export type MutationSendPractitionerInviteToPreSchoolArgs = {
-  preSchoolName?: InputMaybe<Scalars['String']>;
-  principalFirstName?: InputMaybe<Scalars['String']>;
-  userId: Scalars['UUID'];
+  practitionerPhoneNumber?: InputMaybe<Scalars['String']>;
+  preSchoolNameCode?: InputMaybe<Scalars['String']>;
+  principalUserId: Scalars['UUID'];
 };
 
 export type MutationSendPractitionerNotAssignedToProgrammeNotificationArgs = {
@@ -17317,13 +17317,7 @@ export type Setting_InvitationCutoffDelay = {
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
-  OAPreSchoolInvitation: Scalars['String'];
-  OAPrincipalSignup: Scalars['String'];
-  OASignup: Scalars['String'];
   Signup: Scalars['String'];
-  WLPreSchoolInvitation: Scalars['String'];
-  WLPrincipalSignup: Scalars['String'];
-  WLSignup: Scalars['String'];
 };
 
 export type Setting_Jwts = {

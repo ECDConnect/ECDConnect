@@ -43,6 +43,7 @@ import { NavigationNames } from '@/pages/navigation';
 import { WalkthroughModal } from '@/components/walkthrough/modal';
 import { InitialAttendanceTutorialModal } from '../attendance/components/attendance-tutorial/initial-tutorial-modal/initial-tutorial-modal';
 import { ActivitiesTab } from '../activities/activities';
+import { useTenant } from '@/hooks/useTenant';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -75,6 +76,8 @@ export const ClassDashboard: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const children = useSelector(childrenSelectors.getChildren);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
 
   const isToShowAttendanceTutorial = useMemo(
     () =>
@@ -331,7 +334,7 @@ export const ClassDashboard: React.FC = () => {
           }
           iconColor="alertMain"
           iconBorderColor="alertBg"
-          importantText={`Would you like to include your Funda App profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
+          importantText={`Would you like to include your ${appName} profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
           detailText={'You can change this photo in your profile.'}
           actionButtons={[
             {
