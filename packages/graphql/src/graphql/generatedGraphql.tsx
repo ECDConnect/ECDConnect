@@ -3318,6 +3318,7 @@ export type Coach = {
   isRegistered?: Maybe<Scalars['Boolean']>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
   secondaryAreaOfOperation?: Maybe<Scalars['String']>;
+  shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
@@ -3343,6 +3344,7 @@ export type CoachFilterInput = {
   or?: InputMaybe<Array<CoachFilterInput>>;
   practitionerVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
   secondaryAreaOfOperation?: InputMaybe<StringOperationFilterInput>;
+  shareInfo?: InputMaybe<BooleanOperationFilterInput>;
   signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -3365,6 +3367,7 @@ export type CoachInput = {
   IsRegistered?: InputMaybe<Scalars['Boolean']>;
   PractitionerVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
   SecondaryAreaOfOperation?: InputMaybe<Scalars['String']>;
+  ShareInfo?: InputMaybe<Scalars['Boolean']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
@@ -3394,6 +3397,7 @@ export type CoachSortInput = {
   isActive?: InputMaybe<SortEnumType>;
   isRegistered?: InputMaybe<SortEnumType>;
   secondaryAreaOfOperation?: InputMaybe<SortEnumType>;
+  shareInfo?: InputMaybe<SortEnumType>;
   signingSignature?: InputMaybe<SortEnumType>;
   siteAddress?: InputMaybe<SiteAddressSortInput>;
   siteAddressId?: InputMaybe<SortEnumType>;
