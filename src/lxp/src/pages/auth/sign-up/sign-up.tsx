@@ -161,7 +161,7 @@ export const SignUp: React.FC = () => {
         return;
       }
     }
-    if (true) {
+    if (authToken) {
       setIsLoading(true);
       const body: RegisterRequestModel = {
         username: formValue.username,
