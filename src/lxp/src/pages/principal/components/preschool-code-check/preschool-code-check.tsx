@@ -41,6 +41,7 @@ export const PreschoolCodeCheck: React.FC<{
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
   const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
   const { stopService } = useNotificationService();
   const [preschoolCode, setPreschoolCode] = useState('');
@@ -180,7 +181,7 @@ export const PreschoolCodeCheck: React.FC<{
 
       <Typography
         color="textDark"
-        text={`If your principal has already signed up for AppName, ask them for the preschool code. If they haven't signed up yet, tap “Skip”.`}
+        text={`If your principal has already signed up for ${appName}, ask them for the preschool code. If they haven't signed up yet, tap “Skip”.`}
         type={'h4'}
         className="mt-4 mb-2"
       />
