@@ -1,14 +1,22 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
+import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
+import { classroomsSelectors } from '@/store/classroom';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { staticDataSelectors } from '@/store/static-data';
 import { PractitionerDto } from '@ecdlink/core';
 import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { BannerWrapper, Button, CheckboxGroup, Typography } from '@ecdlink/ui';
-import { UserIcon } from '@heroicons/react/solid';
+import {
+  AcademicCapIcon,
+  ClipboardCheckIcon,
+  PresentationChartLineIcon,
+  UserAddIcon,
+  UserIcon,
+} from '@heroicons/react/solid';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -26,6 +34,7 @@ export const EditPractitionerPermissions = ({
   const appDispatch = useAppDispatch();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const permissions = useSelector(staticDataSelectors.getPermissions);
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +86,41 @@ export const EditPractitionerPermissions = ({
       }
     }
   }, [practitioner?.permissions]);
+
+  const renderPermissionIcon = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return (
+          <ClipboardCheckIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.create_progress_reports:
+        return (
+          <PresentationChartLineIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.plan_classroom_actitivies:
+        return (
+          <AcademicCapIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      default:
+        return (
+          <UserAddIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+    }
+  };
+
+  const renderPermissionName = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return 'Take attendance for their class(es)';
+      case PermissionsNames.create_progress_reports:
+        return 'Create progress reports to share with caregivers';
+      case PermissionsNames.plan_classroom_actitivies:
+        return 'Plan their own classroom activities';
+      default:
+        return `Add, edit, or remove children from ${classroom?.name}`;
+    }
+  };
+
   return (
     <div>
       <BannerWrapper
@@ -99,7 +143,7 @@ export const EditPractitionerPermissions = ({
         />
         <Typography
           type={'body'}
-          text={`You can edit this in future by going to the Classroom then Practitioners tab.}`}
+          text={`You can edit this in future by going to the Classroom then Practitioners tab.`}
           color={'textMid'}
         />
       </div>
@@ -108,16 +152,14 @@ export const EditPractitionerPermissions = ({
           <CheckboxGroup
             id={item.id}
             key={item.id}
-            title={item?.normalizedName}
+            title={renderPermissionName(item?.name)}
             checked={permissionsAdded?.some((option) => option === item.id)}
             value={item.id}
             onChange={(event) => {
               updateArray(event, item?.id!);
             }}
             className="mb-1"
-            icon={
-              <UserIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
-            }
+            icon={renderPermissionIcon(item?.name)}
             isIconFullWidth
             checkboxColor="primary"
           />
@@ -132,7 +174,7 @@ export const EditPractitionerPermissions = ({
           text="Save"
           textColor="white"
           icon="SaveIcon"
-          disabled={permissionsAdded?.length === 0 || isLoading}
+          disabled={isLoading}
           isLoading={isLoading}
           onClick={handleUpdatePermissions}
         />
