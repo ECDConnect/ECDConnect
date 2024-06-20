@@ -60,7 +60,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<License, Guid> _licenseRepo;
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
-        private IGenericRepository<Coach, Guid> _coachRepo;
+        private IGenericRepository<Coach, Guid> _coachGenericRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
         private IGenericRepository<TeamLead, Guid> _teamLeadRepo;
         private AuthenticationDbContext _dbContext;
@@ -97,7 +97,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
+            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
@@ -111,7 +111,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
-            _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
+            _coachGenericRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
             _calendarEventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>(userContext: _applicationUserId);
             _statementStartupSupportRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
@@ -575,7 +575,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             Trainee trainee = _traineeRepo.GetByUserId(userId);
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
-            Coach coach = _coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
+            Coach coach = _coachGenericRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
             PractitionerTimeline timeline = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
@@ -1052,7 +1052,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     latestDate = latestDate.AddDays(7);
                     if (trainee != null)
                     {
-                        Coach coach = _coachRepo.GetByUserId(trainee.Practitioner.CoachHierarchy.ToString());
+                        Coach coach = _coachGenericRepo.GetByUserId(trainee.Practitioner.CoachHierarchy.ToString());
 
                         VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
 
@@ -1211,26 +1211,60 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return practitioner;
         }
 
-        public Practitioner RegisterPractitioner(string userName)
+        public bool RegisterWLUser(Guid userId)
         {
-            var user = _userManager.FindByNameAsync(userName).Result;
-            var practitioner = _practiGenericRepo.GetByUserId(user.Id);
-
-            practitioner.IsRegistered = true;
-            practitioner.StartDate = DateTime.Now;
-            practitioner.UpdatedDate = DateTime.Now;
-            practitioner.UpdatedBy = _applicationUserId.ToString();
-            return _practiGenericRepo.Update(practitioner);
+            // This WL user can be a practitioner or coach
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
+            if (practitioner != null)
+            {
+                practitioner.IsRegistered = true;
+                practitioner.StartDate = DateTime.Now;
+                practitioner.UpdatedDate = DateTime.Now;
+                practitioner.UpdatedBy = _applicationUserId.ToString();
+                _practiGenericRepo.Update(practitioner);
+                return true;
+            } 
+            else
+            {
+                var coach = _coachGenericRepo.GetByUserId(userId);
+                if (coach != null)
+                {
+                    coach.IsRegistered = true;
+                    coach.StartDate = DateTime.Now;
+                    coach.UpdatedDate = DateTime.Now;
+                    coach.UpdatedBy = _applicationUserId.ToString();
+                    _coachGenericRepo.Update(coach);
+                    return true;
+                }
+            }
+            return false;
         }
 
-        public Practitioner UpdatePractitionerShareInfo(Guid userId, bool shareInfo)
+        
+        public bool UpdateWLUserShareInfo(Guid userId, bool shareInfo)
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
-
-            practitioner.ShareInfo = shareInfo;
-            practitioner.UpdatedDate = DateTime.Now;
-            practitioner.UpdatedBy = _applicationUserId.ToString();
-            return _practiGenericRepo.Update(practitioner);
+            if (practitioner != null)
+            {
+                practitioner.ShareInfo = shareInfo;
+                practitioner.UpdatedDate = DateTime.Now;
+                practitioner.UpdatedBy = _applicationUserId.ToString();
+                _practiGenericRepo.Update(practitioner);
+                return true;
+            } 
+            else
+            {
+                var coach = _coachGenericRepo.GetByUserId(userId);
+                if (coach != null)
+                {
+                    coach.ShareInfo = shareInfo;
+                    coach.UpdatedDate = DateTime.Now;
+                    coach.UpdatedBy = _applicationUserId.ToString();
+                    _coachGenericRepo.Update(coach);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
