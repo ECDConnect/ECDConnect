@@ -11,10 +11,14 @@ import {
   ActionModal,
   Avatar,
   BannerWrapper,
+  Button,
   Dialog,
   DialogPosition,
+  PasswordInput,
   ProfileAvatar,
   StackedList,
+  Typography,
+  renderIcon,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -49,6 +53,15 @@ import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/chil
 import { PractitionerAboutRouteState } from './practitioner-about.types';
 import { BackToCommunityDialog } from '@/pages/coach/coach-about/components/back-to-community-dialog/indext';
 import { useTenant } from '@/hooks/useTenant';
+import { Editpassword } from './edit-password/edit-password';
+import { NewPassword } from '@/pages/auth/new-password/new-password';
+import { DialogFormInput } from '@/models/practitioner/DialogFormInput';
+import {
+  PractitionerAccountModel,
+  initialPractitionerAccountValues,
+  practitionerAccountModelSchema,
+} from '@/schemas/practitioner/practitioner-account';
+import { UserResetPasswrodParams } from '@/store/user/user.types';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -67,12 +80,31 @@ export const PractitionerAbout: React.FC = () => {
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
+  const [editPassword, setEditPassword] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
+  const [editFieldVisible, setEditFieldVisible] = useState(false);
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
 
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
+
+  const [dialogFormInput, setDialogFormInput] = useState<
+    DialogFormInput<PractitionerAccountModel>
+  >({ label: '', formFieldName: 'password', value: '' });
+  const {
+    register: practitionerAccountRegister,
+    formState: practitionerAccountFormState,
+    getValues: practitionerAccountFormGetValues,
+    watch,
+  } = useForm({
+    resolver: yupResolver(practitionerAccountModelSchema),
+    defaultValues: initialPractitionerAccountValues,
+    mode: 'onChange',
+  });
+
+  const { isValid } = practitionerAccountFormState;
+  const { password } = watch();
 
   useEffect(() => {
     if (!isOnline) {
@@ -312,6 +344,21 @@ export const PractitionerAbout: React.FC = () => {
           setEditEmail(true);
         },
       },
+      {
+        title: 'Password',
+        subTitle: 'Edit your password',
+        switchTextStyles: true,
+        actionName: 'Edit',
+        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
+        buttonType: 'filled',
+        onActionClick: () => {
+          editField({
+            label: 'Password',
+            formFieldName: 'password',
+            value: practitionerAccountFormGetValues().password,
+          });
+        },
+      },
       // getPhotoOnProgressReportItem(),
     ];
 
@@ -422,6 +469,36 @@ export const PractitionerAbout: React.FC = () => {
     isFromCommunityWelcome,
   ]);
 
+  const editField = (
+    formInputToLoad: DialogFormInput<PractitionerAccountModel>
+  ) => {
+    setDialogFormInput(formInputToLoad);
+    setEditFieldVisible(true);
+  };
+
+  const saveNewPassword = async () => {
+    if (isValid) {
+      setEditFieldVisible(false);
+      await savePractitionerPasswordUserData();
+    }
+  };
+
+  const savePractitionerPasswordUserData = async () => {
+    if (user) {
+      const practitionerForm = practitionerAccountFormGetValues();
+
+      const resetModel: UserResetPasswrodParams = {
+        newPassword: practitionerForm.password,
+      };
+
+      appDispatch(userThunkActions.resetUserPassword(resetModel));
+    }
+  };
+
+  const closeEditField = () => {
+    setEditFieldVisible(false);
+  };
+
   return (
     <div className={styles.container}>
       <Dialog
@@ -471,7 +548,7 @@ export const PractitionerAbout: React.FC = () => {
             />
           </div>
           <StackedList
-            className={'bg-uiBg h-auto'}
+            className={'h-auto bg-white'}
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
@@ -498,6 +575,50 @@ export const PractitionerAbout: React.FC = () => {
             }
             isProfileEmojis={true}
           ></PhotoPrompt>
+        </div>
+      </Dialog>
+      <Dialog
+        borderRadius="normal"
+        stretch={true}
+        visible={editFieldVisible}
+        position={DialogPosition.Bottom}
+      >
+        <div className={'p-4'}>
+          <div className={styles.labelContainer}>
+            <Typography
+              type="body"
+              className=""
+              color="textDark"
+              text={dialogFormInput.label}
+              weight="bold"
+            ></Typography>
+            <div onClick={closeEditField}>
+              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
+            </div>
+          </div>
+          <PasswordInput<PractitionerAccountModel>
+            visible={true}
+            strengthMeterVisible={true}
+            nameProp={dialogFormInput.formFieldName}
+            register={practitionerAccountRegister}
+            disabled={false}
+            className={'mb-6'}
+            value={password}
+          />
+          <Button
+            type="filled"
+            color="quatenary"
+            className={'w-full'}
+            onClick={saveNewPassword}
+          >
+            {renderIcon('SaveIcon', styles.buttonIcon)}
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
+          </Button>
         </div>
       </Dialog>
     </div>
