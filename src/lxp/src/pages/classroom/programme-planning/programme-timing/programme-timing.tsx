@@ -43,6 +43,8 @@ const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
   const { state } = useLocation<ProgrammeTimingRouteState>();
 
+  const programmeToEdit = state?.programmeToEdit;
+
   useEffect(() => {
     if (!state?.classroomGroupId) {
       history.push(ROUTES.CLASSROOM.ROOT, {
@@ -150,7 +152,8 @@ const ProgrammeTiming: React.FC = () => {
       validatedDate,
       formValue.language,
       selectedTheme,
-      new Date(endDate!)
+      new Date(endDate!),
+      programmeToEdit
     );
 
     if (isOnline) {
@@ -161,7 +164,9 @@ const ProgrammeTiming: React.FC = () => {
   };
 
   useEffect(() => {
-    setIsFormValid(programmeTimingSchema.isValidSync(getValues()));
+    setIsFormValid(
+      !!programmeToEdit || programmeTimingSchema.isValidSync(getValues())
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, selectedLanguage]);
 
@@ -176,7 +181,12 @@ const ProgrammeTiming: React.FC = () => {
       const endOfWeekDay = getNoThemedProgrammeEndDate(validatedDate);
       internalEndDate = endOfWeekDay.endDate;
     } else {
-      setValue('endDate', getThemedProgrammeEndDate(validatedDate).toString());
+      if (!programmeToEdit) {
+        setValue(
+          'endDate',
+          getThemedProgrammeEndDate(validatedDate).toString()
+        );
+      }
       internalEndDate = getThemedProgrammeEndDate(validatedDate);
     }
 
@@ -233,6 +243,14 @@ const ProgrammeTiming: React.FC = () => {
     [selectedDate, selectedTheme]
   );
 
+  useEffect(() => {
+    if (programmeToEdit) {
+      setValue('date', programmeToEdit.startDate);
+      setValue('endDate', programmeToEdit.endDate);
+      setValue('language', programmeToEdit.preferredLanguage);
+    }
+  }, [programmeToEdit, setValue]);
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -248,7 +266,11 @@ const ProgrammeTiming: React.FC = () => {
       <ProgrammeWrapper />
       <Typography
         type="h1"
-        text={`Set up your theme for ${classroomGroup?.name}`}
+        text={
+          !!programmeToEdit
+            ? 'Edit programme'
+            : `Set up your theme for ${classroomGroup?.name}`
+        }
         color="textDark"
       />
       <>
@@ -321,13 +343,14 @@ const ProgrammeTiming: React.FC = () => {
           <Typography
             type="help"
             text="You can change languages while you plan. When your chosen language isn’t available, activities or stories will be shown in English."
-            color={'textLight'}
+            color={'textMid'}
           />
           <Dropdown
             fullWidth
             fillType="clear"
             placeholder="Tap to choose language"
             selectedValue={selectedLanguage}
+            disabled={!!programmeToEdit}
             list={
               (languages &&
                 languages
@@ -352,7 +375,7 @@ const ProgrammeTiming: React.FC = () => {
           isLoading={isLoading}
           onClick={handleSave}
           icon="SaveIcon"
-          text="Save"
+          text={!!programmeToEdit ? 'Update' : 'Save'}
           textColor="white"
           className="mt-auto w-full"
         />

@@ -45,7 +45,10 @@ const programmeSlice = createSlice({
       if (state.programmes) {
         for (let i = 0; i < state.programmes.length; i++) {
           if (state.programmes[i].id === action.payload.programme.id)
-            state.programmes[i] = action.payload.programme;
+            state.programmes[i] = {
+              ...action.payload.programme,
+              synced: false,
+            };
         }
       } else {
         state.programmes = [];

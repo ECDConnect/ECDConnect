@@ -53,10 +53,11 @@ export const useProgrammePlanning = () => {
     startDate: Date,
     language: string,
     theme?: ProgrammeThemeDto,
-    endDate?: Date
+    endDate?: Date,
+    programme?: ProgrammeDto
   ): Promise<ProgrammeDto> => {
     const newProgramme: ProgrammeDto = {
-      id: newGuid(),
+      id: programme?.id || newGuid(),
       insertedDate: formatISO(new Date()),
       classroomId:
         classroom?.id || practitionerClassroomGroups?.at(0)?.classroomId || '',
@@ -81,7 +82,24 @@ export const useProgrammePlanning = () => {
 
     clearOverlappingDaysProgrammes(newProgramme);
 
-    dispatch(programmeActions.createProgramme(newProgramme));
+    if (!!programme) {
+      dispatch(
+        programmeActions.updateProgrammes({
+          programme: {
+            ...newProgramme,
+            dailyProgrammes: [
+              ...newProgramme.dailyProgrammes,
+              ...programme.dailyProgrammes?.map((day) => ({
+                ...day,
+                isActive: false,
+              })),
+            ],
+          },
+        })
+      );
+    } else {
+      dispatch(programmeActions.createProgramme(newProgramme));
+    }
 
     return newProgramme;
   };
@@ -287,6 +305,7 @@ export const useProgrammePlanning = () => {
         conflictingProgrammeCopy = refreshProgrammeDateRange(
           conflictingProgrammeCopy
         );
+
         dispatch(
           programmeActions.updateProgrammes({
             programme: conflictingProgrammeCopy,

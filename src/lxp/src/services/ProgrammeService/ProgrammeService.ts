@@ -139,6 +139,8 @@ class ProgrammeService {
           name
           preferredLanguage
           dailyProgrammes {
+            insertedDate
+            isActive
             id
             day
             dayDate
