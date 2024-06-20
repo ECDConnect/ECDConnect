@@ -252,7 +252,6 @@ export const PractitionerProfile: React.FC = () => {
       initActive: true,
       child: (
         <div>
-          {/* {practitioner?.progress !== 0 ? null : <CompleteProfile />} */}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}

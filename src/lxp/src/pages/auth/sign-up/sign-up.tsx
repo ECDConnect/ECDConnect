@@ -80,7 +80,7 @@ export const SignUp: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
   const [openHelp, setOpenHelp] = useState(false);
-  const tenantName = tenant?.tenant?.organisationName;
+  const appName = tenant?.tenant?.applicationName;
   const isWhitelabel = tenant?.isWhiteLabel;
   const [permissionsErrorMessage, setPermissionsErrorMessage] = useState('');
 
@@ -438,7 +438,7 @@ export const SignUp: React.FC = () => {
           </Button>
 
           <Divider
-            title={`Already have a ${tenantName} App account?`}
+            title={`Already have a ${appName} App account?`}
             dividerType={'solid'}
             className={'mb-2'}
           />
@@ -475,7 +475,7 @@ export const SignUp: React.FC = () => {
         <ActionModal
           icon={'InformationCircleIcon'}
           iconColor={'alertMain'}
-          importantText={`${tenantName} has a different cellphone number for you`}
+          importantText={`${appName} has a different cellphone number for you`}
           detailText={`Please check that this is the correct cellphone number: ${
             signUpFormGetValues().cellphone
           }. If you have entered the correct number and are still getting this error, fill in the help form.`}

@@ -165,7 +165,6 @@ export const CoachProfile: React.FC = () => {
       initActive: true,
       child: (
         <div>
-          {isProfileComplete ? null : <CompleteProfile />}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
