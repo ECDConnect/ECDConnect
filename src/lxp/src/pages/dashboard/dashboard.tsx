@@ -522,7 +522,14 @@ export const Dashboard: React.FC = () => {
       !missingProgramme
     ) {
       history.push(navItem.href, navItem.params);
-    } else if (navItem.href.includes('classroom') && isWhiteLabel) {
+    } else if (
+      (navItem.href.includes('classroom') &&
+        isWhiteLabel &&
+        missingProgramme) ||
+      (navItem.href.includes('calendar') && isWhiteLabel && missingProgramme) ||
+      (navItem.href.includes('training') && isWhiteLabel && missingProgramme) ||
+      (navItem.href.includes('community') && isWhiteLabel && missingProgramme)
+    ) {
       showCompleteProfileBlockingDialog();
     } else {
       history.push(navItem.href, navItem.params);
@@ -928,26 +935,22 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToClassroom = () => {
-    // TODO: revert this change
-    history.push(ROUTES.CLASSROOM.ROOT, {
-      activeTabIndex: TabsItems.CLASSES,
-    });
-    // if (
-    //   ((classroom && classroom.id) ||
-    //     (classroomGroups && classroomGroups.length > 0)) &&
-    //   isRegistered &&
-    //   isProgress &&
-    //   isProgress > 0 &&
-    //   hasConsent &&
-    //   !missingProgramme &&
-    //   isWhiteLabel
-    // ) {
-    //   history.push(ROUTES.CLASSROOM.ROOT, {
-    //     activeTabIndex: TabsItems.CLASSES,
-    //   });
-    // } else {
-    //   showCompleteProfileBlockingDialog();
-    // }
+    if (
+      ((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme &&
+      isWhiteLabel
+    ) {
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.CLASSES,
+      });
+    } else {
+      showCompleteProfileBlockingDialog();
+    }
   };
 
   const goToCalendar = () => {
