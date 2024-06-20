@@ -259,7 +259,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
         />
 
         <div className="flex h-full flex-wrap justify-center overflow-auto">
-          <div className="mt-16 grid w-9/12 grid-cols-2 justify-center gap-x-8 gap-y-8 overflow-auto">
+          <div className="mt-16 grid h-screen w-9/12 grid-cols-2 justify-center gap-x-8 gap-y-8 overflow-auto">
             {isProfileEmojis
               ? !!profileEmojis?.length &&
                 profileEmojis.map((item, index) => (
@@ -288,12 +288,12 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
                   </div>
                 ))}
           </div>
-          <div className="mt-14 flex w-full justify-center">
+          <div className="mt-14 mb-20 flex w-full justify-center">
             <div className="flex w-full justify-center ">
               <Button
                 type={'filled'}
                 text={'Confirm'}
-                color={'primary'}
+                color={'quatenary'}
                 textColor={'white'}
                 className={'w-11/12'}
                 iconPosition={'start'}
