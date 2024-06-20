@@ -130,6 +130,12 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
     const resendAuthCode = await new AuthService().SendOAAuthCode(username);
   };
 
+  const handleGoBack = () => {
+    saveOldPractitionerUserData && saveOldPractitionerUserData();
+    isFromEditCellPhone && closeAction && closeAction(false);
+    setEditiCellPhoneNumber && setEditiCellPhoneNumber(false);
+  };
+
   return (
     <BannerWrapper
       size="small"
@@ -138,9 +144,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
       menuLogoUrl={theme?.images?.logoUrl}
       displayOffline={!isOnline}
       onBack={
-        isFromEditCellPhone && closeAction
-          ? () => closeAction(false)
-          : undefined
+        isFromEditCellPhone && closeAction ? () => handleGoBack() : undefined
       }
     >
       <div className="p-4">

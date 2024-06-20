@@ -48,6 +48,8 @@ import {
 import { CoachAboutRouteState } from './coach-about.types';
 import { usePrevious } from 'react-use';
 import { BackToCommunityDialog } from './components/back-to-community-dialog/indext';
+import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
+import { AuthService } from '@/services/AuthService';
 
 export const CoachAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
@@ -55,6 +57,7 @@ export const CoachAbout: React.FC = () => {
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
+  const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -73,6 +76,14 @@ export const CoachAbout: React.FC = () => {
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
 
   const pictureStorageKey = LocalStorageKeys.coachProfilePicture;
+
+  const [oldUserNumber, setOldUserNumber] = useState('');
+  console.log({ oldUserNumber });
+  useEffect(() => {
+    if (user?.phoneNumber) {
+      setOldUserNumber(user?.phoneNumber);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -201,6 +212,15 @@ export const CoachAbout: React.FC = () => {
     setListItems(list);
   };
 
+  const handleSaveNewPhone = async () => {
+    await saveCoachUserData();
+    const resendAuthCode = await new AuthService().SendOAAuthCode(
+      user?.userName!
+    );
+
+    setOpenVerifyPhoneNumber(true);
+  };
+
   const editField = (formInputToLoad: DialogFormInput<CoachAboutModel>) => {
     setDialogFormInput(formInputToLoad);
     setEditFieldVisible(true);
@@ -210,6 +230,10 @@ export const CoachAbout: React.FC = () => {
     if (coachAboutFormState.errors[dialogFormInput.formFieldName]) {
       setDisplayError(true);
     } else {
+      if (dialogFormInput.formFieldName === 'cellphone') {
+        handleSaveNewPhone();
+        return;
+      }
       setEditFieldVisible(false);
       saveCoachUserData();
     }
@@ -324,6 +348,33 @@ export const CoachAbout: React.FC = () => {
       userCopy.firstName = coachForm.name;
       userCopy.surname = coachForm.surname;
       userCopy.phoneNumber = coachForm.cellphone;
+      userCopy.email = coachForm.email;
+      userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
+
+      Object.assign(coachCopy.user as UserDto, userCopy);
+
+      appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
+
+      appDispatch(coachActions.updateCoach(coachCopy));
+      appDispatch(coachThunkActions.updateCoach(coachCopy));
+
+      setNewStackListItems(coachCopy);
+    }
+  };
+
+  const saveOldCoachUserData = (imageBaseString: string = '') => {
+    const coachForm = coachAboutFormGetValues();
+    const coachCopy = cloneDeep(coach);
+    const userCopy = cloneDeep(user);
+
+    if (coachCopy && userCopy) {
+      userCopy.firstName = coachForm.name;
+      userCopy.surname = coachForm.surname;
+      userCopy.phoneNumber = oldUserNumber;
       userCopy.email = coachForm.email;
       userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
       if (imageBaseString?.length > 0) {
@@ -478,6 +529,21 @@ export const CoachAbout: React.FC = () => {
           }
           isProfileEmojis={true}
         ></PhotoPrompt>
+      </Dialog>
+      <Dialog
+        visible={openVerifyPhoneNumber}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <VerifyPhoneNumberAuthCode
+          closeAction={setOpenVerifyPhoneNumber}
+          username={user?.userName!}
+          savePractitionerUserData={saveCoachUserData}
+          isFromEditCellPhone={true}
+          saveOldPractitionerUserData={saveOldCoachUserData}
+          setEditiCellPhoneNumber={setEditFieldVisible}
+        />
       </Dialog>
     </div>
   );
