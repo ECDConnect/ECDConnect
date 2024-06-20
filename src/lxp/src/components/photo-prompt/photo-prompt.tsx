@@ -61,6 +61,7 @@ import profile35 from '@/assets/profile-emojis/animoji-35.svg';
 import profile36 from '@/assets/profile-emojis/animoji-36.svg';
 import profile37 from '@/assets/profile-emojis/animoji-37.svg';
 import profile38 from '@/assets/profile-emojis/animoji.svg';
+import { XIcon } from '@heroicons/react/solid';
 
 export interface PhotoPromptProps extends ComponentBaseProps {
   title: string;
@@ -250,13 +251,19 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
         fullScreen
         className="overflow-auto"
       >
-        <Typography
-          type={'h1'}
-          weight="bold"
-          color={'textMid'}
-          className="ml-6 mt-6"
-          text={'Choose your emoji'}
-        />
+        <div className="flex items-center justify-between">
+          <Typography
+            type={'h1'}
+            weight="bold"
+            color={'textMid'}
+            className="ml-6 mt-6"
+            text={'Choose your emoji'}
+          />
+          <XIcon
+            className="text-textMid mt-6 mr-2 h-8 w-8"
+            onClick={() => setEmojisSection(false)}
+          />
+        </div>
 
         <div className="flex h-full flex-wrap justify-center overflow-auto">
           <div className="mt-16 grid h-screen w-9/12 grid-cols-2 justify-center gap-x-8 gap-y-8 overflow-auto">
