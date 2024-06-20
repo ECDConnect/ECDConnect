@@ -349,7 +349,8 @@ export const AddPractitioner = ({
                     <Button
                       className={'mt-3 mb-2'}
                       type="outlined"
-                      color="primary"
+                      color="secondary"
+                      textColor="secondary"
                       background={'transparent'}
                       size="small"
                       text="Enter ID number instead"
@@ -360,9 +361,10 @@ export const AddPractitioner = ({
                     <Button
                       className={'mt-3 mb-2'}
                       type="outlined"
-                      color="primary"
+                      color="secondary"
                       size="small"
                       background={'transparent'}
+                      textColor="secondary"
                       text="Enter passport number instead"
                       onClick={() => setValue('preferId', false)}
                     />
