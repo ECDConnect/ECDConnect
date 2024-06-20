@@ -263,7 +263,11 @@ export default function ConfirmPractitioners({
               </div>
               <Typography
                 type={'h2'}
-                text={'Invite practitioners'}
+                text={
+                  listItems?.length > 0
+                    ? 'Confirm practitioners'
+                    : 'Invite practitioners'
+                }
                 color={'textDark'}
               />
               <StackedList<ActionListDataItem>
