@@ -886,14 +886,14 @@ export const Dashboard: React.FC = () => {
 
   const goToCommunity = () => {
     if (
-      ((classroom && classroom.id) ||
+      (((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-      isRegistered &&
-      isProgress &&
-      isProgress > 0 &&
-      hasConsent &&
-      !missingProgramme &&
-      isWhiteLabel
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent &&
+        !missingProgramme) ||
+      isTrialPeriod
     ) {
       history.push(
         isFirstTimeCommunitySection
@@ -901,7 +901,7 @@ export const Dashboard: React.FC = () => {
           : ROUTES.COMMUNITY.ROOT,
         { isFromDashboard: true } as CommunityRouteState
       );
-    } else {
+    } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -946,35 +946,36 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      ((classroom && classroom.id) ||
+      (((classroom && !!classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-      isRegistered &&
-      isProgress &&
-      isProgress > 0 &&
-      hasConsent &&
-      !missingProgramme &&
-      isWhiteLabel
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent &&
+        !missingProgramme) ||
+      isTrialPeriod
     ) {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.CLASSES,
       });
-    } else {
+    } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     }
   };
 
   const goToCalendar = () => {
     if (
-      ((classroom && classroom.id) ||
+      (((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-      isRegistered &&
-      isProgress &&
-      isProgress > 0 &&
-      hasConsent &&
-      !missingProgramme
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent &&
+        !missingProgramme) ||
+      isTrialPeriod
     ) {
       history.push(ROUTES.CALENDAR);
-    } else {
+    } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -988,17 +989,17 @@ export const Dashboard: React.FC = () => {
 
   const goToTraining = () => {
     if (
-      ((classroom && classroom.id) ||
+      (((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
-      isRegistered &&
-      isProgress &&
-      isProgress > 0 &&
-      hasConsent &&
-      !missingProgramme &&
-      isWhiteLabel
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent &&
+        !missingProgramme) ||
+      isTrialPeriod
     ) {
       history.push(ROUTES.TRAINING);
-    } else {
+    } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     }
   };

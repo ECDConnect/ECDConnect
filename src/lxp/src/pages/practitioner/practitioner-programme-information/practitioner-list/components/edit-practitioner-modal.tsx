@@ -31,6 +31,11 @@ export const EditPractitionerModal = ({
     string | undefined
   >(undefined);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const modalTitle = !practitioner?.isPrincipal
+    ? `What do you want to do on ${
+        practitioner?.user?.firstName || practitioner?.user?.userName
+      } profile?`
+    : `What do you want to do on your profile?`;
 
   const getRemovalsForPractitioners = async () => {
     if (practitioners) {
@@ -93,24 +98,24 @@ export const EditPractitionerModal = ({
     <div className="h-full w-full p-4">
       <Typography
         type="h4"
-        text={`What do you want to do on ${
-          practitioner?.user?.firstName || practitioner?.user?.userName
-        } profile?`}
+        text={modalTitle}
         color={'textDark'}
         className="mt-4 w-full"
         align="center"
       />
       <div className="-mb-4 mt-4 flex h-full  flex-col justify-center gap-2">
-        <Button
-          size="normal"
-          className="w-full"
-          type="filled"
-          color="quatenary"
-          text="Change app rules"
-          textColor="white"
-          icon="LockOpenIcon"
-          onClick={() => setEditPractitionerPermissions(true)}
-        />
+        {!practitioner?.isPrincipal && (
+          <Button
+            size="normal"
+            className="w-full"
+            type="filled"
+            color="quatenary"
+            text="Change app rules"
+            textColor="white"
+            icon="LockOpenIcon"
+            onClick={() => setEditPractitionerPermissions(true)}
+          />
+        )}
         <Button
           size="normal"
           className="w-full"
@@ -121,18 +126,20 @@ export const EditPractitionerModal = ({
           icon="PencilAltIcon"
           onClick={() => handleReassignClass()}
         />
-        <Button
-          size="normal"
-          className="w-full"
-          type="outlined"
-          color="quatenary"
-          text={`Remove ${
-            practitioner?.user?.firstName || practitioner?.user?.userName
-          }`}
-          textColor="quatenary"
-          icon="TrashIcon"
-          onClick={() => handleRemoveuser()}
-        />
+        {!practitioner?.isPrincipal && (
+          <Button
+            size="normal"
+            className="w-full"
+            type="outlined"
+            color="quatenary"
+            text={`Remove ${
+              practitioner?.user?.firstName || practitioner?.user?.userName
+            }`}
+            textColor="quatenary"
+            icon="TrashIcon"
+            onClick={() => handleRemoveuser()}
+          />
+        )}
         <Button
           size="normal"
           className="mb-8 w-full"

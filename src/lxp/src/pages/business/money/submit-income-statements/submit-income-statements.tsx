@@ -47,7 +47,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
 
-    if (!statements.some((x) => x.month === month && x.year === year)) {
+    if (!statements.some((x) => x?.month === month && x.year === year)) {
       dispatch(
         statementsActions.createStatement({
           id: newGuid(),
@@ -145,9 +145,9 @@ export const SubmitIncomeStatements: React.FC = () => {
   const previousMonth = getPreviousMonth(lastMonth);
 
   const hasLastTwoMonthsStatements =
-    lastMonthStatement.month === lastMonth.getMonth() &&
-    lastMonthStatement.year === lastMonth.getFullYear() &&
-    previousMonthStatement.month === previousMonth.getMonth() &&
+    lastMonthStatement?.month === lastMonth.getMonth() &&
+    lastMonthStatement?.year === lastMonth.getFullYear() &&
+    previousMonthStatement?.month === previousMonth.getMonth() &&
     previousMonthStatement.year === previousMonth.getFullYear();
 
   const totalDownloadedStatements = statements.reduce(
