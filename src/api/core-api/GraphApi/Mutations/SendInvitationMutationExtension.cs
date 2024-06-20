@@ -22,7 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 
@@ -151,6 +150,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new ArgumentException("Preschool name is empty");
             }
 
+            var principal = await userManager.FindByIdAsync(principalUserId);
+            if (principal == null)
+            {
+                throw new ArgumentException("Principal with id not available in application");
+            }
+
             var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber);
             var userByPhoneNumber = userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
                                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
@@ -185,7 +190,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new QueryException("Token generation failed");
             }
 
-            var principal = await userManager.FindByIdAsync(principalUserId);
+            
             await notificationManager.SendPreSchoolInvitationAsync(user, principal.FullName, preSchoolNameCode, token);
 
             await Task.Delay(1000);
@@ -212,6 +217,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (string.IsNullOrEmpty(practitionerUserId.ToString()))
             {
                 throw new ArgumentException("Practitioner UserId is empty");
+            }
+            var practitionerUser = await userManager.FindByIdAsync(practitionerUserId);
+            if (practitionerUser == null)
+            {
+                throw new ArgumentException("Practitioner with id not available in application");
             }
 
             var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(principalPhoneNumber);
@@ -247,9 +257,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 throw new QueryException("Token generation failed");
             }
-
-            var practitioner = await userManager.FindByIdAsync(practitionerUserId);
-            await notificationManager.SendPrincipalInvitationAsync(user, practitioner.FullName, token);
+            await notificationManager.SendPrincipalInvitationAsync(user, practitionerUser.FullName, token);
 
             await Task.Delay(1000);
             user.IsActive = false;
