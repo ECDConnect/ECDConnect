@@ -62,7 +62,7 @@ export const CoachProfile: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-
+  console.log({ coach });
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
@@ -78,7 +78,7 @@ export const CoachProfile: React.FC = () => {
         subTitleStyle,
         menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         iconColor: 'white',
 
         showIcon: profilePc === undefined,
@@ -93,7 +93,7 @@ export const CoachProfile: React.FC = () => {
         subTitle: 'Password',
         subTitleStyle,
         menuIcon: 'ShieldCheckIcon',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         showIcon: true,
         iconColor: 'white',
         onActionClick: () => {
@@ -107,7 +107,7 @@ export const CoachProfile: React.FC = () => {
         subTitleStyle,
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         showIcon: true,
         onActionClick: () => {
           dialog({
