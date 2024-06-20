@@ -52,7 +52,8 @@ export const ConfirmClasses = ({
     for (const classroomGroup of filteredClassroomGroups as ClassroomGroupDto[]) {
       const current =
         currentPractitioner?.userId === classroomGroup.userId
-          ? currentPractitioner?.user?.firstName
+          ? currentPractitioner?.user?.firstName ||
+            currentPractitioner?.user?.userName
           : 'Practitioner';
       const _practitioner =
         practitioners?.filter((a) => a.userId === classroomGroup?.userId).at(0)
