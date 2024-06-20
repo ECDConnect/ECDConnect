@@ -341,8 +341,7 @@ namespace ECDLink.Security.Api
             if (!string.IsNullOrEmpty(verifyModel.PhoneNumber))
             {
                 var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
-                var userByPhoneNumber = _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
-                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+                var userByPhoneNumber = _securityManager.GetUserByNameAsync(normalizePhoneNumber);
                 if (userByPhoneNumber != null)
                 {
                     return BadRequest(new FailedVerificationModel
@@ -440,7 +439,7 @@ namespace ECDLink.Security.Api
             }
 
             // Step4: add user to practitioner table
-            var newPractitioner = _personnelService.AddOAPractitioner(user.Id);
+            var newPractitioner = _personnelService.AddOAPractitioner(user.Id, user.UserName);
             if (newPractitioner == null)
             {
                 return BadRequest(new FailedVerificationModel
