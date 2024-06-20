@@ -126,10 +126,10 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     });
   };
 
-  const handleEditTheme = () => {
+  const handleEditProgramme = async () => {
     if (isOnline) {
       if (themes.length === 0) {
-        appDispatch(
+        await appDispatch(
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
         );
       }
@@ -250,7 +250,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
         {!isWeekendDay && showChips && (
           <button
             className={`flex w-full items-center rounded-xl ${themeColour()}`}
-            onClick={handleEditTheme}
+            onClick={handleEditProgramme}
           >
             {chosenTheme && (
               <img

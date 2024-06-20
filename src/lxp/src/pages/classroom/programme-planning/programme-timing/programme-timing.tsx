@@ -56,7 +56,7 @@ const ProgrammeTiming: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const {
-    createProgramme,
+    createOrEditProgramme,
     getConflictingProgramme,
     validateStartDate,
     getThemedProgrammeEndDate,
@@ -147,7 +147,7 @@ const ProgrammeTiming: React.FC = () => {
     const formValue = getValues();
     const validatedDate = validateStartDate(new Date(formValue.date));
 
-    await createProgramme(
+    await createOrEditProgramme(
       state.classroomGroupId,
       validatedDate,
       formValue.language,

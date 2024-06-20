@@ -48,7 +48,7 @@ export const useProgrammePlanning = () => {
     return item?.userId === practitioner?.userId;
   });
 
-  const createProgramme = async (
+  const createOrEditProgramme = async (
     classroomGroupId: string,
     startDate: Date,
     language: string,
@@ -416,7 +416,7 @@ export const useProgrammePlanning = () => {
   };
 
   return {
-    createProgramme,
+    createOrEditProgramme,
     getConflictingProgramme,
     validateStartDate,
     getThemedProgrammeEndDate,
