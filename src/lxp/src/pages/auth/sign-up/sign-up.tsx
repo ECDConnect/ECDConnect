@@ -137,30 +137,30 @@ export const SignUp: React.FC = () => {
 
     setIsLoading(true);
 
-    // const informationVerified = await new AuthService().VerifyInvitationRequest(
-    //   {
-    //     phoneNumber: formValue.cellphone,
-    //     token: authToken || '',
-    //     username: formValue.username || '',
-    //   }
-    // );
+    const informationVerified = await new AuthService().VerifyInvitationRequest(
+      {
+        phoneNumber: formValue.cellphone,
+        token: authToken || '',
+        username: formValue.username || '',
+      }
+    );
 
-    // setIsLoading(false);
+    setIsLoading(false);
 
-    // if (informationVerified.errorCode) {
-    //   if (informationVerified.verified === false) {
-    //     if (informationVerified.errorCode === 1) {
-    //       setRequestError(`If you are having trouble, tap "Get help"`);
-    //       setIsLoading(false);
-    //       return;
-    //     }
-    //     if (informationVerified.errorCode === 2) {
-    //       setPresentCellNumberMismatch(true);
-    //       setIsLoading(false);
-    //     }
-    //     return;
-    //   }
-    // }
+    if (informationVerified.errorCode) {
+      if (informationVerified.verified === false) {
+        if (informationVerified.errorCode === 1) {
+          setRequestError(`If you are having trouble, tap "Get help"`);
+          setIsLoading(false);
+          return;
+        }
+        if (informationVerified.errorCode === 2) {
+          setPresentCellNumberMismatch(true);
+          setIsLoading(false);
+        }
+        return;
+      }
+    }
     if (true) {
       setIsLoading(true);
       const body: RegisterRequestModel = {
