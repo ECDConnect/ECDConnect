@@ -317,8 +317,8 @@ namespace ECDLink.Security.Api
                 }
             }
 
-            var updatedPractitioner = _personnelService.RegisterPractitioner(user.UserName);
-            if (updatedPractitioner == null)
+            var isPractitionerUpdated = _personnelService.RegisterWLUser(user.Id);
+            if (!isPractitionerUpdated)
             {
                 return BadRequest(new FailedVerificationModel
                 {
@@ -416,9 +416,9 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            // update Practitioner ShareInfo value
-            var updatePractitioner = _personnelService.UpdatePractitionerShareInfo(user.Id, input.ShareInfo);
-            if (updatePractitioner == null)
+            // update Practitioner/Coach ShareInfo value
+            var isUpdatedUser = _personnelService.UpdateWLUserShareInfo(user.Id, input.ShareInfo);
+            if (!isUpdatedUser)
             {
                 return BadRequest(new FailedVerificationModel
                 {

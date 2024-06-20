@@ -30,7 +30,11 @@ interface VerifyPhoneNumberProps {
   phoneNumber?: string;
   username: string;
   setIsFromAuthCodeScreen?: (item: boolean) => void;
-  password: string;
+  password?: string;
+  savePractitionerUserData?: () => void;
+  saveOldPractitionerUserData?: () => void;
+  isFromEditCellPhone?: boolean;
+  setEditiCellPhoneNumber?: (item: boolean) => void;
 }
 
 export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
@@ -39,6 +43,10 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   username,
   setIsFromAuthCodeScreen,
   password,
+  savePractitionerUserData,
+  saveOldPractitionerUserData,
+  isFromEditCellPhone,
+  setEditiCellPhoneNumber,
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -56,7 +64,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
     appDispatch(authActions.setUserExpired());
     await appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
-    history.push(ROUTES.DASHBOARD);
+    history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
   const handleConfirmAuthCode = async () => {
@@ -73,12 +81,21 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
           title: ` Failed to verify the auth token!`,
           variant: NOTIFICATION.ERROR,
         });
+        if (isFromEditCellPhone) {
+          saveOldPractitionerUserData && saveOldPractitionerUserData();
+        }
         setErrorMessage('Wrong code. Please insert a valid code!');
         setIsLoading(false);
         return;
       });
 
-    if (confirmAuthToken) {
+    if (confirmAuthToken && isFromEditCellPhone) {
+      savePractitionerUserData && (await savePractitionerUserData());
+      closeAction && closeAction(false);
+      setEditiCellPhoneNumber && setEditiCellPhoneNumber(false);
+    }
+
+    if (confirmAuthToken && password) {
       setNotification({
         title: `Auth code confirmed`,
         variant: NOTIFICATION.SUCCESS,
@@ -118,6 +135,11 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
       className={'h-screen'}
       title={orgName}
       displayOffline={!isOnline}
+      onBack={
+        isFromEditCellPhone && closeAction
+          ? () => closeAction(false)
+          : undefined
+      }
     >
       <div className="p-4">
         <Typography

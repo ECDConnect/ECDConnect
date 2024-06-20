@@ -48,6 +48,7 @@ import { contentReportSelectors } from '@/store/content/report';
 import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
 import { PractitionerAboutRouteState } from './practitioner-about.types';
 import { BackToCommunityDialog } from '@/pages/coach/coach-about/components/back-to-community-dialog/indext';
+import { useTenant } from '@/hooks/useTenant';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -67,6 +68,8 @@ export const PractitionerAbout: React.FC = () => {
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
 
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
@@ -143,8 +146,8 @@ export const PractitionerAbout: React.FC = () => {
           iconBorderColor="infoMain"
           importantText={
             using
-              ? `Your Funda App profile photo will be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
-              : `Your Funda App profile photo will not be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+              ? `Your ${appName} profile photo will be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+              : `Your ${appName} profile photo will not be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
           }
           detailText={
             using
@@ -493,6 +496,7 @@ export const PractitionerAbout: React.FC = () => {
             onDelete={
               userProfilePicture || avatar ? deleteProfilePicture : undefined
             }
+            isProfileEmojis={true}
           ></PhotoPrompt>
         </div>
       </Dialog>

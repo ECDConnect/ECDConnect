@@ -98,7 +98,7 @@ export const OaLogin: React.FC = () => {
     appDispatch(authActions.setUserExpired());
     await appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
-    history.push(ROUTES.DASHBOARD);
+    history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
   const checkSyncData = async () => {

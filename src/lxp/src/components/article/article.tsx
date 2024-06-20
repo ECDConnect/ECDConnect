@@ -18,7 +18,8 @@ import {
 } from '@store/content/consent';
 import LanguageSelector from '../language-selector/language-selector';
 import * as styles from './article.styles';
-import { ArticleProps, LanguagesModels } from './article.types';
+import { ArticleProps } from './article.types';
+import { LanguageCode } from '@/i18n/types';
 
 export const Article = ({
   visible = true,
@@ -32,7 +33,10 @@ export const Article = ({
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [articleText, setArticleText] = useState<string>('');
-
+  const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [availableLanguages, setAvailableLanguages] = useState([
+    language.locale as LanguageCode,
+  ]);
   const consent = useSelector(contentConsentSelectors.getConsent);
   const dialog = useDialog();
 
@@ -65,6 +69,13 @@ export const Article = ({
         ? content?.[0]
         : content.find((x) => x.name === consentEnumType);
       setArticleText(consentFilter?.description ?? '');
+      setAvailableLanguages(
+        consentFilter?.availableLanguages
+          ? consentFilter.availableLanguages?.map((item) => {
+              return item?.locale as LanguageCode;
+            })
+          : [language.locale as LanguageCode]
+      );
     } else {
       setArticleText('');
       presentUnavailableAlert();
@@ -77,6 +88,14 @@ export const Article = ({
     if (!consentFilter || consentFilter.description?.length === 0) {
       presentUnavailableAlert();
     }
+
+    setAvailableLanguages(
+      consentFilter?.availableLanguages
+        ? consentFilter.availableLanguages?.map((item) => {
+            return item?.locale as LanguageCode;
+          })
+        : [language.locale as LanguageCode]
+    );
 
     setArticleText(consentFilter?.description ?? '');
   };
@@ -133,7 +152,7 @@ export const Article = ({
                   labelClassName="text-textDark mr-2"
                   currentLocale="en-za"
                   selectLanguage={(data) => changeLanugage(data)}
-                  availableLanguages={LanguagesModels}
+                  availableLanguages={availableLanguages}
                   notLogged={true}
                 />
               </div>

@@ -1,4 +1,10 @@
-import { Typography, Card, StackedList, BannerWrapper } from '@ecdlink/ui';
+import {
+  Typography,
+  Card,
+  StackedList,
+  BannerWrapper,
+  Button,
+} from '@ecdlink/ui';
 import React from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
@@ -18,7 +24,6 @@ import ROUTES from '@/routes/routes';
 export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
   hideDetails,
   statementTitle,
-  isEditable,
   incomeItems,
   statementMonth,
   statementId,
@@ -27,7 +32,6 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
   const children = useSelector(childrenSelectors.getChildren);
   const { isOnline } = useOnlineStatus();
 
-  // TODO better mapping, or pass in mapped items
   const incomeListDetailsItems = incomeItems?.map((item) => {
     return {
       title: item?.childUserId
@@ -38,9 +42,6 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
       onActionClick: () => {
-        if (!isEditable) {
-          return;
-        }
         history.push(ROUTES.BUSINESS_UPDATE_INCOME, {
           statementId: statementId,
           incomeItem: item,
@@ -86,7 +87,7 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
           />
         )}
         <Card
-          className="bg-secondary flex items-center justify-between p-4"
+          className="bg-tertiary flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography

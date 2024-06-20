@@ -26,6 +26,7 @@ import { userSelectors } from '@/store/user';
 import { FieldError } from 'react-hook-form';
 import { useAppDispatch } from '@/store';
 import { practitionerThunkActions } from '@/store/practitioner';
+import { useTenant } from '@/hooks/useTenant';
 
 export const InvitePrincipal: React.FC<{
   onNext: OnNext;
@@ -33,6 +34,8 @@ export const InvitePrincipal: React.FC<{
 }> = ({ onNext, setInvitePrincipal }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -114,7 +117,7 @@ export const InvitePrincipal: React.FC<{
                 </div>
                 <Typography
                   color="textDark"
-                  text={`Connect with your principal`}
+                  text={`Invite your principal to ${appName}!`}
                   type={'h3'}
                   align="center"
                 />
@@ -180,31 +183,34 @@ export const InvitePrincipal: React.FC<{
                 />
               </div>
             )}
-
-            <Button
-              type="filled"
-              color="quatenary"
-              className={'bottom-12 mt-1 mb-2 w-full'}
-              disabled={!principalPhoneNumber || !allowPermissions}
-              isLoading={isLoading}
-              onClick={handleInvitePrincipal}
-            >
-              {renderIcon('ExclamationIcon', 'mr-2 text-white w-5')}
-              <Typography
-                type={'help'}
-                text={'Save & send invitation'}
-                color={'white'}
-              />
-            </Button>
-            <Button
-              type="outlined"
-              color="quatenary"
-              className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
-              onClick={handleSkipAddPractitionerToPrincipal} // Navigate to a different page if it is principle
-            >
-              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-              <Typography type={'help'} text={'Skip'} color={'quatenary'} />
-            </Button>
+            <div className="absolute bottom-4 w-full">
+              <Button
+                type="filled"
+                color="quatenary"
+                className={'bottom-12 mt-1 mb-2 w-11/12'}
+                disabled={!principalPhoneNumber || !allowPermissions}
+                isLoading={isLoading}
+                onClick={handleInvitePrincipal}
+              >
+                {renderIcon('ExclamationIcon', 'mr-2 text-white w-5')}
+                <Typography
+                  type={'help'}
+                  text={'Save & send invitation'}
+                  color={'white'}
+                />
+              </Button>
+              <Button
+                type="outlined"
+                color="quatenary"
+                className={
+                  'border-quatenary bottom-12 mt-1 mb-2 w-11/12 border'
+                }
+                onClick={handleSkipAddPractitionerToPrincipal} // Navigate to a different page if it is principle
+              >
+                {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+                <Typography type={'help'} text={'Skip'} color={'quatenary'} />
+              </Button>
+            </div>
           </div>
           <Article
             visible={viewPermissionToShare}

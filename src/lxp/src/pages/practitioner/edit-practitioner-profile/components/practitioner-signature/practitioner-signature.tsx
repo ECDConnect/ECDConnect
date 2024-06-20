@@ -19,7 +19,7 @@ import {
 import { useEffect } from 'react';
 import { PractitionerInput } from '@ecdlink/graphql';
 import { FormComponentProps } from '@/../../../packages/core/lib';
-
+import { useTenant } from '@/hooks/useTenant';
 export interface SignupSignatureProps
   extends FormComponentProps<string | undefined> {
   isLoading?: boolean;
@@ -30,7 +30,8 @@ export const PractitionerSignature: React.FC<SignupSignatureProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   let signature = {} as SignatureCanvas | null;
@@ -89,7 +90,7 @@ export const PractitionerSignature: React.FC<SignupSignatureProps> = ({
       </div>
       <IconTitleDescriptionTile
         title="You can use this signature to sign forms on the app."
-        subTitle="You can access and change your signature through your Funda App profile in future."
+        subTitle={`You can access and change your signature through your ${appName} profile in future.`}
         icon="InformationCircleIcon"
         iconColour={'infoDark'}
         iconBorderColour={'uiBg'}

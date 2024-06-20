@@ -12,6 +12,7 @@ import {
   getIncomeStatements,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 const initialState: StatementsState = {
   expensesTypes: undefined,
@@ -40,30 +41,130 @@ const statementsSlice = createSlice({
         },
       ];
     },
-    addIncomeItem: (state, action: PayloadAction<IncomeItemDto>) => {
-      // TODO - need to add logic to create a statement if one does not exist for the given date
-      const dateReceived = new Date(action.payload.dateReceived);
+    markStatementAsDownloaded: (
+      state,
+      action: PayloadAction<{ statementId: string }>
+    ) => {
+      const { statementId } = action.payload;
+
+      // Get by statement Id or the month/year of the income item
+      let updatedStatement = state.incomeStatements.find(
+        (x) => x.id === statementId
+      );
+
+      if (!updatedStatement) {
+        return;
+      }
+
+      state.incomeStatements = [
+        ...state.incomeStatements.filter((x) => x.id !== statementId),
+        {
+          ...updatedStatement,
+          synced: false,
+          downloaded: true,
+        },
+      ];
+    },
+    addOrUpdateIncomeItems: (
+      state,
+      action: PayloadAction<{
+        statementId?: string;
+        incomeItems: IncomeItemDto[];
+      }>
+    ) => {
+      const { incomeItems, statementId } = action.payload;
+
+      if (!incomeItems.length) {
+        return;
+      }
+
+      const dateReceived = new Date(incomeItems[0].dateReceived);
       const receivedMonth = dateReceived.getMonth() + 1;
       const receivedYear = dateReceived.getFullYear();
-      for (let i = 0; i < state.incomeStatements.length; i++) {
-        if (
-          state.incomeStatements[i].month === receivedMonth &&
-          state.incomeStatements[i].year === receivedYear
-        ) {
-          state.incomeStatements[i] = {
-            ...state.incomeStatements[i],
-            incomeItems: [
-              ...state.incomeStatements[i].incomeItems,
-              action.payload,
-            ],
+
+      // Get by statement Id or the month/year of the income item
+      let updatedStatement = !!statementId
+        ? state.incomeStatements.find((x) => x.id === statementId)
+        : state.incomeStatements.find(
+            (x) => x.month === receivedMonth && x.year === receivedYear
+          );
+
+      // If nothing found, then create one
+      if (!updatedStatement) {
+        const date = new Date(incomeItems[0].dateReceived);
+        updatedStatement = {
+          id: newGuid(),
+          month: receivedMonth,
+          year: receivedYear,
+          contactedByCoach: false,
+          downloaded: false,
+          incomeItems: [],
+          expenseItems: [],
+          synced: false,
+          dateRefreshed: undefined,
+        };
+      }
+
+      state.incomeStatements = [
+        ...state.incomeStatements.filter((x) => x.id !== statementId),
+        {
+          ...updatedStatement,
+          synced: false,
+          incomeItems: [
+            ...updatedStatement.incomeItems.filter(
+              (x) =>
+                !action.payload.incomeItems.some(
+                  (updatedItem) => updatedItem.id === x.id
+                )
+            ),
+            ...incomeItems,
+          ],
+        },
+      ];
+    },
+    addExpenseItem: (state, action: PayloadAction<ExpenseItemDto>) => {
+      const datePaid = new Date(action.payload.datePaid);
+      const paidMonth = datePaid.getMonth() + 1;
+      const paidYear = datePaid.getFullYear();
+
+      const updatedStatement = state.incomeStatements.find(
+        (x) => x.month === paidMonth && x.year === paidYear
+      );
+
+      if (!updatedStatement) {
+        // No statement for the month yet, so add one
+        state.incomeStatements = [
+          ...state.incomeStatements,
+          {
+            id: newGuid(),
+            contactedByCoach: false,
+            year: paidYear,
+            month: paidMonth,
+            downloaded: false,
             synced: false,
-          };
-        }
+            dateRefreshed: undefined,
+            incomeItems: [],
+            expenseItems: [action.payload],
+          },
+        ];
+      } else {
+        // Add item to existing statement
+        state.incomeStatements = [
+          ...state.incomeStatements.filter((x) => x.id !== updatedStatement.id),
+          {
+            ...updatedStatement,
+            synced: false,
+            expenseItems: [...updatedStatement.expenseItems, action.payload],
+          },
+        ];
       }
     },
-    updateIncomeItem: (
+    updateExpenseItem: (
       state,
-      action: PayloadAction<{ statementId: string; incomeItem: IncomeItemDto }>
+      action: PayloadAction<{
+        statementId: string;
+        expenseItem: ExpenseItemDto;
+      }>
     ) => {
       const updatedStatement = state.incomeStatements.find(
         (x) => x.id === action.payload.statementId
@@ -78,38 +179,17 @@ const statementsSlice = createSlice({
         {
           ...updatedStatement,
           synced: false,
-          incomeItems: [
-            ...updatedStatement.incomeItems.filter(
-              (x) => x.id !== action.payload.incomeItem.id
+          expenseItems: [
+            ...updatedStatement.expenseItems.filter(
+              (x) => x.id !== action.payload.expenseItem.id
             ),
-            action.payload.incomeItem,
+            action.payload.expenseItem,
           ],
         },
       ];
     },
-    addExpenseItem: (state, action: PayloadAction<ExpenseItemDto>) => {
-      const dateReceived = new Date(action.payload.datePaid);
-      const receivedMonth = dateReceived.getMonth() + 1;
-      const receivedYear = dateReceived.getFullYear();
-      for (let i = 0; i < state.incomeStatements.length; i++) {
-        if (
-          state.incomeStatements[i].month === receivedMonth &&
-          state.incomeStatements[i].year === receivedYear
-        ) {
-          state.incomeStatements[i] = {
-            ...state.incomeStatements[i],
-            expenseItems: [
-              ...state.incomeStatements[i].expenseItems,
-              action.payload,
-            ],
-            synced: false,
-          };
-        }
-      }
-    },
   },
   extraReducers: (builder) => {
-    //setThunkActionStatus(builder, submitIncomeStatement);
     builder.addCase(getAllExpensesTypes.fulfilled, (state, action) => {
       state.expensesTypes = action.payload;
     });
@@ -134,7 +214,6 @@ const statementsSlice = createSlice({
             dateRefreshed: new Date().toString(),
           })),
         ];
-        console.log('state.incomeStatements', state.incomeStatements);
       }
     });
   },

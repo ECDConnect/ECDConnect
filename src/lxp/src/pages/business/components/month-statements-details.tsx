@@ -4,6 +4,7 @@ import {
   StackedList,
   Dialog,
   DialogPosition,
+  Button,
 } from '@ecdlink/ui';
 import React, { useMemo, useState } from 'react';
 import {
@@ -12,14 +13,15 @@ import {
 } from '@/utils/statements/statements-utils';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import {
-  ExpenseItemDto,
   ExpenseTypeIds,
-  IncomeItemDto,
   IncomeStatementDto,
   IncomeTypeIds,
 } from '@ecdlink/core';
 import { IncomeDetailsList } from './income-details-list.tsx/income-details-list';
 import { ExpenseDetailsList } from './expense-details-list.tsx/expense-details-list';
+import SecondaryFileEmoticon from '../../../assets/emoji_secondary_file.svg';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
 
 export type MonthStatementsDetailsProps = {
   statement: IncomeStatementDto;
@@ -28,6 +30,8 @@ export type MonthStatementsDetailsProps = {
 export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
   statement,
 }) => {
+  const history = useHistory();
+
   const statementTitle = `${getMonthName(statement.month - 1)} ${
     statement.year
   }`;
@@ -47,8 +51,6 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
     useState(false);
   const [showUtilitiesDetails, setShowUtilitiesDetails] = useState(false);
   const [showSalaryDetails, setShowSalaryDetails] = useState(false);
-
-  const today = new Date();
 
   // Totals
   const totalIncome = sumIncomeOrExpenseItems(statement.incomeItems);
@@ -273,50 +275,126 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           color="textDark"
           text={statementTitle}
         />
-        <StackedList
-          className="mt-4 flex w-full flex-col gap-1"
-          type="MenuList"
-          listItems={incomeItemsList}
-        />
-        <Card
-          className="bg-successMain mt-2 flex items-center justify-between p-4"
-          shadowSize={'md'}
-        >
-          <Typography
-            text={'Total income'}
-            type="body"
-            color={'white'}
-            className="w-8/12"
-          />
-          <Typography
-            text={`R ${formatCurrency(totalIncome)}`}
-            color={'white'}
-            type="h4"
-            className="mr-12 w-4/12 text-right"
-          />
-        </Card>
-        <StackedList
-          className="mt-4 flex w-full flex-col gap-1"
-          type="MenuList"
-          listItems={expenseItemsList}
-        />
-        <Card
-          className="bg-secondary mt-2 flex items-center justify-between p-4"
-          shadowSize={'md'}
-        >
-          <Typography
-            text={'Total expenses'}
-            type="body"
-            color={'white'}
-            className="w-9/12"
-          />
-          <Typography
-            text={`R ${formatCurrency(totalExpenses)}`}
-            color={'white'}
-            type="h4"
-            className="mr-12 w-4/12 text-right"
-          />
-        </Card>
+        {!statement.incomeItems.length && (
+          <Card className="bg-secondaryAccent2 my-4 flex flex-col justify-center rounded-2xl p-4">
+            <div className="flex flex-row gap-3">
+              <div className="rounded-full">
+                <img
+                  src={SecondaryFileEmoticon}
+                  alt="income"
+                  className="h-11 w-11"
+                />
+              </div>
+              <Typography
+                className="pt-2"
+                color={'textDark'}
+                type={'h3'}
+                text={`You haven't added any income for ${getMonthName(
+                  Number(statement.month)
+                )}!`}
+              />
+            </div>
+            <Button
+              text={`Add income`}
+              icon={'PlusIcon'}
+              type={'outlined'}
+              color={'secondary'}
+              background={'transparent'}
+              textColor={'secondary'}
+              className={'mt-4 max-h-10'}
+              iconPosition={'start'}
+              onClick={() => {
+                history.push(ROUTES.BUSINESS_ADD_INCOME);
+              }}
+            />
+          </Card>
+        )}
+        {!!statement.incomeItems.length && (
+          <>
+            <StackedList
+              className="mt-4 flex w-full flex-col gap-1"
+              type="MenuList"
+              listItems={incomeItemsList}
+            />
+            <Card
+              className="bg-successMain mt-2 flex items-center justify-between p-4"
+              shadowSize={'md'}
+            >
+              <Typography
+                text={'Total income'}
+                type="body"
+                color={'white'}
+                className="w-8/12"
+              />
+              <Typography
+                text={`R ${formatCurrency(totalIncome)}`}
+                color={'white'}
+                type="h4"
+                className="mr-12 w-4/12 text-right"
+              />
+            </Card>
+          </>
+        )}
+        {!statement.expenseItems.length && (
+          <Card className="bg-secondaryAccent2 my-4 flex flex-col justify-center rounded-2xl p-4">
+            <div className="flex flex-row gap-3">
+              <div className="rounded-full">
+                <img
+                  src={SecondaryFileEmoticon}
+                  alt="expense"
+                  className="h-11 w-11"
+                />
+              </div>
+              <Typography
+                className="pt-2"
+                color={'textDark'}
+                type={'h3'}
+                text={`You haven't added any expenses for ${getMonthName(
+                  Number(statement.month)
+                )}!`}
+              />
+            </div>
+            <Button
+              text={`Add Expense`}
+              icon={'PlusIcon'}
+              type={'outlined'}
+              color={'secondary'}
+              background={'transparent'}
+              textColor={'secondary'}
+              className={'mt-4 max-h-10'}
+              iconPosition={'start'}
+              onClick={() => {
+                history.push(ROUTES.BUSINESS_ADD_EXPENSE);
+              }}
+            />
+          </Card>
+        )}
+        {!!statement.expenseItems.length && (
+          <>
+            <StackedList
+              className="mt-4 flex w-full flex-col gap-1"
+              type="MenuList"
+              listItems={expenseItemsList}
+            />
+            <Card
+              className="bg-secondary mt-2 flex items-center justify-between p-4"
+              shadowSize={'md'}
+            >
+              <Typography
+                text={'Total expenses'}
+                type="body"
+                color={'white'}
+                className="w-9/12"
+              />
+              <Typography
+                text={`R ${formatCurrency(totalExpenses)}`}
+                color={'white'}
+                type="h4"
+                className="mr-12 w-4/12 text-right"
+              />
+            </Card>
+          </>
+        )}
         <Card
           className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
           borderRaduis={'xl'}
@@ -342,13 +420,11 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
         visible={showPreschoolDetails}
         position={DialogPosition.Full}
       >
-        {/* TODO if editable this needs to redirect to the edit preschool fees list  */}
         <IncomeDetailsList
           hideDetails={() => setShowPreschoolDetails(false)}
           incomeItems={preschoolFees}
           statementTitle="Preschool fees"
           statementMonth={statement.month - 1}
-          isEditable={!statement.downloaded}
           statementId={statement.id}
         />
       </Dialog>
@@ -362,7 +438,6 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           incomeItems={donationsOrVouchers}
           statementTitle="Donations or vouchers"
           statementMonth={statement.month - 1}
-          isEditable={!statement.downloaded}
           statementId={statement.id}
         />
       </Dialog>
@@ -376,7 +451,6 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           incomeItems={dbeSubsidy}
           statementTitle="DBE Subsidy"
           statementMonth={statement.month - 1}
-          isEditable={!statement.downloaded}
           statementId={statement.id}
         />
       </Dialog>
@@ -390,7 +464,6 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           incomeItems={otherIncomeValues}
           statementTitle="Other income"
           statementMonth={statement.month - 1}
-          isEditable={!statement.downloaded}
           statementId={statement.id}
         />
       </Dialog>
@@ -404,6 +477,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={rent}
           statementTitle="Rent"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -416,6 +490,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={food}
           statementTitle="Food"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -428,6 +503,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={learningMaterials}
           statementTitle="Learning materials"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -440,6 +516,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={maintenance}
           statementTitle="Maintenance"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -452,6 +529,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={otherExpenseValues}
           statementTitle="Other Expenses"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -464,6 +542,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={utilities}
           statementTitle="Utilities"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
         />
       </Dialog>
       <Dialog
@@ -476,6 +555,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
           expenseItems={salary}
           statementTitle="Salary"
           statementMonth={statement.month - 1}
+          statementId={statement.id}
         />
       </Dialog>
     </>

@@ -53,7 +53,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
   const learner = useSelector(
-    classroomsSelectors.getChildLearnerByClassroom(
+    classroomsSelectors.getChildLearnerByClassroomGroup(
       classroomGroupId,
       child?.userId || childUserId
     )

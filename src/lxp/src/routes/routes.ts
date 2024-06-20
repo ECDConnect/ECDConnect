@@ -30,6 +30,7 @@ const ROUTES = {
   BUSINESS_ADD_INCOME: '/business-add-income',
   BUSINESS_UPDATE_INCOME: '/business-update-income',
   BUSINESS_ADD_EXPENSE: '/business-add-expense',
+  BUSINESS_UPDATE_EXPENSE: '/business-update-expense',
   BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
   CALENDAR: '/calendar',

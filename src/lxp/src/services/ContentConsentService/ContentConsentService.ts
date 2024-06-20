@@ -21,6 +21,11 @@ class ContentConsentService {
             name
             type
             description
+            availableLanguages {
+              id
+              description
+              locale
+            }
           }
         }
       `,
@@ -47,6 +52,11 @@ class ContentConsentService {
             name
             type
             description
+            availableLanguages {
+              id
+              description
+              locale
+            }
           }
         }
       `,

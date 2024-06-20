@@ -75,6 +75,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { differenceInDays } from 'date-fns';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 const { version } = require('../../../package.json');
 
@@ -127,6 +128,7 @@ export const Dashboard: React.FC = () => {
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
     !isPrincipal;
+  const isTrialPeriod = useIsTrialPeriod();
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -154,7 +156,7 @@ export const Dashboard: React.FC = () => {
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
 
   useEffect(() => {
-    if (isFromLogin && practitioner?.progress === 0) {
+    if (isFromLogin && practitioner?.progress === 0 && !isOpenAccess) {
       history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
     }
   }, []);
@@ -520,7 +522,14 @@ export const Dashboard: React.FC = () => {
       !missingProgramme
     ) {
       history.push(navItem.href, navItem.params);
-    } else if (navItem.href.includes('classroom') && isWhiteLabel) {
+    } else if (
+      (navItem.href.includes('classroom') &&
+        isWhiteLabel &&
+        missingProgramme) ||
+      (navItem.href.includes('calendar') && isWhiteLabel && missingProgramme) ||
+      (navItem.href.includes('training') && isWhiteLabel && missingProgramme) ||
+      (navItem.href.includes('community') && isWhiteLabel && missingProgramme)
+    ) {
       showCompleteProfileBlockingDialog();
     } else {
       history.push(navItem.href, navItem.params);
@@ -667,7 +676,7 @@ export const Dashboard: React.FC = () => {
             },
           ],
     },
-    ...(isPrincipal || isFundaAppAdmin
+    ...(isPrincipal || isFundaAppAdmin || isTrialPeriod
       ? [
           {
             name: NavigationNames.Business.Business,
@@ -832,7 +841,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (!isCoach && !isPrincipal && isPractitioner) {
+  if (!isCoach && !isPrincipal && isPractitioner && !isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Community.Community,
       titleIcon: styles.communityIconName,
@@ -844,7 +853,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin) {
+  if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
       titleIcon: styles.businessIconName,
@@ -864,6 +873,16 @@ export const Dashboard: React.FC = () => {
       classNames: 'bg-quatenaryBg',
     });
   }
+
+  dashboardItems.splice(4, 0, {
+    title: NavigationNames.Training,
+    titleIcon: 'PresentationChartBarIcon',
+    titleIconClassName: styles.trainingIcon,
+    onActionClick: () => {
+      goToTraining();
+    },
+    classNames: 'bg-successBg',
+  });
 
   const goToCommunity = () => {
     if (
@@ -926,26 +945,22 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToClassroom = () => {
-    // TODO: revert this change
-    history.push(ROUTES.CLASSROOM.ROOT, {
-      activeTabIndex: TabsItems.CLASSES,
-    });
-    // if (
-    //   ((classroom && classroom.id) ||
-    //     (classroomGroups && classroomGroups.length > 0)) &&
-    //   isRegistered &&
-    //   isProgress &&
-    //   isProgress > 0 &&
-    //   hasConsent &&
-    //   !missingProgramme &&
-    //   isWhiteLabel
-    // ) {
-    //   history.push(ROUTES.CLASSROOM.ROOT, {
-    //     activeTabIndex: TabsItems.CLASSES,
-    //   });
-    // } else {
-    //   showCompleteProfileBlockingDialog();
-    // }
+    if (
+      ((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme &&
+      isWhiteLabel
+    ) {
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.CLASSES,
+      });
+    } else {
+      showCompleteProfileBlockingDialog();
+    }
   };
 
   const goToCalendar = () => {
@@ -965,7 +980,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToBusiness = () => {
-    if (isPrincipal || isFundaAppAdmin) {
+    if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
       history.push(ROUTES.BUSINESS);
       return;
     }

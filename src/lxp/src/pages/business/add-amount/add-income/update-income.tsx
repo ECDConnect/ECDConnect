@@ -1,14 +1,13 @@
 import { useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useAppDispatch } from '@store';
 import * as styles from './add-income.styles';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
 import OtherIncome from './components/other-income/other-income';
-import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import { statementsActions } from '@/store/statements';
 import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
+import EditPreschoolFees from './components/preschool-fees/edit-preschool-fees';
 
 export type UpdateIncomeState = {
   statementId: string;
@@ -16,49 +15,51 @@ export type UpdateIncomeState = {
 };
 
 export const UpdateIncome: React.FC = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
+  const history = useHistory();
   const appDispatch = useAppDispatch();
 
   const location = useLocation<UpdateIncomeState>();
   const statementId = location.state.statementId;
   const incomeItem = location.state.incomeItem;
 
-  const onSubmit = useCallback(
-    (updatedItem: IncomeItemDto) => {
-      appDispatch(
-        statementsActions.updateIncomeItem({
-          statementId,
-          incomeItem: updatedItem,
-        })
-      );
-    },
-    [userAuth]
-  );
+  const onSubmit = useCallback((updatedItem: IncomeItemDto) => {
+    appDispatch(
+      statementsActions.addOrUpdateIncomeItems({
+        statementId,
+        incomeItems: [updatedItem],
+      })
+    );
+  }, []);
 
   return (
     <div className={styles.container}>
       {incomeItem.incomeTypeId === IncomeTypeIds.DBE_SUBSIDY_ID && (
         <DbeSubsidy
-          onBack={() => {}}
+          onBack={() => history.goBack()}
           onSubmit={onSubmit}
           incomeItem={incomeItem}
         />
       )}
       {incomeItem.incomeTypeId === IncomeTypeIds.DONATION_ID && (
         <DonationsOrVouchers
-          onBack={() => {}}
+          onBack={() => history.goBack()}
           onSubmit={onSubmit}
           incomeItem={incomeItem}
         />
       )}
       {incomeItem.incomeTypeId === IncomeTypeIds.OTHER_INCOME_ID && (
         <OtherIncome
-          onBack={() => {}}
+          onBack={() => history.goBack()}
           onSubmit={onSubmit}
           incomeItem={incomeItem}
         />
       )}
-      {/* Preschool fees have a combined edit component */}
+      {incomeItem.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID && (
+        <EditPreschoolFees
+          onBack={() => history.goBack()}
+          incomeItem={incomeItem}
+        />
+      )}
     </div>
   );
 };

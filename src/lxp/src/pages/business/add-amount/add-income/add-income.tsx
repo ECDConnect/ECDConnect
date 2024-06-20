@@ -13,7 +13,7 @@ import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './add-income.styles';
 import ROUTES from '@routes/routes';
-import PreschoolFees from './components/preschool-fees/preschool-fees';
+import AddPreschoolFees from './components/preschool-fees/add-preschool-fees';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
 import OtherIncome from './components/other-income/other-income';
 import StatementsWrapper from '../../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
@@ -23,38 +23,39 @@ import { authSelectors } from '@/store/auth';
 import { statementsActions } from '@/store/statements';
 import { IncomeItemDto } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
+import { BusinessTabItems } from '../../business.types';
 
 export const AddIncome: React.FC = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
 
-  useEffect(() => {
-    if (!isOnline) {
-      appDispatch(
-        analyticsActions.createViewTracking({
-          pageView: window.location.pathname,
-          title: 'Practitioner About',
-        })
-      );
-    }
-  }, [appDispatch, isOnline]);
+  // useEffect(() => {
+  //   if (!isOnline) {
+  //     appDispatch(
+  //       analyticsActions.createViewTracking({
+  //         pageView: window.location.pathname,
+  //         title: 'Practitioner About',
+  //       })
+  //     );
+  //   }
+  // }, [appDispatch, isOnline]);
 
-  // const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [type, setType] = useState('');
 
-  const onSubmit = useCallback(
-    (incomeItem: IncomeItemDto) => {
-      appDispatch(statementsActions.addIncomeItem(incomeItem));
-    },
-    [userAuth]
-  );
+  const onSubmit = useCallback((incomeItem: IncomeItemDto) => {
+    appDispatch(
+      statementsActions.addOrUpdateIncomeItems({ incomeItems: [incomeItem] })
+    );
+    history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
+  }, []);
 
   const incomeType = (type?: string) => {
     switch (type) {
       case 'PreschoolFees':
-        return <PreschoolFees onBack={() => setType('')} onSubmit={onSubmit} />;
+        return <AddPreschoolFees onBack={() => setType('')} />;
       case 'DsdSubsidy':
         return <DbeSubsidy onBack={() => setType('')} onSubmit={onSubmit} />;
       case 'DonationsOrvouchers':
@@ -77,6 +78,8 @@ export const AddIncome: React.FC = () => {
       actionName: 'Add',
       actionIcon: 'PlusIcon',
       buttonType: 'filled',
+      buttonColor: 'quatenary',
+      textColor: 'white',
       onActionClick: () => {
         setType('PreschoolFees');
         nextStep();
@@ -90,6 +93,8 @@ export const AddIncome: React.FC = () => {
       actionName: 'Add',
       actionIcon: 'PlusIcon',
       buttonType: 'filled',
+      buttonColor: 'quatenary',
+      textColor: 'white',
       onActionClick: () =>
         state?.stepIndex === 4 ? null : setType('DonationsOrvouchers'),
     },
@@ -101,6 +106,8 @@ export const AddIncome: React.FC = () => {
       actionName: 'Add',
       actionIcon: 'PlusIcon',
       buttonType: 'filled',
+      buttonColor: 'quatenary',
+      textColor: 'white',
       onActionClick: () =>
         state?.stepIndex === 4 ? null : setType('DsdSubsidy'),
     },
@@ -112,6 +119,8 @@ export const AddIncome: React.FC = () => {
       actionName: 'Add',
       actionIcon: 'PlusIcon',
       buttonType: 'filled',
+      buttonColor: 'quatenary',
+      textColor: 'white',
       onActionClick: () =>
         state?.stepIndex === 4 ? null : setType('OtherIncome'),
     },
@@ -148,8 +157,9 @@ export const AddIncome: React.FC = () => {
                 text={'Add your income'}
               />
               <Typography
-                type="body"
-                color={'textMid'}
+                type="h4"
+                className={'pt-2'}
+                color={'textDark'}
                 text={'What type of money came in'}
               />
             </div>

@@ -2,8 +2,6 @@ import {
   EditClassModel,
   editClassroomSchema,
 } from '@/schemas/practitioner/edit-class';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
-import { ClassProgrammeDto } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import {
@@ -25,7 +23,7 @@ import {
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { buttonDays, isFullDayOptions } from './setup-classes.types';
+import { buttonDays } from './setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
@@ -47,7 +45,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const {
     setValue: setClassFormValue,
     getValues: getClassFormValues,
-    formState: classFormState,
     register: classFormRegister,
     reset: resetClassForm,
     control: classFormControl,
@@ -65,7 +62,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   });
 
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
-  const { isValid } = classFormState;
 
   const { name, meetEveryday } = useWatch({
     control: classFormControl,
@@ -120,7 +116,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   const isFormValid = () => {
     const meetingDays = getClassFormValues().meetingDays;
-    return isValid && meetingDays && meetingDays?.length > 1;
+    return meetingDays && meetingDays?.length > 1;
   };
 
   const saveClassData = async () => {
@@ -131,7 +127,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       const classroomGroupModel: ClassroomGroupDto = {
         id: classroomGroupId,
         classroomId: classroom?.id ?? '',
-        name: data?.name ?? '',
+        name: data?.name || `Class ${classCount}`,
         userId: data?.practitionerId!,
         learners: [],
         classProgrammes: data.meetingDays.map((x) => {
@@ -205,30 +201,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
             )}
           />
         </div>
-        {/* {programmeType?.enumId === ProgrammeTypeEnum.Playgroup && (
-          <div>
-            <span>
-              Do children attend this class for half the day or the full day?
-            </span>
-            <div className="mt-2">
-              <Controller
-                name={'isFullDay'}
-                control={classFormControl}
-                render={({ field: { onChange, value, ref } }) => (
-                  <ButtonGroup<boolean>
-                    inputRef={ref}
-                    options={isFullDayOptions}
-                    onOptionSelected={onChange}
-                    selectedOptions={value}
-                    color="secondary"
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full'}
-                  />
-                )}
-              />
-            </div>
-          </div>
-        )} */}
 
         <div>
           <span>{`Does ${
@@ -287,11 +259,12 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         <Button
           icon="ViewGridAddIcon"
           type={'outlined'}
-          color={'primary'}
+          color={'quatenary'}
           text="Add another class"
           className="w-full"
           disabled={!isFormValid()}
           onClick={addAnotherClass}
+          textColor="quatenary"
         />
       </div>
 

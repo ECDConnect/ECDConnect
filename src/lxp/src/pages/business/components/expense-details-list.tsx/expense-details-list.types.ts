@@ -5,4 +5,5 @@ export interface ExpenseDetailsListProps {
   statementTitle: string;
   expenseItems: ExpenseItemDto[];
   statementMonth: number;
+  statementId: string;
 }

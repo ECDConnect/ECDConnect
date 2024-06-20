@@ -6,6 +6,8 @@ import {
   LoadingSpinner,
   CheckboxGroup,
   SA_CELL_REGEX,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { UserDto } from '@ecdlink/core';
 import { useState, useEffect, useCallback } from 'react';
@@ -23,18 +25,26 @@ import {
   ConfirmPractitionersSteps,
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
-import { UserIcon } from '@heroicons/react/solid';
+import {
+  UserIcon,
+  ClipboardCheckIcon,
+  PresentationChartLineIcon,
+  AcademicCapIcon,
+  UserAddIcon,
+} from '@heroicons/react/solid';
 import {
   AddPractitinerInitialState,
   AddNewPractitionerModel,
+  PermissionsNames,
 } from '../add-practitioner/add-practitioner.types';
-import { practitionerSelectors } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
 import { StackListItems } from './confirm-practitioners';
+import { HelpForm } from '@/components/help-form/help-form';
 import { userSelectors } from '@/store/user';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -53,10 +63,11 @@ export const AddOrEditPractitioner = ({
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
+
   const {
     register,
     control,
-    formState: { errors, isValid },
+    formState: { errors },
     getValues,
     setValue,
     reset,
@@ -70,15 +81,18 @@ export const AddOrEditPractitioner = ({
   const [isPractitionerRegistered, setIsPractitionerRegistered] =
     useState<boolean>();
   const user = useSelector(userSelectors.getUser);
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+
   const [isPrincipal, setIsPrincipal] = useState<boolean>(false);
   const [newPractitioner, setNewPractitioner] =
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
   const [addNote, setAddNote] = useState();
   const [isEdit, setIsEdit] = useState(false);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const permissions = useSelector(staticDataSelectors.getPermissions);
   const [practitionerPhoneNumber, setPractitionerPhoneNumber] = useState('');
   const [error, setError] = useState('');
+  const [openHelp, setOpenHelp] = useState(false);
+  const [isOwnUserId, setisOwnUserId] = useState(false);
 
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
 
@@ -87,10 +101,16 @@ export const AddOrEditPractitioner = ({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
+  const [searched, setSearched] = useState(false);
 
   const getPractitionerDetailsByIdNumber = useCallback(async () => {
     // Check if the practitioner exists
     let _practitioner: UserDto = {} as UserDto;
+
+    if (idNumber === user?.idNumber || passport === user?.idNumber) {
+      setisOwnUserId(true);
+      return;
+    }
 
     if (userAuth && idNumber) {
       setIsLoading(true);
@@ -107,7 +127,7 @@ export const AddOrEditPractitioner = ({
       setIsLoading(false);
     }
     return _practitioner;
-  }, [idNumber, passport, userAuth]);
+  }, [idNumber, passport, user?.idNumber, userAuth]);
 
   const handleSearch = () => {
     let validPassportOrIdNumber = true;
@@ -132,13 +152,14 @@ export const AddOrEditPractitioner = ({
           !!p?.appUser?.idNumber || !!p?.appUser?.userName
         );
         setNewPractitioner({
-          firstName: p?.appUser?.firstName,
+          firstName: p?.appUser?.firstName || p?.appUser?.userName,
           surname: p?.appUser?.surname,
           idNumber: p?.appUser?.idNumber,
           userId: p?.appUser?.id,
           username: p?.appUser?.userName,
           userPermissions: p?.appUser?.userPermissions,
         });
+        setSearched(true);
       });
     }
   };
@@ -184,9 +205,9 @@ export const AddOrEditPractitioner = ({
         permissionIds: permissionsAdded,
       };
 
-      const updatePermissions = await new PermissionsService(
-        userAuth?.auth_token!
-      ).UpdateUserPermission(updatePermissionInput);
+      await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
+        updatePermissionInput
+      );
     }
 
     onSubmit({
@@ -266,6 +287,40 @@ export const AddOrEditPractitioner = ({
     }
   }
 
+  const renderPermissionIcon = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return (
+          <ClipboardCheckIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.create_progress_reports:
+        return (
+          <PresentationChartLineIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.plan_classroom_actitivies:
+        return (
+          <AcademicCapIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      default:
+        return (
+          <UserAddIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+    }
+  };
+
+  const renderPermissionName = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return 'Take attendance for their class(es)';
+      case PermissionsNames.create_progress_reports:
+        return 'Create progress reports to share with caregivers';
+      case PermissionsNames.plan_classroom_actitivies:
+        return 'Plan their own classroom activities';
+      default:
+        return `Add, edit, or remove children from ${classroom?.name}`;
+    }
+  };
+
   return (
     <div className="wrapper-with-sticky-button">
       <div className="mt-4 flex flex-col gap-4">
@@ -277,7 +332,7 @@ export const AddOrEditPractitioner = ({
           />
         </div>
         <div>
-          {preferId && !isOpenAccess && (
+          {preferId && (
             <div className="mt-4 flex items-center justify-between">
               <FormInput<AddPractitionerModel>
                 label={'Practitioner ID number'}
@@ -288,24 +343,15 @@ export const AddOrEditPractitioner = ({
                 placeholder={'E.g. 7601010338089'}
                 className="mr-2 w-full pb-2"
                 disabled={isEdit}
-              />
-            </div>
-          )}
-          {preferId && isOpenAccess && (
-            <div className="mt-4 flex items-center justify-between">
-              <FormInput<AddPractitionerModel>
-                label={'Practitioner username'}
-                visible={true}
-                nameProp={'idNumber'}
-                register={register}
-                placeholder={'e.g. Nothando_123'}
-                className="mr-2 w-full pb-2"
-                disabled={isEdit}
+                onKeyDown={() => {
+                  setSearched(false);
+                  setisOwnUserId(false);
+                }}
               />
             </div>
           )}
           <div>
-            {!preferId && !isOpenAccess && (
+            {!preferId && (
               <div className="mt-4 flex items-center justify-between">
                 <FormInput<AddPractitionerModel>
                   label={'Practitioner Passport number'}
@@ -315,10 +361,14 @@ export const AddOrEditPractitioner = ({
                   register={register}
                   className="mr-2 w-full pb-2"
                   disabled={isEdit}
+                  onKeyDown={() => {
+                    setSearched(false);
+                    setisOwnUserId(false);
+                  }}
                 />
               </div>
             )}
-            {!preferId && !isOpenAccess && (
+            {!preferId && (
               <Button
                 className={'mt-3 mb-2'}
                 type="outlined"
@@ -330,7 +380,7 @@ export const AddOrEditPractitioner = ({
                 onClick={() => setValue('preferId', true)}
               />
             )}
-            {preferId && !isOpenAccess && (
+            {preferId && (
               <Button
                 className={'mt-3 mb-2'}
                 textColor="secondary"
@@ -343,7 +393,7 @@ export const AddOrEditPractitioner = ({
               />
             )}
           </div>
-          {!isEdit && (
+          {!isEdit && !isLoading && (idNumber || passport) && !searched && (
             <div>
               <Button
                 size="normal"
@@ -379,7 +429,7 @@ export const AddOrEditPractitioner = ({
               type={'error'}
               title={
                 isPrincipal
-                  ? 'This practitioner is linked to a different SmartStart programme.'
+                  ? `This practitioner is linked to a different ${appName} programme.`
                   : addNote
               }
               list={[
@@ -400,39 +450,76 @@ export const AddOrEditPractitioner = ({
             />
           </div>
         )}
-        {isValidPractitioner === false && (
+        {isValidPractitioner === false &&
+          isOpenAccess &&
+          !isOwnUserId &&
+          searched && (
+            <>
+              <div className="mb-1">
+                <Alert
+                  type={'warning'}
+                  title={`Oh dear! It looks like your practitioner has not joined ${appName} yet.`}
+                  list={[
+                    'Enter their cellphone number below to send them an invitation.',
+                  ]}
+                />
+              </div>
+
+              <FormInput
+                label={`Cellphone number`}
+                placeholder={'e.g 0123456789'}
+                type={'number'}
+                onChange={(e) => {
+                  setPractitionerPhoneNumber(e?.target?.value);
+                  setError('');
+                }}
+                value={practitionerPhoneNumber}
+                error={error as unknown as FieldError}
+              ></FormInput>
+              {error && (
+                <Typography
+                  type="body"
+                  hasMarkup
+                  text={error}
+                  color="errorMain"
+                />
+              )}
+            </>
+          )}
+
+        {isOwnUserId && (
           <>
             <div className="mb-8">
               <Alert
-                type={'warning'}
-                title={
-                  'Oh dear! It looks like you practitioner has not joined AppName yet.'
-                }
-                list={[
-                  'Enter their cellphone number below to send them an invitation.',
-                ]}
+                type={'error'}
+                title={`Oops! You’ve entered your own ID number. Please enter the ID number of a practitioner in your programme instead.`}
               />
             </div>
+          </>
+        )}
 
-            <FormInput
-              label={`Cellphone number`}
-              placeholder={'e.g 0123456789'}
-              type={'number'}
-              onChange={(e) => {
-                setPractitionerPhoneNumber(e?.target?.value);
-                setError('');
-              }}
-              value={practitionerPhoneNumber}
-              error={error as unknown as FieldError}
-            ></FormInput>
-            {error && (
-              <Typography
-                type="body"
-                hasMarkup
-                text={error}
-                color="errorMain"
+        {isValidPractitioner === false && !isOpenAccess && !isOwnUserId && (
+          <>
+            <div className="mb-8">
+              <Alert
+                type={'error'}
+                title={`Oops, practitioner not found! Only ${appName} practitioners can be added.`}
+                list={[
+                  `Check the practitioner ID and try again. Only ${appName} practitioners can be added.`,
+                  `You can add a different practitioner or exit.`,
+                ]}
+                button={
+                  <Button
+                    text="Get help"
+                    icon="ClipboardListIcon"
+                    type={'filled'}
+                    color={'quatenary'}
+                    textColor={'white'}
+                    onClick={() => setOpenHelp(true)}
+                  />
+                }
               />
-            )}
+            </div>
           </>
         )}
         {isValidPractitioner === true && !addNote && !isPrincipal && (
@@ -460,32 +547,31 @@ export const AddOrEditPractitioner = ({
             />
             <Typography
               type={'body'}
-              text={`You can edit this in future by going to the Classroom then Practitioners tab.}`}
+              text={`You can edit this in future by going to the Classroom then Practitioners tab.`}
               color={'textMid'}
             />
           </div>
         )}
-
-        {isValidPractitioner === true &&
-          !addNote &&
-          permissions.map((item, index) => (
-            <CheckboxGroup
-              id={item.id}
-              key={item.id}
-              title={item?.normalizedName}
-              checked={permissionsAdded?.some((option) => option === item.id)}
-              value={item.id}
-              onChange={(event) => {
-                updateArray(event, item?.id!);
-              }}
-              className="mb-1"
-              icon={
-                <UserIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
-              }
-              isIconFullWidth
-              checkboxColor="primary"
-            />
-          ))}
+        <div>
+          {isValidPractitioner === true &&
+            !addNote &&
+            permissions.map((item, index) => (
+              <CheckboxGroup
+                id={item.id}
+                key={item.id}
+                title={renderPermissionName(item?.name)}
+                checked={permissionsAdded?.some((option) => option === item.id)}
+                value={item.id}
+                onChange={(event) => {
+                  updateArray(event, item?.id!);
+                }}
+                icon={renderPermissionIcon(item?.name)}
+                className="mb-2"
+                isIconFullWidth
+                checkboxColor="primary"
+              />
+            ))}
+        </div>
       </div>
       <div className="-mb-4 self-end">
         <Button
@@ -530,6 +616,14 @@ export const AddOrEditPractitioner = ({
           />
         )}
       </div>
+      <Dialog
+        visible={openHelp}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <HelpForm closeAction={setOpenHelp} />
+      </Dialog>
     </div>
   );
 };

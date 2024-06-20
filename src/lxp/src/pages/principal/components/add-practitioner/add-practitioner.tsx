@@ -8,6 +8,9 @@ import {
   Typography,
   SA_CELL_REGEX,
   CheckboxGroup,
+  LoadingSpinner,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
@@ -29,15 +32,23 @@ import ROUTES from '@/routes/routes';
 import {
   AddPractitinerInitialState,
   AddNewPractitionerModel,
+  PermissionsNames,
 } from './add-practitioner.types';
 import { userSelectors } from '@store/user';
-import { SearchIcon, UserIcon } from '@heroicons/react/solid';
+import {
+  SearchIcon,
+  UserAddIcon,
+  ClipboardCheckIcon,
+  AcademicCapIcon,
+  PresentationChartLineIcon,
+} from '@heroicons/react/solid';
 import { classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
+import { HelpForm } from '@/components/help-form/help-form';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -77,6 +88,9 @@ export const AddPractitioner = ({
   const permissions = useSelector(staticDataSelectors.getPermissions);
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
   const [isLoading, setIsloading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [openHelp, setOpenHelp] = useState(false);
+  const [isOwnUserId, setisOwnUserId] = useState(false);
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -89,10 +103,17 @@ export const AddPractitioner = ({
     // Check if the practitioner exists
     let _practitioner: UserDto = {} as UserDto;
 
+    if (idNumber === user?.idNumber || passport === user?.idNumber) {
+      setisOwnUserId(true);
+      return;
+    }
+
     if (userAuth && idNumber) {
+      setIsloading(true);
       _practitioner = await new PractitionerService(
         userAuth.auth_token
       ).getPractitionerByIdNumber(idNumber);
+      setIsloading(false);
     }
 
     if (userAuth && passport) {
@@ -100,6 +121,7 @@ export const AddPractitioner = ({
         userAuth.auth_token
       ).getPractitionerByIdNumber(passport);
     }
+
     return _practitioner;
   };
 
@@ -134,16 +156,18 @@ export const AddPractitioner = ({
         if (p?.appUser?.practitionerObjectData?.isRegistered === true) {
           setIsPractitionerRegistered(true);
         }
-        setIsValidPractitioner(!!p?.appUser?.idNumber);
+        setIsValidPractitioner(
+          !!p?.appUser?.idNumber || !!p?.appUser?.userName
+        );
         setNewPractitioner({
-          firstName: p?.appUser?.firstName,
+          firstName: p?.appUser?.firstName || p?.appUser?.userName,
           surname: p?.appUser?.surname,
           idNumber: p?.appUser?.idNumber,
           userId: p?.appUser?.id,
           userPermissions: p?.appUser?.userPermissions,
         });
+        setSearched(true);
       });
-      setIsloading(false);
     }
   };
 
@@ -246,6 +270,40 @@ export const AddPractitioner = ({
     }
   }
 
+  const renderPermissionIcon = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return (
+          <ClipboardCheckIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.create_progress_reports:
+        return (
+          <PresentationChartLineIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      case PermissionsNames.plan_classroom_actitivies:
+        return (
+          <AcademicCapIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+      default:
+        return (
+          <UserAddIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
+        );
+    }
+  };
+
+  const renderPermissionName = (name: string) => {
+    switch (name) {
+      case PermissionsNames.take_attendance:
+        return 'Take attendance for their class(es)';
+      case PermissionsNames.create_progress_reports:
+        return 'Create progress reports to share with caregivers';
+      case PermissionsNames.plan_classroom_actitivies:
+        return 'Plan their own classroom activities';
+      default:
+        return `Add, edit, or remove children from ${classroom?.name}`;
+    }
+  };
+
   return (
     <div>
       <BannerWrapper
@@ -259,7 +317,7 @@ export const AddPractitioner = ({
           <div className="flex w-full flex-wrap justify-center">
             <div className="mt-4 flex w-11/12 flex-col gap-4">
               <div>
-                {preferId && !isOpenAccess && (
+                {preferId && (
                   <div className="mt-4 flex items-center justify-between">
                     <FormInput<AddPractitionerModel>
                       label={'Practitioner ID number'}
@@ -269,35 +327,8 @@ export const AddPractitioner = ({
                       error={errors['idNumber']}
                       placeholder={'E.g. 7601010338089'}
                       className="mr-2 w-full pb-2"
+                      onKeyDown={() => setSearched(false)}
                     />
-                    <div
-                      className={
-                        'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
-                      }
-                      onClick={handleSearch}
-                    >
-                      <SearchIcon className={'w-4 cursor-pointer text-white'} />
-                    </div>
-                  </div>
-                )}
-                {preferId && isOpenAccess && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <FormInput<AddPractitionerModel>
-                      label={'Practitioner username'}
-                      visible={true}
-                      nameProp={'idNumber'}
-                      register={register}
-                      placeholder={'e.g. Nothando_123'}
-                      className="mr-2 w-full pb-2"
-                    />
-                    <div
-                      className={
-                        'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
-                      }
-                      onClick={handleSearch}
-                    >
-                      <SearchIcon className={'w-4 cursor-pointer text-white'} />
-                    </div>
                   </div>
                 )}
                 <div>
@@ -310,20 +341,11 @@ export const AddPractitioner = ({
                         error={errors['passport']}
                         register={register}
                         className="mr-2 w-full pb-2"
+                        onKeyDown={() => setSearched(false)}
                       />
-                      <div
-                        className={
-                          'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
-                        }
-                        onClick={handleSearch}
-                      >
-                        <SearchIcon
-                          className={'w-4 cursor-pointer text-white'}
-                        />
-                      </div>
                     </div>
                   )}
-                  {!preferId && !isOpenAccess && (
+                  {!preferId && (
                     <Button
                       className={'mt-3 mb-2'}
                       type="outlined"
@@ -334,7 +356,7 @@ export const AddPractitioner = ({
                       onClick={() => setValue('preferId', true)}
                     />
                   )}
-                  {preferId && !isOpenAccess && (
+                  {preferId && (
                     <Button
                       className={'mt-3 mb-2'}
                       type="outlined"
@@ -347,6 +369,19 @@ export const AddPractitioner = ({
                   )}
                 </div>
               </div>
+              {!isLoading && (idNumber || passport) && !searched && (
+                <Button
+                  size="normal"
+                  className="mb-4 w-full"
+                  type="filled"
+                  color="quatenary"
+                  text="Search for practitioner"
+                  textColor="white"
+                  icon="SearchIcon"
+                  onClick={handleSearch}
+                  disabled={!idNumber && !passport}
+                />
+              )}
               {(addNote || isPrincipal) && (
                 <div>
                   <Alert
@@ -379,9 +414,7 @@ export const AddPractitioner = ({
                   <div className="mb-8">
                     <Alert
                       type={'warning'}
-                      title={
-                        'Oh dear! It looks like you practitioner has not joined AppName yet.'
-                      }
+                      title={`Oh dear! It looks like your practitioner has not joined ${appName} yet.`}
                       list={[
                         'Enter their cellphone number below to send them an invitation.',
                       ]}
@@ -409,6 +442,33 @@ export const AddPractitioner = ({
                   )}
                 </>
               )}
+
+              {isValidPractitioner === false &&
+                !isOpenAccess &&
+                !isOwnUserId && (
+                  <>
+                    <div className="mb-8">
+                      <Alert
+                        type={'error'}
+                        title={`Oops, practitioner not found! Only ${appName} practitioners can be added.`}
+                        list={[
+                          `Check the practitioner ID and try again. Only ${appName} practitioners can be added.`,
+                          `You can add a different practitioner or exit.`,
+                        ]}
+                        button={
+                          <Button
+                            text="Get help"
+                            icon="ClipboardListIcon"
+                            type={'filled'}
+                            color={'quatenary'}
+                            textColor={'white'}
+                            onClick={() => setOpenHelp(true)}
+                          />
+                        }
+                      />
+                    </div>
+                  </>
+                )}
               {isValidPractitioner === true && !isPrincipal && (
                 <div className="mb-8">
                   <Alert type={'success'} title={'Practitioner found!'} />
@@ -471,35 +531,42 @@ export const AddPractitioner = ({
                   />
                   <Typography
                     type={'body'}
-                    text={`You can edit this in future by going to the Classroom then Practitioners tab.}`}
+                    text={`You can edit this in future by going to the Classroom then Practitioners tab.`}
                     color={'textMid'}
                   />
                 </div>
               )}
-
-              {isValidPractitioner === true &&
-                !addNote &&
-                permissions.map((item, index) => (
-                  <CheckboxGroup
-                    id={item.id}
-                    key={item.id}
-                    title={item?.normalizedName}
-                    checked={permissionsAdded?.some(
-                      (option) => option === item.id
-                    )}
-                    value={item.id}
-                    onChange={(event) => {
-                      updateArray(event, item?.id!);
-                    }}
-                    className="mb-1"
-                    icon={
-                      <UserIcon className="bg-quatenary full ml-2 h-10 w-12 rounded-full py-2 text-white" />
-                    }
-                    isIconFullWidth
-                    checkboxColor="primary"
-                  />
-                ))}
+              <div>
+                {isValidPractitioner === true &&
+                  !addNote &&
+                  permissions.map((item, index) => (
+                    <CheckboxGroup
+                      id={item.id}
+                      key={item.id}
+                      title={renderPermissionName(item?.name)}
+                      checked={permissionsAdded?.some(
+                        (option) => option === item.id
+                      )}
+                      value={item.id}
+                      onChange={(event) => {
+                        updateArray(event, item?.id!);
+                      }}
+                      className="mb-1"
+                      icon={renderPermissionIcon(item?.name)}
+                      isIconFullWidth
+                      checkboxColor="primary"
+                    />
+                  ))}
+              </div>
             </div>
+            {isLoading && (
+              <LoadingSpinner
+                size="medium"
+                spinnerColor={'quatenary'}
+                backgroundColor={'uiLight'}
+                className="my-8 w-full"
+              />
+            )}
             <div className="-mb-4 mt-4 h-full w-11/12 self-end">
               <Button
                 size="normal"
@@ -534,6 +601,14 @@ export const AddPractitioner = ({
           </div>
         </div>
       </BannerWrapper>
+      <Dialog
+        visible={openHelp}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <HelpForm closeAction={setOpenHelp} />
+      </Dialog>
     </div>
   );
 };

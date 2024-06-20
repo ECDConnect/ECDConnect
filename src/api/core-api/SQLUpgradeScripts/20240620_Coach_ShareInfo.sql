@@ -1,0 +1,1 @@
+ALTER TABLE public."Coach" ADD "ShareInfo" bool DEFAULT false NULL;

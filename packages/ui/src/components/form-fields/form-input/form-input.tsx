@@ -148,13 +148,18 @@ export const FormInput = <T extends FieldValues>({
               disableAbbreviations={true}
               {...register(nameProp)}
               className={
-                error ? styles.errorStyle : styles.defaultMoneyInputStyle
+                disabled
+                  ? styles.disabledMoneyInputStyle
+                  : error
+                  ? styles.errorStyle
+                  : styles.defaultMoneyInputStyle
               }
               style={
                 prefixIcon || startIcon
                   ? { paddingRight: 38 }
                   : { paddingRight: 16 }
               }
+              value={value}
               {...restProps}
             />
           );
@@ -172,7 +177,11 @@ export const FormInput = <T extends FieldValues>({
               value={value ?? ''}
               disableAbbreviations={true}
               className={
-                error ? styles.errorStyle : styles.defaultMoneyInputStyle
+                disabled
+                  ? styles.disabledMoneyInputStyle
+                  : error
+                  ? styles.errorStyle
+                  : styles.defaultMoneyInputStyle
               }
               style={{
                 paddingRight: suffixIcon ? 38 : 16,

@@ -1,4 +1,4 @@
-import { ClassProgrammeDto } from '@ecdlink/core';
+import { ChildDto, ClassProgrammeDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
@@ -66,7 +66,7 @@ export const getClassroomGroupLearners = (state: RootState): LearnerDto[] =>
     .flatMap((x) => x.learners)
     ?.filter((x) => x.isActive);
 
-export const getChildLearnerByClassroom = (
+export const getChildLearnerByClassroomGroup = (
   classroomGroupId: string,
   childUserId?: string
 ) =>
@@ -76,4 +76,38 @@ export const getChildLearnerByClassroom = (
       classroomGroup?.learners.find(
         (learner) => learner.childUserId === childUserId
       )
+  );
+
+export const getLearnersForClassroomGroups = (
+  classroomGroupIds: string[],
+  startDate: Date,
+  endDate: Date
+) =>
+  createSelector(
+    (state: RootState) =>
+      state.classroomData.classroomGroupData.classroomGroups,
+    (state: RootState) => state.children.childData.children,
+    (classroomGroups: ClassroomGroupDto[], children: ChildDto[]) => {
+      return classroomGroups
+        .filter((classroomGroup) =>
+          classroomGroupIds.includes(classroomGroup.id)
+        )
+        .map((classroomGroup) => ({
+          classroomGroupId: classroomGroup.id,
+          classroomGroupName: classroomGroup.name,
+          learners: classroomGroup.learners
+            .filter(
+              (learner) =>
+                new Date(learner.startedAttendance) <= endDate &&
+                (!learner.stoppedAttendance ||
+                  new Date(learner.stoppedAttendance) >= startDate)
+            )
+            .map((learner) => ({
+              ...learner,
+              child: children.find(
+                (child) => child.userId === learner.childUserId
+              ),
+            })),
+        }));
+    }
   );

@@ -326,19 +326,22 @@ namespace ECDLink.Security.Api
                 var userByUsername = await _securityManager.GetUserByNameAsync(verifyModel.Username);
                 if (userByUsername != null)
                 {
-                    return BadRequest(new FailedVerificationModel
+                    var userWithIdNumberExists = !string.IsNullOrEmpty(userByUsername.IdNumber) && userByUsername.IdNumber == verifyModel.Username;
+                    if (!userWithIdNumberExists)
                     {
-                        ErrorCode = 2,
-                        Error = "Invalid Username"
-                    });
+                        return BadRequest(new FailedVerificationModel
+                        {
+                            ErrorCode = 2,
+                            Error = "Invalid Username"
+                        });
+                    }
                 }
             }
 
             if (!string.IsNullOrEmpty(verifyModel.PhoneNumber))
             {
                 var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
-                var userByPhoneNumber = _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
-                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+                var userByPhoneNumber = _securityManager.GetUserByNameAsync(normalizePhoneNumber);
                 if (userByPhoneNumber != null)
                 {
                     return BadRequest(new FailedVerificationModel
@@ -436,7 +439,7 @@ namespace ECDLink.Security.Api
             }
 
             // Step4: add user to practitioner table
-            var newPractitioner = _personnelService.AddOAPractitioner(user.Id);
+            var newPractitioner = _personnelService.AddOAPractitioner(user.Id, user.UserName);
             if (newPractitioner == null)
             {
                 return BadRequest(new FailedVerificationModel
@@ -484,14 +487,6 @@ namespace ECDLink.Security.Api
                     Error = "Password unavailable"
                 });
             }
-            if (string.IsNullOrEmpty(input.PhoneNumber))
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 3,
-                    Error = "Phone number unavailable"
-                });
-            }
 
             var user = await _securityManager.GetUserByNameAsync(input.Username);
 
@@ -499,7 +494,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 4,
+                    ErrorCode = 3,
                     Error = "User not found with username"
                 });
             }
@@ -509,7 +504,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 5,
+                    ErrorCode = 4,
                     Error = "Password insecure"
                 });
             }
@@ -524,7 +519,7 @@ namespace ECDLink.Security.Api
                 {
                     return BadRequest(new FailedVerificationModel
                     {
-                        ErrorCode = 6,
+                        ErrorCode = 5,
                         Error = "Invalid phone number"
                     });
                 }
@@ -551,7 +546,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 7,
+                    ErrorCode = 6,
                     Error = "Generate of token failure"
                 });
             }
@@ -600,21 +595,46 @@ namespace ECDLink.Security.Api
             return Ok();
         }
 
-        [Route("register-practitioner")]
+        [Route("register-wl-user")]
         [AllowAnonymous]
         [HttpPost]
-        public string RegisterPractitioner([FromBody] RegisterPractitionerModel input)
+        public async Task<IActionResult> RegisterWLUser([FromBody] RegisterModel input)
         {
-            var practitioner = _personnelService.RegisterPractitioner(input.Username);
 
-            if (practitioner == null)
+            if (string.IsNullOrEmpty(input.Username))
             {
-                return "Register of practitioner failed";
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Username is empty"
+                });
             }
 
-           return practitioner.UserId.ToString();
+            var user = await _securityManager.GetUserByNameAsync(input.Username);
+            if (user == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "User not available on system"
+                });
+            }
+
+            var practitionerOrCoachRegistered = _personnelService.RegisterWLUser(user.Id);
+
+            if (!practitionerOrCoachRegistered)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 3,
+                    Error = "Register of user failed"
+                });
+            }
+
+           return Ok(user.Id);
         }
 
+        
 
     }
 }

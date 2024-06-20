@@ -135,6 +135,8 @@ export const CoachAbout: React.FC = () => {
     coachAboutFormWatch();
   }, [coachAboutFormWatch]);
 
+  const { cellphone } = coachAboutFormWatch();
+
   const setNewStackListItems = (currentUser: CoachDto) => {
     const list: ActionListDataItem[] = [
       {
@@ -176,7 +178,7 @@ export const CoachAbout: React.FC = () => {
           editField({
             label: 'Cellphone Number',
             formFieldName: 'cellphone',
-            value: coachAboutFormGetValues().cellphone,
+            value: cellphone,
           });
         },
       },
@@ -449,7 +451,7 @@ export const CoachAbout: React.FC = () => {
           )}
           <Button
             type="filled"
-            color="primary"
+            color="quatenary"
             className={'w-full'}
             onClick={saveEdit}
           >

@@ -240,6 +240,17 @@ namespace ECDLink.ContentManagement.Repositories
                                     && x.ContentTypeId == contentTypeId
                                     && x.TenantId == currentTenant)
                             .FirstOrDefault();
+
+                // Use global tenant as a fallback, mostly for static and dynamic links
+                content ??= _context.Contents
+                        .Include(i => i.ContentValues)
+                        .Where(x => x.Id == contentId
+                            && x.IsActive
+                            && x.ContentTypeId == contentTypeId
+                            && x.TenantId == null)
+                        .OrderBy(x => x.Id)
+                        .FirstOrDefault();
+
                 results = content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
 
                 _memoryCache.Set(key, results, GetCacheOptions());

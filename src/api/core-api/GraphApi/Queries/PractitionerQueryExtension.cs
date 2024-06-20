@@ -27,11 +27,14 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Threading;
 using System.Threading.Tasks;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -481,6 +484,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             }
 
             return connectUsageSearch.Any() ? filteredUsers.DistinctBy(x => x.Id).ToList() : practitionerModels;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public async Task<FileModel> PractitionerTemplateGenerator(
+          [Service] IFileGenerationService fileService)
+        {
+            var fieldDefinitionSheet = $"Field Definition";
+            var fieldDefinitionList = new List<List<string>>
+            {
+                new List<string> {"Column", "Type Description"},
+                new List<string> {"Type of identification", "Text, (Must be: 'id' or 'passport')"},
+                new List<string> {"ID number", "Number, (required if type of identification is 'id'; must be 13 digits)"},
+                new List<string> {"Passport", "Text, (required if type of identification is 'passport')"},
+                new List<string> {"First name", "Text, (required)"},
+                new List<string> {"Surname", "Text, (required)"},
+                new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
+            };
+
+            var templateHeaderSheet = $"Practitioner Template";
+            var templateHeaders = new List<List<string>>()
+            {
+                new List<string> {
+                    "Type of identification",
+                    "ID number",
+                    "Passport",
+                    "First name",
+                    "Surname",
+                    "Cellphone number"
+                }
+            };
+
+            var spreadSheets = new Dictionary<string, List<List<string>>>() {
+                { templateHeaderSheet, templateHeaders },
+                { fieldDefinitionSheet, fieldDefinitionList }
+            };
+
+            var fileName = templateHeaderSheet.Replace(" ", "_");
+            return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
     }
 }

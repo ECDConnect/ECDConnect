@@ -53,12 +53,14 @@ export default function CoachAccount() {
     register: coachAccountRegister,
     formState: coachAccountFormState,
     getValues: coachAccountFormGetValues,
+    watch,
   } = useForm({
     resolver: yupResolver(coachAccountModelSchema),
     defaultValues: initialCoachAccountValues,
     mode: 'onChange',
   });
   const { isValid } = coachAccountFormState;
+  const { password } = watch();
   const stackedActionList: ActionListDataItem[] = [
     {
       title: 'Password',
@@ -69,7 +71,7 @@ export default function CoachAccount() {
         editField({
           label: 'Password',
           formFieldName: 'password',
-          value: coachAccountFormGetValues().password,
+          value: password,
         });
       },
     } as ActionListDataItem,

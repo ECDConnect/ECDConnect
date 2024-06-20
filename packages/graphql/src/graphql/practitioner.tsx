@@ -96,6 +96,17 @@ export const GetPractitionerById = gql`
       attendedChildProgress
       usePhotoInReport
       isCompletedBusinessWalkThrough
+      isNewInClub
+      clubId
+      clubName
+      permissions {
+        id
+        isActive
+        permissionId
+        permissionName
+        permissionNormalizedName
+        permissionGrouping
+      }
     }
   }
 `;
@@ -188,6 +199,30 @@ export const GetAllPortalPractitioners = gql`
         connectUsage
         connectUsageColor
       }
+    }
+  }
+`;
+
+export const PractitionersTemplate = gql`
+  query {
+    practitionerTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
+  }
+`;
+
+export const UploadPractitioners = gql`
+  mutation ($file: String) {
+    importPractitioners(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers
     }
   }
 `;

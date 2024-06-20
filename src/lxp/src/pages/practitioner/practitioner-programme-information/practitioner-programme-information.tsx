@@ -253,6 +253,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             ? 'Add'
             : 'Edit',
         actionIcon: isTrialPeriod ? 'PlusIcon' : 'PencilIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
         onActionClick:
           (practitioner?.isRegistered !== null ||
             practitioner?.isLeaving !== null) &&
@@ -293,6 +295,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           : classroomGroups.length === 0 && isTrialPeriod
           ? 'PlusIcon'
           : 'EyeIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
         onActionClick: isTrialPeriod
           ? () => showTrialPeriodCompleteProfileBlockingDialog()
           : () => {
@@ -329,6 +333,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           : isTrialPeriod
           ? 'PlusIcon'
           : 'EyeIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
         onActionClick: isTrialPeriod
           ? () => showTrialPeriodCompleteProfileBlockingDialog()
           : () => {
@@ -350,6 +356,14 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         switchTextStyles: true,
         actionName: isPrincipal ? 'Add/Edit' : '',
         actionIcon: 'PlusIcon',
+        buttonColor:
+          isTrialPeriod || !classroom?.siteAddress?.addressLine1
+            ? 'quatenary'
+            : undefined,
+        textColor:
+          isTrialPeriod || !classroom?.siteAddress?.addressLine1
+            ? 'white'
+            : undefined,
         onActionClick: () => setShowEditAddress(true),
       });
     }
@@ -419,6 +433,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             size={'header'}
             onPressed={displayProfilePicturePrompt}
             hasConsent={true}
+            isPreschoolImage={true}
           />
         </div>
 
@@ -427,7 +442,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             <Alert
               type="info"
               title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
-              list={[`Edit your profile to accept or disagree. `]}
+              list={[`Connect with your principal & manage your classes.`]}
               className={'mt-4 w-11/12'}
               button={
                 <Button
@@ -474,53 +489,57 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           type={'ActionList'}
         ></StackedList>
       </BannerWrapper>
-      <div className="mb-28 flex w-full justify-center">
-        <Card
-          className={'bg-adminBackground mt-4	 w-11/12 rounded-xl shadow-lg'}
-        >
-          <div className={'mt-6 ml-4'}>
-            <Typography
-              type={'h1'}
-              color="textDark"
-              text={`Copy the code to invite practitioners`}
-              className={'mt-6 ml-4'}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`You can invite new practitioners to your preschool by sharing the code: AngelsDaycare001`}
-              className={'mt-4 ml-4'}
-            />
-            <div className="flex justify-center">
-              <Button
-                type="filled"
-                color="quatenary"
-                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                onClick={() => {
-                  //TODO: what if copy fails?
-                  navigator?.clipboard?.writeText &&
-                    navigator?.clipboard?.writeText(classroom?.preschoolCode!);
-                  showMessage({
-                    message: 'Preschool code copied!',
-                    type: 'success',
-                  });
-                }}
-              >
-                {renderIcon(
-                  'ArrowCircleRightIcon',
-                  'w-5 h-5 color-white text-white mr-1'
-                )}
-                <Typography
-                  type="body"
-                  className="mr-4"
-                  color="white"
-                  text={'Copy preschool code'}
-                ></Typography>
-              </Button>
+      {practitioner?.isPrincipal && (
+        <div className="mb-28 flex w-full justify-center">
+          <Card
+            className={'bg-adminBackground mt-4	 w-11/12 rounded-xl shadow-lg'}
+          >
+            <div className={'mt-6 ml-4'}>
+              <Typography
+                type={'h1'}
+                color="textDark"
+                text={`Copy the code to invite practitioners`}
+                className={'mt-6 ml-4'}
+              />
+              <Typography
+                type={'body'}
+                color="textMid"
+                text={`You can invite new practitioners to your preschool by sharing the code: ${classroom?.preschoolCode}`}
+                className={'mt-4 ml-4'}
+              />
+              <div className="flex justify-center">
+                <Button
+                  type="filled"
+                  color="quatenary"
+                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                  onClick={() => {
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        classroom?.preschoolCode!
+                      );
+                    showMessage({
+                      message: 'Preschool code copied!',
+                      type: 'success',
+                    });
+                  }}
+                >
+                  {renderIcon(
+                    'ArrowCircleRightIcon',
+                    'w-5 h-5 color-white text-white mr-1'
+                  )}
+                  <Typography
+                    type="body"
+                    className="mr-4"
+                    color="white"
+                    text={'Copy preschool code'}
+                  ></Typography>
+                </Button>
+              </div>
             </div>
-          </div>
-        </Card>
-      </div>
+          </Card>
+        </div>
+      )}
       <Dialog
         fullScreen
         visible={showEditAddress}
@@ -584,6 +603,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             onClose={displayProfilePicturePrompt}
             onAction={saveClassroomPicture}
             onDelete={classroomImage ? deleteClassroomPicture : undefined}
+            hideEmojiOption={true}
           ></PhotoPrompt>
         </div>
       </Dialog>

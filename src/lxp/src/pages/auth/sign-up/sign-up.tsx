@@ -55,6 +55,7 @@ export const SignUp: React.FC = () => {
     handleSubmit,
     control,
     clearErrors,
+    trigger,
   } = useForm<SignUpModel>({
     resolver: yupResolver(signUpSchema),
     defaultValues: initialRegisterValues,
@@ -90,7 +91,7 @@ export const SignUp: React.FC = () => {
         await resetAuth();
       }
 
-      await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
+      await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -300,6 +301,7 @@ export const SignUp: React.FC = () => {
               );
               clearErrors('termsAndConditionsAccepted');
               setPermissionsErrorMessage('');
+              trigger();
             }}
           >
             <Checkbox<SignUpModel>
@@ -331,7 +333,7 @@ export const SignUp: React.FC = () => {
               onClick={() => {
                 displayArticle(
                   ContentConsentTypeEnum.TermsAndConditions,
-                  'Consent & Commitment Agreement'
+                  'Terms and Conditions'
                 );
               }}
             />
@@ -352,6 +354,7 @@ export const SignUp: React.FC = () => {
               );
               clearErrors('dataPermissionAgreementAccepted');
               setPermissionsErrorMessage('');
+              trigger();
             }}
           >
             <Checkbox<SignUpModel>

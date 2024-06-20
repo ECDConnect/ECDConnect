@@ -116,6 +116,7 @@ class IncomeStatementsService {
             id 
             month
             year
+            downloaded
             incomeItems {
               incomeTypeId
               id

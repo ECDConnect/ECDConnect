@@ -32,6 +32,7 @@ import { staticDataSelectors } from '@/store/static-data';
 import { ContentStoryBookService } from '@/services/ContentStoryBookService';
 import { authSelectors } from '@store/auth';
 import { ContentActivityService } from '@/services/ContentActivityService';
+import { LanguageCode } from '@/i18n/types';
 
 const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   storyBookId,
@@ -146,12 +147,19 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
       +a.part >= +b.part ? 1 : -1
     )
   );
+  const [language, setLanguage] = useState({ locale: 'en-za' });
   const { isOnline } = useOnlineStatus();
   const authUser = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const defaultLanguage = languages?.find(
     (item: LanguageDto) => item?.locale === 'en-za'
   );
+
+  const availableLanguages: LanguageCode[] = storyBook?.availableLanguages
+    ? storyBook.availableLanguages?.map((item) => {
+        return item?.locale as LanguageCode;
+      })
+    : [language.locale as LanguageCode];
 
   const onBookLocationClicked = (bookLocation: string) => {
     const _strippedHtml = stripPTag(bookLocation);
@@ -193,9 +201,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
           <LanguageSelector
             labelClassName="text-textDark mr-2"
             currentLocale={'en-za'}
-            availableLanguages={
-              storyBook?.availableLanguages || [defaultLanguage]
-            }
+            availableLanguages={availableLanguages || [defaultLanguage]}
             selectLanguage={getDataByLanguage}
           />
         </div>
@@ -666,6 +672,12 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
     }
   };
 
+  const availableLanguages: LanguageCode[] = activity?.availableLanguages
+    ? activity.availableLanguages?.map((item) => {
+        return item?.locale as LanguageCode;
+      })
+    : [defaultLanguage?.locale as LanguageCode];
+
   return (
     <div className={'flex flex-col'}>
       <div className={'flex flex-col pb-24'}>
@@ -673,9 +685,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
           <LanguageSelector
             labelClassName="text-textDark mr-2"
             currentLocale={'en-za'}
-            availableLanguages={
-              activity?.availableLanguages || [defaultLanguage]
-            }
+            availableLanguages={availableLanguages || [defaultLanguage]}
             selectLanguage={getDataByLanguage}
           />
         </div>

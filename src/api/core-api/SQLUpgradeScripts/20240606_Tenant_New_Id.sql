@@ -85,7 +85,6 @@ INSERT INTO "AspNetRoles" ("Id","Name","NormalizedName","ConcurrencyStamp","Tena
 	 ('88c06cd9-5162-4d0b-a3a1-dbfed47f6e75','Super Admin','SUPER ADMIN','51ef4ce2-2e7e-4c2c-b2dc-d85131ecc1ff','e8f571eb-1972-4e71-a20f-347c65d059bb','Super Admin'),
 	 ('4a38da49-481b-40f6-87ce-ca7b25343f3b','Administrator','ADMINISTRATOR','97c120fa-871e-45f1-a115-e1ebabb6c28e','e8f571eb-1972-4e71-a20f-347c65d059bb','Administrator');
 
-
 INSERT INTO public."AspNetUserRoles"
 ("UserId", "RoleId", "TenantId")
 VALUES('53f1384c-6d34-44e3-adb5-33d623906317', '88c06cd9-5162-4d0b-a3a1-dbfed47f6e75', 'e8f571eb-1972-4e71-a20f-347c65d059bb');
@@ -109,6 +108,10 @@ INSERT INTO "Hierarchy" ("Id","Type","SystemType","ParentId","IsActive","Inserte
 
 INSERT INTO "UserHierarchy" ("Id","ParentId","UserId","UserType","NamedTypePath","Hierarchy","Key", "IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
 	 ('db966393-e223-44a5-a2e0-7243577d2b83','710aa070-a6a1-4b3a-be08-ef9bb74792fa','710aa070-a6a1-4b3a-be08-ef9bb74792fa','Administrator','System.Administrator.','0.1.',1,true,'2022-01-31 07:39:32.431','2022-01-31 07:39:32.431',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb');
+
+INSERT INTO "UserHierarchy" ("Id","ParentId","UserId","UserType","NamedTypePath","Hierarchy","Key", "IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+	 ('6b097194-3863-4361-a132-8fe6a0ceee3d','53f1384c-6d34-44e3-adb5-33d623906317','53f1384c-6d34-44e3-adb5-33d623906317','Administrator','System.Administrator.','0.1.',1,true,'2022-01-31 07:39:32.431','2022-01-31 07:39:32.431',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb');
+
 
 INSERT INTO public."TenantHasModule" ("TenantId","ModuleId") VALUES
 	 ('e8f571eb-1972-4e71-a20f-347c65d059bb','72653e65-40a2-4c57-a251-0e35797b107f'),
