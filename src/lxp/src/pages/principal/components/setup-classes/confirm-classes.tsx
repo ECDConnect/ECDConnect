@@ -63,7 +63,7 @@ export const ConfirmClasses = ({
         subTitle: `${_practitioner}; ${formatMeetingDays(
           classroomGroup.classProgrammes
         )}`,
-        switchTextStyles: true,
+        switchTextStyles: false,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
@@ -114,7 +114,7 @@ export const ConfirmClasses = ({
       <div className="pb-20">
         <Typography
           type={'h2'}
-          text={'Add a class'}
+          text={classroomGroups.length > 0 ? 'Confirm classes' : 'Add a class'}
           color={'textDark'}
           className={'mt-3'}
         />
@@ -146,7 +146,7 @@ export const ConfirmClasses = ({
             className="w-full"
             type="filled"
             color="quatenary"
-            text="Save"
+            text="Next"
             textColor="white"
             icon="SaveIcon"
             onClick={() => {
