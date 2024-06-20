@@ -21,7 +21,6 @@ using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -327,7 +326,8 @@ namespace ECDLink.Security.Api
                 var userByUsername = await _securityManager.GetUserByNameAsync(verifyModel.Username);
                 if (userByUsername != null)
                 {
-                    if (!string.IsNullOrEmpty(userByUsername.IdNumber) && userByUsername.IdNumber != verifyModel.Username)
+                    var userWithIdNumberExists = !string.IsNullOrEmpty(userByUsername.IdNumber) && userByUsername.IdNumber == verifyModel.Username;
+                    if (!userWithIdNumberExists)
                     {
                         return BadRequest(new FailedVerificationModel
                         {
