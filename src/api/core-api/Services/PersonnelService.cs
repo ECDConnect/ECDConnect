@@ -1182,9 +1182,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return _teamLeadRepo.Update(teamLead);
         }
 
-        public Practitioner AddOAPractitioner(Guid userId)
+        public Practitioner AddOAPractitioner(Guid userId, string userName)
         {
-            return _practiRepo.Insert(
+            var practitioner = _practiRepo.Insert(
                 new Practitioner
                 {
                     Id = userId,
@@ -1194,6 +1194,21 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _applicationUserId.ToString(),
                 });
+
+            // also create a dummy pre-school (classroom) for practitioner to test with
+            _classRepo.Insert(new Classroom
+            {
+                Id = Guid.NewGuid(),
+                Name = userName + "'s testing pre-school",
+                UserId = userId,
+                NumberPractitioners = 0,
+                NumberOfAssistants = 0,
+                NumberOfOtherAssistants = 0,
+                IsDummySchool = true,
+                Hierarchy = practitioner.Hierarchy
+            });
+
+            return practitioner;
         }
 
         public Practitioner RegisterPractitioner(string userName)

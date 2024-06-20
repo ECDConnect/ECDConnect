@@ -1880,6 +1880,7 @@ export type Classroom = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isDummySchool?: Maybe<Scalars['Boolean']>;
   isPrinciple?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
   numberOfAssistants?: Maybe<Scalars['Int']>;
@@ -1905,6 +1906,7 @@ export type ClassroomFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isDummySchool?: InputMaybe<BooleanOperationFilterInput>;
   isPrinciple?: InputMaybe<BooleanOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   numberOfAssistants?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
@@ -2031,6 +2033,7 @@ export type ClassroomInput = {
   DoesOwnerTeach?: InputMaybe<Scalars['Boolean']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  IsDummySchool?: InputMaybe<Scalars['Boolean']>;
   IsPrinciple?: InputMaybe<Scalars['Boolean']>;
   Name?: InputMaybe<Scalars['String']>;
   NumberOfAssistants?: InputMaybe<Scalars['Int']>;
@@ -2080,6 +2083,7 @@ export type ClassroomSortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isDummySchool?: InputMaybe<SortEnumType>;
   isPrinciple?: InputMaybe<SortEnumType>;
   name?: InputMaybe<SortEnumType>;
   numberOfAssistants?: InputMaybe<SortEnumType>;
@@ -7082,7 +7086,9 @@ export type Mutation = {
   fileUpload?: Maybe<DocumentModel>;
   gGBottom75PercPointsTeam: Scalars['Boolean'];
   generateCaregiverChildToken?: Maybe<InitialChildRegistrationModel>;
+  importCoaches?: Maybe<UserImportModel>;
   importHealthCareWorkers?: Maybe<UserImportModel>;
+  importPractitioners?: Maybe<UserImportModel>;
   importTeamLeads?: Maybe<UserImportModel>;
   markAsReadNotification: Scalars['Boolean'];
   moveClubMembers: Scalars['Boolean'];
@@ -9128,7 +9134,15 @@ export type MutationGenerateCaregiverChildTokenArgs = {
   surname?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationImportCoachesArgs = {
+  file?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationImportHealthCareWorkersArgs = {
+  file?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationImportPractitionersArgs = {
   file?: InputMaybe<Scalars['String']>;
 };
 
@@ -13727,6 +13741,7 @@ export type Query = {
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
   coachNameByUserId?: Maybe<Scalars['String']>;
+  coachTemplateGenerator?: Maybe<FileModel>;
   completedReferralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   completedReferralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
   completedVisitsForVisitId?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -13927,6 +13942,7 @@ export type Query = {
   practitionerRolePermissions?: Maybe<
     Array<Maybe<PractitionerPermissionModel>>
   >;
+  practitionerTemplateGenerator?: Maybe<FileModel>;
   practitionerTimeline?: Maybe<PractitionerTimeline>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
   previousVisitInformationForInfant?: Maybe<Progress_VisitDataStatus>;
