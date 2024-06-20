@@ -5,7 +5,7 @@ export const wrapper =
 export const classRoomIcon = 'bg-secondary text-white';
 export const businessIcon = 'bg-warning text-white';
 export const practitionerIcon = 'bg-quatenary text-white';
-export const trainingIcon = 'bg-quatenaryBg text-quatenary';
+export const trainingIcon = 'bg-successMain text-white';
 export const communityIcon = 'bg-quatenary text-white';
 export const icon = 'bg-tertiary text-white';
 

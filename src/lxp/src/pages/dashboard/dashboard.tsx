@@ -874,6 +874,16 @@ export const Dashboard: React.FC = () => {
     });
   }
 
+  dashboardItems.splice(4, 0, {
+    title: NavigationNames.Training,
+    titleIcon: 'PresentationChartBarIcon',
+    titleIconClassName: styles.trainingIcon,
+    onActionClick: () => {
+      goToTraining();
+    },
+    classNames: 'bg-successBg',
+  });
+
   const goToCommunity = () => {
     if (
       ((classroom && classroom.id) ||
