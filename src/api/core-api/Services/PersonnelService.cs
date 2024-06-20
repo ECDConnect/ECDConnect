@@ -435,7 +435,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 practitionerToPromote.IsPrincipal = true;
                 practitionerToPromote.ShareInfo = true;
-                _practiRepo.Update(practitionerToPromote);
+                _practiGenericRepo.Update(practitionerToPromote);
 
                 //now add user to principal
                 var user = _userManager.FindByIdAsync(userId).Result;
