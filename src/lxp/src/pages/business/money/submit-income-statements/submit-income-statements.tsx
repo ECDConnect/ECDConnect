@@ -8,18 +8,16 @@ import {
 } from '@/utils/statements/statements-utils';
 import {
   Typography,
-  StatusChip,
   Button,
   Card,
   FADButton,
   Alert,
   renderIcon,
-  CelebrationCard,
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { differenceInDays, format } from 'date-fns';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { format } from 'date-fns';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
@@ -27,22 +25,8 @@ import StatementsWrapper from './components/statements-wrapper/StatementsWrapper
 import { useAppContext } from '@/walkthrougContext';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  IncomeStatementDto,
-  LocalStorageKeys,
-  SmartStartPointsLibrary,
-  getNextMonth,
-  getPreviousMonth,
-} from '@ecdlink/core';
-import { IncomeStatementDates } from '@/constants/Dates';
+import { IncomeStatementDto, getPreviousMonth } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { ReactComponent as EmojiYellowBigSmile } from '@/assets/ECD_Connect_emoji3.svg';
-import { ReactComponent as EmojiGreenSmile } from '@/assets/ECD_Connect_emoji1.svg';
-import { pointsSelectors } from '@/store/points';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@/utils/common/local-storage.utils';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { InfoPage } from './components/info-page';
 import { CoachInfo } from '../../components/coach-info';
@@ -55,13 +39,7 @@ export const SubmitIncomeStatements: React.FC = () => {
   const [isLearnMore, setIsLearnMore] = useState(false);
 
   const history = useHistory();
-  const { isOnline } = useOnlineStatus();
   const statements = useSelector(statementsSelectors.getIncomeStatements);
-
-  const { isLoading: isSubmittingStatement } = useThunkFetchCall(
-    'statements',
-    'submitIncomeStatement'
-  );
 
   // If no statement for current month
   // TODO if we ahven't fetched recently, do we need to force them to sync first? To ensure we don't create a statement for the month, if one exists on the server?
@@ -86,6 +64,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const currentMonthStatement = statements[statements.length - 1];
   const lastMonthStatement = statements[statements.length - 2];
+  const previousMonthStatement = statements[statements.length - 2];
 
   const getStatementTitle = (statement: IncomeStatementDto | undefined) =>
     !!statement
@@ -127,220 +106,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
   }, [stepIndex]);
 
-  // POINTS LOGIC
-  const [pointsMessageDismissedDate, setPointsMessageDismissedDate] = useState<
-    string | undefined
-  >(undefined);
-
-  const submitStatementConsecutivePointLibrary = useSelector(
-    pointsSelectors.getPointsLibraryById(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS_CONSECUTIVE
-    )
-  );
-
-  const submitStatementPoints = useSelector(
-    pointsSelectors.getPointsSummariesForActivity(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS,
-      13 // Need to get last 13 months, in case we are in the next month but still the submit window
-    )
-  );
-  const submitPreschoolFeesPoints = useSelector(
-    pointsSelectors.getPointsSummariesForActivity(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS_PRESCHOOL_FEES_ADDED
-    )
-  );
-  const submitStatementConsecutivePoints = useSelector(
-    pointsSelectors.getPointsSummariesForActivity(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS_CONSECUTIVE
-    )
-  );
-
-  useEffect(() => {
-    const storageItem = getStorageItem<string>(
-      LocalStorageKeys.pointsSubmitStatementsMessageDismissed
-    );
-
-    if (storageItem) {
-      setPointsMessageDismissedDate(new Date(storageItem).toDateString());
-    }
-  }, []);
-
-  const onDismissCelebration = useCallback(() => {
-    const dismissedDate = new Date();
-    setStorageItem(
-      JSON.stringify(dismissedDate),
-      LocalStorageKeys.pointsSubmitStatementsMessageDismissed
-    );
-    setPointsMessageDismissedDate(dismissedDate.toDateString());
-  }, []);
-
-  // Points celebration card, not sure if still need any of this, but it's likely to change a lot with no submit at least
-  // const celebrationCard = useMemo<JSX.Element>(() => {
-  //   const messageDismissedDate = !!pointsMessageDismissedDate
-  //     ? new Date(pointsMessageDismissedDate)
-  //     : undefined;
-
-  //   if (
-  //     currentDate.getDate() < IncomeStatementDates.SubmitStartDay &&
-  //     currentDate.getDate() > IncomeStatementDates.SubmitEndDay
-  //   ) {
-  //     return <></>;
-  //   }
-
-  //   if (
-  //     currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
-  //     !isThisMonthSubmitted
-  //   ) {
-  //     return <></>;
-  //   }
-
-  //   if (
-  //     currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
-  //     isThisMonthSubmitted &&
-  //     !!messageDismissedDate &&
-  //     messageDismissedDate.getMonth() === currentDate.getMonth() &&
-  //     messageDismissedDate.getDate() >= IncomeStatementDates.SubmitStartDay
-  //   ) {
-  //     return <></>;
-  //   }
-
-  //   if (
-  //     currentDate.getDate() <= IncomeStatementDates.SubmitEndDay &&
-  //     !isLastMonthSubmitted
-  //   ) {
-  //     return <></>;
-  //   }
-
-  //   if (
-  //     currentDate.getDate() < IncomeStatementDates.SubmitEndDay &&
-  //     isLastMonthSubmitted &&
-  //     !!messageDismissedDate &&
-  //     ((messageDismissedDate.getMonth() ===
-  //       getPreviousMonth(currentDate).getMonth() &&
-  //       messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay) ||
-  //       (messageDismissedDate.getMonth() === currentDate.getMonth() &&
-  //         messageDismissedDate.getDate() <= IncomeStatementDates.SubmitEndDay))
-  //   ) {
-  //     return <></>;
-  //   }
-
-  //   // Check depending on window if we need to try display last months message
-  //   // We can just add an offset of 1 to the logic below to ignore this months points if we want to show for last month
-  //   var offset =
-  //     currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
-  //       ? 1 // Last month
-  //       : 0; // Current month
-
-  //   let submittedMonthsInARow = 0;
-  //   for (
-  //     let i = offset;
-  //     i < submitStatementPoints.length &&
-  //     submitStatementPoints[i].pointsTotal !== 0;
-  //     i++
-  //   ) {
-  //     submittedMonthsInARow++;
-  //   }
-
-  //   if (submittedMonthsInARow === 0) {
-  //     return <></>;
-  //   }
-
-  //   let monthsSinceConsecutiveBonus = 0;
-  //   for (
-  //     let i = offset;
-  //     i < submitStatementConsecutivePoints.length &&
-  //     submitStatementConsecutivePoints[i].pointsTotal === 0;
-  //     i++
-  //   ) {
-  //     monthsSinceConsecutiveBonus++;
-  //   }
-
-  //   const submittedPointsThisMonth = submitStatementPoints[offset].pointsTotal;
-  //   const submittedWithFeesPointsThisMonth =
-  //     submitPreschoolFeesPoints[offset].pointsTotal;
-  //   const submitConsecutiveBonusPointsThisMonth =
-  //     submitStatementConsecutivePoints[offset]?.pointsTotal;
-  //   const monthTotal =
-  //     submittedPointsThisMonth +
-  //     submittedWithFeesPointsThisMonth +
-  //     submitConsecutiveBonusPointsThisMonth;
-
-  //   const preschoolFeesMessage =
-  //     ' & you added preschool fees for each child this month';
-  //   const consecutiveBonusMessage = ' You earned 25 bonus points.';
-
-  //   // Improved messaging and colours for 12+ months submitted in a row
-  //   if (submittedMonthsInARow === 12) {
-  //     return (
-  //       <CelebrationCard
-  //         image={<EmojiYellowBigSmile className="mr-2 h-16 w-16" />}
-  //         primaryMessage={`Amazing! You submitted statements for 12 months in a row${
-  //           submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-  //         }!`}
-  //         scoreMessage={`${monthTotal} points earned`}
-  //         scoreIcon="GiftIcon"
-  //         primaryTextColour="uiBg"
-  //         secondaryTextColour="uiBg"
-  //         backgroundColour="successMain"
-  //         onDismiss={onDismissCelebration}
-  //         secondaryMessage=""
-  //       />
-  //     );
-  //   }
-
-  //   // Only the last month submitted
-  //   if (submittedMonthsInARow === 1) {
-  //     return (
-  //       <CelebrationCard
-  //         image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-  //         primaryMessage={`Great jobl! You have submitted your ${format(
-  //           offset === 0 ? new Date() : getPreviousMonth(new Date()),
-  //           'MMMM'
-  //         )} statement${
-  //           submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-  //         }!`}
-  //         //scoreMessage={`${monthTotal} points earned`}
-  //         scoreIcon="GiftIcon"
-  //         primaryTextColour="successMain"
-  //         backgroundColour="successBg"
-  //         onDismiss={onDismissCelebration}
-  //         secondaryMessage=""
-  //         secondaryTextColour="black"
-  //       />
-  //     );
-  //   }
-
-  //   // Multiple months, but less than 12
-  //   return (
-  //     <CelebrationCard
-  //       image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-  //       primaryMessage={`Wow you're on a roll! You submitted statements for ${submittedMonthsInARow} months in a row${
-  //         submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-  //       }! ${
-  //         submitConsecutiveBonusPointsThisMonth > 0
-  //           ? consecutiveBonusMessage
-  //           : ''
-  //       }`}
-  //       // scoreMessage={`${monthTotal} points earned`}
-  //       scoreIcon="GiftIcon"
-  //       primaryTextColour="successMain"
-  //       backgroundColour="successBg"
-  //       onDismiss={onDismissCelebration}
-  //       secondaryMessage={
-  //         monthsSinceConsecutiveBonus === 2
-  //           ? `Submit you next statement to earn ${submitStatementConsecutivePointLibrary?.points} bonus points.`
-  //           : ''
-  //       }
-  //       secondaryTextColour="black"
-  //     />
-  //   );
-  // }, [
-  //   pointsMessageDismissedDate,
-  //   submitStatementPoints,
-  //   submitPreschoolFeesPoints,
-  //   submitStatementConsecutivePoints,
-  // ]);
-
   const lastMonthIncomeTotal = useMemo(
     () => getStatementIncomeTotal(lastMonthStatement),
     [lastMonthStatement]
@@ -361,6 +126,11 @@ export const SubmitIncomeStatements: React.FC = () => {
     [currentMonthStatement]
   );
 
+  const previousMonthBalance = useMemo(
+    () => getStatementBalance(previousMonthStatement),
+    [previousMonthStatement]
+  );
+
   const lastMonthBalance = lastMonthIncomeTotal - lastMonthExpenseTotal;
   const currentMonthBalance =
     currentMonthIncomeTotal - currentMonthExpenseTotal;
@@ -368,8 +138,22 @@ export const SubmitIncomeStatements: React.FC = () => {
   const hasIncomeStatements =
     !!lastMonthIncomeTotal ||
     !!lastMonthExpenseTotal ||
-    currentMonthExpenseTotal ||
-    currentMonthIncomeTotal;
+    !!currentMonthExpenseTotal ||
+    !!currentMonthIncomeTotal;
+
+  const lastMonth = getPreviousMonth(new Date());
+  const previousMonth = getPreviousMonth(lastMonth);
+
+  const hasLastTwoMonthsStatements =
+    lastMonthStatement.month === lastMonth.getMonth() &&
+    lastMonthStatement.year === lastMonth.getFullYear() &&
+    previousMonthStatement.month === previousMonth.getMonth() &&
+    previousMonthStatement.year === previousMonth.getFullYear();
+
+  const totalDownloadedStatements = statements.reduce(
+    (total, statement) => (statement.downloaded ? total + 1 : total),
+    0
+  );
 
   return (
     <>
@@ -507,7 +291,11 @@ export const SubmitIncomeStatements: React.FC = () => {
                       text={formatCurrentValue(lastMonthBalance)}
                       type="body"
                       color={
-                        lastMonthBalance >= 0 ? 'successMain' : 'secondary'
+                        lastMonthBalance === 0
+                          ? 'primary'
+                          : lastMonthBalance >= 0
+                          ? 'successMain'
+                          : 'secondary'
                       }
                       align={'center'}
                     />
@@ -517,7 +305,11 @@ export const SubmitIncomeStatements: React.FC = () => {
                       text={formatCurrentValue(currentMonthBalance)}
                       type="body"
                       color={
-                        currentMonthBalance >= 0 ? 'successMain' : 'secondary'
+                        currentMonthBalance === 0
+                          ? 'primary'
+                          : currentMonthBalance > 0
+                          ? 'successMain'
+                          : 'secondary'
                       }
                       align={'center'}
                     />
@@ -525,8 +317,85 @@ export const SubmitIncomeStatements: React.FC = () => {
                 </tr>
               </tbody>
             </table>
-            {/* 
-              {balanceNotifications} */}
+
+            {hasLastTwoMonthsStatements &&
+              lastMonthBalance < 0 &&
+              previousMonthBalance < 0 && (
+                <Alert
+                  type="warning"
+                  className="mt-4"
+                  message="Over the past two months, you have made less money than you have earned. This means your business is running at a loss."
+                  button={
+                    <Button
+                      text={`Learn more`}
+                      type={'filled'}
+                      color={'quatenary'}
+                      textColor={'white'}
+                      onClick={() => setIsLearnMore(true)}
+                    />
+                  }
+                  customIcon={
+                    <div className="rounded-full">
+                      {renderIcon(
+                        'ExclamationCircleIcon',
+                        'text-alertMain w-5 h-5'
+                      )}
+                    </div>
+                  }
+                />
+              )}
+
+            {hasLastTwoMonthsStatements &&
+              lastMonthBalance > 0 &&
+              previousMonthBalance > 0 && (
+                <Alert
+                  type="success"
+                  variant="outlined"
+                  className="mt-4"
+                  message="Great job! You have made a profit for 2 months in a row!"
+                  listColor="white"
+                  list={[
+                    `You had R ${(
+                      lastMonthBalance + previousMonthBalance
+                    ).toFixed(2)} left over for 
+                  ${getMonthName(lastMonthStatement.month - 1).substring(
+                    0,
+                    3
+                  )} & 
+                  ${getMonthName(previousMonthStatement.month - 1).substring(
+                    0,
+                    3
+                  )} combined.`,
+                  ]}
+                  customIcon={
+                    <div className="rounded-full">
+                      <img
+                        src={PositiveBonusEmoticon}
+                        alt="positive emoticon"
+                        className="h-6 w-6"
+                      />
+                    </div>
+                  }
+                />
+              )}
+
+            {totalDownloadedStatements > 0 && (
+              <Alert
+                type="success"
+                variant="outlined"
+                className="mt-4"
+                message={`Well done! You have downloaded ${totalDownloadedStatements} statements this year. Keep going!`}
+                customIcon={
+                  <div className="rounded-full">
+                    <img
+                      src={PositiveBonusEmoticon}
+                      alt="positive emoticon"
+                      className="h-6 w-6"
+                    />
+                  </div>
+                }
+              />
+            )}
 
             <Button
               shape="normal"

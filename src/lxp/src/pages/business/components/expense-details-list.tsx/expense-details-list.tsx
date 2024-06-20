@@ -1,4 +1,10 @@
-import { Typography, Card, StackedList, BannerWrapper } from '@ecdlink/ui';
+import {
+  Typography,
+  Card,
+  StackedList,
+  BannerWrapper,
+  Button,
+} from '@ecdlink/ui';
 import React from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
@@ -18,12 +24,11 @@ export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
   expenseItems,
   statementMonth,
   statementId,
-  isEditable,
 }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
 
-  const incomeListDetailsItems = expenseItems?.map((item) => {
+  const expenseListDetailsItems = expenseItems?.map((item) => {
     return {
       title:
         item.notes ?? format(Date.parse(item.datePaid || ''), 'dd/MM/yyyy'),
@@ -69,11 +74,11 @@ export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
           color="textMid"
           text={`${getMonthName(Number(statementMonth))} expenses`}
         />
-        {incomeListDetailsItems && (
+        {expenseListDetailsItems && (
           <StackedList
             className="mt-4 flex w-full flex-col"
             type="MenuList"
-            listItems={incomeListDetailsItems}
+            listItems={expenseListDetailsItems}
           />
         )}
         <Card
