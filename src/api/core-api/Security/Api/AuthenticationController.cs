@@ -341,8 +341,7 @@ namespace ECDLink.Security.Api
             if (!string.IsNullOrEmpty(verifyModel.PhoneNumber))
             {
                 var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
-                var userByPhoneNumber = _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
-                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+                var userByPhoneNumber = _securityManager.GetUserByNameAsync(normalizePhoneNumber);
                 if (userByPhoneNumber != null)
                 {
                     return BadRequest(new FailedVerificationModel
