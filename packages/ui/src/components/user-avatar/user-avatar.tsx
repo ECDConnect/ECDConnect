@@ -13,6 +13,7 @@ export interface UserAvatarProps extends ComponentBaseProps {
   color?: Colours;
   displayBorder?: boolean;
   borderColour?: Colours;
+  isPreschoolImage?: boolean;
 }
 
 export const UserAvatar: React.FC<UserAvatarProps> = ({
@@ -23,10 +24,14 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   className,
   displayBorder = false,
   borderColour = 'transparent',
+  isPreschoolImage,
 }) => {
   const textString = text.length > 2 ? text.substring(0, 2) : text;
   const iconSize = styles.getIconSize(size);
   const getAvatarToRender = () => {
+    if (isPreschoolImage) {
+      return renderIcon('HomeIcon', `h-${iconSize} w-${iconSize} text-white`);
+    }
     if (textString === '') {
       return renderIcon('UserIcon', `h-${iconSize} w-${iconSize} text-white`);
     } else {

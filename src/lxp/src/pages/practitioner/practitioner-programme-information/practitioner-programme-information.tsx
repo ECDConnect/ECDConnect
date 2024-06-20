@@ -433,6 +433,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             size={'header'}
             onPressed={displayProfilePicturePrompt}
             hasConsent={true}
+            isPreschoolImage={true}
           />
         </div>
 
