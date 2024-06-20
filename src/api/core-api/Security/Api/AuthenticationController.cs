@@ -595,21 +595,46 @@ namespace ECDLink.Security.Api
             return Ok();
         }
 
-        [Route("register-practitioner")]
+        [Route("register-wl-user")]
         [AllowAnonymous]
         [HttpPost]
-        public string RegisterPractitioner([FromBody] RegisterPractitionerModel input)
+        public async Task<IActionResult> RegisterWLUser([FromBody] RegisterModel input)
         {
-            var practitioner = _personnelService.RegisterPractitioner(input.Username);
 
-            if (practitioner == null)
+            if (string.IsNullOrEmpty(input.Username))
             {
-                return "Register of practitioner failed";
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Username is empty"
+                });
             }
 
-           return practitioner.UserId.ToString();
+            var user = await _securityManager.GetUserByNameAsync(input.Username);
+            if (user == null)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 2,
+                    Error = "User not available on system"
+                });
+            }
+
+            var practitionerOrCoachRegistered = _personnelService.RegisterWLUser(user.Id);
+
+            if (!practitionerOrCoachRegistered)
+            {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 3,
+                    Error = "Register of user failed"
+                });
+            }
+
+           return Ok(user.Id);
         }
 
+        
 
     }
 }

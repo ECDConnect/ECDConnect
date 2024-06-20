@@ -45,6 +45,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string AboutInfo { get; set; }
         public Boolean? ClickedClubTab { get; set; } = false;
         public Boolean? IsRegistered { get; set; } = false;
+        public Boolean? ShareInfo { get; set; } = false;
     }
 
     public interface CoachJoin<TKey>
