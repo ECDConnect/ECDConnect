@@ -30,6 +30,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   const appDispatch = useAppDispatch();
   const [isWhatsappNumber, setIsWhatsappNumber] = useState(true);
   const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -70,7 +71,8 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     }
   }, []);
 
-  const savePractitionerUserData = () => {
+  const savePractitionerUserData = async () => {
+    setIsLoading(true);
     const practitionerForm = getPractitionerInfoFormValues();
     const copy = cloneDeep(user);
     if (copy) {
@@ -84,12 +86,14 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
 
-      appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+      await appDispatch(userActions.updateUser(copy));
+      await appDispatch(userThunkActions.updateUser(copy));
+      setIsLoading(false);
     }
   };
 
-  const saveOldPractitionerUserData = () => {
+  const saveOldPractitionerUserData = async () => {
+    setIsLoading(true);
     const practitionerForm = getPractitionerInfoFormValues();
     const copy = cloneDeep(user);
     if (copy) {
@@ -103,8 +107,9 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
 
-      appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+      await appDispatch(userActions.updateUser(copy));
+      await appDispatch(userThunkActions.updateUser(copy));
+      setIsLoading(false);
     }
   };
 
@@ -123,6 +128,11 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     setOpenVerifyPhoneNumber(true);
   };
 
+  const handleCloseEditCellphoneNumber = async () => {
+    await saveOldPractitionerUserData();
+    setEditiCellPhoneNumber(false);
+  };
+
   return (
     <div>
       <BannerWrapper
@@ -133,7 +143,8 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         title={'Edit Cellphone Number'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
-        onBack={() => setEditiCellPhoneNumber(false)}
+        onBack={handleCloseEditCellphoneNumber}
+        onClose={handleCloseEditCellphoneNumber}
       ></BannerWrapper>
       <div className="w-12/12 wrapper-with-sticky-button px-4">
         <div className="flex w-full justify-center">
@@ -167,14 +178,14 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"
+                isLoading={isLoading}
                 disabled={
                   !!Object.keys(errors).length ||
-                  (!!isWhatsappNumber ? !cellphone : !whatsapp || !cellphone)
+                  !cellphone ||
+                  cellphone === user?.phoneNumber
                 }
                 onClick={() => {
                   handleSaveNewPhone();
-                  // savePractitionerUserData();
-                  // setEditiCellPhoneNumber(false);
                 }}
               />
             </div>

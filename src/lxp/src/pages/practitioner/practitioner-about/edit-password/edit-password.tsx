@@ -27,7 +27,10 @@ const editEmailModelSchema = Yup.object().shape({
     .matches(emailRexExp, 'Email address is not valid'),
 });
 
-export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
+export const Editpassword: React.FC<EditEmailProps> = ({
+  setEditEmail,
+  user,
+}) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
 
@@ -80,11 +83,10 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
         renderBorder={true}
         showBackground={false}
         color={'primary'}
-        title={'Edit Email Address'}
+        title={'Edit password'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
         onBack={() => setEditEmail(false)}
-        onClose={() => setEditEmail(false)}
       ></BannerWrapper>
       <div className="w-12/12 wrapper-with-sticky-button px-4">
         <div className="flex w-full justify-center">
@@ -92,7 +94,7 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
             <div className="w-full">
               <Typography
                 type="h2"
-                text="Email Address"
+                text="Password"
                 color={'textDark'}
                 className="mt-4 w-11/12"
               />

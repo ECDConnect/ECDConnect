@@ -2,7 +2,7 @@ export const NavigationNames = {
   Home: 'Home',
   Profile: {
     Profile: 'Profile',
-    Account: 'Account',
+    Account: 'About me',
     Preschool: 'Preschool',
     Journey: 'Journey',
   },

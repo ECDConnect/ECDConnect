@@ -12,6 +12,7 @@ import {
   LoginRequestModel,
   NOTIFICATION,
   useNotifications,
+  useTheme,
 } from '@ecdlink/core';
 import {
   Alert,
@@ -49,6 +50,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   setEditiCellPhoneNumber,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const { theme } = useTheme();
   const appDispatch = useAppDispatch();
   const { setNotification } = useNotifications();
   const history = useHistory();
@@ -133,7 +135,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
       size="small"
       color="primary"
       className={'h-screen'}
-      title={orgName}
+      menuLogoUrl={theme?.images?.logoUrl}
       displayOffline={!isOnline}
       onBack={
         isFromEditCellPhone && closeAction

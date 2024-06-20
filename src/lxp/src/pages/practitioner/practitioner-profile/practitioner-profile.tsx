@@ -256,7 +256,7 @@ export const PractitionerProfile: React.FC = () => {
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
-            className={'flex flex-col gap-1 px-4 pt-1'}
+            className={'flex flex-col gap-1 bg-white px-4 pt-1'}
           ></StackedList>
         </div>
       ),
@@ -276,14 +276,14 @@ export const PractitionerProfile: React.FC = () => {
     <BannerWrapper
       size="normal"
       renderBorder={true}
-      title={`${user?.firstName} ${user?.surname}`}
+      title={`${user?.firstName} ${user?.surname ? user?.surname : ''}`}
       color={'primary'}
       onBack={() => history.push(ROUTES.ROOT)}
       backgroundColour="white"
       displayOffline={!isOnline}
     >
       <TabList
-        className="bg-uiBg mb-1"
+        className="mb-1 bg-white"
         tabItems={tabItem}
         setSelectedIndex={selectedTab}
       />

@@ -581,7 +581,7 @@ export const Dashboard: React.FC = () => {
       nestedChildren: [
         {
           name: NavigationNames.Profile.Account,
-          href: ROUTES.PRACTITIONER.ACCOUNT,
+          href: ROUTES.PRACTITIONER.ABOUT.ROOT,
           onNavigation: onNavigation,
           current: false,
         },
