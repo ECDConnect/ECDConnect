@@ -75,8 +75,7 @@ export function Profile(props: any) {
     });
 
   const { errors, isValid } = formState;
-  console.log({ isValid });
-  console.log({ errors });
+
   const {
     register: passwordRegister,
     formState: passwordFormState,
