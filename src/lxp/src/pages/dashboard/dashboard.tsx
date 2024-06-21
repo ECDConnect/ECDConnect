@@ -156,8 +156,22 @@ export const Dashboard: React.FC = () => {
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
 
   useEffect(() => {
-    if (isFromLogin && practitioner?.progress === 0 && !isOpenAccess) {
+    if (
+      isFromLogin &&
+      practitioner?.progress === 0 &&
+      !isOpenAccess &&
+      !practitioner?.principalHierarchy
+    ) {
       history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+    }
+
+    if (
+      isFromLogin &&
+      practitioner?.progress === 0 &&
+      !isOpenAccess &&
+      practitioner?.principalHierarchy
+    ) {
+      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
     }
   }, []);
 
