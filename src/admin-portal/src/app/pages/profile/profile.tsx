@@ -81,6 +81,7 @@ export function Profile(props: any) {
     formState: passwordFormState,
     getValues: passwordGetValues,
     setValue: passwordSetValue,
+    watch,
   } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
@@ -89,6 +90,7 @@ export function Profile(props: any) {
 
   const { errors: passwordFormErrors, isValid: isPasswordValid } =
     passwordFormState;
+  const { password } = watch();
 
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
@@ -443,7 +445,7 @@ export function Profile(props: any) {
                       label={'Password'}
                       nameProp={'password'}
                       sufficIconColor="black"
-                      value={passwordForm.password}
+                      value={password}
                       register={passwordRegister}
                       strengthMeterVisible={true}
                       className="mb-9 "
@@ -478,7 +480,7 @@ export function Profile(props: any) {
             type="filled"
             isLoading={loading}
             color="secondary"
-            disabled={!isValid}
+            disabled={isSuperAdmin ? !isPasswordValid : !isValid}
             onClick={handleSubmit(onSave)}
           >
             <Typography

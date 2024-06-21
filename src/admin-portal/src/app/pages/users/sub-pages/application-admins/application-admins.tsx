@@ -231,6 +231,7 @@ export default function ApplicationAdmins() {
     const role = selectedRow?.roles?.filter(
       (item) => item?.name !== RoleSystemNameEnum.CHW
     );
+
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -239,7 +240,7 @@ export default function ApplicationAdmins() {
       pathname: '/users/view-user',
       state: {
         component: role?.[0]?.name,
-        userId: selectedRow?.userId,
+        userId: selectedRow?.id,
       },
     });
   };
