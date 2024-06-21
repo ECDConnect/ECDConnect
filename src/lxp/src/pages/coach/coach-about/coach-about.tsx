@@ -78,7 +78,7 @@ export const CoachAbout: React.FC = () => {
   const pictureStorageKey = LocalStorageKeys.coachProfilePicture;
 
   const [oldUserNumber, setOldUserNumber] = useState('');
-  console.log({ oldUserNumber });
+
   useEffect(() => {
     if (user?.phoneNumber) {
       setOldUserNumber(user?.phoneNumber);
