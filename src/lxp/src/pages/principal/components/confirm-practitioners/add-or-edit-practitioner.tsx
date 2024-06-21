@@ -597,22 +597,10 @@ export const AddOrEditPractitioner = ({
             className="mb-4 w-full"
             type="outlined"
             color="quatenary"
-            text="Remove practitioner"
+            text="Delete practitioner"
             textColor="quatenary"
-            icon="SaveIcon"
+            icon="TrashIcon"
             onClick={handleRemoveuser}
-          />
-        )}
-        {isValidPractitioner === false && (
-          <Button
-            size="normal"
-            className="mb-4 w-full"
-            type="outlined"
-            color="quatenary"
-            text="Skip"
-            textColor="quatenary"
-            icon="ArrowCircleRightIcon"
-            onClick={handleReset}
           />
         )}
       </div>
