@@ -41,10 +41,10 @@ export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
   email: yup.string().email('Invalid email'),
-  phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid'),
-  whatsAppNumber: yup
-    .string()
-    .matches(SA_CELL_REGEX, 'Phone number is not valid'),
+  // phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid'),
+  // whatsAppNumber: yup
+  //   .string()
+  //   .matches(SA_CELL_REGEX, 'Phone number is not valid'),
 });
 
 export const tlSchema = yup.object().shape({
