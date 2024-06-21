@@ -156,10 +156,14 @@ export class IncompletePractitionerInformationNotificationValidator
             title:
               practitionerState?.practitioner?.progress === 1.0
                 ? 'Join your preschool team!'
+                : practitionerState?.practitioner?.principalHierarchy
+                ? `You have been added to ${classroomState?.classroom?.name}`
                 : 'Join or add a preschool!',
             message:
               practitionerState?.practitioner?.progress === 1.0
                 ? 'Ask your principal to sign up for AppName and add you to the preschool, or fill in your preschool code now.'
+                : practitionerState?.practitioner?.principalHierarchy
+                ? 'Connect with your principal & manage your classes.'
                 : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
             priority: NotificationPriority.lower,
