@@ -6,6 +6,7 @@ using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
@@ -21,6 +22,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -40,6 +42,7 @@ namespace ECDLink.Security.Api
         private readonly SecurityNotificationManager _notificationManager;
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly PersonnelService _personnelService;
+        private readonly AuthenticationDbContext _dbContext;
 
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
@@ -55,7 +58,8 @@ namespace ECDLink.Security.Api
             IPasswordManager<ApplicationUser> passwordManager,
             SecurityNotificationManager notificationManager,
             PersonnelService personnelService,
-            HierarchyEngine hierarchyEngine)
+            HierarchyEngine hierarchyEngine,
+            AuthenticationDbContext dbContext)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -69,6 +73,7 @@ namespace ECDLink.Security.Api
             _personnelService = personnelService;
             _notificationManager = notificationManager;
             _securityCodeManager = securityCodeManager;
+            _dbContext = dbContext;
         }
 
         // POST api/auth/login
@@ -309,7 +314,7 @@ namespace ECDLink.Security.Api
         [Route("check-username-phone-number")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> CheckUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
+        public IActionResult CheckUsernamePhoneNumber([FromBody] OAVerifyUsernamePhoneNumberModel verifyModel)
         {
             // if both are empty, return error
             if (!string.IsNullOrEmpty(verifyModel.Username) && !string.IsNullOrEmpty(verifyModel.PhoneNumber))
@@ -323,7 +328,8 @@ namespace ECDLink.Security.Api
 
             if (!string.IsNullOrEmpty(verifyModel.Username))
             {
-                var userByUsername = await _securityManager.GetUserByNameAsync(verifyModel.Username);
+                // we use _dbContext to exclude tenantId validation
+                var userByUsername = _dbContext.Users.Where(user => user.UserName == verifyModel.Username).FirstOrDefault();
                 if (userByUsername != null)
                 {
                     var userWithIdNumberExists = !string.IsNullOrEmpty(userByUsername.IdNumber) && userByUsername.IdNumber == verifyModel.Username;
@@ -340,8 +346,9 @@ namespace ECDLink.Security.Api
 
             if (!string.IsNullOrEmpty(verifyModel.PhoneNumber))
             {
+                // we use _dbContext to exclude tenantId validation
                 var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(verifyModel.PhoneNumber);
-                var userByPhoneNumber = _securityManager.GetUserByNameAsync(normalizePhoneNumber);
+                var userByPhoneNumber = _dbContext.Users.Where(user => user.UserName == normalizePhoneNumber).FirstOrDefault();
                 if (userByPhoneNumber != null)
                 {
                     return BadRequest(new FailedVerificationModel

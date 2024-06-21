@@ -27,14 +27,11 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Threading;
 using System.Threading.Tasks;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -416,8 +413,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 .OrderByDescending(x => x.InsertedDate)
                 .GroupBy(x => x.UserId);
 
-            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.First().InsertedDate);
-            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.First().NotificationResult);
+            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.Last().InsertedDate);
+            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.Last().NotificationResult);
 
              var practitionerModels = practitionerQuery
                 .Select(item => new PortalPractitionerModel
@@ -449,8 +446,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 filteredUsers.AddRange(practitionerModels.Where(x =>
                     x.IsRegistered
                     && x.User.IsActive
-                    && x.User.InsertedDate.HasValue
-                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
                     && x.User.LastSeen.Date >= sixMonthsAgo));
             }
             if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
@@ -458,8 +453,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 filteredUsers.AddRange(practitionerModels.Where(x =>
                     x.IsRegistered
                     && x.User.IsActive
-                    && x.User.InsertedDate.HasValue
-                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
                     && x.User.LastSeen.Date <= sixMonthsAgo));
             }
             if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))

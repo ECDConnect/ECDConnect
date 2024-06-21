@@ -311,8 +311,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 .GroupBy(x => x.UserId);
 
 
-            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.First().InsertedDate);
-            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.First().NotificationResult);
+            var invitationDates = invitations.ToDictionary(x => x.Key, x => x.Last().InsertedDate);
+            var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.Last().NotificationResult);
 
             var coachModels = coachQuery
                 .Select(item => new PortalCoachModel
@@ -342,8 +342,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 filteredUsers.AddRange(coachModels.Where(x =>
                     x.IsRegistered
                     && x.User.IsActive
-                    && x.User.InsertedDate.HasValue
-                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
                     && x.User.LastSeen.Date >= sixMonthsAgo));
             }
             if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
@@ -351,8 +349,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 filteredUsers.AddRange(coachModels.Where(x =>
                     x.IsRegistered
                     && x.User.IsActive
-                    && x.User.InsertedDate.HasValue
-                    && x.User.LastSeen.Date != x.User.InsertedDate.Value.Date
                     && x.User.LastSeen.Date <= sixMonthsAgo));
             }
             if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
