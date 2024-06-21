@@ -28,6 +28,9 @@ import {
 } from '../../class-dashboard/class-dashboard.types';
 import { ProgrammeDashboardRouteParams } from './programme-dashboard.types';
 import { useProgrammePlanning } from '@/hooks/useProgrammePlanning';
+import ProgrammeWrapper from './walkthrough/programme-wrapper';
+import { useAppContext } from '@/walkthrougContext';
+import { WalkthroughModal } from '@/components/walkthrough/modal';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -166,6 +169,24 @@ export const ProgrammeDashboard: React.FC = () => {
     selectedDate,
     user?.firstName,
   ]);
+
+  const { setState } = useAppContext();
+
+  const handleWalkthroughLanguage = useCallback(() => {
+    return dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => (
+        <WalkthroughModal
+          onStart={() => {
+            setState({ run: true, tourActive: true, stepIndex: 0 });
+            onClose();
+          }}
+        />
+      ),
+    });
+  }, [dialog, setState]);
 
   useEffect(() => {
     showStartPlanning();
@@ -306,34 +327,21 @@ export const ProgrammeDashboard: React.FC = () => {
     }
   }, [fetchData, progressSummary, downloadPdf, dialog]);
 
-  // const handleAddProgramme = () => {
-  //   if (isOnline) {
-  //     history.push(ROUTES.PROGRAMMES.THEME);
-  //   } else {
-  //     showOnlineOnly();
-  //   }
-  // };
-
-  // const showOnlineOnly = () => {
-  //   dialog({
-  //     position: DialogPosition.Bottom,
-  //     render: (onSubmit) => {
-  //       return <div>test</div>//<OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-  //     },
-  //   });
-  // };
   return (
     <BannerWrapper
       size="small"
       title="Activities"
       subTitle={classroomGroup?.name}
+      displayHelp
+      onHelp={handleWalkthroughLanguage}
       onBack={() =>
         history.push(ROUTES.CLASSROOM.ROOT, {
           activeTabIndex: TabsItems.ACTIVITES,
         } as ClassDashboardRouteState)
       }
-      className="p-4"
+      className="relative p-4"
     >
+      <ProgrammeWrapper />
       <DailyRoutine
         programme={currentProgramme}
         currentDailyProgramme={currentDailyProgramme}

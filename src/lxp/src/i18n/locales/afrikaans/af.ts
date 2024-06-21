@@ -1,7 +1,9 @@
 import attendanceWalkthrough from '../../modules/attendance/walkthrough/af.json';
+import programmeWalkthrough from '../../modules/programme/walkthrough/af.json';
 
 export const AF = {
   translation: {
     ...attendanceWalkthrough,
+    ...programmeWalkthrough,
   },
 };

@@ -7,6 +7,9 @@ import { ActivitySubCategoryCard } from '../../components/activity-sub-category-
 import { ActivityDetailsProps } from './activity-details.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useAppContext } from '@/walkthrougContext';
+import { dummyActivityDetails } from '@/pages/classroom/programme-planning/programme-dashboard/walkthrough/dummy-content';
+import ProgrammeWrapper from '../../../../programme-dashboard/walkthrough/programme-wrapper';
 
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   activityId,
@@ -18,9 +21,16 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 }) => {
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
   const { isOnline } = useOnlineStatus();
-  const activityDetail = useSelector(
+
+  const { state } = useAppContext();
+
+  const isWalkthrough = state?.run;
+
+  const activityById = useSelector(
     activitySelectors.getActivityById(activityId)
   );
+
+  const activityDetail = isWalkthrough ? dummyActivityDetails : activityById;
 
   const date = new Date();
 
@@ -35,68 +45,69 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   if (!activityDetail) return <></>;
 
   return (
-    <BannerWrapper
-      showBackground={false}
-      size="medium"
-      renderBorder={true}
-      title={activityDetail.name}
-      subTitle={`${date.toDateString()}`}
-      color={'primary'}
-      backgroundColour="white"
-      onBack={onBack}
-      displayOffline={!isOnline}
-    >
-      {isOnlineOnlyAlert && (
-        <div className="absolute  z-10 flex h-full items-center ">
-          <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
-            <OnlineOnlyModal
-              onSubmit={() => setOnlineOnlyAlert(false)}
-            ></OnlineOnlyModal>
+    <>
+      <ProgrammeWrapper />
+      <BannerWrapper
+        showBackground={false}
+        size="medium"
+        renderBorder={true}
+        title={activityDetail.name}
+        subTitle={`${date.toDateString()}`}
+        color={'primary'}
+        backgroundColour="white"
+        onBack={onBack}
+        displayOffline={!isOnline}
+      >
+        {isOnlineOnlyAlert && (
+          <div className="absolute  z-10 flex h-full items-center ">
+            <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
+              <OnlineOnlyModal
+                onSubmit={() => setOnlineOnlyAlert(false)}
+              ></OnlineOnlyModal>
+            </div>
+            <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
           </div>
-          <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
-        </div>
-      )}
-      {activityDetail.image && activityDetail.image?.length > 0 && (
-        <img
-          src={activityDetail.image}
-          className="mx-auto h-40 w-full rounded-md"
-          alt=""
-        />
-      )}
+        )}
+        {activityDetail.image && activityDetail.image?.length > 0 && (
+          <img
+            src={activityDetail.image}
+            className="mx-auto h-40 w-full rounded-md"
+            alt=""
+          />
+        )}
 
-      <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
-      <Divider />
-      <div className="px-4 py-3">
-        <Typography type="h1" text={activityDetail.name} color={'textDark'} />
+        <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
+        <Divider />
+        <div className="px-4 py-3">
+          <Typography type="h1" text={activityDetail.name} color={'textDark'} />
 
-        {!disabled &&
-          (isSelected ? (
-            <Button
-              type={'filled'}
-              color={'quatenary'}
-              className={'mt-2 mb-4 w-full'}
-              textColor={'white'}
-              text={`Change activity`}
-              icon={'RefreshIcon'}
-              iconPosition={'start'}
-              onClick={handleActivityChanged}
-            />
-          ) : (
-            <Button
-              type={'filled'}
-              color={'quatenary'}
-              className={'mt-2 mb-4 w-full'}
-              textColor={'white'}
-              text={'Choose this activity'}
-              icon={'CheckCircleIcon'}
-              iconPosition={'start'}
-              onClick={onActivitySelected}
-            />
-          ))}
+          {!disabled &&
+            (isSelected ? (
+              <Button
+                type={'filled'}
+                color={'quatenary'}
+                className={'mt-2 mb-4 w-full'}
+                textColor={'white'}
+                text={`Change activity`}
+                icon={'RefreshIcon'}
+                iconPosition={'start'}
+                onClick={handleActivityChanged}
+              />
+            ) : (
+              <Button
+                type={'filled'}
+                color={'quatenary'}
+                className={'mt-2 mb-4 w-full'}
+                textColor={'white'}
+                text={'Choose this activity'}
+                icon={'CheckCircleIcon'}
+                iconPosition={'start'}
+                onClick={onActivitySelected}
+              />
+            ))}
 
-        <Divider dividerType="dashed" />
+          <Divider dividerType="dashed" />
 
-        <div id="walkthrough-activity-detail">
           <Typography
             type="body"
             weight="bold"
@@ -113,81 +124,82 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
               />
             ))}
           </Card>
+          <div id="walkthrough-activity-detail">
+            <Typography
+              type="body"
+              fontSize={'18'}
+              weight="bold"
+              text={'What do I need?'}
+              color={'textDark'}
+              className="mt-5"
+            />
 
+            <Typography
+              type="body"
+              fontSize={'16'}
+              text={activityDetail.materials}
+              color={'textMid'}
+            />
+            <Typography
+              type="body"
+              fontSize={'18'}
+              weight="bold"
+              text={'What do I do?'}
+              color={'textDark'}
+              className="mt-5"
+            />
+
+            <Typography
+              type="markdown"
+              fontSize={'16'}
+              text={activityDetail.description}
+              color={'textDark'}
+            />
+          </div>
+        </div>
+        <div className="bg-uiBg px-4 py-2">
           <Typography
             type="body"
             fontSize={'18'}
             weight="bold"
-            text={'What do I need?'}
+            text={'Notes'}
             color={'textDark'}
-            className="mt-5"
           />
-
           <Typography
-            type="body"
+            type="markdown"
             fontSize={'16'}
-            text={activityDetail.materials}
-            color={'textMid'}
+            text={activityDetail.notes}
+            color={'textDark'}
           />
         </div>
-        <Typography
-          type="body"
-          fontSize={'18'}
-          weight="bold"
-          text={'What do I do?'}
-          color={'textDark'}
-          className="mt-5"
-        />
-
-        <Typography
-          type="markdown"
-          fontSize={'16'}
-          text={activityDetail.description}
-          color={'textDark'}
-        />
-      </div>
-      <div className="bg-uiBg px-4 py-2">
-        <Typography
-          type="body"
-          fontSize={'18'}
-          weight="bold"
-          text={'Notes'}
-          color={'textDark'}
-        />
-        <Typography
-          type="markdown"
-          fontSize={'16'}
-          text={activityDetail.notes}
-          color={'textDark'}
-        />
-      </div>
-      <div className="mb-20 p-4">
-        {!disabled &&
-          (isSelected ? (
-            <Button
-              type={'filled'}
-              color={'quatenary'}
-              className={'mt-2 w-full'}
-              textColor={'white'}
-              text={`Change activity`}
-              icon={'RefreshIcon'}
-              iconPosition={'start'}
-              onClick={onActivityChanged}
-            />
-          ) : (
-            <Button
-              type={'filled'}
-              color={'primary'}
-              className={'mt-2 w-full'}
-              textColor={'white'}
-              text={'Choose this activity'}
-              icon={'CheckCircleIcon'}
-              iconPosition={'start'}
-              onClick={onActivitySelected}
-            />
-          ))}
-      </div>
-    </BannerWrapper>
+        <div className="mb-20 p-4">
+          {!disabled &&
+            (isSelected ? (
+              <Button
+                type={'filled'}
+                color={'quatenary'}
+                className={'mt-2 w-full'}
+                textColor={'white'}
+                text={`Change activity`}
+                icon={'RefreshIcon'}
+                iconPosition={'start'}
+                onClick={onActivityChanged}
+              />
+            ) : (
+              <Button
+                type={'filled'}
+                color={'primary'}
+                className={'mt-2 w-full'}
+                textColor={'white'}
+                text={'Choose this activity'}
+                icon={'CheckCircleIcon'}
+                iconPosition={'start'}
+                onClick={onActivitySelected}
+              />
+            ))}
+        </div>
+      </BannerWrapper>
+    </>
   );
 };
 
