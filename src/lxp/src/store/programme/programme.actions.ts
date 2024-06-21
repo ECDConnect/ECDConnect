@@ -233,7 +233,10 @@ export const formatDailyProgrammes = (
       largeGroupActivityId: daily.largeGroupActivityId ?? 0,
       storyBookId: daily.storyBookId ?? 0,
       storyActivityId: daily.storyActivityId ?? 0,
-      isActive: isBefore(new Date(), new Date(programme.endDate)),
+      isActive:
+        daily.isActive === false
+          ? false
+          : isBefore(new Date(), new Date(programme.endDate)),
     };
   });
 };

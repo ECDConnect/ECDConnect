@@ -5,16 +5,26 @@ import {
   Dropdown,
   DropDownOption,
   Button,
+  DialogPosition,
 } from '@ecdlink/ui/';
 import { addDays, addMonths, isSameDay, subDays } from 'date-fns';
 import { ProgrammePlanningHeaderProps } from './programme-planning-header-updated.types';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { programmeThemeSelectors } from '@/store/content/programme-theme';
+import {
+  programmeThemeSelectors,
+  programmeThemeThunkActions,
+} from '@/store/content/programme-theme';
 import format from 'date-fns/format';
-import { useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { ProgrammeDashboardRouteParams } from '../../programme-dashboard/programme-dashboard.types';
 import { classroomsSelectors } from '@/store/classroom';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import ROUTES from '@/routes/routes';
+import { useAppDispatch } from '@/store';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useDialog } from '@ecdlink/core';
+import { ProgrammeTimingRouteState } from '../../programme-timing/programme-timing.types';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -35,6 +45,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
 }) => {
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
 
+  const { isOnline } = useOnlineStatus();
   const dailyProgramme = theme?.dailyProgrammes?.find((item) => {
     return isSameDay(new Date(item?.dayDate), new Date(selectedDate!));
   });
@@ -45,6 +56,12 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   );
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosenTheme = themes?.find((item) => item?.name === theme?.name);
+
+  const appDispatch = useAppDispatch();
+
+  const dialog = useDialog();
+
+  const history = useHistory();
 
   // Business rule to only go back 3 months and forward 6 months
   const threeMonthsBack: Date = addMonths(selectedDate!, -3);
@@ -98,6 +115,33 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     DropDownOption<string>[]
   >([]);
   const [monthDropdownLabel, setMonthDropdownLabel] = useState('');
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit} />;
+      },
+    });
+  };
+
+  const handleEditProgramme = async () => {
+    if (isOnline) {
+      if (themes.length === 0) {
+        await appDispatch(
+          programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+        );
+      }
+      history.push(ROUTES.PROGRAMMES.TIMING, {
+        classroomGroupId,
+        theme: themes.find((item) => item?.name === theme?.name),
+        programmeToEdit: theme,
+      } as ProgrammeTimingRouteState);
+    } else {
+      showOnlineOnly();
+    }
+  };
 
   useEffect(() => {
     if (newMonthYearList.length === 0) {
@@ -204,8 +248,9 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
       </div>
       <div className={classNames(className, 'flex w-full gap-2')}>
         {!isWeekendDay && showChips && (
-          <div
+          <button
             className={`flex w-full items-center rounded-xl ${themeColour()}`}
+            onClick={handleEditProgramme}
           >
             {chosenTheme && (
               <img
@@ -235,7 +280,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
                 weight={`bold`}
               />
             )}
-          </div>
+          </button>
         )}
       </div>
     </div>

@@ -108,8 +108,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   const chosedTheme = themes?.find((item) => item?.name === programme?.name);
 
-  const { createProgramme, checkIfWholeWeekIsPlanned, getPlannedWeeksCount } =
-    useProgrammePlanning();
+  const {
+    createOrEditProgramme,
+    checkIfWholeWeekIsPlanned,
+    getPlannedWeeksCount,
+  } = useProgrammePlanning();
 
   const { isWholeWeekPlanned } = checkIfWholeWeekIsPlanned(
     selectedDate!,
@@ -352,7 +355,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     activityId?: number
   ) => {
     if (!currentDailyProgramme) {
-      await createProgramme(
+      await createOrEditProgramme(
         classroomGroupId,
         selectedDate!,
         'en-za',

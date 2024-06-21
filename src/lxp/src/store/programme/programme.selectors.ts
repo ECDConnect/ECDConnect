@@ -4,15 +4,22 @@ import { compareDesc, isAfter, isBefore, isSameDay, parseISO } from 'date-fns';
 import { RootState } from '../types';
 
 export const getProgrammes = (state: RootState): ProgrammeDto[] =>
-  [...(state.programmeData.programmes || [])]?.sort((a, b) => {
-    const dateA = a?.insertedDate
-      ? parseISO(a.insertedDate as string)
-      : new Date(0);
-    const dateB = b?.insertedDate
-      ? parseISO(b.insertedDate as string)
-      : new Date(0);
-    return compareDesc(dateA, dateB);
-  }) || [];
+  [...(state.programmeData.programmes || [])]
+    ?.map((programme) => ({
+      ...programme,
+      dailyProgrammes: programme?.dailyProgrammes?.filter(
+        (day) => day?.isActive === undefined || day?.isActive !== false
+      ),
+    }))
+    ?.sort((a, b) => {
+      const dateA = a?.insertedDate
+        ? parseISO(a.insertedDate as string)
+        : new Date(0);
+      const dateB = b?.insertedDate
+        ? parseISO(b.insertedDate as string)
+        : new Date(0);
+      return compareDesc(dateA, dateB);
+    }) || [];
 
 export const getProgrammeById = (programmeId?: string) =>
   createSelector(getProgrammes, (programmes: ProgrammeDto[]) =>
