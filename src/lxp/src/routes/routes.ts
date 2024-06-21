@@ -17,11 +17,6 @@ const ROUTES = {
     TIMING: '/timing',
     SUMMARY: '/summary',
     ROUTINE: '/routine',
-    TUTORIAL: addPrefix('/tutorial', {
-      GETTING_STARTED: '/getting-started',
-      DAILY_ROUTINE: '/daily-routine',
-      DEVELOPING_CHILDREN: '/developing-children',
-    }),
   }),
   ATTENDANCE_TUTORIAL_WALKTHROUGH: '/attendance-tutorial-walkthrough',
   DASHBOARD: '/dashboard',
@@ -40,7 +35,13 @@ const ROUTES = {
       EDIT_REGISTERS: '/edit-registers',
     }),
     ACTIVITIES: addPrefix('/activities', {
-      PROGRAMME_DASHBOARD: '/programme-dashboard/:classroomGroupId',
+      PROGRAMME_DASHBOARD: addPrefix('/programme-dashboard/:classroomGroupId', {
+        TUTORIAL: addPrefix('/tutorial', {
+          GETTING_STARTED: '/getting-started',
+          DAILY_ROUTINE: '/daily-routine',
+          DEVELOPING_CHILDREN: '/developing-children',
+        }),
+      }),
     }),
     UPDATE_FEE: '/preschool-fee',
   }),

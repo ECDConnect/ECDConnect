@@ -120,7 +120,7 @@ const ProgrammeTiming: React.FC = () => {
               onClick: () => {
                 onClose();
                 history.push(
-                  ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.replace(
+                  ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
                     ':classroomGroupId',
                     state.classroomGroupId
                   )

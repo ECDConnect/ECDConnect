@@ -198,9 +198,6 @@ export const ClassDashboard: React.FC = () => {
       case NavigationNames.Classroom.Attendance:
         setAttendanceTutorialActive(true);
         break;
-      case NavigationNames.Classroom.Programme:
-        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
-        break;
       default:
         break;
     }

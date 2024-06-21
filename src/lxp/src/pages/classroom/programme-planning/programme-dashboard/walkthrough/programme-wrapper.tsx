@@ -195,7 +195,7 @@ export default function ProgrammeWrapper() {
     } else if (type === 'step:after' && index === 3) {
       setState({ run: true, stepIndex: 4 });
       // redirect back to activities page
-      history.push(ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD);
+      history.push(ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT);
     } else if (type === 'step:after' && index === 4) {
       setState({ run: true, stepIndex: 5 });
     } else if (type === 'step:after' && index === 5) {

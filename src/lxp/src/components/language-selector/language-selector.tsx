@@ -1,5 +1,5 @@
 import { LanguageDto } from '@ecdlink/core';
-import { Dropdown, ComponentBaseProps } from '@ecdlink/ui';
+import { Dropdown, ComponentBaseProps, classNames } from '@ecdlink/ui';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
@@ -28,6 +28,7 @@ export const LanguageSelector = ({
   availableLanguages,
   notLogged,
   showOfflineAlert,
+  className,
 }: LanguageSelectorProps) => {
   const allLanguages = useSelector(staticDataSelectors.getLanguages);
   const languages = useSelector(staticDataSelectors.getLanguages);
@@ -83,7 +84,7 @@ export const LanguageSelector = ({
   }, []);
 
   return (
-    <div className={styles.localeDropDownWrapper}>
+    <div className={classNames(styles.localeDropDownWrapper, className)}>
       <label
         className={
           labelClassName === undefined ? styles.languageLabel : labelClassName
