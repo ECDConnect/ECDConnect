@@ -87,8 +87,18 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       }
 
       await appDispatch(userActions.updateUser(copy));
-      await appDispatch(userThunkActions.updateUser(copy));
+      const updatedUser = await appDispatch(userThunkActions.updateUser(copy));
       setIsLoading(false);
+
+      if (updatedUser) {
+        const resendAuthCode = await new AuthService().SendOAAuthCode(
+          user?.userName!
+        );
+
+        if (resendAuthCode) {
+          setOpenVerifyPhoneNumber(true);
+        }
+      }
     }
   };
 
@@ -118,15 +128,6 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       setPractitionerInfoFormValues('cellphone', user?.phoneNumber);
     }
   }, [setPractitionerInfoFormValues, user?.phoneNumber]);
-
-  const handleSaveNewPhone = async () => {
-    await savePractitionerUserData();
-    const resendAuthCode = await new AuthService().SendOAAuthCode(
-      user?.userName!
-    );
-
-    setOpenVerifyPhoneNumber(true);
-  };
 
   const handleCloseEditCellphoneNumber = async () => {
     await saveOldPractitionerUserData();
@@ -185,7 +186,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                   cellphone === user?.phoneNumber
                 }
                 onClick={() => {
-                  handleSaveNewPhone();
+                  savePractitionerUserData();
                 }}
               />
             </div>
