@@ -4,7 +4,7 @@ import { useTenant } from '@/hooks/useTenant';
 
 export const EmptyPractitioners = () => {
   const tenant = useTenant();
-  const orgName = tenant?.tenant?.organisationName;
+  const orgName = tenant?.tenant?.applicationName;
 
   return (
     <div className="flex h-full w-full items-center justify-center">
