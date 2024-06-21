@@ -429,11 +429,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       >
         <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
-            dataUrl={classroomImage?.file || ''}
+            dataUrl={classroom?.imageUrl || ''}
             size={'header'}
             onPressed={displayProfilePicturePrompt}
             hasConsent={true}
             isPreschoolImage={true}
+            canChangeImage={practitioner?.isPrincipal ? true : false}
           />
         </div>
 
