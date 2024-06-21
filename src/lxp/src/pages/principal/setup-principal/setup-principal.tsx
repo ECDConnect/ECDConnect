@@ -248,7 +248,7 @@ export const SetupPrincipal: React.FC = () => {
     }
     setIsLoading(false);
     stopService();
-    history.push(ROUTES.ROOT);
+    history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
   };
 
   const exitPrompt = () => {
