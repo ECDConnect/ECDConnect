@@ -279,6 +279,44 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const handlePrincipalCompleteProfileDialog = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+            textAlignment="right"
+            customDetailText={
+              <Typography
+                type="h4"
+                className="mb-7 mt-4"
+                text={`If you want to change these details later, tap your profile and go to “Preschool”.`}
+                color="black"
+                align="center"
+              />
+            }
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => onSubmit(),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+            customIcon={
+              <div className="mb-2 flex w-full justify-center">
+                <Cebisa />
+              </div>
+            }
+          />
+        );
+      },
+    });
+  };
+
   const handle30DaysExpired = () => {
     dialog({
       position: DialogPosition.Middle,
@@ -326,6 +364,12 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (isFromCompleteProfile && !practitioner?.isPrincipal) {
       handleDialog();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFromCompleteProfile && practitioner?.isPrincipal) {
+      handlePrincipalCompleteProfileDialog();
     }
   }, []);
 

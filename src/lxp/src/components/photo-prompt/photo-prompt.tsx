@@ -299,7 +299,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
             <div className="flex w-full justify-center ">
               <Button
                 type={'filled'}
-                text={'Confirm'}
+                text={'Close'}
                 color={'quatenary'}
                 textColor={'white'}
                 className={'w-11/12'}
