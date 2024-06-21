@@ -42,8 +42,9 @@ import { PersonalInfo } from './components/personal-info/personal-info';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
-import { RoleSystemNameEnum } from '@ecdlink/core';
+import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import { useTenant } from '../../hooks/useTenant';
+import { ResetUserPassword } from './components/reset-password/reset-password';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -501,7 +502,6 @@ export function ViewUser(props: any) {
         {isNotLockedOut(
           userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
         ) &&
-          !isAdministrator &&
           !isTeamLeadRole && (
             <div className="flex flex-col gap-2 lg:flex-row">
               {!isRegistered && (
@@ -511,11 +511,15 @@ export function ViewUser(props: any) {
                   refetchUserData={refetchUserData}
                 />
               )}
+              {/* {isRegistered && isAdministrator && (
+                <ResetUserPassword userData={userData?.userById} />
+              )} */}
               <DeactivateUser
                 userData={userData?.userById}
                 chwData={chwData?.GetHealthCareWorkerById}
                 refetchUserData={refetchUserData}
                 isTeamLead={isTeamLead}
+                isAdministrator={isAdministrator}
                 teamLeadId={teamLeadId}
                 hcwId={hcwId}
               />

@@ -57,7 +57,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       variables: state?.queryVariables,
     }) || {};
 
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  const [sendInviteToApplication, { loading: sendInviteLoading }] = useMutation(
+    SendInviteToApplication
+  );
   const [createUser, { loading }] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
@@ -286,7 +288,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         color="secondary"
         disabled={!isValid || isEmailInUse}
         onClick={handleSubmit(onSave)}
-        isLoading={loading}
+        isLoading={loading || sendInviteLoading}
       >
         <SaveIcon color="white" className="mr-6 h-6 w-6" />
         <Typography type="help" color="white" text="Save"></Typography>
