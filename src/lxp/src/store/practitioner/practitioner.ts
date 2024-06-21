@@ -92,6 +92,7 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
       state.practitioners = action.payload;
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(updatePractitionerRegistered.fulfilled, (state) => {
       state.practitioner = { ...state.practitioner, isRegistered: true };

@@ -86,6 +86,7 @@ const practitionerForCoachSlice = createSlice({
         ) as PractitionerDto[];
 
         state.practitionersForCoach = practitionersForCoach;
+        setFulfilledThunkActionStatus(state, action);
       }
     });
 

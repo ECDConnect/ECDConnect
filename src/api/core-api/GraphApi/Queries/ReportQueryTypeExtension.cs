@@ -1339,7 +1339,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     #region MISSING INCOME STATEMENT
                     if (lastMonthStatement == null || (!lastMonthStatement.ExpenseItems.Any() && !lastMonthStatement.IncomeItems.Any()))
                     {
-                        notification.Subject = $"Missing income statement in {previousMonthEnd.ToString("MMM")}";
+                        notification.Subject = $"No income/expenses tracked in {previousMonthEnd.ToString("MMM")}";
                         notification.Icon = MetricsIconEnum.Error.ToString();
                         notification.Color = MetricsColorEnum.Error.ToString();
                         notification.Message = "";

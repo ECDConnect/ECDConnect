@@ -22,7 +22,6 @@ import { PractitionerDto } from '@/../../../packages/core/lib';
 import { userSelectors } from '@store/user';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
-import { getClubsForCoach } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
 import { PractitionersRouteState } from './practitioners-types';
