@@ -63,21 +63,40 @@ import { userSelectors } from '@/store/user';
 import { ReactComponent as NoProgressEmoticon } from '@/assets/ECD_Connect_emoji4.svg';
 import { ProgrammeThemeRouteState } from '../../../programme-theme/programme-theme.types';
 import { ProgrammeDashboardRouteParams } from '../../programme-dashboard.types';
+import { useAppContext } from '@/walkthrougContext';
+import {
+  dummyDailyProgramme,
+  dummyRoutineItems,
+} from '../../walkthrough/dummy-content';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
-  currentDailyProgramme,
+  currentDailyProgramme: dailyProgramme,
   setSelectedDate,
   selectedDate,
 }) => {
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
 
+  const { setState, state } = useAppContext();
+  const nextWalkthroughStep = (stepNr: number) => {
+    setState({ stepIndex: stepNr });
+  };
+  const isWalkthrough = state?.run;
+
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-
-  const programmeRoutine = useSelector(
+  const programmeRoutineById = useSelector(
     programmeRoutineSelectors.getProgrammeRoutineById(1)
   );
+
+  const programmeRoutine = isWalkthrough
+    ? { routineItems: dummyRoutineItems }
+    : programmeRoutineById;
+
+  const currentDailyProgramme = isWalkthrough
+    ? dummyDailyProgramme
+    : dailyProgramme;
+
   const programmeWeeks = getProgrammeWeeks(programme);
 
   const appDispatch = useAppDispatch();
@@ -182,6 +201,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
         );
       }
+      nextWalkthroughStep(1);
       history.push(ROUTES.PROGRAMMES.THEME, {
         classroomGroupId,
       } as ProgrammeThemeRouteState);
@@ -257,6 +277,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             isSelected={true}
             disabled={!hasPermissionToEdit}
             onActivitySelected={() => {
+              nextWalkthroughStep(6);
               onClose();
               // onEditActivityItem(routineItem, day);
             }}
@@ -329,6 +350,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   const onProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
+    nextWalkthroughStep(5);
     if (routineItem.name === DailyRoutineItemType.messageBoard) {
       openMessageBoardItem(routineItem);
       return;
@@ -612,8 +634,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           isWeekendDay={isWeekendDay}
         />
 
-        {(isCurrentDayEmpty || currentDailyProgramme) &&
-          (isCurrentDayHoliday || isWeekendDay ? (
+        {(isCurrentDayEmpty || currentDailyProgramme || isWalkthrough) &&
+          ((isCurrentDayHoliday || isWeekendDay) && !isWalkthrough ? (
             isWeekendDay ? (
               <WeekendDayIndicator
                 date={new Date(selectedDate!)}
@@ -636,19 +658,31 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
               {programmeRoutine?.routineItems.map((routineItem, index) => {
                 if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
                   return (
-                    <>
+                    <div
+                      id={
+                        index === 2
+                          ? state.stepIndex < 5
+                            ? 'walkthrough-plan-activity'
+                            : 'walkthrough-add-activity'
+                          : ''
+                      }
+                    >
                       <ProgrammePlanningRoutineListItemUpdated
                         key={`id_${routineItem.id}`}
                         routineItem={routineItem}
                         storyBookId={currentDailyProgramme?.storyBookId}
-                        day={currentDailyProgramme}
+                        day={
+                          isWalkthrough
+                            ? dummyDailyProgramme
+                            : currentDailyProgramme
+                        }
                         selectedDate={selectedDate}
                         onClick={() => onProgrammeClick(routineItem)}
                       />
                       {index === programmeRoutine.routineItems.length - 1 && (
                         <Divider className="-m-1 mb-4" />
                       )}
-                    </>
+                    </div>
                   );
                 }
                 return null;
@@ -736,7 +770,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         )}
         {!isPastDay() && hasPermissionToEdit && (
           <Button
-            id="gtm-add-programme"
+            id="walkthrough-start"
             className={'absolute bottom-6 right-4 ml-2 mt-4 rounded-3xl'}
             type={'filled'}
             color={'quatenary'}
@@ -746,6 +780,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             textColor="white"
           />
         )}
+        <div
+          id="walkthrough-last-step"
+          className="absolute bottom-0 h-0 w-full"
+        />
       </div>
     );
   }

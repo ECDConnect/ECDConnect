@@ -19,6 +19,9 @@ import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { storyBookSelectors } from '@/store/content/story-book';
+import { useAppContext } from '@/walkthrougContext';
+import { dummyActivity } from '../../programme-dashboard/walkthrough/dummy-content';
+import { useMemo } from 'react';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
@@ -26,6 +29,10 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   const dialog = useDialog();
 
   const { isOnline } = useOnlineStatus();
+
+  const { state } = useAppContext();
+
+  const isWalkthrough = state?.run;
 
   const routineType = getRoutineItemType(routineItem.name);
   const canLinkActionToType =
@@ -35,11 +42,20 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   const isMessageBoard =
     routineType === DailyRoutineItemType.messageBoard ||
     routineType === DailyRoutineItemType.greeting;
-  const activity = useSelector(
+  const activityById = useSelector(
     activitySelectors.getActivityById(
       getActivityIdForRoutineItem(routineItem.name, day)
     )
   );
+
+  const activity = useMemo(() => {
+    if (isWalkthrough) {
+      return state.stepIndex < 5 ? dummyActivity : undefined;
+    }
+
+    return activityById;
+  }, [activityById, isWalkthrough, state.stepIndex]);
+
   const storyBook = useSelector(
     storyBookSelectors.getStoryBookById(storyBookId)
   );

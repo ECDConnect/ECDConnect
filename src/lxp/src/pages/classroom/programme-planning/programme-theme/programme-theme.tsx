@@ -27,6 +27,8 @@ import { classroomsSelectors } from '@/store/classroom';
 import { ProgrammeTimingRouteState } from '../programme-timing/programme-timing.types';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ProgrammeThemeActions } from '@/store/content/programme-theme/programme-theme.actions';
+import { useAppContext } from '@/walkthrougContext';
+import { dummyThemes } from '../programme-dashboard/walkthrough/dummy-content';
 
 const ProgrammeTheme: React.FC = () => {
   const dialog = useDialog();
@@ -35,10 +37,17 @@ const ProgrammeTheme: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
 
+  const { setState, state } = useAppContext();
+
+  const isWalkthrough = state?.run;
   const classroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(location.state.classroomGroupId)
   );
-  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+  const programmeThemes = useSelector(
+    programmeThemeSelectors.getProgrammeThemes
+  );
+
+  const themes = isWalkthrough ? dummyThemes : programmeThemes;
 
   const { isLoading } = useThunkFetchCall(
     'programmeThemeData',
@@ -90,6 +99,7 @@ const ProgrammeTheme: React.FC = () => {
   };
 
   const handelThemeSelected = (theme: ProgrammeThemeModel) => {
+    setState({ stepIndex: 2 });
     history.push(ROUTES.PROGRAMMES.TIMING, {
       theme,
       classroomGroupId: classroomGroup?.id,
@@ -97,7 +107,7 @@ const ProgrammeTheme: React.FC = () => {
   };
 
   const themeList: UserAlertListDataItem[] = themes?.map((theme) => ({
-    id: theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : '',
+    // id: theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : '',
     title: theme.name,
     profileText: theme.name.slice(0, 2).toUpperCase(),
     alertSeverity: 'none',
@@ -113,7 +123,7 @@ const ProgrammeTheme: React.FC = () => {
 
   return (
     <BannerWrapper
-      isLoading={isLoading}
+      isLoading={!isWalkthrough && isLoading}
       showBackground={false}
       size="medium"
       renderBorder={true}
@@ -132,11 +142,13 @@ const ProgrammeTheme: React.FC = () => {
         color={'primary'}
         className="mb-4"
       />
-      <StackedList
-        className="flex flex-col gap-1"
-        type="UserAlertList"
-        listItems={themeList}
-      />
+      <div id="walkthrough-nature-theme">
+        <StackedList
+          className="flex flex-col gap-1"
+          type="UserAlertList"
+          listItems={themeList}
+        />
+      </div>
     </BannerWrapper>
   );
 };
