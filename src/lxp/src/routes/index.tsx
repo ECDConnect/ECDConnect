@@ -73,7 +73,6 @@ import AddAmount from '@/pages/business/add-amount/add-amount';
 import { AddIncome } from '@/pages/business/add-amount/add-income/add-income';
 import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
 import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/attendance-tutorial/walkthrough-tutorial/walkthrough-tutorial';
-import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
 import { PreviousStatements } from '@/pages/business/money/previous-statements/previous-statements';
 import { MonthStatements } from '@/pages/business/money/monthly-statements/month-statements';
 import { Community } from '@/pages/community/community';
@@ -540,7 +539,7 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         exact
-        path={ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD}
+        path={ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT}
         component={ProgrammeDashboard}
       />
       <Route
@@ -610,15 +609,23 @@ const AuthRoutes: React.FC = () => {
       <Route path={ROUTES.PROGRAMMES.SUMMARY} component={ProgrammeSummaries} />
       <Route path={ROUTES.PROGRAMMES.ROUTINE} component={ProgrammeRoutine} />
       <Route
-        path={ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED}
+        path={
+          ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL
+            .GETTING_STARTED
+        }
         component={ProgrammeTutorial}
       />
       <Route
-        path={ROUTES.PROGRAMMES.TUTORIAL.DEVELOPING_CHILDREN}
+        path={
+          ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL
+            .DEVELOPING_CHILDREN
+        }
         component={ProgrammePlanningDevelopingChildren}
       />
       <Route
-        path={ROUTES.PROGRAMMES.TUTORIAL.DAILY_ROUTINE}
+        path={
+          ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL.DAILY_ROUTINE
+        }
         component={ProgrammePlanningDailyRoutine}
       />
       <Route exact path={ROUTES.COACH.PROFILE.ROOT} component={CoachProfile} />

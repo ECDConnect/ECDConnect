@@ -29,8 +29,7 @@ import {
 import { ProgrammeDashboardRouteParams } from './programme-dashboard.types';
 import { useProgrammePlanning } from '@/hooks/useProgrammePlanning';
 import ProgrammeWrapper from './walkthrough/programme-wrapper';
-import { useAppContext } from '@/walkthrougContext';
-import { WalkthroughModal } from '@/components/walkthrough/modal';
+import { ProgrammeWalkthroughStart } from './walkthrough/components/walkthrough-start';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -40,6 +39,8 @@ export interface iSkills {
 }
 
 export const ProgrammeDashboard: React.FC = () => {
+  const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+
   // TODO: handle with date from state
   const programmeStartDate = new Date();
 
@@ -170,23 +171,18 @@ export const ProgrammeDashboard: React.FC = () => {
     user?.firstName,
   ]);
 
-  const { setState } = useAppContext();
+  const checkIfToShowInitialWalkthrough = useCallback(() => {
+    if (
+      classroomGroup?.classProgrammes.length &&
+      !getStorageItem(LocalStorageKeys.programmeWalkthroughComplete)
+    ) {
+      setShowInitialWalkthrough(true);
+    }
+  }, [classroomGroup?.classProgrammes.length]);
 
-  const handleWalkthroughLanguage = useCallback(() => {
-    return dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: (onClose) => (
-        <WalkthroughModal
-          onStart={() => {
-            setState({ run: true, tourActive: true, stepIndex: 0 });
-            onClose();
-          }}
-        />
-      ),
-    });
-  }, [dialog, setState]);
+  useEffect(() => {
+    checkIfToShowInitialWalkthrough();
+  }, [checkIfToShowInitialWalkthrough]);
 
   useEffect(() => {
     showStartPlanning();
@@ -333,7 +329,14 @@ export const ProgrammeDashboard: React.FC = () => {
       title="Activities"
       subTitle={classroomGroup?.name}
       displayHelp
-      onHelp={handleWalkthroughLanguage}
+      onHelp={() =>
+        history.push(
+          ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL.GETTING_STARTED.replace(
+            ':classroomGroupId',
+            classroomGroupId
+          )
+        )
+      }
       onBack={() =>
         history.push(ROUTES.CLASSROOM.ROOT, {
           activeTabIndex: TabsItems.ACTIVITES,
@@ -356,6 +359,11 @@ export const ProgrammeDashboard: React.FC = () => {
             <ProgressReport progressSummary={progressSummary!} />
           </div>
         </div>
+      )}
+      {showInitialWalkthrough && (
+        <ProgrammeWalkthroughStart
+          onClose={() => setShowInitialWalkthrough(false)}
+        />
       )}
     </BannerWrapper>
   );

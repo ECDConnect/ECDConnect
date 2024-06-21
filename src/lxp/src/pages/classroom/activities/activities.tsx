@@ -97,7 +97,7 @@ export const ActivitiesTab = () => {
     hideAlertSeverity: true,
     onActionClick: () =>
       history.push(
-        ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.replace(
+        ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
           ':classroomGroupId',
           currentClass.id
         )

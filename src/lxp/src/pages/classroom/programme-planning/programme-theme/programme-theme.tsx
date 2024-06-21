@@ -64,7 +64,7 @@ const ProgrammeTheme: React.FC = () => {
 
   const handleBack = () => {
     history.push(
-      ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.replace(
+      ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
         ':classroomGroupId',
         location.state.classroomGroupId
       )

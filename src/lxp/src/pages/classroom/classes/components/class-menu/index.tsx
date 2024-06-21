@@ -92,7 +92,7 @@ export const ClassMenu = ({
           type: 'outlined',
           onClick: () => {
             history.push(
-              ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.replace(
+              ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
                 ':classroomGroupId',
                 classroomGroupId
               )
