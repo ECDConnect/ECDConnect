@@ -407,7 +407,7 @@ export const SetupPrincipal: React.FC = () => {
         return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
 
       case PractitionerSetupSteps.ADD_PHOTO:
-        if (practitioner?.progress === 1) {
+        if (practitioner?.progress === 1 || isNotPrincipal) {
           return setPage(PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE);
         }
         return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
