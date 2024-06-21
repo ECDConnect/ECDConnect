@@ -57,10 +57,6 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
-  // TODO: check this state
-  const [programmeStartDate, setProgrammeStartDate] = useState(
-    state?.programmeStartDate
-  );
   const [promptPhotoReportPermission, setPromptPhotoReportPermission] =
     useState<boolean>(false);
   const [showAttendanceWalkthrough, setShowAttendanceWalkthrough] =
