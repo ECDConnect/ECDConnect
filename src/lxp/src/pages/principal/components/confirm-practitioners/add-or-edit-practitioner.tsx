@@ -214,6 +214,25 @@ export const AddOrEditPractitioner = ({
       );
     }
 
+    if (practitionerPhoneNumber) {
+      onSubmit({
+        id: '',
+        userId: '',
+        idNumber: '',
+        firstName: '',
+        surname: '',
+        passport: '',
+        preferId: !!idNumber,
+        isRegistered: Boolean(
+          practitionerUserDetails?.appUser?.practitionerObjectData?.isRegistered
+        ),
+        phoneNumber: practitionerPhoneNumber ? practitionerPhoneNumber : '',
+      });
+
+      setIsLoadingSubmit(false);
+      return;
+    }
+
     onSubmit({
       id: practitionerUserDetails?.appUser?.practitionerObjectData?.id ?? '',
       userId: practitionerUserDetails?.appUser?.id ?? '',
