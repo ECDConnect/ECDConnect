@@ -91,7 +91,6 @@ const statementsSlice = createSlice({
 
       // If nothing found, then create one
       if (!updatedStatement) {
-        const date = new Date(incomeItems[0].dateReceived);
         updatedStatement = {
           id: newGuid(),
           month: receivedMonth,
