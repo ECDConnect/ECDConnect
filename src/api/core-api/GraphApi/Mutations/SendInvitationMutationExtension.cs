@@ -225,13 +225,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(principalPhoneNumber);
-            var userByPhoneNumber = userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
-                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-
-            if (userByPhoneNumber != null)
-            {
-                throw new ValidationException("User with phone number already exists");
-            }
 
             var userId = httpContext.HttpContext.GetUser().Id;
             var tenantId = TenantExecutionContext.Tenant.Id;
