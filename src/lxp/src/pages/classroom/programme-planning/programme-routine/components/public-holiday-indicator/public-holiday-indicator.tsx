@@ -2,6 +2,9 @@ import { Button, Typography, renderIcon } from '@ecdlink/ui';
 import HolidayEmoji from '../../../../../../assets/holidayEmoji.png';
 import { DailyProgrammeDto } from '@/../../../packages/core/lib';
 import { nextMonday } from 'date-fns';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
 
 interface PublicHolidayProps {
   date: Date;
@@ -14,8 +17,12 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
   nextProgrammeDaysWithoutActivity,
   setSelectedDate,
 }) => {
-  // TODO: Implement permission check (W3)
-  const hasPermissionToEdit = true;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
 
   return (
     <div className={'flex flex-auto flex-col items-center justify-center'}>

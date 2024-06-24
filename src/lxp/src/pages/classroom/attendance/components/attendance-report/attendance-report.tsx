@@ -27,6 +27,8 @@ import {
 } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -38,8 +40,12 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
 
-  // TODO: Implement permission check (W3)
-  const hasPermissionToEdit = true;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const { hasPermissionToTakeAttendance } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance;
 
   const classroomGroup = classroomGroups?.find((x) => x.classroomId != null);
 

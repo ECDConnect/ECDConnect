@@ -46,6 +46,7 @@ import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useWindowSize } from '@reach/window-size';
 import { ClassDashboardRouteState } from '../class-dashboard/class-dashboard.types';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 const headerHeight = 121;
 
@@ -113,8 +114,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     practitioner!
   );
 
-  // TODO: Implement permission check (W3)
-  const hasPermissionToEdit = true;
+  const { hasPermissionToTakeAttendance } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance;
 
   const handleComebackDay = useCallback((date: Date) => {
     if (isFriday(new Date(date)) || isWeekend(new Date(date))) {

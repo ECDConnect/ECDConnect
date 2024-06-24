@@ -33,6 +33,8 @@ import { ContentStoryBookService } from '@/services/ContentStoryBookService';
 import { authSelectors } from '@store/auth';
 import { ContentActivityService } from '@/services/ContentActivityService';
 import { LanguageCode } from '@/i18n/types';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   storyBookId,
@@ -58,13 +60,16 @@ const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   const storyBook = useSelector(
     storyBookSelectors.getStoryBookById(storyBookId)
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const title =
     viewType === 'StoryBook' ? storyBook?.name : activityDetail?.name;
   const subTitle = viewType === 'StoryBook' ? 'Story' : 'Story Activity';
 
-  // TODO: Implement permission check (W3)
-  const hasPermissionToEdit = true;
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
 
   useEffect(() => {
     if (activityIdFromProp) {

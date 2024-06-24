@@ -68,6 +68,8 @@ import {
   dummyDailyProgramme,
   dummyRoutineItems,
 } from '../../walkthrough/dummy-content';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -157,6 +159,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     programmeSelectors.getProgrammesAfterDate(selectedDate!)
   );
   const userData = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const [celebrateMessage, setCelebrateMessage] = useState('');
   const [hideCelebrateMessage, setHideCelebrateMessage] = useState(false);
@@ -174,8 +177,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       );
     });
 
-  // TODO: Implement permission check (W3)
-  const hasPermissionToEdit = true;
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
 
   useEffect(() => {
     if (selectedDate) {
