@@ -182,12 +182,7 @@ export const AddPractitioner = ({
     }
   }, [isValidPractitioner, newPractitioner, setValue]);
 
-  const handleReset = () => {
-    reset(initialAddPractitionerValues);
-    setIsValidPractitioner(undefined);
-  };
-
-  const onSubmitAddPractitioner = async () => {
+  const onSubmitAddPractitioner = async (isAddAnotherPractitioner: boolean) => {
     if (practitionerPhoneNumber) {
       let validPhoneNumber = true;
       validPhoneNumber = SA_CELL_REGEX.test(practitionerPhoneNumber);
@@ -239,6 +234,11 @@ export const AddPractitioner = ({
     ).unwrap();
 
     setIsloading(false);
+    if (isAddAnotherPractitioner) {
+      reset(initialAddPractitionerValues);
+      setIsValidPractitioner(undefined);
+      return;
+    }
     history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: TabsItems.CLASSES });
   };
 
@@ -411,7 +411,7 @@ export const AddPractitioner = ({
                   />
                 </div>
               )}
-              {isValidPractitioner === false && (
+              {isValidPractitioner === false && isOpenAccess && (
                 <>
                   <div className="mb-8">
                     <Alert
@@ -569,7 +569,25 @@ export const AddPractitioner = ({
                 className="my-8 w-full"
               />
             )}
-            <div className="-mb-4 mt-4 h-full w-11/12 self-end">
+            <div className="-mb-4 mt-4 w-11/12 self-end">
+              {isValidPractitioner === true && (
+                <Button
+                  size="normal"
+                  className="mb-12 w-full"
+                  type="outlined"
+                  color="quatenary"
+                  text="Add another practitioner"
+                  textColor="quatenary"
+                  icon="UserAddIcon"
+                  onClick={() => onSubmitAddPractitioner(true)}
+                  disabled={
+                    (!idNumber && !passport && !practitionerPhoneNumber) ||
+                    isValidPractitioner === undefined ||
+                    addNote ||
+                    isPrincipal
+                  }
+                />
+              )}
               <Button
                 size="normal"
                 className="mb-4 w-full"
@@ -585,20 +603,8 @@ export const AddPractitioner = ({
                   addNote ||
                   isPrincipal
                 }
-                onClick={onSubmitAddPractitioner}
+                onClick={() => onSubmitAddPractitioner(false)}
               />
-              {isValidPractitioner === false && (
-                <Button
-                  size="normal"
-                  className="mb-4 w-full"
-                  type="outlined"
-                  color="quatenary"
-                  text="Skip"
-                  textColor="quatenary"
-                  icon="ArrowCircleRightIcon"
-                  onClick={handleReset}
-                />
-              )}
             </div>
           </div>
         </div>

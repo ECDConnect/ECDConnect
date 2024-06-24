@@ -222,8 +222,30 @@ export default function ConfirmPractitioners({
       (l) => l.isRegistered === true
     );
     setAllInFundaApp(allInFunda);
-
     setConfirmPractitionerPage(ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS);
+  };
+
+  const handleAddOrEditAnotherPractitionerSubmit = (
+    data: RegisterPractitioner
+  ) => {
+    const indexToEdit = listItems.findIndex(
+      (d) => d.idNumber === editPractitioner?.idNumber
+    );
+
+    if (indexToEdit > -1) {
+      principalPractitioners.splice(indexToEdit, 1);
+      listItems.splice(indexToEdit, 1);
+    }
+
+    listItems.push(createStackItem(data));
+    principalPractitioners.push(data);
+    setPrincipalPractitioners(principalPractitioners);
+    setListItems(listItems);
+
+    const allInFunda = principalPractitioners.every(
+      (l) => l.isRegistered === true
+    );
+    setAllInFundaApp(allInFunda);
   };
 
   const handleConfirmPractitionerSubmit = () => {
@@ -315,6 +337,9 @@ export default function ConfirmPractitioners({
             listItems={listItems}
             setListItems={setListItems}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
+            handleAddOrEditAnotherPractitionerSubmit={
+              handleAddOrEditAnotherPractitionerSubmit
+            }
           />
         );
       case ConfirmPractitionersSteps.ADD_PRACTITIONER:
@@ -322,6 +347,9 @@ export default function ConfirmPractitioners({
           <AddOrEditPractitioner
             onSubmit={handleAddOrEditPractitionerSubmit}
             listItems={listItems}
+            handleAddOrEditAnotherPractitionerSubmit={
+              handleAddOrEditAnotherPractitionerSubmit
+            }
           />
         );
     }
