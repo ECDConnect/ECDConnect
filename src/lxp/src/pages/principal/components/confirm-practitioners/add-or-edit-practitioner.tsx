@@ -52,12 +52,16 @@ export const AddOrEditPractitioner = ({
   listItems,
   setListItems,
   setConfirmPractitionerPage,
+  handleAddOrEditAnotherPractitionerSubmit,
 }: {
   onSubmit: (data: RegisterPractitioner) => void;
   formData?: AddPractitionerModel;
   listItems?: StackListItems[];
   setListItems?: (item: StackListItems[]) => void;
   setConfirmPractitionerPage?: (item: ConfirmPractitionersSteps) => void;
+  handleAddOrEditAnotherPractitionerSubmit: (
+    data: RegisterPractitioner
+  ) => void;
 }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const tenant = useTenant();
@@ -227,7 +231,70 @@ export const AddOrEditPractitioner = ({
       ),
       phoneNumber: practitionerPhoneNumber ? practitionerPhoneNumber : '',
     });
+
     setIsLoadingSubmit(false);
+  }, [
+    getPractitionerDetailsByIdNumber,
+    getValues,
+    newPractitioner?.firstName,
+    newPractitioner?.surname,
+    newPractitioner?.username,
+    onSubmit,
+    permissionsAdded,
+    practitionerPhoneNumber,
+    userAuth?.auth_token,
+  ]);
+
+  const handleSubmitAnotherPractitioner = useCallback(async () => {
+    if (practitionerPhoneNumber) {
+      let validPhoneNumber = true;
+      validPhoneNumber = SA_CELL_REGEX.test(practitionerPhoneNumber);
+
+      if (!validPhoneNumber) {
+        setError('Phone number is not valid');
+        setIsLoading(false);
+        return;
+      } else {
+        setError('');
+      }
+    }
+    setIsLoadingSubmit(true);
+    const { firstName, idNumber, passport, surname } = getValues();
+
+    const practitionerUserDetails: any =
+      await getPractitionerDetailsByIdNumber();
+
+    if (practitionerUserDetails) {
+      const updatePermissionInput: UpdateUserPermissionInputModelInput = {
+        userId: practitionerUserDetails?.appUser?.id,
+        permissionIds: permissionsAdded,
+      };
+
+      await new PermissionsService(userAuth?.auth_token!).UpdateUserPermission(
+        updatePermissionInput
+      );
+    }
+
+    handleAddOrEditAnotherPractitionerSubmit({
+      id: practitionerUserDetails?.appUser?.practitionerObjectData?.id ?? '',
+      userId: practitionerUserDetails?.appUser?.id ?? '',
+      idNumber: idNumber || passport,
+      firstName:
+        newPractitioner?.firstName ||
+        firstName ||
+        newPractitioner?.username ||
+        '',
+      surname: newPractitioner?.surname || surname,
+      passport: passport,
+      preferId: !!idNumber,
+      isRegistered: Boolean(
+        practitionerUserDetails?.appUser?.practitionerObjectData?.isRegistered
+      ),
+      phoneNumber: practitionerPhoneNumber ? practitionerPhoneNumber : '',
+    });
+
+    setIsLoadingSubmit(false);
+    handleReset();
   }, [
     getPractitionerDetailsByIdNumber,
     getValues,
@@ -420,6 +487,7 @@ export const AddOrEditPractitioner = ({
               size="medium"
               spinnerColor="quatenary"
               backgroundColor="uiLight"
+              className="my-8"
             />
           )}
         </div>
@@ -574,6 +642,24 @@ export const AddOrEditPractitioner = ({
         </div>
       </div>
       <div className="-mb-4 self-end">
+        {isValidPractitioner === true && !isEdit && (
+          <Button
+            size="normal"
+            className="mb-12 w-full"
+            type="outlined"
+            color="quatenary"
+            text="Add another practitioner"
+            textColor="quatenary"
+            icon="UserAddIcon"
+            onClick={handleSubmitAnotherPractitioner}
+            disabled={
+              (!idNumber && !passport && !practitionerPhoneNumber) ||
+              isValidPractitioner === undefined ||
+              addNote ||
+              isPrincipal
+            }
+          />
+        )}
         <Button
           size="normal"
           className="mb-4 w-full"
