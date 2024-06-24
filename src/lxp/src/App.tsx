@@ -111,29 +111,6 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userExpired]);
 
-  useEffect(() => {
-    if (
-      expirationTime &&
-      userLocalxpiration < expirationTime &&
-      user?.auth_token
-    ) {
-      dialog({
-        position: DialogPosition.Middle,
-        blocking: true,
-        render: (onSubmit, onClose) => {
-          return (
-            <LoginModal
-              loginSuccessful={onSubmit}
-              updateTime={updateTime}
-              isLocalExpiration={true}
-            />
-          );
-        },
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expirationTime, userLocalxpiration, user?.auth_token]);
-
   const onFocus = () => {
     const focusItem = JSON.parse(localStorage?.getItem('appFocus')!);
     const isSameDayItem = isSameDay(new Date(), new Date(focusItem));
