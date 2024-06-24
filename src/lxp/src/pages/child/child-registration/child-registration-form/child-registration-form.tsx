@@ -85,7 +85,7 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
 
   return (
     <div className={'flex h-full flex-1 flex-col overflow-scroll bg-white p-4'}>
-      <Typography type="h1" color="primary" text="Agreements" />
+      <Typography type="h2" color="primary" text="Agreements" />
       {variation === 'practitioner' && (
         <Typography
           type="h4"

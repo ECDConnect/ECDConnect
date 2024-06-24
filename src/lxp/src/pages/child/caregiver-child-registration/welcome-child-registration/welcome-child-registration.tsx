@@ -50,13 +50,13 @@ export const WelcomeChildRegistration: React.FC<
         <Typography
           type="markdown"
           color="textMid"
-          text={`<b>${childDetails.practitoner.firstname} ${childDetails.practitoner.surname}</b> added your child <b>${childDetails.child.firstname} ${childDetails.child.surname}</b> to their early learning programme, <b>${childDetails.child.groupName}</b>.`}
+          text={`<b>${childDetails?.practitoner?.firstname}</b> added your child <b>${childDetails?.child?.firstname} ${childDetails?.child?.surname}</b> to their early learning programme, <b>${childDetails?.child?.groupName}</b>.`}
         />
       </div>
       <CustomSuccessCard
         text={`You are taking a first step to giving ${childDetails.child.firstname} the best start in life!`}
         textColour="white"
-        color="successDark"
+        color="tertiary"
         customIcon={<EmojiYellowSmile className="h-14 w-14" />}
       />
       <Typography
@@ -94,7 +94,7 @@ export const WelcomeChildRegistration: React.FC<
         icon="ArrowCircleRightIcon"
         text="Start"
         type="filled"
-        color="primary"
+        color="quatenary"
         textColor="white"
         onClick={handleNextClick}
         className="mb-4 mt-auto w-full"

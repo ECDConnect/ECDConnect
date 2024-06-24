@@ -43,8 +43,8 @@ export const CareGiverInformationForm: React.FC<
 
   return (
     <div className={styles.wrapper}>
-      <Typography type={'h1'} text={'Primary caregiver'} color={'primary'} />
-      <Typography type={'h2'} text={'Details'} color={'textMid'} />
+      <Typography type={'h2'} text={'Primary caregiver'} color={'primary'} />
+      <Typography type={'h4'} text={'Details'} color={'textMid'} />
 
       <Dropdown
         placeholder={'Select relationship'}

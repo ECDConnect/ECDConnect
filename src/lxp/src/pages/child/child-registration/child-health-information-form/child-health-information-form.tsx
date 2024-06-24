@@ -64,8 +64,8 @@ export const ChildHealthInformationForm: React.FC<
 
   return (
     <div className={'flex h-full flex-col bg-white px-4 pt-2 pb-4'}>
-      <Typography type={'h1'} text={childName} color={'primary'} />
-      <Typography type={'h2'} text={'Health information'} color={'textMid'} />
+      <Typography type={'h2'} text={childName} color={'primary'} />
+      <Typography type={'h4'} text={'Health information'} color={'textMid'} />
       <FormInput<ChildHealthInformationFormModel>
         readonly={readonly}
         label={'List any allergies'}

@@ -197,7 +197,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   return (
     <div className={'flex h-full flex-col bg-white p-4'}>
-      <Typography type={'h1'} text={"Child's details"} color={'primary'} />
+      <Typography type={'h2'} text={"Child's details"} color={'primary'} />
       <FormInput<ChildInformationFormModel>
         label={'ID number'}
         className={'mt-4'}
@@ -205,7 +205,8 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
         nameProp={'childIdField'}
         register={childInformationFormRegister}
         error={errors['childIdField']}
-        placeholder={'E.g. 190101 0000 000'}
+        placeholder={'E.g. 1901010000000'}
+        maxLength={13}
       />
       <Typography
         type="h4"
@@ -217,6 +218,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
         <Dropdown
           className="w-full"
           placeholder={'Day'}
+          textColor="textMid"
           selectedValue={getChildInformationFormValues().dobDay}
           list={dayDropDownList}
           onChange={(item) => {
@@ -226,6 +228,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
         <Dropdown
           className="w-full"
           placeholder={'Month'}
+          textColor="textMid"
           list={monthDropDownList}
           selectedValue={getChildInformationFormValues().dobMonth}
           onChange={(item) => {
@@ -235,6 +238,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
         <Dropdown
           className="w-full"
           placeholder={'Year'}
+          textColor="textMid"
           list={yearDropDownList}
           selectedValue={getChildInformationFormValues().dobYear}
           onChange={(item) => {

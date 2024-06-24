@@ -121,6 +121,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     };
 
     dialog({
+      color: 'bg-white',
       render: (onSubmit, onCancel) => {
         return (
           <CaregiverChildRegistrationModal
@@ -202,9 +203,9 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
             type="outlined"
             className="mt-4 w-full"
             color="quatenary"
-            text="Upload paper registration form"
+            text="Fill child's registration form"
             textColor="quatenary"
-            icon="UploadIcon"
+            icon="DocumentDuplicateIcon"
             iconPosition="start"
             onClick={completeRegistration}
           />

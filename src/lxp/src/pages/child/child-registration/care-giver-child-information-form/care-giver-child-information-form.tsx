@@ -85,11 +85,11 @@ export const CareGiverChildInformationForm: React.FC<
   return (
     <div className={styles.wrapper}>
       <Typography
-        type={'h1'}
+        type={'h2'}
         text={'Primary caregiver & child'}
         color={'primary'}
       />
-      <Typography type={'h2'} text={'Address'} color={'textMid'} />
+      <Typography type={'h4'} text={'Address'} color={'textMid'} />
       <FormInput<CareGiverChildInformationFormModel>
         readonly={readonly}
         label={'Street address'}
