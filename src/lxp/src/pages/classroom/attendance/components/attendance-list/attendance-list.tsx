@@ -1,18 +1,14 @@
-import { useDialog, useSnackbar } from '@ecdlink/core';
+import { useSnackbar } from '@ecdlink/core';
 import {
-  ActionModal,
   Alert,
   AttendanceListDataItem,
   AttendanceStatus,
   Button,
-  DialogPosition,
   FilterInfo,
   SearchDropDown,
   SearchDropDownOption,
   StatusChip,
-  Typography,
 } from '@ecdlink/ui';
-import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -61,8 +57,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   );
   const user = useSelector(userSelectors.getUser);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-
-  const dialog = useDialog();
 
   const classProgrammes = classroomGroups
     ?.flatMap((x) => x?.classProgrammes)
@@ -289,59 +283,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     showMessage({ message: 'Great job, register saved!', type: 'success' });
   };
 
-  const submitPrompt = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          textAlignment="center"
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Are you sure you want to submit your ${format(
-            attendanceDate,
-            'EEEE, d LLLL'
-          )} attendance register?`}
-          customDetailText={
-            <Typography
-              type="h4"
-              className="mb-7 mt-4"
-              text={`By submitting this register, you confirm that all the attendance information is accurate. `}
-              color="black"
-              align="center"
-            />
-          }
-          detailText={'Your signature will be added to the monthly register.'}
-          actionButtons={[
-            {
-              text: 'Yes, submit register',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                handleFormSubmit();
-                onCancel();
-              },
-              leadingIcon: 'SaveIcon',
-            },
-            {
-              text: 'No, continue editing',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => onCancel(),
-              leadingIcon: 'PencilIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
-
   return (
     <div className={styles.wrapper}>
       <>
-        {searchDropDownOptions?.length && (
+        {!!searchDropDownOptions?.length && (
           <div className={'bg-uiBg flex w-full flex-col items-start pb-2 pt-1'}>
             <SearchDropDown<any>
               displayMenuOverlay
@@ -434,7 +379,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       {hasChildren && (
         <Button
           id="gtm-add-attendance"
-          onClick={submitPrompt}
+          onClick={handleFormSubmit}
           className="mx-4 mt-auto mb-4 w-11/12"
           size="small"
           color="quatenary"
