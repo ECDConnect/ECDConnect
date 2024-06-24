@@ -62,6 +62,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 .FirstOrDefault();
         }
 
+        public Classroom GetTrialPeriodClassroomForUser(Guid userId)
+        {
+            return _classroomRepo.GetAll()
+                .Where(x =>
+                    x.IsActive
+                    && x.UserId.HasValue
+                    && x.UserId.Value == userId)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+        }
+
         public List<ClassroomGroup> GetClassroomGroupsForUser(Guid userId)
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
