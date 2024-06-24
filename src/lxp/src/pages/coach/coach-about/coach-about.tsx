@@ -235,7 +235,7 @@ export const CoachAbout: React.FC = () => {
         return;
       }
       setEditFieldVisible(false);
-      saveCoachUserData();
+      await saveCoachUserData();
     }
   };
 
@@ -339,7 +339,7 @@ export const CoachAbout: React.FC = () => {
     saveCoachUserData(imageBaseString);
   };
 
-  const saveCoachUserData = (imageBaseString: string = '') => {
+  const saveCoachUserData = async (imageBaseString: string = '') => {
     const coachForm = coachAboutFormGetValues();
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
@@ -356,17 +356,17 @@ export const CoachAbout: React.FC = () => {
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
-      appDispatch(userActions.updateUser(userCopy));
-      appDispatch(userThunkActions.updateUser(userCopy));
+      await appDispatch(userActions.updateUser(userCopy));
+      await appDispatch(userThunkActions.updateUser(userCopy));
 
-      appDispatch(coachActions.updateCoach(coachCopy));
-      appDispatch(coachThunkActions.updateCoach(coachCopy));
+      await appDispatch(coachActions.updateCoach(coachCopy));
+      await appDispatch(coachThunkActions.updateCoach(coachCopy));
 
       setNewStackListItems(coachCopy);
     }
   };
 
-  const saveOldCoachUserData = (imageBaseString: string = '') => {
+  const saveOldCoachUserData = async (imageBaseString: string = '') => {
     const coachForm = coachAboutFormGetValues();
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
@@ -383,11 +383,11 @@ export const CoachAbout: React.FC = () => {
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
-      appDispatch(userActions.updateUser(userCopy));
-      appDispatch(userThunkActions.updateUser(userCopy));
+      await appDispatch(userActions.updateUser(userCopy));
+      await appDispatch(userThunkActions.updateUser(userCopy));
 
-      appDispatch(coachActions.updateCoach(coachCopy));
-      appDispatch(coachThunkActions.updateCoach(coachCopy));
+      await appDispatch(coachActions.updateCoach(coachCopy));
+      await appDispatch(coachThunkActions.updateCoach(coachCopy));
 
       setNewStackListItems(coachCopy);
     }
