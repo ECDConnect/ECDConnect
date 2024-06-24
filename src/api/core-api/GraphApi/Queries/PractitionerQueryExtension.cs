@@ -10,6 +10,7 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -21,6 +22,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Data;
@@ -73,7 +75,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public PractitionerUserAndNote GetPractitionerByIdNumber(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] ApplicationUserManager userManager,
+            AuthenticationDbContext dbContext,
             IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
@@ -88,12 +90,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var principal = dbRepo.GetByUserId(uId.Value);
             if (principal != null)
             {
-                var practionerUser = userManager.FindByNameAsync(idNumber).Result;
+                var practitionerUser = dbContext.Users.Where(user => (user.UserName == idNumber || user.IdNumber == idNumber) && user.TenantId == TenantExecutionContext.Tenant.Id).FirstOrDefault();
 
-                if (practionerUser != null)
+                if (practitionerUser != null)
                 {
                     var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-                    var practitioner = practiRepo.GetByUserId(practionerUser.Id);
+                    var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
                     if (practitioner != null)
                     {
                         if (practitioner.PrincipalHierarchy == null && practitioner.CoachHierarchy == principal.CoachHierarchy) // only allow practitioners assigned to same coach and where they are not assigned to any otehr practitioners
