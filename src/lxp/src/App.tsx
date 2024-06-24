@@ -28,6 +28,7 @@ import { practitionerSelectors } from './store/practitioner';
 import { AppErrorHandler } from '@ecdlink/core';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
+import { Helmet } from 'react-helmet';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
@@ -45,6 +46,17 @@ const App: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const [expirationTime, setExpirationTime] = useState<number>();
+
+  const getTitle = () => {
+    const env = process.env.REACT_APP_RUNENVIRONMENT || '';
+    var title = env;
+    if (title !== '') title += ' ';
+    title +=
+      (tenant.isWhiteLabel
+        ? `${tenant.tenant?.applicationName} - ECD Connect`
+        : tenant.tenant?.applicationName) || 'ECD Connect';
+    return title;
+  };
 
   useEffect(() => {
     const intervalId = setInterval(updateTime, 3600000);
@@ -178,6 +190,9 @@ const App: React.FC = () => {
 
   return (
     <IonApp className="m-auto max-w-4xl bg-white">
+      <Helmet>
+        <title>{getTitle()}</title>
+      </Helmet>
       <IonReactRouter>
         <AppErrorHandler>
           <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
