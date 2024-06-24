@@ -13,6 +13,7 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { classroomsSelectors } from '@/store/classroom';
 import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
+import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const Classes = () => {
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
@@ -97,12 +98,21 @@ export const Classes = () => {
 
   return (
     <div className="p-4 pt-6">
-      <StackedList
-        className="mb-20 flex flex-col gap-2"
-        type="UserAlertList"
-        listItems={classList}
-        onScroll={onScroll}
-      />
+      {!!classList?.length ? (
+        <StackedList
+          className="mb-20 flex flex-col gap-2"
+          type="UserAlertList"
+          listItems={classList}
+          onScroll={onScroll}
+        />
+      ) : (
+        <IconInformationIndicator
+          icon="SearchIcon"
+          title="You don't have any classes yet!"
+          subTitle=""
+        />
+      )}
+
       {isPrincipal && (
         <FADButton
           title="Add a class"

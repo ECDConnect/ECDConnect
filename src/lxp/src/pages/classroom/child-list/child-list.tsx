@@ -458,7 +458,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             placeholder="Classes"
             pluralSelectionText="Classes"
             multiple
-            color="secondary"
+            color="quatenary"
             info={{
               name: 'Filter by: Class',
               hint: 'You can select multiple classes',
@@ -476,7 +476,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             }}
             placeholder={'Sort By'}
             multiple={false}
-            color={'secondary'}
+            color={'quatenary'}
             info={{
               name: `Sort By:`,
             }}

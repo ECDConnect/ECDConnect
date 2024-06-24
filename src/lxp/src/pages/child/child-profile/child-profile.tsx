@@ -15,7 +15,6 @@ import {
 } from '@ecdlink/graphql';
 import {
   ActionModal,
-  Alert,
   BannerWrapper,
   Button,
   Dialog,
@@ -24,9 +23,7 @@ import {
   ListItem,
   ListItemProps,
   ProfileAvatar,
-  renderIcon,
   StatusChip,
-  Typography,
 } from '@ecdlink/ui';
 import { getWeek, startOfISOWeekYear } from 'date-fns';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -113,12 +110,6 @@ export const ChildProfile: React.FC = () => {
   const practitionerIsOnLeave = location.state?.practitionerIsOnLeave;
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
-  const workflowDocumentVerified = getWorkflowStatusIdByEnum(
-    WorkflowStatusEnum.DocumentVerified
-  );
-  const workflowDocumentPendingVerified = getWorkflowStatusIdByEnum(
-    WorkflowStatusEnum.DocumentPendingVerification
-  );
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const progressTrainingDone = practitioner?.attendedChildProgress || false;
   const isPrincipal = practitioner?.isPrincipal;
@@ -147,22 +138,6 @@ export const ChildProfile: React.FC = () => {
   const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const authUser = useSelector(authSelectors.getAuthUser);
-  const childDocuments = useSelector(
-    documentSelectors.getDocumentsByUserId(child?.userId)
-  );
-
-  const birthCertTypeId = getDocumentTypeIdByEnum(
-    FileTypeEnum.ChildBirthCertificate
-  );
-  const clinicCardTypeId = getDocumentTypeIdByEnum(
-    FileTypeEnum.ChildClinicCard
-  );
-
-  const childBirthCertificate = childDocuments?.find(
-    (x) =>
-      x.documentTypeId === birthCertTypeId ||
-      x.documentTypeId === clinicCardTypeId
-  );
 
   // TODO: this selector isn't working (show photo of child & allow user to add photo of child IF caregiver has consented)
   const childPhotoConsent = useSelector(
@@ -521,30 +496,6 @@ export const ChildProfile: React.FC = () => {
     history.push(ROUTES.CHILD_CAREGIVERS, { childId: child?.id });
   };
 
-  const showCertificateError = (): boolean => {
-    if (!childBirthCertificate) {
-      return true;
-    }
-
-    if (
-      (childBirthCertificate &&
-        childBirthCertificate?.workflowStatusId ===
-          workflowDocumentPendingVerified) ||
-      childBirthCertificate?.workflowStatusId === workflowDocumentVerified
-    ) {
-      return false;
-    }
-
-    if (
-      childBirthCertificate &&
-      childBirthCertificate?.workflowStatusId !== workflowDocumentVerified
-    ) {
-      return true;
-    }
-
-    return false;
-  };
-
   const options = useMemo((): ListItemProps[] => {
     const attendancePercentage = attendanceReport?.attendancePercentage;
 
@@ -730,32 +681,6 @@ export const ChildProfile: React.FC = () => {
             className={'mr-2'}
           />
         </div>
-        {showCertificateError() && (
-          <Alert
-            className="m-4"
-            title={'No birth certificate or clinic card'}
-            list={[
-              `Please upload a birth certificate or clinic card for ${child?.user?.firstName}`,
-            ]}
-            type="error"
-            button={
-              <Button
-                color="textMid"
-                type="filled"
-                size="small"
-                onClick={() => {
-                  history.push(ROUTES.CHILD_REGISTRATION_BIRTH_CERTIFICATE, {
-                    childId: child?.id,
-                  });
-                }}
-              >
-                {renderIcon('UploadIcon', 'w-5 h-5 text-white mr-1')}
-                <Typography color="white" text={'Upload'} type="small" />
-              </Button>
-            }
-          />
-        )}
-
         {!!notifications?.length && child && (
           <div className={styles.notificationsStackList}>
             {notifications.map((notification) => (
