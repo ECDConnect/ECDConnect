@@ -146,8 +146,9 @@ const classroomsSlice = createSlice({
         const index = state.classroomGroupData.classroomGroups.findIndex(
           (c) => c.id === action.payload.id
         );
-        if (index && index > -1)
+        if (index > -1) {
           state.classroomGroupData.classroomGroups.splice(index, 1);
+        }
       }
     },
   },

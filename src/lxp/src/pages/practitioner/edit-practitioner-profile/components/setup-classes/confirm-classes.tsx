@@ -35,6 +35,7 @@ export const ConfirmClasses = ({
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
   );
+
   const formatMeetingDays = (programmes?: ClassProgrammeDto[]) => {
     const meetingDays = programmes
       ?.map((programme) => programme.meetingDay)

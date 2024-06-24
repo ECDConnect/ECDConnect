@@ -188,6 +188,7 @@ export const updateClassroomGroup = createAsyncThunk<
       } = getState();
       if (userAuth?.auth_token) {
         const input = mapClassroomGroupInput(classroomGroup);
+
         await new ClassroomGroupService(
           userAuth?.auth_token
         ).updateClassroomGroup(input.Id || '', input);

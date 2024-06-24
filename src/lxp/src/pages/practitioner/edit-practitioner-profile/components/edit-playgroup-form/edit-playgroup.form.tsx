@@ -37,6 +37,7 @@ import { authSelectors } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 import { practitionerSelectors } from '@/store/practitioner';
+import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
 
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,
@@ -65,6 +66,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     register: playgroupFormRegister,
     reset: resetPlaygroupFormValue,
     control: playgroupFormControl,
+    trigger,
   } = useForm<EditPlaygroupModel>({
     resolver: yupResolver(editPlaygroupSchema),
     mode: 'onBlur',
@@ -72,7 +74,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     reValidateMode: 'onChange',
   });
 
-  const { isFullDay, meetingDays, name } = useWatch({
+  const { isFullDay, meetingDays, name, meetEveryday } = useWatch({
     control: playgroupFormControl,
     defaultValue: playgroup,
   });
@@ -116,6 +118,18 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioners]);
+
+  useEffect(() => {
+    if (meetEveryday == null) return;
+
+    if (!meetEveryday) {
+      setPlaygroupFormValue('meetingDays', []);
+    } else {
+      setPlaygroupFormValue('meetingDays', [1, 2, 3, 4, 5]);
+    }
+
+    trigger();
+  }, [meetEveryday, setPlaygroupFormValue, trigger]);
 
   const getCannotDeletePlaygroupRender = (submit: () => void) => {
     return (
@@ -278,29 +292,51 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         className="text-errorMain -mb-4"
         type={'small'}
       />
-      <div className="mt-5">
-        <span className={styles.label}>{`When does ${
-          name ? `"${name}"` : 'the'
-        } class meet?`}</span>
-        <span className={styles.hintStyle}>
-          You must choose at least 2 days
-        </span>
+      <div className="mt-2">
+        <span>{`Does ${name ? `${name}` : 'this'} class meet everyday?`}</span>
         <div className="mt-2">
-          <ButtonGroup<number>
-            type={ButtonGroupTypes.Chip}
-            options={buttonDays}
-            onOptionSelected={(value: number | number[]) => {
-              if (typeof value !== 'number') {
-                value = value.sort();
-              }
-              handleDaySelection(value as Weekdays[]);
-            }}
-            multiple
-            selectedOptions={selectedDays}
-            color="secondary"
+          <Controller
+            name={'meetEveryday'}
+            control={playgroupFormControl}
+            render={({ field: { onChange, value, ref } }) => (
+              <ButtonGroup<boolean>
+                inputRef={ref}
+                options={yesNoOptions}
+                onOptionSelected={onChange}
+                selectedOptions={value}
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                className={'w-full'}
+              />
+            )}
           />
         </div>
       </div>
+      {meetEveryday === false && (
+        <div className="mt-5">
+          <span className={styles.label}>{`When does ${
+            name ? `"${name}"` : 'the'
+          } class meet?`}</span>
+          <span className={styles.hintStyle}>
+            You must choose at least 2 days
+          </span>
+          <div className="mt-2">
+            <ButtonGroup<number>
+              type={ButtonGroupTypes.Chip}
+              options={buttonDays}
+              onOptionSelected={(value: number | number[]) => {
+                if (typeof value !== 'number') {
+                  value = value.sort();
+                }
+                handleDaySelection(value as Weekdays[]);
+              }}
+              multiple
+              selectedOptions={selectedDays}
+              color="secondary"
+            />
+          </div>
+        </div>
+      )}
       {/* {isPlaygroup && (
         <div className="mt-1">
           <span className={styles.label}>
