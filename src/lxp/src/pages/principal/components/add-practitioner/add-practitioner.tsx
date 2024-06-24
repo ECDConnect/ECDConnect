@@ -388,26 +388,11 @@ export const AddPractitioner = ({
                 <div>
                   <Alert
                     type={'error'}
-                    title={
-                      isPrincipal
-                        ? 'This practitioner is linked to a different SmartStart programme.'
-                        : addNote
-                    }
+                    title={`You cannot add this practitioner -  they are already linked to a different preschool.`}
                     list={[
-                      'Check if the ID you entered is correct.',
-                      'Make sure the practitioner is still in your programme.',
-                      'If your practitioner needs help, please contact the SmartStart call centre.',
+                      'Make sure you have entered the correct ID number above.',
+                      'Ask the practitioner to update their preschool information.',
                     ]}
-                    button={
-                      <Button
-                        text="Contact call centre"
-                        icon="PhoneIcon"
-                        type={'filled'}
-                        color={'primary'}
-                        textColor={'white'}
-                        onClick={() => callForHelp()}
-                      />
-                    }
                   />
                 </div>
               )}
