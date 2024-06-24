@@ -412,6 +412,7 @@ export const ClassDashboard: React.FC = () => {
         id={'header'}
       >
         <TabList
+          activeTabColour="quatenary"
           className="bg-uiBg"
           tabItems={tabItems}
           setSelectedIndex={selectedTabIndex}

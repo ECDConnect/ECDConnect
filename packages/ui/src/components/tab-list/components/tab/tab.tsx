@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { ComponentBaseProps } from '../../../../models/ComponentBaseProps';
 import Typography from '../../../typography/typography';
 import * as styles from './tab.styles';
+import { Colours } from '../../../../models';
 
 export interface TabProps extends ComponentBaseProps {
   title: string;
   tabIndex: number;
   activeIndex: number;
+  activeTabColour?: Colours;
   isOnlyTab?: boolean;
   activeTabClassName?: string;
   tabSelected?: (index: number) => void;
@@ -21,6 +23,7 @@ export function Tab({
   className,
   isOnlyTab,
   activeTabClassName,
+  activeTabColour = 'quatenary',
 }: TabProps) {
   const selectTabReceived = (tab: number) => {
     if (tabSelected) {
@@ -53,6 +56,7 @@ export function Tab({
         tabIndex === activeIndex,
         className ? className : '',
         isOnlyTab,
+        activeTabColour,
         activeTabClassName
       )}
       onClick={() => selectTabReceived(tabIndex)}
@@ -64,7 +68,7 @@ export function Tab({
           isOnlyTab
             ? 'textDark'
             : tabIndex === activeIndex
-            ? 'primary'
+            ? activeTabColour
             : 'primaryAccent1'
         }
         text={title}

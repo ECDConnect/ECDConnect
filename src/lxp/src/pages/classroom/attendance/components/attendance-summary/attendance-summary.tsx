@@ -11,7 +11,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
-  StackedList,
+  Divider,
   Typography,
 } from '@ecdlink/ui';
 import {
@@ -408,12 +408,37 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
               />
             </div>
           )}
-        <div>
-          <StackedList
-            listItems={attendanceActionList.slice(0, registersToShow)}
-            type={'ActionList'}
-          />
-        </div>
+        {attendanceActionList.slice(0, registersToShow).map((register) => (
+          <>
+            <div className="flex items-center justify-between py-4">
+              <div>
+                <Typography
+                  type={'h3'}
+                  weight={'bold'}
+                  text={register.title}
+                  color={'textDark'}
+                />
+                <Typography
+                  type={'h4'}
+                  text={register.subTitle}
+                  color={'textMid'}
+                />
+              </div>
+              <Button
+                className="h-9"
+                size="small"
+                type="filled"
+                color="secondaryAccent2"
+                textColor="secondary"
+                text="Edit"
+                icon="PencilIcon"
+                iconPosition="end"
+                onClick={register.onActionClick}
+              />
+            </div>
+            <Divider dividerType="dashed" />
+          </>
+        ))}
         {registersToShow < attendanceActionList.length && (
           <Button
             type="outlined"
