@@ -115,7 +115,7 @@ export const ConfirmClasses = ({
       <div className="pb-20">
         <Typography
           type={'h2'}
-          text={classroomGroups.length > 0 ? 'Confirm classes' : 'Add a class'}
+          text={classroomGroups.length > 0 ? '' : 'Add a class'}
           color={'textDark'}
           className={'mt-3'}
         />

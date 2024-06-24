@@ -1,5 +1,11 @@
 import { FormComponentProps } from '@ecdlink/core';
-import { Button, Divider, Typography, renderIcon } from '@ecdlink/ui';
+import {
+  Button,
+  Divider,
+  LoadingSpinner,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { newGuid } from '@utils/common/uuid.utils';
@@ -29,7 +35,12 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
   const [playgroups, setPlayGroups] =
     useState<EditPlaygroupModel[]>(defaultPlayGroups);
   const onAddNewPlaygroup = () => {
-    playgroups.push({ meetingDays: [], name: '', classroomGroupId: newGuid() });
+    playgroups.push({
+      meetingDays: [],
+      name: '',
+      classroomGroupId: newGuid(),
+      meetEveryday: false,
+    });
     onEditPlaygroup(playgroups, playgroups.length - 1, true);
   };
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -48,45 +59,51 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
         className={'mt-3'}
       />
 
-      {playgroups.map((playGroup, index) => {
-        return (
-          <div key={`confirm-playgroup-${index}`}>
-            {index > 0 && (
-              <Divider dividerType="dashed" className={styles.divider} />
-            )}
+      {isLoading ? (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor={'quatenary'}
+          backgroundColor={'uiLight'}
+          className="my-8 w-full"
+        />
+      ) : (
+        playgroups.map((playGroup, index) => {
+          return (
+            <div key={`confirm-playgroup-${index}`}>
+              {index > 0 && (
+                <Divider dividerType="dashed" className={styles.divider} />
+              )}
 
-            <ConfirmPlayGroupListItem
-              playGroup={playGroup}
-              index={index}
-              onPlayGroupEdit={() => onEditPlaygroup(playgroups, index)}
-            />
-          </div>
-        );
-      })}
+              <ConfirmPlayGroupListItem
+                playGroup={playGroup}
+                index={index}
+                onPlayGroupEdit={() => onEditPlaygroup(playgroups, index)}
+              />
+            </div>
+          );
+        })
+      )}
+
+      <Divider className="mt-4 mb-1" dividerType="dashed" />
 
       {isPrincipal && (
         <Button
-          className="mt-4"
-          color="secondary"
+          className="my-4"
+          color="quatenary"
           type="filled"
           shape="normal"
           onClick={onAddNewPlaygroup}
+          isLoading={isLoading}
         >
-          {renderIcon('PlusSmIcon', styles.icon)}
-          <Typography
-            className="mx-2"
-            text="Add class"
-            type="help"
-            color="white"
-          />
+          {renderIcon('PlusSmIcon', 'text-white w-5')}
+          <Typography text="Add class" type="help" color="white" />
         </Button>
       )}
 
-      <Divider className="mt-4 mb-1" dividerType="solid" />
       {isPrincipal && (
         <Button
           type="filled"
-          color="primary"
+          color="quatenary"
           className={'my-3 w-full'}
           isLoading={isLoading}
           disabled={isLoading}

@@ -1,5 +1,6 @@
 import { Button, Typography, renderIcon } from '@ecdlink/ui';
 import {
+  formatMeetingDays,
   getWeekdayValue,
   Weekdays,
 } from '@utils/practitioner/playgroups-utils';
@@ -13,28 +14,45 @@ export const ConfirmPlayGroupListItem: React.FC<
 > = ({ index, playGroup, onPlayGroupEdit }) => {
   const getText = () => {
     return playGroup.meetingDays
-      .map((day) => getWeekdayValue(day as Weekdays))
-      .join(' & ');
+      .map((day) => getWeekdayValue(day as Weekdays).substring(0, 3))
+      .join(', ');
   };
+
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const isPrincipal = practitioner?.isPrincipal === true;
+
+  const getPractitionerName = () => {
+    const classPractitionerName =
+      practitioners?.find((item) => item?.user?.id === playGroup?.userId)?.user
+        ?.firstName ||
+      practitioners?.find((item) => item?.user?.id === playGroup?.userId)?.user
+        ?.userName;
+
+    const classPractitionerUserName = practitioners?.find(
+      (item) => item?.user?.id === playGroup?.userId
+    )?.user?.userName;
+    return classPractitionerName
+      ? `${classPractitionerName}; `
+      : `${practitioner?.user?.firstName}; `;
+  };
 
   return (
     <div className={styles.wrapper} key={`confirm-playgroup-item-${index}`}>
       <div className="flex-column flex-1">
         <Typography
-          type="body"
-          color={'textMid'}
-          text={`Class ${index + 1}: ${playGroup.name}`}
+          type="h4"
+          color={'textDark'}
+          text={`${playGroup.name}`}
           weight={'bold'}
         />
         <div>
-          <Typography type={'span'} color={'textMid'} text={getText()} />
           <Typography
             type={'span'}
             color={'textMid'}
-            text={`, ${playGroup.isFullDay ? 'Full Day' : 'Half Day'}`}
+            text={getPractitionerName()}
           />
+          <Typography type={'span'} color={'textMid'} text={getText()} />
         </div>
       </div>
       {isPrincipal && (
@@ -42,11 +60,11 @@ export const ConfirmPlayGroupListItem: React.FC<
           <Button
             size="small"
             shape="normal"
-            color="primary"
-            type="outlined"
+            color="secondaryAccent2"
+            type="filled"
             onClick={onPlayGroupEdit}
           >
-            <Typography type="help" color="primary" text="Edit" />
+            <Typography type="help" color="secondary" text="Edit" />
             {renderIcon('PencilIcon', styles.buttonIcon)}
           </Button>
         </div>

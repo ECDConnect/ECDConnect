@@ -1,5 +1,6 @@
 import { useDialog } from '@ecdlink/core';
-import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
+import { ClassProgrammeDto } from '@ecdlink/core';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -28,7 +29,6 @@ import { s } from 'msw/lib/glossary-297d38ba';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsRouteState>();
-
   const routeReturn = location?.state?.returnRoute
     ? location?.state?.returnRoute
     : null;
@@ -108,37 +108,36 @@ export const EditPlaygroups: React.FC = () => {
     }
   };
 
-  const createPlayGroup = (playgroup: EditPlaygroupModel) => {
-    const classroomGroupInputModel: ClassroomGroupDto = {
-      id: newGuid(),
-      insertedDate: new Date().toISOString(),
+  const createPlayGroup = async (playgroup: EditPlaygroupModel) => {
+    const classroomGroupId = newGuid();
+    const today = new Date().toISOString();
+    const classroomGroupModel: ClassroomGroupDto = {
+      id: classroomGroupId || '',
       classroomId: classroom?.id ?? '',
-      name: playgroup.name,
-      programmeTypeId: playGroupType?.id ?? '',
-      isActive: true,
-      userId: playgroup?.userId,
+      name: playgroup?.name ?? '',
+      userId: playgroup?.userId!,
+      learners: [],
+      classProgrammes: playgroup.meetingDays.map((x) => {
+        return {
+          id: newGuid(),
+          classroomGroupId: classroomGroupId,
+          meetingDay: x,
+          isActive: true,
+          programmeStartDate: today,
+          isFullDay: playgroup?.isFullDay || false,
+          synced: false,
+        };
+      }),
     };
 
-    // TODO
-    // appDispatch(
-    //   classroomsActions.createClassroomGroup(classroomGroupInputModel)
+    await appDispatch(
+      classroomsActions.createClassroomGroup(classroomGroupModel)
+    );
+
+    await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+    // await appDispatch(
+    //   classroomsThunkActions.upsertClassroomGroupProgrammes({})
     // );
-
-    for (const meetingDay of playgroup.meetingDays) {
-      const classProgrammeInputModel: ClassProgrammeDto = {
-        id: newGuid(),
-        classroomGroupId: classroomGroupInputModel.id ?? '',
-        insertedDate: new Date().toISOString(),
-        meetingDay: meetingDay,
-        isFullDay: playgroup?.isFullDay || false,
-        programmeStartDate: new Date().toISOString(),
-        isActive: true,
-      };
-
-      // appDispatch(
-      //   classroomsActions.createClassroomProgramme(classProgrammeInputModel)
-      // );
-    }
   };
 
   const confirmPlaygroups = async (playgroups: EditPlaygroupModel[]) => {
@@ -149,9 +148,21 @@ export const EditPlaygroups: React.FC = () => {
     );
 
     // TODO
-    // for (const playG of removedClassroomGroups) {
-    //   appDispatch(classroomsActions.deleteClassroomGroup(playG));
-    // }
+    for (const playG of removedClassroomGroups) {
+      appDispatch(
+        classroomsThunkActions.updateClassroomGroup({
+          id: playG.id,
+          classroomGroup: {
+            id: playG?.id,
+            name: playG?.name || '',
+            classroomId: playG?.classroomId,
+            isActive: false,
+            practitionerId: playG?.userId!,
+            userId: playG?.userId,
+          },
+        })
+      );
+    }
 
     await saveEditedPlayGroups(playgroups);
 
@@ -180,6 +191,7 @@ export const EditPlaygroups: React.FC = () => {
               const removed = !playGroup.meetingDays.includes(
                 programme.meetingDay
               );
+
               return {
                 ...programme,
                 isActive: !removed,
@@ -205,7 +217,6 @@ export const EditPlaygroups: React.FC = () => {
               });
             }
           });
-          console.log('currentPlayGroupProgrammes', currentPlayGroupProgrammes);
 
           appDispatch(
             classroomsActions.updateClassroomGroup({
@@ -232,9 +243,9 @@ export const EditPlaygroups: React.FC = () => {
               })
             );
           }
-          appDispatch(
-            classroomsThunkActions.upsertClassroomGroupProgrammes({})
-          );
+          // appDispatch(
+          //   classroomsThunkActions.upsertClassroomGroupProgrammes({})
+          // );
         } else {
           createPlayGroup(playGroup);
         }
