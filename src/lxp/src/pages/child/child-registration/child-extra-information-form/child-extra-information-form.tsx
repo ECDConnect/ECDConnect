@@ -4,7 +4,6 @@ import {
   ButtonGroupOption,
   ButtonGroupTypes,
   FormInput,
-  renderIcon,
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -88,20 +87,35 @@ export const ChildExtraInformationForm: React.FC<
 
   return (
     <div className={'flex h-full flex-col bg-white px-4 pt-2 pb-4'}>
-      <Typography type={'h1'} text={childName} color={'primary'} />
-      <Typography type={'h2'} text={'Extra Information'} color={'textMid'} />
-      <Typography type="h4" text="Gender" color="textDark" className="mt-4" />
+      <Typography type={'h2'} text={childName} color={'primary'} />
+      <Typography type={'h4'} text={'Extra Information'} color={'textMid'} />
+      <Typography
+        type="h4"
+        text="Gender"
+        color="textDark"
+        className="mt-4 mb-2"
+      />
       <Typography type="help" text="Optional" color="textMid" />
       <div className={'mt-2'}>
         <ButtonGroup<string>
           options={
-            (gender &&
+            (
+              gender &&
               gender
                 ?.filter((item) => item?.isActive === true)
                 ?.map((x) => {
-                  return { text: x.description, value: x.id ?? '' };
-                })) ||
-            []
+                  let text = x.description;
+
+                  if (x.description === 'Female') {
+                    text = 'Girl';
+                  }
+
+                  if (x.description === 'Male') {
+                    text = 'Boy';
+                  }
+                  return { text, value: x.id ?? '' };
+                })
+            )?.reverse() || []
           }
           onOptionSelected={(value: string | string[]) => {
             setChildExtraInformationFormValue('genderId', value as string);
@@ -119,7 +133,7 @@ export const ChildExtraInformationForm: React.FC<
         type="h4"
         text={`${childName}’s home language(s)?`}
         color="textDark"
-        className="mt-8"
+        className="mt-8 mb-2"
       />
       <Typography type="help" text="Optional" color="textMid" />
       <div className={'mt-2'}>
@@ -149,10 +163,10 @@ export const ChildExtraInformationForm: React.FC<
         size="small"
         color="quatenary"
         type="filled"
-      >
-        {renderIcon('ArrowCircleRightIcon', 'h-5 w-5 text-white')}
-        <Typography type="h6" className="ml-2" text="Next" color="white" />
-      </Button>
+        icon="ArrowCircleRightIcon"
+        text="Next"
+        textColor="white"
+      />
     </div>
   );
 };

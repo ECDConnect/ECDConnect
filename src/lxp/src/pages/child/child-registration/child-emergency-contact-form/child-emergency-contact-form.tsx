@@ -88,7 +88,7 @@ export const ChildEmergencyContactForm: React.FC<
   return (
     <div className="mb-4 flex h-full flex-col bg-white px-4 pt-2 pb-4">
       <Typography
-        type={'h1'}
+        type={'h2'}
         text={'Additional person to contact in an emergency'}
         color={'primary'}
       />

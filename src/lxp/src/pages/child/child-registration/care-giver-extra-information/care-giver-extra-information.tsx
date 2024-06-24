@@ -73,9 +73,9 @@ export const CareGiverExtraInformationForm: React.FC<
 
   return (
     <div className={'flex h-full flex-col bg-white px-4 pt-2 pb-4'}>
-      <Typography type={'h1'} text={'Primary caregiver'} color={'primary'} />
+      <Typography type={'h2'} text={'Primary caregiver'} color={'primary'} />
       <Typography
-        type={'h2'}
+        type={'h4'}
         text={'Additional information'}
         color={'textMid'}
       />
