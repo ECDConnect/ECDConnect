@@ -15,6 +15,8 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import ActivityDetails from '../activity-details/activity-details';
 import { ActivityCardProps } from './activity-card.types';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const ActivityCard: React.FC<ActivityCardProps> = ({
   activity,
@@ -30,8 +32,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     progressTrackingSelectors.getActivityCategories(activity)
   );
 
-  // TODO: Implement permission check (W3)
-  const hasPermissionToEdit = true;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
 
   const handleDetailsClick = () => {
     setDisplayDetails(true);

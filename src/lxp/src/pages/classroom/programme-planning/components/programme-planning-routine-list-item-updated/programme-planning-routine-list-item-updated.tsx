@@ -22,6 +22,8 @@ import { storyBookSelectors } from '@/store/content/story-book';
 import { useAppContext } from '@/walkthrougContext';
 import { dummyActivity } from '../../programme-dashboard/walkthrough/dummy-content';
 import { useMemo } from 'react';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
@@ -47,6 +49,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
       getActivityIdForRoutineItem(routineItem.name, day)
     )
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const activity = useMemo(() => {
     if (isWalkthrough) {
@@ -60,8 +63,10 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
     storyBookSelectors.getStoryBookById(storyBookId)
   );
 
-  // TODO: Implement permission check (W3)
-  const hasPermissionToEdit = true;
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
 
   const isPastDay = () => {
     if (selectedDate) {
