@@ -161,7 +161,7 @@ export const AddProgrammeForm: React.FC<{
     smartStartPractitioners !== undefined &&
     smartStartPractitioners !== null;
 
-  const createClassroom = (
+  const createClassroom = async (
     programme: EditProgrammeModel,
     classroomId: string
   ) => {
@@ -198,12 +198,26 @@ export const AddProgrammeForm: React.FC<{
     };
 
     // TODO
-    appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
+    await appDispatch(classroomsActions.createClassroom(classroomInputModel));
+    await appDispatch(
+      classroomsThunkActions.upsertClassroom(classroomInputModel)
+    );
+
+    if (classroomGroups?.length > 0) {
+      for (const classroomGroup of classroomGroups) {
+        const classroomGroupInput = {
+          ...classroomGroup,
+          classroomId: classroom?.id!,
+        };
+        appDispatch(
+          classroomsActions.updateClassroomGroup(classroomGroupInput)
+        );
+      }
+    }
     // Should this upsert the classroom ???
   };
 
-  const updateClassroom = (
+  const updateClassroom = async (
     programme: EditProgrammeModel,
     classroomId: string
   ) => {
@@ -235,8 +249,22 @@ export const AddProgrammeForm: React.FC<{
     };
 
     // This won't actually call the BE
-    appDispatch(classroomsActions.updateClassroom(classroomInputModel));
-    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
+    await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
+    await appDispatch(
+      classroomsThunkActions.upsertClassroom(classroomInputModel)
+    );
+
+    if (classroomGroups?.length > 0) {
+      for (const classroomGroup of classroomGroups) {
+        const classroomGroupInput = {
+          ...classroomGroup,
+          classroomId: classroom?.id!,
+        };
+        appDispatch(
+          classroomsActions.updateClassroomGroup(classroomGroupInput)
+        );
+      }
+    }
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
@@ -244,10 +272,15 @@ export const AddProgrammeForm: React.FC<{
       setIsNotPrincipal(true);
       onNext(PractitionerSetupSteps.ADD_PHOTO);
       return;
+    } else {
+      if (classroom?.id) {
+        updateClassroom(e, classroom.id);
+      } else {
+        const classroomId = newGuid();
+        createClassroom(e, classroomId);
+      }
+      onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
     }
-    const classroomId = newGuid();
-    createClassroom(e, classroomId);
-    onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
 
   // Do we still have imported users?

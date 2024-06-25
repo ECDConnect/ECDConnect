@@ -12,6 +12,7 @@ import {
   updateClassroomGroup,
   upsertClassroomGroupLearners,
   upsertClassroomGroupProgrammes,
+  getClassroomForTrialPeriodUser,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
@@ -162,6 +163,18 @@ const classroomsSlice = createSlice({
         };
       }
     });
+    builder.addCase(
+      getClassroomForTrialPeriodUser.fulfilled,
+      (state, action) => {
+        if (action.payload) {
+          state.classroom = {
+            ...action.payload,
+            dateRefreshed: new Date().toDateString(),
+            synced: true,
+          };
+        }
+      }
+    );
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
       if (action.payload) {
         state.classroomGroupData = {

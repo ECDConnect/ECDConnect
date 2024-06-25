@@ -213,6 +213,55 @@ class ClassroomService {
 
     return response.data.data.validatePreSchoolCode;
   }
+
+  async getClassroomForTrialPeriodUser(userId: string): Promise<ClassroomDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { trialPeriodClassroomForUser: ClassroomDto };
+      errors?: {};
+    }>(``, {
+      query: `query GetTrialPeriodClassroomForUser($userId: UUID!) {
+          trialPeriodClassroomForUser(userId: $userId) {            
+            id
+            name
+            imageUrl
+            numberOfPractitioners
+            numberOfAssistants
+            numberOfOtherAssistants
+            preschoolFeeAmount
+            preschoolFeeAmountLastUpdateDate
+            preschoolCode
+            siteAddress {
+              id
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
+            principal {
+              userId
+              firstName
+              surname
+              phoneNumber
+              email
+              profileImageUrl
+            }
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('GetClassroomForUser Failed - Server connection error');
+    }
+
+    return response.data.data.trialPeriodClassroomForUser;
+  }
 }
 
 export default ClassroomService;

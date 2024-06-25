@@ -34,7 +34,7 @@ export const ConfirmPlayGroupListItem: React.FC<
     )?.user?.userName;
     return classPractitionerName
       ? `${classPractitionerName}; `
-      : `${practitioner?.user?.firstName}; `;
+      : `${practitioner?.user?.firstName || practitioner?.user?.userName}; `;
   };
 
   return (

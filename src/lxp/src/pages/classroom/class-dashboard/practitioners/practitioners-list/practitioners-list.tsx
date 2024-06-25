@@ -26,9 +26,12 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
+  const isTrialPeriod = useIsTrialPeriod();
   const history = useHistory();
   const dialog = useDialog();
   const { errorDialog } = useRequestResponseDialog();
@@ -106,6 +109,16 @@ export const PractitionersList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const showTrialPeriodCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+      },
+    });
+  };
+
   const mapUserListDataItem = (
     practitionerRecord: PractitionerDto
   ): UserAlertListDataItem => {
@@ -172,7 +185,11 @@ export const PractitionersList: React.FC = () => {
           type="filled"
           color="quatenary"
           className={'mb-6 w-full'}
-          onClick={() => history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST)}
+          onClick={
+            isTrialPeriod
+              ? () => showTrialPeriodCompleteProfileBlockingDialog()
+              : () => history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST)
+          }
         >
           {renderIcon('PlusCircleIcon', 'w-5 h-5 color-white text-white mr-2')}
           <Typography

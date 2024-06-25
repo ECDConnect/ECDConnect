@@ -14,6 +14,7 @@ import * as styles from '../../edit-practitioner-profile.styles';
 import { ConfirmPlayGroupListItem } from '../edit-playgroup-form/components/confirm-playgroup-list-item/confirm-playgroup-list-item';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {
   defaultPlayGroups: EditPlaygroupModel[];
   onEditPlaygroup: (
@@ -43,6 +44,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
     });
     onEditPlaygroup(playgroups, playgroups.length - 1, true);
   };
+  const isTrialPeriod = useIsTrialPeriod();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal === true;
 
@@ -86,21 +88,22 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
 
       <Divider className="mt-4 mb-1" dividerType="dashed" />
 
-      {isPrincipal && (
-        <Button
-          className="my-4"
-          color="quatenary"
-          type="filled"
-          shape="normal"
-          onClick={onAddNewPlaygroup}
-          isLoading={isLoading}
-        >
-          {renderIcon('PlusSmIcon', 'text-white w-5')}
-          <Typography text="Add class" type="help" color="white" />
-        </Button>
-      )}
+      {isPrincipal ||
+        (isTrialPeriod && (
+          <Button
+            className="my-4"
+            color="quatenary"
+            type="filled"
+            shape="normal"
+            onClick={onAddNewPlaygroup}
+            isLoading={isLoading}
+          >
+            {renderIcon('PlusSmIcon', 'text-white w-5')}
+            <Typography text="Add class" type="help" color="white" />
+          </Button>
+        ))}
 
-      {isPrincipal && (
+      {(isPrincipal || isTrialPeriod) && playgroups?.length > 0 && (
         <Button
           type="filled"
           color="quatenary"
