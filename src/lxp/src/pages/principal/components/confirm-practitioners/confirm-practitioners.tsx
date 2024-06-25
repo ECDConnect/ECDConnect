@@ -28,6 +28,7 @@ import { useTenant } from '@/hooks/useTenant';
 
 export interface StackListItems extends ActionListDataItem {
   idNumber: string;
+  phoneNumber?: string;
 }
 
 export default function ConfirmPractitioners({
@@ -229,7 +230,9 @@ export default function ConfirmPractitioners({
     data: RegisterPractitioner
   ) => {
     const indexToEdit = listItems.findIndex(
-      (d) => d.idNumber === editPractitioner?.idNumber
+      (d) =>
+        d.idNumber === editPractitioner?.idNumber ||
+        d?.phoneNumber === editPractitioner?.phoneNumber
     );
 
     if (indexToEdit > -1) {

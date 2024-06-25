@@ -733,7 +733,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 <StatusChip
                   backgroundColour="secondary"
                   borderColour="secondary"
-                  text={`Owner`}
+                  text={`Principal`}
                   textColour={'white'}
                   className={'mr-2 px-3 py-1.5'}
                 />
