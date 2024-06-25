@@ -372,7 +372,6 @@ export const SetupPrincipal: React.FC = () => {
         return <></>;
     }
   };
-
   const onBack = () => {
     switch (page) {
       case PractitionerSetupSteps.SETUP_PROGRAMME:
@@ -408,6 +407,9 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.ADD_PHOTO:
         if (practitioner?.progress === 1 || isNotPrincipal) {
+          if (practitioner?.progress === 2) {
+            return setPage(PractitionerSetupSteps.SETUP_PROGRAMME);
+          }
           return setPage(PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE);
         }
         return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
