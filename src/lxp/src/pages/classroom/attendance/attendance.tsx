@@ -47,6 +47,7 @@ import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useWindowSize } from '@reach/window-size';
 import { ClassDashboardRouteState } from '../class-dashboard/class-dashboard.types';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 const headerHeight = 121;
 
@@ -83,6 +84,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const [currentDate] = useState(new Date());
+  const isTrialPeriod = useIsTrialPeriod();
 
   function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
     const filteredArray: boolean[] = studentsArray.map((student) => {
@@ -117,7 +119,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const { hasPermissionToTakeAttendance } = useUserPermissions();
 
   const hasPermissionToEdit =
-    practitioner?.isPrincipal || hasPermissionToTakeAttendance;
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
   const handleComebackDay = useCallback((date: Date) => {
     if (isFriday(new Date(date)) || isWeekend(new Date(date))) {

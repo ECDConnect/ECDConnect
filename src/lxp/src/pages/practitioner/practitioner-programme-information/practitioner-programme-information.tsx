@@ -235,10 +235,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       {
         title: 'Preschool name',
         subTitle:
-          classroomForPractitionerAnyType?.id &&
-          practitioner?.isPrincipal !== true &&
-          !missingProgramme &&
-          practitioner?.isRegistered
+          (classroomForPractitionerAnyType?.id &&
+            practitioner?.isPrincipal !== true &&
+            !missingProgramme &&
+            practitioner?.isRegistered) ||
+          isTrialPeriod
             ? classroomForPractitionerAnyType?.name
             : practitioner?.isRegistered && !missingProgramme
             ? classroom?.name || 'None'
@@ -297,11 +298,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           : 'EyeIcon',
         buttonColor: isTrialPeriod ? 'quatenary' : undefined,
         textColor: isTrialPeriod ? 'white' : undefined,
-        onActionClick: isTrialPeriod
-          ? () => showTrialPeriodCompleteProfileBlockingDialog()
-          : () => {
-              history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
-            },
+        onActionClick: () => {
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+        },
       });
     }
 

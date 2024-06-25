@@ -9,7 +9,7 @@ import {
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { format } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompletePractitionerInformationNotificationValidator
@@ -35,6 +35,13 @@ export class IncompletePractitionerInformationNotificationValidator
 
     if (!classroomState || !userState) return [];
     const isOnStipend = practitionerState?.practitioner?.isOnStipend;
+
+    const differenceInDaysResult = practitionerState?.practitioner?.startDate
+      ? differenceInDays(
+          new Date(),
+          new Date(practitionerState?.practitioner?.startDate)
+        )
+      : null;
 
     /**
      * Notification is returned when
@@ -135,7 +142,7 @@ export class IncompletePractitionerInformationNotificationValidator
                 ? 'Ask your principal to sign up for AppName and add you to the preschool, or fill in your preschool code now.'
                 : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.highest,
+            priority: 15,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',

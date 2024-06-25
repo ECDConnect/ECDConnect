@@ -26,6 +26,7 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { s } from 'msw/lib/glossary-297d38ba';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsRouteState>();
@@ -33,6 +34,7 @@ export const EditPlaygroups: React.FC = () => {
     ? location?.state?.returnRoute
     : null;
   const history = useHistory();
+  const isTrialPeriod = useIsTrialPeriod();
   const [isLoading, setIsLoading] = useState(false);
   const [activeClassroomGroupIndex, setActiveClassroomGroupIndex] =
     useState<number>();
@@ -288,7 +290,9 @@ export const EditPlaygroups: React.FC = () => {
           <ConfirmPlayGroups
             defaultPlayGroups={updatedClassroomGroups || []}
             onEditPlaygroup={onPlayGroupsEdit}
-            title={isPrincipal ? 'Edit classes' : 'View classes'}
+            title={
+              isPrincipal || isTrialPeriod ? 'Edit classes' : 'View classes'
+            }
             isLoading={isLoading}
             onSubmit={(value) => {
               confirmPlaygroups(value);
@@ -378,7 +382,7 @@ export const EditPlaygroups: React.FC = () => {
   return (
     <BannerWrapper
       title={
-        isPrincipal
+        isPrincipal || isTrialPeriod
           ? `Edit class${
               typeof activeClassroomGroupIndex === 'number' ? '' : 'es'
             }`
