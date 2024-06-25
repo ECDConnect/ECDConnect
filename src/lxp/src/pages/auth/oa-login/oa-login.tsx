@@ -129,11 +129,6 @@ export const OaLogin: React.FC = () => {
         setIsLoading(false);
         return;
       });
-
-    if (checkUserAuthCode === true) {
-      setOpenVerifyPhoneNumber(true);
-      return;
-    }
     setIsLoading(false);
 
     if (isValid) {
@@ -173,6 +168,10 @@ export const OaLogin: React.FC = () => {
               isAuthenticated?.error === undefined &&
               isAuthenticated?.payload?.response?.status !== 401
             ) {
+              if (checkUserAuthCode === true) {
+                setOpenVerifyPhoneNumber(true);
+                return;
+              }
               login();
             } else {
               setDisplayError(true);
