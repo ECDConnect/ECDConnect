@@ -3,10 +3,13 @@ import addPrefix from './withParentPrefix';
 const ROUTES = {
   ROOT: '/',
   LOGIN: '/login',
+  OA_LOGIN: 'oa-login',
+  OA_SIGN_UP_OR_LOGIN: '/oa-sign-up-or-login',
   LOGOUT: '/logout',
   PASSWORD_RESET: '/password-reset',
   NEW_PASSWORD: '/new-password',
   SIGN_UP: '/sign-up',
+  CREATE_USERNAME: '/create-username',
   VERIFY_PHONE: '/verify-phone',
   CHILD_REGISTRATION_LANDING: '/child-registration-landing',
   PROGRAMMES: addPrefix('/programmes', {
@@ -14,25 +17,32 @@ const ROUTES = {
     TIMING: '/timing',
     SUMMARY: '/summary',
     ROUTINE: '/routine',
-    TUTORIAL: addPrefix('/tutorial', {
-      GETTING_STARTED: '/getting-started',
-      DAILY_ROUTINE: '/daily-routine',
-      DEVELOPING_CHILDREN: '/developing-children',
-    }),
   }),
   ATTENDANCE_TUTORIAL_WALKTHROUGH: '/attendance-tutorial-walkthrough',
   DASHBOARD: '/dashboard',
   BUSINESS: '/business',
   BUSINESS_ADD_AMOUNT: '/business-add-amount',
   BUSINESS_ADD_INCOME: '/business-add-income',
+  BUSINESS_UPDATE_INCOME: '/business-update-income',
   BUSINESS_ADD_EXPENSE: '/business-add-expense',
-  BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST:
-    '/business-submit-income-statements-list',
+  BUSINESS_UPDATE_EXPENSE: '/business-update-expense',
   BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
-  BUSINESS_CURRENT_MONTH_STATEMENTS_DETAILS: '/current-month-statement-details',
   CALENDAR: '/calendar',
   CLASSROOM: addPrefix('/classroom', {
+    CHILDREN: '/children',
+    ATTENDANCE: addPrefix('/attendance', {
+      EDIT_REGISTERS: '/edit-registers',
+    }),
+    ACTIVITIES: addPrefix('/activities', {
+      PROGRAMME_DASHBOARD: addPrefix('/programme-dashboard/:classroomGroupId', {
+        TUTORIAL: addPrefix('/tutorial', {
+          GETTING_STARTED: '/getting-started',
+          DAILY_ROUTINE: '/daily-routine',
+          DEVELOPING_CHILDREN: '/developing-children',
+        }),
+      }),
+    }),
     UPDATE_FEE: '/preschool-fee',
   }),
   TRAINING: '/training',
@@ -175,7 +185,6 @@ const ROUTES = {
       BUSINESS: '/:userId',
       LIST_STATEMENTS: '/:userId/previous-statements-list',
       STATEMENT_DETAILS: '/:userId/statement-details',
-      CURRENT_MONTH_SUMMARY: '/:userId/current-month-summary',
     }),
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',

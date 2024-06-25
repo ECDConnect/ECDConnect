@@ -323,7 +323,10 @@ namespace EcdLink.Api.CoreApi.Services
             var notifications = _messageRepo.GetAll().Where(x => x.MessageLogRelatedTos.Any(x => x.RelatedEntityId == entityId)).ToList();
             foreach (var notification in notifications)
             {
-                _messageRepo.Delete(notification.Id);
+               notification.MessageEndDate = DateTime.Now;
+               notification.UpdatedDate = DateTime.Now;
+               notification.IsActive = false;
+               _messageRepo.Update(notification);
             }
             return true;
         }
@@ -359,7 +362,7 @@ namespace EcdLink.Api.CoreApi.Services
                     .Where(n => 
                         n.To == userId 
                         && n.MessageTemplateType == templateType 
-                        && (string.IsNullOrWhiteSpace(searchCriteria) || n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria)) 
+                        && (string.IsNullOrWhiteSpace(searchCriteria) || n.Subject.Contains(searchCriteria) || n.Message.Contains(searchCriteria) || n.Action.Contains(searchCriteria)) 
                         && (!relatedToUserId.HasValue || n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedToUserId) ))
                     .ToList();
                 

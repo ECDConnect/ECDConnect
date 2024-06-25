@@ -1,5 +1,4 @@
 ﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.Notifications.BulkSms;
@@ -31,6 +30,7 @@ namespace ECDLink.Notifications.MessageLogs
             {
                 _messageLog.Add(new MessageLog()
                 {
+                    Id = Guid.NewGuid(),
                     MessageTemplateType = messageTemplateType,
                     MessageProtocol = MessageTypeConstants.SMS,
                     From = "System",
@@ -42,7 +42,7 @@ namespace ECDLink.Notifications.MessageLogs
                     SentByUserId = Guid.Empty,
                     TenantId = TenantExecutionContext.Tenant.Id
                 });
-
+                
                 result = _context.SaveChanges();
             }
             catch (Exception ex)

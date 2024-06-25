@@ -1336,29 +1336,23 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   className={'mt-1'}
                 />
               </div>
-              <div>
-                <Button
-                  size="small"
-                  shape="normal"
-                  color="secondaryAccent2"
-                  type="filled"
-                  onClick={() => {
-                    //TODO: what if copy fails?
-                    navigator?.clipboard?.writeText &&
-                      navigator?.clipboard?.writeText(
-                        practitioner?.user?.email!
-                      );
-                  }}
-                >
-                  <Typography
-                    className={'mr-1'}
-                    type="buttonSmall"
-                    color="secondary"
-                    text="Copy"
-                  />
-                  {renderIcon('DocumentDuplicateIcon', styles.actionIcon)}
-                </Button>
-              </div>
+              <Button
+                size="small"
+                shape="normal"
+                color="secondaryAccent2"
+                type="filled"
+                onClick={() => {
+                  window.open(`mailto:${practitioner?.user?.email}`);
+                }}
+              >
+                <Typography
+                  className={'mr-1'}
+                  type="buttonSmall"
+                  color="secondary"
+                  text="Copy"
+                />
+                {renderIcon('DocumentDuplicateIcon', styles.actionIcon)}
+              </Button>
             </div>
             <Divider dividerType="dashed" className="my-4" />
             <div className={styles.infoWrapper}>

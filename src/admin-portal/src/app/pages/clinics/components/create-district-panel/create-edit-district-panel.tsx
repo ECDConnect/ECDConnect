@@ -73,13 +73,12 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
 
   const duplicatedName =
     duplicatedNameInTheSameProvince &&
-    watchFields?.districtName !== props?.district?.name &&
-    watchFields?.province === duplicatedNameInTheSameProvince?.province?.id;
+    watchFields?.districtName !== props?.district?.name;
 
   useEffect(() => {
     if (duplicatedName) {
       setDuplicatedNameMessage(
-        `There is a different district the same name. Please choose a different district name.`
+        `There is a different district with this name. Please choose a different district name.`
       );
     }
   }, [duplicatedName]);
@@ -287,7 +286,6 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
             nameProp={'districtName'}
             placeholder="District name"
             label="District name *"
-            subLabel="The combination of clinic name & sub-district must be unique."
             type={'text'}
             maxCharacters={50}
             value={watchFields?.districtName}

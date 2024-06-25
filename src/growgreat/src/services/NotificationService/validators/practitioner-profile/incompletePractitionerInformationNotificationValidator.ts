@@ -43,7 +43,7 @@ export class IncompletePractitionerInformationNotificationValidator
             message:
               'Share more information about who you are to make CHW Connect more useful for you.',
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.lower,
+            priority: 2,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',

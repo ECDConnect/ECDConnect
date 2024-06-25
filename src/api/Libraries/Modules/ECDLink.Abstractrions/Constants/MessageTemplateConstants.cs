@@ -15,6 +15,13 @@
         public const string AdminUserFullName = "AdminUserFullName";
         public const string AffectedUserFullName = "AffectedUserFullName";
         public const string LoginLinkShort = "LoginLink:shorturl";
+        public const string Username = "Username";
+        public const string PreSchoolName = "PreSchoolName";
 
+        // Help form
+        public const string HelpContactDetail = "HelpContactDetail";
+        public const string HelpCategory = "HelpCategory";
+        public const string HelpDescription = "HelpDescription";
+        public const string HelpLoginStatus = "HelpStatus";
     }
 }

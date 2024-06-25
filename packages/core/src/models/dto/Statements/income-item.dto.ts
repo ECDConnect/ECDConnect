@@ -7,14 +7,9 @@ export type IncomeItemMinDto = {
 };
 
 export type IncomeItemDto = IncomeItemMinDto & {
-  notes?: string;
   description?: string;
-  amountExpected?: number;
-  childCoverAmount?: number;
+  notes?: string;
+  numberOfChildrenCovered?: number;
   payTypeId?: string;
-  contributionTypeId?: string;
   photoProof?: string;
-  insertedDate?: string;
-  isOffline?: boolean;
-  feeTypeId?: string;
 };

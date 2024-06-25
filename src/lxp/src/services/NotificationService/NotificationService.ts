@@ -4,7 +4,6 @@ import { ChildDocumentsNotificationValidator } from './validators/child-document
 import { ChildProgressReportNotificationValidator } from './validators/child-progess-report/childProgressReportNotificationValidator';
 import { IncompleteChildRegistrationNotificationValidator } from './validators/child-registration/incompleteChildRegistrationNotificationValidator';
 import { IncompletePractitionerInformationNotificationValidator } from './validators/practitioner-profile/incompletePractitionerInformationNotificationValidator';
-import { IncompleteCoachInformationNotificationValidator } from './validators/coach-profile/incompleteCoachInformationNotificationValidator';
 import { ProgrammePlanningNotificationValidator } from './validators/programme-planning/programmePlanningNotificationValidator';
 import { IncompleteTrackAttendanceNotificationValidator } from './validators/track-attendance/incompleteTrackAttendanceNotificationValidator';
 import { UserLastLoginNotificationValidator } from './validators/user/userLastLoginNotificationValidator';
@@ -84,7 +83,6 @@ export class NotificationService {
       new IncompleteTrackAttendanceNotificationValidator(store, currentDate),
       new ProgrammePlanningNotificationValidator(store, currentDate),
       new ChildProgressReportNotificationValidator(store, currentDate),
-      new IncompleteCoachInformationNotificationValidator(store),
       new UserLastLoginNotificationValidator(store, currentDate),
     ];
   };

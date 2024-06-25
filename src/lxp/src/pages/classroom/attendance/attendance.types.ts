@@ -1,1 +1,1 @@
-export type AttendanceComponentType = 'attendance' | 'summary' | 'report';
+export type AttendanceComponentType = 'summary' | 'report';

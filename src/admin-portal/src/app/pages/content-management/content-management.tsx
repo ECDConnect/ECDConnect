@@ -4,7 +4,6 @@ import debounce from 'lodash.debounce';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
-  GetTenantContext,
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
@@ -25,7 +24,7 @@ import {
 } from '../../constants/content-management';
 import { LinksShared } from './components/links-shared/links-shared';
 import ProgressToolsContentList from './sub-pages/content-list/components/progress-tools-content-list/progress-tools-content-list';
-import { TenantContext } from '../../utils/constants';
+import { useTenant } from '../../hooks/useTenant';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -40,10 +39,7 @@ export function ContentManagement() {
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
   const [natalType, setNatalType] = useState(0);
-
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const tenant = useTenant();
 
   const { data: languages } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
@@ -91,11 +87,7 @@ export function ContentManagement() {
   );
 
   const getNavigationItems = () => {
-    if (
-      data &&
-      data.tenantContext &&
-      data.tenantContext.applicationName === TenantContext.GrowGreat
-    ) {
+    if (tenant.isCHWConnect) {
       return [
         {
           name: 'Consent',
@@ -287,11 +279,7 @@ export function ContentManagement() {
     }
 
     if (specialType === ContentManagementTabs.COMMUNITY.name) {
-      if (
-        data &&
-        data.tenantContext &&
-        data.tenantContext.applicationName !== TenantContext.GrowGreat
-      ) {
+      if (!tenant.isCHWConnect) {
         return setSubTabs([
           {
             title: 'Coaching circle topics',
@@ -453,6 +441,11 @@ export function ContentManagement() {
     }
   }, [handleSubTabs, previousTab, selectedTab]);
 
+  const goBackToList = () => {
+    setSelectedContent(undefined);
+    setSearchValue('');
+  };
+
   return (
     <div className="">
       {dataTypes && !isLoadingSelectedRow ? (
@@ -488,8 +481,7 @@ export function ContentManagement() {
                       ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2'
                       : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                     'consent-tabs text-md flex h-14 items-center justify-center font-medium',
-                    data?.tenantContext.applicationName ===
-                      TenantContext.GrowGreat
+                    tenant.isCHWConnect
                       ? 'w-3/12'
                       : 'flex w-5/12 justify-center'
                   )}
@@ -505,7 +497,7 @@ export function ContentManagement() {
               contentView={selectedContent}
               contentType={selectedType}
               languages={languages.GetAllLanguage}
-              goBack={() => setSelectedContent(undefined)}
+              goBack={() => goBackToList()}
               savedContent={() => refreshParent()}
               choosedSectionTitle={choosedSectionTitle}
               setSearchValue={setSearchValue}

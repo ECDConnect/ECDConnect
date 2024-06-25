@@ -1,4 +1,9 @@
-import { ChildDto, LearnerDto, useDialog, getAvatarColor } from '@ecdlink/core';
+import {
+  ChildDto,
+  useDialog,
+  getAvatarColor,
+  usePrevious,
+} from '@ecdlink/core';
 import {
   DialogPosition,
   FADButton,
@@ -6,11 +11,11 @@ import {
   StackedList,
   AlertSeverityType,
   ComponentBaseProps,
-  FilterInfo,
   SearchDropDownOption,
   SearchSortOptions,
   UserAlertListDataItem,
   ActionModal,
+  BannerWrapper,
 } from '@ecdlink/ui';
 import {
   addDays,
@@ -22,31 +27,29 @@ import {
 } from 'date-fns';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { getChildAlertModel } from '@utils/child/child-alert-message-util';
 import SearchHeader from '../../../components/search-header/search-header';
 import * as styles from './child-list.styles';
 import { attendanceSelectors } from '@store/attendance';
-import { documentSelectors } from '@store/document';
-import { contentReportSelectors } from '@store/content/report';
 import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import ROUTES from '@/routes/routes';
-import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
-import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { coachSelectors } from '@/store/coach';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
-
-const filterInfo: FilterInfo = {
-  filterName: 'Class',
-  filterHint: 'You can select multiple classes',
-};
+import {
+  ClassDashboardRouteState,
+  TabsItemForPrincipal,
+  TabsItems,
+} from '../class-dashboard/class-dashboard.types';
+import { ChildData, ChildListRouteState } from './child-list.types';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -87,64 +90,46 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
   const coach = useSelector(coachSelectors.getCoach);
   const { getWorkflowStatusIdByEnum } = useStaticData();
-  const pendingStatusId = getWorkflowStatusIdByEnum(
+  const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
   );
+  const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildExternalLink
+  );
+
+  const { state } = useLocation<ChildListRouteState>();
+
+  const previousChildrenClassroomGroupId = usePrevious(state?.classroomGroupId);
+
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
+
   const children = useSelector(childrenSelectors.getChildren);
-  const childrenForPrincipal = useSelector(
-    childrenForPractitionerSelectors?.getChildrenForPractitioner
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(state?.classroomGroupId)
   );
-
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const getAllClassroomGroups = useSelector(
-    classroomsSelectors?.getAllClassroomGroups
-  );
-  const classroomGroupProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammes
-  );
-  const childUsers = useSelector(childrenSelectors.getChildUsers);
-  const documents = useSelector(documentSelectors.getDocuments);
-  const childReportSummaries = useSelector(
-    contentReportSelectors.getChildLatestCompletedReports()
-  );
 
-  const classroomGroupLearners = useSelector(
-    classroomsSelectors.getClassroomGroupLearners
-  );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<any[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<
+    SearchDropDownOption<ClassroomGroupDto>[]
+  >([]);
   const [activeSort, setActiveSort] = useState<any[]>([]);
   const [childUserListData, setChildUserListData] =
-    useState<UserAlertListDataItem[]>();
+    useState<UserAlertListDataItem<ChildData>[]>();
   const [filteredChildData, setFilteredChildData] = useState<
-    UserAlertListDataItem[]
+    UserAlertListDataItem<ChildData>[]
   >([]);
-  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
-    SearchDropDownOption<string>[]
+  const [classOptions, setClassOptions] = useState<
+    SearchDropDownOption<ClassroomGroupDto>[]
   >([]);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const practitionerId = practitioner?.id;
   const isPrincipal = practitioner?.isPrincipal === true;
-  const principalClassroomGroups = classroomGroups.filter(
-    (item) => item?.userId === practitioner?.userId
-  );
 
-  const principalLearners = classroomGroupLearners.filter((el) => {
-    return principalClassroomGroups.some((f) => {
-      return f.id === el.classroomGroupId; // filter only principal learners
-    });
-  });
-
-  const principalChildren = children?.filter((el) => {
-    return principalLearners.some((f) => {
-      return f.userId === el.userId; // filter only principal learners
-    });
-  });
+  const today = new Date();
 
   const call = useCallback(() => {
     window.open(`tel:${coach?.user?.phoneNumber}`);
@@ -162,295 +147,128 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     return new Date(addDays(new Date(date), 1));
   }, []);
 
-  useEffect(() => {
-    if (classroomGroups && classroomGroupLearners) {
-      const groupedItems: SearchDropDownOption<string>[] = isPrincipal
-        ? classroomGroups?.map((groupedItem, idx) =>
-            groupedItem.name === NoPlaygroupClassroomType.name
-              ? {
-                  id: idx.toString(),
-                  label: NoPlaygroupClassroomType.title,
-                  value: groupedItem.id ?? '',
-                }
-              : {
-                  id: idx.toString(),
-                  label: groupedItem.name,
-                  value: groupedItem.id ?? '',
-                }
+  const onChildListItemAction = useCallback(
+    (childId: string) => {
+      history.push(ROUTES.CHILD_PROFILE, {
+        childId,
+        practitionerIsOnLeave,
+      });
+    },
+    [history, practitionerIsOnLeave]
+  );
+
+  const onFilterClasses = (
+    value: SearchDropDownOption<ClassroomGroupDto>[]
+  ) => {
+    setSelectedClasses(value);
+
+    if (!value.length) {
+      return setFilteredChildData(childUserListData ?? []);
+    }
+
+    const filteredChildren =
+      childUserListData?.filter((child) =>
+        value.some((x) =>
+          x.value?.learners?.some(
+            (learner) => learner.childUserId === child.extraData?.userId
           )
-        : classroomGroups?.map((groupedItem, idx) =>
-            groupedItem.name === NoPlaygroupClassroomType.name
-              ? {
-                  id: idx.toString(),
-                  label: NoPlaygroupClassroomType.title,
-                  value: groupedItem.id ?? '',
-                }
-              : {
-                  id: idx.toString(),
-                  label: groupedItem.name,
-                  value: groupedItem.id ?? '',
-                }
-          );
+        )
+      ) || [];
 
-      setUpdatedPlaygroups(groupedItems);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getAllClassroomGroups, classroomGroupLearners]);
-
-  useEffect(() => {
-    if (!isPrincipal) {
-      if (principalLearners && children && pendingStatusId) {
-        const childListItem: UserAlertListDataItem[] = [];
-
-        for (const child of children) {
-          const learner = principalLearners.find(
-            (x) => x.userId === child.userId && x.stoppedAttendance == null
-          );
-          childListItem.push(mapUserListDataItem(child, learner));
-        }
-
-        setChildUserListData(childListItem);
-        setFilteredChildData(childListItem);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroupLearners, children, pendingStatusId]);
-
-  useEffect(() => {
-    if (isPrincipal) {
-      if (classroomGroupLearners && children && pendingStatusId) {
-        const childListItem: UserAlertListDataItem[] = [];
-
-        for (const child of children) {
-          const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId && x.stoppedAttendance == null
-          );
-          childListItem.push(mapUserListDataItem(child, learner));
-        }
-        setChildUserListData(childListItem);
-        setFilteredChildData(childListItem);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    classroomGroupLearners,
-    childrenForPrincipal,
-    pendingStatusId,
-    isPrincipal,
-  ]);
-
-  const onChildListItemAction = (childId: string) => {
-    history.push(ROUTES.CHILD_PROFILE, {
-      childId,
-      practitionerIsOnLeave,
-    });
-  };
-
-  const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
-    setActiveFilters(value);
-    const selectedClassrooms = value.map((x) => x.value);
-    if (!isPrincipal) {
-      const childListItem: UserAlertListDataItem[] = [];
-      if (principalChildren && principalLearners) {
-        if (value && value.length > 0) {
-          for (const child of principalChildren) {
-            const learner = principalLearners.find(
-              (x) =>
-                x.userId === child.userId &&
-                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
-                x.stoppedAttendance == null &&
-                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-            );
-            if (learner) {
-              childListItem.push(mapUserListDataItem(child, learner));
-            }
-          }
-        } else {
-          for (const child of principalChildren) {
-            const learner = principalLearners.find(
-              (x) => x.userId === child.userId && x.stoppedAttendance == null
-            );
-            if (learner) {
-              childListItem.push(mapUserListDataItem(child, learner));
-            }
-          }
-        }
-      }
-      setChildUserListData(childListItem || []);
-      setActiveSort([]);
-    } else {
-      const childListItem: UserAlertListDataItem[] = [];
-      if (children && classroomGroupLearners) {
-        if (value && value.length > 0) {
-          for (const child of children) {
-            const learner = classroomGroupLearners.find(
-              (x) =>
-                x.userId === child.userId &&
-                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
-                x.stoppedAttendance == null &&
-                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-            );
-            if (learner) {
-              childListItem.push(mapUserListDataItem(child, learner));
-            }
-          }
-        } else {
-          for (const child of children) {
-            const learner = classroomGroupLearners.find(
-              (x) => x.userId === child.userId && x.stoppedAttendance == null
-            );
-            if (learner) {
-              childListItem.push(mapUserListDataItem(child, learner));
-            }
-          }
-        }
-      }
-      setChildUserListData(childListItem || []);
-      setActiveSort([]);
-    }
+    setFilteredChildData(filteredChildren);
   };
 
   const onSortItemsChanges = (column: string) => {
-    if (children && classroomGroupLearners) {
-      const filteredChildren = children?.filter((child) =>
-        childUserListData?.some((x) => x.id === child.id)
-      );
-      const sorted = [...(filteredChildren || [])].sort(
-        (a: ChildDto, b: ChildDto) => {
-          const childUserOne = childUsers?.find((x) => x.id === a.userId);
-          const childUserTwo = childUsers?.find((x) => x.id === b.userId);
-          const childLearnerOne = classroomGroupLearners?.find(
-            (x) => x.userId === a.userId
-          );
-          const childLearnerTwo = classroomGroupLearners?.find(
-            (x) => x.userId === b.userId
-          );
+    if (filteredChildData?.length) {
+      const sorted = [...filteredChildData].sort((dataA, dataB) => {
+        const childA = dataA.extraData;
+        const childB = dataB.extraData;
 
-          switch (column) {
-            case 'priority': {
-              const childUserDocumentsOne = documents?.filter(
-                (x) => x.userId === a.userId
-              );
-              const childReportsOne = childReportSummaries?.filter(
-                (x) => x.childId === a?.id
-              );
-              const childAlertOne = getChildAlertModel(
-                childLearnerOne,
-                pendingStatusId,
-                childUserOne,
-                a,
-                childUserDocumentsOne,
-                attendanceData,
-                getAllClassroomGroups,
-                classroomGroupProgrammes,
-                childReportsOne,
-                practitioner?.attendedChildProgress || false
-              );
-              const childUserDocumentsTwo = documents?.filter(
-                (x) => x.userId === b.userId
-              );
-              const childReportsTwo = childReportSummaries?.filter(
-                (x) => x.childId === b?.id
-              );
-              const childAlertTwo = getChildAlertModel(
-                childLearnerTwo,
-                pendingStatusId,
-                childUserTwo,
-                b,
-                childUserDocumentsTwo,
-                attendanceData,
-                getAllClassroomGroups,
-                classroomGroupProgrammes,
-                childReportsTwo,
-                practitioner?.attendedChildProgress || false
-              );
-              return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
-            }
-            case 'surname':
-              return (childUserOne !== undefined &&
-                childUserOne?.surname?.toUpperCase()!) >
-                (childUserTwo !== undefined &&
-                  childUserTwo.surname?.toUpperCase()!)
-                ? 1
-                : -1;
-            case 'age':
-              if (
-                childUserOne !== undefined &&
-                childUserOne?.dateOfBirth !== undefined &&
-                childUserTwo !== undefined &&
-                childUserTwo?.dateOfBirth !== undefined
-              ) {
-                return isBefore(
-                  new Date(childUserOne.dateOfBirth),
-                  new Date(childUserTwo.dateOfBirth)
-                )
-                  ? 1
-                  : -1;
-              } else return 1;
-            case 'firstName':
-            default:
-              return (childUserOne !== undefined &&
-                childUserOne.firstName?.toUpperCase()!) >
-                (childUserTwo !== undefined &&
-                  childUserTwo.firstName?.toUpperCase()!)
-                ? 1
-                : -1;
+        switch (column) {
+          case 'attendance':
+            return childA?.attendancePercentage! > childB?.attendancePercentage!
+              ? 1
+              : -1;
+          case 'priority': {
+            return childA?.alertSeverity! > childB?.alertSeverity! ? 1 : -1;
           }
+          case 'surname':
+            return (childA !== undefined &&
+              childA?.user?.surname?.toUpperCase()!) >
+              (childB !== undefined && childB?.user?.surname?.toUpperCase()!)
+              ? 1
+              : -1;
+          case 'age':
+            if (
+              childA !== undefined &&
+              childA?.user?.dateOfBirth !== undefined &&
+              childB !== undefined &&
+              childB?.user?.dateOfBirth !== undefined
+            ) {
+              return isBefore(
+                new Date(childA?.user?.dateOfBirth),
+                new Date(childB?.user?.dateOfBirth)
+              )
+                ? 1
+                : -1;
+            } else return 1;
+          case 'firstName':
+          default:
+            return (childA !== undefined &&
+              childA?.user?.firstName?.toUpperCase()!) >
+              (childB !== undefined && childB?.user?.firstName?.toUpperCase()!)
+              ? 1
+              : -1;
         }
-      );
+      });
 
-      const childListItem: UserAlertListDataItem[] = [];
-      for (const child of sorted) {
-        const learner = classroomGroupLearners.find(
-          (x) => x.userId === child.userId
-        );
-
-        childListItem.push(mapUserListDataItem(child, learner));
-      }
-      setChildUserListData(childListItem || []);
+      return setFilteredChildData(sorted);
     }
   };
 
-  const mapUserListDataItem = (
-    childRecord: ChildDto,
-    childLearner?: LearnerDto
-  ): UserAlertListDataItem => {
-    const childUser = childUsers?.find((x) => x.id === childRecord.userId);
-    const childDocuments = documents?.filter(
-      (x) => x.userId === childRecord.userId
-    );
-    const reports = childReportSummaries?.filter(
-      (x) => x.childId === childRecord?.id
-    );
+  const mapUserListDataItem = useCallback(
+    (child: ChildDto): UserAlertListDataItem<ChildData> => {
+      const childAttendance = attendanceData?.filter(
+        (attendance) => attendance.userId === child.userId
+      );
 
-    const childAlert = getChildAlertModel(
-      childLearner,
-      pendingStatusId,
-      childUser,
-      childRecord,
-      childDocuments,
+      const childAlert = getChildAlertModel({
+        attendance: childAttendance,
+        child,
+        classroomGroups,
+        childExternalWorkflowStatusId,
+        childPendingWorkflowStatusId,
+      });
+
+      return {
+        id: child.id,
+        profileDataUrl: child?.user?.profileImageUrl,
+        title: `${child?.user?.firstName} ${child?.user?.surname}`,
+        subTitle: childAlert?.message ?? '',
+        profileText: `${
+          child?.user?.firstName && child?.user?.firstName[0]?.toUpperCase()
+        }${child?.user?.surname && child?.user?.surname[0]?.toUpperCase()}`,
+        alertSeverity: childAlert.status as AlertSeverityType,
+        avatarColor: getAvatarColor() || '',
+        extraData: {
+          ...child,
+          alertSeverity: childAlert.severity,
+          attendancePercentage: childAlert.attendancePercentage,
+        },
+        hideAlertSeverity: childAlert.status === 'none',
+        onActionClick: () => {
+          onChildListItemAction(String(child.id));
+        },
+      };
+    },
+    [
       attendanceData,
-      getAllClassroomGroups,
-      classroomGroupProgrammes,
-      reports,
-      practitioner?.attendedChildProgress || false
-    );
-
-    return {
-      id: childRecord.id,
-      profileDataUrl: childUser?.profileImageUrl,
-      title: `${childUser?.firstName} ${childUser?.surname}`,
-      subTitle: childAlert?.message ?? '',
-      profileText: `${
-        childUser?.firstName && childUser?.firstName[0]?.toUpperCase()
-      }${childUser?.surname && childUser?.surname[0]?.toUpperCase()}`,
-      alertSeverity: childAlert.status as AlertSeverityType,
-      avatarColor: getAvatarColor() || '',
-      onActionClick: () => {
-        onChildListItemAction(String(childRecord.id));
-      },
-    };
-  };
+      childExternalWorkflowStatusId,
+      childPendingWorkflowStatusId,
+      classroomGroups,
+      onChildListItemAction,
+    ]
+  );
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -463,10 +281,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const registerNewChild = () => {
     if (isOnline) {
       if (practitionerIsOnLeave) {
-        handleIsOnleaveModal();
+        handleIsOnLeaveModal();
         return;
       }
-      history.push(ROUTES.CHILD_REGISTRATION_LANDING, { practitionerId });
+      history.push(ROUTES.CHILD_REGISTRATION_LANDING);
     } else {
       showOnlineOnly();
     }
@@ -475,7 +293,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const onSearchChange = (value: string) => {
     setFilteredChildData(
       childUserListData?.filter((x) =>
-        x.title.toLowerCase().includes(value.toLowerCase())
+        x.title.toLowerCase()?.includes(value.toLowerCase())
       ) || []
     );
   };
@@ -489,7 +307,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     });
   };
 
-  const handleIsOnleaveModal = useCallback(() => {
+  const handleIsOnLeaveModal = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
       blocking: true,
@@ -502,12 +320,12 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             importantText={`You are on leave and cannot use this section`}
             paragraphs={[
               `You are on leave from ${format(
-                new Date((currentAbsentee?.absentDate as Date) || new Date()),
+                new Date((currentAbsentee?.absentDate as Date) || today),
                 'd MMM yyyy'
               )} to ${format(
                 new Date(
                   handleComebackDay(
-                    (currentAbsentee?.absentDateEnd as Date) || new Date()
+                    (currentAbsentee?.absentDateEnd as Date) || today
                   )
                 ),
                 'd MMM yyyy'
@@ -552,12 +370,74 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   useEffect(() => {
     if (practitionerIsOnLeave) {
-      handleIsOnleaveModal();
+      handleIsOnLeaveModal();
     }
   }, []);
 
+  const populateClassOptions = useCallback(() => {
+    const classOptions = classroomGroups?.map((currentClass) => ({
+      id: currentClass.id,
+      label: currentClass.name,
+      value: currentClass,
+    }));
+    const selectedClassForRedirectedClass = classOptions.filter(
+      (currentClass) => currentClass.value?.id === state?.classroomGroupId
+    );
+
+    setClassOptions(classOptions);
+    setSelectedClasses(selectedClassForRedirectedClass);
+  }, [classroomGroups, state?.classroomGroupId]);
+
+  const populateStackedList = useCallback(() => {
+    const mappedChildren = children?.map((child) => mapUserListDataItem(child));
+    const mappedChildrenForRedirectedClass =
+      mappedChildren?.filter((child) =>
+        classroomGroup?.learners?.some(
+          (learner) =>
+            (learner.childUserId === child.extraData?.userId ||
+              learner.childUserId === child.extraData?.user?.id) &&
+            learner.isActive
+        )
+      ) ?? [];
+
+    setChildUserListData(mappedChildren);
+    setFilteredChildData(mappedChildrenForRedirectedClass);
+  }, [children, classroomGroup?.learners, mapUserListDataItem]);
+
+  const populateInitialState = useCallback(() => {
+    if (
+      !children?.length ||
+      state?.classroomGroupId === previousChildrenClassroomGroupId
+    )
+      return;
+
+    populateStackedList();
+    populateClassOptions();
+  }, [
+    children?.length,
+    populateClassOptions,
+    populateStackedList,
+    previousChildrenClassroomGroupId,
+    state?.classroomGroupId,
+  ]);
+
+  useEffect(() => {
+    populateInitialState();
+  }, [populateInitialState]);
+
   return (
-    <>
+    <BannerWrapper
+      title="Children"
+      subTitle={format(today, 'EEEE, dd MMMM')}
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: isPrincipal
+            ? TabsItemForPrincipal.CLASSES
+            : TabsItems.CLASSES,
+        } as ClassDashboardRouteState)
+      }
+      size="small"
+    >
       {children && children.length > 0 && (
         <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}
@@ -567,20 +447,21 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           onBack={() => setSearchTextActive(false)}
           onSearchButtonClick={() => setSearchTextActive(true)}
         >
-          <SearchDropDown<string>
+          <SearchDropDown<ClassroomGroupDto>
             displayMenuOverlay={true}
             menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={updatedPlaygroups}
-            selectedOptions={activeFilters}
-            onChange={onFilterItemsChanges}
-            placeholder={'Classes'}
-            pluralSelectionText={'Classes'}
+            overlayTopOffset="0"
+            className="mr-1"
+            options={classOptions}
+            selectedOptions={selectedClasses}
+            onChange={onFilterClasses}
+            placeholder="Classes"
+            pluralSelectionText="Classes"
             multiple
-            color={'secondary'}
+            color="quatenary"
             info={{
-              name: `Filter by: ${filterInfo?.filterName}`,
-              hint: filterInfo?.filterHint || '',
+              name: 'Filter by: Class',
+              hint: 'You can select multiple classes',
             }}
           />
 
@@ -595,42 +476,47 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             }}
             placeholder={'Sort By'}
             multiple={false}
-            color={'secondary'}
+            color={'quatenary'}
             info={{
               name: `Sort By:`,
             }}
           />
         </SearchHeader>
       )}
-
       <div className={styles.overlay}>
-        {(!children || children.length === 0) && (
+        {!childUserListData?.length && (
           <IconInformationIndicator
             title="You don't have any children yet!"
             subTitle="Tap the add a child button below to start"
           />
         )}
-        {childUserListData ? (
+        {!!childUserListData?.length && !filteredChildData?.length && (
+          <IconInformationIndicator
+            title="You don't have any children in this class yet!"
+            subTitle=""
+          />
+        )}
+        {!!filteredChildData?.length && (
           <StackedList
             className={styles.stackedList}
-            listItems={childUserListData}
+            listItems={filteredChildData}
             type={'UserAlertList'}
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
           />
-        ) : null}
+        )}
         <FADButton
           title={'Add a child'}
           icon={'PlusIcon'}
           iconDirection={'left'}
           textToggle={addChildButtonExpanded}
           type={'filled'}
-          color={'primary'}
+          color={'quatenary'}
           shape={'round'}
           className={styles.fadButton}
           click={registerNewChild}
         />
       </div>
-    </>
+    </BannerWrapper>
   );
 };
 

@@ -15,15 +15,10 @@ import { PractitionerProfileRouteState } from './coach-practitioner-classroom.ty
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-practitioner-classroom.styles';
 import ROUTES from '@routes/routes';
-import { childrenSelectors } from '@store/children';
+import { childrenSelectors, childrenThunkActions } from '@store/children';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
-import {
-  childrenForPractitionerActions,
-  childrenForPractitionerSelectors,
-  childrenForPractitionerThunkActions,
-} from '@/store/childrenForPractitioner';
 import { ChildrenPerAgeGroup } from './components/childrenPerAgeGroup/childrenPerAgeGroup';
 import { classroomsSelectors } from '@/store/classroom';
 import { ClassroomAttendance } from './components/classroom-attendance/classroom-attendance';
@@ -40,9 +35,8 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const children = useSelector(childrenSelectors.getChildren);
-  const childrenForPractitioner = useSelector(
-    childrenForPractitionerSelectors.getChildrenForPractitioner
-  );
+  // TODO - this might need updates
+  const childrenForPractitioner = useSelector(childrenSelectors.getChildren);
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerUserId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -59,6 +53,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
+  // TODO - NEED TO FIX TYPES
   const [classMetrics, setClassMetrics] = useState<any>();
   const [practitionerClassroomsData, setPractitionerClassroomsData] =
     useState<any[]>();
@@ -126,21 +121,11 @@ export const CoachPractitionerClassroom: React.FC = () => {
   }, [practitionerUserId]);
 
   useEffect(() => {
-    resetChildrenForPractitioner();
     (async () =>
-      await appDispatch(
-        childrenForPractitionerThunkActions.getChildrenForPractitioner({
-          id: practitionerUserId,
-        })
-      ).unwrap())();
+      // TODO - This might need updates
+      await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDispatch, practitionerUserId]);
-
-  const resetChildrenForPractitioner = () => {
-    appDispatch(
-      childrenForPractitionerActions.resetChildrenForPractitionerState()
-    );
-  };
 
   const notificationItem: MenuListDataItem[] = [
     {

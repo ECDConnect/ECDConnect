@@ -169,7 +169,9 @@ export function SearchDropDown<T>({
                 )
               )}
               disabled={disabled}
-              onClick={() => setIsOpen(true)}
+              onClick={() =>
+                isOpen === false ? setIsOpen(true) : setIsOpen(false)
+              }
             >
               <Typography
                 type={'help'}

@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public TenantModel TenantContext()
         {
-            return TenantExecutionContext.Tenant;
+            return new TenantModel(TenantExecutionContext.Tenant);
         }
 
         public List<Language> GetAllContentLanguages(

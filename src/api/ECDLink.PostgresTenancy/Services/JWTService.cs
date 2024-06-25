@@ -58,14 +58,28 @@ namespace ECDLink.PostgresTenancy.Services
                 return default;
             }
 
-            var tokenEntity = _repository.Insert(entity);
+            try
+            {
+                _repository.Insert(entity);
+            }
+            catch(Exception)
+            {
+            }
 
-            return tokenEntity;
+            return entity;
         }
 
         public bool InvalidateExistingTokens(Guid id)
         {
-            return _repository.DeleteAllTokensById(id);
+            try
+            {
+                return _repository.DeleteAllTokensById(id);
+            }
+            catch (Exception)
+            {
+
+            }
+            return true;
         }
     }
 }

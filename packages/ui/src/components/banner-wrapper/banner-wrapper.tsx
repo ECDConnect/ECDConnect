@@ -33,6 +33,7 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   menuLogoUrl?: string;
   titleOverrideRender?: () => React.ReactNode;
   notificationRender?: () => React.ReactNode;
+  calendarRender?: () => React.ReactNode;
   onNavigation?: (navItem: any) => void;
   onAvatarSelect?: () => void;
   onBack?: () => void;
@@ -62,6 +63,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
   menuLogoUrl = '',
   onAvatarSelect,
   notificationRender,
+  calendarRender,
   titleOverrideRender,
   onNavigation = () => {},
   onBack,
@@ -157,6 +159,9 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
               height={30}
               onClick={onHelp}
             />
+          )}
+          {calendarRender && (
+            <div className={'mr-5 flex items-center'}>{calendarRender()}</div>
           )}
           {notificationRender && (
             <div className={'mr-5 flex items-center'}>

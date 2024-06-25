@@ -23,7 +23,29 @@ namespace ECDLink.DataAccessLayer.Repositories
         {
             try
             {
-                _context.Attendances.AddRange(attendances);
+                // Check for existing records
+                foreach (var attendance in attendances)
+                {
+                    var existingRecord = _context.Attendances.FirstOrDefault(x =>
+                        x.AttendanceDate.Date == attendance.AttendanceDate.Date
+                        && x.UserId == attendance.UserId
+                        && x.ParentRecordId == attendance.ParentRecordId
+                        && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId);
+
+                    if (existingRecord != null)
+                    {
+                        // Update existing record
+                        if (existingRecord.Attended != attendance.Attended)
+                        {
+                            existingRecord.Attended = attendance.Attended;
+                        }
+                    }
+                    else
+                    {
+                        // Add new record
+                        _context.Attendances.AddRange(attendances);
+                    }
+                }
 
                 await _context.SaveChangesAsync();
             }
@@ -36,13 +58,32 @@ namespace ECDLink.DataAccessLayer.Repositories
             return true;
         }
 
+        public IQueryable<Attendance> GetAllAttendances(List<Guid> classroomGroupIds)
+        {
+            if (classroomGroupIds == null || !classroomGroupIds.Any())
+            {
+                return Enumerable.Empty<Attendance>().AsQueryable();
+            }
+
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var attendances = _context.Attendances
+                              .Include(x => x.User)
+                              .Include(x => x.ClassroomProgramme)
+                                .ThenInclude(x => x.ClassroomGroup)
+                              .Where(x => x.ClassroomProgramme.ClassroomGroupId.HasValue && classroomGroupIds.Contains(x.ClassroomProgramme.ClassroomGroupId.Value))
+                              .Where(e => e.TenantId == Guid.Empty || e.TenantId == tenantId);
+
+            return attendances;
+        }
+
         public IQueryable<Attendance> GetAllAttendancesByParentId(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Enumerable.Empty<Attendance>().AsQueryable();
             }
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            var tenantId = TenantExecutionContext.Tenant.Id;
             var attendances = _context.Attendances
                               .Include(x => x.User)
                               .Include(x => x.ClassroomProgramme)
@@ -109,7 +150,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 }
                 return filteredAttendance;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -124,7 +165,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 List<Attendance> attendance = _context.Attendances.Where(f => f.UserId.ToString() == userId)
                     .Where(g => g.ClassroomProgrammeId == classroomId)
                     .Where(y => y.ParentRecordId == parentRecordId)
-                    .Where(e => e.TenantId == null || e.TenantId == tenantId).ToList();//
+                    .Where(e => e.TenantId == tenantId).ToList();//
 
                 List<Attendance> filteredAttendance = new List<Attendance>();
 
@@ -141,7 +182,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 }
                 return filteredAttendance;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -167,8 +208,6 @@ namespace ECDLink.DataAccessLayer.Repositories
                 // Log error
                 return false;
             }
-
-            return true;
         }
 
         public int GetAttendancePercentileByParent(string parentRecordId, DateTime startDate, DateTime endDate)
@@ -191,7 +230,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                             .Where(g => g.ClassroomProgrammeId == programme.Id)
                             .Where(y => y.ParentRecordId == parentRecordId)
                             .Where(x => x.AttendanceDate >= startDate && x.AttendanceDate <= endDate)
-                            .Where(e => e.TenantId == null || e.TenantId == tenantId).ToList();//
+                            .Where(e => e.TenantId == tenantId).ToList();//
 
                         List<Attendance> filteredAttendance = new List<Attendance>();
 
@@ -222,7 +261,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 }
                 return totalPercentageAttendance;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return 0;
             }

@@ -3,6 +3,7 @@ import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import {
   HealthCareWorkerDto,
   NOTIFICATION,
+  RoleSystemNameEnum,
   UserDto,
   useDialog,
   useNotifications,
@@ -27,9 +28,9 @@ export const SendInvite: React.FC<SendInviteProps> = ({
 
   const isAdminUser = userData?.roles?.some(
     (role: any) =>
-      role.name === 'Administrator' ||
-      role.name === 'Super Admin' ||
-      role.name === 'Team Lead'
+      role.systemName === RoleSystemNameEnum.Administrator ||
+      role.systemName === RoleSystemNameEnum.SuperAdmin ||
+      role.systemName === RoleSystemNameEnum.TeamLead
   );
 
   const sendInvite = async () => {

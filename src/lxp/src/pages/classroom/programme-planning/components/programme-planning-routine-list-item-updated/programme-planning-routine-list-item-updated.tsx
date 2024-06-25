@@ -19,6 +19,11 @@ import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { storyBookSelectors } from '@/store/content/story-book';
+import { useAppContext } from '@/walkthrougContext';
+import { dummyActivity } from '../../programme-dashboard/walkthrough/dummy-content';
+import { useMemo } from 'react';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
@@ -26,6 +31,10 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   const dialog = useDialog();
 
   const { isOnline } = useOnlineStatus();
+
+  const { state } = useAppContext();
+
+  const isWalkthrough = state?.run;
 
   const routineType = getRoutineItemType(routineItem.name);
   const canLinkActionToType =
@@ -35,14 +44,29 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   const isMessageBoard =
     routineType === DailyRoutineItemType.messageBoard ||
     routineType === DailyRoutineItemType.greeting;
-  const activity = useSelector(
+  const activityById = useSelector(
     activitySelectors.getActivityById(
       getActivityIdForRoutineItem(routineItem.name, day)
     )
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const activity = useMemo(() => {
+    if (isWalkthrough) {
+      return state.stepIndex < 5 ? dummyActivity : undefined;
+    }
+
+    return activityById;
+  }, [activityById, isWalkthrough, state.stepIndex]);
+
   const storyBook = useSelector(
     storyBookSelectors.getStoryBookById(storyBookId)
   );
+
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
 
   const isPastDay = () => {
     if (selectedDate) {
@@ -65,7 +89,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   };
 
   const handleOnClick = () => {
-    if (isPastDay()) {
+    if (isPastDay() || (!hasPermissionToEdit && !activity?.name)) {
       return;
     } else if (isOnline || (!isOnline && !!activity?.name)) {
       return onClick();
@@ -103,7 +127,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   const getTitleTextType = () => {
     if (canLinkActionToType && activity) return 'small';
 
-    return 'body';
+    return 'help';
   };
 
   const getSubTitleTextType = () => {
@@ -157,8 +181,17 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
               'ml-4 flex w-full flex-row items-center justify-start gap-4'
             }
           >
-            <Typography type={'h1'} text={'+'} color={'secondary'} />
-            <Typography type={'h4'} text={'Add Activity'} color={'secondary'} />
+            {renderIcon(
+              hasPermissionToEdit ? 'PlusIcon' : 'ExclamationCircleIcon',
+              `w-6 h-6 text-secondary`
+            )}
+            <Typography
+              type={'h4'}
+              text={
+                hasPermissionToEdit ? 'Add Activity' : 'No activity planned'
+              }
+              color={'secondary'}
+            />
 
             {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
           </div>
@@ -172,10 +205,15 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
               'ml-4 flex w-full flex-row items-center justify-start gap-4'
             }
           >
-            <Typography type={'h1'} text={'+'} color={'primaryAccent1'} />
+            {renderIcon(
+              hasPermissionToEdit ? 'PlusIcon' : 'ExclamationCircleIcon',
+              `w-6 h-6 text-secondary`
+            )}
             <Typography
               type={'h4'}
-              text={'Add Activity'}
+              text={
+                hasPermissionToEdit ? 'Add Activity' : 'No activity planned'
+              }
               color={'primaryAccent1'}
             />
           </div>
@@ -272,7 +310,6 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
         weight: canLinkActionToType && activity ? 'bold' : 'skinny',
       }}
       overwritePostSlotRender={getRoutineItemPostSlotRender}
-      dividerType={'solid'}
       dividerColor={'uiLight'}
       onClick={handleOnClick}
       routineItem={routineItem}

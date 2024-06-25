@@ -3,6 +3,7 @@ import {
   initialUserDetailsValues,
   NOTIFICATION,
   RoleDto,
+  RoleSystemNameEnum,
   useNotifications,
 } from '@ecdlink/core';
 import {
@@ -35,7 +36,6 @@ import {
 import { SaveIcon, XIcon } from '@heroicons/react/solid';
 import FormField from '../../../../../../components/form-field/form-field';
 import * as yup from 'yup';
-import { GrowGreatRoles } from '../../../../../../utils/constants';
 import { idTypeEnum } from '../../../../../view-user/view-user.types';
 import { useLocation } from 'react-router';
 import { TeamLeadsRouteState } from '../../team-leads.types';
@@ -207,7 +207,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   };
 
   const saveRoles = async (userId: string) => {
-    const rolesToAdd: string[] = [GrowGreatRoles?.TeamLead];
+    const rolesToAdd: string[] = [RoleSystemNameEnum.TeamLead];
 
     await addRolesToUser({
       variables: {
@@ -220,7 +220,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   const addUserRole = () => {
     const role = roleData.roles.find(
       //TODO: Keeping this patern but the name should not be hard coded
-      (role: RoleDto) => role.name === GrowGreatRoles?.TeamLead
+      (role: RoleDto) => role.systemName === RoleSystemNameEnum.TeamLead
     );
 
     const copy = [...selectedUserRoles];

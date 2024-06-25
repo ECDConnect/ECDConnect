@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notes;
+using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Entities.Users;
 using HotChocolate;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +60,9 @@ namespace ECDLink.DataAccessLayer.Entities
         public bool? ResetData { get; set; }
         public string ReasonForLeaving { get; set; }
         public string ReasonForLeavingComments { get; set; }
+        public string RegisterType { get; set; }
+
+        public virtual ICollection<UserPermission> UserPermissions { get; set; }
 
         [NotMapped]
         public virtual Franchisor franchisorObjectData { get; set; }
@@ -124,6 +128,9 @@ namespace ECDLink.DataAccessLayer.Entities
 
         [GraphIgnoreInput]
         public DateTime? UpdatedDate { get; set; } = DateTime.Now;
+
+        [GraphIgnoreInput]
+        public virtual ICollection<UserTrainingCourse> TrainingCourses { get; set; }
     }
 
     public interface ApplicationUserJoin

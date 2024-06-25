@@ -1,5 +1,7 @@
-import { ProgrammeThemeDto } from '@ecdlink/core';
+import { ProgrammeDto, ProgrammeThemeDto } from '@ecdlink/core';
 
 export interface ProgrammeTimingRouteState {
-  theme?: ProgrammeThemeDto;
+  classroomGroupId: string;
+  theme: ProgrammeThemeDto;
+  programmeToEdit?: ProgrammeDto;
 }

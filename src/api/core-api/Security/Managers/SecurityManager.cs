@@ -116,6 +116,20 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return firstUserWithThatEmail;
         }
 
+        public async Task<ApplicationUser> GetUserByPhoneNumberAsync(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                return default;
+            }
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var user = await _userManager.Users.FirstOrDefaultAsync(
+                user => user.IsActive == true
+                    && user.PhoneNumber == phoneNumber
+                    && user.TenantId == tenantId);
+            return user;
+        }
+
         public async Task<bool> ForgotPasswordAsync(ApplicationUser user, bool isPortal = false)
         {
             var resetToken = await _passwordManager.RequestPasswordResetTokenAsync(user);
@@ -157,8 +171,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                     user.Id.ToString(),
                     new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Id, user.Id.ToString()),
                     new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Rol, string.Join(',', roles))
-                ); //TODO: CB Remove ROL again when portal login errors have been resolved
-            //Remove the Rol and tenantId and add to table and obfuscate
+                );
             var jwt = await _jwtTokenManager.GenerateJwt(claimIdentity, user.Id.ToString(), jwtType, user.ResetData);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
             await ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id.ToString(), string.Join(',', roles));

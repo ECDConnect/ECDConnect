@@ -7,6 +7,11 @@ import {
   PasswordResetModel,
   SimpleUserModel,
   VerifyInvitationModel,
+  RegisterRequestModel,
+  CheckUsernamePhoneNumberModel,
+  UpdateUsernameModel,
+  AuthCodeModel,
+  ResendAuthCodeModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
 import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
@@ -153,6 +158,113 @@ class AuthService {
     }
 
     return response.data;
+  }
+
+  async RegisterPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
+    return await api(baseEndPoint).post(
+      APIs.registerPractitioner,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async RegisterOpenAccessUser(
+    baseEndPoint: string,
+    body: RegisterRequestModel
+  ) {
+    return await api(baseEndPoint).post(
+      APIs.addOAPractitioner,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async CheckUsernamePhoneNumber(
+    baseEndPoint: string,
+    body: CheckUsernamePhoneNumberModel
+  ) {
+    return await api(baseEndPoint).post(
+      APIs.checkUsernamePhoneNumber,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async UpdateUsername(baseEndPoint: string, body: UpdateUsernameModel) {
+    return await api(baseEndPoint).post(
+      APIs.updateUsernamePassword,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async VerifyAuthCode(baseEndPoint: string, body: AuthCodeModel) {
+    return await api(baseEndPoint).post(
+      APIs.verifyOAWLAuthCode,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async SendOAAuthCode(username: string): Promise<boolean> {
+    const BASE_URL = Config.authApi;
+    const response = await api(BASE_URL).post(
+      APIs.sendOAWLAuthCode,
+      JSON.stringify({
+        username,
+      })
+    );
+
+    const dataResponse = getDataResponse<boolean>(response);
+
+    if (dataResponse.dataError) return false;
+
+    return true;
+  }
+
+  async VerifyOaAuthCodeStatus(
+    baseEndPoint: string,
+    body: CheckUsernamePhoneNumberModel
+  ) {
+    const response = await api(baseEndPoint).post(
+      APIs.verifyOAWLAuthCodeStatus,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+
+    const dataResponse = getDataResponse<boolean>(response);
+
+    if (dataResponse.dataError) return false;
+
+    return dataResponse?.data;
+  }
+
+  async UpdateOaPractitioner(baseEndPoint: string, body: RegisterRequestModel) {
+    const response = await api(baseEndPoint).post(
+      APIs.updateOAPractitioner,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+
+    const dataResponse = getDataResponse<boolean>(response);
+
+    if (dataResponse.dataError) return false;
+
+    return dataResponse?.data;
   }
 }
 

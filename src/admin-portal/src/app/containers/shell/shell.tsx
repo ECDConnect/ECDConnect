@@ -1,18 +1,14 @@
 import { useQuery } from '@apollo/client';
 import { getAvatarColor, usePanel, useTheme } from '@ecdlink/core';
-import {
-  GetAllNavigation,
-  GetAllNotifications,
-  GetTenantContext,
-} from '@ecdlink/graphql';
-import { Avatar, Button, IconBadge, Typography, UserAvatar } from '@ecdlink/ui';
+import { GetAllNavigation, GetAllNotifications } from '@ecdlink/graphql';
+import { Avatar, Button, IconBadge, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
 } from '@heroicons/react/outline';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
@@ -21,7 +17,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
-import { TenantContext } from '../../utils/constants';
 import {
   INavigation,
   NavbarTypes,
@@ -30,6 +25,7 @@ import {
 import { useUserRole } from '../../hooks/useUserRole';
 import ROUTES from '../../routes/app.routes-constants';
 import { navigationFromFrontend } from './shell.constants';
+import { useTenant } from '../../hooks/useTenant';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -37,17 +33,6 @@ function classNames(...classes: any[]) {
 
 type menuItemProps = {
   item: INavigation;
-};
-
-export const tlMeetings = {
-  description: 'Team meetings',
-  icon: 'PresentationChartBarIcon',
-  id: '96d4070a-e5a6-4148-961b-20d9c05dje41',
-  isActive: true,
-  name: 'Team meetings',
-  permissions: [],
-  route: '/team-meetings',
-  sequence: 8,
 };
 
 const MenuItem: React.FC<menuItemProps> = ({ item }) => {
@@ -81,13 +66,14 @@ export default function Shell() {
   const panel = usePanel();
   const { logout } = useAuth();
   const { user } = useUser();
-  const { isTeamLead, isAdministrator, isSuperAdmin } = useUserRole();
+  const { isAdministrator, isSuperAdmin } = useUserRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const history = useHistory();
   const location = useLocation();
   const [avatarColor, setAvatarColor] = useState<string>();
   const [navigation, setNavigation] = useState<INavigation[]>();
   const [activeNavigation, setActiveNavigation] = useState<INavigation>();
+  const tenant = useTenant();
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
@@ -121,14 +107,6 @@ export default function Shell() {
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
-      const teamLeadNavigationItems = [
-        NavbarTypes.Users,
-        NavbarTypes.Clinics,
-        NavbarTypes.League,
-        NavbarTypes.Referrals,
-        NavbarTypes.TeamMeetings,
-      ];
-
       const adminNavigationItems = [
         NavbarTypes.Dashboard,
         NavbarTypes.Users,
@@ -138,23 +116,19 @@ export default function Shell() {
         NavbarTypes.TLMeetings,
         NavbarTypes.Documents,
         NavbarTypes.CMS,
-        NavbarTypes.Reporting,
+        [NavbarTypes.Reporting],
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
-        NavbarTypes.Settings,
+        [NavbarTypes.Settings],
         NavbarTypes.Notifications,
         NavbarTypes.CHWsOptedOut,
       ];
 
       const navigationList = [
         ...navigationData?.GetAllNavigation,
-        tlMeetings,
         ...navigationFromFrontend,
       ];
 
-      const teamLeadNavigationList: INavigation[] = navigationList?.filter(
-        (item) => teamLeadNavigationItems?.includes(item?.name)
-      );
       const adminNavigationList: INavigation[] = navigationList?.filter(
         (item) =>
           adminNavigationItems?.some((adminItem) =>
@@ -170,10 +144,6 @@ export default function Shell() {
         setNavigation(
           adminNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
         );
-      } else if (isTeamLead) {
-        setNavigation(
-          teamLeadNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
-        );
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))
@@ -181,33 +151,21 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [user, navigationData, isAdministrator, isSuperAdmin, isTeamLead]);
-
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+  }, [user, navigationData, isAdministrator, isSuperAdmin]);
 
   const getLogoUrl = () => {
-    if (
-      theme &&
-      theme.images &&
-      data?.tenantContext.applicationName !== TenantContext.GrowGreat
-    ) {
+    if (theme && theme.images) {
       return theme.images.logoUrl;
     } else {
       return ggLogo;
     }
   };
 
-  const signOutClick = () => {
+  const signOutClick = useCallback(() => {
     logout();
 
-    if (isTeamLead) {
-      history.push(ROUTES.ROOT_TEAM_LEAD);
-      return;
-    }
     history.push('/');
-  };
+  }, [logout, history]);
 
   const gotToProfile = () => {
     history.push(ROUTES.PROFILE);
@@ -222,6 +180,42 @@ export default function Shell() {
       ),
     });
   };
+
+  const renderFooter = useMemo(() => {
+    return (
+      <div className="mb-2 flex flex-col px-4 md:py-4">
+        <Button
+          className={
+            'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
+          }
+          type="filled"
+          color="uiMid"
+          icon="InformationCircleIcon"
+          textColor="white"
+          text="Help"
+          // TODO: Implement help
+          onClick={() => {}}
+        />
+        <Button
+          className={
+            'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
+          }
+          type="filled"
+          color="uiMid"
+          onClick={signOutClick}
+          icon="ArrowLeftIcon"
+          textColor="white"
+          text="Logout"
+        />
+      </div>
+    );
+  }, [signOutClick]);
+
+  const renderBadgeValue = useMemo(() => {
+    return !!notReadNotifications?.length
+      ? `${notReadNotifications?.length}`
+      : '';
+  }, [notReadNotifications?.length]);
 
   return (
     <div className="flex h-full overflow-hidden bg-gray-100">
@@ -283,7 +277,7 @@ export default function Shell() {
                   alt="Workflow"
                 />
               </div>
-              <div className="mt-5 h-0 flex-1 overflow-y-auto">
+              <div className="mt-5 flex-1 flex-grow overflow-y-auto">
                 <nav className="space-y-1 px-2">
                   {navigation?.map((item) => (
                     <MenuItem
@@ -293,6 +287,7 @@ export default function Shell() {
                   ))}
                 </nav>
               </div>
+              {renderFooter}
             </div>
           </Transition.Child>
           <div className="w-14 flex-shrink-0" aria-hidden="true"></div>
@@ -323,42 +318,7 @@ export default function Shell() {
                     </div>
                   ))}
               </nav>
-              <div className="mb-2 flex flex-col px-4 md:py-4">
-                <Button
-                  className={
-                    'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
-                  }
-                  type="filled"
-                  // isLoading={isLoading}
-                  color="uiMid"
-                  // disabled={!isValid}
-                  // onClick={signIn}
-                  icon="InformationCircleIcon"
-                >
-                  <Typography
-                    type="body"
-                    color="white"
-                    text={'Help'}
-                    fontSize={'24'}
-                  ></Typography>
-                </Button>
-                <Button
-                  className={
-                    'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
-                  }
-                  type="filled"
-                  color="uiMid"
-                  onClick={signOutClick}
-                  icon="ArrowLeftIcon"
-                >
-                  <Typography
-                    type="body"
-                    color="white"
-                    text={'Logout'}
-                    fontSize={'24'}
-                  ></Typography>
-                </Button>
-              </div>
+              {renderFooter}
             </div>
           </div>
         </div>
@@ -400,11 +360,7 @@ export default function Shell() {
                   badgeTextColor={'white'}
                   icon={'BellIcon'}
                   iconColor={'darkBackground'}
-                  badgeText={
-                    !!notReadNotifications?.length
-                      ? `${notReadNotifications?.length}`
-                      : ''
-                  }
+                  badgeText={renderBadgeValue}
                   className="mt-4"
                 />
               </div>

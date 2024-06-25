@@ -1,4 +1,4 @@
-import { useDialog } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import {
   Button,
   ComponentBaseProps,
@@ -18,7 +18,7 @@ import {
   ChildRegistrationRouteState,
   ChildRegistrationSteps,
 } from '../../child-registration/child-registration.types';
-import { classroomsActions, classroomsThunkActions } from '@store/classroom';
+import { classroomsActions } from '@store/classroom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
@@ -27,12 +27,10 @@ import { CaregiverMultipleChildrenModal } from '../../components/caregiver-multi
 import ROUTES from '@/routes/routes';
 import { useSelector } from 'react-redux';
 import { getUser } from '@/store/user/user.selectors';
-import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
   TabsItemForPrincipal,
   TabsItems,
-  TabsItemsWithAttendance,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
 
@@ -49,7 +47,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const history = useHistory();
   const location = useLocation<ChildRegistrationRouteState>();
   const dispatch = useAppDispatch();
-  const [childId, setChildId] = useState();
+  const [childId, setChildId] = useState<string>();
   const [loadingLink, setLoadingLink] = useState(false);
 
   const [loadingManualUpload, setLoadingManualUpload] = useState(false);
@@ -57,34 +55,28 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const { isOnline } = useOnlineStatus();
 
   const user = useSelector(getUser);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
 
   const isPrincipal = practitioner?.isPrincipal;
   const isCoachView = user?.roles?.some(
-    (role) => role.name === UserTypeEnum.Coach
+    (role) => role.systemName === RoleSystemNameEnum.Coach
   );
   const isPractitionerView =
-    user?.roles?.some((role) => role.name === UserTypeEnum.Practitioner) ||
-    isPrincipal;
-  const hasAttendanceRoute =
-    (isPrincipal && practitioners?.length! > 0) ||
-    (practitioner && !practitioner?.isTrainee);
-
+    user?.roles?.some(
+      (role) => role.systemName === RoleSystemNameEnum.Practitioner
+    ) || isPrincipal;
   const practitionerId = location?.state?.practitionerId;
 
   const getChildToken = async () => {
-    let token = '';
-
     if (childId) {
-      token = await dispatch(
+      return await dispatch(
         childrenThunkActions.refreshCaregiverChildToken({
           childId: childId,
           classgroupId: childDetails.playgroupId,
         })
       ).unwrap();
     } else {
-      token = await dispatch(
+      return await dispatch(
         childrenThunkActions.generateCaregiverChildToken({
           firstName: childDetails.firstName,
           surname: childDetails.surname,
@@ -92,8 +84,6 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
         })
       ).unwrap();
     }
-
-    return token;
   };
 
   const onSendcaregiverLink = async () => {
@@ -117,13 +107,11 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     if (isPractitionerView) {
       if (isPrincipal) {
         history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: TabsItemForPrincipal.CHILDREN,
+          activeTabIndex: TabsItemForPrincipal.CLASSES,
         } as ClassDashboardRouteState);
       } else {
         history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: hasAttendanceRoute
-            ? TabsItemsWithAttendance.CHILDREN
-            : TabsItems.CHILDREN,
+          activeTabIndex: TabsItems.CLASSES,
         } as ClassDashboardRouteState);
       }
     } else {
@@ -133,27 +121,30 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const createLink = async () => {
     setLoadingLink(true);
-    const token = await getChildToken();
-    const modelString = decodeToken(token);
-    const result = JSON.parse(modelString);
+    const childRegistrationDetails = await getChildToken();
 
-    if (!childId) createLocalUser(result);
+    if (!childId) {
+      createLocalUser(
+        childRegistrationDetails.childId,
+        childRegistrationDetails.childUserId
+      );
+    }
 
-    const caregiverChildregUrl = history.createHref({
-      pathname: window.location.href,
-      search: `?token=${token}`,
-    });
-
-    setChildId(result.ChildId);
-    const linkCopied = await copyToClip(caregiverChildregUrl);
+    setChildId(childRegistrationDetails.childId);
+    const linkCopied = await copyToClip(
+      childRegistrationDetails.caregiverRegistrationUrl
+    );
 
     const whatsapp = () => {
-      window.open(`whatsapp://send?text=${caregiverChildregUrl}`);
+      window.open(
+        `whatsapp://send?text=${childRegistrationDetails.caregiverRegistrationUrl}`
+      );
     };
 
-    await copyToClip(caregiverChildregUrl);
+    await copyToClip(childRegistrationDetails.caregiverRegistrationUrl);
     setLoadingLink(false);
     dialog({
+      color: 'bg-white',
       render: (onSubmit, onCancel) => {
         if (!!practitionerId) {
           return (
@@ -176,17 +167,13 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
             onSubmit={whatsapp}
             onCancel={onCancel}
             childDetails={childDetails}
-            caregiverUrl={caregiverChildregUrl}
+            caregiverUrl={childRegistrationDetails.caregiverRegistrationUrl}
             couldCopyToClipboard={linkCopied}
           />
         );
       },
       position: DialogPosition.Middle,
     });
-  };
-
-  const decodeToken = (token: string) => {
-    return atob(token);
   };
 
   const onUploadSelf = async () => {
@@ -199,30 +186,32 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
   const goToChildRegistration = async () => {
     setLoadingManualUpload(true);
-    const token = await getChildToken();
-    const modelString = decodeToken(token);
-    const result = JSON.parse(modelString);
+    const childRegistrationDetails = await getChildToken();
     if (!childId) {
-      createLocalUser(result);
-      setChildId(result.ChildId);
+      createLocalUser(
+        childRegistrationDetails.childId,
+        childRegistrationDetails.childUserId
+      );
+      setChildId(childRegistrationDetails.childId);
     }
     setLoadingManualUpload(false);
     history.replace('/child-registration', {
       childDetails,
-      childId: result.ChildId,
+      childId: childRegistrationDetails.childId,
       step: ChildRegistrationSteps.registrationForm,
       practitionerId: isCoachView ? practitionerId : null,
     });
   };
 
-  const createLocalUser = (model: any) => {
+  // This doesn't set any state, or return anything
+  const createLocalUser = (childId: string, childUserId: string) => {
     const childInformation = {
       dobDay: 0,
       dobMonth: 0,
       dobYear: 0,
       firstname: childDetails.firstName,
       surname: childDetails.surname,
-      playgroupId: childDetails.playgroupId,
+      playgroupId: childDetails.playgroupId, // TODO : Rename to classroomGroupId
       otherReason: '',
     };
     const childExtraInformation = { childFirstname: childDetails.firstName };
@@ -234,7 +223,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
     userInputModel = {
       ...userInputModel,
-      id: model.ChildUserId,
+      id: childUserId,
     };
 
     const childStatusId = getWorkflowStatusIdByEnum(
@@ -242,7 +231,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     );
 
     let childInputModel = childRegisterUtils.mapChildDto(
-      model.ChildUserId,
+      childUserId,
       childStatusId ?? '',
       {},
       childExtraInformation
@@ -250,51 +239,44 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
     childInputModel = {
       ...childInputModel,
-      id: model.ChildId,
+      id: childId,
+      user: userInputModel,
     };
 
-    const learnerInputModel = childRegisterUtils.mapLearnerDto(
-      model.ChildUserId,
-      childInformation
-    );
-
-    dispatch(childrenActions.createChildUser(userInputModel));
+    // Add values to redux. This could potentially be a refresh for child/classroomGroup data
     dispatch(childrenActions.createChild(childInputModel));
-    dispatch(classroomsActions.createClassroomGroupLearner(learnerInputModel));
     dispatch(
-      classroomsThunkActions.createLearner({ learner: learnerInputModel })
+      classroomsActions.createLearner({
+        childUserId,
+        newClassroomGroupId: childDetails.playgroupId,
+      })
     );
   };
 
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
       <Typography
-        type="unspecified"
-        weight="normal"
-        fontSize="16"
+        type="h4"
+        color="textDark"
         text="Send registration form to caregiver or upload paper registration form"
       />
       <Typography
-        type="unspecified"
+        type="body"
         className="mt-4"
-        weight="normal"
         color="textMid"
-        fontSize="16"
         text="If the caregiver has a smartphone, you can send the registration form to the caregiver to complete."
       />
       <Typography
-        type="unspecified"
+        type="body"
         className="mt-4"
-        weight="normal"
         color="textMid"
-        fontSize="16"
         text={`You can always access the link again on ${childDetails.firstName}'s profile.`}
       />
 
       <Button
         id="gtm-share-caregiver"
         type="filled"
-        color="primary"
+        color="quatenary"
         className="mt-4"
         text="Copy link to send to caregiver"
         textColor="white"
@@ -308,19 +290,18 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
       <Divider title="OR" dividerType="solid" className="my-4" />
 
       <Typography
-        type="unspecified"
-        weight="normal"
-        fontSize="16"
-        text="If the caregiver has already filled in a paper version of the child registration form, upload a photo of the form and fill in the details."
+        type="h4"
+        color="textDark"
+        text="You can complete the registration if the caregiver cannot fill it in on their phone."
       />
 
       <Button
         type="outlined"
         className="mt-4"
-        color="primary"
-        text="Upload paper registration form"
-        textColor="primary"
-        icon="UploadIcon"
+        color="quatenary"
+        text="Fill in child’s registration form"
+        textColor="quatenary"
+        icon="DocumentDuplicateIcon"
         iconPosition="start"
         isLoading={loadingManualUpload}
         disabled={loadingManualUpload}

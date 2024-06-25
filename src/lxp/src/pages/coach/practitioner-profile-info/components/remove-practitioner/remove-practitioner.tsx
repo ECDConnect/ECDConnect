@@ -64,8 +64,9 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
   );
+  // TODO - this probably needs an upate
   const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.userId === practitionerUserId
+    (item) => item.principal.userId === practitionerUserId
   );
 
   //Get list of practitioners for classroom
@@ -133,6 +134,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     useState<ClassroomGroupDto[]>();
 
   const classroomsGroupsForPractitioner = async () => {
+    // Needs to be updated
     const classroomDetails = await new PractitionerService(
       authUser?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);

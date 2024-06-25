@@ -2,6 +2,7 @@ import { Divider, Typography } from '@ecdlink/ui';
 import { Chart } from 'react-chartjs-2';
 import { ClinicDto } from '@ecdlink/core';
 import { FlagIcon } from '@heroicons/react/solid';
+import { useEffect, useState } from 'react';
 
 interface ReportsDataCharProps {
   clinic: ClinicDto;
@@ -127,7 +128,7 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         ctx.marginTop = '4pxß';
 
         // Draw "Total" on the first line
-        var text1 = `${targetPerc || 0}%`;
+        var text1 = `${targetPerc !== undefined ? targetPerc : 0}%`;
         var textX1 = Math.round((width - ctx.measureText(text1).width) / 2);
         var textY1 = height / 2.8;
         ctx.fillText(text1, textX1, textY1);
@@ -159,13 +160,15 @@ export const ReportsDataChart: React.FC<ReportsDataCharProps> = ({
         <Typography type="h4" color={'textDark'} text={title} />
       </div>
       <div className="flex justify-center">
-        <Chart
-          type="doughnut"
-          data={reportsDataSet}
-          options={options}
-          className="h-64 w-64 overflow-hidden rounded-lg"
-          plugins={plugins}
-        />
+        {targetPerc !== undefined && (
+          <Chart
+            type="doughnut"
+            data={reportsDataSet}
+            options={options}
+            className="h-64 w-64 overflow-hidden rounded-lg"
+            plugins={plugins}
+          />
+        )}
       </div>
       <Typography
         type="body"

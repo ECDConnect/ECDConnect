@@ -80,3 +80,62 @@ export const DeleteCoach = gql`
     deleteCoach(id: $id)
   }
 `;
+
+export const GetAllPortalCoaches = gql`
+  query GetAllPortalCoaches(
+    $search: String
+    $connectUsageSearch: [String]
+    $pagingInput: PagedQueryInput
+    $order: [PortalCoachModelSortInput!]
+  ) {
+    allPortalCoaches(
+      search: $search
+      connectUsageSearch: $connectUsageSearch
+      pagingInput: $pagingInput
+      order: $order
+    ) {
+      id
+      userId
+      isRegistered
+      user {
+        id
+        idNumber
+        insertedDate
+        lastSeen
+        firstName
+        surname
+        fullName
+        userName
+        phoneNumber
+        email
+        isActive
+        connectUsage
+        connectUsageColor
+      }
+    }
+  }
+`;
+
+export const CoachesTemplate = gql`
+  query {
+    coachTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
+  }
+`;
+
+export const UploadCoaches = gql`
+  mutation ($file: String) {
+    importCoaches(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers
+    }
+  }
+`;

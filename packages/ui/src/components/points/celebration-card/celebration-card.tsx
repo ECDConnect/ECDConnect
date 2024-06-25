@@ -1,10 +1,11 @@
-import { renderIcon } from '../../../utils';
+import { classNames, renderIcon } from '../../../utils';
 import Button from '../../button/button';
 import { Card } from '../../card/card';
 import Typography from '../../typography/typography';
 import { CelebrationCardProps } from './celebration-card.types';
 
 export const CelebrationCard: React.FC<CelebrationCardProps> = ({
+  className,
   image,
   primaryTextColour,
   secondaryTextColour,
@@ -17,7 +18,10 @@ export const CelebrationCard: React.FC<CelebrationCardProps> = ({
 }) => {
   return (
     <Card
-      className={`mt-2 px-4 py-4 sm:px-6 bg-${backgroundColour}`}
+      className={classNames(
+        className,
+        `mt-2 px-4 py-4 sm:px-6 bg-${backgroundColour}`
+      )}
       borderRaduis="lg"
     >
       <div className="flex flex-row gap-3">

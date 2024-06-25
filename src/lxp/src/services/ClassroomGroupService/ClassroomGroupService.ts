@@ -1,6 +1,7 @@
-import { ClassroomGroupDto, Config } from '@ecdlink/core';
+import { Config } from '@ecdlink/core';
 import { ClassroomGroupInput, ClassroomMetricReport } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 class ClassroomGroupService {
   _accessToken: string;
 
@@ -38,49 +39,51 @@ class ClassroomGroupService {
     return response.data.data.GetClassroomGroupById;
   }
 
-  async getClassroomGroups(): Promise<ClassroomGroupDto[]> {
+  async getClassroomGroupsForUser(
+    userId: string
+  ): Promise<ClassroomGroupDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { classroomGroupsForUser: ClassroomGroupDto[] };
+      errors?: {};
+    }>(``, {
       query: `
-        query {
-          GetAllClassroomGroup {
+        query GetClassroomGroupsForUser($userId: UUID!) {
+          classroomGroupsForUser(userId: $userId) {
             id
             classroomId
             name
             userId
-            classroom {
-              id
-              siteAddress {
-                  name
-                  addressLine1
-                  addressLine2
-                  addressLine3
-                  postalCode
-                  province {
-                      description
-                  }
-              }
-              name
-              numberPractitioners
-              numberOfAssistants
-              numberOfOtherAssistants
+            learners {
+              learnerId
+              childUserId
+              startedAttendance
+              stoppedAttendance
+              isActive
             }
-            programmeTypeId
-            programmeType {
+            classProgrammes {
               id
-              description
+              programmeStartDate
+              meetingDay
+              isFullDay
+              classroomGroupId
+              isActive
             }
-            isActive
           }
         }
           `,
+      variables: {
+        userId: userId,
+      },
     });
 
-    if (response.status !== 200) {
-      throw new Error('Get Classroom Groups Failed - Server connection error');
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'GetClassroomGroupsForUser Failed - Server connection error'
+      );
     }
 
-    return response.data.data.GetAllClassroomGroup;
+    return response.data.data.classroomGroupsForUser;
   }
 
   async updateClassroomGroup(

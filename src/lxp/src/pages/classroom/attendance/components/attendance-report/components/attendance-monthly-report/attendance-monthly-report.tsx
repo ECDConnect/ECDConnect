@@ -6,74 +6,25 @@ import {
   DialogPosition,
   renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
-import { AttendanceService } from '@services/AttendanceService';
-import { getMonthRange } from '@utils/classroom/attendance/track-attendance-utils';
+import { useState } from 'react';
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
-import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
-import { getYear, add } from 'date-fns';
-import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
-import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { getYear } from 'date-fns';
+import { MonthlyAttendanceRecord } from '@ecdlink/core';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
-  attendanceSummary: AttendanceSummary[];
-  classroomId: string;
+  attendanceSummary: MonthlyAttendanceRecord[];
 }
 
 export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
-> = ({ attendanceSummary, classroomId }) => {
+> = ({ attendanceSummary }) => {
   const [displayReport, setDisplayReport] = useState<boolean>(false);
-
-  const [totalAttendance, setTotalAttendance] = useState<
-    {
-      key: number;
-      value: number;
-    }[]
-  >([]);
-  const [totalAttendanceStatsReport, setTotalAttendanceStatsReport] = useState<{
-    totalSessions: number;
-    totalMonthlyAttendance: number;
-    totalChildrenAttendedAllSessions: number;
-  }>();
-
-  const [viewReportDate, setViewReportDate] = useState<string>();
-  const [reportData, setReportData] = useState<
-    ChildAttendanceOverallReportModel[]
-  >([]);
-  const authUser = useSelector(authSelectors.getAuthUser);
-  const { errorDialog } = useRequestResponseDialog();
+  const [selectedMonth, setSelectedMonth] = useState<MonthlyAttendanceRecord>();
 
   const closeReport = () => {
     setDisplayReport(!displayReport);
   };
-
-  useEffect(() => {
-    if (viewReportDate) {
-      const { startDate, endDate } = getMonthRange(viewReportDate);
-
-      const nextDay = add(startDate, { days: 1 });
-      new AttendanceService(authUser?.auth_token ?? '')
-        .getClassroomAttendanceReport(
-          authUser?.id ?? '',
-          classroomId,
-          nextDay,
-          endDate
-        )
-        .then((data) => {
-          setReportData(data.classroomAttendanceReport);
-          setTotalAttendance(data.totalAttendance);
-          setTotalAttendanceStatsReport(data.totalAttendanceStatsReport);
-        })
-        .catch((err) => {
-          errorDialog(err.message);
-        });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewReportDate]);
 
   return (
     <div className={styles.wrapper}>
@@ -82,13 +33,16 @@ export const AttendanceMonthlyReport: React.FC<
           return (
             <div
               onClick={() => {
+                if (!attendanceItem.percentageAttendance) return;
                 setDisplayReport(true);
-                setViewReportDate(attendanceItem?.month);
+                setSelectedMonth(attendanceItem);
               }}
               key={`attendance-summary-item-${idx}`}
               className={classNames(
-                styles.attendanceItemWrapper(attendanceItem.attendanceScore),
-                styles.getBgColor(attendanceItem.attendanceScore)
+                styles.attendanceItemWrapper(
+                  attendanceItem.percentageAttendance
+                ),
+                styles.getBgColor(attendanceItem.percentageAttendance)
               )}
             >
               <div className={styles.resultsSection} id="results-section">
@@ -111,14 +65,15 @@ export const AttendanceMonthlyReport: React.FC<
 
                 <div id="big-score-result" className={'flex flex-row'}>
                   <Typography
-                    text={`${attendanceItem.attendanceScore}%`}
+                    text={`${attendanceItem.percentageAttendance}%`}
                     weight={'bold'}
-                    color={styles.getColor(attendanceItem.attendanceScore)}
+                    color={styles.getColor(attendanceItem.percentageAttendance)}
                     type={'h1'}
                     className={'text-4xl'}
                   />
-                  <div className={'pl-6 pt-2'}>
-                    {renderIcon('ChevronRightIcon', 'text-primary h-6')}
+                  <div className={'h-6 w-6 pl-4 pt-2'}>
+                    {!!attendanceItem.percentageAttendance &&
+                      renderIcon('ChevronRightIcon', 'text-primary h-6')}
                   </div>
                 </div>
               </div>
@@ -126,7 +81,7 @@ export const AttendanceMonthlyReport: React.FC<
           );
         })}
 
-      {displayReport && (
+      {displayReport && selectedMonth && (
         <Dialog
           fullScreen
           visible={displayReport}
@@ -134,13 +89,9 @@ export const AttendanceMonthlyReport: React.FC<
         >
           <div className={'h-full'}>
             <MonthlyAttendanceReport
-              reportMonth={viewReportDate ?? ''}
+              selectedMonth={selectedMonth}
               onDownloadReport={() => {}}
-              onBack={() => closeReport()}
-              classroomGroupId={classroomId}
-              reportData={reportData}
-              totalAttendance={totalAttendance}
-              totalAttendanceStatsReport={totalAttendanceStatsReport}
+              onBack={closeReport}
             />
           </div>
         </Dialog>

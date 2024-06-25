@@ -227,7 +227,7 @@ export default function EditMultiplePractitioners({
                 <Button
                   size="small"
                   type="filled"
-                  color="primary"
+                  color="quatenary"
                   text="Add practitioner"
                   textColor="white"
                   icon="PlusIcon"

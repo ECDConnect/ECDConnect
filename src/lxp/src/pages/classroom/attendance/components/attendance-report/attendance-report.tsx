@@ -1,33 +1,51 @@
 import {
-  ClassroomGroupDto,
-  LocalStorageKeys,
-  MonthlyAttendanceRecord,
-} from '@ecdlink/core';
-import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+  Button,
+  DialogPosition,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { OfflineCard } from '../../../../../components/offline-card/offline-card';
 import PointsSuccessCard from '../../../../../components/points-success-card/points-success-card';
-import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
-import { AttendanceService } from '@services/AttendanceService';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@store';
-import {
-  setStorageItem,
-  getStorageItem,
-} from '@utils/common/local-storage.utils';
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
-import { attendanceThunkActions } from '@/store/attendance';
-import { addDays, startOfYear } from 'date-fns';
+import {
+  attendanceSelectors,
+  attendanceThunkActions,
+} from '@/store/attendance';
+import { isSameDay, startOfMonth, subMonths } from 'date-fns';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { AttendanceActions } from '@/store/attendance/attendance.actions';
+import {
+  MonthlyAttendanceRecord,
+  useDialog,
+  usePrevious,
+  useSnackbar,
+} from '@ecdlink/core';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
   currentClassroomGroup,
   classroomGroups,
+  isAllRegistersCompleted,
+  onTakeAttendance,
 }) => {
   const appDispatch = useAppDispatch();
-  const isOnline = true;
+  const { isOnline } = useOnlineStatus();
+
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const { hasPermissionToTakeAttendance } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance;
 
   const classroomGroup = classroomGroups?.find((x) => x.classroomId != null);
 
@@ -37,48 +55,72 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     currentClassroomGroup?.classroomId ??
     classroomGroup?.classroomId;
 
-  const [successMessageVisible, setSuccessMessageVisible] =
-    useState<boolean>(true);
-  const [displaySmartStartMessage, setDisplaySmartStartMessage] =
-    useState<boolean>(true);
-
   const authUser = useSelector(authSelectors.getAuthUser);
+  const attendanceSummary = useSelector(
+    attendanceSelectors.getAttendanceReportsForUser(authUser?.id ?? '')
+  );
 
-  const closeMessage = () => {
-    setDisplaySmartStartMessage(false);
-    setStorageItem(
-      true,
-      LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-    );
-  };
+  const previousAttendanceSummary = usePrevious(attendanceSummary) as
+    | MonthlyAttendanceRecord[]
+    | undefined;
 
-  useEffect(() => {
-    const lastDate = localStorage.getItem('lastDate');
-    const today = new Date().toDateString();
-    if (lastDate !== today) {
-      // Show notification on a new day
-      setSuccessMessageVisible(true);
-      // localStorage.setItem('lastDate', today);
-    } else {
-      setSuccessMessageVisible(false);
-    }
-  }, []);
-
-  // const closeNotification = () => {
-  //   setSuccessMessageVisible(false);
-  //   setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
-  //   const today = new Date().toDateString();
-  //   localStorage.setItem('lastDate', today);
-  // };
-
-  const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
-  const [reportData, setReportData] = useState<MonthlyAttendanceRecord[]>();
   const [attendanceTracked, setAttendanceTracked] = useState<boolean>(false);
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
+  const [lastStartOfPeriod, setLastStartOfPeriod] = useState<Date>();
 
   const today = new Date();
+  const firstDayOfMonth = startOfMonth(today);
+  const fourthRecentMonth = subMonths(firstDayOfMonth, 3);
+
+  const { isLoading, wasLoading, isFulfilled } = useThunkFetchCall(
+    'attendanceData',
+    AttendanceActions.GET_MONTHLY_ATTENDANCE_REPORT
+  );
+
+  const { showMessage } = useSnackbar();
+  const dialog = useDialog();
+
+  const isInitialStartDate =
+    lastStartOfPeriod && isSameDay(fourthRecentMonth, lastStartOfPeriod);
+  const isToShowSeeMoreButton =
+    isInitialStartDate ||
+    attendanceSummary?.length !== previousAttendanceSummary?.length;
+
+  const formattedAttendanceSummary = useMemo(() => {
+    const copy = [...(attendanceSummary ?? [])]?.reverse() ?? [];
+
+    if (isInitialStartDate) {
+      return copy.slice(0, 4);
+    }
+
+    return copy;
+  }, [attendanceSummary, isInitialStartDate]);
+
+  const onSeeMoreRegisters = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
+      });
+    }
+    const nextStartOfPeriod = subMonths(lastStartOfPeriod!, 1);
+
+    setLastStartOfPeriod(nextStartOfPeriod);
+
+    appDispatch(
+      attendanceThunkActions.getMonthlyAttendanceReport({
+        overrideCache: true,
+        userId: authUser?.id!,
+        startDate: nextStartOfPeriod,
+        endDate: today,
+      })
+    );
+  };
 
   useEffect(() => {
     setSelectedClassroomGroups(
@@ -89,45 +131,19 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   }, [classroomGroups, classroomID]);
 
   useEffect(() => {
-    const lastDayCurrentMonth = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      0
-    );
-
-    const firstDay = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
-
-    const firstDayOfYear = addDays(firstDay, 1);
-
     if (!attendanceTracked) {
-      new AttendanceService(authUser?.auth_token ?? '')
-        .getMonthlyAttendanceReport(
-          authUser?.id ?? '',
-          classroomID!,
-          firstDayOfYear,
-          new Date()
-        )
-        .then((data) => {
-          setReportData(data);
-        });
+      setLastStartOfPeriod(fourthRecentMonth);
+
+      appDispatch(
+        attendanceThunkActions.getMonthlyAttendanceReport({
+          userId: authUser?.id!,
+          startDate: fourthRecentMonth,
+          endDate: today,
+        })
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedClassroomGroups]);
-
-  useEffect(() => {
-    if (!reportData) return;
-
-    const attendanceReport: AttendanceSummary[] = reportData.map(
-      (mar: MonthlyAttendanceRecord) => ({
-        month: mar.month,
-        monthOfYear: +mar.monthOfYear,
-        attendanceScore: mar.percentageAttendance,
-      })
-    );
-
-    setAttendanceData(attendanceReport.reverse());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportData]);
+  }, [selectedClassroomGroups, attendanceTracked]);
 
   useEffect(() => {
     if (!attendanceTracked) {
@@ -145,55 +161,68 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (wasLoading && isFulfilled && !isToShowSeeMoreButton) {
+      showMessage({
+        message: 'No more registers to show',
+        type: 'info',
+        duration: 10000,
+      });
+    }
+  }, [isFulfilled, isToShowSeeMoreButton, showMessage, wasLoading]);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        className="p-4"
+        backgroundColor="quatenary"
+        size="medium"
+        spinnerColor="uiBg"
+      />
+    );
+  }
+
   return (
-    <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
+    <div className="flex h-full w-full flex-col overflow-y-auto p-4">
       <div className={'flex flex-col'}>
+        <Typography
+          type="h2"
+          color="textDark"
+          text="Choose a register to view"
+          className="mb-4"
+        />
         <PointsSuccessCard
-          visible={successMessageVisible}
+          visible={!!isAllRegistersCompleted}
           className={'mb-4'}
           message={`Good job! All your attendance registers are up to date!`}
           icon={'SparklesIcon'}
         />
         <AttendanceMonthlyReport
-          attendanceSummary={attendanceData}
-          classroomId={classroomID || classroomID!}
+          attendanceSummary={formattedAttendanceSummary}
         />
-        {!isOnline && <OfflineCard />}
       </div>
-      <div
-        className={'static bottom-0 flex h-full w-full flex-1 flex-col px-2'}
-      >
-        {attendanceData.length > 6 && (
-          <Button
-            type="outlined"
-            color="primary"
-            className={'mt-0'}
-            onClick={() => {
-              // setSeeRegister(true);
-            }}
-          >
-            {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
-            <Typography
-              type="h6"
-              color="primary"
-              text={'See more registers'}
-              className="ml-2"
-            ></Typography>
-          </Button>
-        )}
-      </div>
-      <MessageModal
-        title={'What can you do with SmartStart points?'}
-        message={'Get R5 airtime for every 500 points you earn!'}
-        visible={
-          false
-          //!hasClosedAttendanceSmartStartPointsMessage ??
-          //displaySmartStartMessage
-        }
-        icon={'GiftIcon'}
-        className={'mt-4'}
-        onClose={closeMessage}
-      />
+      {isToShowSeeMoreButton && (
+        <Button
+          className="mt-6"
+          type="outlined"
+          color="quatenary"
+          textColor="quatenary"
+          icon="EyeIcon"
+          text="See more registers"
+          onClick={onSeeMoreRegisters}
+        ></Button>
+      )}
+      {!isAllRegistersCompleted && hasPermissionToEdit && (
+        <Button
+          className="mt-auto"
+          type="filled"
+          color="quatenary"
+          textColor="white"
+          text="Take attendance"
+          icon="PencilAltIcon"
+          onClick={onTakeAttendance}
+        />
+      )}
     </div>
   );
 };

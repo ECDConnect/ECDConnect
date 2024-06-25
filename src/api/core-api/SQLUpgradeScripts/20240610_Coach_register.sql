@@ -1,0 +1,1 @@
+ALTER TABLE public."Coach" ADD "IsRegistered" bool default false;

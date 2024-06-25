@@ -1,20 +1,15 @@
-import { ClassroomGroupDto, useDialog } from '@ecdlink/core';
+import { useSnackbar } from '@ecdlink/core';
 import {
-  ActionModal,
   Alert,
   AttendanceListDataItem,
   AttendanceStatus,
   Button,
-  DialogPosition,
   FilterInfo,
-  renderIcon,
   SearchDropDown,
   SearchDropDownOption,
   StatusChip,
-  Typography,
 } from '@ecdlink/ui';
-import { format, getDay } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -27,12 +22,12 @@ import {
   getAttendanceStatusCheck,
   getPlaygroup,
   mapTrackAttendance,
+  mergeClassProgrammesWithSameClassroomGroupId,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import ClassProgrammeAttendanceList from '../class-programme-attendance-list/class-programme-attendance-list';
 import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
-import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
-import { practitionerSelectors } from '@/store/practitioner';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -40,13 +35,14 @@ export const filterInfo: FilterInfo = {
 };
 
 export const AttendanceList: React.FC<AttendanceListProps> = ({
-  submitText = '',
   attendanceDate = new Date(),
   onSubmitSuccess,
   editAttendanceRegisterVisible,
-  classroomgroupId,
+  classroomGroupId,
 }) => {
   const appDispatch = useAppDispatch();
+
+  const { showMessage } = useSnackbar();
 
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
@@ -56,58 +52,58 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     ClassroomGroupDto[]
   >([]);
 
-  const userData = useSelector(userSelectors.getUser);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const allLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
   const user = useSelector(userSelectors.getUser);
-  const allClassroomGroups = useSelector(
-    classroomsSelectors.getClassroomGroups
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+
+  const classProgrammes = classroomGroups
+    ?.flatMap((x) => x?.classProgrammes)
+    ?.filter((x) => x?.isActive);
+
+  const selectedClassroomGroup = classroomGroups.filter(
+    (classroomGroup) => classroomGroup.id === classroomGroupId
   );
 
-  const isPrincipal = practitioner?.isPrincipal === true;
+  const classProgrammesWithSameClassroomGroup =
+    mergeClassProgrammesWithSameClassroomGroupId(classProgrammes);
 
-  const dialog = useDialog();
+  const classroomGroupsWithoutDailyMeetings = classroomGroups?.filter(
+    (classroomGroup) =>
+      classroomGroup?.id !== classroomGroupId &&
+      classProgrammesWithSameClassroomGroup.some(
+        (data) =>
+          data.classroomGroupId === classroomGroup.id && data.items?.length < 5
+      )
+  );
 
-  const classroomGroups = allClassroomGroups.filter(
-    (x) => x.name !== NoPlaygroupClassroomType.name
-  );
-  const classroomGroupsForPrincipal = classroomGroups.filter(
-    (item) => item?.userId === userData?.id
-  );
-  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
-  const classProgrammesForPrincipal = classProgrammes.filter((el) => {
-    return classroomGroupsForPrincipal.some((f) => {
-      return f.id === el.classroomGroupId;
+  const searchDropDownOptions = useMemo(() => {
+    if (!classroomGroupsWithoutDailyMeetings?.length) return [];
+
+    const options = [
+      ...classroomGroupsWithoutDailyMeetings,
+      ...selectedClassroomGroup,
+    ];
+
+    return options.map((option) => {
+      return {
+        id: option.id,
+        value: option,
+        label: option.name,
+        disabled: false,
+      };
     });
-  });
-  const classProgrammesUpdated = isPrincipal
-    ? classProgrammesForPrincipal
-    : classProgrammes;
+  }, [classroomGroupsWithoutDailyMeetings, selectedClassroomGroup]);
 
-  const primaryClassProgramme = classProgrammesUpdated.filter(
-    (prog) => prog.meetingDay === getDay(attendanceDate)
-  );
+  // TODO: check if this is needed
+  // const primaryClassProgramme = classProgrammes.filter(
+  //   (prog) => prog.meetingDay === getDay(attendanceDate)
+  // );
 
   useEffect(() => {
-    if (classroomGroups) {
-      const selectedGroups = isPrincipal
-        ? classroomGroupsForPrincipal.filter(
-            (x) =>
-              x.id ===
-              (editAttendanceRegisterVisible
-                ? classroomgroupId
-                : primaryClassProgramme[0]?.classroomGroupId)
-          )
-        : classroomGroups.filter(
-            (x) =>
-              x.id ===
-              (editAttendanceRegisterVisible
-                ? classroomgroupId
-                : primaryClassProgramme[0]?.classroomGroupId)
-          );
-      setSelectedClassroomGroups(selectedGroups);
+    if (classroomGroups?.length) {
+      setSelectedClassroomGroups(selectedClassroomGroup);
 
       const _allLearners = allLearners.filter(
         (x) =>
@@ -118,9 +114,12 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       const uniqueLearners = _allLearners.filter((object, index, array) => {
         return (
           index ===
-          array.findIndex((newObject) => newObject.userId === object.userId)
+          array.findIndex(
+            (newObject) => newObject.childUserId === object.childUserId
+          )
         );
       });
+
       setHasChildren(uniqueLearners && uniqueLearners.length > 0);
     }
 
@@ -143,6 +142,17 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
+
+    const updatedAttendanceGroups =
+      attendanceGroups?.filter((attendanceGroup) =>
+        value.some(
+          (classroomGroup) =>
+            classroomGroup.value.id === attendanceGroup.cacheId
+        )
+      ) ?? [];
+
+    setAttendanceGroups(updatedAttendanceGroups);
+    updateAttendanceState(updatedAttendanceGroups);
   };
 
   const validateAttendanceList = (
@@ -169,20 +179,17 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         isRequired: isPrimaryList,
         list: updateList,
       });
-      setAttendanceGroups(
-        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
-      );
-      updateAttendanceState(
-        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
-      );
+
+      setAttendanceGroups(newAttendanceGroups);
+      updateAttendanceState(newAttendanceGroups);
     }
   };
 
   const handleFormSubmit = async () => {
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
-      classProgrammesUpdated,
+      classProgrammes,
       attendanceDate,
-      editAttendanceRegisterVisible ? classroomgroupId : ''
+      classroomGroupId
     );
 
     const currentGroup = classroomGroups.find(
@@ -198,11 +205,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     if (!currentAttendanceGroup) return;
 
     const currentProgramme = getPlaygroup(
-      classProgrammesUpdated,
+      classProgrammes,
       attendanceDate,
-      editAttendanceRegisterVisible && selectedClassroomGroups.length === 1
-        ? classroomgroupId
-        : ''
+      classroomGroupId
     );
 
     if (!currentProgramme) return;
@@ -275,85 +280,19 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     setAttendanceGroups([]);
     setSelectedClassroomGroups([]);
     updateAttendanceState([]);
-  };
-
-  const submitPrompt = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          textAlignment="center"
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Are you sure you want to submit your ${format(
-            attendanceDate,
-            'EEEE, d LLLL'
-          )} attendance register?`}
-          customDetailText={
-            <Typography
-              type="h4"
-              className="mb-7 mt-4"
-              text={`By submitting this register, you confirm that all the attendance information is accurate. `}
-              color="black"
-              align="center"
-            />
-          }
-          detailText={'Your signature will be added to the monthly register.'}
-          actionButtons={[
-            {
-              text: 'Yes, submit register',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                handleFormSubmit();
-                onCancel();
-              },
-              leadingIcon: 'SaveIcon',
-            },
-            {
-              text: 'No, continue editing',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => onCancel(),
-              leadingIcon: 'PencilIcon',
-            },
-          ]}
-        />
-      ),
-    });
+    showMessage({ message: 'Great job, register saved!', type: 'success' });
   };
 
   return (
     <div className={styles.wrapper}>
-      <div className={'bg-uiBg flex w-full flex-col items-start'}>
-        {classroomGroupsForPrincipal.length > 1 && (
-          <>
+      <>
+        {!!searchDropDownOptions?.length && (
+          <div className={'bg-uiBg flex w-full flex-col items-start pb-2 pt-1'}>
             <SearchDropDown<any>
               displayMenuOverlay
               menuItemClassName={styles.dropdownStyles}
               className={'mr-1 ml-2'}
-              options={
-                (classroomGroups && isPrincipal
-                  ? classroomGroupsForPrincipal.map((x) => {
-                      return {
-                        id: x.id ?? '',
-                        value: x,
-                        label: x.name,
-                        disabled: false,
-                      };
-                    })
-                  : classroomGroups.map((x) => {
-                      return {
-                        id: x.id ?? '',
-                        value: x,
-                        label: x.name,
-                        disabled: false,
-                      };
-                    })) || []
-              }
+              options={searchDropDownOptions}
               onChange={(value) => onFilterItemsChanges(value)}
               placeholder={'Class'}
               pluralSelectionText={'Classes'}
@@ -371,101 +310,86 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                 hint: filterInfo?.filterHint || '',
               }}
             />
-          </>
+          </div>
         )}
-      </div>
-      <div>
-        {hasChildren ? (
-          <>
-            <div>
-              <div className={styles.statusChipsWrapper(false)}>
+      </>
+      {hasChildren ? (
+        <>
+          <div>
+            <div className={styles.statusChipsWrapper(false)}>
+              <StatusChip
+                className={'mr-2 '}
+                padding={'px-3 py-3'}
+                textColour="successMain"
+                borderColour="white"
+                textType="h2"
+                backgroundColour="white"
+                text={`${presentChildrenCount} present`}
+              />
+              <div>
                 <StatusChip
-                  className={'mr-2 '}
+                  textColour="errorMain"
                   padding={'px-3 py-3'}
-                  textColour="successMain"
                   borderColour="white"
                   textType="h2"
                   backgroundColour="white"
-                  text={`${presentChildrenCount} present`}
+                  text={`${absentChildrenCount} absent`}
                 />
-                <div>
-                  <StatusChip
-                    textColour="errorMain"
-                    padding={'px-3 py-3'}
-                    borderColour="white"
-                    textType="h2"
-                    backgroundColour="white"
-                    text={`${absentChildrenCount} absent`}
+              </div>
+            </div>
+          </div>
+          <div className={styles.attendanceListsWrapper}>
+            {selectedClassroomGroups.map((selectedGroup, idx) => {
+              const isPrimaryClass = selectedGroup.id === classroomGroupId;
+              return (
+                <div
+                  key={`attencance_list_${idx}`}
+                  id={`attendanceList${selectedGroup.id}`}
+                >
+                  <ClassProgrammeAttendanceList
+                    key={`class_attencance_list_${idx}`}
+                    isPrimaryClass={isPrimaryClass}
+                    classroomGroup={selectedGroup}
+                    attendanceDate={attendanceDate}
+                    isMultipleClasses={selectedClassroomGroups.length > 1}
+                    onAttendanceUpdated={(state) => {
+                      validateAttendanceList(
+                        selectedGroup.id ?? '',
+                        state.listItems,
+                        // TODO: check this hardcoded value
+                        false
+                      );
+                    }}
+                    id={`attendance-list${selectedGroup.id}`}
                   />
                 </div>
-              </div>
-            </div>
-            <div className={styles.attendanceListsWrapper}>
-              {selectedClassroomGroups.map((selectedGroup, idx) => {
-                const isPrimaryList =
-                  selectedGroup.id ===
-                  primaryClassProgramme[0]?.classroomGroupId;
-                return (
-                  <div
-                    key={`attencance_list_${idx}`}
-                    id={`attendanceList${selectedGroup.id}`}
-                  >
-                    <ClassProgrammeAttendanceList
-                      key={`class_attencance_list_${idx}`}
-                      isPrimaryClass={isPrimaryList}
-                      classroomGroup={selectedGroup}
-                      attendanceDate={attendanceDate}
-                      isMultipleClasses={selectedClassroomGroups.length > 1}
-                      onAttendanceUpdated={(state) => {
-                        validateAttendanceList(
-                          editAttendanceRegisterVisible
-                            ? classroomgroupId ?? ''
-                            : selectedGroup.id ?? '',
-                          state.listItems,
-                          isPrimaryList
-                        );
-                      }}
-                      id={`attendance-list${selectedGroup.id}`}
-                    />
-                  </div>
-                );
-              })}
-
-              <div className={'px-4'}>
-                <Button
-                  id="gtm-add-attendance"
-                  onClick={submitPrompt}
-                  className="mt-4 w-full"
-                  size="small"
-                  color="primary"
-                  type="filled"
-                  // disabled={isButtonActive}
-                >
-                  {renderIcon('PaperAirplaneIcon', 'h-5 w-5 text-white')}
-                  <Typography
-                    type="h6"
-                    className="ml-2"
-                    text={
-                      submitText.length > 0
-                        ? submitText
-                        : 'Submit today’s register'
-                    }
-                    color="white"
-                  />
-                </Button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className={'mb-2 flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
-            <Alert
-              title={'There are no children in your class(es).'}
-              message={'Add children to your class(es) to capture attendance.'}
-              type={'info'}
-            />
+              );
+            })}
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <div className={'mb-2 flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
+          <Alert
+            title={'There are no children in your class(es).'}
+            message={'Add children to your class(es) to capture attendance.'}
+            type={'info'}
+          />
+        </div>
+      )}
+      {hasChildren && (
+        <Button
+          id="gtm-add-attendance"
+          onClick={handleFormSubmit}
+          className="mx-4 mt-auto mb-4 w-11/12"
+          size="small"
+          color="quatenary"
+          type="filled"
+          // disabled={isButtonActive}
+          icon="SaveIcon"
+          text="Save"
+          textColor="white"
+        />
+      )}
     </div>
   );
 };

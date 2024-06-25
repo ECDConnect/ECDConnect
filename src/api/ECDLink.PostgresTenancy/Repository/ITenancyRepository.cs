@@ -1,18 +1,20 @@
 ﻿using ECDLink.PostgresTenancy.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace ECDLink.PostgresTenancy.Repository
 {
-    public interface ITenancyRepository
+    public interface ITenancyRepository<T> where T : class
     {
-        IQueryable<TenantEntity> GetAll();
+        DbSet<Y> GetSet<Y>() where Y : class;
 
-        TenantEntity GetById(string id);
-        TenantEntity Insert(TenantEntity entity);
-        TenantEntity Update(TenantEntity entity);
+        IQueryable<T> GetAll();
 
-        void Delete(string id);
-        bool Exists(string id);
-        bool dbCreated();
+        //T GetById(string id);
+        T Insert(T entity);
+        T Update(T entity);
+
+        //void Delete(string id);
+        //bool Exists(string id);
     }
 }

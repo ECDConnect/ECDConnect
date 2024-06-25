@@ -21,7 +21,7 @@ import {
   GetHealthCareWorkersForClinicId,
 } from '@ecdlink/graphql';
 import { useLazyQuery, useMutation } from '@apollo/client';
-import { formatISO } from 'date-fns';
+import { formatISO, lastDayOfMonth, sub } from 'date-fns';
 import { XIcon } from '@heroicons/react/solid';
 
 export interface ClinicPanelCreateProps {
@@ -31,6 +31,7 @@ export interface ClinicPanelCreateProps {
   healthCareWorkersData?: HealthCareWorkerDto[];
   user?: UserDto;
   selectedTabId?: string;
+  isUntilDaySevenOfTheMonth?: boolean;
 }
 
 export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
@@ -57,6 +58,13 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
   const [positiveStory, setPositiveStory] = useState('');
   const [reportissue, setReportIssue] = useState('');
   const todaysDate = useMemo(() => new Date(), []);
+  const previousmonthDate = sub(todaysDate, {
+    months: 1,
+  });
+  const lastDayOfPreviousMonth = lastDayOfMonth(previousmonthDate);
+  const lastDayOfPreviousMonthFormatted = formatISO(lastDayOfPreviousMonth, {
+    representation: 'date',
+  });
   const todaysDateFormatted = formatISO(todaysDate, { representation: 'date' });
 
   const [
@@ -137,7 +145,9 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
   const handleSaveMeetingReport = useCallback(async () => {
     const inputModel: AddClinicMeetingInputModelInput = {
       clinicId: clinic,
-      meetingDate: todaysDateFormatted,
+      meetingDate: props?.isUntilDaySevenOfTheMonth
+        ? lastDayOfPreviousMonthFormatted
+        : todaysDateFormatted,
       teamLeadUserId: props?.user?.id,
       positiveStory: positiveStory,
       reportingIssue: reportissue,
@@ -164,6 +174,7 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
     addRepotMeetingMutation,
     clinic,
     inFieldSupportVisits,
+    lastDayOfPreviousMonth,
     optOutIds,
     participantsInFieldIds,
     positiveStory,
@@ -187,6 +198,7 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
             setClinic={setClinic}
             clinic={clinic}
             loadingHCWs={loadingHCWs}
+            selectedClinicId={props?.selectedTabId}
           />
         );
       case 1:
@@ -216,19 +228,20 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
         return null;
     }
   }, [
-    clinic,
+    step,
+    healthCareWorkers,
+    props?.user,
+    props?.selectedTabId,
+    optOutHcws,
     clinics,
     handleNextButton,
-    handleSaveMeetingReport,
-    healthCareWorkers,
-    inFieldSupportVisits,
-    optOutHcws,
-    participantsInFields,
-    positiveStory,
-    props?.user,
-    reportissue,
-    step,
+    clinic,
     loadingHCWs,
+    positiveStory,
+    reportissue,
+    handleSaveMeetingReport,
+    participantsInFields,
+    inFieldSupportVisits,
   ]);
 
   return (
@@ -236,7 +249,7 @@ export const AddTeamMeetingReport = (props: ClinicPanelCreateProps) => {
       {formIsDirty && (
         <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
           <button
-            className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+            className="focus:outline-none focus:ring-primary z-70 mt-2 mr-1 rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
             onClick={() => setDisplayFormIsDirty(true)}
           >
             <span className="sr-only">Close panel</span>

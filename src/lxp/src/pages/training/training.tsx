@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { BannerWrapper, LoadingSpinner } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { ContextService } from '@/services/ContextService';
 import { authSelectors } from '@store/auth';
 import { useSelector } from 'react-redux';
 
 import React from 'react';
 import { userSelectors } from '@store/user';
 import { PractitionerService } from '@/services/PractitionerService';
+import { useTenant } from '@/hooks/useTenant';
 
 export const Training: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -17,7 +17,7 @@ export const Training: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [moodleUserCreated, setMoodleUserCreated] = useState(false);
   const [loginPosted, setLoginPosted] = useState(false);
-  const [moodleUrl, setMoodleUrl] = useState('');
+  const tenant = useTenant();
 
   const formRef = useRef(null);
 
@@ -25,17 +25,10 @@ export const Training: React.FC = () => {
     if (userData?.id) {
       const data = await new PractitionerService(
         userAuth?.auth_token!
-      ).getMoodleSessionForUserId(userData?.id);
+      ).getMoodleSessionForCurrentUser();
       const bData = Boolean(data);
       setMoodleUserCreated(bData);
     }
-  };
-
-  const getContext = async () => {
-    const data = await new ContextService(
-      userAuth?.auth_token!
-    ).tenantContext();
-    setMoodleUrl(data?.moodleUrlVar);
   };
 
   useEffect(() => {
@@ -47,16 +40,17 @@ export const Training: React.FC = () => {
   }, [userData?.id]);
 
   useEffect(() => {
-    getContext();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (formRef && formRef.current && !!moodleUserCreated && !!moodleUrl) {
+    if (
+      formRef &&
+      formRef.current &&
+      !!moodleUserCreated &&
+      !!tenant &&
+      !!tenant.tenant?.moodleUrl
+    ) {
       (formRef.current as any).submit();
       setLoginPosted(true);
     }
-  }, [moodleUserCreated, moodleUrl]);
+  }, [moodleUserCreated, tenant.tenant]);
 
   return (
     <BannerWrapper
@@ -84,13 +78,13 @@ export const Training: React.FC = () => {
         name="moodle-training-login-form"
         id="moodle-training-login-form"
         target="moodle-training"
-        action={`${moodleUrl}/login/index.php?service=moodle_mobile_app`}
+        action={`${tenant.tenant?.moodleUrl}/login/index.php?service=moodle_mobile_app`}
       >
         <input
           type="text"
           name="username"
           title="username"
-          defaultValue={userData?.idNumber + '@ecdconnect.co.za'}
+          defaultValue={userData?.id}
         />
         <input
           type="password"

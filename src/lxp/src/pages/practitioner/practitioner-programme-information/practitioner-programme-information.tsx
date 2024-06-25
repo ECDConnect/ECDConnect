@@ -1,4 +1,10 @@
-import { ClassroomDto, useTheme } from '@ecdlink/core';
+import {
+  NOTIFICATION,
+  useDialog,
+  useNotifications,
+  useSnackbar,
+  useTheme,
+} from '@ecdlink/core';
 import {
   FileTypeEnum,
   PractitionerColleagues,
@@ -16,6 +22,7 @@ import {
   StackedList,
   Typography,
   Alert,
+  Card,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -44,9 +51,18 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { EditAddress } from './edit-address/edit-address';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { useTenant } from '@/hooks/useTenant';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
+  const dialog = useDialog();
+  const { showMessage } = useSnackbar();
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
+  const isTrialPeriod = useIsTrialPeriod();
 
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -56,9 +72,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const programmeType = useSelector(
-    classroomsSelectors.getClassroomProgrammeType()
-  );
+
   const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
   const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
     []
@@ -69,6 +83,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+
   const isPrincipal = practitioner?.isPrincipal === true;
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
     useDocuments();
@@ -125,7 +140,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       setProgrammeNameValue('name', classroom?.name || '');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom, classroomGroups, programmeType, otherColleaguesFiltered]);
+  }, [classroom, classroomGroups, otherColleaguesFiltered]);
 
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
@@ -160,7 +175,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const setClassImageBaseString = (imageBaseString?: string) => {
     const copy = Object.assign({}, classroom);
     if (copy) {
-      copy.classroomImageUrl = imageBaseString;
+      copy.imageUrl = imageBaseString || '';
     }
     setUpdatedClassroom(copy);
   };
@@ -185,6 +200,16 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     return practitionerColleagues;
   };
 
+  const showTrialPeriodCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+      },
+    });
+  };
+
   useEffect(() => {
     getPractitionerColleagues();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -193,20 +218,22 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   useEffect(() => {
     if (otherColleagues && user?.firstName) {
       const filteredColleagues = otherColleagues?.filter(
-        (item) => !item?.name.includes(user?.firstName)
+        (item) =>
+          !item?.name?.includes(user?.firstName) ||
+          item?.username?.includes(user?.userName)
       );
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
-        name: item?.name.split(' ')[0],
+        name: item?.name?.split(' ')[0] || item?.username,
         title: item?.title,
       }));
       setOtherColleaguesFiltered(firstNameFilteredColleagues);
     }
-  }, [otherColleagues, user?.firstName]);
+  }, [otherColleagues, user?.firstName, user?.userName]);
 
   const getStackedListItems = () => {
     const stackedActionList: ActionListDataItem[] = [
       {
-        title: 'Programme name',
+        title: 'Preschool name',
         subTitle:
           classroomForPractitionerAnyType?.id &&
           practitioner?.isPrincipal !== true &&
@@ -218,19 +245,30 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             : 'None',
         switchTextStyles: true,
         actionName:
-          practitioner?.isRegistered && practitioner?.isPrincipal !== true
+          practitioner?.isRegistered &&
+          practitioner?.isPrincipal !== true &&
+          !isTrialPeriod
             ? ''
+            : isTrialPeriod
+            ? 'Add'
             : 'Edit',
-        actionIcon: 'PencilIcon',
+        actionIcon: isTrialPeriod ? 'PlusIcon' : 'PencilIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
         onActionClick:
-          practitioner?.isRegistered !== null ||
-          practitioner?.isLeaving !== null
+          (practitioner?.isRegistered !== null ||
+            practitioner?.isLeaving !== null) &&
+          !isTrialPeriod
             ? classroomForPractitionerAnyType?.id &&
               practitioner?.isPrincipal !== true
               ? () => {}
               : () => setEditFieldVisible(true)
             : practitioner?.isPrincipal !== true
-            ? () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+            ? isTrialPeriod
+              ? () => showTrialPeriodCompleteProfileBlockingDialog()
+              : () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+            : isTrialPeriod
+            ? () => showTrialPeriodCompleteProfileBlockingDialog()
             : () => {
                 history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
                 return;
@@ -238,34 +276,41 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
     ];
 
-    if (
-      (practitioner?.isRegistered !== null ||
-        practitioner?.isLeaving !== null) &&
-      !missingProgramme
-    ) {
-      stackedActionList.push(
-        {
-          title: 'Location',
-          subTitle:
-            classroom?.siteAddress?.addressLine1 || classroom?.classSiteAddress,
-          switchTextStyles: true,
-          actionName: isPrincipal ? 'Add/Edit' : '',
-          actionIcon: 'PlusIcon',
-          onActionClick: () => setShowEditAddress(true),
-        },
-        {
-          title: 'Type of ECD service',
-          subTitle: programmeType?.description,
-          switchTextStyles: true,
-        }
-      );
+    if ((classroomGroups.length > 0 && !missingProgramme) || isTrialPeriod) {
+      stackedActionList.push({
+        title: 'Classes',
+        subTitle:
+          classroomGroups
+            ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+            .map((x) => x.name)
+            .join(', ') || 'None',
+        switchTextStyles: true,
+        actionName: isPrincipal
+          ? 'Edit'
+          : classroomGroups.length === 0 && isTrialPeriod
+          ? 'Add'
+          : 'View',
+        actionIcon: isPrincipal
+          ? 'PencilIcon'
+          : classroomGroups.length === 0 && isTrialPeriod
+          ? 'PlusIcon'
+          : 'EyeIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
+        onActionClick: isTrialPeriod
+          ? () => showTrialPeriodCompleteProfileBlockingDialog()
+          : () => {
+              history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+            },
+      });
     }
 
     if (
-      (practitioner?.isRegistered !== null ||
+      ((practitioner?.isRegistered !== null ||
         isPrincipal !== false ||
         practitioner?.isLeaving !== null) &&
-      !missingProgramme
+        !missingProgramme) ||
+      isTrialPeriod
     ) {
       if (isPrincipal) {
         practitionersList?.push(practitioner);
@@ -274,7 +319,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         title: 'Other practitioners on site',
         subTitle: isPrincipal
           ? practitionersList?.map((x) => x?.user?.firstName).join(', ')
-          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
+          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', ') ||
+            'None',
         switchTextStyles: true,
         actionName:
           practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0
@@ -282,52 +328,67 @@ export const PractitionerProgrammeInformation: React.FC = () => {
               ? 'Edit'
               : 'View'
             : 'Add',
-        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
-        onActionClick: () => {
-          history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
-            returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
-          });
-        },
+        actionIcon: isPrincipal
+          ? 'PencilIcon'
+          : isTrialPeriod
+          ? 'PlusIcon'
+          : 'EyeIcon',
+        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+        textColor: isTrialPeriod ? 'white' : undefined,
+        onActionClick: isTrialPeriod
+          ? () => showTrialPeriodCompleteProfileBlockingDialog()
+          : () => {
+              history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+                returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+              });
+            },
       });
     }
 
-    if (classroomGroups.length > 0 && !missingProgramme) {
+    if (
+      (practitioner?.isRegistered !== null ||
+        practitioner?.isLeaving !== null) &&
+      !missingProgramme
+    ) {
       stackedActionList.push({
-        title: 'Classes',
-        subTitle: classroomGroups
-          ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
-          .map((x) => x.name)
-          .join(', '),
+        title: 'Location',
+        subTitle: classroom?.siteAddress?.addressLine1,
         switchTextStyles: true,
-        actionName: isPrincipal ? 'Edit' : 'View',
-        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
-        },
+        actionName: isPrincipal ? 'Add/Edit' : '',
+        actionIcon: 'PlusIcon',
+        buttonColor:
+          isTrialPeriod || !classroom?.siteAddress?.addressLine1
+            ? 'quatenary'
+            : undefined,
+        textColor:
+          isTrialPeriod || !classroom?.siteAddress?.addressLine1
+            ? 'white'
+            : undefined,
+        onActionClick: () => setShowEditAddress(true),
       });
     }
 
-    if (!!classroom && (isPrincipal || practitioner?.isFundaAppAdmin)) {
-      const feeUpdatedThisYear =
-        !!classroom?.preschoolFeeAmountLastUpdateDate &&
-        new Date(classroom.preschoolFeeAmountLastUpdateDate).getFullYear() ===
-          new Date().getFullYear();
+    // if (!!classroom && (isPrincipal || practitioner?.isFundaAppAdmin)) {
+    //   const feeUpdatedThisYear =
+    //     !!classroom?.preschoolFeeAmountLastUpdateDate &&
+    //     new Date(classroom.preschoolFeeAmountLastUpdateDate).getFullYear() ===
+    //       new Date().getFullYear();
 
-      stackedActionList.push({
-        title: 'Monthly preschool fee',
-        subTitle: !!classroom.preschoolFeeAmount
-          ? `R ${classroom.preschoolFeeAmount}`
-          : feeUpdatedThisYear
-          ? 'No fee'
-          : 'Add the preschool fee',
-        switchTextStyles: true,
-        actionName: !!classroom.preschoolFeeAmount ? 'Edit' : 'Add',
-        actionIcon: !!classroom.preschoolFeeAmount ? 'PencilIcon' : 'PlusIcon',
-        onActionClick: () => {
-          history.push(ROUTES.CLASSROOM.UPDATE_FEE);
-        },
-      });
-    }
+    //   stackedActionList.push({
+    //     title: 'Monthly preschool fee',
+    //     subTitle: !!classroom.preschoolFeeAmount
+    //       ? `R ${classroom.preschoolFeeAmount}`
+    //       : feeUpdatedThisYear
+    //       ? 'No fee'
+    //       : 'Add the preschool fee',
+    //     switchTextStyles: true,
+    //     actionName: !!classroom.preschoolFeeAmount ? 'Edit' : 'Add',
+    //     actionIcon: !!classroom.preschoolFeeAmount ? 'PencilIcon' : 'PlusIcon',
+    //     onActionClick: () => {
+    //       history.push(ROUTES.CLASSROOM.UPDATE_FEE);
+    //     },
+    //   });
+    // }
 
     setListItems(stackedActionList);
   };
@@ -368,10 +429,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       >
         <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
-            dataUrl={classroomImage?.file || ''}
+            dataUrl={classroom?.imageUrl || ''}
             size={'header'}
             onPressed={displayProfilePicturePrompt}
             hasConsent={true}
+            isPreschoolImage={true}
+            canChangeImage={practitioner?.isPrincipal ? true : false}
           />
         </div>
 
@@ -380,7 +443,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             <Alert
               type="info"
               title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
-              list={[`Edit your profile to accept or disagree. `]}
+              list={[`Connect with your principal & manage your classes.`]}
               className={'mt-4 w-11/12'}
               button={
                 <Button
@@ -398,7 +461,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           </div>
         )}
 
-        {!isPrincipal && missingProgramme && (
+        {!isPrincipal && missingProgramme && !isOpenAccess && (
           <div className="flex justify-center">
             <Alert
               type="error"
@@ -427,6 +490,57 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           type={'ActionList'}
         ></StackedList>
       </BannerWrapper>
+      {practitioner?.isPrincipal && (
+        <div className="mb-28 flex w-full justify-center">
+          <Card
+            className={'bg-adminBackground mt-4	 w-11/12 rounded-xl shadow-lg'}
+          >
+            <div className={'mt-6 ml-4'}>
+              <Typography
+                type={'h1'}
+                color="textDark"
+                text={`Copy the code to invite practitioners`}
+                className={'mt-6 ml-4'}
+              />
+              <Typography
+                type={'body'}
+                color="textMid"
+                text={`You can invite new practitioners to your preschool by sharing the code: ${classroom?.preschoolCode}`}
+                className={'mt-4 ml-4'}
+              />
+              <div className="flex justify-center">
+                <Button
+                  type="filled"
+                  color="quatenary"
+                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                  onClick={() => {
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        classroom?.preschoolCode!
+                      );
+                    showMessage({
+                      message: 'Preschool code copied!',
+                      type: 'success',
+                    });
+                  }}
+                >
+                  {renderIcon(
+                    'ArrowCircleRightIcon',
+                    'w-5 h-5 color-white text-white mr-1'
+                  )}
+                  <Typography
+                    type="body"
+                    className="mr-4"
+                    color="white"
+                    text={'Copy preschool code'}
+                  ></Typography>
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
       <Dialog
         fullScreen
         visible={showEditAddress}
@@ -449,7 +563,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             <Typography
               type="body"
               color="textDark"
-              text={'Programme Name'}
+              text={'Preschool'}
               weight="bold"
             ></Typography>
             <div onClick={closeEditField}>
@@ -490,6 +604,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             onClose={displayProfilePicturePrompt}
             onAction={saveClassroomPicture}
             onDelete={classroomImage ? deleteClassroomPicture : undefined}
+            hideEmojiOption={true}
           ></PhotoPrompt>
         </div>
       </Dialog>

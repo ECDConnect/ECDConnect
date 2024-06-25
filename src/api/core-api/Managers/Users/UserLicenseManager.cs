@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             _notificationService = notificationService;
             _userManager = userManager;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
@@ -100,15 +100,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 };
 
                 return _licenseRepo.Insert(input);
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "DueDate",
-                    ReplacementValue = DateTime.Now.AddDays(21).ToShortDateString(),
-                });
+                //List<TagsReplacements> replacements = new List<TagsReplacements>();
+                //replacements.Add(new TagsReplacements()
+                //{
+                //    FindValue = "DueDate",
+                //    ReplacementValue = DateTime.Now.AddDays(21).ToShortDateString(),
+                //});
 
-                var userToSend =  _userManager.FindByIdAsync(userId.ToString()).Result;
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+                //var userToSend =  _userManager.FindByIdAsync(userId.ToString()).Result;
+                //_notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
 
             }
 

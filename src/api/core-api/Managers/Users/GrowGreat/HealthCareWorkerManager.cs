@@ -1,9 +1,7 @@
-﻿using DotLiquid.Util;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -101,16 +99,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // Check if team lead or admin
             var currentUser = _applicationUserManager.FindByIdAsync(_applicationUserId).Result;
             var isUserAdmin = _applicationUserManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR).Result;
+            var isSuperAdmin = _applicationUserManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR).Result;
 
             var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
 
             // If only a team lead, filter to only CHWs at relavant clinics
             var healthCareWorkersQuery = _healthCareWorkerRepo.GetAll()
                 .Where(x =>
-                    isUserAdmin
-                    || x.Clinic.TeamLeads.Any(y => y.TeamLead.UserId == _applicationUserId));
-
-            var hasFilters = false;
+                    isUserAdmin || isSuperAdmin
+                    || x.Clinic.TeamLeads.Where(y => y.IsActive).Any(y => y.TeamLead.UserId == _applicationUserId));
 
             // General search term
             if (!string.IsNullOrWhiteSpace(search))

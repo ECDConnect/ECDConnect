@@ -8,5 +8,7 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         public string Signup { get; set; }
         public string AdminSignup { get; set; }
         public string TeamLeadSignup { get; set; }
+        public string PreSchoolInvitation { get; set; }
+        public string PrincipalSignup { get; set; }
     }
 }

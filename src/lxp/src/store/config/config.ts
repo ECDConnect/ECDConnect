@@ -84,10 +84,6 @@ import { syncReducer } from '../sync';
 import { userPersistConfig, userReducer } from '../user/user';
 import type { RootState } from './types';
 import {
-  childrenForPractitionerPersistConfig,
-  childrenForPractitionerReducer,
-} from '../childrenForPractitioner/childrenForPractitioner';
-import {
   statementsPersistConfig,
   statementsReducer,
 } from '../statements/statements';
@@ -97,6 +93,7 @@ import { pqaPersistConfig, pqaReducer } from '../pqa/pqa';
 import { traineePersistConfig, traineerReducer } from '../trainee/trainee';
 import { pointsPersistConfig, pointsReducer } from '../points/points';
 import { clubPersistConfig, clubReducer } from '../club/club';
+import { tenantPersistConfig, tenantReducer } from '../tenant/tenant';
 
 const persistedReducers = {
   activityData: persistReducer(activityPersistConfig, activityReducer),
@@ -106,10 +103,6 @@ const persistedReducers = {
   calendar: persistReducer(calendarPersistConfig, calendarReducer),
   caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
   children: persistReducer(childrenPersistConfig, childrenReducer),
-  childrenForPractitioner: persistReducer(
-    childrenForPractitionerPersistConfig,
-    childrenForPractitionerReducer
-  ),
   classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
   classroomForCoachData: persistReducer(
     classroomsForCoachPersistConfig,
@@ -150,6 +143,7 @@ const persistedReducers = {
   staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
   storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
   sync: syncReducer,
+  tenant: persistReducer(tenantPersistConfig, tenantReducer),
   trainee: persistReducer(traineePersistConfig, traineerReducer),
   user: persistReducer(userPersistConfig, userReducer),
   community: persistReducer(communityPersistConfig, communityReducer),

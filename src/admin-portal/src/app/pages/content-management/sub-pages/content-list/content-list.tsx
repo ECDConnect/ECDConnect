@@ -30,8 +30,7 @@ import {
 } from '../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../components/ui-table/type';
 import { LanguageId } from '../../../../constants/language';
-import { GetNatalRecordsForType, GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../../../utils/constants';
+import { GetNatalRecordsForType } from '@ecdlink/graphql';
 import {
   Dropdown,
   SearchDropDown,
@@ -42,6 +41,7 @@ import {
 import { formatDate } from '../../../../utils/date-utils/date-utils';
 import { format } from 'date-fns';
 import ReactDatePicker from 'react-datepicker';
+import { useTenant } from '../../../../hooks/useTenant';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -84,6 +84,7 @@ export default function ContentList({
   const [typeFilter, setTypeFilter] = useState<SearchDropDownOption<string>[]>(
     []
   );
+  const tenant = useTenant();
 
   const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
     (item) => ({
@@ -289,10 +290,6 @@ export default function ContentList({
       });
     }
   }, [languageId, natalQuery, selectedTab]);
-
-  const { data: tenantData } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
@@ -555,9 +552,7 @@ export default function ContentList({
   }, []);
 
   const rows =
-    tenantData &&
-    tenantData.tenantContext &&
-    tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
+    tenant.isCHWConnect &&
     natalData &&
     natalData?.natalRecordsForType &&
     natalDataFiltered &&
@@ -590,9 +585,7 @@ export default function ContentList({
 
   const renderTables = useMemo(() => {
     if (
-      tenantData &&
-      tenantData.tenantContext &&
-      tenantData.tenantContext.applicationName === TenantContext.GrowGreat &&
+      tenant.isCHWConnect &&
       natalData &&
       natalData?.natalRecordsForType &&
       (selectedTab === 2 || selectedTab === 3)
@@ -652,7 +645,7 @@ export default function ContentList({
     searchValue,
     selectedTab,
     tableData,
-    tenantData,
+    tenant,
     viewSelectedRow,
   ]);
 

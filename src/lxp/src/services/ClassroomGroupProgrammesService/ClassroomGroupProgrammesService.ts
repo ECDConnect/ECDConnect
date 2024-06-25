@@ -8,31 +8,6 @@ class ClassroomGroupProgrammesService {
     this._accessToken = accessToken;
   }
 
-  async getClassroomProgrammes(): Promise<ClassProgrammeDto[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query {
-          GetAllClassProgramme {            
-            id
-            classroomGroupId
-            meetingDay
-            isFullDay
-            isActive           
-            programmeStartDate               
-          }
-        }`,
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Classroom Programmes Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.GetAllClassProgramme;
-  }
-
   async updateClassProgramme(
     id: string,
     input: ClassProgrammeInput

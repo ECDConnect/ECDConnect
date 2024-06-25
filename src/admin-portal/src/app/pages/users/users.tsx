@@ -2,74 +2,44 @@ import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { UserRoutes } from '../../routes/app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
-import { useQuery } from '@apollo/client/react/hooks/useQuery';
-import { GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
-import { useUserRole } from '../../hooks/useUserRole';
+import { useTenant } from '../../hooks/useTenant';
+import { UserTypes } from './user.types';
+import { pluralize } from '../pages.utils';
 
 export function Users() {
   const location = useLocation();
+  const tenant = useTenant();
 
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
-  const { isTeamLead, isAdministrator } = useUserRole();
+  const userTabs = [
+    {
+      name: 'All Roles',
+      href: ROUTES.USERS.ALL_ROLES,
+    },
+    {
+      name: UserTypes.Practitioners,
+      href: ROUTES.USERS.PRACTITIONERS,
+    },
+    {
+      name: UserTypes.Administrators,
+      href: ROUTES.USERS.ADMINS,
+    },
+  ];
 
   const getNavigationItems = () => {
-    if (
-      data &&
-      data.tenantContext &&
-      data.tenantContext.applicationName === TenantContext.GrowGreat
-    ) {
-      if (isTeamLead && !isAdministrator) {
-        return [
-          {
-            name: 'CHWs',
-            href: ROUTES.USERS.HEALTH_CARE_WORKERS,
-          },
-        ];
+    if (tenant.isWhiteLabel) {
+      if (tenant.modules && tenant.modules.coachRoleEnabled) {
+        userTabs.splice(2, 0, {
+          name: pluralize(tenant.modules.coachRoleName),
+          href: ROUTES.USERS.COACHES,
+        });
       }
-
-      return [
-        {
-          name: 'All Roles',
-          href: '/users/all-roles',
-        },
-        {
-          name: 'CHWs',
-          href: ROUTES.USERS.HEALTH_CARE_WORKERS,
-        },
-        {
-          name: 'Team Leads',
-          href: '/users/team-leads',
-        },
-        {
-          name: 'Administrators',
-          href: '/users/admins',
-        },
-      ];
-    } else {
-      return [
-        {
-          name: 'Administrators',
-          href: '/users/admins',
-        },
-        {
-          name: 'Practitioners',
-          href: '/users/practitioners',
-        },
-        {
-          name: 'Children',
-          href: '/users/children',
-        },
-      ];
     }
+    return userTabs;
   };
 
   const navigation = getNavigationItems();
-
-  const childrenRoutes = [ROUTES.VIEW_USERS];
+  const childrenRoutes = [ROUTES.USERS.VIEW_USER];
 
   const history = useHistory();
   useEffect(() => {
@@ -94,14 +64,11 @@ export function Users() {
   return (
     <div className="">
       <div className="flex bg-white">
-        {window.location.pathname !== '/users/view-user' &&
+        {window.location.pathname !== ROUTES.USERS.VIEW_USER &&
           navigation.map((item) => (
             <div
-              className={
-                data?.tenantContext.applicationName === TenantContext.GrowGreat
-                  ? 'w-3/12 '
-                  : 'w-full'
-              }
+              className={'w-full'}
+              key={`${item.name}-${new Date().getTime()}`}
             >
               <SubNavigationLink
                 key={`${item.name}-${new Date().getTime()}`}

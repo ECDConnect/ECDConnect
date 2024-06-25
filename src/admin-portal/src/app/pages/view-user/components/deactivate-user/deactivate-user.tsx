@@ -3,6 +3,7 @@ import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import {
   HealthCareWorkerDto,
   NOTIFICATION,
+  RoleDefaultNameEnum,
   UserDto,
   useDialog,
   useNotifications,
@@ -13,7 +14,6 @@ import {
   DeactivateTeamLead,
 } from '@ecdlink/graphql';
 import { useCallback } from 'react';
-import { GrowGreatRoles } from '../../../../utils/constants';
 import { useHistory } from 'react-router';
 
 interface DeactivateUserProps {
@@ -21,6 +21,7 @@ interface DeactivateUserProps {
   chwData: HealthCareWorkerDto;
   refetchUserData?: () => void;
   isTeamLead?: boolean;
+  isAdministrator?: boolean;
   teamLeadId?: string;
   hcwId?: string;
 }
@@ -32,6 +33,7 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
   isTeamLead,
   teamLeadId,
   hcwId,
+  isAdministrator,
 }) => {
   const dialog = useDialog();
   const { setNotification } = useNotifications();
@@ -98,9 +100,11 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title={`Deactivate ${
-            isTeamLead
-              ? GrowGreatRoles?.TeamLead
-              : GrowGreatRoles?.HealthCareWorker
+            isAdministrator
+              ? RoleDefaultNameEnum.Administrator
+              : isTeamLead
+              ? RoleDefaultNameEnum.TeamLead
+              : RoleDefaultNameEnum.CHW
           }`}
           message={`You are about to deactivate ${
             chwData?.user?.fullName ?? userData?.fullName

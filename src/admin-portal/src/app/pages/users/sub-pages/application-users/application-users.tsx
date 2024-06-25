@@ -1,27 +1,22 @@
-import { useLazyQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { UserDto } from '@ecdlink/core';
-import { UserList, SortEnumType } from '@ecdlink/graphql';
-import {
-  DropDownOption,
-  Dropdown,
-  SearchDropDown,
-  SearchDropDownOption,
-  Typography,
-} from '@ecdlink/ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import UiTable from '../../../../components/ui-table';
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  SearchIcon,
-} from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
-import { useHistory } from 'react-router';
-import { format } from 'date-fns';
-import DatePicker from 'react-datepicker';
+import { UserList } from '@ecdlink/graphql';
+import { SearchDropDownOption, Table } from '@ecdlink/ui';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Status } from '../application-admins/applications-admins.types';
+import { format } from 'date-fns';
+
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
+import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
+import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
+import { ColumnNames, UserSearch } from './application-user.types';
 
 export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
   Status?.ACTIVE,
@@ -33,118 +28,90 @@ export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
 }));
 
 export default function ApplicationUsers() {
+  const [tableData, setTableData] = useState<any[]>([]);
   const [searchValue, setSearchValue] = useState('');
-  const [showFilter, setShowFilter] = useState(false);
-  const [nameFilter, setNameFilter] = useState(false);
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
-  const [sortDescending, setSortDescending] = useState<boolean>(true);
-  const [selectedPage, setSelectedPage] = useState<number>(1);
-  const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
 
+  const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const tableRef = useRef<TableRefMethods>(null);
+
   const onChange = (dates) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
   };
 
-  const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const handleSetDateFilter = useCallback(() => {
+    setFilterDateAdded(!filterDateAdded);
+  }, [filterDateAdded]);
+
+  useEffect(() => {
+    if (endDate) {
+      handleSetDateFilter();
+    }
+  }, [endDate, handleSetDateFilter]);
+
   const [statusFilter, setStatusFilter] = useState<
     SearchDropDownOption<string>[]
   >([sortByClientStatusOptions[0]]);
 
-  const dateDropdownValue = useMemo(
-    () =>
-      startDate && endDate
-        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
-        : '',
-    [endDate, startDate]
+  const queryVariables = useMemo(
+    () => ({
+      search: '',
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
+      order: [
+        {
+          insertedDate: 'DESC',
+        },
+      ],
+    }),
+    []
   );
 
-  // TODO: When sort by gets implemented, this could be useful, else remove.
-  // type SortInput = { [Key in keyof ApplicationUserSortInput]?: ApplicationUserSortInput[Key] };
-  // const getSortInput = (sorts: SortInput[]) => {
-  //   return sorts.map(sort => sort);
-  // };
-  //
-  // const sortinput = getSortInput([
-  //   { insertedDate : sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
-  //   { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc }
-  // ]);
-  const history = useHistory();
-
-  const viewSelectedRow = (selectedRow: any) => {
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
-    );
-    history.push({
-      pathname: '/users/view-user',
-      state: {
-        component: 'administrators',
-        userId: selectedRow?.userId,
-      },
-    });
-  };
-
-  const getVariables = (
-    search: string,
-    sortDescending: boolean,
-    currentPage: number,
-    pageSize: number
-  ) => {
-    return {
-      search: search,
-      order: [
-        { insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
-        { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
-      ],
-      pagingInput: {
-        pageNumber: currentPage,
-        pageSize: pageSize,
-      },
-    };
-  };
-
-  const [getAllUsers, { data, loading }] = useLazyQuery(UserList, {
-    variables: getVariables(searchValue, sortDescending, selectedPage, 100),
+  const { data, loading } = useQuery(UserList, {
+    variables: queryVariables,
     fetchPolicy: 'network-only',
   });
 
-  useEffect(() => {
-    getAllUsers({
-      variables: getVariables(
-        '',
-        sortDescending,
-        selectedPage,
-        selectedPageSize
-      ),
-    });
-  }, [getAllUsers, selectedPage, selectedPageSize, sortDescending]);
+  const isLoading = loading;
+  const isFilterActive = !!startDate || !!endDate || !!statusFilter?.length;
 
-  const [tableData, setTableData] = useState<any[]>([]);
+  const noContentText = useMemo(() => {
+    if (isFilterActive) {
+      return 'No results found. Try changing the filters selected';
+    }
+
+    return 'No entries found';
+  }, [isFilterActive]);
+
+  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value || '');
+  }, 150);
+
+  const mapUserTableItem = (item: any) => {
+    return {
+      ...item,
+      displayColumnIdPassportEmail:
+        item?.user?.userName ?? item?.idNumber ?? item?.email ?? '',
+      userId: item.id,
+      fullName: `${item.fullName}`,
+      isActive: item.isActive,
+      idNumber: item.idNumber,
+      dateInvited: item.insertedDate,
+      connectUsage: item?.connectUsage,
+    };
+  };
 
   useEffect(() => {
     if (data && data.users) {
-      const copyItems = data.users;
-      const modifiedData = copyItems.map((obj) => {
-        const newUserData = {
-          ...obj,
-          displayColumnIdPassportEmail:
-            obj?.userName || obj?.idNumber || obj?.email || '',
-        };
-        const { __typename: _, roles, ...rest } = newUserData;
-        const modifiedRoles = roles.map((role) => {
-          const { __typename: __, ...roleRest } = role;
-          return roleRest;
-        });
-        return { ...rest, roles: modifiedRoles };
-      });
-
-      // const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
-
-      const filteredByDateData = modifiedData?.filter((d) => {
+      const copyItems = data.users.map((item: UserDto) =>
+        mapUserTableItem(item)
+      );
+      const filteredByDateData = copyItems?.filter((d) => {
         return (
           new Date(d?.insertedDate).getTime() >=
             new Date(startDate)?.getTime() &&
@@ -175,13 +142,13 @@ export default function ApplicationUsers() {
       if (statusFilter) {
         if (statusFilter?.length === 1) {
           if (statusFilter.some((e) => e.value === Status?.ACTIVE)) {
-            const filterByStatusActive = modifiedData?.filter(
+            const filterByStatusActive = copyItems?.filter(
               (item) => item?.isActive
             );
             setTableData(filterByStatusActive);
             return;
           } else {
-            const filterByStatusInactive = modifiedData?.filter(
+            const filterByStatusInactive = copyItems?.filter(
               (item) => !item?.isActive
             );
             setTableData(filterByStatusInactive);
@@ -189,215 +156,143 @@ export default function ApplicationUsers() {
           }
         }
       }
-      setTableData(modifiedData);
+      setTableData(copyItems);
     }
   }, [data, endDate, startDate, statusFilter]);
 
-  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value || '');
-  }, 150);
-
   const clearFilters = () => {
-    setNameFilter(false);
-    setSelectedRoleFilter('');
-    setEndDate(null);
-    setStartDate(null);
-    setFilterDateAdded(false);
     setStatusFilter([]);
+    setStartDate('');
+    setEndDate('');
   };
 
-  const handleSetDateFilter = useCallback(() => {
-    setFilterDateAdded(!filterDateAdded);
-  }, [filterDateAdded]);
+  const columns: Icolumn[] = [
+    {
+      field: 'displayColumnIdPassportEmail',
+      use: ColumnNames.IdPassportEmail,
+    },
+    {
+      field: 'fullName',
+      use: ColumnNames.Name,
+    },
+    {
+      field: 'roleComponent',
+      use: ColumnNames.Role,
+    },
+    {
+      field: 'insertedDateFormatted',
+      use: ColumnNames.Date,
+    },
+    {
+      field: 'isActiveComponent',
+      use: ColumnNames.Status,
+    },
+  ];
 
-  useEffect(() => {
-    if (endDate) {
-      handleSetDateFilter();
-    }
-  }, [endDate]);
-
-  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
-  const numberOfFilters = useMemo(
-    () => statusFilter?.length + hasDateFilter,
-    [statusFilter?.length, hasDateFilter]
-  );
-
-  const renderFilterButtonText = useMemo(() => {
-    if (numberOfFilters) {
-      if (numberOfFilters === 1) {
-        return `${numberOfFilters} Filter`;
-      }
-      return `${numberOfFilters} Filters`;
-    }
-
-    return 'Filter';
-  }, [numberOfFilters]);
-
-  if (tableData) {
-    return (
-      <div>
-        <div className="flex flex-col">
-          <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <div className="text-body w-full sm:flex  sm:justify-around">
-              <div className="text-body w-full flex-col sm:flex sm:justify-around">
-                <div className="relative w-auto">
-                  <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                    {searchValue === '' && (
-                      <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-                    )}
-                  </span>
-                  <input
-                    className="focus:outline-none sm:text-md block w-full rounded-md bg-white py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="      Search by name, ID or cellphone..."
-                    onChange={search}
-                  />
-                </div>
-                {showFilter && (
-                  <div className="my-4 flex w-full flex-row items-center ">
-                    {!filterDateAdded && (
-                      <div
-                        className="min-w mr-2 flex items-center gap-2"
-                        onClick={() => setFilterDateAdded(!filterDateAdded)}
-                      >
-                        <Dropdown
-                          fillType="filled"
-                          textColor={'textLight'}
-                          fillColor={endDate ? 'secondary' : 'white'}
-                          placeholder={dateDropdownValue || 'Date invited'}
-                          labelColor={endDate ? 'white' : 'textLight'}
-                          list={[]}
-                          onChange={(item) => {}}
-                          className="w-56 text-sm text-white"
-                        />
-                      </div>
-                    )}
-                    {filterDateAdded && (
-                      <DatePicker
-                        selected={startDate}
-                        onChange={onChange}
-                        startDate={startDate}
-                        endDate={endDate}
-                        selectsRange={true}
-                        inline
-                        shouldCloseOnSelect={true}
-                      />
-                    )}
-                    <div className="mr-2 flex items-center gap-2">
-                      <SearchDropDown<string>
-                        displayMenuOverlay={true}
-                        className={'mr-1'}
-                        menuItemClassName={
-                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                        }
-                        overlayTopOffset={'120'}
-                        options={sortByClientStatusOptions}
-                        selectedOptions={statusFilter}
-                        onChange={setStatusFilter}
-                        placeholder={'Status'}
-                        multiple={true}
-                        color={'secondary'}
-                        info={{
-                          name: `Status:`,
-                        }}
-                      />
-                    </div>
-
-                    <div className="flex w-3/12 justify-end">
-                      <div className="">
-                        <button
-                          onClick={clearFilters}
-                          type="button"
-                          className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
-                        >
-                          Clear All
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mx-2 w-3/12">
-                <span className="w-full text-lg font-medium leading-6 text-gray-900">
-                  <button
-                    onClick={() => setShowFilter(!showFilter)}
-                    id="dropdownHoverButton"
-                    className={`${
-                      numberOfFilters
-                        ? ' bg-secondary'
-                        : 'border-secondary border-2 bg-white'
-                    } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
-                      numberOfFilters ? 'text-white' : 'text-textMid'
-                    } hover:bg-gray-300 focus:ring-2`}
-                    type="button"
-                  >
-                    <div className="flex items-center gap-1">
-                      <Typography
-                        className="truncate"
-                        type="help"
-                        color={numberOfFilters ? 'white' : 'textLight'}
-                        text={renderFilterButtonText}
-                      />
-                      {!showFilter ? (
-                        <span>
-                          <ChevronDownIcon
-                            className={`h-6 w-6 ${
-                              numberOfFilters ? 'text-white' : 'text-textLight'
-                            }`}
-                          />
-                        </span>
-                      ) : (
-                        <span>
-                          <ChevronUpIcon
-                            className={`h-6 w-6 ${
-                              numberOfFilters ? 'text-white' : 'text-textLight'
-                            }`}
-                          />
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-                <UiTable
-                  columns={[
-                    {
-                      field: 'displayColumnIdPassportEmail',
-                      use: 'ID/Passport/Email',
-                    },
-                    { field: 'fullName', use: 'Name' },
-                    {
-                      field: 'roles',
-                      use: 'Role',
-                      type: 'array',
-                      displayProperty: 'name',
-                    },
-                    { field: 'insertedDate', use: 'date Invited' },
-                    { field: 'isActive', use: 'Status' },
-                  ]}
-                  rows={
-                    searchValue !== 'Search by title or content...'
-                      ? filterByValue(tableData, searchValue)
-                      : tableData
+  const rows: Irow[] =
+    (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
+      (item) => ({
+        ...item,
+        key: item?.id,
+        displayColumnIdPassportEmail:
+          item?.userName ?? item?.idNumber ?? item?.email ?? '-',
+        connectUsageComponent: item?.connectUsage
+          ? columnColor(item.connectUsage)
+          : '-',
+        insertedDateFormatted: item?.insertedDate
+          ? format(new Date(item?.insertedDate), 'dd/MM/yyyy')
+          : '-',
+        isActiveComponent: (
+          <p className={item?.isActive ? 'text-successMain' : 'text-errorMain'}>
+            {item?.isActive ? 'Active' : 'Inactive'}
+          </p>
+        ),
+        roleComponent: (
+          <div className="ml-0 flex cursor-pointer items-center">
+            {item?.roles?.map((item: any) => {
+              const chipColor = (role?: string) => {
+                switch (role) {
+                  case 'Administrator':
+                    return 'bg-secondary';
+                  case 'Practitioner':
+                    return 'bg-infoMain';
+                  case 'Principal':
+                    return 'bg-tertiary';
+                  default:
+                    return 'bg-primary';
+                }
+              };
+              return (
+                <div
+                  key={`role_` + item?.id}
+                  className={
+                    `${chipColor(item?.systemName)}` +
+                    ' m-1 rounded-full p-3 py-1 text-xs text-white'
                   }
-                  component={'administrators'}
-                  viewRow={viewSelectedRow}
-                  noBulkSelection
-                  isLoading={loading}
-                />
-              </div>
-            </div>
+                >
+                  {item?.systemName}
+                </div>
+              );
+            })}
           </div>
+        ),
+      })
+    ) ?? [];
+
+  return (
+    <>
+      <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
+        <div className="rounded-xl bg-white p-12">
+          <Table
+            watchMode
+            ref={tableRef}
+            rows={rows}
+            columns={columns}
+            onClearFilters={clearFilters}
+            noContentText={noContentText}
+            loading={{
+              isLoading: tableData === undefined || isLoading,
+              size: 'medium',
+              spinnerColor: 'adminPortalBg',
+              backgroundColor: 'secondary',
+            }}
+            search={{
+              placeholder: UserSearch.SearchBy,
+              onChange: search,
+            }}
+            filters={[
+              {
+                dateFormat: 'd MMM yyyy',
+                className: 'w-64 h-11 mt-1 border-2 border-transparent',
+                isFullWidth: false,
+                colour: !!startDate ? 'secondary' : 'adminPortalBg',
+                textColour: !!startDate ? 'white' : 'textMid',
+                placeholderText: ColumnNames.Date,
+                type: 'date-picker',
+                showChevronIcon: true,
+                chevronIconColour: !!startDate ? 'white' : 'primary',
+                hideCalendarIcon: true,
+                selected: startDate,
+                onChange,
+                startDate,
+                endDate,
+                selectsRange: true,
+                shouldCloseOnSelect: true,
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'w-11/12 mx-8 mt-1',
+                options: sortByClientStatusOptions,
+                selectedOptions: statusFilter,
+                onChange: setStatusFilter,
+                placeholder: 'Status',
+                multiple: true,
+                info: { name: 'Status:' },
+              },
+            ]}
+          />
         </div>
       </div>
-    );
-  } else {
-    return <ContentLoader />;
-  }
+    </>
+  );
 }

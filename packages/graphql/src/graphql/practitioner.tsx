@@ -96,6 +96,17 @@ export const GetPractitionerById = gql`
       attendedChildProgress
       usePhotoInReport
       isCompletedBusinessWalkThrough
+      isNewInClub
+      clubId
+      clubName
+      permissions {
+        id
+        isActive
+        permissionId
+        permissionName
+        permissionNormalizedName
+        permissionGrouping
+      }
     }
   }
 `;
@@ -147,6 +158,71 @@ export const practitionerExcelTemplateGenerator = gql`
       fileType
       fileName
       extension
+    }
+  }
+`;
+
+export const GetAllPortalPractitioners = gql`
+  query GetAllPortalPractitioners(
+    $search: String
+    $provinceSearch: [UUID!]
+    $connectUsageSearch: [String]
+    $practitionerTypeSearch: [String]
+    $pagingInput: PagedQueryInput
+    $order: [PortalPractitionerModelSortInput!]
+  ) {
+    allPortalPractitioners(
+      search: $search
+      provinceSearch: $provinceSearch
+      connectUsageSearch: $connectUsageSearch
+      practitionerTypeSearch: $practitionerTypeSearch
+      pagingInput: $pagingInput
+      order: $order
+    ) {
+      id
+      userId
+      isPrincipal
+      isFundaAppAdmin
+      isRegistered
+      user {
+        id
+        idNumber
+        insertedDate
+        lastSeen
+        firstName
+        surname
+        fullName
+        userName
+        phoneNumber
+        email
+        isActive
+        connectUsage
+        connectUsageColor
+      }
+    }
+  }
+`;
+
+export const PractitionersTemplate = gql`
+  query {
+    practitionerTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
+  }
+`;
+
+export const UploadPractitioners = gql`
+  mutation ($file: String) {
+    importPractitioners(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers
     }
   }
 `;

@@ -11,7 +11,7 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { yesOrNoOptions } from '../../../team-meetings-types';
 
 interface Step1Props {
@@ -24,6 +24,7 @@ interface Step1Props {
   setClinic?: (item: string) => void;
   clinic?: string;
   loadingHCWs?: boolean;
+  selectedClinicId?: string;
 }
 
 export const Step1: React.FC<Step1Props> = ({
@@ -35,6 +36,7 @@ export const Step1: React.FC<Step1Props> = ({
   setClinic,
   clinic,
   loadingHCWs,
+  selectedClinicId,
 }) => {
   const [optOutValue, setOptOutValue] = useState<boolean | boolean[]>(
     undefined
@@ -44,13 +46,22 @@ export const Step1: React.FC<Step1Props> = ({
     (optOutValue && optOutHcws?.length <= 0) ||
     optOutValue === undefined;
 
+  useEffect(() => {
+    if (selectedClinicId) {
+      setClinic(selectedClinicId);
+    }
+  }, [selectedClinicId, setClinic]);
+
   return (
     <div className="mt-4s">
       <div className=" w-full">
+        <Typography type="h4" color={'textMid'} text={'Choose a clinic'} />
+        <Typography
+          type="body"
+          color={'textMid'}
+          text={'Please select a clinic.'}
+        />
         <Dropdown
-          placeholder={'Click to select a clinic'}
-          label={'Choose a clinic *'}
-          subLabel="Please select a clinic."
           list={clinics}
           onChange={(item) => {
             setClinic(item);
@@ -59,6 +70,8 @@ export const Step1: React.FC<Step1Props> = ({
           labelColor="textMid"
           fillColor="adminPortalBg"
           selectedValue={clinic}
+          disabled={true}
+          className="opacity-40"
         />
       </div>
       <div className="my-4">

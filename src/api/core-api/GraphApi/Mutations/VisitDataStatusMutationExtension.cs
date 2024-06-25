@@ -23,6 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public bool UpdateVisitDataStatus(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
+            [Service] INotificationService notificationService,
             IGenericRepositoryFactory repoFactory,
             VisitDataStatusReferral input)
         {
@@ -52,6 +53,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     referral.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
                     visitDataStatusRepo.Update(referral);
                 }
+                //clear notifications
+                notificationService.DeleteAllNotificationsRelatedToEntity(entityToUpdate.Id);
             }
 
             // TODO: check which needs to be called based on the referrals made

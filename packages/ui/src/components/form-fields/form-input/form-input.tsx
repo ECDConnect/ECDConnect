@@ -10,6 +10,7 @@ import * as styles from './form-input.style';
 export type FormFieldType = 'text' | 'number' | 'password';
 export type TextInputType = 'input' | 'textarea' | 'date' | 'moneyInput';
 import CurrencyInput from 'react-currency-input-field';
+import Typography from '../../typography/typography';
 
 export interface FormFieldProps<T extends FieldValues>
   extends ComponentBaseProps {
@@ -36,6 +37,7 @@ export interface FormFieldProps<T extends FieldValues>
   register?: UseFormRegister<T>;
   maxLength?: number;
   min?: number;
+  readonly?: boolean;
   onKeyDown?: (event: React.KeyboardEvent<HTMLElement>) => void;
   suffixIconAction?: () => void;
   onChange?: (
@@ -67,9 +69,13 @@ export const FormInput = <T extends FieldValues>({
   startIconColor,
   color,
   isAdminPortalField,
+  readonly,
   ...restProps
 }: FormFieldProps<T>) => {
   const getInputStyle = () => {
+    if (readonly) {
+      return styles.readonlyInputStyle;
+    }
     if (error) {
       return styles.errorStyle;
     }
@@ -96,7 +102,7 @@ export const FormInput = <T extends FieldValues>({
             <textarea
               autoComplete="new-off"
               placeholder={placeholder}
-              disabled={disabled}
+              disabled={disabled || readonly}
               maxLength={maxLength}
               rows={4}
               {...register(nameProp)}
@@ -114,7 +120,7 @@ export const FormInput = <T extends FieldValues>({
             <textarea
               autoComplete="new-off"
               placeholder={placeholder}
-              disabled={disabled}
+              disabled={disabled || readonly}
               rows={4}
               maxLength={maxLength}
               className={getInputStyle()}
@@ -136,19 +142,24 @@ export const FormInput = <T extends FieldValues>({
               step={10}
               autoComplete="new-off"
               placeholder={placeholder}
-              disabled={disabled}
+              disabled={disabled || readonly}
               type={type}
               maxLength={maxLength}
               disableAbbreviations={true}
               {...register(nameProp)}
               className={
-                error ? styles.errorStyle : styles.defaultMoneyInputStyle
+                disabled
+                  ? styles.disabledMoneyInputStyle
+                  : error
+                  ? styles.errorStyle
+                  : styles.defaultMoneyInputStyle
               }
               style={
                 prefixIcon || startIcon
                   ? { paddingRight: 38 }
                   : { paddingRight: 16 }
               }
+              value={value}
               {...restProps}
             />
           );
@@ -160,13 +171,17 @@ export const FormInput = <T extends FieldValues>({
               step={10}
               autoComplete="new-off"
               placeholder={placeholder}
-              disabled={disabled}
+              disabled={disabled || readonly}
               type={type}
               maxLength={maxLength}
               value={value ?? ''}
               disableAbbreviations={true}
               className={
-                error ? styles.errorStyle : styles.defaultMoneyInputStyle
+                disabled
+                  ? styles.disabledMoneyInputStyle
+                  : error
+                  ? styles.errorStyle
+                  : styles.defaultMoneyInputStyle
               }
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
@@ -183,7 +198,7 @@ export const FormInput = <T extends FieldValues>({
             <input
               autoComplete="new-off"
               placeholder={placeholder}
-              disabled={disabled}
+              disabled={disabled || readonly}
               type={type}
               maxLength={maxLength}
               {...register(nameProp)}
@@ -203,7 +218,7 @@ export const FormInput = <T extends FieldValues>({
             <input
               autoComplete="new-off"
               placeholder={placeholder}
-              disabled={disabled}
+              disabled={disabled || readonly}
               type={type}
               maxLength={maxLength}
               className={classNames(

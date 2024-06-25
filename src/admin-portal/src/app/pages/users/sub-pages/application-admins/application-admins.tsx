@@ -1,6 +1,11 @@
 import { useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
-import { PermissionEnum, usePanel, UserDto } from '@ecdlink/core';
+import {
+  PermissionEnum,
+  RoleSystemNameEnum,
+  usePanel,
+  UserDto,
+} from '@ecdlink/core';
 import { UserList } from '@ecdlink/graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -24,18 +29,6 @@ import { format } from 'date-fns';
 import { AdminTypes, Status } from './applications-admins.types';
 import UiTable from './components/ui-table';
 import { filterByValue } from '../../../../utils/string-utils/string-utils';
-import { GrowGreatRoles } from '../../../../utils/constants';
-
-export const sortByTypeOptions: SearchDropDownOption<string>[] = [
-  AdminTypes?.ContentManager,
-  AdminTypes?.SuperAdmin,
-  AdminTypes?.DesignManager,
-  AdminTypes?.Administrator,
-].map((item) => ({
-  id: item,
-  label: item,
-  value: item,
-}));
 
 export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
   Status?.ACTIVE,
@@ -52,7 +45,7 @@ export default function ApplicationAdmins() {
 
   const { hasPermission, user } = useUser();
   const isSuperAdmin = user?.roles?.some(
-    (role: any) => role.name === AdminTypes.SuperAdmin
+    (role: any) => role.systemName === AdminTypes.SuperAdmin
   );
 
   const [searchValue, setSearchValue] = useState('');
@@ -236,8 +229,9 @@ export default function ApplicationAdmins() {
 
   const viewSelectedRow = (selectedRow: any) => {
     const role = selectedRow?.roles?.filter(
-      (item) => item?.name !== GrowGreatRoles.HealthCareWorker
+      (item) => item?.name !== RoleSystemNameEnum.CHW
     );
+
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -246,7 +240,7 @@ export default function ApplicationAdmins() {
       pathname: '/users/view-user',
       state: {
         component: role?.[0]?.name,
-        userId: selectedRow?.userId,
+        userId: selectedRow?.id,
       },
     });
   };
@@ -299,26 +293,7 @@ export default function ApplicationAdmins() {
                   />
                 </div>
                 {showFilter && (
-                  <div className="mt-4 flex flex-row items-center justify-between sm:mt-6">
-                    <div className="mr-2 flex items-center gap-2">
-                      <SearchDropDown<string>
-                        displayMenuOverlay={true}
-                        className={'mr-1 rounded-lg'}
-                        menuItemClassName={
-                          'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                        }
-                        overlayTopOffset={'120'}
-                        options={sortByTypeOptions}
-                        selectedOptions={types}
-                        onChange={setTypes}
-                        placeholder={'Admin type'}
-                        multiple={true}
-                        color={'secondary'}
-                        info={{
-                          name: `Admin type:`,
-                        }}
-                      />
-                    </div>
+                  <div className="items-left mt-4 flex flex-row sm:mt-6">
                     {!filterDateAdded && (
                       <div
                         className="min-w mr-2 flex items-center gap-2"
@@ -336,7 +311,6 @@ export default function ApplicationAdmins() {
                         />
                       </div>
                     )}
-
                     {filterDateAdded && (
                       <ReactDatePicker
                         selected={startDate}
@@ -349,7 +323,7 @@ export default function ApplicationAdmins() {
                       />
                     )}
 
-                    <div className="mr-2 flex items-center gap-2">
+                    <div className="items-left mr-2 flex gap-2">
                       <SearchDropDown<string>
                         displayMenuOverlay={true}
                         className={'mr-1'}
@@ -450,7 +424,6 @@ export default function ApplicationAdmins() {
                       use: 'Email/Username/Id',
                     },
                     { field: 'fullName', use: 'name' },
-                    { field: 'roles', use: 'Admin type' },
                     { field: 'insertedDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}

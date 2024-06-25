@@ -11,7 +11,7 @@ import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
 import { default as React, useEffect, useState } from 'react';
-import ReactGA from 'react-ga';
+import ReactGA from 'react-ga4';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'react-redux';
 import { AuthRoutes, PublicRoutes } from '@routes';
@@ -19,7 +19,7 @@ import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
-import { settingActions, settingSelectors } from './store/settings';
+import { settingActions } from './store/settings';
 // import BackgroundSync from './components/background-sync/background-sync';
 import { differenceInHours, getTime, isSameDay } from 'date-fns';
 import { syncThunkActions } from './store/sync';
@@ -27,25 +27,36 @@ import { useAppDispatch } from './store';
 import { practitionerSelectors } from './store/practitioner';
 import { AppErrorHandler } from '@ecdlink/core';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
+import { useTenant } from './hooks/useTenant';
+import { Helmet } from 'react-helmet';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
 }
 
 const App: React.FC = () => {
+  const tenant = useTenant();
   const dialog = useDialog();
   const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
-  const applicationSettings = useSelector(
-    settingSelectors.getApplicationSettings
-  );
   const userLocalxpiration = JSON.parse(
     localStorage?.getItem('userLocalxpiration')!
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const [expirationTime, setExpirationTime] = useState<number>();
+
+  const getTitle = () => {
+    const env = process.env.REACT_APP_RUNENVIRONMENT || '';
+    var title = env;
+    if (title !== '') title += ' ';
+    title +=
+      (tenant.isWhiteLabel
+        ? `${tenant.tenant?.applicationName} - ECD Connect`
+        : tenant.tenant?.applicationName) || 'ECD Connect';
+    return title;
+  };
 
   useEffect(() => {
     const intervalId = setInterval(updateTime, 3600000);
@@ -61,22 +72,41 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (applicationSettings && applicationSettings.Google) {
-      if (applicationSettings.Google.GoogleAnalyticsTag) {
-        ReactGA.initialize(applicationSettings.Google.GoogleAnalyticsTag);
-        ReactGA.pageview(window.location.pathname + window.location.search);
+    if (!!tenant && !!tenant.tenant) {
+      if (!!tenant.tenant.googleAnalyticsTag) {
+        ReactGA.initialize([
+          {
+            trackingId: tenant.tenant.googleAnalyticsTag,
+            gaOptions: {
+              debug_mode:
+                window.location.host.indexOf('localhost') > 0 ? true : false,
+            },
+            gtagOptions: {
+              debug_mode:
+                window.location.host.indexOf('localhost') > 0 ? true : false,
+            },
+          },
+          // {
+          //   trackingId: "your second GA measurement id",
+          // },
+        ]);
+
+        ReactGA.send({
+          hitType: 'pageview',
+          page: window.location.pathname + window.location.search,
+        });
       }
 
-      if (applicationSettings.Google.GoogleTagManager) {
+      if (!!tenant.tenant.googleTagManager) {
         const tagManagerArgs = {
-          gtmId: applicationSettings.Google.GoogleTagManager,
+          gtmId: tenant.tenant.googleTagManager,
         };
 
         TagManager.initialize(tagManagerArgs);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applicationSettings]);
+  }, [tenant]);
 
   useEffect(() => {
     if (userExpired) {
@@ -92,29 +122,6 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userExpired]);
-
-  useEffect(() => {
-    if (
-      expirationTime &&
-      userLocalxpiration < expirationTime &&
-      user?.auth_token
-    ) {
-      dialog({
-        position: DialogPosition.Middle,
-        blocking: true,
-        render: (onSubmit, onClose) => {
-          return (
-            <LoginModal
-              loginSuccessful={onSubmit}
-              updateTime={updateTime}
-              isLocalExpiration={true}
-            />
-          );
-        },
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expirationTime, userLocalxpiration, user?.auth_token]);
 
   const onFocus = () => {
     const focusItem = JSON.parse(localStorage?.getItem('appFocus')!);
@@ -183,6 +190,9 @@ const App: React.FC = () => {
 
   return (
     <IonApp className="m-auto max-w-4xl bg-white">
+      <Helmet>
+        <title>{getTitle()}</title>
+      </Helmet>
       <IonReactRouter>
         <AppErrorHandler>
           <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>

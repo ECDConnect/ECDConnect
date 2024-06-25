@@ -3,5 +3,6 @@ import { CareGiverExtraInformationFormModel } from '@schemas/child/child-registr
 
 export interface CareGiverExtraInformationFormProps
   extends FormComponentProps<CareGiverExtraInformationFormModel> {
+  caregiverFirstName?: string;
   careGiverExtraInformation?: CareGiverExtraInformationFormModel;
 }

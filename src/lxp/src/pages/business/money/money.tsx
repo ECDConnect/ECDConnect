@@ -13,7 +13,7 @@ import { SubmitIncomeStatements } from './submit-income-statements/submit-income
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@/store';
-import { statementsSelectors, statementsThunkActions } from '@store/statements';
+import { statementsThunkActions } from '@store/statements';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   getStorageItem,
@@ -24,7 +24,6 @@ import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.
 import { pointsSelectors } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useAppContext } from '@/walkthrougContext';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const Money: React.FC = () => {
   const history = useHistory();
@@ -33,72 +32,31 @@ export const Money: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
 
-  const unsyncedIncome = useSelector(
-    statementsSelectors.getUnsyncedIncomeItems
-  );
-  const unsyncedExpenses = useSelector(
-    statementsSelectors.getUnsyncedExpenseItems
-  );
-
-  const { isLoading: isSubmittingStatement } = useThunkFetchCall(
-    'statements',
-    'submitIncomeStatement'
-  );
-
   useEffect(() => {
-    if (isOnline) {
-      unsyncedIncome.forEach(async (item) => {
-        appDispatch(
-          statementsThunkActions.addIncomeItem({
-            input: item,
-            firstAttempt: false,
+    const syncStatements = async () => {
+      if (userAuth?.auth_token && isOnline) {
+        setIsLoading(true);
+
+        // Push any updates
+        await appDispatch(
+          statementsThunkActions.upsertIncomeStatements({})
+        ).unwrap();
+
+        // Fetch updates
+        const startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        await appDispatch(
+          statementsThunkActions.getIncomeStatements({
+            startDate: startDate,
+            endDate: undefined,
           })
-        );
-      });
-    }
-  }, [appDispatch, isOnline, unsyncedIncome]);
+        ).unwrap();
+        setIsLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    if (isOnline) {
-      unsyncedExpenses.forEach(async (item) => {
-        appDispatch(
-          statementsThunkActions.addExpenseItem({
-            input: item,
-            firstAttempt: false,
-          })
-        );
-      });
-    }
-  }, [appDispatch, isOnline, unsyncedExpenses]);
-
-  const fetchStatements = useCallback(async () => {
-    if (userAuth?.auth_token && isOnline) {
-      setIsLoading(true);
-      const startDate = new Date();
-      startDate.setFullYear(startDate.getFullYear() - 1);
-      await appDispatch(
-        statementsThunkActions.getIncomeStatements({
-          startDate: startDate,
-          endDate: undefined,
-        })
-      ).unwrap();
-
-      await appDispatch(
-        statementsThunkActions.getUnsubmittedIncomeItems({})
-      ).unwrap();
-
-      await appDispatch(
-        statementsThunkActions.getUnsubmittedExpenseItems({})
-      ).unwrap();
-
-      setIsLoading(false);
-    }
-  }, [appDispatch, setIsLoading, userAuth, isOnline]);
-
-  useEffect(() => {
-    fetchStatements();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchStatements]);
+    syncStatements();
+  }, []);
 
   // Display update fees logic
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -145,7 +103,7 @@ export const Money: React.FC = () => {
 
   return (
     <>
-      {(isLoading || isSubmittingStatement) && (
+      {isLoading && (
         <LoadingSpinner
           size="big"
           spinnerColor="white"
@@ -153,7 +111,7 @@ export const Money: React.FC = () => {
           className="mb-7"
         />
       )}
-      {!isLoading && !isSubmittingStatement && (
+      {!isLoading && (
         <>
           <SubmitIncomeStatements />
           <Dialog

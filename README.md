@@ -150,7 +150,7 @@ hosted on Azure infrastructure.
 
 ### Run the Frontend PWA
 
-- `yarn fe` to run the Front End
+- `yarn app` to run the Front End
 
 ### Run the Admin Portal
 

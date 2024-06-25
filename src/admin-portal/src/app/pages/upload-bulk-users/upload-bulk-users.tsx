@@ -1,10 +1,9 @@
 import { useLazyQuery, useMutation } from '@apollo/client';
 import {
-  HealthCareWorkerTemplate,
-  TeamLeadsTemplate,
-  UploadHealthCareWorkers,
-  UploadTeamLeads,
-  importAll,
+  CoachesTemplate,
+  PractitionersTemplate,
+  UploadCoaches,
+  UploadPractitioners,
 } from '@ecdlink/graphql';
 import { useForm } from 'react-hook-form';
 import FormFileInput from '../../../../../admin-portal/src/app/components/form-file-input/form-file-input';
@@ -13,53 +12,56 @@ import { b64toBlob, useNotifications, NOTIFICATION } from '@ecdlink/core';
 import {
   ArrowLeftIcon,
   DownloadIcon,
-  LockClosedIcon,
   PaperAirplaneIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 import { Alert, Button } from '@ecdlink/ui';
+import { useTenant } from '../../hooks/useTenant';
+import { pluralize } from '../pages.utils';
 
 const acceptedFormats = ['xls', 'xlsx'];
 const allowedFileSize = 13631488;
 
 export default function UploadBulkUser(props: any) {
+  const tenant = useTenant();
   const { setValue, handleSubmit } = useForm();
   const history = useHistory();
   const { setNotification } = useNotifications();
-  // props.location.state?.component === 'team-leads'
+  // props.location.state?.component === 'practitioners'
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
   const [docErrors, setDocErrors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
-    HealthCareWorkerTemplate,
-    {
-      fetchPolicy: 'cache-and-network',
-    }
-  );
-
-  const [getTeamLeadsExcelTemplateGenerator, { data: teamLeadsTemplateData }] =
-    useLazyQuery(TeamLeadsTemplate, {
+  const [getCoachesExcelTemplateGenerator, { data: coachesTemplateData }] =
+    useLazyQuery(CoachesTemplate, {
       fetchPolicy: 'cache-and-network',
     });
 
-  const [importTeamLeads] = useMutation(UploadTeamLeads);
-  const [importPractitioners, loading] = useMutation(UploadHealthCareWorkers);
+  const [
+    getPractitionerExcelTemplateGenerator,
+    { data: practitionersTemplateData },
+  ] = useLazyQuery(PractitionersTemplate, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const [importPractitioners] = useMutation(UploadPractitioners);
+  const [importCoaches, loading] = useMutation(UploadCoaches);
 
   const onSubmit = async (values: any) => {
     const model = { ...values };
 
     if (model.templateFile?.file) {
-      if (props.location.state?.component === 'team-leads') {
+      if (props.location.state?.component === 'practitioners') {
         setIsLoading(true);
-        await importTeamLeads({
+        await importPractitioners({
           variables: {
             file: model.templateFile?.file,
           },
         }).then((res) => {
-          if (res.data?.importTeamLeads.validationErrors.length !== 0) {
-            setDocErrors(res.data?.importTeamLeads.validationErrors);
-            const errors = res.data?.importTeamLeads?.validationErrors?.errors;
+          if (res.data?.importPractitioners.validationErrors.length !== 0) {
+            setDocErrors(res.data?.importPractitioners.validationErrors);
+            const errors =
+              res.data?.importPractitioners?.validationErrors?.errors;
             if (errors?.length) {
               setNotification({
                 title: `${errors[0]}`,
@@ -69,8 +71,8 @@ export default function UploadBulkUser(props: any) {
           } else {
             setNotification({
               title: `Successfully Uploaded ${
-                res.data?.importTeamLeads?.createdUsers?.length ?? 0
-              } team leads!`,
+                res.data?.importPractitioners?.createdUsers?.length ?? 0
+              } practitioners!`,
               variant: NOTIFICATION.SUCCESS,
             });
           }
@@ -80,17 +82,14 @@ export default function UploadBulkUser(props: any) {
       } else {
         // if is not team leads, upload to chw
         setIsLoading(true);
-        await importPractitioners({
+        await importCoaches({
           variables: {
             file: model.templateFile?.file,
           },
         })
           .then((res) => {
-            if (
-              res?.data?.importHealthCareWorkers?.validationErrors?.length > 0
-            ) {
-              const errorList =
-                res.data.importHealthCareWorkers.validationErrors;
+            if (res?.data?.importCoaches?.validationErrors?.length > 0) {
+              const errorList = res.data.importCoaches.validationErrors;
 
               setNotification({
                 title: `Please see error details below. (${errorList.length} errors)`,
@@ -100,9 +99,10 @@ export default function UploadBulkUser(props: any) {
               setIsLoading(false);
             } else {
               setNotification({
-                title: `Successfully Uploaded ${
-                  res.data?.importHealthCareWorkers?.createdUsers?.length ?? 0
-                } CHWs!`,
+                title:
+                  `Successfully Uploaded ${
+                    res.data?.importCoaches?.createdUsers?.length ?? 0
+                  } ` + pluralize(tenant.modules.coachRoleName),
                 variant: NOTIFICATION.SUCCESS,
               });
               setIsLoading(false);
@@ -113,22 +113,23 @@ export default function UploadBulkUser(props: any) {
     }
   };
 
+  // Practitioners
   useEffect(() => {
     if (
-      teamLeadsTemplateData &&
-      teamLeadsTemplateData.teamLeadTemplateGenerator &&
+      practitionersTemplateData &&
+      practitionersTemplateData.practitionerTemplateGenerator &&
       !templateDownloaded &&
-      props.location.state?.component === 'team-leads'
+      props.location.state?.component === 'practitioners'
     ) {
       const b64Data =
-        teamLeadsTemplateData.teamLeadTemplateGenerator.base64File;
+        practitionersTemplateData.practitionerTemplateGenerator.base64File;
       const contentType =
-        teamLeadsTemplateData.teamLeadTemplateGenerator.fileType;
-      const fileName = teamLeadsTemplateData.teamLeadTemplateGenerator.fileName;
+        practitionersTemplateData.practitionerTemplateGenerator.fileType;
+      const fileName =
+        practitionersTemplateData.practitionerTemplateGenerator.fileName;
       const extension =
-        teamLeadsTemplateData.teamLeadTemplateGenerator.extension;
+        practitionersTemplateData.practitionerTemplateGenerator.extension;
       const blob = b64toBlob(b64Data, contentType);
-
       const link = document.createElement('a');
 
       if (link.download !== undefined) {
@@ -143,22 +144,24 @@ export default function UploadBulkUser(props: any) {
 
       setTemplateDownloaded(true);
     }
-  }, [teamLeadsTemplateData, templateDownloaded]);
+  }, [
+    practitionersTemplateData,
+    props.location.state?.component,
+    templateDownloaded,
+  ]);
 
+  // Coaches
   useEffect(() => {
     if (
-      templateData &&
-      templateData.healthCareWorkerTemplateGenerator &&
+      coachesTemplateData &&
+      coachesTemplateData.coachTemplateGenerator &&
       !templateDownloaded
     ) {
-      const b64Data = templateData.healthCareWorkerTemplateGenerator.base64File;
-      const contentType =
-        templateData.healthCareWorkerTemplateGenerator.fileType;
-      const fileName = templateData.healthCareWorkerTemplateGenerator.fileName;
-      const extension =
-        templateData.healthCareWorkerTemplateGenerator.extension;
+      const b64Data = coachesTemplateData.coachTemplateGenerator.base64File;
+      const contentType = coachesTemplateData.coachTemplateGenerator.fileType;
+      const fileName = coachesTemplateData.coachTemplateGenerator.fileName;
+      const extension = coachesTemplateData.coachTemplateGenerator.extension;
       const blob = b64toBlob(b64Data, contentType);
-
       const link = document.createElement('a');
 
       if (link.download !== undefined) {
@@ -173,14 +176,14 @@ export default function UploadBulkUser(props: any) {
 
       setTemplateDownloaded(true);
     }
-  }, [templateData, templateDownloaded]);
+  }, [coachesTemplateData, templateDownloaded]);
 
   const downloadContentTypeTemplate = async () => {
     setTemplateDownloaded(false);
-    if (props.location.state?.component === 'team-leads') {
-      await getTeamLeadsExcelTemplateGenerator();
+    if (props.location.state?.component === 'practitioners') {
+      await getPractitionerExcelTemplateGenerator();
     } else {
-      await getExcelTemplateGenerator();
+      await getCoachesExcelTemplateGenerator();
     }
   };
 
@@ -203,9 +206,9 @@ export default function UploadBulkUser(props: any) {
         <div className="flex flex-col pt-10">
           <h1 className="text-xl">
             Step 1: Download the{' '}
-            {props.location.state?.component === 'team-leads'
-              ? 'Team Leads'
-              : 'CHWs'}{' '}
+            {props.location.state?.component === 'practitioners'
+              ? 'Practitioners'
+              : pluralize(tenant.modules.coachRoleName)}{' '}
             template
           </h1>
 

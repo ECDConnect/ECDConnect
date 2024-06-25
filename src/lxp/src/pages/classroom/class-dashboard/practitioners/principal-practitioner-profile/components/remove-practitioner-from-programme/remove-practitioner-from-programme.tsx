@@ -1,5 +1,4 @@
 import {
-  ClassroomGroupDto,
   ReasonForLeavingDto,
   ReasonsForPractitionerLeavingProgramme,
   useSnackbar,
@@ -46,6 +45,8 @@ import {
 import { notificationsSelectors } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { PractitionerNotRegistered } from '../../practitioner-not-registered/practitioner-not-registered';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { TabsItemForPrincipal } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps
@@ -161,7 +162,10 @@ export const RemovePractitionerFromProgramme: React.FC<
       (!_list || _list.length === 0)
     ) {
       _list?.push({
-        label: `${principalPractitioner?.user?.firstName} ${principalPractitioner?.user?.surname}`,
+        label: `${principalPractitioner?.user?.firstName} ${
+          principalPractitioner?.user?.surname ||
+          principalPractitioner?.user?.userName
+        }`,
         value: principalPractitioner.userId,
       });
     }
@@ -300,10 +304,12 @@ export const RemovePractitionerFromProgramme: React.FC<
             displayOffline={!isOnline}
             onBack={() => history.goBack()}
           >
-            <div className="py-4' px-4">
+            <div className="py-4' mt-4 px-4">
               <Typography
                 type={'h1'}
-                text={`Why is ${practitioner?.user?.firstName} leaving ${classroom?.name}?`}
+                text={`Why is ${
+                  practitioner?.user?.firstName || practitioner?.user?.userName
+                } leaving ${classroom?.name}?`}
                 color={'primary'}
                 className={'pt-1'}
               />
@@ -344,7 +350,9 @@ export const RemovePractitionerFromProgramme: React.FC<
                 />
               )}
               <label className="text-md mt-2 mb-1 block w-11/12 font-medium text-gray-700">
-                {`When would you like ${practitioner?.user?.firstName} to be removed?`}
+                {`When would you like ${
+                  practitioner?.user?.firstName || practitioner?.user?.userName
+                } to be removed?`}
               </label>
               <div className="mb-3 flex w-full flex-wrap justify-center">
                 <DatePicker
@@ -376,7 +384,10 @@ export const RemovePractitionerFromProgramme: React.FC<
                       className={'pt-1'}
                     />
                     <label className={classNames(styles.label, 'mt-4')}>
-                      {`${practitioner?.user?.firstName} is still assigned to ${
+                      {`${
+                        practitioner?.user?.firstName ||
+                        practitioner?.user?.userName
+                      } is still assigned to ${
                         practitionerClassroomGroups.length
                       } ${
                         practitionerClassroomGroups.length > 1
@@ -468,9 +479,15 @@ export const RemovePractitionerFromProgramme: React.FC<
                 <Alert
                   className="mt-10 w-11/12 rounded-xl"
                   type={'error'}
-                  title={`${practitioner?.user?.firstName} will be removed from the programme on this date`}
+                  title={`${
+                    practitioner?.user?.firstName ||
+                    practitioner?.user?.userName
+                  } will be removed from the programme on this date`}
                   list={[
-                    `${practitioner?.user?.firstName} will no longer be able to see child information.`,
+                    `${
+                      practitioner?.user?.firstName ||
+                      practitioner?.user?.userName
+                    } will no longer be able to see child information.`,
                   ]}
                 />
               </div>
@@ -479,9 +496,9 @@ export const RemovePractitionerFromProgramme: React.FC<
               </div>
               <Button
                 onClick={() => setRemovePractionerPromptVisible(true)}
-                className="w-full"
+                className="mb-2 w-full"
                 size="small"
-                color="errorMain"
+                color="quatenary"
                 type="filled"
                 disabled={!isValid}
               >
@@ -495,17 +512,17 @@ export const RemovePractitionerFromProgramme: React.FC<
               </Button>
               <Button
                 onClick={() => history.goBack()}
-                className="mt-4 w-full"
+                className="mb-4 w-full"
                 size="small"
-                color="primary"
+                color="quatenary"
                 type="outlined"
               >
-                {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+                {renderIcon('XIcon', classNames('h-5 w-5 text-quatenary'))}
                 <Typography
                   type="h6"
                   className="ml-2"
                   text="Cancel"
-                  color="primary"
+                  color="quatenary"
                 />
               </Button>
             </div>
@@ -522,7 +539,9 @@ export const RemovePractitionerFromProgramme: React.FC<
                 removeNotifications();
                 handleFormSubmit(getRemovePractionerFormValues());
                 setRemovePractionerPromptVisible(false);
-                history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+                history.push(ROUTES.CLASSROOM.ROOT, {
+                  activeTabIndex: TabsItemForPrincipal.CLASSES,
+                });
                 showMessage({
                   message: `${practitioner?.user?.firstName} removed`,
                 });

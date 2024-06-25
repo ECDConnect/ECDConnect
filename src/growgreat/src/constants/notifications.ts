@@ -19,6 +19,7 @@ interface NotificationTagConfigParams {
   SassaReferral: Partial<Message>;
   HomeAffairsReferral: Partial<Message>;
   MaternalDistressReferral: Partial<Message>;
+  ChildFiveYears: Partial<Message>;
 }
 
 export const notificationTagConfig: NotificationTagConfigParams = {
@@ -72,6 +73,9 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   SeePoints: {
     cta: 'SeePoints',
+  },
+  ChildFiveYears: {
+    cta: 'ChildFiveYears',
   },
 };
 

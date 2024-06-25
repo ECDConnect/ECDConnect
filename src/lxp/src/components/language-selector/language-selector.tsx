@@ -1,9 +1,12 @@
 import { LanguageDto } from '@ecdlink/core';
-import { Dropdown, ComponentBaseProps } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { Dropdown, ComponentBaseProps, classNames } from '@ecdlink/ui';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from './language-selector.styles';
+import { LanguageCode } from '@/i18n/types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useTranslation } from 'react-i18next';
 
 export interface LanguageSelectorProps extends ComponentBaseProps {
   currentLocale: string;
@@ -11,7 +14,9 @@ export interface LanguageSelectorProps extends ComponentBaseProps {
   labelText?: string;
   labelClassName?: string;
   selectLanguage: (value: LanguageDto) => void;
-  availableLanguages?: LanguageDto[];
+  availableLanguages?: LanguageCode[];
+  notLogged?: boolean;
+  showOfflineAlert?: boolean;
 }
 
 export const LanguageSelector = ({
@@ -21,29 +26,65 @@ export const LanguageSelector = ({
   labelClassName,
   selectLanguage,
   availableLanguages,
+  notLogged,
+  showOfflineAlert,
+  className,
 }: LanguageSelectorProps) => {
   const allLanguages = useSelector(staticDataSelectors.getLanguages);
-  const languages: LanguageDto[] = availableLanguages
-    ? allLanguages.filter((langauge: LanguageDto) =>
-        availableLanguages.some((item) => item.id === langauge.id)
-      )
-    : allLanguages;
+  const languages = useSelector(staticDataSelectors.getLanguages);
+  const [isOfflineAlert, setIsOfflineAlert] = useState(false);
+  const { i18n } = useTranslation();
+  const { isOnline } = useOnlineStatus();
 
   const [locale, setLocale] = useState<string>('en-za'); // SET DEFAULT LOCALE
-  const setLanguage = (locale: string) => {
-    setLocale(locale);
+  const currentLanguages = useMemo(
+    () =>
+      availableLanguages?.length
+        ? languages?.filter((language) =>
+            availableLanguages?.includes(language.locale as LanguageCode)
+          )
+        : languages,
+    [languages, availableLanguages]
+  );
 
-    const language = languages?.find((x: LanguageDto) => x.locale === locale);
+  const setLanguage = (nextLocale: string) => {
+    if (!isOnline && showOfflineAlert) {
+      return setIsOfflineAlert(true);
+    }
 
-    if (language) selectLanguage(language);
+    setLocale(nextLocale);
+
+    const language = currentLanguages?.find((x) => x.locale === nextLocale);
+
+    if (language) {
+      i18n.changeLanguage(language.locale);
+      selectLanguage(language);
+    }
   };
 
+  const handleOfflineAlert = useCallback(() => {
+    if (isOfflineAlert) {
+      setTimeout(() => {
+        setIsOfflineAlert(false);
+      }, 5000);
+    }
+  }, [isOfflineAlert]);
+
   useEffect(() => {
-    if (currentLocale) setLocale(currentLocale); // LOCALE SELECT OVERRIDE
-  }, [currentLocale]);
+    handleOfflineAlert();
+  }, [handleOfflineAlert]);
+
+  useEffect(() => {
+    if (i18n.language !== locale) {
+      i18n.changeLanguage(locale);
+    }
+
+    // trigger only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className={styles.localeDropDownWrapper}>
+    <div className={classNames(styles.localeDropDownWrapper, className)}>
       <label
         className={
           labelClassName === undefined ? styles.languageLabel : labelClassName
@@ -55,21 +96,22 @@ export const LanguageSelector = ({
         fillType="clear"
         selectedValue={locale}
         disabled={disabled}
+        fillColor="quatenary"
+        labelColor="white"
         list={
-          (languages &&
-            languages
+          (currentLanguages &&
+            currentLanguages
               .filter((x) => x.locale?.length > 0)
-              .map((language: LanguageDto) => {
-                return {
-                  label: language.description,
-                  value: language.locale,
-                };
-              })) ||
+              .map((language: LanguageDto) => ({
+                value: language.locale,
+                label: language.description,
+              }))) ||
           []
         }
         onChange={(item) => {
           setLanguage(item);
         }}
+        className="w-auto"
       />
     </div>
   );

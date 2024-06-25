@@ -1,25 +1,16 @@
 import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { useQuery } from '@apollo/client/react/hooks/useQuery';
-import { GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import { TlMeetingsRoutes } from '../../routes/app.routes';
+import { useTenant } from '../../hooks/useTenant';
 
 export function TLMeetings() {
   const location = useLocation();
-
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const tenant = useTenant();
 
   const getNavigationItems = () => {
-    if (
-      data &&
-      data.tenantContext &&
-      data.tenantContext.applicationName === TenantContext.GrowGreat
-    ) {
+    if (tenant.isCHWConnect) {
       return [
         {
           name: 'See reports',

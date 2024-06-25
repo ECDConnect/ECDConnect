@@ -113,9 +113,6 @@
             {
                 public const string GoogleGrouping = "General.Analytics.Google";
                 public const string GoogleReport = "General.Analytics.Google.DashboardGoogleReport";
-
-                public const string Tag = "General.Analytics.Google.GoogleAnalyticsTag";
-                public const string TagManager = "General.Analytics.Google.GoogleTagManager";
             }
         }
 
@@ -130,6 +127,7 @@
                 public const string Signup = "General.Callback.Invitations.Signup";
                 public const string AdminSignup = "General.Callback.Invitations.AdminSignup";
                 public const string TeamLeadSignup = "General.Callback.Invitations.TeamLeadSignup";
+                public const string PreSchoolInvitation = "General.Callback.Invitations.PreSchoolInvitation";
             }
 
             public static class Security

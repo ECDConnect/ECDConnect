@@ -5,6 +5,7 @@ namespace ECDLink.Abstractrions.Constants
         //sms/email
         public const string ForgotPassword = "forgot-password";
         public const string AuthCode = "auth-code";
+        public const string OAWLAuthCode = "oa-wl-auth-code";
         public const string Invitation = "invitation";
         public const string ThreeWeekNotLoggedOn = "three-week-notification";
         public const string FourWeekNotLoggedOn = "four-week-notification";
@@ -18,6 +19,13 @@ namespace ECDLink.Abstractrions.Constants
         public const string TeamLeadInvitation = "team-lead-portal-invitation";
         public const string ForgotPasswordPortal = "forgot-password-portal";
         public const string VerifyCellphoneNumber = "verify-cellphone-number";
+
+        // help
+        public const string AdminUserHelpForm = "admin-user-help-form";
+
+        // WL / OA
+        public const string PreSchoolInvitation = "pre-school-invitation";
+        public const string PrincipalInvitation = "principal-invitation";
 
         //app notifications
         public const string StartTraineeJourney = "start-trainee-journey";
@@ -82,6 +90,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string CoachSelfAssessmentFormReminder = "coach-fillin-self-asessment-form";
 
         //GG notifications
+        public const string GGThreeWeekNotLoggedOn = "gg-three-week-notification";
+        public const string GGFourWeekNotLoggedOn = "gg-four-week-notification";
         public const string GGWalkthroughNotificationInfant = "gg-walkthrough-notification-infant";
         public const string GGWalkthroughNotificationMother = "gg-walkthrough-notification-mother";
         public const string GGUploadRTHNotification = "gg-upload-rth";

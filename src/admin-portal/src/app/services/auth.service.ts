@@ -5,6 +5,7 @@ import {
   PasswordResetModel,
   RegisterRequestModel,
   SimpleUserModel,
+  TenantModel,
   VerifyInvitationModel,
 } from '@ecdlink/core';
 import { api } from '../utils/axios.helper';
@@ -172,4 +173,17 @@ export async function VerifyCellPhoneNumber(
       headers: headers,
     }
   );
+}
+
+export async function GetCurrentTenant(
+  baseEndPoint: string
+): Promise<TenantModel | null> {
+  const response = await api(baseEndPoint)
+    .get(APIs.tenantCurrent, {
+      headers: headers,
+    })
+    .catch(handlerError);
+
+  if (response.status < 300) return response.data;
+  return null;
 }

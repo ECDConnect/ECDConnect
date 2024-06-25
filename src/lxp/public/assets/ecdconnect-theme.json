@@ -1,0 +1,41 @@
+{
+  "Images": {
+    "LogoUrl": "",
+    "GraphicOverlayUrl": ""
+  },
+  "Fonts": {
+    "FontUrl": "",
+    "MainHeadingOverrideFontUrl": ""
+  },
+  "Colors": {
+    "primary":"#27385A",
+    "primaryAccent1":"#52607B",
+    "primaryAccent2":"#D4D7DE",
+    "secondary":"#FF2180",
+    "secondaryAccent1":"#FF90BF",
+    "secondaryAccent2":"#FFD3E6",
+    "tertiary":" #83BB26",
+    "tertiaryAccent1":"#C1DD92",
+    "tertiaryAccent2":"#E6F1D4",
+    "textDark":"#27385A",
+    "textMid":"#65727A",
+    "textLight":"#C9CFD2",
+    "uiMidDark":"#5e557a",
+    "uiMid":"#827c93",
+    "uiLight":"#cac5d8",
+    "uiBg":"#EFF6FA",
+    "modalBg":"#667289",
+    "errorMain":"#ED1414",
+    "errorDark":"#D20000",
+    "errorBg":"#FFEEF6",
+    "alertMain":"#FF5C00",
+    "alertDark":"#E43802",
+    "alertBg":"#FFEEE4",
+    "successMain":"#83BB26",
+    "successDark":"#5A8F02",
+    "successBg":"#E6F1D4",
+    "infoMain":"#1D67D5",
+    "infoDark":"#1752AB",
+    "infoBb":"#EBF3FF"
+  }
+}

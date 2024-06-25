@@ -1,4 +1,4 @@
-import { classNames, renderIcon, Typography } from '@ecdlink/ui';
+import { Button, classNames, renderIcon, Typography } from '@ecdlink/ui';
 import { CustomSuccessCardProps } from './custom-success-card.types';
 import * as styles from './custom-success-card.styles';
 import { useTheme } from '@ecdlink/core';
@@ -12,6 +12,7 @@ export const CustomSuccessCard: React.FC<CustomSuccessCardProps> = ({
   color,
   onClose,
   className,
+  button,
 }) => {
   const { theme } = useTheme();
 
@@ -58,6 +59,7 @@ export const CustomSuccessCard: React.FC<CustomSuccessCardProps> = ({
                   />
                 </div>
               )}
+              {button && <Button {...button} />}
             </div>
             {onClose && (
               <div className={styles.closeWrapper}>

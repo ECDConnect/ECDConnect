@@ -1,9 +1,4 @@
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-  PractitionerDto,
-} from '@ecdlink/core';
+import { IncomeStatementDto, PractitionerDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
@@ -163,89 +158,89 @@ export const updateUserContactStatusForStatement = createAsyncThunk<
   }
 );
 
-export const getUserIncomeForCoach = createAsyncThunk<
-  IncomeItemDto[],
-  { userId: string },
-  ThunkApiType<RootState>
->(
-  'getUserIncomeForCoach',
-  async ({ userId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      practitionerForCoach: { statementsForPractitionerUser: statementCache },
-    } = getState();
+// export const getUserIncomeForCoach = createAsyncThunk<
+//   IncomeItemDto[],
+//   { userId: string },
+//   ThunkApiType<RootState>
+// >(
+//   'getUserIncomeForCoach',
+//   async ({ userId }, { getState, rejectWithValue }) => {
+//     const {
+//       auth: { userAuth },
+//       practitionerForCoach: { statementsForPractitionerUser: statementCache },
+//     } = getState();
 
-    try {
-      let incomeItems: IncomeItemDto[] | undefined;
+//     try {
+//       let incomeItems: IncomeItemDto[] | undefined;
 
-      // Basic caching
-      if (!!statementCache[userId]) {
-        const daysSinceLoad = differenceInDays(
-          new Date(),
-          new Date(statementCache[userId].incomeDateLoaded)
-        );
+//       // Basic caching
+//       if (!!statementCache[userId]) {
+//         const daysSinceLoad = differenceInDays(
+//           new Date(),
+//           new Date(statementCache[userId].incomeDateLoaded)
+//         );
 
-        if (daysSinceLoad < 1) {
-          return statementCache[userId].unsubmittedIncomeItems;
-        }
-      }
+//         if (daysSinceLoad < 1) {
+//           return statementCache[userId].unsubmittedIncomeItems;
+//         }
+//       }
 
-      if (userAuth?.auth_token) {
-        incomeItems = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).getUnsubmittedIncomeItems(userId);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
+//       if (userAuth?.auth_token) {
+//         incomeItems = await new IncomeStatementsService(
+//           userAuth?.auth_token
+//         ).getUnsubmittedIncomeItems(userId);
+//       } else {
+//         return rejectWithValue('no access token, profile check required');
+//       }
 
-      return incomeItems;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
+//       return incomeItems;
+//     } catch (err) {
+//       return rejectWithValue(err);
+//     }
+//   }
+// );
 
-export const getUserExpensesForCoach = createAsyncThunk<
-  ExpenseItemDto[],
-  { userId: string },
-  ThunkApiType<RootState>
->(
-  'getUserExpensesForCoach',
-  async ({ userId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      practitionerForCoach: { statementsForPractitionerUser: statementCache },
-    } = getState();
+// export const getUserExpensesForCoach = createAsyncThunk<
+//   ExpenseItemDto[],
+//   { userId: string },
+//   ThunkApiType<RootState>
+// >(
+//   'getUserExpensesForCoach',
+//   async ({ userId }, { getState, rejectWithValue }) => {
+//     const {
+//       auth: { userAuth },
+//       practitionerForCoach: { statementsForPractitionerUser: statementCache },
+//     } = getState();
 
-    try {
-      let expenseItems: ExpenseItemDto[] | undefined;
+//     try {
+//       let expenseItems: ExpenseItemDto[] | undefined;
 
-      // Basic caching
-      if (!!statementCache[userId]) {
-        const daysSinceLoad = differenceInDays(
-          new Date(),
-          new Date(statementCache[userId].expensesDateLoaded)
-        );
+//       // Basic caching
+//       if (!!statementCache[userId]) {
+//         const daysSinceLoad = differenceInDays(
+//           new Date(),
+//           new Date(statementCache[userId].expensesDateLoaded)
+//         );
 
-        if (daysSinceLoad < 1) {
-          return statementCache[userId].unsubmittedExpenseItems;
-        }
-      }
+//         if (daysSinceLoad < 1) {
+//           return statementCache[userId].unsubmittedExpenseItems;
+//         }
+//       }
 
-      if (userAuth?.auth_token) {
-        expenseItems = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).getUnsubmittedExpenseItems(userId);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
+//       if (userAuth?.auth_token) {
+//         expenseItems = await new IncomeStatementsService(
+//           userAuth?.auth_token
+//         ).getUnsubmittedExpenseItems(userId);
+//       } else {
+//         return rejectWithValue('no access token, profile check required');
+//       }
 
-      return expenseItems;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
+//       return expenseItems;
+//     } catch (err) {
+//       return rejectWithValue(err);
+//     }
+//   }
+// );
 
 export const getChildProgressReportsStatusForUser = createAsyncThunk<
   ChildProgressReportsStatus,

@@ -55,9 +55,8 @@ namespace EcdLink.Api.CoreApi.Services
 
         public LeagueSetupModel GetLeagueSetup()
         {
-            // TODO - Reset this so it is working for the next season (should be this year, to next year)
-            var startDate = new DateTime(DateTime.Now.Year - 1, 10, 1);
-            var endDate = new DateTime(DateTime.Now.Year, 9, 30);
+            var startDate = LeagueHelpers.GetNextSeasonStartDate();
+            var endDate = LeagueHelpers.GetNextSeasonEndDate();
 
             // Districts
             var districts = _districtRepo.GetAll().Where(x => x.IsActive).ToList();
@@ -152,9 +151,8 @@ namespace EcdLink.Api.CoreApi.Services
     
         public void AddLeagues(List<LeagueInputModel> input)
         {
-            // TODO - Reset this so it is working for the next season (should be this year, to next year)
-            var startDate = new DateTime(DateTime.Now.Year - 1, 10, 1);
-            var endDate = new DateTime(DateTime.Now.Year, 9, 30);
+            var startDate = LeagueHelpers.GetNextSeasonStartDate();
+            var endDate = LeagueHelpers.GetNextSeasonEndDate();
 
             // Should we validate that all league types and clinics exist?
 
@@ -263,9 +261,8 @@ namespace EcdLink.Api.CoreApi.Services
             }
             _leagueRepo.Delete(leagueId);
 
-            // TODO - Reset this so it is working for the next season (should be this year, to next year)
-            var startDate = new DateTime(DateTime.Now.Year - 1, 10, 1);
-            var endDate = new DateTime(DateTime.Now.Year, 9, 30);
+            var startDate = LeagueHelpers.GetNextSeasonStartDate();
+            var endDate = LeagueHelpers.GetNextSeasonEndDate();
             CheckAndExpireNotifications(startDate, endDate, TemplateTypeConstants.LeagueSetupUnassignedClinics);
         }
 
@@ -377,19 +374,6 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
-        public static class LeagueHelpers
-        {
-            public static DateTime GetCurrentSeasonStartDate()
-            {
-                return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year, 10, 1) : new DateTime(DateTime.Now.Year - 1, 10, 1);
-            }
-
-            public static DateTime GetCurrentSeasonEndDate()
-            {
-                return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year + 1, 10, 1) : new DateTime(DateTime.Now.Year, 10, 1);
-            }
-
-        }
 
         public List<PortalLeagueModel> GetLeaguesForTeamLead(Guid teamLeadUserId)
         {
@@ -410,6 +394,28 @@ namespace EcdLink.Api.CoreApi.Services
                                 LeagueTypeName = x.LeagueType.Name,
                                 Clinics = x.Clinics.Where(x => x.IsActive && x.Clinic.IsActive).Select(x => new BaseClinicModel { Id = x.ClinicId, Name = x.Clinic.Name }).ToList()
                             }).Distinct().ToList();
+        }
+    }
+    public static class LeagueHelpers
+    {
+        public static DateTime GetCurrentSeasonStartDate()
+        {
+            return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year, 10, 1) : new DateTime(DateTime.Now.Year - 1, 10, 1);
+        }
+
+        public static DateTime GetCurrentSeasonEndDate()
+        {
+            return DateTime.Now.Month > 9 ? new DateTime(DateTime.Now.Year + 1, 10, 1) : new DateTime(DateTime.Now.Year, 10, 1);
+        }
+
+        public static DateTime GetNextSeasonStartDate()
+        {
+            return new DateTime(DateTime.Now.Year, 10, 1);
+        }
+
+        public static DateTime GetNextSeasonEndDate()
+        {
+            return new DateTime(DateTime.Now.Year + 1, 10, 1);
         }
     }
 }

@@ -41,10 +41,10 @@ export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
   email: yup.string().email('Invalid email'),
-  phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid'),
-  whatsAppNumber: yup
-    .string()
-    .matches(SA_CELL_REGEX, 'Phone number is not valid'),
+  // phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid'),
+  // whatsAppNumber: yup
+  //   .string()
+  //   .matches(SA_CELL_REGEX, 'Phone number is not valid'),
 });
 
 export const tlSchema = yup.object().shape({
@@ -81,6 +81,7 @@ export function Profile(props: any) {
     formState: passwordFormState,
     getValues: passwordGetValues,
     setValue: passwordSetValue,
+    watch,
   } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
@@ -89,6 +90,7 @@ export function Profile(props: any) {
 
   const { errors: passwordFormErrors, isValid: isPasswordValid } =
     passwordFormState;
+  const { password } = watch();
 
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
@@ -365,6 +367,19 @@ export function Profile(props: any) {
                     />
 
                     <div className="flex w-full flex-col">
+                      <div className="my-2 flex items-center gap-2">
+                        <Typography
+                          type="body"
+                          color="textDark"
+                          weight="bold"
+                          text={'Email address:'}
+                        />
+                        <Typography
+                          type="body"
+                          color="textDark"
+                          text={user?.user?.email}
+                        />
+                      </div>
                       <div>
                         <FormField
                           label={'First Name *'}
@@ -430,7 +445,7 @@ export function Profile(props: any) {
                       label={'Password'}
                       nameProp={'password'}
                       sufficIconColor="black"
-                      value={passwordForm.password}
+                      value={password}
                       register={passwordRegister}
                       strengthMeterVisible={true}
                       className="mb-9 "
@@ -465,7 +480,7 @@ export function Profile(props: any) {
             type="filled"
             isLoading={loading}
             color="secondary"
-            disabled={!isValid}
+            disabled={isSuperAdmin ? !isPasswordValid : !isValid}
             onClick={handleSubmit(onSave)}
           >
             <Typography

@@ -11,5 +11,7 @@ namespace ECDLink.Core.Caching
         public const string SystemSettingCache = "SystemSettings";
 
         public const string TenantCache = "Tenants";
+
+        public const string UserHierarchyAdminUserIdCache = "UserHierarchy.AdminUserId";
     }
 }

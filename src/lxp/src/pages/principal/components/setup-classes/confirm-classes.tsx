@@ -1,10 +1,10 @@
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
 import { practitionerSelectors } from '@/store/practitioner';
 import { formatMeetingDays } from '@/utils/practitioner/playgroups-utils';
-import { ClassroomGroupDto } from '@ecdlink/core';
 import {
   ActionListDataItem,
   Button,
+  Card,
   renderIcon,
   StackedList,
   Typography,
@@ -16,6 +16,8 @@ import {
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
 import { UNSURE_CLASS } from '@/constants/classroom';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const ConfirmClasses = ({
   title,
@@ -50,7 +52,8 @@ export const ConfirmClasses = ({
     for (const classroomGroup of filteredClassroomGroups as ClassroomGroupDto[]) {
       const current =
         currentPractitioner?.userId === classroomGroup.userId
-          ? currentPractitioner?.user?.firstName
+          ? currentPractitioner?.user?.firstName ||
+            currentPractitioner?.user?.userName
           : 'Practitioner';
       const _practitioner =
         practitioners?.filter((a) => a.userId === classroomGroup?.userId).at(0)
@@ -61,16 +64,16 @@ export const ConfirmClasses = ({
         subTitle: `${_practitioner}; ${formatMeetingDays(
           classroomGroup.classProgrammes
         )}`,
-        switchTextStyles: true,
+        switchTextStyles: false,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
           editClass({
             id: classroomGroup?.id || '',
-            classroomId: classroomGroup?.classroom?.id,
+            classroomId: classroomGroup?.classroomId,
             name: classroomGroup.name,
             meetEveryday: classroomGroup.classProgrammes?.length === 5,
-            practitionerId: classroomGroup.practitionerId ?? '',
+            practitionerId: classroomGroup.userId ?? '',
             meetingDays:
               classroomGroup.classProgrammes?.map(
                 (a: { meetingDay: any }) => a.meetingDay
@@ -88,14 +91,35 @@ export const ConfirmClasses = ({
 
   return (
     <>
+      <div className="flex flex-col gap-11">
+        <div className="flex flex-col gap-11">
+          <div className="flex w-full px-4">
+            <Card
+              className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
+              borderRaduis="xl"
+              shadowSize="lg"
+            >
+              <div className="">
+                <Cebisa />
+              </div>
+              <Typography
+                color="textDark"
+                text={`Add at least 1 class to ${classroomName}.`}
+                type={'h3'}
+                align="center"
+              />
+            </Card>
+          </div>
+        </div>
+      </div>
       <div className="pb-20">
         <Typography
           type={'h2'}
-          text={title}
-          color={'primary'}
+          text={classroomGroups.length > 0 ? '' : 'Add a class'}
+          color={'textDark'}
           className={'mt-3'}
         />
-        {classroomGroups.length ? (
+        {classroomGroups.length > 0 && (
           <div>
             <StackedList
               className={'w-full bg-white'}
@@ -103,31 +127,16 @@ export const ConfirmClasses = ({
               type={'ActionList'}
             />
           </div>
-        ) : (
-          <>
-            <Typography
-              type={'help'}
-              text={`You must add at least 1 class to ${classroomName}.`}
-              color={'primary'}
-              className={'mt-3'}
-            />
-          </>
         )}
 
         <Button
           className="mt-4"
-          color="primary"
+          color="quatenary"
           type="filled"
-          shape="normal"
           onClick={addClass}
         >
           {renderIcon('PlusSmIcon', 'mr-2 text-white w-5')}
-          <Typography
-            className="mx-2"
-            text="Add class"
-            type="help"
-            color="white"
-          />
+          <Typography text="Add class" type="help" color="white" />
         </Button>
       </div>
 
@@ -137,12 +146,12 @@ export const ConfirmClasses = ({
             size="normal"
             className="w-full"
             type="filled"
-            color="primary"
-            text="Save"
+            color="quatenary"
+            text="Next"
             textColor="white"
             icon="SaveIcon"
             onClick={() => {
-              onSubmit(PractitionerSetupSteps.ADD_SIGNATURE);
+              onSubmit(PractitionerSetupSteps.ADD_PHOTO);
             }}
           />
         </div>

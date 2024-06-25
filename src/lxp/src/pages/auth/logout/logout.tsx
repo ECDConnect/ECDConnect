@@ -54,7 +54,7 @@ export const Logout: React.FC = () => {
         actionButtons={[
           {
             text: 'Yes, log out',
-            colour: 'primary',
+            colour: 'quatenary',
             onClick: handleSync,
             type: 'filled',
             textColour: 'white',
@@ -63,7 +63,7 @@ export const Logout: React.FC = () => {
           {
             text: 'No, cancel',
             textColour: 'white',
-            colour: 'primary',
+            colour: 'quatenary',
             type: 'filled',
             onClick: () => history.push(ROUTES.DASHBOARD),
             leadingIcon: 'XCircleIcon',

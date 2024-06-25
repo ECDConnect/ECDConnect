@@ -1,12 +1,12 @@
-import { ActionModal, DialogPosition } from '@ecdlink/ui';
-import { isSameDay } from 'date-fns';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
+import { isAfter, isSameDay, isSameWeek, isToday } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import { programmeSelectors } from '@store/programme';
 import { DailyRoutine } from './components/daily-routine/daily-routine';
 import { useCallback, useEffect, useState } from 'react';
 import { useHolidays } from '@/hooks/useHolidays';
-import { LocalStorageKeys, useDialog } from '@ecdlink/core';
+import { LocalStorageKeys, useDialog, usePrevious } from '@ecdlink/core';
 import {
   getStorageItem,
   setStorageItem,
@@ -16,45 +16,58 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
-import walktroughImage from '../../../../assets/walktroughImage.png';
+import robot from '../../../../assets/iconRobot.svg';
 import { classroomsSelectors } from '@store/classroom';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  programmeThemeSelectors,
-  programmeThemeThunkActions,
-} from '@/store/content/programme-theme';
 import ROUTES from '@routes/routes';
-import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '../../class-dashboard/class-dashboard.types';
+import { ProgrammeDashboardRouteParams } from './programme-dashboard.types';
+import { useProgrammePlanning } from '@/hooks/useProgrammePlanning';
+import ProgrammeWrapper from './walkthrough/programme-wrapper';
+import { ProgrammeWalkthroughStart } from './walkthrough/components/walkthrough-start';
 
 const { usePDF } = require('react-to-pdf');
-
-interface ProgrammeDashboardProps {
-  programmeStartDate: Date | undefined;
-}
 
 export interface iSkills {
   skill: string;
   totalChildren: number;
 }
 
-export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
-  programmeStartDate,
-}) => {
+export const ProgrammeDashboard: React.FC = () => {
+  const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+
+  // TODO: handle with date from state
+  const programmeStartDate = new Date();
+
+  const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
   const history = useHistory();
-  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(classroomGroupId)
+  );
   const user = useSelector(userSelectors.getUser);
+
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const [showReport, setShowReport] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     programmeStartDate || new Date()
   );
+
+  const previousSelectedDate = usePrevious(selectedDate);
+
   const currentProgramme = useSelector(
-    programmeSelectors.getProgrammeByDate(new Date(selectedDate))
+    programmeSelectors.getProgrammeByDateAndClassroomGroupId({
+      date: selectedDate,
+      classroomGroupId,
+    })
   );
+
   const currentDailyProgramme = currentProgramme?.dailyProgrammes.find(
     (dailyRoutine) => isSameDay(new Date(dailyRoutine?.dayDate), selectedDate)
   );
@@ -64,6 +77,12 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   const progressSummary = useSelector(
     progressTrackingSelectors?.getPractitionerProgressReportSummary
   );
+
+  const { checkIfWholeWeekIsPlanned } = useProgrammePlanning();
+
+  const { isWholeWeekPlanned, dailyProgrammesUnplanned } =
+    checkIfWholeWeekIsPlanned(selectedDate, classroomGroupId);
+
   const fetchData = useCallback(
     async (reportDate: string) => {
       await appDispatch(
@@ -85,65 +104,89 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
     setTimeout(() => setShowReport(false), 600);
   }, [setShowReport, toPDF]);
 
-  const hasVisitedDashboard = getStorageItem<boolean>(
-    LocalStorageKeys.hasVisitedProgrammeDashboard || false
-  );
+  const showStartPlanning = useCallback(() => {
+    if (
+      !isWholeWeekPlanned &&
+      dailyProgrammesUnplanned.every(
+        (day) => isToday(day.date) || isAfter(day.date, new Date())
+      ) &&
+      (!previousSelectedDate || !isSameWeek(selectedDate, previousSelectedDate))
+    ) {
+      dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render: (onSubmit, onCancel) => (
+          <ActionModal
+            customIcon={
+              <div className="flex">
+                <img src={robot} alt="profile" className="mb-4 h-20 w-20" />
+              </div>
+            }
+            importantText={`Hello, ${user?.firstName}! Start planning your daily routine`}
+            detailText={
+              'Choose a theme and create your own programme for this week'
+            }
+            actionButtons={[
+              {
+                text: 'Choose a theme',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  setStorageItem(
+                    true,
+                    LocalStorageKeys.hasVisitedProgrammeDashboard
+                  );
+                  history.push(ROUTES.PROGRAMMES.THEME);
+                  onCancel();
+                },
+                leadingIcon: 'ColorSwatchIcon',
+              },
+              {
+                text: 'Create my own programme',
+                textColour: 'quatenary',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => {
+                  setStorageItem(
+                    true,
+                    LocalStorageKeys.hasVisitedProgrammeDashboard
+                  );
+                  onCancel();
+                },
+                leadingIcon: 'PencilAltIcon',
+              },
+            ]}
+          />
+        ),
+      });
+    }
+  }, [
+    dailyProgrammesUnplanned,
+    dialog,
+    history,
+    isWholeWeekPlanned,
+    previousSelectedDate,
+    selectedDate,
+    user?.firstName,
+  ]);
 
-  const showFirstVisit = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <ActionModal
-          customIcon={
-            <div className="flex">
-              <img src={walktroughImage} alt="profile" className="mb-2" />
-            </div>
-          }
-          importantText={`Hello, ${user?.firstName}! Start planning your daily routine`}
-          detailText={
-            'Choose a theme and create your own programme for this week'
-          }
-          actionButtons={[
-            {
-              text: 'Choose a theme',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.hasVisitedProgrammeDashboard
-                );
-                history.push(ROUTES.PROGRAMMES.THEME);
-                onCancel();
-              },
-              leadingIcon: 'BookOpenIcon',
-            },
-            {
-              text: 'Create my own programme',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.hasVisitedProgrammeDashboard
-                );
-                onCancel();
-              },
-              leadingIcon: 'PencilIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
+  const checkIfToShowInitialWalkthrough = useCallback(() => {
+    if (
+      classroomGroup?.classProgrammes.length &&
+      !getStorageItem(LocalStorageKeys.programmeWalkthroughComplete)
+    ) {
+      setShowInitialWalkthrough(true);
+    }
+  }, [classroomGroup?.classProgrammes.length]);
 
   useEffect(() => {
-    if (!hasVisitedDashboard) {
-      showFirstVisit();
-    }
-  }, []);
+    checkIfToShowInitialWalkthrough();
+  }, [checkIfToShowInitialWalkthrough]);
+
+  useEffect(() => {
+    showStartPlanning();
+  }, [showStartPlanning]);
 
   useEffect(() => {
     if (!progressSummary) {
@@ -280,24 +323,28 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
     }
   }, [fetchData, progressSummary, downloadPdf, dialog]);
 
-  // const handleAddProgramme = () => {
-  //   if (isOnline) {
-  //     history.push(ROUTES.PROGRAMMES.THEME);
-  //   } else {
-  //     showOnlineOnly();
-  //   }
-  // };
-
-  // const showOnlineOnly = () => {
-  //   dialog({
-  //     position: DialogPosition.Bottom,
-  //     render: (onSubmit) => {
-  //       return <div>test</div>//<OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-  //     },
-  //   });
-  // };
   return (
-    <>
+    <BannerWrapper
+      size="small"
+      title="Activities"
+      subTitle={classroomGroup?.name}
+      displayHelp
+      onHelp={() =>
+        history.push(
+          ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL.GETTING_STARTED.replace(
+            ':classroomGroupId',
+            classroomGroupId
+          )
+        )
+      }
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItems.ACTIVITES,
+        } as ClassDashboardRouteState)
+      }
+      className="relative p-4"
+    >
+      <ProgrammeWrapper />
       <DailyRoutine
         programme={currentProgramme}
         currentDailyProgramme={currentDailyProgramme}
@@ -313,7 +360,12 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
           </div>
         </div>
       )}
-    </>
+      {showInitialWalkthrough && (
+        <ProgrammeWalkthroughStart
+          onClose={() => setShowInitialWalkthrough(false)}
+        />
+      )}
+    </BannerWrapper>
   );
 };
 

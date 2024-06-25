@@ -123,7 +123,7 @@ export function Dropdown<T>({
       >
         <Typography
           type={'body'}
-          color={labelColor ? labelColor : touched ? 'textDark' : 'textLight'}
+          color={labelColor ? labelColor : touched ? 'textDark' : 'textMid'}
           text={selectedItem?.label ? selectedItem.label : placeholder}
           className={styles.title}
         />
@@ -131,7 +131,7 @@ export function Dropdown<T>({
           !open ? 'ChevronDownIcon' : 'ChevronUpIcon',
           styles.getDropDownIcon(
             fillType,
-            labelColor ? labelColor : touched ? 'textDark' : 'textLight'
+            labelColor ? labelColor : touched ? 'textDark' : 'textMid'
           )
         )}
       </Menu.Button>

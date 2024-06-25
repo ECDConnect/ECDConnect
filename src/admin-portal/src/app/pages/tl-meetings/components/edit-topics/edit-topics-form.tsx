@@ -86,6 +86,8 @@ export default function EditTopicsForm({
         setCurrentContent(c);
         setViewKey(Math.random());
       }
+
+      setCurrentContent({} as ContentDto);
     }
   }, [contentType, contentView, postNatalType]);
 

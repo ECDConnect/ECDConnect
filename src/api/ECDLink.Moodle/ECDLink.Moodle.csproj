@@ -17,9 +17,11 @@
     <None Remove="Microsoft.AspNet.WebApi.Client" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="7.0.0" />
+    <PackageReference Include="Npgsql" Version="7.0.7" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Managers\" />
+    <ProjectReference Include="..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
+    <ProjectReference Include="..\Libraries\Modules\ECDLink.Core\ECDLink.Core.csproj" />
+    <ProjectReference Include="..\Libraries\Modules\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
   </ItemGroup>
 </Project>

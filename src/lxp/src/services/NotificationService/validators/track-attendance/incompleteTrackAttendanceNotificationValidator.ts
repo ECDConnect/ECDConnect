@@ -8,6 +8,7 @@ import {
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompleteTrackAttendanceNotificationValidator
   implements NotificationValidator
@@ -33,7 +34,8 @@ export class IncompleteTrackAttendanceNotificationValidator
     } = this.store.getState();
 
     const isCoach = userState?.user?.roles?.some(
-      (role: { name: string }) => role.name === 'Coach'
+      (role: { systemName: string }) =>
+        role.systemName === RoleSystemNameEnum.Coach
     );
 
     if (isCoach) return [];
@@ -46,10 +48,8 @@ export class IncompleteTrackAttendanceNotificationValidator
     if (hours < 12) return [];
 
     const classroomGroups =
-      classroomState?.classroomGroups?.filter(
-        (classroomGroup) =>
-          classroomGroup.isActive &&
-          classroomGroup.userId === userState?.user?.id
+      classroomState.classroomGroupData.classroomGroups.filter(
+        (classroomGroup) => classroomGroup.userId === userState?.user?.id
       ) || [];
 
     if (!classroomGroups) return [];
@@ -58,10 +58,11 @@ export class IncompleteTrackAttendanceNotificationValidator
 
     const missedAttendance = getMissedClassAttendance(
       classroomGroups || [],
-      classroomState.classroomProgrammes || [],
+      classroomGroups
+        .flatMap((x) => x.classProgrammes)
+        .filter((x) => x.isActive),
       attendanceState.attendance || [],
-      this.currentDate,
-      classroomState.classroomGroupLearners
+      this.currentDate
     );
 
     if (!missedAttendance.length) return [];

@@ -75,12 +75,12 @@ namespace EcdLink.Api.CoreApi.Services
 
                         if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
                         {                   
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, replacements, null, false, true, null,
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, replacements, DateTime.Now.AddDays(1), false, false, null,
                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.UserId.Value, "ApplicationUser") });
                         }
                         else if (daysToCheck.Days >= 30)
                         {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, replacements, null, false, true, null,
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGFourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, replacements, DateTime.Now.AddDays(1), false, false, null,
                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.UserId.Value, "ApplicationUser") });
                         }
                     }

@@ -1,16 +1,12 @@
-import {
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-  LearnerDto,
-} from '@ecdlink/core';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassProgrammeDto, LearnerDto } from '@ecdlink/core';
 
 export type ClassroomForCoachState = {
   classroomForCoach: ClassroomDto[] | undefined;
   classroomGroups: ClassroomGroupDto[] | undefined;
   classroomProgrammes: ClassProgrammeDto[] | undefined;
-  classroomGroupLearners: LearnerDto[] | undefined;
-  programmeType: string | undefined; //TODO Fix this
+  classroomGroupLearners: LearnerDto[] | undefined; // This should probably be removed
 };
 
 export type ClassroomUpdateParams = {

@@ -26,7 +26,7 @@ import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { UiTableProps } from './type';
 import { ContentTypes } from '../../../../../../constants/content-management';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import { columnColor } from '../../../../../../utils/health-care-worker/components-utils';
+import { columnColor } from '../../../../../../utils/app-usage/app-usage-utils';
 
 export default function UiTable({
   columns = [],

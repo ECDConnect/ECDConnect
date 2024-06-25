@@ -16,5 +16,7 @@ namespace ECDLink.Core.Models
         }
 
         public Guid? TenantId { get; set; }
+
+        public string SystemName { get; set; }
     }
 }

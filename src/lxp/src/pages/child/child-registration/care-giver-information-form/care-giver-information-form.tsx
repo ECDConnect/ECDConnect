@@ -1,14 +1,12 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Button,
-  Divider,
   Dropdown,
   FormInput,
   Typography,
   classNames,
   renderIcon,
 } from '@ecdlink/ui';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
@@ -23,7 +21,6 @@ export const CareGiverInformationForm: React.FC<
   CareGiverInformationFormProps
 > = ({ careGiverInformation, childName, onSubmit }) => {
   const relations = useSelector(staticDataSelectors.getRelations);
-  const [idFieldVisible, setIdFieldVisible] = useState(true);
 
   const {
     getValues: getCareGiverInformationFormValues,
@@ -44,25 +41,10 @@ export const CareGiverInformationForm: React.FC<
     }
   };
 
-  const toggleIdAndpassport = (visible: boolean) => {
-    const flag = !visible;
-    setCareGiverInformationFormValue(
-      flag ? 'careGiverPassportField' : 'careGiverIdField',
-      '',
-      {
-        shouldValidate: true,
-      }
-    );
-    setCareGiverInformationFormValue('preferId', flag, {
-      shouldValidate: true,
-    });
-    setIdFieldVisible(flag);
-  };
-
   return (
     <div className={styles.wrapper}>
-      <Typography type={'h1'} text={'Primary caregiver'} color={'primary'} />
-      <Typography type={'h2'} text={'Details'} color={'textMid'} />
+      <Typography type={'h2'} text={'Primary caregiver'} color={'primary'} />
+      <Typography type={'h4'} text={'Details'} color={'textMid'} />
 
       <Dropdown
         placeholder={'Select relationship'}
@@ -94,80 +76,25 @@ export const CareGiverInformationForm: React.FC<
       />
       <FormInput<CareGiverInformationFormModel>
         label={'Surname'}
-        className={'mt-3'}
+        className={'mt-4'}
         register={CareGiverInformationFormRegister}
         nameProp={'surname'}
         error={careGiverInformationFormState.errors['surname']}
         placeholder={'Surname/family name'}
       />
-      {idFieldVisible && (
-        <FormInput<CareGiverInformationFormModel>
-          label={"Caregiver's ID number"}
-          className={'mt-4'}
-          nameProp={'careGiverIdField'}
-          register={CareGiverInformationFormRegister}
-          error={careGiverInformationFormState.errors['careGiverIdField']}
-          placeholder={'E.g. 190101 0000 000'}
-        />
-      )}
-      {!idFieldVisible && (
-        <FormInput<CareGiverInformationFormModel>
-          label={'Passport number'}
-          className={'mt-4'}
-          visible={true}
-          nameProp={'careGiverPassportField'}
-          error={careGiverInformationFormState.errors['careGiverPassportField']}
-          register={CareGiverInformationFormRegister}
-        />
-      )}
-      {!idFieldVisible && (
-        <Button
-          className={'mt-3 mb-2'}
-          type="outlined"
-          color="primary"
-          background={'transparent'}
-          size="small"
-          onClick={() => toggleIdAndpassport(idFieldVisible)}
-        >
-          <Typography
-            type="small"
-            color="primary"
-            text={'Enter ID number instead'}
-          ></Typography>
-        </Button>
-      )}
-      {idFieldVisible && (
-        <Button
-          className={'mt-3 mb-2'}
-          type="outlined"
-          color="primary"
-          size="small"
-          background={'transparent'}
-          onClick={() => toggleIdAndpassport(idFieldVisible)}
-        >
-          <Typography
-            type="small"
-            color="primary"
-            text={'Enter passport number instead'}
-          ></Typography>
-        </Button>
-      )}
       <FormInput<CareGiverInformationFormModel>
         label={'Cellphone number'}
-        className={'mt-1'}
+        className={'mt-4'}
         register={CareGiverInformationFormRegister}
         nameProp={'phoneNumber'}
         error={careGiverInformationFormState.errors['phoneNumber']}
         placeholder={'E.g. 082 345 6789'}
       />
-      <div className={'py-4'}>
-        <Divider></Divider>
-      </div>
       <Button
         onClick={handleFormSubmit}
-        className="w-full"
+        className="mt-auto w-full"
         size="small"
-        color="primary"
+        color="quatenary"
         type="filled"
         disabled={!isValid}
       >

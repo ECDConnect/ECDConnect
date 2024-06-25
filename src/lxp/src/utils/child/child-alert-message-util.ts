@@ -1,154 +1,95 @@
-import { NoPlaygroupClassroomType } from './../../enums/ProgrammeType';
-import {
-  AttendanceDto,
-  ChildDto,
-  ChildProgressReportSummaryModel,
-  ClassProgrammeDto,
-  ClassroomGroupDto,
-  Document,
-  LearnerDto,
-  UserDto,
-} from '@ecdlink/core';
-import { isPractitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
-import {
-  getChildAttendancePercentageAtPlaygroup,
-  getReportingPeriod,
-  isInFinalMonthOfReportingPeriod,
-  isMatchingReportingPeriods,
-} from './child-profile-utils';
-import { differenceInDays } from 'date-fns';
+import { AttendanceDto, ChildDto } from '@ecdlink/core';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { AlertSeverityType } from '@ecdlink/ui';
+import { getWeek } from 'date-fns';
 
-export const getChildAlertModel = (
-  learner?: LearnerDto,
-  pendingStatusId?: string,
-  childUser?: UserDto,
-  child?: ChildDto,
-  userDocuments?: Document[],
-  attendance?: AttendanceDto[],
-  classroomGroups?: ClassroomGroupDto[],
-  classProgrammes?: ClassProgrammeDto[],
-  childReports?: ChildProgressReportSummaryModel[],
-  attendedChildProgressTraining?: boolean,
-  userRole: 'practitioner' | 'coach' = 'practitioner'
-) => {
-  const today = new Date();
-  let alert = 'success';
-  let alertMessage = 'All information captured';
-  if (classroomGroups && learner) {
-    const classroomGroup = classroomGroups.find(
-      (x) => x.id === learner?.classroomGroupId
-    );
+interface ChildAlertModel {
+  status: AlertSeverityType;
+  message: string;
+  severity: number;
+  attendancePercentage: number;
+}
 
-    if (classroomGroup?.name === NoPlaygroupClassroomType.name) {
-      alert = 'error';
-      alertMessage = 'No class assigned';
+interface ChildAlertModelProps {
+  child?: ChildDto;
+  attendance?: AttendanceDto[];
+  classroomGroups?: ClassroomGroupDto[];
+  childPendingWorkflowStatusId?: string;
+  childExternalWorkflowStatusId?: string;
+}
 
-      return { status: alert, message: alertMessage, severity: 1 };
-    }
+function getAttendanceData(schoolDays: AttendanceDto[]) {
+  if (!schoolDays.length) {
+    return { percentage: 0, attendedDays: 0, totalDays: 0 };
   }
 
-  if (
-    !childUser?.firstName ||
-    !childUser?.surname ||
-    !child?.caregiverId ||
-    !learner
-  ) {
-    alert = 'error';
-    alertMessage = 'Child information missing';
+  const totalDays = schoolDays.length;
+  const attendedDays = schoolDays.filter((day) => day.attended).length;
 
-    return { status: alert, message: alertMessage, severity: 1 };
-  }
+  return { percentage: attendedDays / totalDays, attendedDays, totalDays };
+}
 
-  const report = childReports?.find((x) =>
-    isMatchingReportingPeriods(new Date(x.reportDate), today)
+export const getChildAlertModel = ({
+  attendance,
+  child,
+  classroomGroups,
+  childExternalWorkflowStatusId,
+  childPendingWorkflowStatusId,
+}: ChildAlertModelProps): ChildAlertModel => {
+  const isClassAssigned = classroomGroups?.some((classroomGroup) =>
+    classroomGroup?.learners?.some(
+      (learner) =>
+        learner.childUserId === child?.userId ||
+        learner.childUserId === child?.user?.id
+    )
   );
-  const reportingPeriod = getReportingPeriod(today, false);
+  const isChildRegistrationIncomplete =
+    child?.workflowStatusId === childPendingWorkflowStatusId ||
+    child?.workflowStatusId === childExternalWorkflowStatusId;
 
-  const isCurrentlyInReportingOverduePeriod = isInFinalMonthOfReportingPeriod(
-    reportingPeriod.monthName,
-    today
+  const currentWeekOfYear = getWeek(new Date());
+
+  const attendanceLastWeek = attendance?.filter(
+    (day) => day.weekOfYear === currentWeekOfYear - 1
   );
 
-  const daysSinceInsertedDate = differenceInDays(
-    new Date(),
-    new Date(child?.insertedDate!)
+  const { percentage, attendedDays, totalDays } = getAttendanceData(
+    attendanceLastWeek ?? []
   );
 
-  if (
-    attendedChildProgressTraining &&
-    !report &&
-    isCurrentlyInReportingOverduePeriod &&
-    daysSinceInsertedDate > 30
-  ) {
-    alert = 'error';
-    alertMessage = 'Progress report overdue';
+  const isLessThan75Percent = percentage < 0.75;
 
-    return { status: alert, message: alertMessage, severity: 1 };
+  if (isChildRegistrationIncomplete) {
+    return {
+      status: 'error',
+      message: 'Child registration incomplete',
+      severity: 1,
+      attendancePercentage: percentage,
+    };
   }
 
-  const userBirthDocument = userDocuments?.find(
-    (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
-  );
-
-  if (!userBirthDocument && daysSinceInsertedDate >= 14) {
-    alert = 'error';
-    alertMessage = 'Child document missing';
-
-    return { status: alert, message: alertMessage, severity: 1 };
+  if (!isClassAssigned) {
+    return {
+      status: 'error',
+      message: 'No class assigned',
+      severity: 2,
+      attendancePercentage: percentage,
+    };
   }
 
-  if (classroomGroups && attendance) {
-    const missedAttendance = isPractitionerAttendanceMissingForLearner(
-      classroomGroups,
-      classProgrammes || [],
-      learner,
-      attendance,
-      today
-    );
-
-    if (missedAttendance) {
-      alert = 'warning';
-      alertMessage = 'Missing attendance information';
-
-      return { status: alert, message: alertMessage, severity: 2 };
-    }
+  if (attendanceLastWeek?.length) {
+    return {
+      status: isLessThan75Percent ? 'warning' : 'success',
+      message: `Attended ${attendedDays} of ${totalDays} days last week`,
+      severity: isLessThan75Percent ? 3 : 4,
+      attendancePercentage: percentage,
+    };
   }
 
-  // if (classroomGroups && attendance) {
-  //   const classroomGroup = classroomGroups.find(
-  //     (x) => x.id === learner?.classroomGroupId
-  //   );
-
-  //   const childAttendancePercentage = getChildAttendancePercentageAtPlaygroup(
-  //     child?.userId ?? '',
-  //     attendance,
-  //     classroomGroup?.id ?? '',
-  //     classProgrammes || [],
-  //     userRole
-  //   );
-
-  //   const daysSinceInsertedDate = differenceInDays(
-  //     new Date(),
-  //     new Date(learner?.startedAttendance)
-  //   );
-
-  //   if (childAttendancePercentage && daysSinceInsertedDate >= 7) {
-  //     if (childAttendancePercentage.percentage < 50) {
-  //       alert = 'warning';
-  //     }
-
-  //     alertMessage = `Attended ${childAttendancePercentage.daysAttended} of ${
-  //       childAttendancePercentage.daysExpected
-  //     } days last ${userRole === 'coach' ? 'month' : 'week'}`;
-  //   }
-  // }
-
-  if (child?.workflowStatusId === pendingStatusId) {
-    alert = 'warning';
-    alertMessage = 'Pending';
-
-    return { status: alert, message: alertMessage, severity: 2 };
-  }
-
-  return { status: alert, message: alertMessage, severity: 3 };
+  return {
+    status: 'none',
+    message: '',
+    severity: 5,
+    attendancePercentage: percentage,
+  };
 };

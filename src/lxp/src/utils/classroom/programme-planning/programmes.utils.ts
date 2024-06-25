@@ -193,19 +193,21 @@ export const getWeekBreakDown = (
 export const findConflictingProgramme = (
   programmes: ProgrammeDto[],
   startDate: number | Date,
-  endDate: number | Date
+  endDate: number | Date,
+  classroomGroupId: string
 ): ProgrammeDto | undefined => {
   return programmes.find((programme) => {
     return (
-      areIntervalsOverlapping(
+      programme.classroomGroupId === classroomGroupId &&
+      (areIntervalsOverlapping(
         { start: startDate, end: endDate },
         {
           start: new Date(programme.startDate),
           end: new Date(programme.endDate),
         }
       ) ||
-      isSameDay(startDate, new Date(programme.endDate)) ||
-      isSameDay(endDate, new Date(programme.startDate))
+        isSameDay(startDate, new Date(programme.endDate)) ||
+        isSameDay(endDate, new Date(programme.startDate)))
     );
   });
 };

@@ -50,8 +50,10 @@ export const AttendanceListItem = ({
       return;
     }
 
-    if (currentItem.status && currentItem.status !== AttendanceStatus.Absent) {
-      currentItem.status = currentItem.status + 1;
+    if (currentItem.status && currentItem.status === AttendanceStatus.Present) {
+      currentItem.status = currentItem?.disabledAbsentStatus
+        ? AttendanceStatus.None
+        : AttendanceStatus.Absent;
     } else {
       currentItem.status = AttendanceStatus.Present;
     }
@@ -127,9 +129,13 @@ export const AttendanceListItem = ({
           </div>
         </div>
         <div>
-          {renderIcon(
-            getBadgeIcon(attendanceItem.status),
-            styles.getColourByStatus(attendanceItem.status, type)
+          {attendanceItem.status === AttendanceStatus.None ? (
+            <div className="border-primaryAccent1 h-5 w-5 rounded-full border bg-white"></div>
+          ) : (
+            renderIcon(
+              getBadgeIcon(attendanceItem.status),
+              styles.getColourByStatus(attendanceItem.status, type)
+            )
           )}
         </div>
       </div>

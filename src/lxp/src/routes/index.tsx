@@ -44,7 +44,6 @@ import { EditCoachProfile } from '@/pages/coach/edit-coach-profile/edit-coach-pr
 import { CoachProfile } from '@/pages/coach/coach-profile/coach-profile';
 import { CoachAbout } from '@/pages/coach/coach-about/coach-about';
 import { CoachSignature } from '@/pages/coach/coach-about/components/coach-signature/coach-signature';
-import { CoachAddress } from '@/pages/coach/coach-about/components/coach-address/coach-address';
 import { Practitioners } from '@/pages/coach/practitioners/practitioners';
 import { CoachPractitionerProfileInfo } from '@/pages/coach/practitioner-profile-info/practitioner-profile-info';
 import { CoachPractitionerClassroom } from '@/pages/coach/coach-practitioner-classroom/coach-practitioner-classroom';
@@ -74,7 +73,6 @@ import AddAmount from '@/pages/business/add-amount/add-amount';
 import { AddIncome } from '@/pages/business/add-amount/add-income/add-income';
 import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
 import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/attendance-tutorial/walkthrough-tutorial/walkthrough-tutorial';
-import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
 import { PreviousStatements } from '@/pages/business/money/previous-statements/previous-statements';
 import { MonthStatements } from '@/pages/business/money/monthly-statements/month-statements';
 import { Community } from '@/pages/community/community';
@@ -117,8 +115,6 @@ import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add'
 import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
 import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-preschool-fee';
 import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
-import { CurrentMonthSummary } from '@/pages/business/money/monthly-statements/current-month-summary';
-import { PractitionerCurrentMonthSummary } from '@/pages/coach/coach-practitioner-business/components/statements/current-month-summary';
 import { AcceptClubLeaderRole } from '@/pages/practitioner/practitioner-community/accept-club-leader-role';
 import { PractitionerCommunity } from '@/pages/practitioner/practitioner-community';
 import { SupportRoleEdit } from '@/pages/practitioner/practitioner-community/club-tab/club/club-support-edit';
@@ -132,16 +128,42 @@ import { MissingMeetingRegisters } from '@/pages/community/clubs-tab/club/club-p
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePrevious } from '@ecdlink/core';
 import { Location } from 'history';
+import ChildList from '@/pages/classroom/child-list/child-list';
+import { UserRegistration } from '@/components/user-registration/user-registration';
+import { useTenant } from '@/hooks/useTenant';
+import { OASignUpOrLogin } from '@/pages/auth/oa-sign-up/oa-sign-up-or-login';
+import { OaLogin } from '@/pages/auth/oa-login/oa-login';
+import { EditRegisters } from '@/pages/classroom/attendance/edit-registers/edit-registers';
+import { UpdateIncome } from '@/pages/business/add-amount/add-income/update-income';
+import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
+import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-expense';
 
 const PublicRoutes: React.FC = () => {
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
+
   return (
     <Switch>
       <Route
         exact
         path={ROUTES.ROOT}
-        render={() => <Redirect to={ROUTES.LOGIN} />}
+        render={() => (
+          <Redirect
+            to={isOpenAccess ? ROUTES.OA_SIGN_UP_OR_LOGIN : ROUTES.LOGIN}
+          />
+        )}
       />
-      <Route path={ROUTES.LOGIN} component={Login} exact={true} />
+      <Route path={ROUTES.LOGIN} component={OaLogin} exact={true} />
+      <Route
+        path={ROUTES.OA_SIGN_UP_OR_LOGIN}
+        component={isOpenAccess ? OASignUpOrLogin : SignUp}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.CREATE_USERNAME}
+        component={UserRegistration}
+        exact={true}
+      />
       <Route
         path={ROUTES.PASSWORD_RESET}
         component={PasswordReset}
@@ -210,13 +232,18 @@ const AuthRoutes: React.FC = () => {
         exact={true}
       />
       <Route
+        path={ROUTES.BUSINESS_UPDATE_INCOME}
+        component={UpdateIncome}
+        exact={true}
+      />
+      <Route
         path={ROUTES.BUSINESS_ADD_EXPENSE}
         component={AddExpense}
         exact={true}
       />
       <Route
-        path={ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST}
-        component={SubmitIncomeStatementsList}
+        path={ROUTES.BUSINESS_UPDATE_EXPENSE}
+        component={UpdateExpense}
         exact={true}
       />
       <Route
@@ -227,11 +254,6 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.BUSINESS_MONTH_STATEMENTS_DETAILS}
         component={MonthStatements}
-        exact={true}
-      />
-      <Route
-        path={ROUTES.BUSINESS_CURRENT_MONTH_STATEMENTS_DETAILS}
-        component={CurrentMonthSummary}
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact />
@@ -509,6 +531,17 @@ const AuthRoutes: React.FC = () => {
       />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />
       <Route exact path={ROUTES.CLASSROOM.ROOT} component={ClassDashboard} />
+      <Route exact path={ROUTES.CLASSROOM.CHILDREN} component={ChildList} />
+      <Route
+        exact
+        path={ROUTES.CLASSROOM.ATTENDANCE.EDIT_REGISTERS}
+        component={EditRegisters}
+      />
+      <Route
+        exact
+        path={ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT}
+        component={ProgrammeDashboard}
+      />
       <Route
         exact
         path={ROUTES.CLASSROOM.UPDATE_FEE}
@@ -576,15 +609,23 @@ const AuthRoutes: React.FC = () => {
       <Route path={ROUTES.PROGRAMMES.SUMMARY} component={ProgrammeSummaries} />
       <Route path={ROUTES.PROGRAMMES.ROUTINE} component={ProgrammeRoutine} />
       <Route
-        path={ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED}
+        path={
+          ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL
+            .GETTING_STARTED
+        }
         component={ProgrammeTutorial}
       />
       <Route
-        path={ROUTES.PROGRAMMES.TUTORIAL.DEVELOPING_CHILDREN}
+        path={
+          ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL
+            .DEVELOPING_CHILDREN
+        }
         component={ProgrammePlanningDevelopingChildren}
       />
       <Route
-        path={ROUTES.PROGRAMMES.TUTORIAL.DAILY_ROUTINE}
+        path={
+          ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL.DAILY_ROUTINE
+        }
         component={ProgrammePlanningDailyRoutine}
       />
       <Route exact path={ROUTES.COACH.PROFILE.ROOT} component={CoachProfile} />
@@ -674,7 +715,6 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.COACH.CONTACT_PRACTITIONER}
         component={CoachContactPractitioner}
       />
-      <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
 
       <Route exact path={ROUTES.COACH.ACCOUNT} component={CoachAccount} />
       <Route
@@ -701,11 +741,6 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS}
         component={PractitionerMonthStatements}
-      />
-      <Route
-        exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS.CURRENT_MONTH_SUMMARY}
-        component={PractitionerCurrentMonthSummary}
       />
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>

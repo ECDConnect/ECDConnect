@@ -1,6 +1,10 @@
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
-import { EventRecordModelInput, EventRecordType } from '@ecdlink/graphql';
+import {
+  EventRecordModelInput,
+  EventRecordType,
+  EventRecord as IEventRecord,
+} from '@ecdlink/graphql';
 
 class EventRecord {
   _accessToken: string;
@@ -40,6 +44,7 @@ class EventRecord {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { allEventRecordTypesForType: EventRecordType[] };
+      errors?: {};
     }>(``, {
       query: `
         query GetAllEventRecordTypesForType($type: String) {
@@ -65,13 +70,52 @@ class EventRecord {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || response.data.errors) {
       throw new Error(
         'Getting event record types failed - Server connection error'
       );
     }
 
     return response.data.data.allEventRecordTypesForType;
+  }
+
+  async getEventRecordByClientId(clientId: string): Promise<IEventRecord> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { GetEventRecordById: IEventRecord };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetEventRecordForClient($clientId: UUID!) {          
+          eventRecordForClient(clientId: $clientId) {            
+            eventRecordType {
+              id
+              name
+            }            
+            id            
+            infantId            
+            insertedDate            
+            isActive            
+            linkedVisitId            
+            motherId            
+            notes            
+            updatedBy            
+            updatedDate          
+          }        
+        } 
+        `,
+      variables: {
+        clientId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Getting event record by clientId failed - Server connection error'
+      );
+    }
+
+    return response.data.data.GetEventRecordById;
   }
 }
 

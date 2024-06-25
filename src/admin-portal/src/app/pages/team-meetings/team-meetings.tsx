@@ -39,7 +39,9 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
   const todaysDateNumber = getDate(today);
   const availableDateToAddReport =
     todaysDateNumber >= 24 || todaysDateNumber <= 7;
-  const isUntilDaySevenOfTheMonth = todaysDateNumber < 7;
+  const availableDateToSecondBlueInfoBox =
+    todaysDateNumber < 24 || todaysDateNumber > 7;
+  const isUntilDaySevenOfTheMonth = todaysDateNumber <= 7;
   const previousMonthName = format(previousMonth, 'MMMM');
   const currentMonthName = format(today, 'MMMM');
   const title = isUntilDaySevenOfTheMonth
@@ -86,10 +88,19 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
 
   const currentTopic: MeetingTopic = useMemo(
     () =>
-      topicData?.GetAllTopic?.find(
-        (item) => item?.title === titleDateFormatted
-      ),
-    [titleDateFormatted, topicData?.GetAllTopic]
+      isUntilDaySevenOfTheMonth
+        ? topicData?.GetAllTopic?.find(
+            (item) => item?.title === untilDay7TitleFormatted
+          )
+        : topicData?.GetAllTopic?.find(
+            (item) => item?.title === titleDateFormatted
+          ),
+    [
+      isUntilDaySevenOfTheMonth,
+      titleDateFormatted,
+      topicData?.GetAllTopic,
+      untilDay7TitleFormatted,
+    ]
   );
 
   useEffect(() => {
@@ -102,8 +113,8 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
     clinicMeetingData?.clinicMeetingForMonth;
   const monthMeetingSubmitted = clinicMeetingReport?.id;
   const submittedDateFormatted =
-    clinicMeetingReport?.meetingDate &&
-    format(new Date(clinicMeetingReport?.meetingDate), 'd MMMM');
+    clinicMeetingReport?.dateSubmitted &&
+    format(new Date(clinicMeetingReport?.dateSubmitted), 'd MMMM');
 
   const languages = useMemo(
     () => languagesData?.GetAllLanguage,
@@ -134,6 +145,7 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
           isEdit={false}
           user={user}
           selectedTabId={selectedTabId}
+          isUntilDaySevenOfTheMonth={isUntilDaySevenOfTheMonth}
         />
       ),
     });
@@ -165,35 +177,59 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
             />
           </div>
         )}
-        {!monthMeetingSubmitted && !loadingClinicMeetingData && (
-          <div>
-            <Card className="bg-infoMain my-8 flex items-center gap-4 rounded-xl p-4">
-              <InformationCircleIcon className="h-5 w-5 text-white" />
-              <Typography type={'h4'} text={dateInfoText} color={'white'} />
-            </Card>
-          </div>
-        )}
 
-        {monthMeetingSubmitted && !loadingClinicMeetingData && (
-          <div>
-            <Card className="bg-successMain my-8 rounded-xl p-4">
-              <div className="flex items-center gap-4">
-                <CheckCircleIcon className="h-5 w-5 text-white" />
+        {!monthMeetingSubmitted &&
+          !loadingClinicMeetingData &&
+          availableDateToAddReport && (
+            <div>
+              <Card className="bg-infoMain my-8 flex items-center gap-4 rounded-xl p-4">
+                <InformationCircleIcon className="h-5 w-5 text-white" />
+                <Typography type={'h4'} text={dateInfoText} color={'white'} />
+              </Card>
+            </div>
+          )}
+
+        {!loadingClinicMeetingData &&
+          !availableDateToAddReport &&
+          availableDateToSecondBlueInfoBox && (
+            <div>
+              <Card className="bg-infoMain my-8 items-center gap-4 rounded-xl p-4">
+                <div className="flex items-center gap-4">
+                  <InformationCircleIcon className="h-5 w-5 text-white" />
+                  <Typography type={'h4'} text={dateInfoText} color={'white'} />
+                </div>
                 <Typography
-                  type={'h4'}
-                  text={reportSubmittedText}
+                  type={'body'}
+                  text={`• From 24 ${currentMonthName}, you will see the “Add meeting report” button on this screen.`}
                   color={'white'}
+                  className="my-2 ml-8"
                 />
-              </div>
-              <Typography
-                type={'body'}
-                text={`• You submitted the ${currentMonthName} report on ${submittedDateFormatted}.`}
-                color={'white'}
-                className="my-2 ml-8"
-              />
-            </Card>
-          </div>
-        )}
+              </Card>
+            </div>
+          )}
+
+        {monthMeetingSubmitted &&
+          !loadingClinicMeetingData &&
+          availableDateToAddReport && (
+            <div>
+              <Card className="bg-successMain my-8 rounded-xl p-4">
+                <div className="flex items-center gap-4">
+                  <CheckCircleIcon className="h-5 w-5 text-white" />
+                  <Typography
+                    type={'h4'}
+                    text={reportSubmittedText}
+                    color={'white'}
+                  />
+                </div>
+                <Typography
+                  type={'body'}
+                  text={`• You submitted the ${previousMonthName} report on ${submittedDateFormatted}.`}
+                  color={'white'}
+                  className="my-2 ml-8"
+                />
+              </Card>
+            </div>
+          )}
 
         <div>
           <Card className="my-8 rounded-xl bg-white p-6">
@@ -290,11 +326,19 @@ export const TeamMeetingsMainPage: React.FC<TeamMeetingsMainPageProps> = ({
         </div>
         <div>
           <Card className="my-8 rounded-xl bg-white p-6">
-            <Typography
-              type={'h3'}
-              text={'3. Knowledge sharing - 30 min'}
-              color={'textDark'}
-            />
+            <div className="flex items-center justify-between">
+              <Typography
+                type={'h3'}
+                text={'3. Knowledge sharing - 30 min'}
+                color={'textDark'}
+              />
+              <LanguageSelector
+                disabled={false}
+                languages={languages?.filter((item) => item?.isActive === true)}
+                currentLanguageId={'en-za'}
+                selectLanguage={setSelectedLanguage}
+              />
+            </div>
             {currentTopic && !loadingTopicData && (
               <div>
                 <Typography

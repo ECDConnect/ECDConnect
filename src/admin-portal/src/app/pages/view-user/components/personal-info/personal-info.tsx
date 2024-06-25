@@ -161,6 +161,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     formState: adminDetailFormState,
     getValues: adminDetailGetValues,
     handleSubmit: handleSubmitAdminDetails,
+    register: userRegister,
   } = useForm({
     resolver: yupResolver(adminSchema),
     defaultValues: initialUserDetailsValues,
@@ -307,7 +308,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 <div className="grid grid-cols-1 ">
                   {userData && (
                     <>
-                      {!isRegistered && (
+                      {!isRegistered && !isAdministrator && (
                         <>
                           <div className="my-4 sm:col-span-3">
                             <Typography
@@ -392,31 +393,46 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                           </div>
                         </>
                       )}
-                      <div className="my-4 w-6/12 sm:col-span-3">
-                        <FormField
-                          label={'First name'}
-                          nameProp={'firstName'}
-                          register={registerCHW}
-                          error={chwDetailFormErrors.firstName?.message}
-                        />
-                      </div>
-                      <div className="my-4 w-6/12 sm:col-span-3">
-                        <FormField
-                          label={'Surname *'}
-                          nameProp={'surname'}
-                          register={registerCHW}
-                          error={chwDetailFormErrors?.surname?.message}
-                        />
-                      </div>
-                      <div className="my-4 w-6/12 sm:col-span-3">
-                        <FormField
-                          label={'Cellphone number *'}
-                          nameProp={'phoneNumber'}
-                          register={registerCHW}
-                          error={chwDetailFormErrors.phoneNumber?.message}
-                        />
-                      </div>
+                      {!isAdministrator && (
+                        <>
+                          <div className="my-4 w-6/12 sm:col-span-3">
+                            <FormField
+                              label={'First name'}
+                              nameProp={'firstName'}
+                              register={registerCHW}
+                              error={chwDetailFormErrors.firstName?.message}
+                            />
+                          </div>
+                          <div className="my-4 w-6/12 sm:col-span-3">
+                            <FormField
+                              label={'Surname *'}
+                              nameProp={'surname'}
+                              register={registerCHW}
+                              error={chwDetailFormErrors?.surname?.message}
+                            />
+                          </div>
+                          <div className="my-4 w-6/12 sm:col-span-3">
+                            <FormField
+                              label={'Cellphone number *'}
+                              nameProp={'phoneNumber'}
+                              register={registerCHW}
+                              error={chwDetailFormErrors.phoneNumber?.message}
+                            />
+                          </div>
+                        </>
+                      )}
                     </>
+                  )}
+
+                  {isAdministrator && (
+                    <div className="my-4 w-full sm:col-span-3">
+                      <FormField
+                        label={'Email address *'}
+                        nameProp={'email'}
+                        register={userRegister}
+                        error={chwDetailFormErrors.email?.message}
+                      />
+                    </div>
                   )}
 
                   <div>
@@ -436,7 +452,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                         selectedValue={clinic || clinicId}
                       />
                     )}
-                    {!isTeamLead && !hcwId && (
+                    {!isTeamLead && !hcwId && !isAdministrator && (
                       <div className="my-0 w-6/12 sm:col-span-2">
                         <PasswordInput
                           label={'Password'}
@@ -564,8 +580,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
       <div className="flex justify-end p-4">
         {isNotLockedOut(userData ?? chwData?.user) &&
-          !isAdministrator &&
-          !isTeamLeadRole && (
+          !isTeamLeadRole &&
+          isAdministrator &&
+          !isRegistered && (
             <button
               onClick={() => {
                 setEditActive(!editActive);

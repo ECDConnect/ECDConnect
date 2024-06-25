@@ -4,6 +4,9 @@ export interface PermissionDto extends EntityBase {
   name: string;
   normalizedName: string;
   grouping: string;
+  id: string;
+  permissionId?: string;
+  permissionName: string;
 }
 
 export interface PermissionGroupDto {
