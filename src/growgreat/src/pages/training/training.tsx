@@ -46,7 +46,7 @@ export const Training: React.FC = () => {
     const data = await new ContextService(
       userAuth?.auth_token!
     ).tenantContext();
-    setMoodleUrl(data?.moodleUrlVar);
+    setMoodleUrl(data?.moodleUrl || '');
   };
 
   useEffect(() => {

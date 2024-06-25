@@ -54,6 +54,7 @@ import { ProgrammePlanningRoutineListItemNotCompleted } from '../components/prog
 import PosiviteIcon from '../../../../assets/positive-bonus-emoticon.png';
 import { practitionerSelectors } from '@/store/practitioner';
 import walkthroughImage from '../../../../assets/walktroughImage.png';
+import { parseISO } from 'date-fns';
 
 export const ProgrammeRoutine: React.FC = () => {
   const { state } = useLocation<ProgrammeRoutineRouteState>();
@@ -338,6 +339,7 @@ export const ProgrammeRoutine: React.FC = () => {
               'en-ZA',
               DateFormats.dayWithLongMonthName
             )}`}
+            date={day?.dayDate ? parseISO(day.dayDate) : new Date()}
             programmeId={programme?.id}
             submitButtonText={isLast ? 'Save' : 'Save & continue'}
             preSelectedActivityId={

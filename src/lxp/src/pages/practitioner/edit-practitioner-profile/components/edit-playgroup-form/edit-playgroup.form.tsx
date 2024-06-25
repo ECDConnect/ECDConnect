@@ -4,14 +4,12 @@ import {
   Button,
   ButtonGroup,
   DialogPosition,
-  Divider,
   FormInput,
   Typography,
   Dropdown,
   ButtonGroupTypes,
-  renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
 import {
@@ -39,9 +37,7 @@ import { authSelectors } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 import { practitionerSelectors } from '@/store/practitioner';
-import { classroomsSelectors } from '@/store/classroom';
-
-const playgroupId = 'c8858630-bb66-4d93-b93f-295cf7cd9ed5';
+import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
 
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,
@@ -55,9 +51,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const [classroomGroup, setClassroomGroup] =
     useState<RecursivePartial<ClassroomGroupDto>>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const programmeType = useSelector(
-    classroomsSelectors.getClassroomProgrammeType()
-  );
+
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
   );
@@ -72,6 +66,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     register: playgroupFormRegister,
     reset: resetPlaygroupFormValue,
     control: playgroupFormControl,
+    trigger,
   } = useForm<EditPlaygroupModel>({
     resolver: yupResolver(editPlaygroupSchema),
     mode: 'onBlur',
@@ -79,7 +74,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     reValidateMode: 'onChange',
   });
 
-  const { isFullDay, meetingDays, name } = useWatch({
+  const { isFullDay, meetingDays, name, meetEveryday } = useWatch({
     control: playgroupFormControl,
     defaultValue: playgroup,
   });
@@ -89,16 +84,8 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     errors: { name: playgroupName },
   } = playgroupsFormState;
 
-  const isPlaygroup = useMemo(
-    () => programmeType?.id === playgroupId,
-    [programmeType?.id]
-  );
-
   const isFormValid = () => {
-    const isValidFields = isPlaygroup
-      ? typeof isFullDay === 'boolean' && isValid
-      : isValid;
-    return isValidFields && meetingDays && meetingDays?.length > 1;
+    return isValid && meetingDays && meetingDays?.length > 1;
   };
 
   const [practitionersList, setPractitionersList] = useState<
@@ -108,9 +95,11 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
-        if (p?.user?.firstName && p?.user?.surname) {
+        if (p?.user?.fullName || p?.user?.userName) {
           return {
-            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            label: `${p?.user?.firstName || p?.user?.userName} ${
+              p?.user?.surname
+            }`,
             value: p.userId,
           };
         }
@@ -119,7 +108,10 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       .filter(Boolean) as { label: string; value: any }[];
 
     _list.push({
-      label: currentPractitioner?.user?.fullName || '',
+      label:
+        currentPractitioner?.user?.fullName ||
+        currentPractitioner?.user?.firstName ||
+        '',
       value: currentPractitioner?.userId,
     });
 
@@ -127,19 +119,28 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioners]);
 
+  useEffect(() => {
+    if (meetEveryday == null) return;
+
+    if (!meetEveryday) {
+      setPlaygroupFormValue('meetingDays', []);
+    } else {
+      setPlaygroupFormValue('meetingDays', [1, 2, 3, 4, 5]);
+    }
+
+    trigger();
+  }, [meetEveryday, setPlaygroupFormValue, trigger]);
+
   const getCannotDeletePlaygroupRender = (submit: () => void) => {
     return (
       <ActionModal
-        title={`Cannot delete this class`}
-        paragraphs={[
-          'You cannot delete this class because there are still children in the class.',
-          'Please move the children to a different class before deleting.',
-        ]}
+        title={`You cannot delete this class`}
+        alertMessage="To delete a class, first move all children to a different class or remove children who are no longer in your preschool."
         actionButtons={[
           {
             text: 'Okay',
             textColour: 'white',
-            colour: 'primary',
+            colour: 'quatenary',
             type: 'filled',
             onClick: submit,
             leadingIcon: 'CheckCircleIcon',
@@ -164,7 +165,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           {
             text: 'Delete',
             textColour: 'white',
-            colour: 'primary',
+            colour: 'quatenary',
             type: 'filled',
             onClick: () => {
               onDelete && onDelete();
@@ -174,8 +175,8 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           },
           {
             text: 'Cancel',
-            textColour: 'primary',
-            colour: 'primary',
+            textColour: 'quatenary',
+            colour: 'quatenary',
             type: 'outlined',
             onClick: () => cancel(),
             leadingIcon: 'XIcon',
@@ -184,7 +185,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       />
     );
   };
-
+  // TODO: refactor this to use the new component: src/lxp/src/components/delete-class
   const confirmDelete = () => {
     let dialogOptionModel: DialogModalOptions = {
       position: DialogPosition.Middle,
@@ -254,7 +255,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   }, [playgroup]);
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       <Typography
         type={'h1'}
         text={title}
@@ -291,30 +292,52 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         className="text-errorMain -mb-4"
         type={'small'}
       />
-      <div className="mt-5">
-        <span className={styles.label}>{`When does ${
-          name ? `"${name}"` : 'the'
-        } class meet?`}</span>
-        <span className={styles.hintStyle}>
-          You must choose at least 2 days
-        </span>
+      <div className="mt-2">
+        <span>{`Does ${name ? `${name}` : 'this'} class meet everyday?`}</span>
         <div className="mt-2">
-          <ButtonGroup<number>
-            type={ButtonGroupTypes.Chip}
-            options={buttonDays}
-            onOptionSelected={(value: number | number[]) => {
-              if (typeof value !== 'number') {
-                value = value.sort();
-              }
-              handleDaySelection(value as Weekdays[]);
-            }}
-            multiple
-            selectedOptions={selectedDays}
-            color="secondary"
+          <Controller
+            name={'meetEveryday'}
+            control={playgroupFormControl}
+            render={({ field: { onChange, value, ref } }) => (
+              <ButtonGroup<boolean>
+                inputRef={ref}
+                options={yesNoOptions}
+                onOptionSelected={onChange}
+                selectedOptions={value}
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                className={'w-full'}
+              />
+            )}
           />
         </div>
       </div>
-      {isPlaygroup && (
+      {meetEveryday === false && (
+        <div className="mt-5">
+          <span className={styles.label}>{`When does ${
+            name ? `"${name}"` : 'the'
+          } class meet?`}</span>
+          <span className={styles.hintStyle}>
+            You must choose at least 2 days
+          </span>
+          <div className="mt-2">
+            <ButtonGroup<number>
+              type={ButtonGroupTypes.Chip}
+              options={buttonDays}
+              onOptionSelected={(value: number | number[]) => {
+                if (typeof value !== 'number') {
+                  value = value.sort();
+                }
+                handleDaySelection(value as Weekdays[]);
+              }}
+              multiple
+              selectedOptions={selectedDays}
+              color="secondary"
+            />
+          </div>
+        </div>
+      )}
+      {/* {isPlaygroup && (
         <div className="mt-1">
           <span className={styles.label}>
             Do children attend this playgroup for half the day or the full day?
@@ -333,45 +356,37 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
             />
           </div>
         </div>
-      )}
-      <Divider className="mt-4 mb-2" />
-      <>
+      )} */}
+      <div className="mt-auto">
         <Button
           type="filled"
-          color="primary"
+          color="quatenary"
           className={'mt-10 w-full'}
           onClick={() => {
             onSubmit(
-              isPlaygroup
-                ? getPlaygroupFormValues()
-                : { ...getPlaygroupFormValues(), isFullDay: undefined }
+              // isPlaygroup
+              //   ? getPlaygroupFormValues()
+              //   :
+              { ...getPlaygroupFormValues(), isFullDay: undefined }
             );
           }}
           disabled={!isFormValid()}
-        >
-          {renderIcon(
-            `${isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}`,
-            styles.icon
-          )}
-
-          <Typography
-            type={'help'}
-            text={`${isNew ? 'Next' : 'Save'}`}
-            color={'white'}
-          />
-        </Button>
+          icon={isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}
+          text={isNew ? 'Next' : 'Save'}
+          textColor="white"
+        />
         {!isNew && (
           <Button
             type="outlined"
-            color="primary"
-            className="mt-10 w-full"
+            color="quatenary"
+            className="mt-4 w-full"
             onClick={confirmDelete}
-          >
-            {renderIcon('TrashIcon', styles.iconPrimary)}
-            <Typography type={'help'} text={'Delete'} color={'primary'} />
-          </Button>
+            icon="TrashIcon"
+            text="Delete"
+            textColor="quatenary"
+          />
         )}
-      </>
-    </>
+      </div>
+    </div>
   );
 };

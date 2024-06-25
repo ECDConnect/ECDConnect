@@ -56,7 +56,6 @@ import { ViewReferralDetail } from '../pages/referrals/view-referral-detail/view
 import { EditBackReferral } from '../pages/referrals/edit-back-referral/edit-back-referral';
 import LoginTeamLead from '../components/auth/login-team-lead/login-team-lead';
 import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password/team-lead-forgot-password';
-import { TeamMeetingsMainPage } from '../pages/team-meetings/team-meetings';
 import { Leagues } from '../pages/clinics/leagues/leagues';
 import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
 import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
@@ -71,6 +70,8 @@ import { EditTopics } from '../pages/tl-meetings/components/edit-topics/edit-top
 import { ViewReport } from '../pages/tl-meetings/components/view-report/view-report';
 import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-care-worker-opted-out';
 import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
+import { useApolloClient } from '@apollo/client';
+import { useTenant } from '../hooks/useTenant';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -147,10 +148,17 @@ const TlMeetingsRoutes: React.FC = () => {
 };
 
 const AuthRoutes: React.FC = () => {
+  const apolloClient = useApolloClient();
+  const tenant = useTenant();
+
+  const isGrowGreatTenant = tenant.isCHWConnect;
+
   return (
     <Switch>
       <Route path={`/dashboard`} component={Dashboard}></Route>
-      <Route path={`/settings`} component={Settings}></Route>
+      {!isGrowGreatTenant && (
+        <Route path={`/settings`} component={Settings}></Route>
+      )}
       <Route path={`/data`} component={StaticData}></Route>
       <Route path={ROUTES.PROFILE} component={Profile}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
@@ -161,7 +169,9 @@ const AuthRoutes: React.FC = () => {
       <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
-      <Route path={`/Reports`} component={Reports}></Route>
+      {!isGrowGreatTenant && (
+        <Route path={`/Reports`} component={Reports}></Route>
+      )}
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/messaging`} component={Messaging}></Route>
       <Route path={ROUTES.TEAM_LEAD_LEAGUES} component={TLLeagues}></Route>
@@ -248,7 +258,7 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/roles`} component={Roles}></Route>
       <Route path={ROUTES.USERS.ALL_ROLES} component={ApplicationUsers}></Route>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={ROUTES.VIEW_USERS} component={ViewUser}></Route>
+      <Route path={ROUTES.USERS.VIEW_USER} component={ViewUser}></Route>
       <Route path={ROUTES.USERS.ADMINS} component={ApplicationAdmins}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>

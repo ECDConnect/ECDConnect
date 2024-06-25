@@ -9,7 +9,6 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.PostgresTenancy.Services;
 using ECDLink.SmartStart.Reports;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.Tenancy.Context;
@@ -63,7 +62,7 @@ namespace ECDLink.AutomatedJobs.Notifications
 
                 foreach (var classroom in classrooms)
                 {
-                    var report = reportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), classroom.Id, startOfWeek, DateTime.UtcNow).FirstOrDefault();
+                    var report = reportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), startOfWeek, DateTime.UtcNow).FirstOrDefault();
 
                     if (report != default)
                     {

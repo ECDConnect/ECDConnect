@@ -41,8 +41,9 @@ export const CoachContactPractitioner: React.FC = () => {
   const principal = practitioners?.find(
     (prac) => prac?.userId === practitioner?.principalHierarchy
   );
+  // THIS PROBABLY NEEDS AN UPDATE
   const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.userId === principal?.userId
+    (item) => item.principal.userId === principal?.userId
   );
   const [removePractionerReasonsVisible, setRemovePractionerReasonsVisible] =
     useState<boolean>(false);

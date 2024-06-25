@@ -1,20 +1,12 @@
 import {
-  ExpenseItemDto,
   ExpensesStatementsTypes,
-  IncomeItemDto,
   IncomeStatementDto,
   IncomeStatementsTypes,
-  ReportTableDataDto,
-  StatementsContributionTypes,
-  StatementsFeeTypes,
   StatementsPayTypes,
 } from '@/../../../packages/core/lib';
+import { IncomeTypeIds } from '@ecdlink/core';
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
-import {
-  StatementsExpensesInput,
-  StatementsIncomeInput,
-} from '@ecdlink/graphql';
 
 // Statements types
 export const getExpensesTypes = (state: RootState): ExpensesStatementsTypes[] =>
@@ -23,28 +15,14 @@ export const getExpensesTypes = (state: RootState): ExpensesStatementsTypes[] =>
 export const getIncomeTypes = (state: RootState): IncomeStatementsTypes[] =>
   state.statements?.incomeTypes || [];
 
-export const getFeeTypes = (state: RootState): StatementsFeeTypes[] =>
-  state.statements?.feeTypes || [];
-
-export const getContributionTypes = (
-  state: RootState
-): StatementsContributionTypes[] => state.statements?.contributionTypes || [];
-
 export const getPayTypes = (state: RootState): StatementsPayTypes[] =>
   state.statements?.payTypes || [];
 
 export const getIncomeStatements = createSelector(
   (state: RootState) => state.statements.incomeStatements,
-  (statements: IncomeStatementDto[]) =>
-    [...statements].sort((a, b) => a.year - b.year || a.month - b.month)
+  (statementsData: IncomeStatementDto[]) =>
+    [...statementsData].sort((a, b) => a.year - b.year || a.month - b.month)
 );
-
-export const getUnsubmittedIncomeItems = (state: RootState): IncomeItemDto[] =>
-  state?.statements?.unSubmittedIncomeItems;
-
-export const getUnsubmittedExpenseItems = (
-  state: RootState
-): ExpenseItemDto[] => state?.statements?.unSubmittedExpenseItems;
 
 export const getStatementById = (statementId: string) =>
   createSelector(
@@ -54,10 +32,27 @@ export const getStatementById = (statementId: string) =>
     }
   );
 
-export const getUnsyncedIncomeItems = (
-  state: RootState
-): StatementsIncomeInput[] => state?.statements?.unsyncedIncomeItems;
+export const getStatementForMonth = (year: number, month: number) =>
+  createSelector(
+    (state: RootState) => state.statements.incomeStatements,
+    (statements: IncomeStatementDto[]) =>
+      statements.find(
+        (statement) => statement.year === year && statement.month === month
+      )
+  );
 
-export const getUnsyncedExpenseItems = (
-  state: RootState
-): StatementsExpensesInput[] => state?.statements?.unsyncedExpenseItems;
+export const getPreschoolFeesForMonth = (year: number, month: number) =>
+  createSelector(
+    getStatementForMonth(year, month),
+    (statement: IncomeStatementDto | undefined) => {
+      return {
+        statementId: statement?.id,
+        downloaded: statement?.downloaded,
+        fees: !!statement
+          ? statement.incomeItems.filter(
+              (item) => item.incomeTypeId === IncomeTypeIds.PRESCHOOL_FEE_ID
+            )
+          : [],
+      };
+    }
+  );

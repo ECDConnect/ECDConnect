@@ -8,6 +8,7 @@ import { FutureProgrammes } from '../programme-summary/components/future-program
 import ProgrammeSummary from '../programme-summary/programme-summary';
 import { ProgrammeSummaryRouteState } from '../programme-summary/programme-summary.types';
 import ROUTES from '@routes/routes';
+import { TabsItemForPrincipal } from '../../class-dashboard/class-dashboard.types';
 
 export const ProgrammeSummaries: React.FC = () => {
   const history = useHistory();
@@ -22,7 +23,9 @@ export const ProgrammeSummaries: React.FC = () => {
   const programme = idProgramme || todaysProgramme;
 
   const handleBack = () => {
-    history.replace(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
+    history.replace(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItemForPrincipal.CLASSES,
+    });
   };
 
   return (

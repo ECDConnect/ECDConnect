@@ -7,6 +7,7 @@ export interface EditPlaygroupModel {
   classroomId?: string;
   name: string;
   meetingDays: number[];
+  meetEveryday: boolean;
   isFullDay?: boolean;
   userId?: string;
   id?: string;
@@ -26,6 +27,11 @@ export const editPlaygroupSchema = Yup.object().shape({
       message: 'You cannot use Unsure as a playgroup name',
     })
     .required('This field is required'),
-  meetingDays: Yup.number().required(),
+  meetingDays: Yup.array().when('meetEveryday', {
+    is: true,
+    then: Yup.array().ensure().compact().of(Yup.number().required()).required(),
+    otherwise: Yup.array(),
+  }),
   isFullDay: Yup.boolean(),
+  meetEveryday: Yup.boolean().required(),
 });

@@ -22,9 +22,10 @@ import Food from './components/food/food';
 import LearningMaterials from './components/learning-materials/learning-materials';
 import AnnualMaintenance from './components/annual-maintenance/annual-maintenance';
 import OtherExpense from './components/other-expense/other';
-import { StatementsExpensesInput } from '@ecdlink/graphql';
-import { statementsThunkActions } from '@/store/statements';
+import { statementsActions } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
+import { ExpenseItemDto } from '@ecdlink/core';
+import { BusinessTabItems } from '../../business.types';
 
 export const AddExpense: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -54,13 +55,11 @@ export const AddExpense: React.FC = () => {
   }, [user]);
 
   const onSubmit = useCallback(
-    (expenseItem: StatementsExpensesInput) => {
-      appDispatch(
-        statementsThunkActions.addExpenseItem({
-          input: expenseItem,
-          firstAttempt: true,
-        })
-      );
+    (expenseItem: ExpenseItemDto) => {
+      appDispatch(statementsActions.addExpenseItem(expenseItem));
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.MONEY,
+      });
     },
     [userAuth]
   );
@@ -68,19 +67,25 @@ export const AddExpense: React.FC = () => {
   const incomeType = (type?: string) => {
     switch (type) {
       case 'Rent':
-        return <Rent setType={setType} onSubmit={onSubmit} />;
+        return <Rent onBack={() => setType('')} onSubmit={onSubmit} />;
       case 'Utilities':
-        return <Utilities setType={setType} onSubmit={onSubmit} />;
+        return <Utilities onBack={() => setType('')} onSubmit={onSubmit} />;
       case 'SalaryAndWages':
-        return <SalaryAndWages setType={setType} onSubmit={onSubmit} />;
+        return (
+          <SalaryAndWages onBack={() => setType('')} onSubmit={onSubmit} />
+        );
       case 'Food':
-        return <Food setType={setType} onSubmit={onSubmit} />;
+        return <Food onBack={() => setType('')} onSubmit={onSubmit} />;
       case 'LearningMaterials':
-        return <LearningMaterials setType={setType} onSubmit={onSubmit} />;
+        return (
+          <LearningMaterials onBack={() => setType('')} onSubmit={onSubmit} />
+        );
       case 'AnnualMaintenance':
-        return <AnnualMaintenance setType={setType} onSubmit={onSubmit} />;
+        return (
+          <AnnualMaintenance onBack={() => setType('')} onSubmit={onSubmit} />
+        );
       case 'Other':
-        return <OtherExpense setType={setType} onSubmit={onSubmit} />;
+        return <OtherExpense onBack={() => setType('')} onSubmit={onSubmit} />;
       default:
         break;
     }
@@ -96,6 +101,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('Rent'),
       },
       {
@@ -106,6 +113,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('Utilities'),
       },
       {
@@ -116,6 +125,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('SalaryAndWages'),
       },
       {
@@ -126,6 +137,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('Food'),
       },
       {
@@ -136,6 +149,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('LearningMaterials'),
       },
       {
@@ -146,6 +161,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('AnnualMaintenance'),
       },
       {
@@ -156,6 +173,8 @@ export const AddExpense: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
+        buttonColor: 'quatenary',
+        textColor: 'white',
         onActionClick: () => setType('Other'),
       },
     ];

@@ -21,6 +21,7 @@ import {
   userSchema,
   siteAddressSchema,
   initialSiteAddressValues,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -235,7 +236,7 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
 
   const addUserRole = () => {
     const role = roleData.roles.find(
-      (role: RoleDto) => role.name === 'Franchisor'
+      (role: RoleDto) => role.systemName === RoleSystemNameEnum.Franchisor
     );
 
     const copy = [...selectedUserRoles];

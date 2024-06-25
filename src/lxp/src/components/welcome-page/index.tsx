@@ -1,20 +1,18 @@
 import { Typography, Card, Button } from '@ecdlink/ui';
-import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { useTenant } from '@/hooks/useTenant';
 
 export const WelcomePage = ({ onNext }: { onNext: () => void }) => {
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
   return (
     <>
       <div className="h-full pt-7">
         <div className="flex flex-col gap-11">
-          <Typography
-            color="white"
-            type="h1"
-            text="Hello, my name is Cebisa and I'm here to help you!"
-          />
           <div>
             <Card
-              className="bg-uiBg p-4 flex items-center flex-col gap-3"
-              borderRaduis="lg"
+              className="bg-uiBg flex flex-col items-center gap-3 p-6"
+              borderRaduis="xl"
               shadowSize="lg"
             >
               <div className="">
@@ -22,25 +20,26 @@ export const WelcomePage = ({ onNext }: { onNext: () => void }) => {
               </div>
               <Typography
                 color="textDark"
-                text="I'd like to get to know you."
+                text={`Hello, I'm Cebisa, your ${appName} guide!`}
                 type={'h3'}
+                align="center"
               />
               <Typography
                 className="text-center"
                 color="textMid"
-                text="Please give me more information to make Funda App useful for you!"
+                text="I'd like to get to know you."
                 type={'body'}
               />
             </Card>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 max-h-20">
+        <div className="absolute bottom-0 left-0 right-0 max-h-20 p-4">
           <Button
             size="normal"
             className="w-full"
             type="filled"
-            color="primary"
+            color="quatenary"
             text="Start"
             textColor="white"
             icon="ArrowCircleRightIcon"

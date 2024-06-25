@@ -9,7 +9,6 @@ import {
 } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
-  AddChildLearnerTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
   AddChildRegistrationTokenModelInput,
@@ -40,14 +39,15 @@ export const mapChildUserDto = (
     new Date().getHours()
   );
   if (user) {
+    const { email, fullName, phoneNumber, insertedDate, ...restUser } = user;
     return {
-      ...user,
+      ...restUser,
       idNumber: childInformationForm.childIdField || '',
       firstName: childInformationForm.firstname,
       surname: childInformationForm.surname,
       dateOfBirth: dateOfBirth.toISOString() || '',
       genderId: childExtraInformationForm?.genderId,
-      raceId: childExtraInformationForm?.race,
+      raceId: undefined,
     };
   }
 
@@ -58,7 +58,7 @@ export const mapChildUserDto = (
     verifiedByHomeAffairs: false,
     dateOfBirth: dateOfBirth.toISOString(),
     genderId: childExtraInformationForm?.genderId,
-    raceId: childExtraInformationForm?.race,
+    raceId: '',
     firstName: childInformationForm.firstname ?? '',
     surname: childInformationForm.surname ?? '',
     contactPreference: 'none',
@@ -77,8 +77,18 @@ export const mapChildDto = (
   child?: ChildDto
 ): ChildDto => {
   if (child) {
+    const {
+      insertedDate,
+      insertedBy,
+      userId,
+      caregiverId,
+      // @ts-ignore
+      synced,
+      ...restChild
+    } = child;
     return {
-      ...child,
+      ...restChild,
+      // TODO: update language field to be an array
       languageId:
         childExtraInformationForm?.homeLanguages &&
         childExtraInformationForm.homeLanguages[0]
@@ -87,6 +97,7 @@ export const mapChildDto = (
       allergies: healthInformationForm?.allergies ?? '',
       disabilities: healthInformationForm?.disabilities ?? '',
       otherHealthConditions: healthInformationForm?.healthConditions ?? '',
+      workflowStatusId: childStatusId,
     };
   }
 
@@ -120,8 +131,6 @@ export const mapLearnerDto = (
       id: learner.id && learner.id.length > 0 ? learner.id : newGuid(),
       classroomGroupId: childInformationForm?.playgroupId ?? '',
       userId: userId,
-      attendanceReasonId: childInformationForm?.reason?.id,
-      otherAttendanceReason: childInformationForm?.otherReason ?? '',
     };
   }
 
@@ -129,8 +138,8 @@ export const mapLearnerDto = (
     id: newGuid(),
     classroomGroupId: childInformationForm?.playgroupId ?? '',
     userId: userId,
-    attendanceReasonId: childInformationForm?.reason?.id,
-    otherAttendanceReason: childInformationForm?.otherReason ?? '',
+    attendanceReasonId: '',
+    otherAttendanceReason: '',
     startedAttendance: new Date().toISOString(),
     stoppedAttendance: null,
   };
@@ -165,12 +174,8 @@ export const mapSiteAddressDto = (
   if (siteAddress) {
     return {
       ...siteAddress,
-      provinceId: childCareGiverChildInformationForm?.provinceId,
       addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
-      addressLine2: childCareGiverChildInformationForm?.suburb ?? '',
-      addressLine3: childCareGiverChildInformationForm?.city ?? '',
       postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
-      ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
     };
   }
 
@@ -179,12 +184,8 @@ export const mapSiteAddressDto = (
     isActive: true,
     insertedDate: new Date().toISOString(),
     name: '',
-    provinceId: childCareGiverChildInformationForm?.provinceId,
     addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
-    addressLine2: childCareGiverChildInformationForm?.suburb ?? '',
-    addressLine3: childCareGiverChildInformationForm?.city ?? '',
     postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
-    ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
   };
 };
 
@@ -198,19 +199,22 @@ export const mapCaregiverDto = (
   caregiver?: CaregiverDto
 ): CaregiverDto => {
   if (caregiver) {
+    const { fullName, siteAddressId, isActive, grants, ...restCaregiver } =
+      caregiver;
     return {
-      ...caregiver,
-      idNumber:
-        caregiverInformationForm?.careGiverIdField ??
-        caregiverInformationForm?.careGiverPassportField ??
-        '',
+      ...restCaregiver,
+      // idNumber:
+      //   caregiverInformationForm?.careGiverIdField ??
+      //   caregiverInformationForm?.careGiverPassportField ??
+      //   '',
       firstName: caregiverInformationForm?.firstname ?? '',
       surname: caregiverInformationForm?.surname ?? '',
       relationId: caregiverInformationForm?.relationId,
-      siteAddressId: siteAddressInputModel?.id,
+      // siteAddressId: siteAddressInputModel?.id,
       siteAddress: siteAddressInputModel,
       educationId: childCareGiverExtraInformationForm?.highestEducationId,
-      grants: childCareGiverExtraInformationForm?.familyGrants,
+      // @ts-ignore
+      grantIds: childCareGiverExtraInformationForm?.familyGrants,
       emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
       emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
       emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
@@ -226,17 +230,16 @@ export const mapCaregiverDto = (
 
   return {
     id: newGuid(),
-    isActive: true,
-    idNumber:
-      caregiverInformationForm?.careGiverIdField ??
-      caregiverInformationForm?.careGiverPassportField ??
-      '',
+    // idNumber:
+    //   caregiverInformationForm?.careGiverIdField ??
+    //   caregiverInformationForm?.careGiverPassportField ??
+    //   '',
     phoneNumber: caregiverInformationForm?.phoneNumber || '',
     firstName: caregiverInformationForm?.firstname ?? '',
     surname: caregiverInformationForm?.surname ?? '',
-    insertedDate: new Date().toISOString(),
     relationId: caregiverInformationForm?.relationId,
-    grants: childCareGiverExtraInformationForm?.familyGrants,
+    // @ts-ignore
+    grantIds: childCareGiverExtraInformationForm?.familyGrants,
     siteAddress: siteAddressInputModel,
     educationId: childCareGiverExtraInformationForm?.highestEducationId,
     emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
@@ -266,10 +269,10 @@ export const mapAddChildCaregiverTokenModelInput = (
   childCareGiverContributionForm?: CareGiverContributionFormModel
 ): AddChildCaregiverTokenModelInput => {
   return {
-    idNumber:
-      caregiverInformationForm?.careGiverIdField ??
-      caregiverInformationForm?.careGiverPassportField ??
-      '',
+    // idNumber:
+    //   caregiverInformationForm?.careGiverIdField ??
+    //   caregiverInformationForm?.careGiverPassportField ??
+    //   '',
     phoneNumber: caregiverInformationForm?.phoneNumber,
     firstName: caregiverInformationForm?.firstname ?? '',
     surname: caregiverInformationForm?.surname ?? '',
@@ -290,15 +293,11 @@ export const mapAddChildCaregiverTokenModelInput = (
 
 export const mapAddChildSiteAddressTokenModelInput = (
   childCareGiverChildInformationForm?: CareGiverChildInformationFormModel
-): AddChildSiteAddressTokenModelInput => {
+): Omit<AddChildSiteAddressTokenModelInput, 'provinceId'> => {
   return {
     name: '',
-    provinceId: childCareGiverChildInformationForm?.provinceId,
     addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
-    addressLine2: childCareGiverChildInformationForm?.suburb ?? '',
-    addressLine3: childCareGiverChildInformationForm?.city ?? '',
     postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
-    ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
   };
 };
 
@@ -322,28 +321,19 @@ export const mapAddChildRegistrationTokenModelInput = (
 export const mapAddChildUserConsentTokenModelInput = (
   userId: string,
   childRegistrationFormModel?: ChildRegistrationFormModel
-): AddChildUserConsentTokenModelInput => {
+  // TODO: update this interface because now only childPhotoConsentAccepted and personalInformationAgreementAccepted are used / remove from backend
+): Omit<
+  AddChildUserConsentTokenModelInput,
+  | 'commitmentAgreementAccepted'
+  | 'consentAgreementAccepted'
+  | 'indemnityAgreementAccepted'
+> => {
   return {
     userId: userId,
     childPhotoConsentAccepted:
       childRegistrationFormModel?.childPhotoConsentAccepted || false,
-    commitmentAgreementAccepted:
-      childRegistrationFormModel?.commitmentAgreementAccepted || false,
-    consentAgreementAccepted:
-      childRegistrationFormModel?.consentAgreementAccepted || false,
-    indemnityAgreementAccepted:
-      childRegistrationFormModel?.indemnityAgreementAccepted || false,
     personalInformationAgreementAccepted:
       childRegistrationFormModel?.personalInformationAgreementAccepted || false,
-  };
-};
-
-export const mapAddChildLearnerTokenModelInput = (
-  childInformationForm?: ChildInformationFormModel
-): AddChildLearnerTokenModelInput => {
-  return {
-    attendanceReasonId: childInformationForm?.reason?.id,
-    otherAttendanceReason: childInformationForm?.otherReason ?? '',
   };
 };
 
@@ -363,7 +353,7 @@ export const mapAddChildTokenModelInput = (
     isSouthAfricanCitizen: true,
     verifiedByHomeAffairs: false,
     userId: userId,
-    raceId: childExtraInformationForm?.race,
+    raceId: null,
     languageId:
       childExtraInformationForm?.homeLanguages &&
       childExtraInformationForm.homeLanguages[0]

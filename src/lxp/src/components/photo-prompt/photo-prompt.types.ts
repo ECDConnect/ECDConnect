@@ -1,1 +1,1 @@
-export type PhotoPromptActionType = 'camera' | 'gallery' | 'delete';
+export type PhotoPromptActionType = 'camera' | 'gallery' | 'delete' | 'emojis';

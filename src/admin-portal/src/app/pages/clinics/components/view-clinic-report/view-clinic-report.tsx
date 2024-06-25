@@ -242,12 +242,14 @@ export const ViewClinicReport = ({
           </div>
         )}
       </div>
-      <div className="mt-8">
-        <PointsReportSummary
-          dataFromClinicPointsData={dataFromClinicPointsData}
-          clinic={clinic}
-        />
-      </div>
+      {dataFromClinicPointsData && (
+        <div className="mt-8">
+          <PointsReportSummary
+            dataFromClinicPointsData={dataFromClinicPointsData}
+            clinic={clinic}
+          />
+        </div>
+      )}
 
       <div className="bg-adminPortalBg mt-8 w-full">
         <div>
@@ -267,56 +269,68 @@ export const ViewClinicReport = ({
             align="left"
           />
         </div>
-        <div className="flex gap-x-4">
-          <ReportsDataChart
-            clinic={clinic}
-            targetPerc={clinicPointsData?.clinicPointsData?.momsTargetPerc}
-            targetPercColor={
-              clinicPointsData?.clinicPointsData?.momsTargetPercColor
-            }
-            clinicHigherThan50Perc={
-              clinicPointsData?.clinicPointsData?.momsClinicHigherThan50Perc
-            }
-            clinicLowerThan50Perc={
-              clinicPointsData?.clinicPointsData?.momsClinicLowerThan50Perc
-            }
-            teamsBottomPerc={
-              clinicPointsData?.clinicPointsData?.momsTeamsBottomPerc
-            }
-            teamsTopPerc={clinicPointsData?.clinicPointsData?.momsTeamsTopPerc}
-            topTeamPerc={clinicPointsData?.clinicPointsData?.momsTopTeamPerc}
-            targetRanking={clinicPointsData?.clinicPointsData?.momsRankingPerc}
-            title={'Pregnant moms'}
-            icon={Pregnant}
-          />
-          <ReportsDataChart
-            clinic={clinic}
-            targetPerc={clinicPointsData?.clinicPointsData?.childrenTargetPerc}
-            targetPercColor={
-              clinicPointsData?.clinicPointsData?.childrenTargetPercColor
-            }
-            clinicHigherThan50Perc={
-              clinicPointsData?.clinicPointsData?.childrenClinicHigherThan50Perc
-            }
-            clinicLowerThan50Perc={
-              clinicPointsData?.clinicPointsData?.childrenClinicLowerThan50Perc
-            }
-            teamsBottomPerc={
-              clinicPointsData?.clinicPointsData?.childrenTeamsBottomPerc
-            }
-            teamsTopPerc={
-              clinicPointsData?.clinicPointsData?.childrenTeamsTopPerc
-            }
-            topTeamPerc={
-              clinicPointsData?.clinicPointsData?.childrenTopTeamPerc
-            }
-            targetRanking={
-              clinicPointsData?.clinicPointsData?.childrenRankingPerc
-            }
-            title={'Children'}
-            icon={Infant}
-          />
-        </div>
+        {clinicPointsData?.clinicPointsData && (
+          <div className="flex gap-x-4">
+            <ReportsDataChart
+              clinic={clinic}
+              targetPerc={clinicPointsData?.clinicPointsData?.momsTargetPerc}
+              targetPercColor={
+                clinicPointsData?.clinicPointsData?.momsTargetPercColor
+              }
+              clinicHigherThan50Perc={
+                clinicPointsData?.clinicPointsData?.momsClinicHigherThan50Perc
+              }
+              clinicLowerThan50Perc={
+                clinicPointsData?.clinicPointsData?.momsClinicLowerThan50Perc
+              }
+              teamsBottomPerc={
+                clinicPointsData?.clinicPointsData?.momsTeamsBottomPerc
+              }
+              teamsTopPerc={
+                clinicPointsData?.clinicPointsData?.momsTeamsTopPerc
+              }
+              topTeamPerc={clinicPointsData?.clinicPointsData?.momsTopTeamPerc}
+              targetRanking={
+                clinicPointsData?.clinicPointsData?.momsRankingPerc
+              }
+              title={'Pregnant moms'}
+              icon={Pregnant}
+              key={Math.random()}
+            />
+            <ReportsDataChart
+              clinic={clinic}
+              targetPerc={
+                clinicPointsData?.clinicPointsData?.childrenTargetPerc
+              }
+              targetPercColor={
+                clinicPointsData?.clinicPointsData?.childrenTargetPercColor
+              }
+              clinicHigherThan50Perc={
+                clinicPointsData?.clinicPointsData
+                  ?.childrenClinicHigherThan50Perc
+              }
+              clinicLowerThan50Perc={
+                clinicPointsData?.clinicPointsData
+                  ?.childrenClinicLowerThan50Perc
+              }
+              teamsBottomPerc={
+                clinicPointsData?.clinicPointsData?.childrenTeamsBottomPerc
+              }
+              teamsTopPerc={
+                clinicPointsData?.clinicPointsData?.childrenTeamsTopPerc
+              }
+              topTeamPerc={
+                clinicPointsData?.clinicPointsData?.childrenTopTeamPerc
+              }
+              targetRanking={
+                clinicPointsData?.clinicPointsData?.childrenRankingPerc
+              }
+              title={'Children'}
+              icon={Infant}
+              key={Math.random()}
+            />
+          </div>
+        )}
       </div>
       <div className="mt-8 flex w-full items-center justify-between">
         <Typography

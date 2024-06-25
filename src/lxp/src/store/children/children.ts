@@ -1,20 +1,22 @@
-import { ChildDto, UserDto } from '@ecdlink/core';
+import { ChildDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
-  generateCaregiverChildToken,
-  refreshCaregiverChildToken,
-  openAccessAddChildDetail,
-  getChildrenForCoach,
-  openAccessAddChild,
+  findCreatedChild,
   getChildren,
+  openAccessAddChild,
+  openAccessAddChildDetail,
   updateChild,
+  upsertChildren,
 } from './children.actions';
-import { ChildrenState } from './children.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { CaregiverContactHistory, ChildrenState } from './children.types';
 
 const initialState: ChildrenState = {
-  children: undefined,
-  childUser: undefined,
+  childData: {
+    children: [],
+    dateRefreshed: undefined,
+  },
 };
 
 const childrenSlice = createSlice({
@@ -22,107 +24,129 @@ const childrenSlice = createSlice({
   initialState,
   reducers: {
     resetChildrenState: (state) => {
-      state.children = initialState.children;
-      state.childUser = initialState.childUser;
+      state.childData = initialState.childData;
     },
     createChild: (state, action: PayloadAction<ChildDto>) => {
-      if (!state.children) state.children = [];
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-      state.children?.push(payloadUpdated);
+      //const isOnline = navigator.onLine;
+      const payloadUpdated = { ...action.payload, synced: false };
+      state.childData.children.push(payloadUpdated);
     },
     updateChild: (state, action: PayloadAction<ChildDto>) => {
-      if (!state.children) return;
+      //const isOnline = navigator.onLine;
+      const payloadUpdated = { ...action.payload, synced: false };
 
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-
-      const childIndex = state.children.findIndex(
+      const childIndex = state.childData.children.findIndex(
         (child) => child.id === action.payload.id
       );
 
       if (childIndex < 0) return;
 
-      state.children[childIndex] = payloadUpdated;
-    },
-    createChildUser: (state, action: PayloadAction<UserDto>) => {
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-
-      if (!state.childUser) state.childUser = [];
-      state.childUser?.push(payloadUpdated);
-    },
-    updateChildUser: (state, action: PayloadAction<UserDto>) => {
-      if (state.childUser) {
-        const isOnline = navigator.onLine;
-        const payloadUpdated = { ...action.payload, isOnline };
-        for (let i = 0; i < state.childUser.length; i++) {
-          if (state.childUser[i].id === action.payload.id)
-            state.childUser[i] = payloadUpdated;
-        }
+      if (payloadUpdated?.isActive === false) {
+        state.childData.children = state.childData.children.filter(
+          (child) => child.id !== action.payload.id
+        );
+        return;
       }
+
+      state.childData.children[childIndex] = payloadUpdated;
     },
+    // This might need to merge with create child, or update the child
+    // Will be part of registration though
+    // createChildUser: (state, action: PayloadAction<UserDto>) => {
+    //   const isOnline = navigator.onLine;
+    //   const payloadUpdated = { ...action.payload, isOnline };
+
+    //   if (!state.childUser) state.childUser = [];
+    //   state.childUser?.push(payloadUpdated);
+    // // },
+    // // TODO - just remove this
+    // updateChildUser: (state, action: PayloadAction<UserDto>) => {
+    //   //const isOnline = navigator.onLine;
+    //   const payloadUpdated = { ...action.payload, synced: false };
+    //   for (let i = 0; i < state.childData.children.length; i++) {
+    //     if (state.childData.children[i].userId === action.payload.id)
+    //       state.childData.children[i].user = payloadUpdated;
+    //   }
+    // },
+    // TODO - refactor so it doesn't require the full DTO, otherwise might as well just use udpate child
     deactivateChild: (state, action: PayloadAction<ChildDto>) => {
-      if (!state.children || !state.childUser) return;
+      //const isOnline = navigator.onLine;
+      const payloadUpdated = { ...action.payload, synced: false };
 
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-
-      const childIndex = state.children.findIndex(
+      const childIndex = state.childData.children.findIndex(
         (child) => child.id === action.payload.id
       );
 
       if (childIndex < 0) return;
 
-      const childUserIndex = state.childUser.findIndex(
-        (child) => child.id === action.payload.userId
-      );
+      state.childData.children[childIndex] = payloadUpdated;
+    },
+    addContactHistory: (
+      state,
+      action: PayloadAction<CaregiverContactHistory>
+    ) => {
+      if (!state.contactHistory) state.contactHistory = [];
 
-      if (childUserIndex < 0) return;
-
-      state.children[childIndex] = payloadUpdated;
-      state.childUser[childUserIndex].isActive = false;
+      state.contactHistory.push(action.payload);
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, updateChild);
+    setThunkActionStatus(builder, findCreatedChild);
+    setThunkActionStatus(builder, openAccessAddChildDetail);
+    setThunkActionStatus(builder, openAccessAddChild);
+    builder.addCase(openAccessAddChild.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(openAccessAddChildDetail.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(findCreatedChild.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getChildren.fulfilled, (state, action) => {
-      if (!state.children) {
-        const childUsers: UserDto[] = [];
+      if (!action.payload.retrievedFromCache) {
+        const unsyncedChildren = state.childData.children.filter(
+          (child) => !child.synced
+        );
+        const newChildren = action.payload.children.map((x) => ({
+          ...x,
+          synced: true,
+        }));
 
-        for (let i = 0; i < action.payload.length; i++) {
-          if (action.payload[i].user) {
-            childUsers.push(action.payload[i].user as UserDto);
-          }
-        }
-
-        state.childUser = childUsers;
-        state.children = action.payload;
+        state.childData = {
+          children: unsyncedChildren.concat(newChildren),
+          dateRefreshed: new Date().toDateString(),
+        };
       }
     });
     builder.addCase(updateChild.fulfilled, (state, action) => {
-      if (!state.children) return;
-
-      const childIndex = state.children.findIndex(
+      setFulfilledThunkActionStatus(state, action);
+      const childIndex = state.childData.children.findIndex(
         (child) => child.id === action.payload.id
       );
 
       if (childIndex < 0) return;
 
-      state.children[childIndex] = action.payload;
+      state.childData.children[childIndex] = {
+        ...action.payload,
+        synced: true,
+      };
     });
-    builder.addCase(
-      generateCaregiverChildToken.fulfilled,
-      (state, action) => {}
-    );
-    builder.addCase(
-      refreshCaregiverChildToken.fulfilled,
-      (state, action) => {}
-    );
-    builder.addCase(getChildrenForCoach.fulfilled, (state, action) => {
-      state.children = action.payload;
+    builder.addCase(upsertChildren.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+      state.childData = {
+        ...state.childData,
+        children: state.childData.children.map((child) => ({
+          ...child,
+          synced: true,
+        })),
+      };
     });
-    builder.addCase(openAccessAddChildDetail.fulfilled, (state, action) => {});
-    builder.addCase(openAccessAddChild.fulfilled, (state, action) => {});
+    // Refactor when we work on coach stuff
+    // builder.addCase(getChildrenForCoach.fulfilled, (state, action) => {
+    //   state.childData.children = action.payload;
+    // });
   },
 });
 const { reducer: childrenReducer, actions: childrenActions } = childrenSlice;

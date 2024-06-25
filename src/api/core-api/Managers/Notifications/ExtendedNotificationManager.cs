@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
 
         public async Task<bool> SendGGChildMUACNotification(
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string childFirstName, string infantUserId)
+        [Service] INotificationService notificationService, string userId, string childFirstName, string infantUserId, Guid referralId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
@@ -46,12 +46,12 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             });
             var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUAC, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
 
         public async Task<bool> SendGGChildGrowthIssueNotification(
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string childFirstName, string mothername,string infantUserId, string growthIssue)
+        [Service] INotificationService notificationService, string userId, string childFirstName, string mothername,string infantUserId, string growthIssue, Guid referralId)
         {
            List<TagsReplacements> replacements = new List<TagsReplacements>();
                     replacements.Add(new TagsReplacements()
@@ -76,11 +76,11 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                     });
             var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildGrowthIssue, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
         public async Task<bool> SendGGReferralDangerSignsInfantNotification(
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string firstName, string dangerSignsList, string infantUserId)
+        [Service] INotificationService notificationService, string userId, string firstName, string dangerSignsList, string infantUserId, Guid referralId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
@@ -100,12 +100,12 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             });
             var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
 
          public async Task<bool> SendGGReferralDangerSignsMotherNotification(
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string firstName, string dangerSignsList, string motherUserId)
+        [Service] INotificationService notificationService, string userId, string firstName, string dangerSignsList, string motherUserId, Guid referralId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
@@ -125,12 +125,12 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             });
             var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSignsMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(motherUserId), "ApplicationUser") });
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
 
          public async Task<bool> SendGGRedAlertMaternalDistressNotificationMother(
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string clientFirstName, string motherUserId)
+        [Service] INotificationService notificationService, string userId, string clientFirstName, string motherUserId, Guid referralId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
@@ -144,13 +144,24 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                     ReplacementValue = motherUserId
                 });
                 var userToSend = userManager.FindByIdAsync(userId).Result;
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistressMother, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(motherUserId), "ApplicationUser") });
+
+            return await notificationService.SendNotificationAsync(null, 
+                TemplateTypeConstants.GGRedAlertMaternalDistressMother, 
+                DateTime.Now.Date, 
+                userToSend,
+                "", 
+                MessageStatusConstants.Red, 
+                replacements,
+                null, 
+                false, 
+                true, 
+                null,
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
 
          public async Task<bool> SendGGRedAlertMaternalDistressNotificationInfant(
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string clientFirstName, string infantUserId)
+        [Service] INotificationService notificationService, string userId, string clientFirstName, string infantUserId, Guid referralId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
@@ -165,12 +176,12 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                 });
                 var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistressInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
 
         public async Task<bool> SendGGChildMUACMalnutritionNotification(
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string childFirstName, string infantUserId)
+        [Service] INotificationService notificationService, string userId, string childFirstName, string infantUserId, Guid referralId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
@@ -185,7 +196,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             });
             var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUACMalnutrition, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
 
         public async Task<bool> SendGGPortalCHWMaternalDistressNotificationMother(
@@ -261,7 +272,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
 
           public async Task<bool> SendGGReferDOHANotification (
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string childFirstName, string caregiverFirstName, string infantUserId)
+        [Service] INotificationService notificationService, string userId, string childFirstName, string caregiverFirstName, string infantUserId, Guid referralId)
         {
           List<TagsReplacements> replacements = new List<TagsReplacements>(){
                 new TagsReplacements()
@@ -280,12 +291,12 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
 
             var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferDOHA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
 
         public async Task<bool> SendGGReferSASSANotification (
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string childFirstName, string caregiverFirstName, string infantUserId)
+        [Service] INotificationService notificationService, string userId, string childFirstName, string caregiverFirstName, string infantUserId, Guid referralId)
         {
           List<TagsReplacements> replacements = new List<TagsReplacements>(){
                 new TagsReplacements()
@@ -303,12 +314,12 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             } };
             var userToSend = userManager.FindByIdAsync(userId).Result;
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferSASSA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, true, null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(infantUserId), "ApplicationUser") });
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
 
           public async Task<bool> SendGGMaternalDistressNotification(
         [Service] ApplicationUserManager userManager,
-        [Service] INotificationService notificationService, string userId, string caregiverFirstName, string motherUserId)
+        [Service] INotificationService notificationService, string userId, string caregiverFirstName, string motherUserId, Guid referralId)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
@@ -322,7 +333,8 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
                     ReplacementValue = motherUserId
             });
            var userToSend = userManager.FindByIdAsync(userId).Result;
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGMaternalDistress, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGMaternalDistress, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, null, false, true, null,
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(referralId, "VisitDataStatus") });
         }
     }
 }

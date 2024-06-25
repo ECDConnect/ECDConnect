@@ -1,16 +1,15 @@
 import {
   ChildAttendanceReportModel,
   ChildGroupingAttendanceReportModel,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
-  Divider,
   Dialog,
   DialogPosition,
   StatusChip,
   Typography,
-  renderIcon,
 } from '@ecdlink/ui';
 import { getYear } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -37,8 +36,13 @@ import { classroomsSelectors } from '@/store/classroom';
 import ROUTES from '@/routes/routes';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { userSelectors } from '@store/user';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const ChildAttendanceReportPage: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const { state } = useLocation<ChildAttendanceReportState>();
@@ -46,12 +50,10 @@ export const ChildAttendanceReportPage: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId || childUserId)
-  );
+
   const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
   const learner = useSelector(
-    classroomsSelectors.getChildLearnerByClassroom(
+    classroomsSelectors.getChildLearnerByClassroomGroup(
       classroomGroupId,
       child?.userId || childUserId
     )
@@ -83,15 +85,17 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   const authUser = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
 
   const getAttendanceText = (score: number): string => {
     if (score >= goodScoreThreshold) {
-      return `${childUser?.firstName}'s attendance is good!`;
+      return `${child?.user?.firstName}'s attendance is good!`;
     }
 
     if (score <= badScoreThreshold) {
-      return `${childUser?.firstName}'s attendance has not been good!`;
+      return `${child?.user?.firstName}'s attendance has not been good!`;
     }
 
     return '';
@@ -99,15 +103,14 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   useEffect(() => {
     async function init() {
+      // TODO: update sync rules, today its syncing all attendance records every time we visit this page
       if (attendanceData && attendanceData.length > 0) {
-        await appDispatch(
-          attendanceThunkActions.trackAttendanceSync({})
-        ).unwrap();
+        appDispatch(attendanceThunkActions.trackAttendanceSync({})).unwrap();
       }
       const startDate = new Date(learner?.startedAttendance || new Date());
       const endDate = new Date();
 
-      new AttendanceService(authUser?.auth_token ?? '')
+      await new AttendanceService(authUser?.auth_token ?? '')
         .getChildAttendanceRecords(
           child?.userId ?? childUserId ?? '',
           classroomGroupId,
@@ -117,6 +120,8 @@ export const ChildAttendanceReportPage: React.FC = () => {
         .then((data) => {
           setChildAttendanceReportData(data);
         });
+
+      setIsLoading(false);
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -138,26 +143,29 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       className="h-full overflow-y-auto"
       onBack={() => {
         if (isCoach) {
           history.goBack();
         } else {
-          childId
+          childUserId
+            ? history.push(ROUTES.CLASSROOM.ROOT, {
+                activeTabIndex: TabsItems.ATTENDANCE,
+                fromChildAttendanceReport: true,
+              } as ClassDashboardRouteState)
+            : childId
             ? history.push(ROUTES.CHILD_PROFILE, { childId })
-            : childUserId
-            ? history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 })
             : history.goBack();
         }
       }}
       size={'small'}
-      title={`${childUser?.firstName}'s attendance`}
+      title={`${child?.user?.firstName}'s attendance`}
       displayOffline={!isOnline}
     >
       {isOnline ? (
-        <div className={'flex w-full flex-col pt-2 pb-20'}>
+        <div className={'flex h-full w-full flex-col p-4'}>
           <Typography
-            className={'px-4'}
             type="h1"
             color={'primary'}
             text={`Attendance ${currentYear}`}
@@ -165,7 +173,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
           {childAttendanceReportData?.totalExpectedAttendance !== 0 && (
             <>
-              <div className={'flex w-full flex-row px-4 pt-4'}>
+              <div className={'flex w-full flex-row pt-4'}>
                 <StatusChip
                   backgroundColour={getColor(attendancePercentage)}
                   text={`${
@@ -181,99 +189,71 @@ export const ChildAttendanceReportPage: React.FC = () => {
                   text={`days attended so far this year.`}
                 />
               </div>
-
               <Typography
-                className={'mt-2 px-4'}
+                className={'mt-2 mb-4'}
                 type="body"
                 color={'textMid'}
                 text={getAttendanceText(attendancePercentage)}
               />
             </>
           )}
-          <div
-            className={
-              'border-uiLight flex w-full flex-row items-center justify-between border-b border-solid py-3'
-            }
-          >
-            <Typography
-              className={'mt-2 w-1/2 pl-6'}
-              type="small"
-              color={'textMid'}
-              text={'MONTH'}
-            />
-            <Typography
-              className={'mt-2 w-1/2 pl-6'}
-              type="small"
-              color={'textMid'}
-              text={'DAYS PRESENT'}
-            />
-          </div>
-          {classroomGroup &&
-            classroomGroup.monthlyAttendance.map((report, idx) => {
-              const reportItemColor = getColor(report.attendancePercentage);
-              const reportItemShape = getShape(report.attendancePercentage);
-              return (
-                <div
-                  key={`child-attendance-report-month-${idx}`}
-                  className={`flex w-full flex-row items-center justify-between py-4 bg-${
-                    (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
-                  }`}
-                >
-                  {report?.expectedAttendance > 0 && (
-                    <>
-                      <Typography
-                        className={'w-1/2 pl-6'}
-                        type="body"
-                        weight="bold"
-                        color={'black'}
-                        text={report.month}
+          <table className="text-textDark text-left">
+            <tr className="bg-uiBg border-quatenary border-b">
+              <th className="w-1/2 py-3 pl-4">MONTH</th>
+              <th>DAYS PRESENT</th>
+            </tr>
+            {classroomGroup &&
+              classroomGroup.monthlyAttendance.map((report, idx) => {
+                const reportItemColor = getColor(report.attendancePercentage);
+                const reportItemShape = getShape(report.attendancePercentage);
+                if (!report?.expectedAttendance) return null;
+
+                return (
+                  <tr
+                    key={`child-attendance-report-month-${idx}`}
+                    className={`${
+                      (idx + 1) % 2 === 0 ? 'bg-uiBg' : 'bg-white'
+                    }`}
+                  >
+                    <td className="py-3 pl-4">{report.month}</td>
+                    <td className="flex items-center gap-2 py-3">
+                      <div
+                        className={getShapeClass(
+                          reportItemShape,
+                          reportItemColor
+                        )}
                       />
-                      <div className={'flex w-1/2 flex-row items-center pl-6'}>
-                        <div
-                          className={getShapeClass(
-                            reportItemShape,
-                            reportItemColor
-                          )}
-                        ></div>
-                        <Typography
-                          align={'center'}
-                          className={'ml-2'}
-                          type="body"
-                          color={reportItemColor}
-                          text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          <div className="px-4">
-            <Divider className={'my-4'} />
-            <Button
-              color={'primary'}
-              type="filled"
-              onClick={contactCaregiver}
-              className="w-full"
-            >
-              {renderIcon('ChatAlt2Icon', 'w-5 h-5 text-white mr-2')}
-              <Typography
-                type="small"
-                color={'white'}
-                text={'Contact caregiver'}
-              />
-            </Button>
-          </div>
+                      <Typography
+                        type="body"
+                        color={reportItemColor}
+                        text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+          </table>
+          <Button
+            color="quatenary"
+            type="filled"
+            onClick={contactCaregiver}
+            className="mt-auto w-full"
+            icon="ChatAlt2Icon"
+            text="Contact caregiver"
+            textColor="white"
+          />
         </div>
       ) : (
         <Dialog visible={!isOnline} position={DialogPosition.Middle}>
           <OnlineOnlyModal
             overrideText={'You need to go online to use this feature.'}
             onSubmit={() => {
-              childId
+              childUserId
+                ? history.push(ROUTES.CLASSROOM.ROOT, {
+                    activeTabIndex: TabsItems.ATTENDANCE,
+                  })
+                : childId
                 ? history.push(ROUTES.CHILD_PROFILE, { childId })
-                : childUserId
-                ? history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 })
                 : history.goBack();
             }}
           ></OnlineOnlyModal>

@@ -7,15 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Configuration\Setup\Seed\SeedData\Programme\**" />
+    <Compile Remove="Configuration\**" />
     <Compile Remove="Entities\Classroom\ProgressTracking\**" />
     <Compile Remove="Entities\Programme\**" />
-    <EmbeddedResource Remove="Configuration\Setup\Seed\SeedData\Programme\**" />
+    <Compile Remove="Migrations\**" />
+    <EmbeddedResource Remove="Configuration\**" />
     <EmbeddedResource Remove="Entities\Classroom\ProgressTracking\**" />
     <EmbeddedResource Remove="Entities\Programme\**" />
-    <None Remove="Configuration\Setup\Seed\SeedData\Programme\**" />
+    <EmbeddedResource Remove="Migrations\**" />
+    <None Remove="Configuration\**" />
     <None Remove="Entities\Classroom\ProgressTracking\**" />
     <None Remove="Entities\Programme\**" />
+    <None Remove="Migrations\**" />
   </ItemGroup>
 
   <ItemGroup>

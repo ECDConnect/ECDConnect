@@ -6,6 +6,7 @@ import ConfigWrapper from './config-wrapper';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './styles.css';
+import './i18n';
 
 if (
   process.env.NODE_ENV === 'development' &&

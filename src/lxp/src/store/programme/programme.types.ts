@@ -1,7 +1,8 @@
+import { OfflineUpdate } from '@/models/sync/offline-update';
 import { DailyProgrammeDto, ProgrammeDto } from '@ecdlink/core';
 
 export type ProgrammeState = {
-  programmes?: ProgrammeDto[];
+  programmes?: (ProgrammeDto & Partial<OfflineUpdate>)[];
 };
 
 export type UpdateProgrammeDay = {

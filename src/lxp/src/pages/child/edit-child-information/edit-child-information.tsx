@@ -1,22 +1,16 @@
 import {
-  ContentConsentTypeEnum,
-  SiteAddressDto,
-  useTheme,
   CaregiverDto,
   ChildDto,
-  LearnerDto,
   Document,
   useDialog,
-  ClassroomGroupDto,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
-import { yupResolver } from '@hookform/resolvers/yup';
 import {
   ActionModal,
   BannerWrapper,
   Button,
   Dialog,
   Dropdown,
-  ProfileAvatar,
   StackedList,
   Typography,
   DropDownOption,
@@ -26,17 +20,11 @@ import {
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
-import {
-  caregiverActions,
-  caregiverSelectors,
-  caregiverThunkActions,
-} from '@store/caregiver';
 import {
   childrenActions,
   childrenSelectors,
@@ -59,10 +47,6 @@ import { ChildCaregiverInformation } from './child-caregiver-information/child-c
 import { ChildCaregiverInformationModel } from '@schemas/child/edit-child-information/care-giver-information-form';
 import * as styles from './edit-child-information.styles';
 import {
-  editChildInformationSchema,
-  initialEditChildInformationValues,
-} from '@schemas/child/edit-child-information/edit-child-information';
-import {
   ChildInformationViewType,
   EditChildInformationLocationParams,
 } from './edit-child-information.types';
@@ -75,67 +59,65 @@ import ROUTES from '../../../../src/routes/routes';
 import { UNSURE_CLASS } from '@/constants/classroom';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationsSelectors } from '@/store/notifications';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { getClassroomGroupByChildUserId } from '@/store/classroom/classroom.selectors';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
-  const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
   const practitionerIsOnLeave = location.state.practitionerIsOnLeave;
-  const playgroupEdit = location.state.playgroupEdit;
+  const isFromEditClass = location.state.isFromEditClass;
+
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const languages = useSelector(staticDataSelectors.getLanguages);
-  const currentChild = useSelector(childrenSelectors.getChildById(childId));
+  const child = useSelector(childrenSelectors.getChildById(childId));
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
+  );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const classroomGroupLearners = useSelector(
-    classroomsSelectors.getClassroomGroupLearners
-  );
-  const caregiver = useSelector(
-    caregiverSelectors.getCaregiverById(currentChild?.caregiverId)
-  );
-  const childPhotoConsent = useSelector(
-    userSelectors.getUserConsentByType(
-      currentChild?.userId,
-      ContentConsentTypeEnum.PhotoPermissions
-    )
-  );
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
+
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
   const profilePicture = useSelector(
-    documentSelectors.getDocumentByTypeId(childUser?.id, typeId)
+    documentSelectors.getDocumentByTypeId(child?.userId, typeId)
   );
+
+  const caregiver = child?.caregiver;
 
   const caregiverRelation = useSelector(
     staticDataSelectors.getRelationById(caregiver?.relationId)
   );
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
-  // View States
-  const [editFieldVisible, setEditFieldVisible] = useState(false);
+  const [editClassVisible, setEditClassVisible] = useState(false);
 
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
-  const [viewInfomationVisible, setViewInfomationVisible] =
+  const [viewInformationVisible, setViewInformationVisible] =
     useState<boolean>(false);
   const [currentViewInformationType, setCurrentViewInformationType] =
     useState<ChildInformationViewType>();
 
   // Data Cache
-  const [currentChildLearnerRecord, setCurrentChildLearnerRecord] =
-    useState<LearnerDto>();
+  const currentChildClassroomGroup = useSelector(
+    getClassroomGroupByChildUserId(child?.userId!)
+  );
+
   const [classRoomGroupsList, setClassRoomGroupsList] = useState<
     DropDownOption<string>[]
   >([]);
-
+  const [classroomGroupId, setClassroomGroupId] = useState<string>(
+    classroomGroup?.id || ''
+  );
   // Forms
-  const [childEmergencyContactForm, setchildEmergencyContactForm] =
+  const [childEmergencyContactForm, setChildEmergencyContactForm] =
     useState<ChildEmergencyContactFormModel>();
   const [childHealthInformationForm, setChildHealthInformationForm] =
     useState<ChildHealthInformationFormModel>();
@@ -146,25 +128,11 @@ export const EditChildInformation: React.FC = () => {
   const [childCaregiverInformation, setChildCaregiverInformation] =
     useState<ChildCaregiverInformationModel>();
 
-  const getDefaultFormValues = () => {
-    return initialEditChildInformationValues;
-  };
-
-  const {
-    getValues: editChildInformationFormGetValues,
-    setValue: editChildInformationFormSetValues,
-  } = useForm({
-    resolver: yupResolver(editChildInformationSchema),
-    defaultValues: getDefaultFormValues(),
-    mode: 'onChange',
-  });
-
   useEffect(() => {
-    if (playgroupEdit) {
-      openChildConfirmEditClassPrompt();
+    if (isFromEditClass) {
+      setEditClassVisible(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playgroupEdit]);
+  }, [isFromEditClass]);
 
   useEffect(() => {
     if (classroomGroups) {
@@ -181,21 +149,11 @@ export const EditChildInformation: React.FC = () => {
   }, [classroomGroups]);
 
   useEffect(() => {
-    if (currentChild && classroomGroupLearners) {
-      const currentChildL = classroomGroupLearners.find(
-        (x) => x.userId === currentChild.userId && x.stoppedAttendance == null
-      );
-      setCurrentChildLearnerRecord(currentChildL);
+    if (child) {
+      setNewStackListItems(child, caregiver);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChild, classroomGroupLearners]);
-
-  useEffect(() => {
-    if (currentChild) {
-      setNewStackListItems(currentChild, caregiver);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChild, caregiver, currentChildLearnerRecord]);
+  }, [child, caregiver]);
 
   const assignToClassNotifications = useSelector(
     notificationsSelectors.getAllNotifications
@@ -224,35 +182,36 @@ export const EditChildInformation: React.FC = () => {
       render: (onSubmit, onCancel) => (
         <ActionModal
           customIcon={
-            <ExclamationCircleIcon className="text-alertMain h-10 w-10" />
+            <ExclamationCircleIcon className="text-alertMain mb-4 h-10 w-10" />
           }
           className="bg-white"
           iconBorderColor="alertBg"
-          importantText={`Confirm ${childUser?.firstName}'s class change`}
-          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm.\n\nMake sure you submit today's attendance before changing the class.`}
+          importantText="Confirm class change"
+          detailText={`Confirm that ${child?.user?.firstName}'s caregiver has agreed to this class change.\n\nMake sure you submit today's attendance before changing the class.`}
           actionButtons={[
             {
               text: 'Yes, confirmed with caregiver',
 
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               onClick: () => {
-                openEditField();
+                saveEditClassroomGroup();
+                history.push(ROUTES.CHILD_PROFILE, { childId });
                 onSubmit();
               },
               leadingIcon: 'PencilIcon',
             },
             {
               text: 'No, do this later',
-              textColour: 'primary',
-              colour: 'primary',
+              textColour: 'quatenary',
+              colour: 'quatenary',
               type: 'outlined',
               onClick: () => {
                 onCancel();
                 history.push(ROUTES.CHILD_PROFILE, { childId });
               },
-              leadingIcon: 'ArrowLeftIcon',
+              leadingIcon: 'ClockIcon',
             },
           ]}
         />
@@ -264,7 +223,7 @@ export const EditChildInformation: React.FC = () => {
     childInformationViewType: ChildInformationViewType
   ) => {
     setCurrentViewInformationType(childInformationViewType);
-    setViewInfomationVisible(true);
+    setViewInformationVisible(true);
   };
 
   const getViewInformation = (
@@ -275,10 +234,9 @@ export const EditChildInformation: React.FC = () => {
         case 'address':
           return (
             <CareGiverChildInformationForm
+              enableReadOnlyMode
               careGiverInformation={childCareGiverChildInformationForm}
-              submitButtonIcon="SaveIcon"
-              submitButtonText={isCoach ? 'Close' : 'Save'}
-              canEdit={isCoach}
+              canEdit={!isCoach && !practitionerIsOnLeave}
               onSubmit={(form) => {
                 setChildCareGiverChildInformationForm(form);
                 saveChildAddress(form);
@@ -288,11 +246,10 @@ export const EditChildInformation: React.FC = () => {
         case 'healthInformation':
           return (
             <ChildHealthInformationForm
-              childName={childUser?.firstName ?? ''}
+              enableReadOnlyMode
+              childName={child?.user?.firstName ?? ''}
               childHealthInformation={childHealthInformationForm}
-              submitButtonIcon="SaveIcon"
-              submitButtonText={isCoach ? 'Close' : 'Save'}
-              canEdit={isCoach}
+              canEdit={!isCoach && !practitionerIsOnLeave}
               onSubmit={(form) => {
                 setChildHealthInformationForm(form);
                 saveChildHealthInformation(form);
@@ -302,28 +259,26 @@ export const EditChildInformation: React.FC = () => {
         case 'caregiverInformation':
           return (
             <ChildCaregiverInformation
+              enableReadOnlyMode
               childCareGiverInformation={childCaregiverInformation}
-              childName={childUser?.firstName ?? ''}
-              submitButtonIcon="SaveIcon"
-              submitButtonText={isCoach ? 'Close' : 'Save'}
-              canEdit={isCoach}
+              childName={child?.user?.firstName ?? ''}
+              canEdit={!isCoach}
               onSubmit={(form) => {
                 setChildCaregiverInformation(form);
-                saveChildCareGiver(form);
+                saveChildCaregiver(form);
               }}
             />
           );
         case 'emergencyContact':
           return (
             <ChildEmergencyContactForm
+              enableReadOnlyMode
               childEmergencyContactForm={childEmergencyContactForm}
-              childName={childUser?.firstName ?? ''}
-              submitButtonIcon="SaveIcon"
-              submitButtonText={isCoach ? 'Close' : 'Save'}
+              childName={child?.user?.firstName ?? ''}
               variation="practitioner"
-              canEdit={isCoach}
+              canEdit={!isCoach && !practitionerIsOnLeave}
               onSubmit={(form) => {
-                setchildEmergencyContactForm(form);
+                setChildEmergencyContactForm(form);
                 saveChildEmergencyContact(form);
               }}
             />
@@ -361,14 +316,10 @@ export const EditChildInformation: React.FC = () => {
       if (caregiver?.siteAddress?.addressLine1 !== '') {
         address += caregiver?.siteAddress?.addressLine1;
       }
-      if (caregiver?.siteAddress?.addressLine2 !== '') {
-        address += ', ' + caregiver?.siteAddress?.addressLine2;
-      }
-      if (caregiver?.siteAddress?.addressLine3 !== '') {
-        address += ', ' + caregiver?.siteAddress?.addressLine3;
-      }
-      if (caregiver?.siteAddress?.ward !== '') {
-        address += ', ' + caregiver?.siteAddress?.ward;
+      if (caregiver?.siteAddress?.postalCode !== '') {
+        address = `${address ? (address += ', ') : ''}${
+          caregiver?.siteAddress?.postalCode
+        }`;
       }
       return address;
     }
@@ -378,17 +329,8 @@ export const EditChildInformation: React.FC = () => {
   const setNewStackListItems = (child: ChildDto, caregiver?: CaregiverDto) => {
     const list: ActionListDataItem[] = [];
     if (child) {
-      const learnerClassroomGroup = classroomGroups.find(
-        (x) => x.id === currentChildLearnerRecord?.classroomGroupId
-      );
-
-      editChildInformationFormSetValues(
-        'classroomGroupId',
-        learnerClassroomGroup?.id || ''
-      );
-
       const dobString = format(
-        childUser?.dateOfBirth ? new Date(childUser?.dateOfBirth) : 0,
+        child?.user?.dateOfBirth ? new Date(child?.user?.dateOfBirth) : 0,
         'd MMM yyyy'
       );
 
@@ -403,17 +345,6 @@ export const EditChildInformation: React.FC = () => {
         subTitle:
           languages.find((x) => x.id === child.languageId)?.description || '',
         switchTextStyles: true,
-      });
-
-      list.push({
-        title: 'Class',
-        subTitle: learnerClassroomGroup?.name || 'No class',
-        switchTextStyles: true,
-        actionName: isCoach || practitionerIsOnLeave ? undefined : 'Edit',
-        actionIcon: 'PencilIcon',
-        onActionClick: () => {
-          openChildConfirmEditClassPrompt();
-        },
       });
 
       if (caregiver) {
@@ -458,6 +389,17 @@ export const EditChildInformation: React.FC = () => {
         });
 
         list.push({
+          title: 'Health information',
+          subTitle: getHealthInformation(child),
+          switchTextStyles: true,
+          actionName: 'View',
+          actionIcon: 'EyeIcon',
+          onActionClick: () => {
+            openViewInformation('healthInformation');
+          },
+        });
+
+        list.push({
           title: 'Address',
           subTitle: getAddress(),
           switchTextStyles: true,
@@ -469,11 +411,7 @@ export const EditChildInformation: React.FC = () => {
         });
 
         setChildCareGiverChildInformationForm({
-          apartmentNumber: caregiver?.siteAddress?.ward,
           streetAddress: caregiver?.siteAddress?.addressLine1,
-          suburb: caregiver?.siteAddress?.addressLine2,
-          city: caregiver?.siteAddress?.addressLine3,
-          provinceId: caregiver?.siteAddress?.provinceId,
           postalCode: caregiver?.siteAddress?.postalCode,
         } as CareGiverChildInformationFormModel);
 
@@ -485,7 +423,7 @@ export const EditChildInformation: React.FC = () => {
           phoneNumber: caregiver?.phoneNumber,
         } as ChildCaregiverInformationModel);
 
-        setchildEmergencyContactForm({
+        setChildEmergencyContactForm({
           firstname: caregiver.emergencyContactFirstName,
           surname: caregiver.emergencyContactSurname,
           phoneNumber: caregiver.emergencyContactPhoneNumber,
@@ -495,17 +433,6 @@ export const EditChildInformation: React.FC = () => {
           custodianPhoneNumber: caregiver.additionalPhoneNumber,
         } as ChildEmergencyContactFormModel);
       }
-
-      list.push({
-        title: 'Health information',
-        subTitle: getHealthInformation(child),
-        switchTextStyles: true,
-        actionName: 'View',
-        actionIcon: 'EyeIcon',
-        onActionClick: () => {
-          openViewInformation('healthInformation');
-        },
-      });
 
       setChildHealthInformationForm({
         allergies: child.allergies,
@@ -539,233 +466,152 @@ export const EditChildInformation: React.FC = () => {
     return information;
   };
 
-  const openEditField = () => {
-    setEditFieldVisible(true);
-  };
-
   const saveEditClassroomGroup = async () => {
-    const newClassroomGroupId =
-      editChildInformationFormGetValues().classroomGroupId;
+    if (!!child) {
+      // They should always be in a classroom group though
+      if (!!currentChildClassroomGroup) {
+        // Deactivate old learner record
+        removeNotifications();
 
-    if (currentChildLearnerRecord) {
-      const learnerInputModel: LearnerDto = {
-        id: currentChildLearnerRecord?.id,
-        classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
-        userId: currentChildLearnerRecord?.userId ?? '',
-        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-        otherAttendanceReason:
-          currentChildLearnerRecord?.otherAttendanceReason ?? '',
-        startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
-        stoppedAttendance: new Date().toISOString(),
-        isActive: false,
-      };
-
-      removeNotifications();
+        appDispatch(
+          classroomsActions.deactivateLearner({
+            childUserId: child.userId!,
+            classroomGroupId: currentChildClassroomGroup.id,
+          })
+        );
+      }
 
       appDispatch(
-        classroomsActions.updateClassroomGroupLearner(learnerInputModel)
-      );
-
-      await appDispatch(
-        classroomsThunkActions.updateLearner({
-          id: learnerInputModel.id as string,
-          learner: learnerInputModel,
+        classroomsActions.createLearner({
+          childUserId: child.userId!,
+          newClassroomGroupId: classroomGroupId,
         })
       );
 
-      const newLearnerModel: LearnerDto = {
-        id: newGuid(),
-        classroomGroupId: newClassroomGroupId,
-        userId: currentChildLearnerRecord?.userId ?? '',
-        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-        otherAttendanceReason:
-          currentChildLearnerRecord?.otherAttendanceReason ?? '',
-        startedAttendance: new Date().toISOString(),
-        stoppedAttendance: null,
-        isActive: currentChildLearnerRecord?.isActive,
-      };
-
-      appDispatch(
-        classroomsActions.createClassroomGroupLearner(newLearnerModel)
-      );
-
       await appDispatch(
-        classroomsThunkActions.createLearner({ learner: newLearnerModel })
-      ).unwrap();
-
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroups({})
-      ).unwrap();
-    } else {
-      //this child does not belong to any classroomgroup
-      const newLearnerModel: LearnerDto = {
-        classroomGroupId: newClassroomGroupId,
-        userId: currentChild?.userId ?? '',
-        attendanceReasonId: undefined,
-        otherAttendanceReason: '',
-        startedAttendance: new Date().toISOString(),
-        stoppedAttendance: null,
-        isActive: true,
-      };
-
-      appDispatch(
-        classroomsActions.createClassroomGroupLearner(newLearnerModel)
-      );
-
-      await appDispatch(
-        classroomsThunkActions.createLearner({ learner: newLearnerModel })
-      ).unwrap();
-
-      await appDispatch(
-        classroomsThunkActions.upsertClassroomGroups({})
+        classroomsThunkActions.upsertClassroomGroupLearners({})
       ).unwrap();
     }
-    setEditFieldVisible(false);
+
+    setEditClassVisible(false);
     history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
-  const saveChildCareGiver = async (
+  const saveChildCaregiver = async (
     childCaregiverForm: ChildCaregiverInformationModel
   ) => {
-    if (caregiver) {
-      const careGiverInputModel: CaregiverDto = {
-        id: caregiver?.id ?? newGuid(),
-        isActive: true,
-        idNumber: caregiver?.idNumber ?? '',
-        phoneNumber: childCaregiverForm.phoneNumber,
-        firstName: caregiver?.firstName ?? '',
-        surname: caregiver?.surname ?? '',
-        insertedDate: new Date().toISOString(),
-        relationId: caregiver?.relationId,
-        siteAddress: caregiver?.siteAddress,
-        educationId: caregiver?.educationId,
-        emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
-        emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
-        emergencyContactPhoneNumber:
-          childEmergencyContactForm?.phoneNumber ?? '',
-        additionalFirstName: childEmergencyContactForm?.isAllowedCustody
-          ? childEmergencyContactForm.firstname
-          : childEmergencyContactForm?.custodianFirstname,
-        additionalSurname: childEmergencyContactForm?.isAllowedCustody
-          ? childEmergencyContactForm.surname
-          : childEmergencyContactForm?.custodianSurname,
-        additionalPhoneNumber: childEmergencyContactForm?.isAllowedCustody
-          ? childEmergencyContactForm.phoneNumber
-          : childEmergencyContactForm?.custodianPhoneNumber,
-        joinReferencePanel: caregiver?.joinReferencePanel ?? false,
-        contribution: caregiver?.contribution ?? false,
-        isAllowedCustody: childEmergencyContactForm?.isAllowedCustody ?? false,
+    if (!!child && !!child.caregiver) {
+      const updatedChild = {
+        ...child,
+        caregiver: {
+          ...child.caregiver,
+          phoneNumber: childCaregiverForm.phoneNumber,
+        },
       };
 
-      appDispatch(caregiverActions.updateCaregiver(careGiverInputModel));
+      appDispatch(childrenActions.updateChild(updatedChild));
       await appDispatch(
-        caregiverThunkActions.updateCaregiver({
-          id: careGiverInputModel.id as string,
-          caregiver: careGiverInputModel,
+        childrenThunkActions.updateChild({
+          id: updatedChild.id as string,
+          child: updatedChild,
         })
       );
-      setViewInfomationVisible(false);
     }
+    setViewInformationVisible(false);
   };
 
   const saveChildEmergencyContact = async (
-    formData: ChildEmergencyContactFormModel
+    emergencyContactForm: ChildEmergencyContactFormModel
   ) => {
-    if (caregiver) {
-      const careGiverInputModel: CaregiverDto = {
-        id: caregiver.id ?? newGuid(),
-        isActive: true,
-        idNumber: caregiver.idNumber ?? '',
-        phoneNumber: caregiver.phoneNumber,
-        firstName: caregiver.firstName ?? '',
-        surname: caregiver.surname ?? '',
-        insertedDate: new Date().toISOString(),
-        relationId: caregiver.relationId,
-        siteAddress: caregiver.siteAddress,
-        educationId: caregiver.educationId,
-        emergencyContactFirstName: formData.firstname,
-        emergencyContactSurname: formData.surname,
-        emergencyContactPhoneNumber: formData.phoneNumber,
-        additionalFirstName: formData.isAllowedCustody
-          ? formData.firstname
-          : formData.custodianFirstname,
-        additionalSurname: formData.isAllowedCustody
-          ? formData.surname
-          : formData.custodianSurname,
-        additionalPhoneNumber: formData.isAllowedCustody
-          ? formData.phoneNumber
-          : formData.custodianPhoneNumber,
-        joinReferencePanel: caregiver?.joinReferencePanel ?? false,
-        contribution: caregiver?.contribution ?? false,
-        isAllowedCustody: formData.isAllowedCustody,
+    //const updateChild = Object.assign({}, child);
+    if (!!child && !!child.caregiver) {
+      const updatedChild = {
+        ...child,
+        caregiver: {
+          ...child.caregiver,
+          emergencyContactFirstName: emergencyContactForm.firstname,
+          emergencyContactSurname: emergencyContactForm.surname,
+          emergencyContactPhoneNumber: emergencyContactForm?.phoneNumber,
+          additionalFirstName: emergencyContactForm.isAllowedCustody
+            ? emergencyContactForm.firstname
+            : emergencyContactForm?.custodianFirstname,
+          additionalSurname: emergencyContactForm.isAllowedCustody
+            ? emergencyContactForm.surname
+            : emergencyContactForm?.custodianSurname,
+          additionalPhoneNumber: emergencyContactForm.isAllowedCustody
+            ? emergencyContactForm.phoneNumber
+            : emergencyContactForm?.custodianPhoneNumber,
+          isAllowedCustody: emergencyContactForm.isAllowedCustody ?? false,
+        },
       };
 
-      appDispatch(caregiverActions.updateCaregiver(careGiverInputModel));
+      appDispatch(childrenActions.updateChild(updatedChild));
       await appDispatch(
-        caregiverThunkActions.updateCaregiver({
-          id: careGiverInputModel.id as string,
-          caregiver: careGiverInputModel,
+        childrenThunkActions.updateChild({
+          id: updatedChild.id as string,
+          child: updatedChild,
         })
       );
     }
 
-    setViewInfomationVisible(false);
+    setViewInformationVisible(false);
   };
 
   const saveChildHealthInformation = async (
     childHealthInformationForm: ChildHealthInformationFormModel
   ) => {
-    if (currentChild) {
-      const updateChild = Object.assign({}, currentChild);
+    if (child) {
+      const updatedChild = {
+        ...child,
+        allergies: childHealthInformationForm.allergies,
+        disabilities: childHealthInformationForm.disabilities,
+        otherHealthConditions: childHealthInformationForm.healthConditions,
+      };
 
-      if (updateChild) {
-        updateChild.allergies = childHealthInformationForm?.allergies || '';
-        updateChild.disabilities =
-          childHealthInformationForm?.disabilities || '';
-        updateChild.otherHealthConditions =
-          childHealthInformationForm?.healthConditions || '';
-
-        appDispatch(childrenActions.updateChild(updateChild));
-        await appDispatch(
-          childrenThunkActions.updateChild({
-            child: updateChild,
-            id: String(updateChild.id),
-          })
-        ).unwrap();
-      }
-
-      setViewInfomationVisible(false);
+      appDispatch(childrenActions.updateChild(updatedChild));
+      await appDispatch(
+        childrenThunkActions.updateChild({
+          child: updatedChild,
+          id: String(updatedChild.id),
+        })
+      ).unwrap();
     }
+
+    setViewInformationVisible(false);
   };
 
   const saveChildAddress = async (
-    childHealthInformationForm: CareGiverChildInformationFormModel
+    childAddressInformationForm: CareGiverChildInformationFormModel
   ) => {
-    if (caregiver) {
-      const updateCareGiver: CaregiverDto = JSON.parse(
-        JSON.stringify(caregiver)
-      );
-      if (updateCareGiver) {
-        const siteAddress: SiteAddressDto = {
-          id: updateCareGiver.siteAddress
-            ? updateCareGiver.siteAddress.id
-            : newGuid(),
-          name: childHealthInformationForm.apartmentNumber ?? '',
-          addressLine1: childHealthInformationForm.streetAddress,
-          addressLine2: childHealthInformationForm.suburb,
-          addressLine3: childHealthInformationForm.city,
-          provinceId: childHealthInformationForm.provinceId,
-          ward: childHealthInformationForm.apartmentNumber,
-          postalCode: childHealthInformationForm.postalCode,
-        };
-        updateCareGiver.siteAddress = siteAddress;
-        updateCareGiver.siteAddressId = siteAddress.id;
+    if (!!child && !!child.caregiver) {
+      const siteAddressId = !!child.caregiver.siteAddressId
+        ? child.caregiver.siteAddressId
+        : newGuid();
 
-        appDispatch(caregiverActions.updateCaregiver(updateCareGiver));
-      }
+      const updatedChild = {
+        ...child,
+        caregiver: {
+          ...child.caregiver,
+          siteAddressId: siteAddressId,
+          siteAddress: {
+            ...child.caregiver.siteAddress,
+            id: siteAddressId,
+            addressLine1: childAddressInformationForm.streetAddress,
+            postalCode: childAddressInformationForm.postalCode,
+          },
+        },
+      };
 
-      setViewInfomationVisible(false);
+      appDispatch(childrenActions.updateChild(updatedChild));
+      await appDispatch(
+        childrenThunkActions.updateChild({
+          child: updatedChild,
+          id: String(updatedChild.id),
+        })
+      ).unwrap();
     }
+
+    setViewInformationVisible(false);
   };
 
   const displayProfilePicturePrompt = () => {
@@ -773,7 +619,7 @@ export const EditChildInformation: React.FC = () => {
   };
 
   const closeEditField = () => {
-    setEditFieldVisible(false);
+    setEditClassVisible(false);
     history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
@@ -786,7 +632,7 @@ export const EditChildInformation: React.FC = () => {
         })
       );
     } else {
-      const fileName = `ProfilePicture_${childUser?.id}.png`;
+      const fileName = `ProfilePicture_${child?.userId}.png`;
 
       const statusId = await getWorkflowStatusIdByEnum(
         WorkflowStatusEnum.DocumentVerified
@@ -794,7 +640,7 @@ export const EditChildInformation: React.FC = () => {
 
       const documentInputModel: Document = {
         id: newGuid(),
-        userId: childUser?.id,
+        userId: child?.userId,
         createdUserId: user?.id ?? '',
         workflowStatusId: statusId ?? '',
         documentTypeId: typeId ?? '',
@@ -819,41 +665,28 @@ export const EditChildInformation: React.FC = () => {
   return (
     <div className={'h-full overflow-y-auto'}>
       <BannerWrapper
-        showBackground={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
-        backgroundImageColour={'primary'}
         title={
-          childUser
-            ? `${childUser?.firstName} ${childUser?.surname} Profile`
+          !!child && !!child.user
+            ? `${child.user.firstName} ${child.user.surname} Profile`
             : 'Profile'
         }
         color={'primary'}
-        size="medium"
+        size="small"
         renderBorder={true}
         renderOverflow={false}
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
+        className="flex w-full flex-col items-center justify-center p-4"
       >
-        <div
-          className={'flex w-full flex-col items-center justify-center pt-8'}
-        >
-          <ProfileAvatar
-            dataUrl={profilePicture?.file || childUser?.profileImageUrl || ''}
-            size={'header'}
-            hasConsent={childPhotoConsent ? true : false}
-            canChangeImage={childPhotoConsent ? true : false}
-            onPressed={displayProfilePicturePrompt}
-          />
-          <StackedList
-            className={'w-full bg-white px-4'}
-            listItems={listItems}
-            type={'ActionList'}
-          />
-        </div>
+        <StackedList
+          className="w-full"
+          listItems={listItems}
+          type={'ActionList'}
+        />
       </BannerWrapper>
 
       <Dialog
-        visible={viewInfomationVisible}
+        visible={viewInformationVisible}
         position={DialogPosition.Bottom}
         fullScreen={true}
         className={'bg-uiBg'}
@@ -862,7 +695,7 @@ export const EditChildInformation: React.FC = () => {
           size={'small'}
           showBackground={false}
           color={'primary'}
-          onBack={() => setViewInfomationVisible(false)}
+          onBack={() => setViewInformationVisible(false)}
           title={getViewInformationTitle(currentViewInformationType)}
           className={styles.bannerContentWrapper}
           displayOffline={!isOnline}
@@ -886,23 +719,22 @@ export const EditChildInformation: React.FC = () => {
       </Dialog>
 
       <Dialog
-        stretch={true}
-        borderRadius="normal"
-        visible={editFieldVisible}
-        position={DialogPosition.Middle}
+        stretch
+        visible={editClassVisible}
+        position={DialogPosition.Bottom}
       >
-        <div className={'p-4'}>
+        <div className={'flex flex-col overflow-auto p-4'}>
           <div className={styles.labelContainer}>
             <Typography
               type="body"
               className=""
               color="textDark"
-              text={'Edit Classes'}
+              text={'Edit Class'}
               weight="bold"
             />
-            <div onClick={closeEditField}>
+            <button onClick={closeEditField}>
               {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
-            </div>
+            </button>
           </div>
           <Dropdown<string>
             placeholder={'Select class'}
@@ -910,28 +742,22 @@ export const EditChildInformation: React.FC = () => {
             fillType="clear"
             fullWidth
             className={'mt-3 w-full'}
-            selectedValue={editChildInformationFormGetValues().classroomGroupId}
+            selectedValue={classroomGroupId}
             onChange={(item) => {
-              editChildInformationFormSetValues('classroomGroupId', item);
+              setClassroomGroupId(item);
             }}
           />
-          <div className={'w-full pt-6'}>
-            <Button
-              size="small"
-              type="filled"
-              color="primary"
-              className={'w-full'}
-              onClick={saveEditClassroomGroup}
-            >
-              {renderIcon('SaveIcon', styles.buttonIcon)}
-              <Typography
-                type="help"
-                className="mr-2"
-                color="white"
-                text={'Save'}
-              />
-            </Button>
-          </div>
+          <Button
+            size="small"
+            type="filled"
+            color="quatenary"
+            className={'mt-6 w-full'}
+            disabled={!classroomGroupId}
+            onClick={openChildConfirmEditClassPrompt}
+            icon="SaveIcon"
+            text="Save"
+            textColor="white"
+          />
         </div>
       </Dialog>
     </div>

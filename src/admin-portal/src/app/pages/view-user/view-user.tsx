@@ -21,7 +21,6 @@ import { ThumbUpIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetHealthCareWorkerByUserId,
-  GetTenantContext,
   GetUserById,
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLeadSummary,
@@ -40,10 +39,12 @@ import { HealthCareWorkerSummary } from './components/health-care-worker-summary
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
 import { HealthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
-import { GrowGreatRoles, TenantContext } from '../../utils/constants';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
+import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
+import { useTenant } from '../../hooks/useTenant';
+import { ResetUserPassword } from './components/reset-password/reset-password';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -88,6 +89,7 @@ export function ViewUser(props: any) {
   const clinicIds = props?.location?.state?.clinicIds;
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
+  const tenant = useTenant();
 
   const { isTeamLead: isTeamLeadRole } = useUserRole();
 
@@ -124,10 +126,6 @@ export function ViewUser(props: any) {
         { name: 'View user', url: '' },
       ];
 
-  const { data, loading: loadingTenant } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
-
   const [
     getChwById,
     { data: chwData, refetch: refetchCHW, loading: loadingChw },
@@ -160,7 +158,7 @@ export function ViewUser(props: any) {
       fetchPolicy: 'cache-and-network',
     });
 
-  const isLoading = loadingTenant || loadingChw || loadingUser;
+  const isLoading = loadingChw || loadingUser;
 
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
@@ -217,7 +215,7 @@ export function ViewUser(props: any) {
   };
 
   let isCHWRole = userData?.userById?.roles?.some(
-    (role: any) => role.name === GrowGreatRoles.HealthCareWorker
+    (role: any) => role.systemName === RoleSystemNameEnum.CHW
   );
 
   const getRoleStatusChip = (status: string) => {
@@ -391,7 +389,7 @@ export function ViewUser(props: any) {
               <div
                 key={i.id}
                 className={classNames(
-                  i.name === GrowGreatRoles.HealthCareWorker
+                  i.name === RoleSystemNameEnum.CHW
                     ? 'bg-primary'
                     : 'bg-tertiary',
                   ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
@@ -399,7 +397,7 @@ export function ViewUser(props: any) {
               >
                 <p className="text-16">
                   {' '}
-                  {i.name === GrowGreatRoles.HealthCareWorker ? 'CHW' : i.name}
+                  {i.name === RoleSystemNameEnum.CHW ? 'CHW' : i.name}
                 </p>
               </div>
             );
@@ -410,7 +408,7 @@ export function ViewUser(props: any) {
       ) && (
         <Alert
           className="mt-5 mb-3"
-          message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
+          message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
           type="error"
         />
       )}
@@ -435,9 +433,7 @@ export function ViewUser(props: any) {
       {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered &&
-        data &&
-        data.tenantContext &&
-        data.tenantContext.applicationName === TenantContext.GrowGreat && (
+        tenant.isCHWConnect && (
           <DatePicker
             selectsRange
             selected={startDate}
@@ -506,7 +502,6 @@ export function ViewUser(props: any) {
         {isNotLockedOut(
           userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
         ) &&
-          !isAdministrator &&
           !isTeamLeadRole && (
             <div className="flex flex-col gap-2 lg:flex-row">
               {!isRegistered && (
@@ -516,11 +511,15 @@ export function ViewUser(props: any) {
                   refetchUserData={refetchUserData}
                 />
               )}
+              {/* {isRegistered && isAdministrator && (
+                <ResetUserPassword userData={userData?.userById} />
+              )} */}
               <DeactivateUser
                 userData={userData?.userById}
                 chwData={chwData?.GetHealthCareWorkerById}
                 refetchUserData={refetchUserData}
                 isTeamLead={isTeamLead}
+                isAdministrator={isAdministrator}
                 teamLeadId={teamLeadId}
                 hcwId={hcwId}
               />
@@ -528,7 +527,7 @@ export function ViewUser(props: any) {
           )}
 
         <p className="ml-auto text-sm text-gray-600">
-          User added to {data?.tenantContext.applicationName} App :{' '}
+          User added to {tenant.tenant?.applicationName} App :{' '}
           {formatDate(
             chwData?.GetHealthCareWorkerById?.insertedDate ||
               userData?.userById?.insertedDate

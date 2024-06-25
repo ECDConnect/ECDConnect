@@ -1,5 +1,9 @@
 import {
+  Config,
   ContentConsentTypeEnum,
+  NOTIFICATION,
+  RegisterRequestModel,
+  useNotifications,
   useQueryParams,
   useTheme,
 } from '@ecdlink/core';
@@ -9,15 +13,10 @@ import {
   BannerWrapper,
   Button,
   Checkbox,
-  ChipStatus,
-  classNames,
   Dialog,
   DialogPosition,
   Divider,
   FormInput,
-  HeaderCard,
-  HeaderSlide,
-  PasswordInput,
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
@@ -38,13 +37,16 @@ import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
 import { UserService } from '@/services/UserService';
+import { HelpForm } from '@/components/help-form/help-form';
+import ROUTES from '@/routes/routes';
+import { useTenant } from '@/hooks/useTenant';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
-let headerSlide: HeaderSlide;
-
 export const SignUp: React.FC = () => {
+  const tenant = useTenant();
   const appDispatch = useAppDispatch();
+  const { setNotification } = useNotifications();
   const {
     watch,
     register: signUpRegister,
@@ -52,6 +54,8 @@ export const SignUp: React.FC = () => {
     getValues: signUpFormGetValues,
     handleSubmit,
     control,
+    clearErrors,
+    trigger,
   } = useForm<SignUpModel>({
     resolver: yupResolver(signUpSchema),
     defaultValues: initialRegisterValues,
@@ -75,26 +79,10 @@ export const SignUp: React.FC = () => {
   const authToken = queryParams.getValue('token');
   const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
-
-  if (userDetails) {
-    // coach
-    if (userDetails.roleName === 'Coach') {
-      headerSlide = {
-        status: ChipStatus.Available,
-        title: 'Manage practitioners',
-        text: 'View practitioner details, see classroom information and fill in important forms.',
-        image: '../../../assets/banner-coach.jpg',
-      };
-    }
-  } else {
-    // practitioner & principal
-    headerSlide = {
-      status: ChipStatus.Available,
-      title: 'Manage your classroom',
-      text: 'Take attendance, track progress, and plan your programme',
-      image: '../../../assets/banner-ss.jpg',
-    };
-  }
+  const [openHelp, setOpenHelp] = useState(false);
+  const appName = tenant?.tenant?.applicationName;
+  const isWhitelabel = tenant?.isWhiteLabel;
+  const [permissionsErrorMessage, setPermissionsErrorMessage] = useState('');
 
   useEffect(() => {
     async function init() {
@@ -103,7 +91,7 @@ export const SignUp: React.FC = () => {
         await resetAuth();
       }
 
-      await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
+      await appDispatch(staticDataThunkActions.getOpenLanguages({})).unwrap();
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -126,11 +114,21 @@ export const SignUp: React.FC = () => {
     }
   }, []);
 
-  const errorStrings = Object.keys(errors).map(
-    (x) => errors[x as keyof SignUpModel]?.message || ''
-  );
-
   watch();
+
+  useEffect(() => {
+    if (
+      errors.termsAndConditionsAccepted?.message ||
+      errors.dataPermissionAgreementAccepted?.message
+    ) {
+      setPermissionsErrorMessage(
+        'You must accept both agreements to continue.'
+      );
+    }
+  }, [
+    errors.dataPermissionAgreementAccepted?.message,
+    errors.termsAndConditionsAccepted?.message,
+  ]);
 
   const submitForm = async (formValue: SignUpModel) => {
     const valid = await signUpSchema.isValid(formValue);
@@ -150,30 +148,53 @@ export const SignUp: React.FC = () => {
     setIsLoading(false);
 
     if (informationVerified.errorCode) {
-      setRequestError('You entered incorrect details');
-      return;
+      if (informationVerified.verified === false) {
+        if (informationVerified.errorCode === 1) {
+          setRequestError(`If you are having trouble, tap "Get help"`);
+          setIsLoading(false);
+          return;
+        }
+        if (informationVerified.errorCode === 2) {
+          setPresentCellNumberMismatch(true);
+          setIsLoading(false);
+        }
+        return;
+      }
     }
+    if (authToken) {
+      setIsLoading(true);
+      const body: RegisterRequestModel = {
+        username: formValue.username,
+      };
 
-    if (informationVerified.verified) {
-      proceedToPhoneValidation(formValue, authToken || '');
-    } else if (informationVerified.errorCode === 2) {
-      setPresentCellNumberMismatch(true);
+      const isAuthenticated = await new AuthService()
+        .RegisterPractitioner(Config.authApi, body)
+        .catch(() => {
+          setNotification({
+            title: ` Failed to Sign Up!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setIsLoading(false);
+        });
+
+      if (isAuthenticated) {
+        setIsLoading(false);
+        history.push(ROUTES.CREATE_USERNAME, {
+          userId: isAuthenticated?.data,
+          token: authToken,
+        });
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+      } else {
+        setNotification({
+          title: ` Successfully registered!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        setIsLoading(false);
+      }
     }
-  };
-
-  const proceedToPhoneValidation = async (
-    { cellphone, username, password }: SignUpModel,
-    token: string
-  ) => {
-    setIsLoading(true);
-
-    setIsLoading(false);
-    history.push('/verify-phone', {
-      phoneNumber: cellphone,
-      password: password,
-      username,
-      token,
-    });
   };
 
   const toggleIdAndPassport = () => {
@@ -198,7 +219,7 @@ export const SignUp: React.FC = () => {
     <div className={styles.wrapper}>
       <BannerWrapper
         color={'primary'}
-        showBackground
+        showBackground={isWhitelabel ? false : true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
@@ -206,9 +227,9 @@ export const SignUp: React.FC = () => {
         renderBorder={false}
         renderOverflow={false}
       >
-        {headerSlide && <HeaderCard className={'mt-4'} slide={headerSlide} />}
-
-        <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
+        {!isWhitelabel && (
+          <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
+        )}
         <form style={{ maxWidth: '442px' }} className={styles.formStyle}>
           {preferId && (
             <FormInput<SignUpModel>
@@ -217,6 +238,7 @@ export const SignUp: React.FC = () => {
               nameProp={'username'}
               register={signUpRegister}
               placeholder={'E.g. 7601010338089'}
+              error={errors?.username}
             />
           )}
           {!preferId && (
@@ -225,20 +247,21 @@ export const SignUp: React.FC = () => {
               visible={true}
               nameProp={'username'}
               register={signUpRegister}
+              error={errors?.username}
             />
           )}
 
           <Button
             className={'mt-4 mb-4'}
             type={'outlined'}
-            color={'primary'}
+            color={'secondary'}
             background={'transparent'}
             shape={'normal'}
             size={'small'}
             onClick={toggleIdAndPassport}
           >
             <Typography
-              color={'primary'}
+              color={'secondary'}
               weight={'bold'}
               text={`Enter ${preferId ? 'Passport' : 'ID'} number instead`}
               type="small"
@@ -252,27 +275,34 @@ export const SignUp: React.FC = () => {
             visible={true}
             type={'text'}
             register={signUpRegister}
-          />
-
-          <PasswordInput<SignUpModel>
-            label={'Password'}
-            nameProp={'password'}
-            sufficIconColor={'uiMidDark'}
-            value={signUpFormGetValues().password}
-            register={signUpRegister}
-            strengthMeterVisible={true}
-            className="mb-9"
+            error={errors?.cellphone}
           />
 
           <Typography
-            type={'body'}
-            color={'uiMidDark'}
+            type={'h4'}
+            color={'textDark'}
             weight={'bold'}
-            text={'Terms and conditions'}
+            text={'Accept the agreements to continue'}
             className={styles.marginBottom}
           />
           <div
-            className={classNames(styles.checkboxWrapper, styles.marginBottom)}
+            className={`${
+              errors.termsAndConditionsAccepted?.message &&
+              'border-errorDark border'
+            } ${
+              signUpFormGetValues()?.termsAndConditionsAccepted
+                ? 'border-quatenary bg-quatenaryBg border'
+                : 'bg-uiBg'
+            } mb-4 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+            onClick={() => {
+              signUpSetValue(
+                'termsAndConditionsAccepted',
+                !signUpFormGetValues()?.termsAndConditionsAccepted
+              );
+              clearErrors('termsAndConditionsAccepted');
+              setPermissionsErrorMessage('');
+              trigger();
+            }}
           >
             <Checkbox<SignUpModel>
               register={signUpRegister}
@@ -284,7 +314,7 @@ export const SignUp: React.FC = () => {
               }
             ></Checkbox>
             <Typography
-              text={'I accept the'}
+              text={'I accept the terms and conditions'}
               type="help"
               color={
                 errors.termsAndConditionsAccepted?.message
@@ -293,28 +323,40 @@ export const SignUp: React.FC = () => {
               }
             />
             &nbsp;
-            <div
+            <Button
+              color={'secondaryAccent2'}
+              type={'filled'}
+              text="Read"
+              textColor="secondary"
+              className={'rounded-xl'}
+              size={'small'}
               onClick={() => {
                 displayArticle(
                   ContentConsentTypeEnum.TermsAndConditions,
-                  'Consent & Commitment Agreement'
+                  'Terms and Conditions'
                 );
               }}
-            >
-              <Typography
-                className={'cursor-pointer'}
-                text={'terms and conditions'}
-                type="help"
-                underline={true}
-                color={
-                  errors.termsAndConditionsAccepted?.message
-                    ? 'errorDark'
-                    : 'secondary'
-                }
-              />
-            </div>
+            />
           </div>
-          <div className={styles.checkboxWrapper}>
+          <div
+            className={`${
+              errors.dataPermissionAgreementAccepted?.message &&
+              'border-errorDark border'
+            } ${
+              signUpFormGetValues()?.dataPermissionAgreementAccepted
+                ? 'border-quatenary bg-quatenaryBg border'
+                : 'bg-uiBg'
+            } flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+            onClick={() => {
+              signUpSetValue(
+                'dataPermissionAgreementAccepted',
+                !signUpFormGetValues()?.dataPermissionAgreementAccepted
+              );
+              clearErrors('dataPermissionAgreementAccepted');
+              setPermissionsErrorMessage('');
+              trigger();
+            }}
+          >
             <Checkbox<SignUpModel>
               register={signUpRegister}
               nameProp={'dataPermissionAgreementAccepted'}
@@ -325,7 +367,7 @@ export const SignUp: React.FC = () => {
               }
             ></Checkbox>
             <Typography
-              text={'I accept the'}
+              text={'I accept the data permissions agreement'}
               type="help"
               color={
                 errors.dataPermissionAgreementAccepted?.message
@@ -334,38 +376,52 @@ export const SignUp: React.FC = () => {
               }
             />
             &nbsp;
-            <Typography
+            <Button
+              color={'secondaryAccent2'}
+              type={'filled'}
+              text="Read"
+              textColor="secondary"
+              className={'rounded-xl'}
+              size={'small'}
               onClick={() => {
                 displayArticle(
                   ContentConsentTypeEnum.DataPermissionsAgreement,
                   'Data Permissions Agreement'
                 );
               }}
-              className={'cursor-pointer'}
-              text={'data permissions agreement'}
-              underline={true}
-              type="help"
-              color={
-                errors.dataPermissionAgreementAccepted?.message
-                  ? 'errorDark'
-                  : 'secondary'
-              }
             />
           </div>
-          {errorStrings.length > 0 && (
+          {permissionsErrorMessage && (
+            <Alert
+              className={'mt-5 mb-3'}
+              title={permissionsErrorMessage}
+              type={'error'}
+            />
+          )}
+          {/* {errorStrings.length > 0 && (
             <Alert
               title={`There were ${errorStrings.length} errors with your submission`}
               type={'error'}
               list={errorStrings}
               className={styles.marginTop}
             />
-          )}
+          )} */}
           {(requestError?.length ?? 0) > 0 && (
             <Alert
-              title={`There were errors with your submission`}
+              title={`Please check your ID and cellphone number.`}
               type={'error'}
               list={requestError ? [requestError] : []}
               className={styles.marginTop}
+              button={
+                <Button
+                  text="Get help"
+                  icon="ClipboardListIcon"
+                  type={'filled'}
+                  color={'quatenary'}
+                  textColor={'white'}
+                  onClick={() => setOpenHelp(true)}
+                />
+              }
             />
           )}
 
@@ -373,30 +429,30 @@ export const SignUp: React.FC = () => {
             id="gtm-register"
             className={styles.formButton}
             type="filled"
-            color="primary"
+            color="quatenary"
             isLoading={isLoading}
-            disabled={!isOnline}
+            disabled={!isOnline || isLoading}
             onClick={handleSubmit(submitForm)}
           >
-            <Typography type="help" color="white" text={'Sign up'}></Typography>
+            <Typography type="help" color="white" text={'Next'}></Typography>
           </Button>
 
           <Divider
-            title={'Already have a Funda App account?'}
+            title={`Already have a ${appName} App account?`}
             dividerType={'solid'}
-            className={'mt-2 mb-2'}
+            className={'mb-2'}
           />
 
           <Button
             className={styles.formButton}
             type="outlined"
-            color="primary"
+            color="quatenary"
             disabled={!isOnline}
             onClick={() => history.push('./login')}
           >
             <Typography
               type="help"
-              color="primary"
+              color="quatenary"
               text={'Log in'}
             ></Typography>
           </Button>
@@ -411,23 +467,21 @@ export const SignUp: React.FC = () => {
           isOpen={true}
         />
       )}
-
       <Dialog
         visible={presentCellNumberMismatch}
         position={DialogPosition.Middle}
+        className="p-4"
       >
         <ActionModal
           icon={'InformationCircleIcon'}
           iconColor={'alertMain'}
-          importantText={`SmartStart has a different cellphone number for you: ${
+          importantText={`${appName} has a different cellphone number for you`}
+          detailText={`Please check that this is the correct cellphone number: ${
             signUpFormGetValues().cellphone
-          }`}
-          detailText={
-            'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
-          }
+          }. If you have entered the correct number and are still getting this error, fill in the help form.`}
           actionButtons={[
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Edit cellphone number',
               textColour: 'white',
               leadingIcon: 'PencilIcon',
@@ -437,17 +491,26 @@ export const SignUp: React.FC = () => {
               type: 'filled',
             },
             {
-              colour: 'primary',
-              text: 'Call 0800 014 817',
-              textColour: 'primary',
+              colour: 'quatenary',
+              text: 'Get help',
+              textColour: 'quatenary',
               leadingIcon: 'PhoneIcon',
               onClick: () => {
                 setPresentCellNumberMismatch(false);
+                setOpenHelp(true);
               },
               type: 'outlined',
             },
           ]}
         />
+      </Dialog>
+      <Dialog
+        visible={openHelp}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <HelpForm closeAction={setOpenHelp} />
       </Dialog>
       {!isOnline && (
         <Alert

@@ -74,6 +74,7 @@ export const Step3: React.FC<Step3Props> = ({
               name: `CHWs:`,
             }}
             label="Select all CHWs you went into the field with. *"
+            preventCloseOnClick={true}
           />
         </div>
       )}

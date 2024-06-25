@@ -1,12 +1,8 @@
-import {
-  // ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-} from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
-import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import ClassroomService from '@/services/ClassroomService/ClassroomService';
 
 export const getClassroomForCoach = createAsyncThunk<
   ClassroomDto[],
@@ -39,42 +35,42 @@ export const getClassroomForCoach = createAsyncThunk<
   }
 );
 
-export const getClassroomGroups = createAsyncThunk<
-  ClassroomGroupDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'getClassroomGroups',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomGroups: cache },
-    } = getState();
+// export const getClassroomGroups = createAsyncThunk<
+//   ClassroomGroupDto[],
+//   // eslint-disable-next-line @typescript-eslint/ban-types
+//   {},
+//   ThunkApiType<RootState>
+// >(
+//   'getClassroomGroups',
+//   // eslint-disable-next-line no-empty-pattern
+//   async ({}, { getState, rejectWithValue }) => {
+//     const {
+//       auth: { userAuth },
+//       classroomData: { classroomGroups: cache },
+//     } = getState();
 
-    if (!cache) {
-      try {
-        let groups: ClassroomGroupDto[] | undefined;
+//     if (!cache) {
+//       try {
+//         let groups: ClassroomGroupDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          groups = await new ClassroomGroupService(
-            userAuth?.auth_token
-          ).getClassroomGroups();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
+//         if (userAuth?.auth_token) {
+//           groups = await new ClassroomGroupService(
+//             userAuth?.auth_token
+//           ).getClassroomGroupsForUser();
+//         } else {
+//           return rejectWithValue('no access token, profile check required');
+//         }
 
-        if (!groups) {
-          return rejectWithValue('Error getting Classroom Groups');
-        }
+//         if (!groups) {
+//           return rejectWithValue('Error getting Classroom Groups');
+//         }
 
-        return groups;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return cache;
-    }
-  }
-);
+//         return groups;
+//       } catch (err) {
+//         return rejectWithValue(err);
+//       }
+//     } else {
+//       return cache;
+//     }
+//   }
+// );

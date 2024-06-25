@@ -61,7 +61,7 @@ export const CheckboxGroup = <T extends FieldValues = {}>({
     <label
       htmlFor={id}
       className={`${className} text-textDark relative flex items-center overflow-hidden rounded-lg p-4 ${
-        checked ? 'bg-secondaryAccent2 border-secondary border-2' : 'bg-uiBg'
+        checked ? 'bg-quatenaryBg border-quatenary border-2' : 'bg-uiBg'
       }`}
     >
       {nameProp && register && (

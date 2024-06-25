@@ -1,6 +1,5 @@
 import { BannerWrapper } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
 import AttendanceList from '../attendance-list/attendance-list';
 import * as styles from './edit-attendance-register.styles';
 import { EditAttendanceRegisterProps } from './edit-attendance-register.types';
@@ -8,20 +7,12 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const EditAttendanceRegister = ({
   attendanceDate,
-  onComplete,
-  submitText = 'Submit',
   onBack,
   editAttendanceRegisterVisible,
   classroomName,
-  classroomgroupId,
+  classroomGroupId,
 }: EditAttendanceRegisterProps) => {
   const { isOnline } = useOnlineStatus();
-
-  const attendanceSubmitted = (attendanceSuccessList: AttendanceResult) => {
-    if (onComplete) {
-      onComplete(attendanceSuccessList);
-    }
-  };
 
   return (
     <BannerWrapper
@@ -36,12 +27,9 @@ export const EditAttendanceRegister = ({
     >
       <AttendanceList
         attendanceDate={attendanceDate}
-        submitText={submitText}
-        onSubmitSuccess={(attendanceSuccessList: AttendanceResult) =>
-          attendanceSubmitted(attendanceSuccessList)
-        }
+        onSubmitSuccess={onBack}
         editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-        classroomgroupId={classroomgroupId}
+        classroomGroupId={classroomGroupId}
       />
     </BannerWrapper>
   );

@@ -142,9 +142,7 @@ export const ReferralsTab: React.FC = () => {
   );
 
   const isToGetPreviousVisitStatusData =
-    (!currentVisit ||
-      (!currentVisit?.attended && isVisitInProgress(currentVisit))) &&
-    !!previousVisit;
+    (!currentVisit || !isVisitInProgress(currentVisit)) && !!previousVisit?.id;
 
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
@@ -339,9 +337,12 @@ export const ReferralsTab: React.FC = () => {
           const removeRedAlertNotification = newState.find(
             (item) =>
               item.isCompleted &&
-              String(item.comment).includes(
+              (String(item.comment).includes(
                 'was experiencing maternal distress'
-              )
+              ) ||
+                String(item.comment).includes(
+                  'was experiencing the following:'
+                ))
           );
 
           if (redAlertNotifications && removeRedAlertNotification) {

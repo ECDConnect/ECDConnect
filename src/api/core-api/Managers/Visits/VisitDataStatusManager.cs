@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitBackReferralManager = visitBackReferralManager;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -141,7 +141,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var growthData = new List<VisitData>();
             var feedingData = new List<VisitData>();
             var immunisationsData = new List<VisitData>();
-            string? previousVisitWeight = null;
+            string previousVisitWeight = null;
             DateTime today = DateTime.Today;
             var totalMonthsOld = ((today.Year - dob.Year) * 12) + today.Month - dob.Month;
             var totalDaysOld = (today - dob).TotalDays;
@@ -239,7 +239,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                             // Add referral item
                             comment = motherName + GGSettings.was_experiencing + bulletList;
-                            AddVisitDataStatusReferral(vData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.DangerSignsChildsMother] });
+                            var referralGuid = AddVisitDataStatusReferral(vData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.DangerSignsChildsMother] });
 
                             var hasGroupA = arrAnswers.Any(x => x == GGSettings.cfm_ds_6 || x == GGSettings.cfm_ds_7 || x == GGSettings.cfm_ds_8);
                             var hasGroupB = arrAnswers.Any(x => x == GGSettings.cfm_ds_1 || x == GGSettings.cfm_ds_2 || x == GGSettings.cfm_ds_3 ||
@@ -270,7 +270,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                 AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
                             }
 
-                            _ = _notificationManager.SendGGReferralDangerSignsInfantNotification(_userManager, _notificationService, _applicationUserId.ToString(), motherName, bulletList, infantUserId);
+                            _ = _notificationManager.SendGGReferralDangerSignsInfantNotification(_userManager, _notificationService, _applicationUserId.ToString(), motherName, bulletList, infantUserId, referralGuid);
 
                             // Add additional visit item with secondary text: ""Danger signs""
                             AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.danger_signs);
@@ -297,7 +297,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                         // If the user chooses any of the danger signs (ie user does not select ""None of the above"")
                         comment = firstName + GGSettings.was_experiencing + bulletList;
-                        AddVisitDataStatusReferral(vData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.DangerSignsChild] });
+                        var referralGuid = AddVisitDataStatusReferral(vData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.DangerSignsChild] });
 
                         // Add red progress item - where X, Y, Z are each of the danger signs selected by the user.
                         comment = firstName + GGSettings.was_experiencing + bulletList;
@@ -314,7 +314,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = GGSettings.urgent_care;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
 
-                          _ = _notificationManager.SendGGReferralDangerSignsInfantNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, bulletList, infantUserId);
+                          _ = _notificationManager.SendGGReferralDangerSignsInfantNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, bulletList, infantUserId, referralGuid);
                     }
                 }
                 else if (vData.Question == GGSettings.q_stop_worry ||
@@ -579,13 +579,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         // Add referral under ""Home Affairs referrals"" = ""Themba does not have a birth certificate""
                         comment = firstName + GGSettings.no_birth_certificate;
-                        AddVisitDataStatusReferral(vData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.home_affairs_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.ChildBirthCertificate] });
+                        var referralGuid = AddVisitDataStatusReferral(vData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.home_affairs_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.ChildBirthCertificate] });
 
                         // Add G4 secondary alert text: ""Refer to home affairs""
                         comment = GGSettings.home_affairs_referrals;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_dashboard, vData.VisitSection, false);
 
-                        _ = _notificationManager.SendGGReferDOHANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId);
+                        _ = _notificationManager.SendGGReferDOHANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId, referralGuid);
+                    } else {
+                        _ = _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGReferDOHA, searchCriteria: infantUserId);
                     }
                 }
                 else if (vData.Question == GGSettings.QuestionReceivingCSG)
@@ -608,12 +610,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (!string.IsNullOrWhiteSpace(vData.QuestionAnswer))
                     {
                         comment = GGSettings.has_csg3;
-                        AddVisitDataStatusReferral(vData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.sassa_refferals, false, new List<ReferralType> { referralTypes[ReferralTypes.ChildSupportGrant] });
+                        var referralGuid = AddVisitDataStatusReferral(vData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.sassa_refferals, false, new List<ReferralType> { referralTypes[ReferralTypes.ChildSupportGrant] });
 
                         comment = GGSettings.has_csg3;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_progress, vData.VisitSection, false);
 
-                        _ = _notificationManager.SendGGReferSASSANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId);
+                        _ = _notificationManager.SendGGReferSASSANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId, referralGuid);
                     }
                 }
             }
@@ -795,7 +797,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         var bulletList = FormatBulletList(arrAnswers);
                         // If the user chooses any of the danger signs (ie user does not select ""None of the above"")
                         comment = firstName + GGSettings.was_experiencing + bulletList;
-                        AddVisitDataStatusReferral(visitData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.DangerSignsPregnantMom] });
+                        var referralGuid = AddVisitDataStatusReferral(visitData, comment, StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.DangerSignsPregnantMom] });
 
                         // Add red progress item - where X, Y, Z are each of the danger signs selected by the user.
                         comment = firstName + GGSettings.was_experiencing + bulletList;
@@ -813,7 +815,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(visitData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, visitData.VisitSection, false);
 
                         Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == motherId).FirstOrDefault();
-                        _ = _notificationManager.SendGGReferralDangerSignsMotherNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, bulletList, mother.UserId.ToString());
+                        _ = _notificationManager.SendGGReferralDangerSignsMotherNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, bulletList, mother.UserId.ToString(), referralGuid);
                     }
                 }
             }
@@ -855,7 +857,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // a GGSettings.answer_yes response to the 3rd question trumps all.
             if (q3.QuestionAnswer == GGSettings.AnswerYes)
             {
-                AddVisitDataStatusReferral(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.MaternalDistress] });
+                var referralGuid = AddVisitDataStatusReferral(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.MaternalDistress] });
 
                 // add to amber items in progress screen(use case 2)(""Lethabo was experiencing maternal distress"")
                 AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
@@ -873,12 +875,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 if (clientType == GGSettings.client_child)
                 {
                     Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
-                    _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infant.UserId.ToString());
+                    _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infant.UserId.ToString(), referralGuid);
                     _ = _notificationManager.SendGGPortalCHWMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), infant);
                 } else if (clientType == GGSettings.client_mother)
                 {
                     Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
-                    _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString());
+                    _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString(), referralGuid);
                     _ = _notificationManager.SendGGPortalCHWMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), mother);
                 }
             }
@@ -886,7 +888,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (q3.QuestionAnswer == GGSettings.AnswerNo && (q1.QuestionAnswer == GGSettings.AnswerYes || q2.QuestionAnswer == GGSettings.AnswerYes))
                 {
-                    AddVisitDataStatusReferral(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.MaternalDistress] });
+                    var referralGuid = AddVisitDataStatusReferral(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, new List<ReferralType> { referralTypes[ReferralTypes.MaternalDistress] });
 
                     AddVisitDataStatus(q3, MaternalDistressFollowUpComment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_progress, q3.VisitSection, false);
 
@@ -899,7 +901,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (clientType == GGSettings.client_mother)
                     {
                         Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
-                        _ = _notificationManager.SendGGMaternalDistressNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString());
+                        _ = _notificationManager.SendGGMaternalDistressNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString(), referralGuid);
                     }    
                 }
 
@@ -1282,7 +1284,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     comment.AppendLine($"<li>{muacIndicator}</li>");
                 }
-                AddVisitDataStatusReferral(weightQuestion, comment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, referrals);
+                var referralGuid = AddVisitDataStatusReferral(weightQuestion, comment.ToString(), StatusColours.None, GGSettings.visit_data_client_referral, GGSettings.clinic_referrals, false, referrals);
 
                 //Refer [[ChildFirstName]] to the clinic immediately and schedule additional visits with [[ChildFirstName]] & [[CaregiverFirstName]].
                 if (weightIndicator == "Severely underweight" || lengthIndicator == "Severely stunted")
@@ -1300,16 +1302,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         growthIssue = lengthIndicator;
                     }
-                    _notificationManager.SendGGChildGrowthIssueNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mothername, infantUserId, growthIssue).Wait();
+                    _notificationManager.SendGGChildGrowthIssueNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mothername, infantUserId, growthIssue, referralGuid).Wait();
                 } 
                 else
                 {
                     if (muacIndicator == GGSettings.IndicatorSevereAcuteMalnutrition)
                     {
-                        _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId).Wait();
+                        _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId, referralGuid).Wait();
                     }else
                     {
-                        _notificationManager.SendGGChildMUACMalnutritionNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId).Wait();
+                        _notificationManager.SendGGChildMUACMalnutritionNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId, referralGuid).Wait();
                     }
                     
                 }
@@ -1686,7 +1688,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return true;
         }
 
-        private void AddVisitDataStatusReferral(VisitData input, string comment, string color, string type, string section, Boolean isCompleted, List<ReferralType> referralTypes)
+        private Guid AddVisitDataStatusReferral(VisitData input, string comment, string color, string type, string section, Boolean isCompleted, List<ReferralType> referralTypes)
         {
             if (input != null)
             {
@@ -1706,7 +1708,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     IsCompleted = isCompleted,
                 };
 
-                if (!ValidateVisitDataStatusRecord(visitDataStatus))
+                var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.Comment == visitDataStatus.Comment && x.Type == visitDataStatus.Type && x.VisitDataId == visitDataStatus.VisitDataId).OrderBy(x => x.Id).FirstOrDefault();
+
+                if (visitStatusRecord == null)
                 {
                     var referrals = new List<VisitDataStatusReferralType>();
                     foreach (var referralType in referralTypes)
@@ -1730,8 +1734,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
 
                     _visitDataStatusReferralTypeRepo.InsertMany(referrals);
+                    return visitDataStatus.Id; 
+                } else
+                {
+                    return visitStatusRecord.Id;
                 }
             }
+            return Guid.Empty;
         }
 
         private Boolean InsertVisitDataStatus(VisitDataStatus input)

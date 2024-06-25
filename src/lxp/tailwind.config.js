@@ -14,7 +14,7 @@ module.exports = {
         headercard: '328px',
       },
       height: {
-        bannerimage: '200px',
+        bannerimage: '220px',
       },
       borderRadius: {
         10: '0.625rem',
@@ -31,7 +31,9 @@ module.exports = {
         120: '120px',
         177: '177px',
         180: '180px',
+        340: '340px',
         360: '360px',
+        600: '600px',
         244: '244px',
         54: '54px',
         102: '102px',
@@ -95,6 +97,9 @@ module.exports = {
         infoBb: 'var(--infoBb)',
         modalBg: 'var(--modalBg)',
         quatenary: '#1DBADF',
+        quatenaryBg: "#D2F1F9",
+        warning: '#FFD525',
+        warningBg: '#fff6d0',
         blue: {
           accent3: '#1DBADF',
         },

@@ -10,11 +10,17 @@ import {
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
-import WalktroughImage from '../../../../../assets/walktroughImage.png';
+import robot from '../../../../../assets/iconRobot.svg';
 import { useAppContext } from '@/walkthrougContext';
-import { LocalStorageKeys } from '@ecdlink/core';
-import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { useTranslation } from 'react-i18next';
+import { usePrevious } from 'react-use';
+import { useEffect } from 'react';
 
 export default function ProgrammeWrapper() {
   const {
@@ -23,24 +29,43 @@ export default function ProgrammeWrapper() {
   } = useAppContext();
 
   const history = useHistory();
+
+  const { t, i18n } = useTranslation();
+
+  const previousLanguage = usePrevious(i18n.language);
+  const previousStepIndex = usePrevious(stepIndex);
+
+  useEffect(() => {
+    if (stepIndex === 0) {
+      window.sessionStorage.setItem('i18nLanguage', i18n.language);
+    }
+
+    if (
+      window.sessionStorage.getItem('i18nLanguage') !== i18n.language &&
+      stepIndex !== 0
+    ) {
+      i18n.changeLanguage(window.sessionStorage.getItem('i18nLanguage')!);
+    }
+  }, [i18n, previousLanguage, previousStepIndex, stepIndex]);
+
   const disableNextButton =
     stepIndex === 0 || stepIndex === 1 || stepIndex === 4;
 
   const steps: StepType[] = [
     {
       target: '#walkthrough-start',
-      content: 'Tap here to add at a theme!',
+      content: t('Tap here to add at a theme!'),
       placement: 'auto',
       offset: 10,
       disableBeacon: true,
-      disableOverlay: true,
+      disableOverlay: false,
       // spotlightClicks: false,
       // disableOverlayClose: false,
       // disableCloseOnEsc: false,
     },
     {
       target: '#walkthrough-nature-theme',
-      content: "I'll show you an example - tap the Nature theme",
+      content: t("I'll show you an example - tap the Nature theme"),
       offset: 10,
       placement: 'auto',
       disableBeacon: true,
@@ -48,7 +73,7 @@ export default function ProgrammeWrapper() {
     },
     {
       target: '#walkthrough-theme-timing',
-      content: 'You can choose a start date and end date for this theme.',
+      content: t('You can choose a start date and end date for this theme.'),
       placement: 'auto',
       offset: 10,
       disableBeacon: true,
@@ -56,8 +81,9 @@ export default function ProgrammeWrapper() {
     },
     {
       target: '#walkthrough-classroom-language',
-      content:
-        "You can choose a language for this theme. I'll show you activities in this language if available.",
+      content: t(
+        "You can choose a language for this theme. I'll show you activities in this language if available."
+      ),
       placement: 'auto',
       offset: 10,
       disableBeacon: true,
@@ -65,52 +91,40 @@ export default function ProgrammeWrapper() {
     },
     {
       target: '#walkthrough-plan-activity',
-      content:
-        'Great! I have planned your activities for Mondays through Thursdays! Tap on activity to see the detail.',
+      content: t(
+        'Great! I have planned all your activities! Tap an activity to see the detail.'
+      ),
       placement: 'auto',
       offset: 10,
       disableBeacon: true,
-      disableOverlay: true,
+      disableOverlay: false,
     },
     {
       target: '#walkthrough-activity-detail',
-      content: 'See the activity details here.',
+      content: t(
+        "See the activity details here. You're all done with adding a theme!"
+      ),
       placement: 'auto',
       offset: 10,
       disableBeacon: true,
-      disableOverlay: true,
+      disableOverlay: false,
     },
     {
-      target: '#walkthrough-friday-plan',
-      content:
-        'You will need to plan your own activities for Fridays.  Tap here to add a small group activity!',
+      target: '#walkthrough-add-activity',
+      content: t(
+        "If you don't want to use a theme, you can tap here to choose an activity!"
+      ),
       placement: 'auto',
       offset: 10,
       disableBeacon: true,
-      disableOverlay: true,
+      disableOverlay: false,
     },
     {
-      target: '#walkthrough-activity',
-      content: 'Tap the box to choose the activity.',
-      placement: 'auto',
+      target: '#walkthrough-last-step',
+      content: t("Great, you're ready to start!"),
+      placement: 'bottom',
       offset: 10,
-      disableBeacon: true,
-      disableOverlay: true,
-    },
-    {
-      target: '#walkthrough-activity-selected',
-      content:
-        'Great! Now the activity is selected.  When you want to learn more about an activity, you can tap this icon.',
-      placement: 'auto',
-      offset: 10,
-      disableBeacon: true,
-      disableOverlay: true,
-    },
-    {
-      target: '#lastStep',
-      content: "Great, you're ready to start!",
-      placement: 'auto',
-      offset: 10,
+      disableOverlayClose: true,
     },
   ];
 
@@ -130,7 +144,7 @@ export default function ProgrammeWrapper() {
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <img src={WalktroughImage} alt="walkthrough profile" />
+                <img src={robot} alt="walkthrough profile" />
                 <Typography
                   color={'textDark'}
                   type={'h2'}
@@ -140,9 +154,9 @@ export default function ProgrammeWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center justify-end gap-4">
+          <div className="mt-4 flex items-center justify-between gap-4">
             <SliderPagination
-              totalItems={10}
+              totalItems={8}
               activeIndex={index}
               className={'p-4'}
             />
@@ -150,7 +164,7 @@ export default function ProgrammeWrapper() {
               <div {...primaryProps} className={'w-full'}>
                 <Button
                   type="filled"
-                  color="primary"
+                  color="quatenary"
                   className={'ml-10 w-6/12'}
                   onClick={() => {}}
                 >
@@ -170,7 +184,7 @@ export default function ProgrammeWrapper() {
   }
 
   const handleCallback = async (data: CallBackProps) => {
-    const { action, index, lifecycle, type } = data;
+    const { index, type } = data;
 
     if (type === 'step:after' && index === 0) {
       setState({ run: true, stepIndex: 1, enableButton: false });
@@ -180,19 +194,26 @@ export default function ProgrammeWrapper() {
       setState({ run: true, stepIndex: 3 });
     } else if (type === 'step:after' && index === 3) {
       setState({ run: true, stepIndex: 4 });
-      // redirect back to programme tab on classroom dashboard
-      history.replace('/classroom', { activeTabIndex: 3 });
+      // redirect back to activities page
+      history.push(ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT);
+    } else if (type === 'step:after' && index === 4) {
+      setState({ run: true, stepIndex: 5 });
     } else if (type === 'step:after' && index === 5) {
       setState({ run: true, stepIndex: 6 });
+      const activityDetailsComponent = document.getElementById(
+        'headlessui-portal-root'
+      );
+      if (activityDetailsComponent) {
+        activityDetailsComponent.remove();
+      }
+    } else if (type === 'step:after' && index === 6) {
+      setState({ run: true, stepIndex: 7 });
     } else if (type === 'step:after' && index === 7) {
-      setState({ run: true, stepIndex: 8 });
-    } else if (type === 'step:after' && index === 8) {
-      setState({ run: true, stepIndex: 9 });
-    } else if (type === 'step:after' && index === 9) {
-      setState({ run: true, stepIndex: 10 });
-    } else if (action === 'reset' || lifecycle === 'complete') {
-      setStorageItem(true, LocalStorageKeys.programmeWalkthroughComplete);
       setState({ run: false, stepIndex: 0, tourActive: false });
+      window.sessionStorage.removeItem('i18nLanguage');
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.ACTIVITES,
+      } as ClassDashboardRouteState);
     }
   };
 
@@ -210,12 +231,18 @@ export default function ProgrammeWrapper() {
         showSkipButton
         disableOverlayClose
         styles={{
-          spotlight: {
-            borderWidth: 4,
-            borderRadius: 20,
-            borderColor: '#99231b',
-            borderStyle: 'solid',
+          options: {
+            arrowColor: stepIndex === 7 ? 'transparent' : 'white',
           },
+          spotlight:
+            stepIndex === 7
+              ? {}
+              : {
+                  borderWidth: 4,
+                  borderRadius: 20,
+                  borderColor: '#FF2180',
+                  borderStyle: 'solid',
+                },
         }}
       />
     </div>

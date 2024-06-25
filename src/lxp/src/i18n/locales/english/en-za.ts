@@ -1,0 +1,9 @@
+import attendanceWalkthrough from '../../modules/attendance/walkthrough/en-za.json';
+import programmeWalkthrough from '../../modules/programme/walkthrough/en-za.json';
+
+export const EN_ZA = {
+  translation: {
+    ...attendanceWalkthrough,
+    ...programmeWalkthrough,
+  },
+};

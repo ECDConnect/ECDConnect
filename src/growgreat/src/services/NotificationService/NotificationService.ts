@@ -8,7 +8,9 @@ import { UserDto } from '@ecdlink/core';
 import { UserLastLoginNotificationValidator } from './validators/user/userLastLoginNotificationValidator';
 import { BackendNotificationsValidator } from './validators/backend-notifications/backendNotificationsValidador';
 import { VisitsNotCompletedNotificationValidator } from './validators/visits/visitsNotCompletedNotificationValidator';
-import { InfantDocumentsNotificationValidator } from './validators/infant-documents/infantDocumentsNotificationValidator';
+import { InfantDocumentsNotificationValidator } from './validators/infant/infantDocumentsNotificationValidator';
+import { ExpectedDeliveryDateValidator } from './validators/mother/expectedDeliveryDateValidator';
+import { ChildOlderThanFiveValidator } from './validators/infant/childOlderThanFiveValidator';
 
 export class NotificationService {
   interval: number;
@@ -76,6 +78,8 @@ export class NotificationService {
       new UserLastLoginNotificationValidator(store, currentDate),
       new VisitsNotCompletedNotificationValidator(store),
       new InfantDocumentsNotificationValidator(store),
+      new ExpectedDeliveryDateValidator(store),
+      new ChildOlderThanFiveValidator(store),
     ];
   };
 }

@@ -15,6 +15,7 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using EcdLink.Api.CoreApi.Services.PointsEngine;
+using EcdLink.Api.CoreApi.Services.Training;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
@@ -101,7 +102,7 @@ namespace EcdLink.Api.CoreApi
             
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
-            PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
+            //PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
 
             AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
 
@@ -129,6 +130,7 @@ namespace EcdLink.Api.CoreApi
             }
 
             services.AddTransient<IOpenAccessValidator<ChildOpenAccessValidator>, ChildOpenAccessValidator>();
+            services.AddTransient<IOpenAccessValidator<PrincipalOpenAccessValidator>, PrincipalOpenAccessValidator>();
 
             services.AddTransient<ITokenManager<ApplicationUser, InvitationTokenManager>, InvitationTokenManager>();
             services.AddTransient<ITokenManager<ApplicationUser, OpenAccessTokenManager>, OpenAccessTokenManager>();
@@ -178,6 +180,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IReferralService, ReferralService>();
             services.AddTransient<ILeagueService, LeagueService>();
             services.AddTransient<ITeamLeadService, TeamLeadService>();
+            services.AddTransient<IClassroomService, ClassroomService>();
 
             // Notification tasks (All will be run daily)
             foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()
@@ -191,7 +194,6 @@ namespace EcdLink.Api.CoreApi
                 return new SynchronizedConverter(new PdfTools());
             });
 
-            services.AddTransient<IAttendancePdfService, AttendancePdfService>();
             services.AddControllers();
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);

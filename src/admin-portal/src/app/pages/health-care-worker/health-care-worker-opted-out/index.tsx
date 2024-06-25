@@ -9,7 +9,7 @@ import {
 import { Alert, Table } from '@ecdlink/ui';
 import { format, sub } from 'date-fns';
 import { Icolumn } from 'react-tailwind-table';
-import { columnColor } from '../../../utils/health-care-worker/components-utils';
+import { columnColor } from '../../../utils/app-usage/app-usage-utils';
 import ROUTES from '../../../routes/app.routes-constants';
 import { useHistory, useLocation } from 'react-router';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
@@ -113,7 +113,7 @@ export const HealthCareWorkerOptedOut: React.FC = () => {
 
         localStorage.setItem('selectedUser', chw?.user?.id ?? chw?.id);
         history.push({
-          pathname: ROUTES.VIEW_USERS,
+          pathname: ROUTES.USERS.VIEW_USER,
           state: {
             component: 'chw',
             userId: chw?.user?.id,

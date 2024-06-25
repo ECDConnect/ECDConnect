@@ -15,7 +15,7 @@ export const LogoutInformation: React.FC<LogoutInformationProps> = ({
   const actionButtons: ActionModalButton[] = [
     {
       text: 'Yes, log out',
-      colour: 'primary',
+      colour: 'quatenary',
       onClick: () => onSubmit && onSubmit(),
       type: 'filled',
       textColour: 'white',
@@ -26,8 +26,8 @@ export const LogoutInformation: React.FC<LogoutInformationProps> = ({
   if (onCancel) {
     actionButtons.push({
       text: 'Cancel',
-      textColour: 'primary',
-      colour: 'primary',
+      textColour: 'quatenary',
+      colour: 'quatenary',
       type: 'outlined',
       onClick: () => onCancel(),
       leadingIcon: 'XIcon',

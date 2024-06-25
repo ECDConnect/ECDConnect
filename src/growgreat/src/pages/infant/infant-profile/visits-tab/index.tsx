@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useWindowSize } from '@reach/window-size';
 
 import {
@@ -81,6 +81,8 @@ export const VisitsTab: React.FC = () => {
 
   const { id: infantId } = useParams<InfantProfileParams>();
 
+  const previousInfantId = usePrevious(infantId);
+
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
@@ -92,6 +94,9 @@ export const VisitsTab: React.FC = () => {
   const previousVisit = useSelector((state: RootState) =>
     getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
+  const isFirstVisit = visits
+    .filter((item) => item.visitType?.name !== 'additional_visits')
+    .every((item) => !item.attended);
 
   const { isLoading } = useThunkFetchCall(
     'infants',
@@ -207,25 +212,32 @@ export const VisitsTab: React.FC = () => {
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
 
+      const isPreviousVisitMissed = previousItem && isVisitMissed(previousItem);
+      const isCurrentVisitMissed = isVisitMissed(item);
+      const checkPreviousVisit =
+        !previousItem ||
+        previousItem.attended ||
+        previousItem.isCancelled ||
+        isPreviousVisitMissed;
+
       return {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: getVisitSubTitle(item),
+        ...((isVisitMissed(item) || isAdditionalVisit) && {
+          subTitleColor: 'alertDark',
+        }),
         isAdditionalVisit: isAdditionalVisit,
-        subTitleColor: 'alertDark',
         inProgressStepIcon: 'CalendarIcon',
         type: getVisitStatus(item),
         showActionButton:
-          (!previousItem ||
-            previousItem.attended ||
-            previousItem.isCancelled ||
-            isVisitMissed(previousItem)) &&
-          canStartVisit(item),
+          (checkPreviousVisit && (canStartVisit(item) || isFirstVisit)) ||
+          (isAdditionalVisit && previousVisit?.attended),
         actionButtonIcon: 'ArrowCircleRightIcon',
-        actionButtonText: !isVisitMissed(item) ? 'Start visit' : 'Redo visit',
+        actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
-          !isVisitMissed(item)
+          !isCurrentVisitMissed
             ? history.push(`${location.pathname}/activities-form/${item.id}`, {
                 editView: true,
               })
@@ -453,9 +465,15 @@ export const VisitsTab: React.FC = () => {
     wasLoading,
   ]);
 
-  useLayoutEffect(() => {
-    appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
-  }, [appDispatch, infantId]);
+  useEffect(() => {
+    if (!previousInfantId && !!infantId) {
+      appDispatch(infantThunkActions.getInfantVisits({ infantId }));
+      /////////////////////////////////////////////////////////////////////////////
+      // TODO: integrate EC-1110 (new child event) and EC-1593 (new pregnant event)
+      // appDispatch(infantThunkActions.getEventRecordByClientId({clientId: infantId}))
+      /////////////////////////////////////////////////////////////////////////////
+    }
+  }, [appDispatch, infantId, previousInfantId]);
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>

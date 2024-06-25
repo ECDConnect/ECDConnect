@@ -2,24 +2,15 @@ import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { ClinicsRoutes } from '../../../../routes/app.routes';
 import SubNavigationLink from '../../../../components/sub-navigation-link/sub-navigation-link';
-import { useQuery } from '@apollo/client/react/hooks/useQuery';
-import { GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../../../utils/constants';
 import ROUTES from '../../../../routes/app.routes-constants';
+import { useTenant } from '../../../../hooks/useTenant';
 
 export function ClinicsAdminView() {
   const location = useLocation();
-
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const tenant = useTenant();
 
   const getNavigationItems = () => {
-    if (
-      data &&
-      data.tenantContext &&
-      data.tenantContext.applicationName === TenantContext.GrowGreat
-    ) {
+    if (tenant.isCHWConnect) {
       return [
         {
           name: 'Clinics',
@@ -80,12 +71,7 @@ export function ClinicsAdminView() {
             {navigation?.map((item) => (
               <div
                 key={item?.href}
-                className={
-                  data?.tenantContext.applicationName ===
-                  TenantContext.GrowGreat
-                    ? 'w-3/12 '
-                    : 'w-full'
-                }
+                className={tenant.isCHWConnect ? 'w-3/12 ' : 'w-full'}
               >
                 <SubNavigationLink
                   key={`${item.name}-${new Date().getTime()}`}

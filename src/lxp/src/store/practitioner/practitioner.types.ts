@@ -2,7 +2,7 @@ import { PractitionerDto, UserDto } from '@ecdlink/core';
 import { NotificationDisplay } from '@ecdlink/graphql';
 
 export type PrincipalPractitioners = Partial<
-  Pick<UserDto, 'firstName' | 'surname' | 'idNumber' | 'id'> & {
+  Pick<UserDto, 'firstName' | 'surname' | 'idNumber' | 'id' | 'phoneNumber'> & {
     userId: string;
   }
 >;

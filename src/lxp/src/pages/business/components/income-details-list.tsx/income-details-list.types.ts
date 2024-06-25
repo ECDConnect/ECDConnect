@@ -5,4 +5,5 @@ export interface IncomeDetailsListProps {
   statementTitle: string;
   incomeItems: IncomeItemMinDto[];
   statementMonth: number;
+  statementId: string;
 }

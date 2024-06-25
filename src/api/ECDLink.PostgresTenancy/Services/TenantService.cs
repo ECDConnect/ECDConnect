@@ -9,92 +9,118 @@ namespace ECDLink.PostgresTenancy.Services
 {
     public class TenantService
     {
-        private readonly ITenancyRepository _repository;
+        private readonly ITenancyRepository<TenantEntity> _repository;
 
-        public TenantService(ITenancyRepository repository)
+        public TenantService(ITenancyRepository<TenantEntity> repository)
         {
             _repository = repository;
         }
 
-        public IEnumerable<TenantModel> GetAllTenants()
+        private IEnumerable<TenantInternalModel> GetAllTenants(Guid? tenantId, string siteAddress, bool includeModules = true)
         {
-            return _repository.GetAll().ToList().Select(t => Cast(t));
-        }
+            List<TenantEntity> tenants = null;
+            List<TenantHasModule> tenantModules = null;
 
-        public TenantModel GetTenantById(string id)
-        {
-            var tenant = _repository.GetById(id);
-
-            if (tenant == null)
+            var tenantQuery = _repository.GetAll();
+            var tenantModulesQuery = includeModules ? _repository.GetSet<TenantHasModule>().AsQueryable() : null;
+            if (tenantId.HasValue)
             {
-                return default;
+                tenantQuery = tenantQuery.Where(x => x.Id == tenantId.Value);
+                if (!string.IsNullOrEmpty(siteAddress)) tenantQuery = tenantQuery.Where(x => x.SiteAddress == siteAddress || x.TestSiteAddress == siteAddress || x.AdminSiteAddress == siteAddress || x.AdminTestSiteAddress == siteAddress);
+                tenants = tenantQuery.ToList();
+                if (includeModules)
+                {
+                    tenantModulesQuery = tenantModulesQuery.Where(x => x.TenantId == tenantId.Value);
+                    tenantModules = tenantModulesQuery.ToList();
+                }
+            }
+            else if (!string.IsNullOrEmpty(siteAddress))
+            {
+                tenantQuery = tenantQuery.Where(x => x.SiteAddress == siteAddress || x.TestSiteAddress == siteAddress || x.AdminSiteAddress == siteAddress || x.AdminTestSiteAddress == siteAddress);
+                tenants = tenantQuery.ToList();
+                if (includeModules)
+                {
+                    if (tenants.Count > 0) tenantModulesQuery = tenantModulesQuery.Where(x => x.TenantId == tenants[0].Id);
+                    tenantModules = tenantModulesQuery.ToList();
+                }
+            }
+            else if (siteAddress == null)
+            {
+                tenants = tenantQuery.ToList();
+                if (includeModules)
+                {
+                    tenantModulesQuery = tenantModulesQuery.Where(x => x.TenantId == tenantId.Value);
+                    tenantModules = tenantModulesQuery.ToList();
+                }
             }
 
-            return Cast(tenant);
-        }
-
-        public TenantModel GetTenantByUrl(string url)
-        {
-            var tenant = _repository.GetAll()
-                            .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
-                            .OrderBy(x => x.Id)
-                            .FirstOrDefault();
-
-            if (tenant == null)
+            var results = new List<TenantInternalModel>();
+            foreach (var dbTenant in tenants)
             {
-                return default;
+                var tenant = Cast(dbTenant);
+                if (includeModules)
+                {
+                    var modules = tenantModules.Where(x => x.TenantId == tenant.Id).Select(x => x.Module);
+                    if ((tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabel) || (tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabelTemplate))
+                    {
+                        tenant.Modules = new TenantModuleModel();
+                        if (modules != null && modules.Count() > 0)
+                        {
+                            foreach (var item in modules)
+                            {
+                                if (item.NormalizedName == "COACH ROLE")
+                                {
+                                    tenant.Modules.CoachRoleName = "Coach";
+                                    tenant.Modules.CoachRoleEnabled = true;
+                                }
+                                if (item.NormalizedName == "CLASSROOM ACTIVITIES") tenant.Modules.ClassroomActivitiesEnabled = true;
+                                if (item.NormalizedName == "PROGRESS") tenant.Modules.ProgressEnabled = true;
+                                if (item.NormalizedName == "ATTENDANCE") tenant.Modules.AttendanceEnabled = true;
+                                if (item.NormalizedName == "CALENDAR") tenant.Modules.CalendarEnabled = true;
+                                if (item.NormalizedName == "TRAINING") tenant.Modules.TrainingEnabled = true;
+                                if (item.NormalizedName == "BUSINESS") tenant.Modules.BusinessEnabled = true;
+                            }
+                        }
+                    }
+                }
+                results.Add(tenant);
             }
 
-            return Cast(tenant);
+            return results;
         }
 
-        public TenantModel AddTenant(TenantModel tenant)
+        public IEnumerable<TenantInternalModel> GetAllTenants(bool includeModules = true)
         {
-            if (tenant == null)
-            {
-                return default;
-            }
-
-            var entity = _repository.Insert(new TenantEntity
-            {
-                ApplicationName = tenant.ApplicationName,
-                InsertedDate = DateTime.UtcNow,
-                UpdatedDate = DateTime.UtcNow,
-                OrganisationName = tenant.OrganisationName,
-                SiteAddress = tenant.SiteAddress,
-                AdminSiteAddress = tenant.AdminSiteAddress,
-                //DatabaseName = connection["Database"]?.ToString() ?? string.Empty,
-                //Server = connection["Server"]?.ToString() ?? string.Empty,
-                //ConnectionString = tenant.ConnectionString,
-                DbProvider = "postgressql",
-                TenantType = tenant.TenantType,
-                TestSiteAddress = tenant.TestSiteAddress,
-                AdminTestSiteAddress = tenant.AdminTestSiteAddress,
-                MoodleUrlVar = tenant.MoodleUrlVar,
-                MoodleConfigVar = tenant.MoodleConfigVar
-            });
-
-            return Cast(entity);
+            return GetAllTenants(null, null, includeModules);
         }
 
-        private static TenantModel Cast(TenantEntity tenantEntity)
+        public IEnumerable<TenantInternalModel> GetTenantById(Guid tenantId, string siteAddress = null, bool includeModules = true)
         {
-            return new TenantModel
+            return GetAllTenants(tenantId, siteAddress, includeModules);
+        }
+
+        public IEnumerable<TenantInternalModel> GetTenantBySiteAddress(string siteAddress, bool includeModules = true)
+        {
+            return GetAllTenants(null, siteAddress, includeModules);
+        }
+
+        private static TenantInternalModel Cast(TenantEntity tenantEntity)
+        {
+            return new TenantInternalModel
             {
                 Id = tenantEntity.Id,
                 OrganisationName = tenantEntity.OrganisationName,
                 ApplicationName = tenantEntity.ApplicationName,
                 SiteAddress = tenantEntity.SiteAddress,
                 AdminSiteAddress = tenantEntity.AdminSiteAddress,
-                TenantType = tenantEntity.TenantType,
-                ThemePathVar = tenantEntity.ThemePathVar,
-                Var1 = tenantEntity.Var1,
-                Var2 = tenantEntity.Var2,
+                TenantType = tenantEntity.TenantTypeId,
+                ThemePath = tenantEntity.ThemePath,
                 TestSiteAddress = tenantEntity.TestSiteAddress,
                 AdminTestSiteAddress = tenantEntity.AdminTestSiteAddress,
-                MoodleUrlVar = tenantEntity.MoodleUrlVar,
-                MoodleConfigVar = tenantEntity.MoodleConfigVar
-
+                MoodleUrl = tenantEntity.MoodleUrl,
+                MoodleConfig = tenantEntity.MoodleConfig,
+                GoogleAnalyticsTag = tenantEntity.GoogleAnalyticsTag,
+                GoogleTagManager = tenantEntity.GoogleTagManager
             };
         }
     }

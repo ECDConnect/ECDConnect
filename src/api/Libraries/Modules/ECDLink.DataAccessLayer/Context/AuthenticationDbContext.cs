@@ -20,6 +20,7 @@ using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.PQA;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
+using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -34,8 +35,12 @@ using System;
 
 namespace ECDLink.DataAccessLayer.Context
 {
-    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>  //IdentityDbContext<ApplicationUser>
+    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>
     {
+        public DbSet<TenantEntity> Tenants { get; set; }
+        public DbSet<Module> Modules { get; set; }
+        public DbSet<TenantHasModule> TenantHasModules { get; set; } 
+        public DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
         public DbSet<UserGrant> UserGrants { get; set; }
@@ -81,6 +86,7 @@ namespace ECDLink.DataAccessLayer.Context
         // Security
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<UserHierarchyEntity> UserHierarchy { get; set; }
         public DbSet<HierarchyEntity> Hierarchy { get; set; }
         public DbSet<AspNetJWTSession> AspNetJWTSession { get; set; }
@@ -196,6 +202,12 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<PointsUserSummary> PointsUserSummary { get; set; }
         public DbSet<PointsClinicSummary> PointsClinicSummary { get; set; }
 
+        // User Help
+        public DbSet<UserHelp> UserHelp { get; set; }
+
+        // Training
+        public DbSet<UserTrainingCourse> UserTrainingCourses {  get; set; }
+
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
         {
@@ -210,7 +222,18 @@ namespace ECDLink.DataAccessLayer.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
+            builder.Entity<TenantEntity>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.ApplicationName, e.SiteAddress });
+            });
+            builder.Entity<TenantHasModule>(x =>
+            {
+                x.HasKey(e => new { e.ModuleId, e.TenantId });
+            });
+            builder.Entity<Module>(x =>
+            {
+                x.HasKey(e => new { e.Id });
+            });
             builder.Entity<ApplicationUser>(x =>
             {
                 x.Property(p => p.PhoneNumber).HasConversion(

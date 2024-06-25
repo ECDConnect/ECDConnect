@@ -17,7 +17,7 @@ import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { addDays, differenceInMonths, format } from 'date-fns';
 import { daysToAcceptBeingLeader } from '@/constants/club';
-import { useDialog, useSnackbar } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog, useSnackbar } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -28,7 +28,9 @@ export const ClubMembers: React.FC = () => {
   const { showMessage } = useSnackbar();
 
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
     clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)

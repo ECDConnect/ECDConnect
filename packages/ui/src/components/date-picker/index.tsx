@@ -74,7 +74,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         {!hideCalendarIcon &&
           renderIcon(
             'CalendarIcon',
-            'absolute z-0 text-primary top-3 right-4 w-6 h-6'
+            'absolute z-0 text-primary top-2 right-4 w-6 h-6'
           )}
         {showChevronIcon && (
           <ChevronDownIcon

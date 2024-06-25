@@ -1,38 +1,58 @@
-import { ChildDto, UserDto } from '@ecdlink/core';
+import { CaregiverDto, ChildDto, SiteAddressDto, UserDto } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
-  AddChildLearnerTokenModelInput,
   AddChildRegistrationTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
   AddChildUserConsentTokenModelInput,
-  ChildInput,
-  UserModelInput,
+  ChildCaregiverInput,
+  ChildCreatedByDetail,
+  ChildUserUpdateInput,
+  UpdateChildAndCaregiverInput,
+  UpdateSiteAddressInput,
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-registration/caregiver-child-registration.types';
 import { ChildService } from '@services/ChildService';
-import { UserService } from '@services/UserService';
 import { RootState, ThunkApiType } from '../types';
+import { OverrideCache } from '@/models/sync/override-cache';
+import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
+import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
+
+export const ChildrenActions = {
+  GET_CHILDREN: 'getChildren',
+  UPDATE_CHILD: 'updateChild',
+  UPSERT_CHILDREN: 'upsertChildren',
+  FIND_CREATED_CHILD: 'findCreatedChild',
+  GENERATE_CAREGIVER_CHILD_TOKEN: 'generateCaregiverChildToken',
+  REFRESH_CAREGIVER_CHILD_TOKEN: 'refreshCaregiverChildToken',
+  OPEN_ACCESS_ADD_CHILD_DETAIL: 'openAccessAddChildDetail',
+  OPEN_ACCESS_ADD_CHILD: 'openAccessAddChild',
+};
 
 export const getChildren = createAsyncThunk<
-  ChildDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  { children: ChildDto[] } & RetrieveFromCache,
+  {} & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getChildren',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  ChildrenActions.GET_CHILDREN,
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      children: { children: childrenCache },
+      children: { childData: childDataCache },
     } = getState();
 
-    if (!childrenCache) {
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    if (
+      !!overrideCache ||
+      !childDataCache.dateRefreshed ||
+      new Date(childDataCache.dateRefreshed) < oneDayAgo
+    ) {
       try {
-        let children: ChildDto[] | undefined;
+        let children: ChildDto[];
 
         if (userAuth?.auth_token) {
           children = await new ChildService(userAuth?.auth_token).getChildren();
@@ -44,12 +64,42 @@ export const getChildren = createAsyncThunk<
           return rejectWithValue('Error getting Children');
         }
 
-        return children;
+        return { children, retrievedFromCache: false };
       } catch (err) {
         return rejectWithValue(err);
       }
     } else {
-      return childrenCache;
+      return { children: childDataCache.children, retrievedFromCache: true };
+    }
+  }
+);
+
+export const findCreatedChild = createAsyncThunk<
+  ChildCreatedByDetail,
+  { practitionerId: string; firstName: string; surname: string },
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.FIND_CREATED_CHILD,
+  async (
+    { firstName, surname, practitionerId },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ChildService(userAuth?.auth_token).findCreatedChild(
+          practitionerId,
+          firstName,
+          surname
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
@@ -58,6 +108,7 @@ type CreateChildRequest = {
   child: ChildDto;
 };
 
+// TODO - check on this... This just calls update child, do we need a seperate action for this?
 export const createChild = createAsyncThunk<
   ChildDto,
   CreateChildRequest,
@@ -69,10 +120,7 @@ export const createChild = createAsyncThunk<
     } = getState();
     if (userAuth?.auth_token) {
       const input = mapChildInput(child);
-      await new ChildService(userAuth?.auth_token).updateChild(
-        input.Id || '',
-        input
-      );
+      await new ChildService(userAuth?.auth_token).updateChild(input);
       return child;
     } else return rejectWithValue('no access token, profile check required');
   } catch (err) {
@@ -85,27 +133,28 @@ type UpdateChildRequest = {
   id: string;
 };
 
+// Used to update a single child when online
 export const updateChild = createAsyncThunk<
   ChildDto,
   UpdateChildRequest,
   ThunkApiType<RootState>
->('updateChild', async ({ child }, { getState, rejectWithValue }) => {
-  try {
-    const {
-      auth: { userAuth },
-    } = getState();
-    if (userAuth?.auth_token) {
-      const input = mapChildInput(child);
-      await new ChildService(userAuth?.auth_token).updateChild(
-        input.Id || '',
-        input
-      );
-      return child;
-    } else return rejectWithValue('no access token, profile check required');
-  } catch (err) {
-    return rejectWithValue(err);
+>(
+  ChildrenActions.UPDATE_CHILD,
+  async ({ child }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const input = mapChildInput(child);
+        await new ChildService(userAuth?.auth_token).updateChild(input);
+        return child;
+      } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
   }
-});
+);
 
 export const calculateChildrenRegistrationRemoval = createAsyncThunk<
   boolean,
@@ -133,102 +182,77 @@ export const calculateChildrenRegistrationRemoval = createAsyncThunk<
   }
 );
 
-type UpdateChildUserRequest = {
-  childUser: UserDto;
-  id: string;
-};
+// Removing this for now, its part of resitration, but we should also sync the child and user in one go. Neither makes sense without the other
+// export const upsertChildUsers = createAsyncThunk<
+//   boolean[],
+//   // eslint-disable-next-line @typescript-eslint/ban-types
+//   {},
+//   ThunkApiType<RootState>
+// >(
+//   'upsertChildUsers',
+//   // eslint-disable-next-line no-empty-pattern
+//   async ({}, { getState, rejectWithValue }) => {
+//     const {
+//       auth: { userAuth },
+//       children: { childUser, children },
+//       staticData: { WorkflowStatuses },
+//     } = getState();
 
-export const updateChildUser = createAsyncThunk<
-  UserDto,
-  UpdateChildUserRequest,
-  ThunkApiType<RootState>
->(
-  'updateChildUser',
-  async ({ childUser, id }, { getState, rejectWithValue }) => {
-    try {
-      const {
-        auth: { userAuth },
-      } = getState();
-      if (userAuth?.auth_token) {
-        const input = mapUserInput(childUser);
-        await new UserService(userAuth?.auth_token).updateUser(id, input);
-        return childUser;
-      } else return rejectWithValue('no access token, profile check required');
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
+//     try {
+//       let promises: Promise<boolean>[] = [];
+//       const workflowStatus = WorkflowStatuses?.find(
+//         (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
+//       );
+//       if (userAuth?.auth_token && childUser) {
+//         promises = childUser
+//           .filter((childUser) => {
+//             const child = children?.find((x) => x.userId === childUser.id);
+//             return child && child.workflowStatusId !== workflowStatus?.id
+//               ? true
+//               : false;
+//           })
+//           .map(async (x) => {
+//             const input: UserModelInput = {
+//               isSouthAfricanCitizen: x.isSouthAfricanCitizen ?? false,
+//               idNumber: x.idNumber && x.idNumber.length > 0 ? x.idNumber : null,
+//               verifiedByHomeAffairs: x.verifiedByHomeAffairs!,
+//               dateOfBirth: x.dateOfBirth,
+//               genderId: x.genderId && x.genderId.length > 0 ? x.genderId : null,
+//               raceId: x.raceId && x.raceId.length > 0 ? x.raceId : null,
+//               firstName: x.firstName,
+//               surname: x.surname,
+//               contactPreference: x.contactPreference,
+//               phoneNumber: x.phoneNumber,
+//               email: x.email,
+//               profileImageUrl: x.profileImageUrl,
+//             };
 
-export const upsertChildUsers = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'upsertChildUsers',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      children: { childUser, children },
-      staticData: { WorkflowStatuses },
-    } = getState();
+//             return await new UserService(userAuth?.auth_token).updateUser(
+//               x.id ?? '',
+//               input
+//             );
+//           });
+//       }
+//       return Promise.all(promises);
+//     } catch (err) {
+//       return rejectWithValue(err);
+//     }
+//   }
+// );
 
-    try {
-      let promises: Promise<boolean>[] = [];
-      const workflowStatus = WorkflowStatuses?.find(
-        (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
-      );
-      if (userAuth?.auth_token && childUser) {
-        promises = childUser
-          .filter((childUser) => {
-            const child = children?.find((x) => x.userId === childUser.id);
-            return child && child.workflowStatusId !== workflowStatus?.id
-              ? true
-              : false;
-          })
-          .map(async (x) => {
-            const input: UserModelInput = {
-              isSouthAfricanCitizen: x.isSouthAfricanCitizen ?? false,
-              idNumber: x.idNumber && x.idNumber.length > 0 ? x.idNumber : null,
-              verifiedByHomeAffairs: x.verifiedByHomeAffairs!,
-              dateOfBirth: x.dateOfBirth,
-              genderId: x.genderId && x.genderId.length > 0 ? x.genderId : null,
-              raceId: x.raceId && x.raceId.length > 0 ? x.raceId : null,
-              firstName: x.firstName,
-              surname: x.surname,
-              contactPreference: x.contactPreference,
-              phoneNumber: x.phoneNumber,
-              email: x.email,
-              profileImageUrl: x.profileImageUrl,
-            };
-
-            return await new UserService(userAuth?.auth_token).updateUser(
-              x.id ?? '',
-              input
-            );
-          });
-      }
-      return Promise.all(promises);
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
+// Syncs all children from state, calling updateChild
 export const upsertChildren = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'upsertChildren',
+  ChildrenActions.UPSERT_CHILDREN,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      children: { children },
+      children: { childData },
       staticData: { WorkflowStatuses },
     } = getState();
 
@@ -237,30 +261,20 @@ export const upsertChildren = createAsyncThunk<
       const workflowStatus = WorkflowStatuses?.find(
         (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
       );
-      if (userAuth?.auth_token && children) {
-        promises = children
-          .filter((child) => child.workflowStatusId !== workflowStatus?.id)
-          .map(async (x) => {
-            const input: ChildInput = {
-              Id: x.id,
-              UserId: x.userId,
-              LanguageId: x.languageId,
-              CaregiverId: x.caregiverId || null,
-              Allergies: x.allergies,
-              Disabilities: x.disabilities,
-              OtherHealthConditions: x.otherHealthConditions,
-              WorkflowStatusId: x.workflowStatusId,
-              IsActive: x.isActive === false ? false : true,
-            };
 
-            if (x?.isOnline === false) {
-              return await new ChildService(userAuth?.auth_token).updateChild(
-                x.id ?? '',
-                input
-              );
-            }
-            return true;
-          });
+      const unsyncedChilren = childData.children.filter(
+        (child) =>
+          !child.synced && child.workflowStatusId !== workflowStatus?.id // Do not update children, who are waiting on caregiver to complete registration
+      );
+
+      if (userAuth?.auth_token && !!unsyncedChilren) {
+        promises = unsyncedChilren.map(async (child) => {
+          const input = mapChildInput(child);
+
+          return await new ChildService(userAuth?.auth_token).updateChild(
+            input
+          );
+        });
       }
       return Promise.all(promises);
     } catch (err) {
@@ -276,12 +290,11 @@ type GenerateCaregiverChildTokenRequest = {
 };
 
 export const generateCaregiverChildToken = createAsyncThunk<
-  string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  ChildRegistrationDto,
   GenerateCaregiverChildTokenRequest,
   ThunkApiType<RootState>
 >(
-  'generateCaregiverChildToken',
+  ChildrenActions.GENERATE_CAREGIVER_CHILD_TOKEN,
   // eslint-disable-next-line no-empty-pattern
   async (
     { firstName, surname, classgroupId },
@@ -313,13 +326,11 @@ type RefreshCaregiverChildTokenRequest = {
 };
 
 export const refreshCaregiverChildToken = createAsyncThunk<
-  string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  ChildRegistrationDto,
   RefreshCaregiverChildTokenRequest,
   ThunkApiType<RootState>
 >(
-  'refreshCaregiverChildToken',
-  // eslint-disable-next-line no-empty-pattern
+  ChildrenActions.REFRESH_CAREGIVER_CHILD_TOKEN,
   async ({ classgroupId, childId }, { getState, rejectWithValue }) => {
     try {
       const {
@@ -343,12 +354,10 @@ type OpenAccessAddChildDetailRequest = {
 
 export const openAccessAddChildDetail = createAsyncThunk<
   ChildRegistrationDetails,
-  // eslint-disable-next-line @typescript-eslint/ban-types
   OpenAccessAddChildDetailRequest,
   ThunkApiType<RootState>
 >(
-  'openAccessAddChildDetail',
-  // eslint-disable-next-line no-empty-pattern
+  ChildrenActions.OPEN_ACCESS_ADD_CHILD_DETAIL,
   async ({ token }, { rejectWithValue }) => {
     try {
       const result = await new ChildService('').openAccessAddChildDetail(
@@ -364,38 +373,31 @@ export const openAccessAddChildDetail = createAsyncThunk<
 export type TokenAddChildRequest = {
   token: string;
   caregiver: AddChildCaregiverTokenModelInput;
-  learner: AddChildLearnerTokenModelInput;
-  siteAddress: AddChildSiteAddressTokenModelInput;
+  siteAddress: Omit<AddChildSiteAddressTokenModelInput, 'provinceId'>;
   child: AddChildTokenModelInput;
   registration?: AddChildRegistrationTokenModelInput;
-  userConsent?: AddChildUserConsentTokenModelInput;
+  userConsent?: Omit<
+    AddChildUserConsentTokenModelInput,
+    | 'commitmentAgreementAccepted'
+    | 'consentAgreementAccepted'
+    | 'indemnityAgreementAccepted'
+  >;
 };
 
 export const openAccessAddChild = createAsyncThunk<
   string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  TokenAddChildRequest,
+  Omit<TokenAddChildRequest, 'learner'>,
   ThunkApiType<RootState>
 >(
-  'openAccessAddChild',
-  // eslint-disable-next-line no-empty-pattern
+  ChildrenActions.OPEN_ACCESS_ADD_CHILD,
   async (
-    {
-      token,
-      caregiver,
-      learner,
-      siteAddress,
-      child,
-      registration,
-      userConsent,
-    },
+    { token, caregiver, siteAddress, child, registration, userConsent },
     { rejectWithValue }
   ) => {
     try {
       const result = await new ChildService('').openAccessAddChild(
         token,
         caregiver,
-        learner,
         siteAddress,
         child,
         registration,
@@ -408,66 +410,107 @@ export const openAccessAddChild = createAsyncThunk<
   }
 );
 
-const mapChildInput = (child: Partial<ChildDto>): ChildInput => ({
-  Id: child.id,
-  UserId: child.userId,
-  LanguageId: child.languageId,
-  CaregiverId: child.caregiverId || null,
-  Allergies: child.allergies,
-  Disabilities: child.disabilities,
-  OtherHealthConditions: child.otherHealthConditions,
-  WorkflowStatusId: child.workflowStatusId,
-  IsActive: child.isActive === false ? false : true,
-  InsertedBy: child?.insertedBy,
-});
-
-const mapUserInput = (child: Partial<UserDto>): UserModelInput => ({
+const mapChildInput = (
+  child: Partial<ChildDto>
+): UpdateChildAndCaregiverInput => ({
   id: child.id,
-  isSouthAfricanCitizen: child.isSouthAfricanCitizen ?? false,
-  idNumber: child.idNumber && child.idNumber.length > 0 ? child.idNumber : null,
-  verifiedByHomeAffairs: child.verifiedByHomeAffairs || false,
-  dateOfBirth: child.dateOfBirth,
-  genderId: child.genderId && child.genderId.length > 0 ? child.genderId : null,
-  raceId: child.raceId && child.raceId.length > 0 ? child.raceId : null,
-  firstName: child.firstName,
-  surname: child.surname,
-  contactPreference: child.contactPreference,
-  phoneNumber: child.phoneNumber,
-  email: child.email,
-  profileImageUrl: child.profileImageUrl,
+  languageId: child.languageId,
+  allergies: child.allergies,
+  disabilities: child.disabilities,
+  otherHealthConditions: child.otherHealthConditions,
+  workflowStatusId: child.workflowStatusId,
+  isActive: child.isActive === false ? false : true,
+  user: mapUserInput(child.user!),
+  caregiver: !!child.caregiver ? mapCaregiver(child.caregiver) : null,
 });
-export const getChildrenForCoach = createAsyncThunk<
-  ChildDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'getChildrenForCoach',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      children: { children: childrenCache },
-    } = getState();
 
-    if (!childrenCache) {
-      try {
-        let children: ChildDto[] | undefined;
+const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({
+  id: childUser.id,
+  isActive: childUser.isActive || false,
+  isSouthAfricanCitizen: childUser.isSouthAfricanCitizen ?? false,
+  idNumber:
+    childUser.idNumber && childUser.idNumber.length > 0
+      ? childUser.idNumber
+      : null,
+  verifiedByHomeAffairs: childUser.verifiedByHomeAffairs || false,
+  dateOfBirth: childUser.dateOfBirth,
+  genderId:
+    childUser.genderId && childUser.genderId.length > 0
+      ? childUser.genderId
+      : null,
+  firstName: childUser.firstName,
+  surname: childUser.surname,
+  contactPreference: childUser.contactPreference,
+  profileImageUrl: childUser.profileImageUrl,
+});
 
-        if (userAuth?.auth_token) {
-          children = await new ChildService(
-            userAuth?.auth_token
-          ).getChildrenForCoach(userAuth?.id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
+const mapCaregiver = (x: Partial<CaregiverDto>): ChildCaregiverInput => ({
+  id: x.id,
+  idNumber: x.idNumber,
+  firstName: x.firstName,
+  surname: x.surname,
+  phoneNumber: x.phoneNumber,
+  siteAddress: x.siteAddress ? mapSiteAddress(x.siteAddress!) : null,
+  relationId: x.relationId,
+  educationId: x.educationId,
+  emergencyContactFirstName: x.emergencyContactFirstName,
+  emergencyContactSurname: x.emergencyContactSurname,
+  emergencyContactPhoneNumber: x.emergencyContactPhoneNumber,
+  additionalFirstName: x.additionalFirstName,
+  additionalSurname: x.additionalSurname,
+  additionalPhoneNumber: x.additionalPhoneNumber,
+  joinReferencePanel: x.joinReferencePanel || false,
+  contribution: x.contribution || false,
+  isAllowedCustody: x.isAllowedCustody ?? false,
+  grantIds: x.grants,
+});
 
-        return children;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return childrenCache;
-    }
-  }
-);
+const mapSiteAddress = (
+  x: Partial<SiteAddressDto>
+): UpdateSiteAddressInput => ({
+  id: x.id,
+  addressLine1: x.addressLine1,
+  addressLine2: x.addressLine2,
+  addressLine3: x.addressLine3,
+  name: x.name,
+  postalCode: x.postalCode,
+  provinceId: x.provinceId,
+  ward: x.ward,
+});
+
+// Refactor when we get to coach, probably won't be needed as fetch should be covered by GetAllChild
+// export const getChildrenForCoach = createAsyncThunk<
+//   ChildDto[],
+//   // eslint-disable-next-line @typescript-eslint/ban-types
+//   {},
+//   ThunkApiType<RootState>
+// >(
+//   'getChildrenForCoach',
+//   // eslint-disable-next-line no-empty-pattern
+//   async ({}, { getState, rejectWithValue }) => {
+//     const {
+//       auth: { userAuth },
+//       children: { children: childrenCache },
+//     } = getState();
+
+//     if (!childrenCache) {
+//       try {
+//         let children: ChildDto[] | undefined;
+
+//         if (userAuth?.auth_token) {
+//           children = await new ChildService(
+//             userAuth?.auth_token
+//           ).getChildrenForCoach(userAuth?.id);
+//         } else {
+//           return rejectWithValue('no access token, profile check required');
+//         }
+
+//         return children;
+//       } catch (err) {
+//         return rejectWithValue(err);
+//       }
+//     } else {
+//       return childrenCache;
+//     }
+//   }
+// );

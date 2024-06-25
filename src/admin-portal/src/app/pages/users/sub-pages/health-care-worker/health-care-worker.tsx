@@ -47,7 +47,7 @@ import { filterByValue } from '../../../../utils/string-utils/string-utils';
 import ROUTES from '../../../../routes/app.routes-constants';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import { useUserRole } from '../../../../hooks/useUserRole';
-import { columnColor } from '../../../../utils/health-care-worker/components-utils';
+import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 
 export const sortByConnectUsage: SearchDropDownOption<string>[] = [
   ConenctUsage?.InvitationActive,
@@ -219,7 +219,7 @@ export default function HealthCareWorkers() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: ROUTES.VIEW_USERS,
+      pathname: ROUTES.USERS.VIEW_USER,
       state: {
         component: 'chw',
         userId: selectedRow?.userId,

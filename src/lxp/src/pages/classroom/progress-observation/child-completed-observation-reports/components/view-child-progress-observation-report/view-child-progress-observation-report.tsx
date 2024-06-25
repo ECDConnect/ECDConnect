@@ -38,11 +38,8 @@ export const ViewChildProgressObservationReport: React.FC = () => {
   const currentChild = useSelector(
     childrenSelectors.getChildById(routeState.childId)
   );
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
-  const currentChildLearner = useSelector(
-    classroomsSelectors.getChildLearner(currentChild)
+  const currentChildClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(currentChild?.userId!)
   );
   const allCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories
@@ -68,7 +65,7 @@ export const ViewChildProgressObservationReport: React.FC = () => {
     const base64Pdf = await appDispatch(
       contentReportThunkActions.generateChildProgressReport({
         childId: currentReport.childId,
-        classgroupId: currentChildLearner?.classroomGroupId || '',
+        classgroupId: currentChildClassroomGroup?.id || '',
         reportDate: currentReport.reportingDate
           ? new Date(currentReport.reportingDate)
           : new Date(),
@@ -79,7 +76,7 @@ export const ViewChildProgressObservationReport: React.FC = () => {
 
     saveBase64Pdf(
       base64Pdf,
-      `${currentChildUser?.firstName}${currentChildUser?.surname}-${currentReport.reportingPeriod}`
+      `${currentChild?.user?.firstName}${currentChild?.user?.surname}-${currentReport.reportingPeriod}`
     );
   };
 
@@ -119,7 +116,7 @@ export const ViewChildProgressObservationReport: React.FC = () => {
         if (loading) return;
         history.goBack();
       }}
-      title={`${currentChildUser?.firstName}'s progress`}
+      title={`${currentChild?.user?.firstName}'s progress`}
       displayOffline={!isOnline}
     >
       <div className={'flex flex-col p-4'}>
@@ -156,7 +153,7 @@ export const ViewChildProgressObservationReport: React.FC = () => {
                   !categoryFromReport?.supportingTask
                 }
                 levelId={categoryFromReport?.achievedLevelId || 0}
-                childName={`${currentChildUser?.firstName}`}
+                childName={`${currentChild?.user?.firstName}`}
                 helpingSkillId={categoryFromReport?.supportingTask?.taskId || 0}
                 toDoNote={categoryFromReport?.supportingTask?.todoText || ''}
               />

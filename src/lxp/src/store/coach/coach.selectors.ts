@@ -3,6 +3,7 @@ import {
   CoachCirclesDto,
   CoachDto,
   CoachingCircleTopicDto,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import { RootState } from '../types';
 
@@ -14,7 +15,11 @@ export const getCoachCircles = (
 ): CoachCirclesDto | undefined => state.coach.coachCircles;
 
 export const getCoachClubs = (state: RootState): ClubDto[] | undefined => {
-  if (state.user.user?.roles?.some((role) => role.name === 'Coach'))
+  if (
+    state.user.user?.roles?.some(
+      (role) => role.systemName === RoleSystemNameEnum.Coach
+    )
+  )
     return state.coach.coachClubs;
   return undefined;
 };

@@ -23,10 +23,6 @@ export const passwordSchema = Yup.object().shape({
       'Password is missing a number - include at least one number.'
     )
     .matches(
-      containsSpecialCharactersRegex,
-      'Password is missing a symbol - include at least one symbol.'
-    )
-    .matches(
       containsUpperCaseRegex,
       'Password is missing a uppercase - include at least one uppercase.'
     ),

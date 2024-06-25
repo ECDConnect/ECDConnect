@@ -1,21 +1,11 @@
-import {
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-  LearnerDto,
-  PrincipalDto,
-} from '@ecdlink/core';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { OfflineCache } from '@/models/sync/offline-cache';
+import { OfflineUpdate } from '@/models/sync/offline-update';
 
 export type ClassroomState = {
-  classroom: ClassroomDto | undefined;
-  classroomGroups: ClassroomGroupDto[] | undefined;
-  classroomProgrammes: ClassProgrammeDto[] | undefined;
-  classroomGroupLearners: LearnerDto[] | undefined;
-  programmeType: string | undefined; //TODO Fix this
-  principal: PrincipalDto | undefined;
-  classrooGroupsForPractitioner: any | undefined;
-};
-
-export type ClassroomUpdateParams = {
-  classroom: ClassroomDto;
+  classroom: (ClassroomDto & OfflineCache & OfflineUpdate) | undefined;
+  classroomGroupData: {
+    classroomGroups: (ClassroomGroupDto & OfflineUpdate)[];
+  } & OfflineCache;
 };

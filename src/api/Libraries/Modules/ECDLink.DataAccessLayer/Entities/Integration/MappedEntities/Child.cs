@@ -32,7 +32,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public bool? HasIdNumber { get; set; }
 
         public MappedFranchisee Franchisee { get; set; }
-        public MappedCaregiver? Caregiver { get; set; }
+        public MappedCaregiver Caregiver { get; set; }
 
     }
 

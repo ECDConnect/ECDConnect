@@ -1,33 +1,24 @@
-import { IncomeStatementsDto } from '@/../../../packages/core/lib';
+import {
+  ExpenseItemDto,
+  IncomeItemDto,
+  IncomeStatementDto,
+} from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getAllExpensesTypes,
   getAllIncomeTypes,
   getAllPayType,
-  getAllStatementsContributionType,
-  getAllStatementsFeeType,
-  submitIncomeStatement,
   getIncomeStatements,
-  getUnsubmittedIncomeItems,
-  getUnsubmittedExpenseItems,
-  addIncomeItem,
-  addExpenseItem,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
-import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 const initialState: StatementsState = {
   expensesTypes: undefined,
   incomeTypes: undefined,
-  feeTypes: undefined,
-  contributionTypes: undefined,
   payTypes: undefined,
   incomeStatements: [],
-  unSubmittedIncomeItems: [],
-  unSubmittedExpenseItems: [],
-  unsyncedIncomeItems: [],
-  unsyncedExpenseItems: [],
 };
 
 const statementsSlice = createSlice({
@@ -37,155 +28,190 @@ const statementsSlice = createSlice({
     resetStatementsState: (state) => {
       state.expensesTypes = initialState.expensesTypes;
       state.incomeTypes = initialState.incomeTypes;
-      state.feeTypes = initialState.feeTypes;
-      state.contributionTypes = initialState.contributionTypes;
       state.incomeStatements = initialState.incomeStatements;
-      state.unSubmittedIncomeItems = initialState.unSubmittedIncomeItems;
-      state.unSubmittedExpenseItems = initialState.unSubmittedExpenseItems;
       state.payTypes = initialState.payTypes;
+    },
+    createStatement: (state, action: PayloadAction<IncomeStatementDto>) => {
+      state.incomeStatements = [
+        ...state.incomeStatements,
+        {
+          ...action.payload,
+          synced: false,
+          dateRefreshed: new Date().toString(),
+        },
+      ];
+    },
+    markStatementAsDownloaded: (
+      state,
+      action: PayloadAction<{ statementId: string }>
+    ) => {
+      const { statementId } = action.payload;
+
+      // Get by statement Id or the month/year of the income item
+      let updatedStatement = state.incomeStatements.find(
+        (x) => x.id === statementId
+      );
+
+      if (!updatedStatement) {
+        return;
+      }
+
+      state.incomeStatements = [
+        ...state.incomeStatements.filter((x) => x.id !== statementId),
+        {
+          ...updatedStatement,
+          synced: false,
+          downloaded: true,
+        },
+      ];
+    },
+    addOrUpdateIncomeItems: (
+      state,
+      action: PayloadAction<{
+        statementId?: string;
+        incomeItems: IncomeItemDto[];
+      }>
+    ) => {
+      const { incomeItems, statementId } = action.payload;
+
+      if (!incomeItems.length) {
+        return;
+      }
+
+      const dateReceived = new Date(incomeItems[0].dateReceived);
+      const receivedMonth = dateReceived.getMonth() + 1;
+      const receivedYear = dateReceived.getFullYear();
+
+      // Get by statement Id or the month/year of the income item
+      let updatedStatement = !!statementId
+        ? state.incomeStatements.find((x) => x.id === statementId)
+        : state.incomeStatements.find(
+            (x) => x.month === receivedMonth && x.year === receivedYear
+          );
+
+      // If nothing found, then create one
+      if (!updatedStatement) {
+        updatedStatement = {
+          id: newGuid(),
+          month: receivedMonth,
+          year: receivedYear,
+          contactedByCoach: false,
+          downloaded: false,
+          incomeItems: [],
+          expenseItems: [],
+          synced: false,
+          dateRefreshed: undefined,
+        };
+      }
+
+      state.incomeStatements = [
+        ...state.incomeStatements.filter((x) => x.id !== statementId),
+        {
+          ...updatedStatement,
+          synced: false,
+          incomeItems: [
+            ...updatedStatement.incomeItems.filter(
+              (x) =>
+                !action.payload.incomeItems.some(
+                  (updatedItem) => updatedItem.id === x.id
+                )
+            ),
+            ...incomeItems,
+          ],
+        },
+      ];
+    },
+    addExpenseItem: (state, action: PayloadAction<ExpenseItemDto>) => {
+      const datePaid = new Date(action.payload.datePaid);
+      const paidMonth = datePaid.getMonth() + 1;
+      const paidYear = datePaid.getFullYear();
+
+      const updatedStatement = state.incomeStatements.find(
+        (x) => x.month === paidMonth && x.year === paidYear
+      );
+
+      if (!updatedStatement) {
+        // No statement for the month yet, so add one
+        state.incomeStatements = [
+          ...state.incomeStatements,
+          {
+            id: newGuid(),
+            contactedByCoach: false,
+            year: paidYear,
+            month: paidMonth,
+            downloaded: false,
+            synced: false,
+            dateRefreshed: undefined,
+            incomeItems: [],
+            expenseItems: [action.payload],
+          },
+        ];
+      } else {
+        // Add item to existing statement
+        state.incomeStatements = [
+          ...state.incomeStatements.filter((x) => x.id !== updatedStatement.id),
+          {
+            ...updatedStatement,
+            synced: false,
+            expenseItems: [...updatedStatement.expenseItems, action.payload],
+          },
+        ];
+      }
+    },
+    updateExpenseItem: (
+      state,
+      action: PayloadAction<{
+        statementId: string;
+        expenseItem: ExpenseItemDto;
+      }>
+    ) => {
+      const updatedStatement = state.incomeStatements.find(
+        (x) => x.id === action.payload.statementId
+      );
+      if (!updatedStatement) {
+        return;
+      }
+      state.incomeStatements = [
+        ...state.incomeStatements.filter(
+          (x) => x.id !== action.payload.statementId
+        ),
+        {
+          ...updatedStatement,
+          synced: false,
+          expenseItems: [
+            ...updatedStatement.expenseItems.filter(
+              (x) => x.id !== action.payload.expenseItem.id
+            ),
+            action.payload.expenseItem,
+          ],
+        },
+      ];
     },
   },
   extraReducers: (builder) => {
-    setThunkActionStatus(builder, submitIncomeStatement);
     builder.addCase(getAllExpensesTypes.fulfilled, (state, action) => {
       state.expensesTypes = action.payload;
     });
     builder.addCase(getAllIncomeTypes.fulfilled, (state, action) => {
       state.incomeTypes = action.payload;
     });
-    builder.addCase(getAllStatementsFeeType.fulfilled, (state, action) => {
-      state.feeTypes = action.payload;
-    });
-    builder.addCase(
-      getAllStatementsContributionType.fulfilled,
-      (state, action) => {
-        state.contributionTypes = action.payload;
-      }
-    );
     builder.addCase(getAllPayType.fulfilled, (state, action) => {
       state.payTypes = action.payload;
     });
-    builder.addCase(submitIncomeStatement.fulfilled, (state, action) => {
-      setFulfilledThunkActionStatus(state, action);
-
-      // Check if we have already synced the statement, if not add it to the state
-      if (
-        state.incomeStatements.findIndex(
-          (statement) =>
-            statement.year === action.payload.year &&
-            statement.month === action.payload.month
-        ) < 0
-      ) {
-        state.incomeStatements = [...state.incomeStatements, action.payload];
-      }
-
-      state.unsyncedIncomeItems = [];
-      state.unsyncedExpenseItems = [];
-      state.unSubmittedIncomeItems = [];
-      state.unSubmittedExpenseItems = [];
-    });
     builder.addCase(getIncomeStatements.fulfilled, (state, action) => {
-      state.incomeStatements = action.payload;
-    });
-    builder.addCase(getUnsubmittedIncomeItems.fulfilled, (state, action) => {
-      state.unSubmittedIncomeItems = action.payload;
-    });
-    builder.addCase(getUnsubmittedExpenseItems.fulfilled, (state, action) => {
-      state.unSubmittedExpenseItems = action.payload;
-    });
-    builder.addCase(addIncomeItem.fulfilled, (state, action) => {
-      const index = state.unSubmittedIncomeItems.findIndex(
-        (x) => x.id === action.payload.id
-      );
-
-      if (index < 0) {
-        state.unSubmittedIncomeItems = [
-          ...state.unSubmittedIncomeItems,
-          action.payload,
-        ];
-      } else {
-        state.unSubmittedIncomeItems = [
-          ...state.unSubmittedIncomeItems.slice(0, index),
-          action.payload,
-          ...state.unSubmittedIncomeItems.slice(index + 1),
-        ];
-      }
-
-      // Remove from unsynced
-      const unsyncedIndex = state.unsyncedIncomeItems.findIndex(
-        (x) => x.Id === action.payload.id
-      );
-
-      if (unsyncedIndex >= 0) {
-        state.unsyncedIncomeItems = [
-          ...state.unsyncedIncomeItems.slice(0, unsyncedIndex),
-          ...state.unsyncedIncomeItems.slice(unsyncedIndex + 1),
-        ];
-      }
-    });
-    builder.addCase(addIncomeItem.rejected, (state, action) => {
-      if (action.meta.arg.firstAttempt) {
-        const input = action.meta.arg.input;
-        state.unsyncedIncomeItems = [...state.unsyncedIncomeItems, input];
-
-        // Map and add to our unsubmitted items
-        state.unSubmittedIncomeItems = [
-          ...state.unSubmittedIncomeItems,
-          {
-            amount: input.Amount,
-            dateReceived: input.DateReceived,
-            id: input.Id,
-            incomeTypeId: input.IncomeTypeId!,
-            childUserId: input.ChildUserId as string,
-          },
-        ];
-      }
-    });
-    builder.addCase(addExpenseItem.fulfilled, (state, action) => {
-      const index = state.unSubmittedExpenseItems.findIndex(
-        (x) => x.id === action.payload.id
-      );
-
-      if (index < 0) {
-        state.unSubmittedExpenseItems = [
-          ...state.unSubmittedExpenseItems,
-          action.payload,
-        ];
-      } else {
-        state.unSubmittedExpenseItems = [
-          ...state.unSubmittedExpenseItems.slice(0, index),
-          action.payload,
-          ...state.unSubmittedExpenseItems.slice(index + 1),
-        ];
-      }
-
-      // Remove from unsynced
-      const unsyncedIndex = state.unsyncedExpenseItems.findIndex(
-        (x) => x.Id === action.payload.id
-      );
-
-      if (unsyncedIndex >= 0) {
-        state.unsyncedExpenseItems = [
-          ...state.unsyncedExpenseItems.slice(0, unsyncedIndex),
-          ...state.unsyncedExpenseItems.slice(unsyncedIndex + 1),
-        ];
-      }
-    });
-    builder.addCase(addExpenseItem.rejected, (state, action) => {
-      if (action.meta.arg.firstAttempt) {
-        const input = action.meta.arg.input;
-        state.unsyncedExpenseItems = [...state.unsyncedExpenseItems, input];
-
-        // Map and add to our unsubmitted items
-        state.unSubmittedExpenseItems = [
-          ...state.unSubmittedExpenseItems,
-          {
-            amount: input.Amount,
-            datePaid: input.DatePaid,
-            id: input.Id,
-            expenseTypeId: input.ExpenseTypeId!,
-            description: input.Description || '',
-          },
+      if (action.payload && action.payload.length) {
+        state.incomeStatements = [
+          ...state.incomeStatements.filter(
+            (x) =>
+              new Date(x.year, x.month, 20) < action.meta.arg.startDate ||
+              (!!action.meta.arg.endDate &&
+                new Date(x.year, x.month, 20) > action.meta.arg.endDate)
+          ),
+          ...action.payload.map((item) => ({
+            ...item,
+            synced: true,
+            dateRefreshed: new Date().toString(),
+          })),
         ];
       }
     });

@@ -1,4 +1,5 @@
 import { Colours, ComponentBaseProps } from '@ecdlink/ui';
+import { ButtonProps } from '@ecdlink/ui/lib/components/button/button.types';
 import { ReactElement } from 'react';
 
 export interface CustomSuccessCardProps extends ComponentBaseProps {
@@ -9,5 +10,6 @@ export interface CustomSuccessCardProps extends ComponentBaseProps {
   subText?: string;
   subTextColours?: Colours;
   color?: Colours;
+  button?: ButtonProps;
   onClose?: () => void;
 }

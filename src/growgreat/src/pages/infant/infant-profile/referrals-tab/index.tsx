@@ -168,9 +168,7 @@ export const ReferralsTab: React.FC = () => {
   );
 
   const isToGetPreviousVisitStatusData =
-    (!currentVisit ||
-      (!currentVisit?.attended && isVisitInProgress(currentVisit))) &&
-    !!previousVisit?.id;
+    (!currentVisit || !isVisitInProgress(currentVisit)) && !!previousVisit?.id;
 
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
@@ -190,7 +188,7 @@ export const ReferralsTab: React.FC = () => {
       appDispatch(
         infantThunkActions.getReferralsForInfant({
           infantId: infantId,
-          visitId: previousVisit.id,
+          visitId: '',
         })
       ).unwrap();
     } else if (currentVisit) {

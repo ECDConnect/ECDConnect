@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useTheme, useDialog } from '@ecdlink/core';
+import { useTheme, useDialog, RoleSystemNameEnum } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -35,7 +35,9 @@ export const CoachProgrammeInformation: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const userData = useSelector(userSelectors.getUser);
-  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -46,8 +48,9 @@ export const CoachProgrammeInformation: React.FC = () => {
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
   );
+  // THIS PROBABLY NEEDS TO BE UPDATED
   const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.userId === practitionerId
+    (item) => item?.principal?.userId === practitionerId
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerClassroomGroups = practitionerClassroom
@@ -131,6 +134,7 @@ export const CoachProgrammeInformation: React.FC = () => {
   const { theme } = useTheme();
 
   const classroomsDetailsForPractitioner = async () => {
+    // Needs to be updated
     const classroomDetails = await new PractitionerService(
       userAuth?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);

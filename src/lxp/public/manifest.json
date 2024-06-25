@@ -1,6 +1,6 @@
 {
-  "short_name": "Funda App",
-  "name": "Funda App",
+  "short_name": "ECD Connect",
+  "name": "ECD Connect",
   "icons": [
     { "src": "assets/icon/favicon.ico", "type": "image/x-icon", "sizes": "32x32" },
     { "src": "assets/icon/icon-192.png", "type": "image/png", "sizes": "192x192" },
@@ -24,7 +24,7 @@
       "purpose": "maskable"
     }
   ],
-  "id": "funda_app",
+  "id": "ecdconnect",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#ffffff",

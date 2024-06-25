@@ -1,7 +1,6 @@
 import { useDialog } from '@ecdlink/core';
 import {
   Alert,
-  ActionModal,
   BannerWrapper,
   DialogPosition,
   MenuListDataItem,
@@ -32,6 +31,9 @@ import { usePrevious } from 'react-use';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { PractitionerProfileRouteState } from './practitioner-profile.types';
+import { NavigationNames } from '@/pages/navigation';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
+import { useTenant } from '@/hooks/useTenant';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -40,6 +42,7 @@ export const PractitionerProfile: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isTrainee = practitioner?.isTrainee;
+  const isPrincipal = practitioner?.isPrincipal;
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomForPractitionerAnyType: any = classroom;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -50,7 +53,12 @@ export const PractitionerProfile: React.FC = () => {
   const [displayError] = useState(false);
   const history = useHistory();
   const dialog = useDialog();
-
+  const missingProgramme =
+    (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
+    !practitioner?.principalHierarchy &&
+    !isPrincipal;
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
   const location = useLocation<PractitionerProfileRouteState>();
 
   const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
@@ -126,6 +134,18 @@ export const PractitionerProfile: React.FC = () => {
     });
   };
 
+  const showCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return (
+          <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod={false} />
+        );
+      },
+    });
+  };
+
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
@@ -135,41 +155,43 @@ export const PractitionerProfile: React.FC = () => {
       userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${user?.firstName} ${user?.surname}`.slice(0, 25),
+        title: 'About me',
         titleStyle,
-        subTitle: 'About me',
+        subTitle: 'Login, contact details',
         subTitleStyle,
         menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         iconColor: 'white',
         showIcon: profilePc === undefined,
+        backgroundColor: 'quatenaryBg',
         onActionClick: () => {
           history.push(ROUTES.PRACTITIONER.ABOUT.ROOT);
         },
       },
+      // {
+      //   title: 'Account',
+      //   titleStyle,
+      //   subTitleStyle,
+      //   subTitle: 'Password',
+      //   menuIcon: 'ShieldCheckIcon',
+      //   menuIconClassName: 'text-white',
+      //   iconBackgroundColor: 'tertiary',
+      //   showIcon: true,
+      //   iconColor: 'white',
+      //   onActionClick: () => {
+      //     history.push(ROUTES.PRACTITIONER.ACCOUNT);
+      //   },
+      // },
       {
-        title: 'Account',
+        title: NavigationNames.Logout,
         titleStyle,
         subTitleStyle,
-        subTitle: 'Password',
-        menuIcon: 'ShieldCheckIcon',
-        menuIconClassName: 'text-white',
-        iconBackgroundColor: 'tertiary',
-        showIcon: true,
-        iconColor: 'white',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ACCOUNT);
-        },
-      },
-      {
-        title: 'Logout',
-        titleStyle,
-        subTitleStyle,
-        subTitle: 'Logout',
+        subTitle: 'Sign out of the app',
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
         iconBackgroundColor: 'tertiary',
+        backgroundColor: 'tertiaryAccent2',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -188,34 +210,8 @@ export const PractitionerProfile: React.FC = () => {
     ];
 
     if (!isTrainee) {
-      stackedMenuList.splice(2, 0, {
-        title: 'Sync App Data',
-        titleStyle,
-        subTitleStyle,
-        subTitle: lastDataSyncDate,
-        menuIcon: 'RefreshIcon',
-        iconColor: 'white',
-        iconBackgroundColor: 'tertiary',
-        showIcon: true,
-        onActionClick: () => {
-          dialog({
-            position: DialogPosition.Bottom,
-            blocking: true,
-            render: (onSubmit, onCancel) => {
-              return (
-                <OfflineSyncModal
-                  isManual
-                  onSubmit={onSubmit}
-                  onCancel={onCancel}
-                ></OfflineSyncModal>
-              );
-            },
-          });
-        },
-      });
-
       stackedMenuList?.splice(1, 0, {
-        title: 'Programme information',
+        title: 'Preschool',
         titleStyle,
         subTitle:
           classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
@@ -225,58 +221,23 @@ export const PractitionerProfile: React.FC = () => {
         menuIconUrl: classroomImage?.file,
         menuIcon: 'HeartIcon',
         menuIconClassName: 'text-white',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'secondary',
+        backgroundColor: 'secondaryAccent2',
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
-          if ((classroom && classroom.id) || classroomGroups) {
+          if (
+            (classroom && classroom.id) ||
+            (classroomGroups && !missingProgramme) ||
+            isOpenAccess
+          ) {
             if (isOnline) {
               history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
             } else {
               showOnlineOnly();
             }
-          } else {
-            dialog({
-              render: (onSubmit, onCancel) => {
-                return (
-                  <ActionModal
-                    icon="ExclamationCircleIcon"
-                    iconBorderColor="alertBg"
-                    iconColor="alertMain"
-                    title="Tell us more about you!"
-                    paragraphs={[
-                      `Please Complete your profile to unlock the classroom feature`,
-                    ]}
-                    actionButtons={[
-                      {
-                        colour: 'primary',
-                        text: 'Okay',
-                        textColour: 'white',
-                        type: 'filled',
-                        leadingIcon: 'ArrowCircleRightIcon',
-                        onClick: async () => {
-                          onSubmit();
-                          handleOnlineCallback(() =>
-                            history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-                          );
-                        },
-                      },
-                      {
-                        colour: 'primary',
-                        text: 'Close',
-                        textColour: 'primary',
-                        type: 'outlined',
-                        leadingIcon: 'XIcon',
-                        onClick: () => {
-                          onCancel();
-                        },
-                      },
-                    ]}
-                  />
-                );
-              },
-              position: DialogPosition.Bottom,
-            });
+          } else if (!isOpenAccess) {
+            showCompleteProfileBlockingDialog();
           }
         },
       });
@@ -285,46 +246,26 @@ export const PractitionerProfile: React.FC = () => {
     return stackedMenuList;
   };
 
-  const tabItem: TabItem[] = isTrainee
-    ? [
-        {
-          title: 'Profile',
-          initActive: true,
-          child: (
-            <div>
-              {practitioner?.progress !== 0 ? null : <CompleteProfile />}
-              <StackedList
-                listItems={getStackedMenuList()}
-                type={'MenuList'}
-                className={'flex flex-col gap-1 px-4 pt-1'}
-              ></StackedList>
-            </div>
-          ),
-        },
-      ]
-    : [
-        {
-          title: 'Profile',
-          initActive: true,
-          child: (
-            <div>
-              {practitioner?.progress !== 0 ? null : <CompleteProfile />}
-              <StackedList
-                listItems={getStackedMenuList()}
-                type={'MenuList'}
-                className={'flex flex-col gap-1 px-4 pt-1'}
-              ></StackedList>
-            </div>
-          ),
-        },
-        {
-          title: 'Journey',
-          initActive: false,
-          child: (
-            <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />
-          ),
-        },
-      ];
+  const tabItem: TabItem[] = [
+    {
+      title: 'Profile',
+      initActive: true,
+      child: (
+        <div>
+          <StackedList
+            listItems={getStackedMenuList()}
+            type={'MenuList'}
+            className={'flex flex-col gap-1 bg-white px-4 pt-1'}
+          ></StackedList>
+        </div>
+      ),
+    },
+    {
+      title: 'Journey',
+      initActive: false,
+      child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
+    },
+  ];
 
   if (isJourneyFormOpen) {
     return <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />;
@@ -334,14 +275,14 @@ export const PractitionerProfile: React.FC = () => {
     <BannerWrapper
       size="normal"
       renderBorder={true}
-      title={`${user?.firstName} ${user?.surname}`}
+      title={`${user?.firstName} ${user?.surname ? user?.surname : ''}`}
       color={'primary'}
       onBack={() => history.push(ROUTES.ROOT)}
       backgroundColour="white"
       displayOffline={!isOnline}
     >
       <TabList
-        className="bg-uiBg mb-1"
+        className="mb-1 bg-white"
         tabItems={tabItem}
         setSelectedIndex={selectedTab}
       />

@@ -22,6 +22,7 @@ import { ProgrammeHistory } from './components/programme-history/programme-histo
 import { ProgrammeSummaryListItem } from './components/programme-summary-list-item/programme-summary-list-item';
 import { ProgrammeSummaryProps } from './programme-summary.types';
 import ROUTES from '@routes/routes';
+import { TabsItemForPrincipal } from '../../class-dashboard/class-dashboard.types';
 
 const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
   programme,
@@ -76,7 +77,9 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
   };
 
   const handleBackToClassroom = () => {
-    history.replace(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+    history.replace(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItemForPrincipal.CLASSES,
+    });
   };
 
   const showOnlineOnly = () => {

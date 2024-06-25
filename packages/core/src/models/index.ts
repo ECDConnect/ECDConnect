@@ -41,3 +41,4 @@ export * from './dto/Referrals';
 export * from './dto/Clinics';
 export * from './dto/League';
 export * from './dto/Meetings';
+export * from './help-form';

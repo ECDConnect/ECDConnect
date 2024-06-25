@@ -1,34 +1,51 @@
 import { DailyProgrammeDto, ProgrammeDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
-import { isAfter, isBefore, isSameDay } from 'date-fns';
+import { compareDesc, isAfter, isBefore, isSameDay, parseISO } from 'date-fns';
 import { RootState } from '../types';
 
 export const getProgrammes = (state: RootState): ProgrammeDto[] =>
-  state.programmeData.programmes || [];
+  [...(state.programmeData.programmes || [])]
+    ?.map((programme) => ({
+      ...programme,
+      dailyProgrammes: programme?.dailyProgrammes?.filter(
+        (day) => day?.isActive === undefined || day?.isActive !== false
+      ),
+    }))
+    ?.sort((a, b) => {
+      const dateA = a?.insertedDate
+        ? parseISO(a.insertedDate as string)
+        : new Date(0);
+      const dateB = b?.insertedDate
+        ? parseISO(b.insertedDate as string)
+        : new Date(0);
+      return compareDesc(dateA, dateB);
+    }) || [];
 
 export const getProgrammeById = (programmeId?: string) =>
-  createSelector(
-    (state: RootState) => state.programmeData.programmes || [],
-    (programmes: ProgrammeDto[]) =>
-      programmes.find((programme) => programme.id === programmeId)
+  createSelector(getProgrammes, (programmes: ProgrammeDto[]) =>
+    programmes.find((programme) => programme.id === programmeId)
   );
 
 export const getTodaysProgramme = () =>
-  createSelector(
-    (state: RootState) => state.programmeData.programmes || [],
-    (programmes: ProgrammeDto[]) =>
-      programmes.find((programme) => {
-        return programme.dailyProgrammes.some((dailyProg) => {
-          return isSameDay(new Date(dailyProg.dayDate), new Date());
-        });
-      })
+  createSelector(getProgrammes, (programmes: ProgrammeDto[]) =>
+    programmes.find((programme) => {
+      return programme.dailyProgrammes.some((dailyProg) => {
+        return isSameDay(new Date(dailyProg.dayDate), new Date());
+      });
+    })
   );
 
-export const getProgrammeByDate = (date: Date) =>
-  createSelector(
-    (state: RootState) => state.programmeData.programmes || [],
-    (programmes: ProgrammeDto[]) =>
-      programmes.find(
+export const getProgrammeByDateAndClassroomGroupId = ({
+  date,
+  classroomGroupId,
+}: {
+  date: Date;
+  classroomGroupId: string;
+}) =>
+  createSelector(getProgrammes, (programmes: ProgrammeDto[]) =>
+    programmes
+      ?.filter((programme) => programme?.classroomGroupId === classroomGroupId)
+      ?.find(
         (programme) =>
           programme.dailyProgrammes.find((dailyRoutine: DailyProgrammeDto) =>
             isSameDay(new Date(dailyRoutine.dayDate), date)
@@ -41,19 +58,15 @@ export const getProgrammeByDate = (date: Date) =>
   );
 
 export const getProgrammesAfterDate = (date: Date) =>
-  createSelector(
-    (state: RootState) => state.programmeData.programmes || [],
-    (programmes: ProgrammeDto[]) =>
-      programmes.filter((programme) =>
-        isAfter(new Date(programme.startDate), date)
-      )
+  createSelector(getProgrammes, (programmes: ProgrammeDto[]) =>
+    programmes.filter((programme) =>
+      isAfter(new Date(programme.startDate), date)
+    )
   );
 
 export const getProgrammesBeforeDate = (date: Date) =>
-  createSelector(
-    (state: RootState) => state.programmeData.programmes || [],
-    (programmes: ProgrammeDto[]) =>
-      programmes.filter((programme) =>
-        isBefore(new Date(programme.endDate), date)
-      )
+  createSelector(getProgrammes, (programmes: ProgrammeDto[]) =>
+    programmes.filter((programme) =>
+      isBefore(new Date(programme.endDate), date)
+    )
   );

@@ -7,6 +7,7 @@ import {
   NotificationValidator,
   NotificationIntervals,
 } from '../../NotificationService.types';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompleteChildRegistrationNotificationValidator
   implements NotificationValidator
@@ -30,7 +31,7 @@ export class IncompleteChildRegistrationNotificationValidator
     } = this.store.getState();
 
     const isCoach = userState?.user?.roles?.some(
-      (role) => role.name === 'Coach'
+      (role) => role.systemName === RoleSystemNameEnum.Coach
     );
 
     if (isCoach) return [];
@@ -41,7 +42,7 @@ export class IncompleteChildRegistrationNotificationValidator
       (x) => x.enumId === WorkflowStatusEnum.ChildPending
     );
     const notifications: Message[] = [];
-    const incompleteChildren = (childrenState.children || []).filter(
+    const incompleteChildren = childrenState.childData.children.filter(
       (child) =>
         child.workflowStatusId === workflowStatus?.id || !child?.caregiverId
     );
@@ -59,12 +60,6 @@ export class IncompleteChildRegistrationNotificationValidator
     if (!applicableChildren) return [];
 
     for (const child of applicableChildren) {
-      const childUser = childrenState.childUser?.find(
-        (childUser) => childUser.id === child.userId
-      );
-
-      if (!childUser) continue;
-
       // if (!isCoach) {
       //   notifications.push({
       //     reference: `${child.id || childUser?.firstName}-reg`,

@@ -1,9 +1,8 @@
 import {
   AttendanceDto,
+  ChildAttendanceOverallReportModel,
   ClassProgrammeDto,
-  ClassroomGroupDto,
   HolidayDto,
-  LearnerDto,
 } from '@ecdlink/core';
 import { AttendanceStatus, Colours, SubTitleShape } from '@ecdlink/ui';
 import {
@@ -18,6 +17,7 @@ import {
   isThursday,
   isTuesday,
   isWednesday,
+  isWeekend,
   nextFriday,
   nextMonday,
   nextThursday,
@@ -26,13 +26,17 @@ import {
   parse,
   startOfMonth,
   startOfWeek,
+  subDays,
 } from 'date-fns';
 import {
   averageScoreThreshold,
   badScoreThreshold,
   goodScoreThreshold,
 } from '@models/classroom/attendance/ClassAttendance';
-import { MissedAttendanceGroups } from '@models/classroom/attendance/MissedAttendanceGroups';
+import {
+  ClassProgrammeWithMissedDate,
+  MissedAttendanceGroups,
+} from '@models/classroom/attendance/MissedAttendanceGroups';
 import {
   AttendanceState,
   AttendanceStateCheckResult,
@@ -43,6 +47,11 @@ import {
 } from '@store/attendance/attendance.types';
 import { isWorkingDay } from '../../common/date.utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';
+import {
+  ClassroomGroupDto,
+  LearnerDto,
+  ClassroomGroupDto as SimpleClassroomGroupDto,
+} from '@/models/classroom/classroom-group.dto';
 
 export const isValidAttendableDate = (
   date: Date,
@@ -115,16 +124,30 @@ export const nextAttendableDateAfterStartDate = (
   return nextAttendableDate;
 };
 
+const getLast30BusinessDays = (
+  date: Date
+): { date: Date; dayOfWeek: number }[] => {
+  const businessDays = [];
+  let count = 0;
+
+  while (businessDays.length < 30) {
+    const currentDate = subDays(date, count);
+    businessDays.push({ date: currentDate, dayOfWeek: getDay(currentDate) });
+    count++;
+  }
+
+  return businessDays.filter((date) => !isWeekend(date.date));
+};
+
 export const getMissedClassAttendance = (
-  classRoomGroups: ClassroomGroupDto[],
+  classroomGroups: SimpleClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
-  date: Date,
-  classroomGroupLearners?: LearnerDto[]
+  date: Date
 ) => {
   const dayOfWeek = getDay(date);
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
-  const returnProgrammes: ClassProgrammeDto[] = [];
+  const returnProgrammes: ClassProgrammeWithMissedDate[] = [];
 
   const groupProgrammes = classProgrammes;
 
@@ -143,39 +166,58 @@ export const getMissedClassAttendance = (
           programStartDate.getTime() < date.getTime();
   });
 
+  const last30BusinessDays = getLast30BusinessDays(date);
+  // Map through the last 30 business days
+  const last30DaysProgrammes = last30BusinessDays
+    // For each day, create an object with the date and the programmes for that day
+    ?.map((day) => ({
+      date: day.date,
+      programmes: classProgrammesUpToCurrentDay?.filter(
+        // Filter programmes that occur on the same day of the week as the current day
+        // and whose start date is before or on the current day
+        (programme) =>
+          programme.meetingDay === day.dayOfWeek &&
+          new Date(programme.programmeStartDate).getTime() <= day.date.getTime()
+      ),
+    }))
+    // Filter out days that don't have any programmes
+    ?.filter((x) => x.programmes && x.programmes.length > 0)
+    // Flatten the array of dayProgrammes into an array of individual programmes with their dates
+    ?.flatMap((dayProgrammes) =>
+      dayProgrammes.programmes.map((programme) => ({
+        date: dayProgrammes.date,
+        programme: programme,
+      }))
+    );
+
   const meetingDays = getClassroomGroupSchoolDays(
     classProgrammesUpToCurrentDay
   );
 
-  const startOfWeekDate = startOfWeek(new Date().setHours(23, 59, 59, 999), {
-    weekStartsOn: 1,
-  });
+  if (last30DaysProgrammes)
+    for (const day of last30DaysProgrammes) {
+      const programme = day.programme!;
+      const missedDayDate = day.date;
 
-  if (classProgrammesUpToCurrentDay)
-    for (const programme of classProgrammesUpToCurrentDay) {
-      const missedDayDate = addDays(startOfWeekDate, programme.meetingDay - 1);
-
-      const classGroups = classRoomGroups.filter((x) => {
-        return x.id === programme.classroomGroupId;
+      const classGroups = classroomGroups.filter((x) => {
+        return x.id === programme?.classroomGroupId;
       });
-      const classLearners = classroomGroupLearners?.filter((x) => {
-        const isValidDay =
-          isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
-          missedDayDate.getTime() >= new Date(x.startedAttendance).getTime();
+      const classLearners = classGroups
+        .flatMap((x) => x.learners)
+        .filter((x) => {
+          const isValidDay =
+            isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
+            missedDayDate.getTime() >= new Date(x.startedAttendance).getTime();
 
-        return (
-          isValidDay &&
-          !Boolean(x.stoppedAttendance) &&
-          classGroups.some((item) => item.id === x.classroomGroupId)
-        );
-      });
+          return isValidDay && !Boolean(x.stoppedAttendance);
+        });
       if (
         classLearners &&
         classLearners.length &&
         classLearners.length > 0 &&
         !attendance.some((att) => att.classroomProgrammeId === programme.id)
       ) {
-        returnProgrammes.push(programme);
+        returnProgrammes.push({ ...programme, missedDate: missedDayDate });
       }
     }
 
@@ -196,17 +238,12 @@ export const removeDuplicates = (arr: MissedAttendanceGroups[]) => {
 };
 
 export const isPractitionerAttendanceMissingForLearner = (
-  classRoomGroup: ClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   learner: LearnerDto,
   attendance: AttendanceDto[],
   date: Date
 ) => {
-  const learnerGroups = classRoomGroup.filter(
-    (x) => x.id === learner.classroomGroupId
-  );
   const missedAttendanceClassProgramme = getMissedClassAttendanceForLearner(
-    learnerGroups,
     classProgrammes,
     attendance,
     date,
@@ -234,7 +271,6 @@ export const mapTrackAttendance = (
 };
 
 export const getMissedClassAttendanceForLearner = (
-  classRoomGroups: ClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
   date: Date,
@@ -262,7 +298,7 @@ export const getMissedClassAttendanceForLearner = (
   });
 
   const learnerAttendance = attendance.filter((x) => {
-    return x.userId === learner.userId;
+    return x.userId === learner.childUserId;
   });
 
   const meetingDays = getClassroomGroupSchoolDays(
@@ -340,7 +376,7 @@ export const getAllMissedAttendanceGroupsByClassroomGroupId = (
 };
 
 export const getMissedAttendanceSummaryGroups = (
-  classroomGroups: ClassroomGroupDto[],
+  classroomGroups: SimpleClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
   holidays: HolidayDto[],
@@ -374,21 +410,15 @@ export const getMissedAttendanceSummaryGroups = (
         classroomGroups,
         classProgrammes,
         attendance,
-        currentDate,
-        classroomGroupLearners
+        currentDate
       );
-
-      const startOfWeekDate = startOfWeek(currentDate, { weekStartsOn: 1 });
 
       for (const classroomGroup of classroomGroups) {
         const currentGroupMissedAttendance = missedAttendance.filter(
           (x) => x.classroomGroupId === classroomGroup.id
         );
         for (const missedAttendanceClassProgramme of currentGroupMissedAttendance) {
-          const missedDayDate = addDays(
-            startOfWeekDate,
-            missedAttendanceClassProgramme.meetingDay - 1
-          );
+          const missedDayDate = missedAttendanceClassProgramme.missedDate;
 
           const isValidDay = isValidAttendableDate(
             missedDayDate,
@@ -547,4 +577,69 @@ export const getColor = (score: number): Colours => {
   }
 
   return 'errorDark';
+};
+
+interface MergedClassProgramme {
+  classroomGroupId: string;
+  items: Omit<ClassProgrammeDto, 'classroomGroupId'>[];
+}
+
+interface MergedChildAttendanceOverallReportModel {
+  classroomGroup?: ClassroomGroupDto;
+  classroomGroupId: string;
+  items: Omit<ChildAttendanceOverallReportModel, 'classgroupId'>[];
+}
+
+export const mergeClassProgrammesWithSameClassroomGroupId = (
+  objects: ClassProgrammeDto[]
+): MergedClassProgramme[] => {
+  const mergedObjects = objects.reduce<Record<string, MergedClassProgramme>>(
+    (acc, obj) => {
+      const { classroomGroupId, ...rest } = obj;
+      if (!acc[classroomGroupId]) {
+        acc[classroomGroupId] = { classroomGroupId, items: [rest] };
+      } else {
+        acc[classroomGroupId].items.push(rest);
+      }
+      return acc;
+    },
+    {}
+  );
+
+  return Object.values(mergedObjects);
+};
+
+export const mergeMonthlyAttendanceReportWithSameClassroomGroupId = (
+  objects: ChildAttendanceOverallReportModel[],
+  classroomGroups?: ClassroomGroupDto[]
+): MergedChildAttendanceOverallReportModel[] => {
+  const mergedObjects = objects.reduce<
+    Record<string, MergedChildAttendanceOverallReportModel>
+  >((acc, obj) => {
+    const { classgroupId, ...rest } = obj;
+
+    let classroomGroup: ClassroomGroupDto | undefined;
+
+    if (classroomGroups) {
+      const _classroomGroup = classroomGroups.find(
+        (x) => x.id === classgroupId
+      );
+      if (_classroomGroup) {
+        classroomGroup = _classroomGroup;
+      }
+    }
+
+    if (!acc[classgroupId]) {
+      acc[classgroupId] = {
+        classroomGroupId: classgroupId,
+        classroomGroup,
+        items: [rest],
+      };
+    } else {
+      acc[classgroupId].items.push(rest);
+    }
+    return acc;
+  }, {});
+
+  return Object.values(mergedObjects);
 };

@@ -1,30 +1,22 @@
-import {
-  ChildDto,
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-  LearnerDto,
-} from '@ecdlink/core';
+import { ChildDto, ClassProgrammeDto, LearnerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { getClassroomForCoach } from './classroomForCoach.actions';
 import { ClassroomForCoachState } from './classroomForCoach.types';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 const initialState: ClassroomForCoachState = {
   classroomForCoach: undefined,
   classroomGroups: undefined,
   classroomProgrammes: undefined,
   classroomGroupLearners: undefined,
-  programmeType: undefined,
 };
 
 const classroomsSlice = createSlice({
   name: 'classroomsForCoach',
   initialState,
   reducers: {
-    setProgrammeType: (state, action: PayloadAction<string>) => {
-      state.programmeType = action.payload;
-    },
     resetClassroomState: (state) => {
       state.classroomForCoach = initialState.classroomForCoach;
       state.classroomGroups = initialState.classroomGroups;
@@ -66,19 +58,10 @@ const classroomsSlice = createSlice({
       }
     },
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (action.payload.id) {
-        if (state.classroomGroups) {
-          for (let i = 0; i < state.classroomGroups.length; i++) {
-            if (state.classroomGroups[i].id === action.payload.id)
-              state.classroomGroups[i].isActive = false;
-          }
-        }
-      } else {
-        const index = state.classroomGroups?.findIndex(
-          (c) => c.id === action.payload.id
-        );
-        if (index && index > -1) state.classroomGroups?.splice(index, 1);
-      }
+      const index = state.classroomGroups?.findIndex(
+        (c) => c.id === action.payload.id
+      );
+      if (index && index > -1) state.classroomGroups?.splice(index, 1);
     },
     deleteClassroomProgramme: (
       state,

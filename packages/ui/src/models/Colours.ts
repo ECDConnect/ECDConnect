@@ -38,4 +38,6 @@ export type Colours =
   | 'adminPortalBg'
   | 'darkBlue'
   | 'pointsCardBg'
-  | 'pointsCardBarBg';
+  | 'pointsCardBarBg'
+  | 'quatenaryBg'
+  | 'adminBackground';

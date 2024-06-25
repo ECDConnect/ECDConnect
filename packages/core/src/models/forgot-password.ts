@@ -4,6 +4,7 @@ export interface SimpleUserModel {
   idField?: string;
   preferId?: boolean;
   passportField?: string;
+  phoneNumber?: string;
 }
 
 export interface PasswordResetModel {

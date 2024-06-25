@@ -141,7 +141,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
 
   const goToTargetChw = useCallback(() => {
     history.push({
-      pathname: ROUTES.VIEW_USERS,
+      pathname: ROUTES.USERS.VIEW_USER,
       state: {
         component: UsersRouteRedirectTypeEnum.chw,
         userId: targetHcw?.user?.id,
@@ -156,7 +156,7 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
 
   const goToTargetTeamLead = useCallback(() => {
     history.push({
-      pathname: ROUTES.VIEW_USERS,
+      pathname: ROUTES.USERS.VIEW_USER,
       state: {
         component: UsersRouteRedirectTypeEnum.teamLeads,
         userId: targetTeamLead?.user?.id,
@@ -173,8 +173,11 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     (value: string) => {
       // TODO: Add more switch cases accordingly with the BE types
       switch (value) {
-        case NotificationsCTAText.AddMeetingReport ||
-          NotificationsCTAText.SeeClinicSummary:
+        case NotificationsCTAText.AddMeetingReport:
+          return history.push(ROUTES.TEAM_MEETINGS, {
+            clinicId: targetClinic?.id,
+          });
+        case NotificationsCTAText.SeeClinicSummary:
           return history.push(ROUTES.TEAM_MEETINGS, {
             clinicId: targetClinic?.id,
           });

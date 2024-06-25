@@ -20,6 +20,8 @@ import { useSelector } from 'react-redux';
 import { getPractitioner } from '@/store/practitioner/practitioner.selectors';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { InfoPage } from './money/submit-income-statements/components/info-page';
+import { NavigationNames } from '../navigation';
+import PractitionersList from '../classroom/class-dashboard/practitioners/practitioners-list/practitioners-list';
 
 export const Business: React.FC = () => {
   const history = useHistory();
@@ -83,12 +85,17 @@ export const Business: React.FC = () => {
 
   const tabItemsForPrincipal: TabItem[] = [
     {
-      title: 'Money',
+      title: NavigationNames.Business.Staff,
+      initActive: false,
+      child: <PractitionersList />,
+    },
+    {
+      title: NavigationNames.Business.Money,
       initActive: true,
       child: <Money />,
     },
     {
-      title: 'Resources',
+      title: NavigationNames.Business.Resources,
       initActive: false,
       child: (
         <div className={'p-4'}>

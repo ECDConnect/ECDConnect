@@ -1,17 +1,15 @@
 import { Typography, Card } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import * as styles from './childrenPerAgeGroup.styles';
 import { ChildrenPerAgeGroupProps } from './childrenperAgeGroup.types';
 import { differenceInCalendarMonths } from 'date-fns';
+import { childrenSelectors } from '@/store/children';
 
 export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
   practitionerId,
 }) => {
-  const childrenForPractitioner = useSelector(
-    childrenForPractitionerSelectors.getChildrenForPractitioner
-  );
+  const childrenForPractitioner = useSelector(childrenSelectors.getChildren);
 
   const [ageGroup1, setAgeGroup1] = useState(0);
   const [ageGroup2, setAgeGroup2] = useState(0);

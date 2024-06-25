@@ -21,7 +21,6 @@ import {
   NoteTypeEnum,
   PractitionerRemovalHistory,
 } from '@ecdlink/graphql';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './principal-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -37,11 +36,9 @@ import { classroomsSelectors } from '@/store/classroom';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
-import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   addDays,
   format,
-  getMonth,
   isFriday,
   isPast,
   isSameDay,
@@ -56,6 +53,7 @@ import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
 import { AbsencesView } from './components/absences-view/absences-view';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -167,7 +165,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           history.push('practitioner-reassign-class', {
             practitionerId,
             allAbsenteeClasses,
-            // principalPractitioner: practitionerUser,
           });
 
         return;
@@ -348,7 +345,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             renderBorder={true}
             renderOverflow={false}
             onBack={() =>
-              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 })
+              history.push(ROUTES.BUSINESS, {
+                activeTabIndex: BusinessTabItems.STAFF,
+              })
             }
             displayOffline={!isOnline}
           >
@@ -398,29 +397,38 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             </div>
             <div className={styles.contactButtons}>
               <Button
-                color={'primary'}
+                color={'quatenary'}
                 type={'outlined'}
                 className={'rounded-2xl'}
                 size={'small'}
                 onClick={callForHelp}
               >
                 <PhoneIcon
-                  className="text-primary h-5 w-5"
+                  className="text-quatenary h-5 w-5"
                   aria-hidden="true"
                 />
               </Button>
               <Button
-                color={'primary'}
+                color={'quatenary'}
                 type={'outlined'}
                 className={'rounded-2xl'}
                 size={'small'}
                 onClick={whatsapp}
               >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className={styles.buttonIconStyle}
-                />
+                <span className="text-quatenary h-5 w-5">
+                  <svg
+                    width="21"
+                    height="21"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12.7179 3.28528C11.3299 1.89661 9.4366 1.19595 7.4486 1.35595C4.77593 1.57061 2.43326 3.42928 1.64926 5.99328C1.08926 7.82528 1.3246 9.73795 2.2366 11.3179L1.3726 14.1866C1.28993 14.4619 1.54126 14.7213 1.81926 14.6473L4.82193 13.8426C5.7946 14.3733 6.88926 14.6526 8.00393 14.6533H8.0066C10.8033 14.6533 13.3873 12.9426 14.2813 10.2926C15.1519 7.70861 14.5079 5.07728 12.7179 3.28528ZM11.2653 10.3693C11.1266 10.7579 10.4473 11.1326 10.1419 11.1599C9.8366 11.1879 9.5506 11.2979 8.14526 10.7439C6.45393 10.0773 5.38593 8.34328 5.30326 8.23261C5.21993 8.12128 4.62393 7.33061 4.62393 6.51194C4.62393 5.69328 5.05393 5.29061 5.2066 5.12461C5.35926 4.95794 5.53926 4.91661 5.6506 4.91661C5.76126 4.91661 5.8726 4.91661 5.96926 4.92061C6.08793 4.92528 6.21926 4.93128 6.34393 5.20794C6.49193 5.53728 6.81526 6.35995 6.8566 6.44328C6.89793 6.52661 6.92593 6.62395 6.8706 6.73461C6.81526 6.84528 6.78726 6.91461 6.7046 7.01195C6.62126 7.10928 6.52993 7.22861 6.45526 7.30328C6.37193 7.38595 6.28526 7.47661 6.38193 7.64261C6.47926 7.80928 6.8126 8.35395 7.30726 8.79461C7.94326 9.36128 8.4786 9.53661 8.64526 9.62061C8.81193 9.70395 8.9086 9.68995 9.00593 9.57861C9.10326 9.46795 9.42193 9.09328 9.5326 8.92661C9.64326 8.75995 9.7546 8.78795 9.90726 8.84328C10.0599 8.89861 10.8779 9.30128 11.0439 9.38461C11.2106 9.46795 11.3213 9.50928 11.3626 9.57861C11.4039 9.64728 11.4039 9.98061 11.2653 10.3693Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
               </Button>
             </div>
           </BannerWrapper>
@@ -496,180 +504,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 practitionerAbsentees={practitionerAbsentees}
               />
             )}
-
-            {!!classMetrics && !!classMetrics.length
-              ? classMetrics?.map((item, index) => {
-                  const classroomGroup = practitionerClassroomGroups?.find(
-                    (x) => {
-                      return x?.id === item?.classroomGroupId;
-                    }
-                  );
-                  return (
-                    <Card className={styles.absentCard} key={index}>
-                      <Typography
-                        type={'h1'}
-                        text={classroomGroup?.name}
-                        color={'textMid'}
-                        className={styles.absentCardTitle}
-                      />
-                      <div>
-                        <div className="mt-2 mr-2 flex flex-col">
-                          <div className="ml-4 flex w-11/12 items-center justify-between">
-                            <div className="flex w-full items-center">
-                              <Typography
-                                type={'h2'}
-                                text={`${item?.childCount}`}
-                                color={'textDark'}
-                                className="mt-2"
-                              />
-                              <Typography
-                                type={'body'}
-                                text={'children in class'}
-                                color={'textDark'}
-                                className="mt-2 ml-4 mr-4"
-                              />
-                            </div>
-                            <Button
-                              size="small"
-                              shape="normal"
-                              color="primary"
-                              type="filled"
-                              onClick={() =>
-                                history.push(
-                                  ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST,
-                                  {
-                                    practitionerUserId,
-                                    classroomGroup,
-                                  }
-                                )
-                              }
-                              className="mt-2 rounded-xl"
-                            >
-                              <Typography
-                                type="help"
-                                color="white"
-                                text="View"
-                              />
-                              {renderIcon('EyeIcon', styles.buttonIcon)}
-                            </Button>
-                          </div>
-                          <div className="mx-4 mt-2 mb-4 flex w-9/12 items-center justify-start">
-                            <StatusChip
-                              backgroundColour="alertMain"
-                              borderColour="alertMain"
-                              text={`${item?.attendancePercentage}%`}
-                              textColour={'white'}
-                              className={'mr-2'}
-                            />
-                            <Typography
-                              type={'body'}
-                              weight={'bold'}
-                              text={`attendance in ${getMonthName(
-                                getMonth(new Date())
-                                // eslint-disable-next-line no-useless-concat
-                              )}\u00A0${item?.year}`}
-                              color={'textMid'}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })
-              : null}
-            <Card className={styles.absentCard}>
-              <Typography
-                type={'h1'}
-                text={'Progress summary'}
-                color={'textMid'}
-                className={styles.absentCardTitle}
-              />
-              <div className="mt-2 mr-4 flex items-center">
-                <div className="mx-4 mt-2 mb-4 flex w-full items-center">
-                  <StatusChip
-                    backgroundColour="errorMain"
-                    borderColour="errorMain"
-                    text={'N/A'}
-                    textColour={'white'}
-                    className={'mr-2'}
-                  />
-                  <Typography
-                    type={'body'}
-                    weight={'bold'}
-                    text={'children working on: does simple things when asked '}
-                    color={'textMid'}
-                  />
-                </div>
-                <Button
-                  size="small"
-                  shape="normal"
-                  color="primary"
-                  type="filled"
-                  onClick={() => {}}
-                  className="rounded-xl"
-                  disabled={true}
-                >
-                  <Typography type="help" color="white" text="View" />
-                  {renderIcon('EyeIcon', styles.buttonIcon)}
-                </Button>
-              </div>
-            </Card>
-            <Card className={styles.absentCard}>
-              <Typography
-                type={'h1'}
-                text={'Programme planning'}
-                color={'textMid'}
-                className={styles.absentCardTitle}
-              />
-              <div>
-                <div className="mt-2 mr-4 flex flex-col">
-                  <div className="ml-4 flex w-11/12 items-center">
-                    <Typography
-                      type={'h2'}
-                      text={'N/A'}
-                      color={'textDark'}
-                      className="mt-2"
-                    />
-                    <Typography
-                      type={'body'}
-                      text={`programmes planned in  ${getMonthName(
-                        getMonth(new Date()) - 1
-                        // eslint-disable-next-line no-useless-concat
-                      )} 2022`}
-                      color={'textDark'}
-                      className="mt-2 ml-4 mr-8"
-                    />
-                    <Button
-                      size="small"
-                      shape="normal"
-                      color="primary"
-                      type="filled"
-                      onClick={() => {}}
-                      className="mt-2 rounded-xl"
-                      disabled={true}
-                    >
-                      <Typography type="help" color="white" text="View" />
-                      {renderIcon('EyeIcon', styles.buttonIcon)}
-                    </Button>
-                  </div>
-                  <div className="mx-4 mt-2 mb-4 flex w-9/12 items-center justify-start">
-                    <StatusChip
-                      backgroundColour="errorMain"
-                      borderColour="errorMain"
-                      text={'N/A'}
-                      textColour={'white'}
-                      className={'mr-2'}
-                    />
-                    <Typography
-                      type={'body'}
-                      weight={'bold'}
-                      text={'skill missing: walking & moving'}
-                      color={'textMid'}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
           </div>
           <>
             <div className={styles.infoWrapper}>
@@ -687,24 +521,25 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   className={'mt-1'}
                 />
               </div>
-              <div>
+              {!!practitioner?.user?.phoneNumber && (
                 <Button
                   size="small"
                   shape="normal"
-                  color="primary"
-                  type="outlined"
-                  onClick={() => {
-                    //TODO: what if copy fails?
-                    navigator?.clipboard?.writeText &&
-                      navigator?.clipboard?.writeText(
-                        practitioner?.user?.phoneNumber!
-                      );
-                  }}
+                  color="secondaryAccent2"
+                  type="filled"
+                  onClick={() =>
+                    window.open(`tel:${practitioner?.user?.phoneNumber}`)
+                  }
                 >
-                  <Typography type="help" color="primary" text="Copy" />
-                  {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
+                  <Typography
+                    className={'mr-1'}
+                    type="buttonSmall"
+                    color="secondary"
+                    text="Phone"
+                  />
+                  {renderIcon('PhoneIcon', 'h-4 w-4 text-secondary')}
                 </Button>
-              </div>
+              )}
             </div>
             <Divider dividerType="dashed" className="my-4" />
             <div className={styles.infoWrapper}>
@@ -722,63 +557,47 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   className={'mt-1'}
                 />
               </div>
-              <div>
+              {!!practitioner?.user?.email && (
                 <Button
                   size="small"
                   shape="normal"
-                  color="primary"
-                  type="outlined"
-                  onClick={() => {
-                    //TODO: what if copy fails?
-                    navigator?.clipboard?.writeText &&
-                      navigator?.clipboard?.writeText(
-                        practitioner?.user?.email!
-                      );
-                  }}
+                  color="secondaryAccent2"
+                  type="filled"
+                  onClick={() =>
+                    window.open(`mailto:${practitioner?.user?.email}`)
+                  }
                 >
-                  <Typography type="help" color="primary" text="Copy" />
-                  {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
+                  <Typography
+                    className={'mr-1'}
+                    type="buttonSmall"
+                    color="secondary"
+                    text="Email"
+                  />
+                  {renderIcon('MailIcon', 'h-4 w-4 text-secondary')}
                 </Button>
-              </div>
-            </div>
-            <Divider dividerType="dashed" className="my-4" />
-            <div className={styles.infoWrapper}>
-              <div>
-                <Typography
-                  text={'Smartstart club'}
-                  type="h5"
-                  color="textMid"
-                  className={'mt-1'}
-                />
-                <Typography
-                  text={'N/A'}
-                  type="h4"
-                  color="textDark"
-                  className={'mt-1'}
-                />
-              </div>
+              )}
             </div>
             <Divider dividerType="dashed" className="my-4" />
             <div className={styles.infoWrapper}>
               <div>
                 <Typography
                   text={'Your notes'}
-                  type="h5"
-                  color="textMid"
+                  type="h4"
+                  color="textDark"
                   className={'mt-1'}
                 />
                 {notes?.length > 0 ? (
                   <Typography
                     text={getLastNoteDate(notes)}
-                    type="h4"
-                    color="textDark"
+                    type="h5"
+                    color="textMid"
                     className={'mt-1'}
                   />
                 ) : (
                   <Typography
-                    text={''}
-                    type="h4"
-                    color="textDark"
+                    text={'Add a note'}
+                    type="h5"
+                    color="textMid"
                     className={'mt-1'}
                   />
                 )}
@@ -787,23 +606,21 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 <Button
                   size="small"
                   shape="normal"
-                  color="primary"
+                  color="quatenary"
                   type="filled"
-                  onClick={
-                    () =>
-                      history.push(ROUTES.PRINCIPAL.NOTES, {
-                        practitionerId: practitionerUserId,
-                      })
-                    // setCreatePractitionerdNoteVisible(true)
+                  onClick={() =>
+                    history.push(ROUTES.PRINCIPAL.NOTES, {
+                      practitionerId: practitionerUserId,
+                    })
                   }
                 >
-                  {renderIcon('EyeIcon', styles.buttonIcon)}
                   <Typography
                     type="help"
                     color="white"
                     text="View"
                     className="ml-1"
                   />
+                  {renderIcon('PlusIcon', styles.buttonIcon)}
                 </Button>
               </div>
               <Dialog
@@ -822,12 +639,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Dialog>
             </div>
-            <Divider dividerType="dashed" className="my-4" />
             {!existingRemoval && (
               <div className="flex w-full justify-center">
                 <Button
-                  type="outlined"
-                  color="primary"
+                  type="filled"
+                  color="quatenary"
                   className={'mt-6 mb-6 w-11/12'}
                   onClick={() =>
                     history.push(
@@ -838,16 +654,16 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     )
                   }
                 >
-                  {renderIcon(
-                    'UsersIcon',
-                    'w-5 h-5 color-primary text-primary mr-2'
-                  )}
                   <Typography
                     type="body"
                     className="mr-4"
-                    color="primary"
+                    color="white"
                     text={'Remove practitioner'}
-                  ></Typography>
+                  />
+                  {renderIcon(
+                    'TrashIcon',
+                    'w-5 h-5 color-quatenary text-quatenary mr-2'
+                  )}
                 </Button>
               </div>
             )}
@@ -884,7 +700,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           onCancel={() => {
             cancelPractitionerRemoval();
             setEditRemovalDialogVisable(false);
-            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+            history.push(ROUTES.BUSINESS, {
+              activeTabIndex: BusinessTabItems.STAFF,
+            });
           }}
           onClose={() => {
             setEditRemovalDialogVisable(false);

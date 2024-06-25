@@ -720,14 +720,16 @@ namespace EcdLink.Api.CoreApi.Services
         public PortalClinicMeetingModel GetClinicMeetingForMonth(Guid clinicId)
         {
             // Always show report from 8 of current month to 7th of next month
-            var startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 07);
+            var startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, 08);
             var endDate = startDate.AddMonths(1);
-            endDate = endDate.AddDays(1);
+            endDate = endDate.AddDays(-1);
 
             var clinicMeeting =  _clinicMeetingRepo.GetAll()
                 .Where(x => x.IsActive && 
-                            x.MeetingDate.Date >= startDate && x.MeetingDate.Date <= endDate.Date &&
+                            x.MeetingDate.Month == startDate.Month &&
+                            x.MeetingDate.Date >= startDate.Date && x.MeetingDate.Date <= endDate.Date &&
                             x.ClinicId == clinicId)
+                .OrderByDescending(x => x.InsertedDate)
                 .FirstOrDefault();
 
             if (clinicMeeting != null)

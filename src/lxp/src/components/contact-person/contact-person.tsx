@@ -3,7 +3,6 @@ import {
   Typography,
   ComponentBaseProps,
   classNames,
-  renderIcon,
 } from '@ecdlink/ui';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
@@ -45,7 +44,7 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
             text={`${name} ${surname}`}
           />
           <Typography
-            color={'black'}
+            color={'textMid'}
             type={'body'}
             weight={'bold'}
             text={type}
@@ -55,19 +54,19 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
 
       <Typography
         className={'mt-1'}
-        color={'textMid'}
+        color={'textDark'}
         type={'body'}
         text={`${name}'s phone number:`}
       />
       <Typography
-        color={'black'}
+        color={'quatenary'}
         type={'body'}
         weight={'bold'}
         text={contactNumber}
       />
       <div className={styles.actionsWrapper}>
         <Button
-          color={'primary'}
+          color={'secondary'}
           type={'outlined'}
           className={'mr-4'}
           size={'small'}
@@ -79,20 +78,20 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
             className={styles.buttonIconStyle}
           />
           <Typography
-            color={'primary'}
+            color={'secondary'}
             type={'small'}
             text={`WhatsApp ${name}`}
           />
         </Button>
         <Button
-          color={'primary'}
+          color={'secondary'}
+          textColor="secondary"
           type={'outlined'}
           size={'small'}
           onClick={call}
-        >
-          {renderIcon('PhoneIcon', styles.buttonIconStyle)}
-          <Typography color={'primary'} type={'small'} text={`Call ${name}`} />
-        </Button>
+          icon="PhoneIcon"
+          text={`Call ${name}`}
+        />
       </div>
     </div>
   );

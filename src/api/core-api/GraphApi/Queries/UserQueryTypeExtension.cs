@@ -1,29 +1,26 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Helpers;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.Moodle.Managers;
 using ECDLink.Moodle.Models;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ECDLink.DataAccessLayer.Helpers;
-using ECDLink.Abstractrions.GraphQL.Attributes;
-using Microsoft.AspNetCore.Http;
-using ECDLink.Security.Extensions;
-using HotChocolate.Data;
-using ECDLink.Core.Models;
-using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -44,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
-            PagedQueryInput? pagingInput = null,
+            PagedQueryInput pagingInput = null,
             string search = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
@@ -57,8 +54,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(u => u.TenantId == tenantId)
                 .AsNoTracking();
 
-            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
 
+            usersQuery = await ExcludeChildren(userManager, usersQuery);
+            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
             usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
@@ -79,6 +77,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     || EF.Functions.ILike(h.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.Email, $"%{search}%"));
             return usersQuery;
+        }
+
+        private static async Task<IQueryable<ApplicationUser>> ExcludeChildren(ApplicationUserManager userManager, IQueryable<ApplicationUser> usersQuery)
+        {
+            var children = await userManager.GetUsersInRoleAsync(Roles.CHILD);
+            var userIds = children
+                .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
+                .Select(r => r.Id)
+                .ToList();
+            return usersQuery.Where(u => !userIds.Contains(u.Id));
         }
 
         private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(ApplicationUserManager userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
@@ -104,7 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
-            PagedQueryInput? pagingInput = null,
+            PagedQueryInput pagingInput = null,
             string search = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
@@ -327,39 +335,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public string getMoodleSessionForUserId(
-            [Service] MoodleManager moodleManager,
-            [Service] ApplicationUserManager userManager,
-            string userId)
+        public string getMoodleSessionForCurrentUser(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] ITrainingService moodleService)
         {
-            string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfigVar;
-            if (string.IsNullOrEmpty(moodleConfigVar))
-            {
-                return "false";
-            }
-            var moodleConfig = JsonConvert.DeserializeObject<MoodleConfig>(moodleConfigVar);
-            if (moodleConfig == null)
-            {
-                return "false";
-            }
-
-            var user = userManager.FindByIdAsync(userId).Result;
-
-            var moodleUser = new MoodleUser()
-            {
-                IdNumber = user.IdNumber,
-                Firstname = user.FirstName,
-                Lastname = user.Surname,
-                Phone1 = string.IsNullOrEmpty(user.PhoneNumber) ? "" : user.PhoneNumber
-            };
-            // create user for moodle
-            return moodleManager.CreateUserAsync(moodleConfig, moodleUser).Result.ToString();
-            // create session for moodle user
-            // return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
+            var currentUser = httpContextAccessor.HttpContext.GetUser();
+            if (currentUser == null) return null;
+            return moodleService.CreateUserAsync(currentUser).Result.ToString();
         }
-
-
-        
-
     }
 }
