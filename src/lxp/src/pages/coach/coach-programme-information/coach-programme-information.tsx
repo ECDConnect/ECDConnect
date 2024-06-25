@@ -219,7 +219,7 @@ export const CoachProgrammeInformation: React.FC = () => {
           <StatusChip
             backgroundColour="primary"
             borderColour="primary"
-            text={isPrincipal ? 'Principal/Owner' : 'SmartStarter'}
+            text={isPrincipal ? 'Principal' : 'Practitioner'}
             textColour={'white'}
             className={'mr-2 px-3 py-1.5'}
           />
