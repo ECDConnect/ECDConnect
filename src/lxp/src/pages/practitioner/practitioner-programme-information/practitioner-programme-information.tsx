@@ -430,7 +430,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           <ProfileAvatar
             dataUrl={classroom?.imageUrl || ''}
             size={'header'}
-            onPressed={displayProfilePicturePrompt}
+            onPressed={isPrincipal ? displayProfilePicturePrompt : () => {}}
             hasConsent={true}
             isPreschoolImage={true}
             canChangeImage={practitioner?.isPrincipal ? true : false}
