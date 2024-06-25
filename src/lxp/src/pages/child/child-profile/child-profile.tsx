@@ -124,7 +124,9 @@ export const ChildProfile: React.FC = () => {
   });
 
   const classroomGroup = useSelector(
-    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
+    classroomsSelectors.getClassroomGroupByChildUserId(
+      child?.userId || child?.user?.id!
+    )
   );
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some(
@@ -135,7 +137,9 @@ export const ChildProfile: React.FC = () => {
     (x) => x?.isActive
   );
 
-  const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
+  const notes = useSelector(
+    notesSelectors.getNotesByUserId(child?.userId || child?.user?.id)
+  );
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const authUser = useSelector(authSelectors.getAuthUser);
 
