@@ -96,7 +96,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
       ? [practitioner, ...(practitioners || [])].map((item) => {
           return {
             title: item?.user?.firstName || item?.user?.userName || '',
-            subTitle: item?.isPrincipal ? 'Principal / owner' : 'Practitioner',
+            subTitle: item?.isPrincipal ? 'Principal' : 'Practitioner',
             switchTextStyles: false,
             actionName: !!practitioners && practitioners.length ? 'Edit' : '',
             buttonColor: 'quatenary',

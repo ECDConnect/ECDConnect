@@ -203,7 +203,7 @@ export const AddOrEditPractitioner = ({
     const practitionerUserDetails: any =
       await getPractitionerDetailsByIdNumber();
 
-    if (practitionerUserDetails) {
+    if (practitionerUserDetails && !formData?.phoneNumber) {
       const updatePermissionInput: UpdateUserPermissionInputModelInput = {
         userId: practitionerUserDetails?.appUser?.id,
         permissionIds: permissionsAdded,
@@ -283,7 +283,7 @@ export const AddOrEditPractitioner = ({
     const practitionerUserDetails: any =
       await getPractitionerDetailsByIdNumber();
 
-    if (practitionerUserDetails) {
+    if (practitionerUserDetails && !formData?.phoneNumber) {
       const updatePermissionInput: UpdateUserPermissionInputModelInput = {
         userId: practitionerUserDetails?.appUser?.id,
         permissionIds: permissionsAdded,
@@ -356,11 +356,17 @@ export const AddOrEditPractitioner = ({
   };
 
   useEffect(() => {
-    if (idNumber || passport) {
+    if (idNumber || passport || formData?.phoneNumber) {
       setIsEdit(true);
       handleSearch();
     }
   }, []);
+
+  useEffect(() => {
+    if (isEdit && formData?.phoneNumber) {
+      setPractitionerPhoneNumber(formData?.phoneNumber);
+    }
+  }, [isEdit]);
 
   function updateArray(checkbox: any, id: string) {
     if (checkbox.checked) {
