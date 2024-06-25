@@ -11,7 +11,7 @@ import App from './app';
 import { ContentLoader } from './components/content-loader/content-loader';
 import Notifications from './components/notifications/notifications';
 import { AuthProvider } from './hooks/useAuth';
-import { TenantContextProvider, useTenant } from './hooks/useTenant';
+import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 
 const history = createBrowserHistory();
@@ -33,7 +33,7 @@ const ConfigWrapper: React.FC = () => {
 
   if (!loading) {
     return (
-      <TenantContextProvider>
+      <>
         <Helmet>
           <title>{getTitle()}</title>
         </Helmet>
@@ -47,16 +47,16 @@ const ConfigWrapper: React.FC = () => {
             </Router>
           </AuthProvider>
         </ThemeProvider>
-      </TenantContextProvider>
+      </>
     );
   } else {
     return (
-      <TenantContextProvider>
+      <>
         <Helmet>
           <title>{getTitle()}</title>
         </Helmet>
         <ContentLoader />
-      </TenantContextProvider>
+      </>
     );
   }
 };
