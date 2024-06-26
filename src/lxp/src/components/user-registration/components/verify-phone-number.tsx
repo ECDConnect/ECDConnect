@@ -127,7 +127,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   };
 
   const resendOAAuthCode = async () => {
-    const resendAuthCode = await new AuthService().SendOAAuthCode(username);
+    const resendAuthCode = await new AuthService().SendOAAuthCode(username, '');
   };
 
   const handleGoBack = () => {

@@ -49,6 +49,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 return null;
             }
 
+            if (!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy == null)
+            {
+                return _classroomRepo.GetAll()
+                    .Where(x =>
+                        x.IsActive
+                        && x.UserId.HasValue
+                        && x.UserId.Value == practitioner.UserId)
+                    .OrderByDescending(x => x.InsertedDate)
+                    .FirstOrDefault();
+            }
+
             var principalUserId = practitioner.IsPrincipalOrAdmin()
                 ? practitioner.UserId
                 : practitioner.PrincipalHierarchy;
@@ -59,23 +70,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             return _classroomRepo.GetAll()
-                .Where(x => 
-                    x.IsActive 
-                    && x.UserId.HasValue 
-                    && x.UserId.Value == principalUserId.Value)
-                .OrderByDescending(x => x.InsertedDate)
-                .FirstOrDefault();
-        }
-
-        public Classroom GetTrialPeriodClassroomForUser(Guid userId)
-        {
-            return _classroomRepo.GetAll()
-                .Where(x =>
-                    x.IsActive
-                    && x.UserId.HasValue
-                    && x.UserId.Value == userId)
-                .OrderByDescending(x => x.InsertedDate)
-                .FirstOrDefault();
+            .Where(x =>
+                x.IsActive
+                && x.UserId.HasValue
+                && x.UserId.Value == principalUserId.Value)
+            .OrderByDescending(x => x.InsertedDate)
+            .FirstOrDefault();
+           
+               
         }
 
         public List<ClassroomGroup> GetClassroomGroupsForUser(Guid userId)

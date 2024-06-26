@@ -42,6 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 NumberOfPractitioners = classroom.NumberPractitioners,
                 PreschoolFeeAmount = classroom.PreschoolFeeAmount,
                 PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate,
+                IsDummySchool = classroom.IsDummySchool,
                 SiteAddress = classroom.SiteAddress != null ? new BaseSiteAddressModel(classroom.SiteAddress) : null,
                 Principal = new BasePractitionerModel()
                 {
@@ -100,40 +101,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return classRepo.GetAll().Where(x => x.PreschoolCode == preSchoolCode).FirstOrDefault();
         }
 
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
-        public ClassroomModel GetTrialPeriodClassroomForUser(
-            [Service] IClassroomService classroomService,
-            Guid userId)
-        {
-            var classroom = classroomService.GetTrialPeriodClassroomForUser(userId);
-
-            if (classroom == null)
-            {
-                return null;
-            }
-
-            return new ClassroomModel()
-            {
-                Id = classroom.Id,
-                Name = classroom.Name,
-                ImageUrl = classroom.ClassroomImageUrl,
-                PreschoolCode = classroom.PreschoolCode,
-                NumberOfAssistants = classroom.NumberOfAssistants,
-                NumberOfOtherAssistants = classroom.NumberOfOtherAssistants,
-                NumberOfPractitioners = classroom.NumberPractitioners,
-                PreschoolFeeAmount = classroom.PreschoolFeeAmount,
-                PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate,
-                SiteAddress = classroom.SiteAddress != null ? new BaseSiteAddressModel(classroom.SiteAddress) : null,
-                Principal = new BasePractitionerModel()
-                {
-                    Email = classroom.User.Email,
-                    FirstName = classroom.User.FirstName,
-                    Surname = classroom.User.Surname,
-                    PhoneNumber = classroom.User.PhoneNumber,
-                    ProfileImageUrl = classroom.User.ProfileImageUrl,
-                    UserId = classroom.UserId.Value,
-                }
-            };
-        }
     }
 }

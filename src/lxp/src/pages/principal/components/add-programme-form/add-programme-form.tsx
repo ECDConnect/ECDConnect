@@ -170,6 +170,7 @@ export const AddProgrammeForm: React.FC<{
     const classroomInputModel: ClassroomDto = {
       id: classroomId,
       name: programme?.name ?? '',
+      isDummySchool: false,
       numberPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,
@@ -226,6 +227,7 @@ export const AddProgrammeForm: React.FC<{
     const classroomInputModel: ClassroomDto = {
       id: classroomId,
       name: programme?.name ?? '',
+      isDummySchool: false,
       numberPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,

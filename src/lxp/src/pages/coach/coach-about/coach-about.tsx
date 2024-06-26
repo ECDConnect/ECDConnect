@@ -215,7 +215,8 @@ export const CoachAbout: React.FC = () => {
   const handleSaveNewPhone = async () => {
     await saveCoachUserData();
     const resendAuthCode = await new AuthService().SendOAAuthCode(
-      user?.userName!
+      user?.userName!,
+      ''
     );
 
     setOpenVerifyPhoneNumber(true);

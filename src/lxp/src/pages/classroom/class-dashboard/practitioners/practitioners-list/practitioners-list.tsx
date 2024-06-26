@@ -7,9 +7,8 @@ import {
   renderIcon,
   Button,
   LoadingSpinner,
-  DialogPosition,
-  ActionModal,
   RoundIcon,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';

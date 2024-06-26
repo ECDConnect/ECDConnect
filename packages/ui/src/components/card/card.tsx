@@ -13,6 +13,7 @@ export const Card: React.FC<CardProps> = ({
   shadowSize = 'sm',
   className,
   children,
+  onClick,
 }) => {
   return (
     <div
@@ -20,6 +21,7 @@ export const Card: React.FC<CardProps> = ({
         styles.getCardStyles(borderRaduis, shadowSize),
         className
       )}
+      onClick={onClick}
     >
       {children}
     </div>

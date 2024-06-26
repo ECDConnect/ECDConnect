@@ -1,4 +1,4 @@
-import { PractitionerDto } from '@ecdlink/core';
+import { PractitionerDto, UserPermissionDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -13,6 +13,7 @@ import {
   updatePractitionerShareInfo,
   updatePrincipalInvitation,
   getPractitionerDisplayMetrics,
+  updatePractitionerPermissions,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -131,6 +132,34 @@ const practitionerSlice = createSlice({
           ...state.practitioner,
           usePhotoInReport: action.payload,
         };
+      }
+    );
+    builder.addCase(
+      updatePractitionerPermissions.fulfilled,
+      (state, action) => {
+        if (!state.practitioners) {
+          return;
+        }
+
+        const practitioner = state.practitioners.find(
+          (practitioner) => practitioner.userId === action.meta.arg.userId
+        );
+        const newPermissions = action.payload.map(
+          (userPermission) => userPermission as UserPermissionDto
+        );
+        console.log('newPermissions', newPermissions);
+
+        if (!!practitioner) {
+          state.practitioners = [
+            ...state.practitioners?.filter(
+              (practitioner) => practitioner.userId !== action.meta.arg.userId
+            ),
+            {
+              ...practitioner,
+              permissions: newPermissions,
+            },
+          ];
+        }
       }
     );
   },

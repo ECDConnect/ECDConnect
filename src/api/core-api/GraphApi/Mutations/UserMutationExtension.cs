@@ -186,28 +186,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             // Phone Number
-            var sendPhoneNumberVerification = false;
-            var userPhoneNumberBeforeChange = user.PhoneNumber;
             if (input.PhoneNumber is not null 
                 && input.PhoneNumber != user.PhoneNumber)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
-                if (user.Id != currentUserId)
-                {
-                    user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
-                    user.PendingPhoneNumber = null;
-                } 
-                else
-                {
-                    var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
-                    if (userIsTL)
-                    {
-                        sendPhoneNumberVerification = true;
-                        user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
-                        user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
-                        user.PhoneNumberConfirmed = false;
-                    }
-                }
+                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
             }
 
             if (input.WhatsAppNumber != null
@@ -395,25 +378,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (!updateResult.Succeeded)
                 {
                     throw new QueryException(updateResult.Errors.First().Description);
-                }
-
-                // Send the verification after the new number is saved, otherwise it sends the sms to the old number
-                if (sendPhoneNumberVerification)
-                {
-                    try
-                    {
-                        
-                        var apiUrl = new Uri("https://" + TenantExecutionContext.Tenant.AdminSiteAddress.ToString());
-                        await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
-
-                        // revert phone number to old one for verification
-                        user.PhoneNumber = userPhoneNumberBeforeChange;
-                        await userManager.UpdateAsync(user);
-                    }
-                    catch (Exception exception)
-                    {
-                        logger?.LogError("Could not send cellphone number verification for change of user cellphone number.", new { userId = user.Id, exception });
-                    }
                 }
             }
 

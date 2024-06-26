@@ -88,20 +88,19 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
 
       <Divider className="mt-4 mb-1" dividerType="dashed" />
 
-      {isPrincipal ||
-        (isTrialPeriod && (
-          <Button
-            className="my-4"
-            color="quatenary"
-            type="filled"
-            shape="normal"
-            onClick={onAddNewPlaygroup}
-            isLoading={isLoading}
-          >
-            {renderIcon('PlusSmIcon', 'text-white w-5')}
-            <Typography text="Add class" type="help" color="white" />
-          </Button>
-        ))}
+      {(isPrincipal || isTrialPeriod) && (
+        <Button
+          className="my-4"
+          color="quatenary"
+          type="filled"
+          shape="normal"
+          onClick={onAddNewPlaygroup}
+          isLoading={isLoading}
+        >
+          {renderIcon('PlusSmIcon', 'text-white w-5')}
+          <Typography text="Add class" type="help" color="white" />
+        </Button>
+      )}
 
       {(isPrincipal || isTrialPeriod) && playgroups?.length > 0 && (
         <Button

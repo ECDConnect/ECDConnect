@@ -150,7 +150,7 @@ namespace ECDLink.SmartStart.Services
         {
             Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => Guid.Parse(userId) == x.UserId);
 
-            if (practi != null && practi.PrincipalHierarchy.HasValue)
+            if (practi != null && practi.IsPrincipal == true)
             {
                return _classGroupRepo.GetAll()
               .Include(x => x.Classroom)

@@ -15,10 +15,12 @@ using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
+using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -268,8 +270,8 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            var result = await _securityCodeManager.GenerateTokenAsync(user);
-            if (string.IsNullOrWhiteSpace(result))
+            var token = await _securityCodeManager.GenerateTokenAsync(user);
+            if (string.IsNullOrWhiteSpace(token))
             {
                 return BadRequest(new FailedVerificationModel
                 {
@@ -278,9 +280,33 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            await _notificationManager.SendOAWLAuthenticationCodeAsync(user, result);
+            if (!string.IsNullOrEmpty(authModel.PhoneNumber) && user.PhoneNumber != authModel.PhoneNumber)
+            {
+                var userPhoneNumberBeforeChange = user.PhoneNumber;
+                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, authModel.PhoneNumber));
+                user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PendingPhoneNumber, authModel.PhoneNumber)); ;
+                user.PhoneNumberConfirmed = false;
+                var updatedUser = await _userManager.UpdateAsync(user);
+                if (updatedUser.Succeeded)
+                {
+                    await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
+                }
+                // revert phone number to old one
+                await Task.Delay(1000);
+                user.PhoneNumber = userPhoneNumberBeforeChange;
+                await _userManager.UpdateAsync(user);
+            } 
+            else
+            {
+                await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
+            }
 
-            return new OkObjectResult(result);
+            return new OkObjectResult(token);
+        }
+
+        private static string replaceIfNotNullOrWhiteSpace(string original, string @new)
+        {
+            return string.IsNullOrWhiteSpace(@new) ? original : @new;
         }
 
         [Route("verify-oa-wl-auth-code")]

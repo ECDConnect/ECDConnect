@@ -14,4 +14,5 @@ export type ClassroomDto = {
   principal: BasePractitionerDto;
   preschoolCode?: string;
   userId?: string;
+  isDummySchool?: boolean;
 };
