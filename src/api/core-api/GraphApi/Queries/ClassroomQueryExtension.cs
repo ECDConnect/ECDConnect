@@ -22,10 +22,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public ClassroomModel GetClassroomForUser(
             [Service] IClassroomService classroomService,
-            Guid userId,
-            bool isTrialPeriod = false)
+            Guid userId)
         {
-            var classroom = classroomService.GetClassroomForUser(userId, isTrialPeriod);
+            var classroom = classroomService.GetClassroomForUser(userId);
 
             if (classroom == null)
             {
