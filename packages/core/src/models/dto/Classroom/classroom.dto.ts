@@ -22,4 +22,5 @@ export interface ClassroomDto extends EntityBase {
   classSiteAddress?: string;
   preschoolFeeAmount?: number;
   preschoolFeeAmountLastUpdateDate?: Date;
+  isDummySchool?: boolean;
 }

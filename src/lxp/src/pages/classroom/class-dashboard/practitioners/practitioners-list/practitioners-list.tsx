@@ -8,8 +8,9 @@ import {
   Button,
   LoadingSpinner,
   RoundIcon,
+  DialogPosition,
 } from '@ecdlink/ui';
-import { getAvatarColor } from '@ecdlink/core';
+import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';
 import * as styles from './practitioners-list.styles';
 import ROUTES from '@routes/routes';
@@ -31,6 +32,7 @@ export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
   const isTrialPeriod = useIsTrialPeriod();
   const history = useHistory();
+  const dialog = useDialog();
   const { errorDialog } = useRequestResponseDialog();
   const { isOnline } = useOnlineStatus();
 
