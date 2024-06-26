@@ -199,14 +199,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 } 
                 else
                 {
-                    var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
-                    if (userIsTL)
-                    {
-                        sendPhoneNumberVerification = true;
-                        user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
-                        user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
-                        user.PhoneNumberConfirmed = false;
-                    }
+                    sendPhoneNumberVerification = true;
+                    user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
+                    user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
+                    user.PhoneNumberConfirmed = false;
                 }
             }
 
@@ -402,7 +398,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     try
                     {
-                        
                         var apiUrl = new Uri("https://" + TenantExecutionContext.Tenant.AdminSiteAddress.ToString());
                         await securityNotificationManager.RequestVerifyCellphoneNumberAsync(user, apiUrl);
 
