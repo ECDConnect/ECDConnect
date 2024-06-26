@@ -141,9 +141,6 @@ import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-ex
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
-  const isWhiteLabel = tenant?.isWhiteLabel;
-  console.log({ isOpenAccess });
-  console.log({ isWhiteLabel });
 
   function getCurrentURL() {
     return window.location.hostname;
