@@ -32,8 +32,8 @@ interface VerifyPhoneNumberProps {
   username: string;
   setIsFromAuthCodeScreen?: (item: boolean) => void;
   password?: string;
-  savePractitionerUserData?: () => void;
-  saveOldPractitionerUserData?: () => void;
+  handleChangePhoneNumber?: () => void;
+  saveNewPractitionerUserData?: () => void;
   isFromEditCellPhone?: boolean;
   setEditiCellPhoneNumber?: (item: boolean) => void;
 }
@@ -44,8 +44,8 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   username,
   setIsFromAuthCodeScreen,
   password,
-  savePractitionerUserData,
-  saveOldPractitionerUserData,
+  handleChangePhoneNumber,
+  saveNewPractitionerUserData,
   isFromEditCellPhone,
   setEditiCellPhoneNumber,
 }) => {
@@ -84,7 +84,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
           variant: NOTIFICATION.ERROR,
         });
         if (isFromEditCellPhone) {
-          saveOldPractitionerUserData && saveOldPractitionerUserData();
+          saveNewPractitionerUserData && saveNewPractitionerUserData();
         }
         setErrorMessage('Wrong code. Please insert a valid code!');
         setIsLoading(false);
@@ -92,7 +92,7 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
       });
 
     if (confirmAuthToken && isFromEditCellPhone) {
-      savePractitionerUserData && (await savePractitionerUserData());
+      saveNewPractitionerUserData && (await saveNewPractitionerUserData());
       closeAction && closeAction(false);
       setEditiCellPhoneNumber && setEditiCellPhoneNumber(false);
     }
@@ -127,11 +127,14 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   };
 
   const resendOAAuthCode = async () => {
-    const resendAuthCode = await new AuthService().SendOAAuthCode(username, '');
+    const resendAuthCode = await new AuthService().SendOAAuthCode(
+      username,
+      phoneNumber!
+    );
   };
 
   const handleGoBack = () => {
-    saveOldPractitionerUserData && saveOldPractitionerUserData();
+    saveNewPractitionerUserData && saveNewPractitionerUserData();
     isFromEditCellPhone && closeAction && closeAction(false);
     setEditiCellPhoneNumber && setEditiCellPhoneNumber(false);
   };
