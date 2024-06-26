@@ -175,14 +175,6 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (isTrialPeriod) {
-      appDispatch(
-        classroomsThunkActions.getClassroomForTrialPeriodUser({})
-      ).unwrap();
-    }
-  }, []);
-
   // Sync the coach data -> TODO make a better sync method
   useEffect(() => {
     if (isCoach) {

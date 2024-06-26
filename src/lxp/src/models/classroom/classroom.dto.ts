@@ -13,4 +13,5 @@ export type ClassroomDto = {
   siteAddress: SiteAddressDto;
   principal: BasePractitionerDto;
   preschoolCode?: string;
+  isDummySchool?: boolean;
 };
