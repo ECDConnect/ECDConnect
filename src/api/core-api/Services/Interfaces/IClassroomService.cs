@@ -7,8 +7,7 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
 {
     public interface IClassroomService
     {
-        Classroom GetClassroomForUser(Guid userId);
-        Classroom GetTrialPeriodClassroomForUser(Guid userId);
+        Classroom GetClassroomForUser(Guid userId, bool isTrialPeriod);
         List<ClassroomGroup> GetClassroomGroupsForUser(Guid userId);
 
         /// <summary>

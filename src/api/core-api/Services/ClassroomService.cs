@@ -40,37 +40,39 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _programmeRepo = _repoFactory.CreateGenericRepository<ProgrammeType>(userContext: _applicationUserId);
         }
 
-        public Classroom GetClassroomForUser(Guid userId)
+        public Classroom GetClassroomForUser(Guid userId, bool isTrialPeriod)
         {
-            var practitioner = _practiGenericRepo.GetByUserId(userId);
-
-            var principalUserId = practitioner.IsPrincipalOrAdmin()
-                ? practitioner.UserId
-                : practitioner.PrincipalHierarchy;
-
-            if (principalUserId == null)
+            if (!isTrialPeriod)
             {
-                return null;
-            }
+                var practitioner = _practiGenericRepo.GetByUserId(userId);
 
-            return _classroomRepo.GetAll()
-                .Where(x => 
-                    x.IsActive 
-                    && x.UserId.HasValue 
+                var principalUserId = practitioner.IsPrincipalOrAdmin()
+                    ? practitioner.UserId
+                    : practitioner.PrincipalHierarchy;
+
+                if (principalUserId == null)
+                {
+                    return null;
+                }
+
+                return _classroomRepo.GetAll()
+                .Where(x =>
+                    x.IsActive
+                    && x.UserId.HasValue
                     && x.UserId.Value == principalUserId.Value)
                 .OrderByDescending(x => x.InsertedDate)
                 .FirstOrDefault();
-        }
-
-        public Classroom GetTrialPeriodClassroomForUser(Guid userId)
-        {
-            return _classroomRepo.GetAll()
+            } 
+            else
+            {
+                return _classroomRepo.GetAll()
                 .Where(x =>
                     x.IsActive
                     && x.UserId.HasValue
                     && x.UserId.Value == userId)
                 .OrderByDescending(x => x.InsertedDate)
                 .FirstOrDefault();
+            }
         }
 
         public List<ClassroomGroup> GetClassroomGroupsForUser(Guid userId)
