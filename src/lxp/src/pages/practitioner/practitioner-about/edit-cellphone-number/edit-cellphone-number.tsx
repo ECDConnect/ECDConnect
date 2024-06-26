@@ -92,7 +92,8 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 
       if (updatedUser) {
         const resendAuthCode = await new AuthService().SendOAAuthCode(
-          user?.userName!
+          user?.userName!,
+          practitionerForm.cellphone!
         );
 
         if (resendAuthCode) {

@@ -220,8 +220,8 @@ class ClassroomService {
       data: { trialPeriodClassroomForUser: ClassroomDto };
       errors?: {};
     }>(``, {
-      query: `query GetTrialPeriodClassroomForUser($userId: UUID!) {
-          trialPeriodClassroomForUser(userId: $userId) {            
+      query: `query GetClassroomForUser($userId: UUID!) {
+          classroomForUser(userId: $userId) {            
             id
             name
             imageUrl

@@ -216,12 +216,16 @@ class AuthService {
     );
   }
 
-  async SendOAAuthCode(username: string): Promise<boolean> {
+  async SendOAAuthCode(
+    username: string,
+    phoneNumber: string
+  ): Promise<boolean> {
     const BASE_URL = Config.authApi;
     const response = await api(BASE_URL).post(
       APIs.sendOAWLAuthCode,
       JSON.stringify({
         username,
+        phoneNumber,
       })
     );
 
