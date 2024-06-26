@@ -11,7 +11,9 @@ import {
   LicenseModelInput,
   NotificationDisplay,
   PrincipalInvitationStatus,
+  UserPermissionModel,
 } from '@ecdlink/graphql';
+import PermissionsService from '@/services/PermissionsService/PermissionsService';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
@@ -31,6 +33,7 @@ export const PractitionerActions = {
   GET_PRACTITIONERS_DISPLAY_METRICS: 'getPractitionersDisplayMetrics',
   GET_PRACTITIONERS_FOR_COACH: 'getPractitionersForCoach',
   GET_ALL_PRACTITIONERS: 'getAllPractitioners',
+  UPDATE_PRACTITIONER_PERMISSIONS: 'updateUserPermission',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -476,6 +479,36 @@ export const updatePrincipalInvitation = createAsyncThunk<
         ).UpdatePrincipalInvitation(userId, principalHierarchy, accepted);
       }
       return result;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerPermissions = createAsyncThunk<
+  UserPermissionModel[],
+  {
+    userId: string;
+    permissionsIds: string[];
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_PERMISSIONS,
+  async ({ userId, permissionsIds }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PermissionsService(
+          userAuth?.auth_token || ''
+        ).UpdateUserPermission({
+          userId: userId,
+          permissionIds: permissionsIds,
+        });
+      }
+      return rejectWithValue('No auth');
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -44,5 +44,15 @@ export interface PractitionerDto extends EntityBase {
   clubName?: string;
   absentees?: AbsenteeDto[];
   daysAbsentLastMonth?: number | string;
-  permissions?: PermissionDto[];
+  permissions?: UserPermissionDto[];
+}
+
+export interface UserPermissionDto {
+  id: string;
+  userId: string;
+  permissionId: string;
+  isActive: boolean;
+  permissionName: string;
+  permissionNormalizedName: string;
+  permissionGrouping: string;
 }
