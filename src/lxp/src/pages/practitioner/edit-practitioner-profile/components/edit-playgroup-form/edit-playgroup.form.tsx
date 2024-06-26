@@ -98,7 +98,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         if (p?.user?.fullName || p?.user?.userName) {
           return {
             label: `${p?.user?.firstName || p?.user?.userName} ${
-              p?.user?.surname && p?.user?.surname
+              p?.user?.surname !== null ? p?.user?.surname : ''
             }`,
             value: p.userId,
           };
