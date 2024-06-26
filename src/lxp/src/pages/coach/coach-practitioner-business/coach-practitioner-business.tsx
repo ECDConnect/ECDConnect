@@ -2,6 +2,7 @@ import ROUTES from '@/routes/routes';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import {
+  Button,
   BannerWrapper,
   Dialog,
   DialogPosition,
@@ -303,7 +304,7 @@ export const CoachPractitionerBusiness = () => {
         size="small"
         renderOverflow
         displayOffline={!isOnline}
-        title="SmartStarter business"
+        title="Finances"
         subTitle={`${practitionerFullname}`}
         onBack={() =>
           history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
@@ -312,10 +313,6 @@ export const CoachPractitionerBusiness = () => {
         }
         className="p-4"
       >
-        <div className="mt-4 flex justify-center">
-          <div className="w-11/12">{renderData}</div>
-        </div>
-
         {isLoading ? (
           <LoadingSpinner
             size="big"
@@ -331,29 +328,52 @@ export const CoachPractitionerBusiness = () => {
             isLastMonthSubmitted={isLastMonthSubmitted}
           />
         ) : (
-          <div className="h-full px-4 py-2 pt-7">
-            <div className="mt-2 flex flex-wrap justify-center p-8">
-              <div className="">
-                <MoneyIcon />
-              </div>
-            </div>
+          <div className="h-full px-2 py-2">
             <div>
               <Typography
-                className="mt-4 text-center"
+                className="mt-4"
                 color="textDark"
-                text={`${practitionerFirstName} has not added any income or expenses yet!`}
+                text={`No income or expenses added`}
                 type={'h3'}
               />
             </div>
             <div>
               <Typography
-                className="mt-2 text-center"
+                className="mt-4"
                 color="textMid"
-                text={`You can contact ${practitionerFirstName} to see if they need support.`}
+                text={format(new Date(), 'dd MMM yyyy')}
                 type={'body'}
               />
             </div>
+            <div>
+              <Typography
+                className="mt-4"
+                color="textDark"
+                text={`Remind ${practitionerFirstName} to complete income statements every month`}
+                type={'h2'}
+              />
+            </div>
             <WhatsappCall />
+            <div className="flex flex-col justify-center">
+              <Button
+                shape="normal"
+                color="quatenary"
+                type="filled"
+                icon="CheckCircleIcon"
+                onClick={() =>
+                  history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+                    practitionerId: userId,
+                  })
+                }
+                className="mt-6 rounded-2xl"
+              >
+                <Typography
+                  type="help"
+                  color="white"
+                  text={`I have contacted ${practitionerFirstName}`}
+                />
+              </Button>
+            </div>
           </div>
         )}
       </BannerWrapper>

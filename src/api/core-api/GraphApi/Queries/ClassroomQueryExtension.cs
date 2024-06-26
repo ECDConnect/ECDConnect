@@ -62,6 +62,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var classroomGroups = classroomService.GetClassroomGroupsForUser(userId);
 
+            if (classroomGroups == null)
+            {
+                return null;
+            }
+
             return classroomGroups.Select(x => new ClassroomGroupModel
             {
                 Id = x.Id,

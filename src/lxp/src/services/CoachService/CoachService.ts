@@ -8,7 +8,9 @@ import {
   CoachCirclesDto,
   CoachDto,
   CoachingCircleTopicDto,
+  ClassroomGroupDto,
 } from '@ecdlink/core';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
 
@@ -399,6 +401,45 @@ class CoachService {
     }
 
     return response.data.data.childProgressReportsStatus;
+  }
+
+  async getClassroomGroupsForCoach(
+    userId: string
+  ): Promise<SimpleClassroomGroupDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { allClassroomGroupsForCoach: SimpleClassroomGroupDto[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetAllClassroomGroupsForCoach($userId: String) {
+          allClassroomGroupsForCoach(userId: $userId) {
+            id
+            classroomId
+            name
+            userId
+            learners {
+              learnerId
+              childUserId
+              startedAttendance
+              stoppedAttendance
+              isActive
+            }
+          }
+        }
+          `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'GetClassroomGroupsForCoach Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allClassroomGroupsForCoach;
   }
 }
 

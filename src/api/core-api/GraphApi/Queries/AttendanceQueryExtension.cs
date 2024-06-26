@@ -34,7 +34,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var userId = httpContextAccessor.HttpContext.GetUser().Id;
 
-            var classroomGroupIds = classroomService.GetClassroomGroupsForUser(userId).Select(x => x.Id).ToList();
+            var classroomGroups = classroomService.GetClassroomGroupsForUser(userId);
+
+            if (classroomGroups == null)
+            {
+                return null;
+            }
+
+            var classroomGroupIds = classroomGroups.Select(x => x.Id).ToList();
 
             var attendance = trackingRepository.GetAllAttendances(classroomGroupIds)
                 .Where(x => x.AttendanceDate.Date >= startDate.Date && x.AttendanceDate.Date <= endDate.Date);

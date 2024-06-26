@@ -156,7 +156,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       setInitLoading(true);
       await initStaticStoreSetup();
 
-      if (!!userData && !isCoach) {
+      if (!!userData) {
         await initAdditionalStoreSetup();
       }
       appDispatch(settingActions.setLastDataSync());
@@ -402,6 +402,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             classroomsForCoachThunkActions.getClassroomForCoach({
               id: userData?.id!,
             })
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            classroomsForCoachThunkActions.getClassroomGroupsForCoach({})
           ).unwrap())();
         (async () =>
           await appDispatch(

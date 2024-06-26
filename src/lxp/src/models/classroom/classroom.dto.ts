@@ -4,8 +4,8 @@ import { SiteAddressDto } from './site-address.dto';
 export type ClassroomDto = {
   id: string;
   name: string;
-  imageUrl: string;
-  numberOfPractitioners?: number;
+  classroomImageUrl: string;
+  numberPractitioners?: number;
   numberOfAssistants?: number;
   numberOfOtherAssistants?: number;
   preschoolFeeAmount?: number;
@@ -13,4 +13,5 @@ export type ClassroomDto = {
   siteAddress: SiteAddressDto;
   principal: BasePractitionerDto;
   preschoolCode?: string;
+  userId?: string;
 };

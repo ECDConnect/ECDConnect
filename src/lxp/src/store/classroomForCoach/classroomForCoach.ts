@@ -1,7 +1,10 @@
 import { ChildDto, ClassProgrammeDto, LearnerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getClassroomForCoach } from './classroomForCoach.actions';
+import {
+  getClassroomForCoach,
+  getClassroomGroupsForCoach,
+} from './classroomForCoach.actions';
 import { ClassroomForCoachState } from './classroomForCoach.types';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
@@ -111,6 +114,11 @@ const classroomsSlice = createSlice({
     builder.addCase(getClassroomForCoach.fulfilled, (state, action) => {
       if (action.payload) {
         state.classroomForCoach = action.payload;
+      }
+    });
+    builder.addCase(getClassroomGroupsForCoach.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.classroomGroups = action.payload;
       }
     });
   },

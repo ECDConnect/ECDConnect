@@ -28,6 +28,7 @@ import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { traineeSelectors } from '@/store/trainee';
 import { getStepDate } from '../coach-practitioner-journey/timeline/timeline-steps';
 import { RegisterChildrenInfo } from './components/register-children-info/register-children-info';
+import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 
 export const CoachPractitionerClassroom: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -44,30 +45,39 @@ export const CoachPractitionerClassroom: React.FC = () => {
     (practitioner) => practitioner?.userId === practitionerUserId
   );
 
-  const isTrainee = practitioner?.isTrainee;
+  const isPrincipal = practitioner?.isPrincipal === true;
 
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const practitionerClassroomGroups = classroomGroups.filter(
-    (item) => item.userId === practitionerUserId
+  const coachClassrooms = useSelector(
+    classroomsForCoachSelectors.getClassroomForCoach
   );
+  const coachClassroomGroups = useSelector(
+    classroomsForCoachSelectors.getClassroomGroups
+  );
+
+  const practitionerClassroomGroups =
+    coachClassroomGroups?.filter(
+      (item) => item.userId === practitionerUserId
+    ) || [];
+
+  const practitionerClassroom = isPrincipal
+    ? coachClassrooms?.find((item) => item?.userId === practitionerUserId)
+    : coachClassrooms?.find(
+        (item) => item?.id === practitionerClassroomGroups?.[0].classroomId
+      );
+
+  const classroomGroups =
+    coachClassroomGroups?.filter(
+      (item) => item.classroomId === practitionerClassroom?.id
+    ) || [];
+
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
-  // TODO - NEED TO FIX TYPES
-  const [classMetrics, setClassMetrics] = useState<any>();
+
   const [practitionerClassroomsData, setPractitionerClassroomsData] =
     useState<any[]>();
-  const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
-  const [showRegisterChildrenInfo, setShowRegisterChildrenInfo] =
-    useState(false);
 
-  const registerChildrenDeadlineDate =
-    traineeTimeline?.threeChildrenRegisteredDeadlineDate;
-  const registerChildrenDeadlineDateFormatted = getStepDate(
-    registerChildrenDeadlineDate
-  );
+  const [classMetrics, setClassMetrics] = useState<any>();
 
   const [actionItems, setActionItems] = useState<any>();
 
@@ -97,6 +107,11 @@ export const CoachPractitionerClassroom: React.FC = () => {
   useEffect(() => {
     if (classMetrics) {
       const practitionerClassroomData = classMetrics?.filter((item: any) => {
+        if (isPrincipal) {
+          return classroomGroups.some((x) => {
+            return item?.classroomId === x.classroomId;
+          });
+        }
         return practitionerClassroomGroups.some((x) => {
           return item?.practitionerId === x?.userId;
         });
@@ -126,22 +141,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
       await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDispatch, practitionerUserId]);
-
-  const notificationItem: MenuListDataItem[] = [
-    {
-      showIcon: true,
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'border-0',
-      iconColor: 'white',
-      title: `${childrenForPractitionerList?.length}/3 children registered`,
-      titleStyle: 'text-textDark semibold',
-      subTitle: `Deadline: ${registerChildrenDeadlineDateFormatted}`,
-      subTitleStyle: 'text-textMid',
-      iconBackgroundColor: 'alertMain',
-      backgroundColor: 'uiBg',
-      onActionClick: () => setShowRegisterChildrenInfo(true),
-    },
-  ];
 
   // TODO: Complete list based on 'getClassroomsActionItems':
   const listItems = [
@@ -212,18 +211,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
           }
           displayOffline={!isOnline}
         ></BannerWrapper>
-        {isTrainee && childrenForPractitioner?.length! < 3 && (
-          <div className="flex w-full justify-center">
-            <div className="my-4 w-11/12">
-              <StackedList
-                isFullHeight={false}
-                className={'flex flex-col gap-2'}
-                listItems={notificationItem}
-                type={'MenuList'}
-              />
-            </div>
-          </div>
-        )}
         <div className="flex w-full flex-wrap justify-center">
           <div className="mt-4 flex justify-center">
             <div className="w-11/12">
@@ -245,33 +232,16 @@ export const CoachPractitionerClassroom: React.FC = () => {
                   {childrenForPractitionerList?.length}
                 </div>
                 <Typography
-                  text={'Registered children'}
+                  text={`Children enrolled at ${practitionerClassroom?.name}`}
                   type="body"
                   className="mb-4"
                 />
               </div>
-              <div className="mr-4 mt-8 h-full">
-                <Button
-                  color="primary"
-                  type="filled"
-                  size="small"
-                  onClick={() => {
-                    history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, {
-                      practitionerId: practitionerUserId,
-                    });
-                  }}
-                >
-                  {renderIcon('EyeIcon', 'w-5 h-5 text-white mr-1')}
-                  <Typography color="white" text={'View all'} type="small" />
-                </Button>
-              </div>
             </Card>
-            {!isTrainee && (
-              <ClassroomAttendance
-                practitionerClassroomGroups={practitionerClassroomGroups}
-                practitionerClassroomsData={practitionerClassroomsData}
-              />
-            )}
+            <ClassroomAttendance
+              practitionerClassroomGroups={practitionerClassroomGroups}
+              practitionerClassroomsData={practitionerClassroomsData}
+            />
             <div className="w-full">
               <ChildrenPerAgeGroup
                 childrenForPractitionerList={childrenForPractitionerList}
@@ -281,19 +251,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
           </>
         </div>
       </div>
-      <Dialog
-        visible={showRegisterChildrenInfo}
-        stretch={true}
-        position={DialogPosition.Full}
-      >
-        <RegisterChildrenInfo
-          setShowRegisterChildrenInfo={setShowRegisterChildrenInfo}
-          registerChildrenDeadlineDateFormatted={
-            registerChildrenDeadlineDateFormatted
-          }
-          practitioner={practitioner}
-        />
-      </Dialog>
     </>
   );
 };

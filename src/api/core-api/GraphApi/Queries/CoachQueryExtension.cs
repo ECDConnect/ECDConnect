@@ -1,7 +1,9 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Files;
@@ -168,8 +170,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return classrooms;
         }
 
-        public List<ClassroomGroup> GetAllClassroomGroupsForCoach(
+        public List<ClassroomGroupModel> GetAllClassroomGroupsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] IClassroomService classroomService,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
@@ -178,12 +181,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var userIdGuid = new Guid(userId);
 
-            List<ClassroomGroup> classrooms = new List<ClassroomGroup>();
+            List<ClassroomGroupModel> classrooms = new List<ClassroomGroupModel>();
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy == userIdGuid).ToList();
             foreach (var practioner in practitioners)
             {
-                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Value == practioner.UserId.Value).ToList();
+                var classroomGroups = classroomService.GetClassroomGroupsForUser(practioner.User.Id);
+                if (classroomGroups == null)
+                {
+                    return null;
+                }
+
+                var practitionerClasses = classroomGroups.Select(x => new ClassroomGroupModel
+                {
+                    Id = x.Id,
+                    ClassroomId = x.ClassroomId,
+                    Name = x.Name,
+                    UserId = x.UserId.Value,
+                    Learners = x.Learners.Select(y => new BaseLearnerModel
+                    {
+                        LearnerId = y.Id,
+                        ChildUserId = y.UserId.Value,
+                        StartedAttendance = y.StartedAttendance,
+                        StoppedAttendance = y.StoppedAttendance,
+                        IsActive = y.IsActive,
+                    }).ToList(),
+                    ClassProgrammes = x.ClassProgrammes.Where(x => x.IsActive).ToList(),
+                }).ToList();
+
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;
