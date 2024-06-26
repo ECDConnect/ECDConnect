@@ -176,7 +176,6 @@ export const UpdatePreschoolFee: React.FC = () => {
         className={'mx-auto mt-8 w-full rounded-2xl'}
         onClick={onSubmit}
         disabled={askForFee && !amount}
-        id="savePreschoolFee"
       >
         {renderIcon(
           'SaveIcon',

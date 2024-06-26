@@ -6,20 +6,17 @@ import {
   Typography,
   Alert,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { analyticsActions } from '@store/analytics';
 import * as styles from './add-income.styles';
 import ROUTES from '@routes/routes';
 import AddPreschoolFees from './components/preschool-fees/add-preschool-fees';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
 import OtherIncome from './components/other-income/other-income';
-import StatementsWrapper from '../../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
+import StatementsWrapper from '../../money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
-import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
 import { statementsActions } from '@/store/statements';
 import { IncomeItemDto } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
@@ -81,8 +78,7 @@ export const AddIncome: React.FC = () => {
       buttonColor: 'quatenary',
       textColor: 'white',
       onActionClick: () => {
-        setType('PreschoolFees');
-        nextStep();
+        return state?.stepIndex === 4 ? null : setType('PreschoolFees');
       },
     },
     {
@@ -95,8 +91,10 @@ export const AddIncome: React.FC = () => {
       buttonType: 'filled',
       buttonColor: 'quatenary',
       textColor: 'white',
-      onActionClick: () =>
-        state?.stepIndex === 4 ? null : setType('DonationsOrvouchers'),
+      onActionClick: () => {
+        nextStep();
+        setType('DonationsOrvouchers');
+      },
     },
     {
       title: 'DBE subsidy',

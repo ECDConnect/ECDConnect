@@ -7,7 +7,7 @@ import {
   Dialog,
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
@@ -16,9 +16,6 @@ import { ClassDashboardRouteState } from './business.types';
 import { Money } from './money/money';
 import { Walkthrough } from './components/statements-walkthrough';
 import { useAppContext } from '@/walkthrougContext';
-import { useSelector } from 'react-redux';
-import { getPractitioner } from '@/store/practitioner/practitioner.selectors';
-import { practitionerThunkActions } from '@/store/practitioner';
 import { InfoPage } from './money/submit-income-statements/components/info-page';
 import { NavigationNames } from '../navigation';
 import PractitionersList from '../classroom/class-dashboard/practitioners/practitioners-list/practitioners-list';
@@ -33,36 +30,12 @@ export const Business: React.FC = () => {
   const appDispatch = useAppDispatch();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
-  const [isFromAutomaticallyStart, setIsFromAutomaticallyStart] =
-    useState(false);
 
   const backToDashboard = () => {
     history.push('/');
   };
 
-  const practitioner = useSelector(getPractitioner);
   const [showInfo, setShowInfo] = useState(false);
-
-  useEffect(() => {
-    if (practitioner?.isCompletedBusinessWalkThrough) {
-      setShowInfo(false);
-    } else {
-      setShowInfo(true);
-    }
-  }, [practitioner?.isCompletedBusinessWalkThrough]);
-
-  const updateWalkThroughStatus = useCallback(
-    (status: boolean) => {
-      if (status && !practitioner?.isCompletedBusinessWalkThrough) {
-        appDispatch(
-          practitionerThunkActions.updatePractitionerBusinessWalkThrough({
-            userId: practitioner?.userId!,
-          })
-        );
-      }
-    },
-    [appDispatch, practitioner?.userId]
-  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -144,12 +117,7 @@ export const Business: React.FC = () => {
           section="Business - Money Tab"
           onClose={() => setShowInfo(false)}
         >
-          <Walkthrough
-            setShowInfo={setShowInfo}
-            isFromAutomaticallyStart={isFromAutomaticallyStart}
-            setIsFromAutomaticallyStart={setIsFromAutomaticallyStart}
-            updateWalkThroughStatus={updateWalkThroughStatus}
-          />
+          <Walkthrough onBack={() => setShowInfo(false)} />
         </InfoPage>
       </Dialog>
     </div>

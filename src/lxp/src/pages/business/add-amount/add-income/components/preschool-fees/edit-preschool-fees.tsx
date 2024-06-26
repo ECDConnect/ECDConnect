@@ -4,7 +4,7 @@ import DatePicker from 'react-datepicker';
 import { useSelector } from 'react-redux';
 import { statementsActions, statementsSelectors } from '@/store/statements';
 import { IncomeItemDto } from '@ecdlink/core';
-import StatementsWrapper from '@/pages/business/money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
+import StatementsWrapper from '@/pages/business/money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { classroomsSelectors } from '@/store/classroom';
