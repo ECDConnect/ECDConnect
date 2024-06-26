@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
 
-            if (!practitioner.IsPrincipalOrAdmin())
+            if (!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy == null)
             {
                 return _classroomRepo.GetAll()
                     .Where(x =>

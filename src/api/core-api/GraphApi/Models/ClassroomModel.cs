@@ -13,6 +13,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public int? NumberOfAssistants { get; set; }
         public int? NumberOfOtherAssistants { get; set; }
 
+        public bool? IsDummySchool { get; set; }
+
         public double? PreschoolFeeAmount { get; set; }
         public DateTime? PreschoolFeeAmountLastUpdateDate { get; set; }
 
