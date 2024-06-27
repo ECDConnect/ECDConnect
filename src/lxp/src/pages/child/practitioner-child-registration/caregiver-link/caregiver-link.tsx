@@ -11,14 +11,12 @@ import { useHistory, useLocation } from 'react-router';
 import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 import { useAppDispatch } from '@store';
 import { childrenThunkActions, childrenActions } from '@store/children';
-import * as childRegisterUtils from '@utils/child/child-registration.utils';
-import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
 import {
   ChildRegistrationRouteState,
   ChildRegistrationSteps,
 } from '../../child-registration/child-registration.types';
-import { classroomsActions } from '@store/classroom';
+import { classroomsThunkActions } from '@store/classroom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
@@ -124,10 +122,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     const childRegistrationDetails = await getChildToken();
 
     if (!childId) {
-      createLocalUser(
-        childRegistrationDetails.childId,
-        childRegistrationDetails.childUserId
-      );
+      refetchData();
     }
 
     setChildId(childRegistrationDetails.childId);
@@ -188,10 +183,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     setLoadingManualUpload(true);
     const childRegistrationDetails = await getChildToken();
     if (!childId) {
-      createLocalUser(
-        childRegistrationDetails.childId,
-        childRegistrationDetails.childUserId
-      );
+      await refetchData();
       setChildId(childRegistrationDetails.childId);
     }
     setLoadingManualUpload(false);
@@ -203,53 +195,11 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     });
   };
 
-  // This doesn't set any state, or return anything
-  const createLocalUser = (childId: string, childUserId: string) => {
-    const childInformation = {
-      dobDay: 0,
-      dobMonth: 0,
-      dobYear: 0,
-      firstname: childDetails.firstName,
-      surname: childDetails.surname,
-      playgroupId: childDetails.playgroupId, // TODO : Rename to classroomGroupId
-      otherReason: '',
-    };
-    const childExtraInformation = { childFirstname: childDetails.firstName };
-
-    let userInputModel = childRegisterUtils.mapChildUserDto(
-      childInformation,
-      childExtraInformation
-    );
-
-    userInputModel = {
-      ...userInputModel,
-      id: childUserId,
-    };
-
-    const childStatusId = getWorkflowStatusIdByEnum(
-      WorkflowStatusEnum.ChildExternalLink
-    );
-
-    let childInputModel = childRegisterUtils.mapChildDto(
-      childUserId,
-      childStatusId ?? '',
-      {},
-      childExtraInformation
-    );
-
-    childInputModel = {
-      ...childInputModel,
-      id: childId,
-      user: userInputModel,
-    };
-
-    // Add values to redux. This could potentially be a refresh for child/classroomGroup data
-    dispatch(childrenActions.createChild(childInputModel));
-    dispatch(
-      classroomsActions.createLearner({
-        childUserId,
-        newClassroomGroupId: childDetails.playgroupId,
-      })
+  // This should just sync children and classgroups (to get the newly created child)
+  const refetchData = async () => {
+    await dispatch(childrenThunkActions.getChildren({ overrideCache: true }));
+    await dispatch(
+      classroomsThunkActions.getClassroomGroups({ overrideCache: true })
     );
   };
 

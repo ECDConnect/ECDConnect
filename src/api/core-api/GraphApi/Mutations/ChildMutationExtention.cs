@@ -1,12 +1,8 @@
 ﻿using ECDLink.DataAccessLayer.Context;
 using HotChocolate;
 using HotChocolate.Types;
-using System.Collections.Generic;
 using System;
-using System.Linq;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.Tenancy.Context;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
