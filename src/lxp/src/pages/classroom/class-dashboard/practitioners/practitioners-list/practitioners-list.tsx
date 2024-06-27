@@ -160,8 +160,8 @@ export const PractitionersList: React.FC = () => {
       <LoadingSpinner
         className="mt-6"
         size={'medium'}
-        spinnerColor={'primary'}
-        backgroundColor={'uiLight'}
+        spinnerColor={'quatenary'}
+        backgroundColor={'uiBg'}
       />
     );
   }

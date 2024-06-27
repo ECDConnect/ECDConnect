@@ -98,20 +98,20 @@ export const Money: React.FC = () => {
   );
 
   const {
-    state: { tourActive },
+    state: { tourActive, run: isWalkthrough },
   } = useAppContext();
 
   return (
     <>
-      {isLoading && (
+      {isLoading && !isWalkthrough && (
         <LoadingSpinner
-          size="big"
-          spinnerColor="white"
-          backgroundColor="secondary"
-          className="mb-7"
+          size="medium"
+          spinnerColor="uiBg"
+          backgroundColor="quatenary"
+          className="mb-7 mt-6"
         />
       )}
-      {!isLoading && (
+      {(!isLoading || isWalkthrough) && (
         <>
           <SubmitIncomeStatements />
           <Dialog

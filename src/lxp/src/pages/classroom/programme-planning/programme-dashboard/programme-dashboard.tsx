@@ -41,7 +41,6 @@ export interface iSkills {
 export const ProgrammeDashboard: React.FC = () => {
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
 
-  // TODO: handle with date from state
   const programmeStartDate = new Date();
 
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();

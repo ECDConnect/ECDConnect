@@ -31,7 +31,7 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({
         item.containerStyle,
         styles.actionListItemContainer
       )}
-      id={id}
+      id={id || item.id}
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>

@@ -110,13 +110,6 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
       el?.scrollIntoView();
       return;
     }
-
-    if (stepIndex === 8) {
-      const el = document.getElementById('howMayDaysToSubmit');
-
-      el?.scrollIntoView();
-      return;
-    }
   }, [stepIndex]);
 
   const currentMonthStatement = statements[statements.length - 1];
