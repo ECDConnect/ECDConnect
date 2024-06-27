@@ -16,5 +16,7 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
         /// <param name="userId"></param>
         /// <returns></returns>
         PrincipalClassroom GetClassroomDetailsForPractitioner(string userId);
+
+        void UpdateDummyClassroomStatus(Guid userId);
     }
 }

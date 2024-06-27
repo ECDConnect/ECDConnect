@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
@@ -80,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                         group.ProgrammeTypeId = programmeTypeId;
                                     }    
                                     classroomGroupRepo.Update(group);
-                                    if (classroom != null) {
+                                    if (classroom != null && classroom.IsDummySchool.HasValue && classroom.IsDummySchool == false) {
                                         classroomIds.Add(classroom.Id);
                                     }                                    
                                 }
@@ -262,6 +263,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] PersonnelService personnelManager,
+            [Service] IClassroomService classroomService,
             string practitionerId, 
             string principalId, 
             bool accepted)
@@ -315,6 +317,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
                 else
                 {
+                    
+
                     //reset the classroomgroups away from this practitioner and back to the principal
                     //if (principal.UserId != null && practitioner.UserId != null)
                     {
@@ -345,6 +349,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
             else
             {
+                // if there is a dummy school linked to this user, mark the school as not dummy
+                classroomService.UpdateDummyClassroomStatus((Guid)practitioner.UserId);
+
                 practitioner.PrincipalHierarchy = principal.UserId;
                 practitioner.DateToBeRemoved = null;
                 practitioner.DateAccepted = DateTime.Now;
