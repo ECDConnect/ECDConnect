@@ -20,6 +20,7 @@ import { RootState, ThunkApiType } from '../types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { OverrideCache } from '@/models/sync/override-cache';
+import { SiteAddressService } from '@/services/SiteAddressService';
 
 export const ClassroomActions = {
   GET_CLASSROOM: 'getClassroom',
@@ -142,7 +143,9 @@ export const upsertClassroom = createAsyncThunk<
         const input: ClassroomInput = {
           Id: classroom.id,
           UserId: classroom.principal.userId,
-          // SiteAddressId: classroom.siteAddress?.id,
+          SiteAddressId: classroom.siteAddress?.id
+            ? classroom.siteAddress?.id
+            : null,
           Name: classroom.name,
           ClassroomImageUrl: classroom.imageUrl,
           NumberPractitioners: classroom.numberOfPractitioners,
@@ -157,6 +160,16 @@ export const upsertClassroom = createAsyncThunk<
             classroom.preschoolFeeAmountLastUpdateDate,
           PreschoolCode: classroom?.preschoolCode,
         };
+
+        if (classroom?.siteAddress?.id) {
+          const addressInput = mapSiteAddress(classroom.siteAddress);
+
+          const updateAddress = await new SiteAddressService(
+            userAuth?.auth_token!
+          ).updateSiteAddress(classroom.siteAddress.id ?? '', addressInput);
+
+          input.SiteAddressId = addressInput.Id;
+        }
 
         const result = await new ClassroomService(
           userAuth?.auth_token
