@@ -178,7 +178,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
           prefixIcon={!!amount}
           error={errors['amount']}
           disabled={disabled}
-          value={amount}
+          value={!!amount ? moneyInputFormat(amount) : undefined}
         />
         {!!payType && payType !== PayTypeIds.MONEY_ID && (
           <FormInput<DonationsOrVouchersModel>

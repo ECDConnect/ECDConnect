@@ -163,7 +163,7 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
           prefixIcon={!!amount}
           error={errors['amount']}
           disabled={disabled}
-          value={amount}
+          value={!!amount ? moneyInputFormat(amount) : undefined}
         />
         <FormInput<DbeSubsidyModel>
           label={'Add a note'}
