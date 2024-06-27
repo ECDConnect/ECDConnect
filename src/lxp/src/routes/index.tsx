@@ -142,6 +142,13 @@ const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
 
+  function getCurrentURL() {
+    return window.location.hostname;
+  }
+
+  // Example
+  const url = getCurrentURL();
+  console.log({ url });
   return (
     <Switch>
       <Route
