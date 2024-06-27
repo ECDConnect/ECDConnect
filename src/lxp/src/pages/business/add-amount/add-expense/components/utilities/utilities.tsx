@@ -168,7 +168,7 @@ export const Utilities: React.FC<AddExpenseState> = ({
           prefixIcon={!!amount}
           error={errors['amount']}
           disabled={disabled}
-          value={amount}
+          value={!!amount ? moneyInputFormat(amount) : undefined}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}

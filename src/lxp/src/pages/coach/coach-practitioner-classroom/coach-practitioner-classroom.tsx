@@ -1,16 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
-import {
-  BannerWrapper,
-  Button,
-  renderIcon,
-  Typography,
-  Card,
-  StackedList,
-  MenuListDataItem,
-  Dialog,
-  DialogPosition,
-} from '@ecdlink/ui';
+import { BannerWrapper, Typography, Card, StackedList } from '@ecdlink/ui';
 import { PractitionerProfileRouteState } from './coach-practitioner-classroom.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-practitioner-classroom.styles';
@@ -20,14 +10,10 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { ChildrenPerAgeGroup } from './components/childrenPerAgeGroup/childrenPerAgeGroup';
-import { classroomsSelectors } from '@/store/classroom';
 import { ClassroomAttendance } from './components/classroom-attendance/classroom-attendance';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
-import { traineeSelectors } from '@/store/trainee';
-import { getStepDate } from '../coach-practitioner-journey/timeline/timeline-steps';
-import { RegisterChildrenInfo } from './components/register-children-info/register-children-info';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 
 export const CoachPractitionerClassroom: React.FC = () => {
@@ -239,7 +225,9 @@ export const CoachPractitionerClassroom: React.FC = () => {
               </div>
             </Card>
             <ClassroomAttendance
-              practitionerClassroomGroups={practitionerClassroomGroups}
+              practitionerClassroomGroups={
+                isPrincipal ? classroomGroups : practitionerClassroomGroups
+              }
               practitionerClassroomsData={practitionerClassroomsData}
             />
             <div className="w-full">

@@ -49,7 +49,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 return null;
             }
 
-            if (!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy == null)
+          
+            if ((!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy == null) || 
+                (!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy.HasValue && practitioner.Progress < 2))
             {
                 return _classroomRepo.GetAll()
                     .Where(x =>
@@ -58,7 +60,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         && x.UserId.Value == practitioner.UserId)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
-            }
+            } 
 
             var principalUserId = practitioner.IsPrincipalOrAdmin()
                 ? practitioner.UserId

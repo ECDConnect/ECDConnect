@@ -134,7 +134,7 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
           prefixIcon={!!amount}
           error={errors['amount']}
           disabled={disabled}
-          value={amount}
+          value={!!amount ? moneyInputFormat(amount) : undefined}
         />
         <FormInput<OtherIncomeModel>
           label={'Add a note'}
