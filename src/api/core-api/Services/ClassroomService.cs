@@ -74,22 +74,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             .FirstOrDefault();
         }
 
-        public void UpdateDummyClassroomStatus(Guid userId)
-        {
-            var classroom =  _classroomRepo.GetAll()
-                    .Where(x => x.IsActive
-                        && x.UserId.HasValue && x.UserId.Value == userId
-                        && x.IsDummySchool.HasValue && x.IsDummySchool.Value == true)
-                    .OrderByDescending(x => x.InsertedDate)
-                    .FirstOrDefault();
-            if (classroom != null)
-            {
-                classroom.IsDummySchool = false;
-                classroom.UpdatedDate = DateTime.Now;
-                classroom.UpdatedBy = _applicationUserId.ToString();
-            }
-        }
-
         public List<ClassroomGroup> GetClassroomGroupsForUser(Guid userId)
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
@@ -165,7 +149,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
             return principalClassroom;
         }
-
     }
 }
 
