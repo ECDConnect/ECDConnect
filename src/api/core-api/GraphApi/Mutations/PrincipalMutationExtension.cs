@@ -30,15 +30,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     public class PrincipalMutationExtension
     {
         public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
-    [Service] ApplicationUserManager userManager,
-    [Service] PersonnelService personnelManager,
-    IGenericRepositoryFactory repoFactory,
-    [Service] INotificationService notificationService,
-    string firstName,
-    string lastName,
-    string idNumber,
-    string userId,
-    Guid? programmeTypeId)
+                                                        [Service] ApplicationUserManager userManager,
+                                                        [Service] PersonnelService personnelManager,
+                                                        IGenericRepositoryFactory repoFactory,
+                                                        [Service] INotificationService notificationService,
+                                                        string firstName,
+                                                        string lastName,
+                                                        string idNumber,
+                                                        string userId,
+                                                        Guid? programmeTypeId)
         {
             //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -264,6 +264,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] INotificationService notificationService,
             [Service] PersonnelService personnelManager,
             [Service] IClassroomService classroomService,
+            [Service] ApplicationUserManager userManager,
             string practitionerId, 
             string principalId, 
             bool accepted)
@@ -317,8 +318,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
                 else
                 {
-                    
-
                     //reset the classroomgroups away from this practitioner and back to the principal
                     //if (principal.UserId != null && practitioner.UserId != null)
                     {
@@ -349,9 +348,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
             else
             {
-                // if there is a dummy school linked to this user, mark the school as not dummy
-                classroomService.UpdateDummyClassroomStatus((Guid)practitioner.UserId);
-
                 practitioner.PrincipalHierarchy = principal.UserId;
                 practitioner.DateToBeRemoved = null;
                 practitioner.DateAccepted = DateTime.Now;
@@ -362,12 +358,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.Leaving = false;
 
                 notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
+
+                // if there is a dummy school linked to this user, delete the dummy school after acceptance
+                var classroom = classroomService.GetClassroomForUser((Guid)practitioner.UserId);
+                if (classroom != null && classroom.IsDummySchool.HasValue && classroom.IsDummySchool.Value)
+                {
+                    personnelManager.RemovePractitionerClassrooms(new List<Guid>()
+                    {
+                        classroom.Id
+                    });
+                }
             }
 
             //update practitioner with column changes
             practitionerRepo.Update(practitioner);
-            
-
             return status;
         }
 
