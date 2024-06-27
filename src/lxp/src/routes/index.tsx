@@ -142,14 +142,6 @@ const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
 
-  function getCurrentURL() {
-    return window.location.hostname;
-  }
-
-  // Example
-  const url = getCurrentURL();
-  const isOpenAccessUrl = url === 'ecdconnect-develop-app.azurewebsites.net';
-
   return (
     <Switch>
       <Route
@@ -157,11 +149,7 @@ const PublicRoutes: React.FC = () => {
         path={ROUTES.ROOT}
         render={() => (
           <Redirect
-            to={
-              isOpenAccess && isOpenAccessUrl
-                ? ROUTES.OA_SIGN_UP_OR_LOGIN
-                : ROUTES.LOGIN
-            }
+            to={isOpenAccess ? ROUTES.OA_SIGN_UP_OR_LOGIN : ROUTES.LOGIN}
           />
         )}
       />
