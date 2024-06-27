@@ -9,6 +9,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -44,8 +45,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
 
-            if ((!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy == null) || 
-                (!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy.HasValue && practitioner.Progress < 2))
+            if (!practitioner.IsPrincipalOrAdmin() && (practitioner.PrincipalHierarchy == null || practitioner.Progress < 2))
             {
                 return _classroomRepo.GetAll()
                     .Where(x =>
@@ -54,7 +54,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         && x.UserId.Value == practitioner.UserId)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
-            } 
+            }
 
             var principalUserId = practitioner.IsPrincipalOrAdmin()
                 ? practitioner.UserId
@@ -72,8 +72,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 && x.UserId.Value == principalUserId.Value)
             .OrderByDescending(x => x.InsertedDate)
             .FirstOrDefault();
-           
-               
         }
 
         public List<ClassroomGroup> GetClassroomGroupsForUser(Guid userId)
@@ -151,7 +149,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
             return principalClassroom;
         }
-
     }
 }
 
