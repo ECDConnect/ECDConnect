@@ -111,35 +111,6 @@ export const NewPassword: React.FC = () => {
         color="primary"
       >
         <div className={styles.wrapper}>
-          {/* <Typography
-            type="body"
-            color="uiMidDark"
-            text={'Enter a new password that has:'}
-          ></Typography> */}
-
-          {/* <ul className={styles.listStyles}>
-            <li>
-              <Typography
-                text={'At least 8 characters'}
-                type={'body'}
-                color={'uiMidDark'}
-              />
-            </li>
-            <li>
-              <Typography
-                text={'At least 1 number'}
-                type={'body'}
-                color={'uiMidDark'}
-              />
-            </li>
-            <li>
-              <Typography
-                text={'At least 1 capital letter'}
-                type={'body'}
-                color={'uiMidDark'}
-              />
-            </li>
-          </ul> */}
           <PasswordInput<NewPasswordModel>
             label={'Enter new password'}
             nameProp={'password'}
