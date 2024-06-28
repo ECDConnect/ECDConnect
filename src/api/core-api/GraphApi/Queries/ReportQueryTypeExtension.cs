@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
@@ -318,6 +319,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] ChildProgressReportService childProgressReportService,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] IHolidayService<Holiday> holidayService,
+            [Service] IClassroomService classroomService,
             [Service] ChildAttendanceReport attendanceReportService,
             HierarchyEngine hierarchyEngine,
             string practitionerId)
@@ -332,21 +334,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var notifications = new List<NotificationDisplay>();
 
-            var classroomGroups = classroomGroupRepo.GetAll()
-                .Where(c => c.UserId == Guid.Parse(practitionerId)).ToList();
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
+            var classroomGroups = classroomService.GetClassroomGroupsForUser(Guid.Parse(practitionerId));
 
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
             var practitioner = practRepo.GetByUserId(practitionerId);
 
-            // TODO: use this to apply:
-            // https://docs.google.com/spreadsheets/d/1xsS-JECUKWzj26sNcOllesCSZ39QwOh95T8goYdozbk/edit#gid=607178088&range=F71
-            // "Note for all actions:
-            // - Remove the action item either if the practitioner has completed the associated action and gone online + synced on Funda App(where possible)
-            //   OR where the coach has tapped ""I have contacted Bulelwa""(if relevant) "
-            //var coachHasContactedPractitionerRegardingThisItem = false;
-
-            //set basic dates to be last month and before last
-            // TODO: Get reporting interval from: `ChildReportOptions`
             DateTime currentDate = DateTime.Now;
 
             DateTime currentMonthStart = currentDate.GetStartOfMonth();
@@ -374,7 +366,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 notifications.Add(new NotificationDisplay()
                 {
-                    Subject = $"{missingRegisterDayCount} missing attendance registers",
+                    Subject = $"{missingRegisterDayCount} attendance registers not saved",
                     // TODO: Warnings or errors?
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),

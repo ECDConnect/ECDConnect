@@ -20,8 +20,8 @@ class ClassroomService {
           classroomForUser(userId: $userId) {            
             id
             name
-            imageUrl
-            numberOfPractitioners
+            classroomImageUrl
+            numberPractitioners
             numberOfAssistants
             numberOfOtherAssistants
             preschoolFeeAmount

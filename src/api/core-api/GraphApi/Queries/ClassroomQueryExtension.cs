@@ -35,11 +35,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 Id = classroom.Id,
                 Name = classroom.Name,
-                ImageUrl = classroom.ClassroomImageUrl,
+                ClassroomImageUrl = classroom.ClassroomImageUrl,
                 PreschoolCode = classroom.PreschoolCode,
                 NumberOfAssistants = classroom.NumberOfAssistants,
                 NumberOfOtherAssistants = classroom.NumberOfOtherAssistants,
-                NumberOfPractitioners = classroom.NumberPractitioners,
+                NumberPractitioners = classroom.NumberPractitioners,
                 PreschoolFeeAmount = classroom.PreschoolFeeAmount,
                 PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate,
                 IsDummySchool = classroom.IsDummySchool,
