@@ -19,7 +19,7 @@ export const OtherPractitionerProfile: React.FC<
 > = ({ setPractitionerInfo, colleagueProfile }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
-
+  console.log({ colleagueProfile });
   const call = () => {
     window.open(`tel:${colleagueProfile?.contactNumber}`);
   };
@@ -31,8 +31,10 @@ export const OtherPractitionerProfile: React.FC<
       )}`
     );
   };
-  const classroomGroups = colleagueProfile?.classroomNames.split(',');
-
+  const classroomGroups =
+    colleagueProfile?.classroomNames &&
+    colleagueProfile?.classroomNames.split(',');
+  console.log({ classroomGroups });
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -57,21 +59,30 @@ export const OtherPractitionerProfile: React.FC<
       </BannerWrapper>
       <div className={styles.chipsWrapper}>
         <StatusChip
-          backgroundColour="successMain"
-          borderColour="successMain"
+          backgroundColour={
+            colleagueProfile?.title === 'Practitioner'
+              ? 'successMain'
+              : 'primary'
+          }
+          borderColour={
+            colleagueProfile?.title === 'Practitioner'
+              ? 'successMain'
+              : 'primary'
+          }
           text={colleagueProfile?.title}
           textColour={'white'}
           className={'mr-2'}
         />
-        {classroomGroups?.map((item: any) => (
-          <StatusChip
-            backgroundColour="tertiary"
-            borderColour="tertiary"
-            text={`${item}`}
-            textColour={'white'}
-            className={'mr-2'}
-          />
-        ))}
+        {classroomGroups &&
+          classroomGroups?.map((item: any) => (
+            <StatusChip
+              backgroundColour="tertiary"
+              borderColour="tertiary"
+              text={`${item}`}
+              textColour={'white'}
+              className={'mr-2'}
+            />
+          ))}
       </div>
       <div>
         <div>
@@ -96,7 +107,7 @@ export const OtherPractitionerProfile: React.FC<
         <div>
           <div className={styles.contactButtons}>
             <Button
-              color={'primary'}
+              color={'secondary'}
               type={'outlined'}
               className={'mr-4 rounded-xl'}
               size={'normal'}
@@ -112,12 +123,12 @@ export const OtherPractitionerProfile: React.FC<
                   text={`Whatsapp ${colleagueProfile?.name}`}
                   type="button"
                   weight="skinny"
-                  color="primary"
+                  color="secondary"
                 />
               </div>
             </Button>
             <Button
-              color={'primary'}
+              color={'secondary'}
               type={'outlined'}
               className={'mr-4 rounded-xl'}
               size={'small'}
@@ -125,14 +136,14 @@ export const OtherPractitionerProfile: React.FC<
             >
               <div className="flex items-center justify-center">
                 <PhoneIcon
-                  className="text-primary mr-2 h-6 w-5"
+                  className="text-secondary mr-2 h-6 w-5"
                   aria-hidden="true"
                 />
                 <Typography
                   text={`Call ${colleagueProfile?.name}`}
                   type="button"
                   weight="skinny"
-                  color="primary"
+                  color="secondary"
                 />
               </div>
             </Button>

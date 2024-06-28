@@ -35,6 +35,7 @@ import { ContentActivityService } from '@/services/ContentActivityService';
 import { LanguageCode } from '@/i18n/types';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   storyBookId,
@@ -67,9 +68,12 @@ const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   const subTitle = viewType === 'StoryBook' ? 'Story' : 'Story Activity';
 
   const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+  const isTrialPeriod = useIsTrialPeriod();
 
   const hasPermissionToEdit =
-    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
 
   useEffect(() => {
     if (activityIdFromProp) {

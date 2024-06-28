@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Clubs;
+using ECDLink.DataAccessLayer.Entities.Community;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
@@ -207,6 +208,15 @@ namespace ECDLink.DataAccessLayer.Context
 
         // Training
         public DbSet<UserTrainingCourse> UserTrainingCourses {  get; set; }
+
+        // Community
+        public DbSet<SupportRating> SupportRatings { get; set; }
+        public DbSet<FeedbackType> FeedbackTypes { get; set; }
+        public DbSet<CoachFeedback> CoachFeedback { get; set; }
+        public DbSet<CommunitySkill> CommunitySkills { get; set; }
+        public DbSet<CommunityProfile> CommunityProfile { get; set; }
+        public DbSet<CommunityProfileSkill> CommunityProfileSkill { get; set; }
+
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

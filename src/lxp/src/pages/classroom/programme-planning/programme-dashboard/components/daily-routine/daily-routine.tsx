@@ -70,6 +70,7 @@ import {
 } from '../../walkthrough/dummy-content';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -178,9 +179,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     });
 
   const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+  const isTrialPeriod = useIsTrialPeriod();
 
   const hasPermissionToEdit =
-    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
 
   useEffect(() => {
     if (selectedDate) {

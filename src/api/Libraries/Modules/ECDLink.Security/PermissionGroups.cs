@@ -14,5 +14,6 @@
         public const string INTEGRATION = "Integration";
         public const string LEAGUE = "League";
         public const string USERPERMISSION = "UserPermission";
+        public const string COMMUNITY = "Community";
     }
 }

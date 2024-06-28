@@ -134,7 +134,6 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   };
 
   const handleGoBack = () => {
-    saveNewPractitionerUserData && saveNewPractitionerUserData();
     isFromEditCellPhone && closeAction && closeAction(false);
     setEditiCellPhoneNumber && setEditiCellPhoneNumber(false);
   };
