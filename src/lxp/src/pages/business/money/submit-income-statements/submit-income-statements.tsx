@@ -16,30 +16,43 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { format } from 'date-fns';
-import React, { useEffect, useMemo, useState } from 'react';
+import { format, sub } from 'date-fns';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
-import StatementsWrapper from './components/statements-wrapper/StatementsWrapper';
+import StatementsWrapper from './components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { IncomeStatementDto, getPreviousMonth } from '@ecdlink/core';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import {
+  IncomeStatementDto,
+  LocalStorageKeys,
+  getPreviousMonth,
+} from '@ecdlink/core';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { InfoPage } from './components/info-page';
 import { CoachInfo } from '../../components/coach-info';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useAppDispatch } from '@/store';
+import { getStorageItem } from '@/utils/common/local-storage.utils';
+import { StatementsWalkthroughStart } from './components/walkthrough-statements-wrapper/walkthrough-start';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const SubmitIncomeStatements: React.FC = () => {
+  const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+
   const dispatch = useAppDispatch();
 
   const [isLearnMore, setIsLearnMore] = useState(false);
 
   const history = useHistory();
   const statements = useSelector(statementsSelectors.getIncomeStatements);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const {
+    setState,
+    state: { stepIndex, run: isWalkthrough },
+  } = useAppContext();
 
   // If no statement for current month
   // TODO if we ahven't fetched recently, do we need to force them to sync first? To ensure we don't create a statement for the month, if one exists on the server?
@@ -81,11 +94,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     if (value < 0) return `- R ${numberWithSpaces(Math.abs(value).toFixed(2))}`;
   };
 
-  const {
-    setState,
-    state: { stepIndex, tourActive },
-  } = useAppContext();
-
   const nextStep = () => {
     setState({ stepIndex: 1 });
   };
@@ -97,43 +105,42 @@ export const SubmitIncomeStatements: React.FC = () => {
       el?.scrollIntoView();
       return;
     }
-
-    if (stepIndex === 8) {
-      const el = document.getElementById('howMayDaysToSubmit');
-
-      el?.scrollIntoView();
-      return;
-    }
   }, [stepIndex]);
 
   const lastMonthIncomeTotal = useMemo(
-    () => getStatementIncomeTotal(lastMonthStatement),
-    [lastMonthStatement]
+    () => (isWalkthrough ? 2000 : getStatementIncomeTotal(lastMonthStatement)),
+    [lastMonthStatement, isWalkthrough]
   );
 
   const currentMonthIncomeTotal = useMemo(
-    () => getStatementIncomeTotal(currentMonthStatement),
-    [currentMonthStatement]
+    () =>
+      isWalkthrough ? 1800 : getStatementIncomeTotal(currentMonthStatement),
+    [currentMonthStatement, isWalkthrough]
   );
 
   const lastMonthExpenseTotal = useMemo(
-    () => getStatementExpenseTotal(lastMonthStatement),
-    [lastMonthStatement]
+    () =>
+      isWalkthrough ? -2700 : getStatementExpenseTotal(lastMonthStatement),
+    [lastMonthStatement, isWalkthrough]
   );
 
   const currentMonthExpenseTotal = useMemo(
-    () => getStatementExpenseTotal(currentMonthStatement),
-    [currentMonthStatement]
+    () =>
+      isWalkthrough ? -1700 : getStatementExpenseTotal(currentMonthStatement),
+    [currentMonthStatement, isWalkthrough]
   );
 
   const previousMonthBalance = useMemo(
-    () => getStatementBalance(previousMonthStatement),
-    [previousMonthStatement]
+    () => (isWalkthrough ? 300.1 : getStatementBalance(previousMonthStatement)),
+    [previousMonthStatement, isWalkthrough]
   );
 
-  const lastMonthBalance = lastMonthIncomeTotal - lastMonthExpenseTotal;
-  const currentMonthBalance =
-    currentMonthIncomeTotal - currentMonthExpenseTotal;
+  const lastMonthBalance = isWalkthrough
+    ? 300.1
+    : lastMonthIncomeTotal - lastMonthExpenseTotal;
+  const currentMonthBalance = isWalkthrough
+    ? 100.25
+    : currentMonthIncomeTotal - currentMonthExpenseTotal;
 
   const hasIncomeStatements =
     !!lastMonthIncomeTotal ||
@@ -155,10 +162,23 @@ export const SubmitIncomeStatements: React.FC = () => {
     0
   );
 
+  const checkIfToShowInitialWalkthrough = useCallback(() => {
+    if (
+      !getStorageItem(LocalStorageKeys.incomeStatementsWalkthroughComplete) &&
+      !practitioner?.isCompletedBusinessWalkThrough
+    ) {
+      setShowInitialWalkthrough(true);
+    }
+  }, [practitioner?.isCompletedBusinessWalkThrough]);
+
+  useEffect(() => {
+    checkIfToShowInitialWalkthrough();
+  }, [checkIfToShowInitialWalkthrough]);
+
   return (
     <>
       <StatementsWrapper />
-      <div className="pb-180 flex flex-col justify-center p-4" id="lastStep">
+      <div className="pb-180 flex flex-col justify-center p-4">
         {!hasIncomeStatements && (
           <div className="mt-2 flex flex-wrap justify-center p-8">
             <div className="">
@@ -183,181 +203,186 @@ export const SubmitIncomeStatements: React.FC = () => {
           </div>
         )}
         {hasIncomeStatements && (
-          <div id="statementsDashboard">
-            {/* {!!celebrationCard && celebrationCard} */}
+          <>
+            <div id="statementsDashboard">
+              {/* {!!celebrationCard && celebrationCard} */}
 
-            <Card
-              className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
-              borderRaduis={'xl'}
-              shadowSize={'md'}
-            >
-              <Typography
-                text={`${format(new Date(), 'MMMM')} balance`}
-                type="h4"
-                color={'white'}
-                className="w-6/12"
-              />
-              <Typography
-                text={`${formatCurrentValue(currentMonthBalance)}`}
-                color={'white'}
-                type="h1"
-                className="w-8/12 text-right"
-              />
-            </Card>
-            <table className="mt-4 w-full">
-              <tbody>
-                <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
-                  <th className="w-1/3"></th>
-                  <th className="text-textDark font-body">
-                    <Typography
-                      text={getStatementTitle(lastMonthStatement)}
-                      type="body"
-                      color={'textDark'}
-                    />
-                  </th>
-                  <th className="w-1/3">
-                    <Typography
-                      text={getStatementTitle(currentMonthStatement)}
-                      type="body"
-                      color={'textDark'}
-                    />
-                  </th>
-                </tr>
-                <tr className="h-14">
-                  <td className="w-1/3">
-                    <Typography
-                      text={`Income`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={`${formatCurrentValue(lastMonthIncomeTotal)}`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={`${formatCurrentValue(currentMonthIncomeTotal)}`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                </tr>
-                <tr className="bg-uiBg h-14">
-                  <td className="w-1/3">
-                    <Typography
-                      text={`Expenses`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={`${formatCurrentValue(lastMonthExpenseTotal)}`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={`${formatCurrentValue(currentMonthExpenseTotal)}`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                </tr>
-                <tr className=" h-14">
-                  <td className="w-1/3">
-                    <Typography
-                      text={`Balance`}
-                      weight="bold"
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                      className="font-bold"
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={formatCurrentValue(lastMonthBalance)}
-                      type="body"
-                      color={
-                        lastMonthBalance === 0
-                          ? 'primary'
-                          : lastMonthBalance >= 0
-                          ? 'successMain'
-                          : 'secondary'
-                      }
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={formatCurrentValue(currentMonthBalance)}
-                      type="body"
-                      color={
-                        currentMonthBalance === 0
-                          ? 'primary'
-                          : currentMonthBalance > 0
-                          ? 'successMain'
-                          : 'secondary'
-                      }
-                      align={'center'}
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {hasLastTwoMonthsStatements &&
-              lastMonthBalance < 0 &&
-              previousMonthBalance < 0 && (
-                <Alert
-                  type="warning"
-                  className="mt-4"
-                  message="Over the past two months, you have made less money than you have earned. This means your business is running at a loss."
-                  button={
-                    <Button
-                      text={`Learn more`}
-                      type={'filled'}
-                      color={'quatenary'}
-                      textColor={'white'}
-                      onClick={() => setIsLearnMore(true)}
-                    />
-                  }
-                  customIcon={
-                    <div className="rounded-full">
-                      {renderIcon(
-                        'ExclamationCircleIcon',
-                        'text-alertMain w-5 h-5'
-                      )}
-                    </div>
-                  }
+              <Card
+                className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
+                borderRaduis={'xl'}
+                shadowSize={'md'}
+              >
+                <Typography
+                  text={`${format(new Date(), 'MMMM')} balance`}
+                  type="h4"
+                  color={'white'}
+                  className="w-6/12"
                 />
-              )}
+                <Typography
+                  text={`${formatCurrentValue(currentMonthBalance)}`}
+                  color={'white'}
+                  type="h1"
+                  className="w-8/12 text-right"
+                />
+              </Card>
+              <table className="mt-4 w-full">
+                <tbody>
+                  <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
+                    <th className="w-1/3"></th>
+                    <th className="text-textDark font-body">
+                      <Typography
+                        text={
+                          isWalkthrough
+                            ? format(sub(new Date(), { months: 1 }), 'MMM yyyy')
+                            : getStatementTitle(lastMonthStatement)
+                        }
+                        type="body"
+                        color={'textDark'}
+                      />
+                    </th>
+                    <th className="w-1/3">
+                      <Typography
+                        text={getStatementTitle(currentMonthStatement)}
+                        type="body"
+                        color={'textDark'}
+                      />
+                    </th>
+                  </tr>
+                  <tr className="h-14">
+                    <td className="w-1/3">
+                      <Typography
+                        text={`Income`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={`${formatCurrentValue(lastMonthIncomeTotal)}`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={`${formatCurrentValue(currentMonthIncomeTotal)}`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                  </tr>
+                  <tr className="bg-uiBg h-14">
+                    <td className="w-1/3">
+                      <Typography
+                        text={`Expenses`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={`${formatCurrentValue(lastMonthExpenseTotal)}`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={`${formatCurrentValue(currentMonthExpenseTotal)}`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                  </tr>
+                  <tr className=" h-14">
+                    <td className="w-1/3">
+                      <Typography
+                        text={`Balance`}
+                        weight="bold"
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                        className="font-bold"
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={formatCurrentValue(lastMonthBalance)}
+                        type="body"
+                        color={
+                          lastMonthBalance === 0
+                            ? 'primary'
+                            : lastMonthBalance >= 0
+                            ? 'successMain'
+                            : 'secondary'
+                        }
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={formatCurrentValue(currentMonthBalance)}
+                        type="body"
+                        color={
+                          currentMonthBalance === 0
+                            ? 'primary'
+                            : currentMonthBalance > 0
+                            ? 'successMain'
+                            : 'secondary'
+                        }
+                        align={'center'}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
-            {hasLastTwoMonthsStatements &&
-              lastMonthBalance > 0 &&
-              previousMonthBalance > 0 && (
-                <Alert
-                  type="success"
-                  variant="outlined"
-                  className="mt-4"
-                  message="Great job! You have made a profit for 2 months in a row!"
-                  listColor="white"
-                  list={[
-                    `You had R ${(
-                      lastMonthBalance + previousMonthBalance
-                    ).toFixed(2)} left over for 
+              {hasLastTwoMonthsStatements &&
+                lastMonthBalance < 0 &&
+                previousMonthBalance < 0 && (
+                  <Alert
+                    type="warning"
+                    className="mt-4"
+                    message="Over the past two months, you have made less money than you have earned. This means your business is running at a loss."
+                    button={
+                      <Button
+                        text={`Learn more`}
+                        type={'filled'}
+                        color={'quatenary'}
+                        textColor={'white'}
+                        onClick={() => setIsLearnMore(true)}
+                      />
+                    }
+                    customIcon={
+                      <div className="rounded-full">
+                        {renderIcon(
+                          'ExclamationCircleIcon',
+                          'text-alertMain w-5 h-5'
+                        )}
+                      </div>
+                    }
+                  />
+                )}
+
+              {hasLastTwoMonthsStatements &&
+                lastMonthBalance > 0 &&
+                previousMonthBalance > 0 && (
+                  <Alert
+                    type="success"
+                    variant="outlined"
+                    className="mt-4"
+                    message="Great job! You have made a profit for 2 months in a row!"
+                    listColor="white"
+                    list={[
+                      `You had R ${(
+                        lastMonthBalance + previousMonthBalance
+                      ).toFixed(2)} left over for 
                   ${getMonthName(lastMonthStatement.month - 1).substring(
                     0,
                     3
@@ -366,7 +391,25 @@ export const SubmitIncomeStatements: React.FC = () => {
                     0,
                     3
                   )} combined.`,
-                  ]}
+                    ]}
+                    customIcon={
+                      <div className="rounded-full">
+                        <img
+                          src={PositiveBonusEmoticon}
+                          alt="positive emoticon"
+                          className="h-6 w-6"
+                        />
+                      </div>
+                    }
+                  />
+                )}
+
+              {totalDownloadedStatements > 0 && (
+                <Alert
+                  type="success"
+                  variant="outlined"
+                  className="mt-4"
+                  message={`Well done! You have downloaded ${totalDownloadedStatements} statements this year. Keep going!`}
                   customIcon={
                     <div className="rounded-full">
                       <img
@@ -378,24 +421,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                   }
                 />
               )}
-
-            {totalDownloadedStatements > 0 && (
-              <Alert
-                type="success"
-                variant="outlined"
-                className="mt-4"
-                message={`Well done! You have downloaded ${totalDownloadedStatements} statements this year. Keep going!`}
-                customIcon={
-                  <div className="rounded-full">
-                    <img
-                      src={PositiveBonusEmoticon}
-                      alt="positive emoticon"
-                      className="h-6 w-6"
-                    />
-                  </div>
-                }
-              />
-            )}
+            </div>
 
             <Button
               shape="normal"
@@ -412,7 +438,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             >
               <Typography type="help" color="white" text="See all statements" />
             </Button>
-          </div>
+          </>
         )}
 
         <FADButton
@@ -423,7 +449,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           type={'filled'}
           color={'quatenary'}
           shape={'round'}
-          className={`absolute bottom-14 right-0 z-10 m-3 px-3.5 py-2.5 ${
+          className={`absolute bottom-4 right-0 z-10 m-3 px-3.5 py-2.5 ${
             stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
           }`}
           click={() => {
@@ -443,6 +469,12 @@ export const SubmitIncomeStatements: React.FC = () => {
           <CoachInfo />
         </InfoPage>
       </Dialog>
+      <div id="lastStep" />
+      {showInitialWalkthrough && (
+        <StatementsWalkthroughStart
+          onClose={() => setShowInitialWalkthrough(false)}
+        />
+      )}
     </>
   );
 };

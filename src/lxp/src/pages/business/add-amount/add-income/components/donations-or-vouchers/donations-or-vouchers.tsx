@@ -1,4 +1,3 @@
-import { useState, useEffect, useMemo } from 'react';
 import {
   BannerWrapper,
   Typography,
@@ -25,12 +24,23 @@ import { isBefore, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { AddIncomeProps } from '../../../add-amount.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { IncomeItemDto, IncomeTypeIds, PayTypeIds } from '@ecdlink/core';
+import { useAppContext } from '@/walkthrougContext';
+import StatementsWrapper from '../../../../money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
   onBack,
   onSubmit,
   incomeItem,
 }) => {
+  const { setState, state } = useAppContext();
+
+  const isWalkthrough = state?.run === true;
+
+  const history = useHistory();
+
   const { control, setValue, register } = useForm<DonationsOrVouchersModel>({
     resolver: yupResolver(donationsOrVouchersSchema),
     mode: 'onBlur',
@@ -109,6 +119,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
       onBack={onBack}
       className="p-4"
     >
+      <StatementsWrapper />
       <div className="mb-3 w-full justify-center">
         <Typography type="h2" color="primary" text={viewTitle} />
         {disabled && (
@@ -127,29 +138,29 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
           }
           className="mt-4 mb-2"
         />
-        <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
-          When did you get this donation/voucher?
-        </label>
-        <DatePicker
-          placeholderText={`Please select a date`}
-          wrapperClassName="text-center"
-          className="bg-uiBg text-primary mx-auto w-full rounded-md border-none"
-          selected={dateReceived ? new Date(dateReceived) : undefined}
-          onChange={(date: Date) => {
-            date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-            setValue('dateReceived', !!date ? date.toISOString() : '');
-          }}
-          dateFormat="EEE, dd MMM yyyy"
-          minDate={minEditDate}
-          maxDate={maxEditDate}
-          disabled={disabled}
-        />
-        <label className={classNames(styles.label, 'mt-4')}>
-          {
-            'Was the donation an item like groceries or toys, money, or a voucher for a particular shop? '
-          }
-        </label>
-        <div className={'mt-2'}>
+        <div id="donationsOrVouchers">
+          <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
+            When did you get this donation/voucher?
+          </label>
+          <DatePicker
+            placeholderText={`Please select a date`}
+            wrapperClassName="text-center"
+            className="bg-uiBg text-primary mx-auto w-full rounded-md border-none"
+            selected={dateReceived ? new Date(dateReceived) : undefined}
+            onChange={(date: Date) => {
+              date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
+              setValue('dateReceived', !!date ? date.toISOString() : '');
+            }}
+            dateFormat="EEE, dd MMM yyyy"
+            minDate={minEditDate}
+            maxDate={maxEditDate}
+            disabled={disabled || isWalkthrough}
+          />
+          <label className={classNames(styles.label, 'mt-4')}>
+            {
+              'Was the donation an item like groceries or toys, money, or a voucher for a particular shop? '
+            }
+          </label>
           <ButtonGroup<string>
             type={ButtonGroupTypes.Button}
             options={
@@ -159,11 +170,14 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
               })) || []
             }
             onOptionSelected={(value: string | string[]) => {
+              if (isWalkthrough) return;
+
               setValue('payType', value as string);
             }}
             multiple={false}
             selectedOptions={!!payType ? [payType] : []}
             color="secondary"
+            className="mt-2"
           />
         </div>
         <FormInput<DonationsOrVouchersModel>
@@ -209,13 +223,21 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
         />
         {!disabled && (
           <Button
+            id="saveDonationsOrVouchers"
             type="filled"
-            color="primary"
+            color="quatenary"
             className={'mx-auto mt-8 w-full rounded-2xl'}
             onClick={() => {
+              if (isWalkthrough) {
+                setState({ stepIndex: 7 });
+                return history.push(ROUTES.BUSINESS, {
+                  activeTabIndex: BusinessTabItems.MONEY,
+                });
+              }
+
               sendIncomeUpdate();
             }}
-            disabled={!isValid || disabled}
+            disabled={(!isValid || disabled) && !isWalkthrough}
           >
             {renderIcon('SaveIcon', styles.buttonIcon)}
             <Typography

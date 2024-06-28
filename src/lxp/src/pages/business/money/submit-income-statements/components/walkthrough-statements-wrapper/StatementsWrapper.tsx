@@ -6,8 +6,20 @@ import Joyride, {
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
 import WalktroughImage from '../../../../../../assets/walktroughImage.png';
 import { useAppContext } from '@/walkthrougContext';
+import { useTranslation } from 'react-i18next';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/store';
 
 export default function StatementsWrapper() {
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const { t } = useTranslation();
+
+  const appDispatch = useAppDispatch();
+
   const {
     setState,
     state: { run, stepIndex },
@@ -18,15 +30,16 @@ export default function StatementsWrapper() {
   const steps: StepType[] = [
     {
       target: '#startStatements',
-      content: 'Tap here to get started!',
+      content: t('Tap here to get started!'),
       placement: 'auto',
       disableBeacon: true,
       spotlightClicks: true,
     },
     {
       target: '#createStatements',
-      content:
-        'You can choose whether you want to add income or expenses to your income statement',
+      content: t(
+        'You can choose whether you want to add income or expenses to your income statement'
+      ),
       placement: 'bottom',
       offset: 10,
       disableBeacon: true,
@@ -34,38 +47,47 @@ export default function StatementsWrapper() {
     },
     {
       target: '#createIncome',
-      content: "Let's go through one example! Tap income",
+      content: t("Let's go through one example! Tap income"),
       placement: 'bottom-end',
-      offset: 10,
+      floaterProps: {
+        styles: {
+          floater: {
+            position: 'fixed',
+            top: 130,
+            left: 30,
+          },
+        },
+      },
       spotlightClicks: true,
     },
     {
       target: '#incomeList',
-      content:
-        'See a list of income types. For income that is not on this list, you can choose “Other”',
+      content: t(
+        'See a list of income types. For income that is not on this list, you can choose “Other”'
+      ),
       placement: 'bottom-end',
       offset: 10,
       disableBeacon: true,
     },
     {
-      target: '#actionList0',
-      content: "Let's pretend a parent gave you school fees today, tap here!",
+      target: '#actionList1',
+      content: t("Let's pretend you received a donation today, tap here!"),
       placement: 'bottom-end',
       offset: 10,
       spotlightClicks: true,
       disableBeacon: true,
     },
     {
-      target: '#preeschoolFee1',
-      content: 'You will need to fill in all the info on this screen',
+      target: '#donationsOrVouchers',
+      content: t('You will need to fill in all the info on this screen'),
       placement: 'bottom-end',
       offset: 20,
       spotlightClicks: true,
       disableBeacon: true,
     },
     {
-      target: '#savePreschoolFee',
-      content: "I've filled in an example for you! Now tap Save",
+      target: '#saveDonationsOrVouchers',
+      content: t("I've filled in an example for you! Now tap Save"),
       placement: 'top',
       offset: 10,
       spotlightClicks: true,
@@ -73,24 +95,18 @@ export default function StatementsWrapper() {
     },
     {
       target: '#statementsDashboard',
-      content:
-        'Great! Your income has now been added to the summary income statement on the money tab',
+      content: t(
+        'Great! Your income has now been added to the summary income statement on the money tab'
+      ),
       placement: 'bottom-end',
       offset: 60,
       disableBeacon: true,
     },
     {
-      target: '#howMayDaysToSubmit',
-      content:
-        "I'll tell you how many days you have left to submit the next statement",
-      placement: 'bottom-end',
-      offset: 10,
-      disableBeacon: true,
-    },
-    {
-      target: '#submitIncomeButton',
-      content:
-        "When you're ready, you can tap here to submit the final statement to SmartStart",
+      target: '#seeAllStatements',
+      content: t(
+        'You can see, change, or download you statements by tapping this button'
+      ),
       placement: 'bottom-end',
       offset: 10,
       spotlightClicks: true,
@@ -98,7 +114,7 @@ export default function StatementsWrapper() {
     },
     {
       target: '#lastStep',
-      content: "Great job, you're ready to start!",
+      content: t("Great job, you're ready to start!"),
       placement: 'bottom-end',
       offset: 10,
     },
@@ -139,18 +155,15 @@ export default function StatementsWrapper() {
             {!disableNextButton && (
               <div {...primaryProps} className={'w-full'}>
                 <Button
+                  size="small"
                   type="filled"
-                  color="primary"
-                  className={'w-6/12'}
+                  color="quatenary"
+                  className={''}
                   onClick={() => {}}
-                >
-                  <Typography
-                    type="help"
-                    className="mr-2"
-                    color="white"
-                    text={isLastStep ? 'Close' : 'Next'}
-                  />
-                </Button>
+                  text={isLastStep ? 'Close' : 'Next'}
+                  textColor="white"
+                  icon={isLastStep ? 'XIcon' : 'ArrowCircleRightIcon'}
+                />
               </div>
             )}
           </div>
@@ -172,14 +185,21 @@ export default function StatementsWrapper() {
       setState({ run: true, stepIndex: 4 });
     } else if (type === 'step:after' && index === 5) {
       setState({ run: true, stepIndex: 6 });
+    } else if (type === 'step:after' && index === 6) {
+      setState({ run: true, stepIndex: 7 });
     } else if (type === 'step:after' && index === 7) {
       setState({ run: true, stepIndex: 8 });
     } else if (type === 'step:after' && index === 8) {
       setState({ run: true, stepIndex: 9 });
-    } else if (type === 'step:after' && index === 9) {
-      setState({ run: true, stepIndex: 10 });
     } else if (action === 'reset' || lifecycle === 'complete') {
       setState({ run: false, stepIndex: 0, tourActive: false });
+      if (!practitioner?.isCompletedBusinessWalkThrough) {
+        appDispatch(
+          practitionerThunkActions.updatePractitionerBusinessWalkThrough({
+            userId: practitioner?.userId!,
+          })
+        );
+      }
     }
   };
 
@@ -197,12 +217,18 @@ export default function StatementsWrapper() {
         showSkipButton
         disableOverlayClose
         styles={{
-          spotlight: {
-            borderWidth: 4,
-            borderRadius: 20,
-            borderColor: '#99231b',
-            borderStyle: 'solid',
+          options: {
+            arrowColor: stepIndex === 9 ? 'transparent' : 'white',
           },
+          spotlight:
+            stepIndex === 9
+              ? {}
+              : {
+                  borderWidth: 4,
+                  borderRadius: 20,
+                  borderColor: '#FF2180',
+                  borderStyle: 'solid',
+                },
         }}
       />
     </div>
