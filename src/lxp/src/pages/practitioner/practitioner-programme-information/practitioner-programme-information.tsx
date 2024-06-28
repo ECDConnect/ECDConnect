@@ -353,8 +353,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         title: 'Location',
         subTitle: classroom?.siteAddress?.addressLine1,
         switchTextStyles: true,
-        actionName: isPrincipal ? 'Add/Edit' : '',
-        actionIcon: 'PlusIcon',
+        actionName: isPrincipal
+          ? classroom?.siteAddress
+            ? 'Edit'
+            : 'Add'
+          : '',
+        actionIcon: classroom?.siteAddress ? 'PencilIcon' : 'PlusIcon',
         buttonColor:
           isTrialPeriod || !classroom?.siteAddress?.addressLine1
             ? 'quatenary'
