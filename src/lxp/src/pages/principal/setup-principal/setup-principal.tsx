@@ -314,7 +314,9 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
-        return (
+        return isNotPrincipal ? (
+          <PreschoolCodeCheck onNext={setPage} />
+        ) : (
           <SelectPractitionerRole
             onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
             setIsNotPrincipal={setIsNotPrincipal}

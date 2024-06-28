@@ -129,7 +129,6 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   }, [setPractitionerInfoFormValues, user?.phoneNumber]);
 
   const handleCloseEditCellphoneNumber = async () => {
-    await saveNewPractitionerUserData();
     setEditiCellPhoneNumber(false);
   };
 
