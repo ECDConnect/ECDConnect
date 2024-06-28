@@ -121,7 +121,17 @@ class ClassroomService {
           userId
           name
           classroomImageUrl
+          numberPractitioners
           isPrinciple
+          siteAddress {
+            id
+            name
+            addressLine1
+            addressLine2
+            addressLine3
+            postalCode
+            ward
+          }
         }
       }
       `,

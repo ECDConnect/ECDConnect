@@ -156,7 +156,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       setInitLoading(true);
       await initStaticStoreSetup();
 
-      if (!!userData && !isCoach) {
+      if (!!userData) {
         await initAdditionalStoreSetup();
       }
       appDispatch(settingActions.setLastDataSync());
@@ -178,16 +178,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     setOtherLoading(true);
+
     const promises = [
-      appDispatch(classroomsThunkActions.getClassroom({})).unwrap(),
-      appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap(),
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
-      appDispatch(
-        attendanceThunkActions.getAttendance({
-          startDate: thirtyDaysAgo,
-          endDate: new Date(),
-        })
-      ).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
       appDispatch(contentReportThunkActions.getDetailedProgressReports(50)),
@@ -206,6 +199,22 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         })
       ),
     ];
+    if (!isCoach) {
+      promises.push(
+        appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
+      );
+      promises.push(
+        appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          attendanceThunkActions.getAttendance({
+            startDate: thirtyDaysAgo,
+            endDate: new Date(),
+          })
+        ).unwrap()
+      );
+    }
     await Promise.allSettled(promises);
     setOtherLoading(false);
   };
@@ -402,6 +411,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             classroomsForCoachThunkActions.getClassroomForCoach({
               id: userData?.id!,
             })
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            classroomsForCoachThunkActions.getClassroomGroupsForCoach({})
           ).unwrap())();
         (async () =>
           await appDispatch(

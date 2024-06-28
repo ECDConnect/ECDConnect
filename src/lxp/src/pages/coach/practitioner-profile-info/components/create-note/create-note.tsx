@@ -111,7 +111,6 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
     <>
       <BannerWrapper
         size={'small'}
-        backgroundColour={'uiBg'}
         renderBorder={true}
         title={titleText}
         color={'primary'}
@@ -156,7 +155,7 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
             onClick={() => handleFormSubmit(getNoteFormValues())}
             className="w-full"
             size="small"
-            color="primary"
+            color="quatenary"
             type="filled"
             disabled={!isValid}
           >

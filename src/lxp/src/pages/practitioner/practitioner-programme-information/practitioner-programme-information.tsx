@@ -175,7 +175,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const setClassImageBaseString = (imageBaseString?: string) => {
     const copy = Object.assign({}, classroom);
     if (copy) {
-      copy.imageUrl = imageBaseString || '';
+      copy.classroomImageUrl = imageBaseString || '';
     }
     setUpdatedClassroom(copy);
   };
@@ -428,7 +428,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       >
         <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
-            dataUrl={classroom?.imageUrl || ''}
+            dataUrl={classroom?.classroomImageUrl || ''}
             size={'header'}
             onPressed={isPrincipal ? displayProfilePicturePrompt : () => {}}
             hasConsent={true}

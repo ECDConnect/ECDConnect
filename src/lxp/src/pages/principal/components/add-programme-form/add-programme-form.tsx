@@ -106,10 +106,10 @@ export const AddProgrammeForm: React.FC<{
       // if (classroomGroups?.[0]?.programmeType?.id) {
       //   setProgrammeFormValue('type', classroomGroups?.[0]?.programmeType?.id);
       // }
-      if (typeof classroom?.numberOfPractitioners === 'number') {
+      if (typeof classroom?.numberPractitioners === 'number') {
         setProgrammeFormValue(
           'smartStartPractitioners',
-          classroom?.numberOfPractitioners
+          classroom?.numberPractitioners
         );
       }
       if (typeof classroom?.numberOfOtherAssistants === 'number') {
@@ -122,7 +122,7 @@ export const AddProgrammeForm: React.FC<{
   }, [
     classroom?.name,
     classroom?.numberOfOtherAssistants,
-    classroom?.numberOfPractitioners,
+    classroom?.numberPractitioners,
     classroomGroups,
     isSmartLinkImported,
     setProgrammeFormValue,
@@ -171,13 +171,13 @@ export const AddProgrammeForm: React.FC<{
       id: classroomId,
       name: programme?.name ?? '',
       isDummySchool: false,
-      numberOfPractitioners: programme?.smartStartPractitioners
+      numberPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,
       numberOfOtherAssistants: programme?.nonSmartStartPractitioners
         ? +programme?.nonSmartStartPractitioners
         : 0,
-      imageUrl: '',
+      classroomImageUrl: '',
       principal: {
         email: user?.email!,
         firstName: user?.firstName!,
@@ -228,13 +228,13 @@ export const AddProgrammeForm: React.FC<{
       id: classroomId,
       name: programme?.name ?? '',
       isDummySchool: false,
-      numberOfPractitioners: programme?.smartStartPractitioners
+      numberPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,
       numberOfOtherAssistants: programme?.nonSmartStartPractitioners
         ? +programme?.nonSmartStartPractitioners
         : 0,
-      imageUrl: '',
+      classroomImageUrl: '',
       siteAddress: classroom?.siteAddress!,
       preschoolFeeAmount: classroom?.preschoolFeeAmount,
       preschoolFeeAmountLastUpdateDate:

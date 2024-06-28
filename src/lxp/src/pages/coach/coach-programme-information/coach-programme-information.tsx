@@ -12,23 +12,19 @@ import {
   DialogPosition,
 } from '@ecdlink/ui';
 import { PractitionerColleagues } from '@ecdlink/graphql';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './coach-programme-information.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-programme-information.styles';
 import ROUTES from '@routes/routes';
-import { PhoneIcon } from '@heroicons/react/solid';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { useEffect, useState } from 'react';
-import { PractitionerService } from '@/services/PractitionerService';
+import { useEffect, useMemo } from 'react';
 import { authSelectors } from '@store/auth';
-import { getClassroomGroupSchoolDays } from '@/utils/classroom/attendance/track-attendance-utils';
 import { userSelectors } from '@store/user';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
-import { classroomsSelectors } from '@/store/classroom';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export const CoachProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -42,60 +38,77 @@ export const CoachProgrammeInformation: React.FC = () => {
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const isFromProgrammeView = true;
-  const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
-    useState<any>();
   const userAuth = useSelector(authSelectors.getAuthUser);
+
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerId)
+  );
+
+  const isPrincipal = practitioner?.isPrincipal === true;
+
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
   );
-  // THIS PROBABLY NEEDS TO BE UPDATED
-  const practitionerClassroom = coachClassrooms?.find(
-    (item) => item?.principal?.userId === practitionerId
+  const coachClassroomGroups = useSelector(
+    classroomsForCoachSelectors.getClassroomGroups
   );
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const practitionerClassroomGroups = practitionerClassroom
-    ? classroomGroups.filter(
-        (item) => item.classroomId === practitionerClassroom?.id
-      )
-    : practitionerClassroomDetails
-    ? classroomGroups.filter(
-        (item) =>
-          item.classroomId === practitionerClassroomDetails?.[0].classroom?.id
-      )
-    : [];
+
+  const practitionerClassroomGroups =
+    coachClassroomGroups?.filter((item) => item.userId === practitionerId) ||
+    [];
+
+  const practitionerClassroom = isPrincipal
+    ? coachClassrooms?.find((item) => item?.userId === practitionerId)
+    : coachClassrooms?.find(
+        (item) => item?.id === practitionerClassroomGroups?.[0].classroomId
+      );
+
+  const classroomGroups =
+    coachClassroomGroups?.filter(
+      (item) => item.classroomId === practitionerClassroom?.id
+    ) || [];
+  const siteName = practitionerClassroom?.name;
+
+  const { addressLine1, addressLine2, addressLine3, postalCode } =
+    practitionerClassroom?.siteAddress || {};
+
+  const siteAddress = useMemo(
+    () =>
+      `${(addressLine1 && addressLine1 + ', ') || ''}${
+        (addressLine2 && addressLine2 + ', ') || ''
+      }${(addressLine3 && addressLine3 + ', ') || ''}${
+        (postalCode && postalCode) || ''
+      }`,
+    [addressLine1, addressLine2, addressLine3, postalCode]
+  );
 
   const practitionersOnSite = practitioners?.filter((el) => {
-    return practitionerClassroomGroups.some((f) => {
+    return classroomGroups.some((f) => {
       return f.userId === el.userId;
     });
   });
 
-  const weekday = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
-
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
-  );
-  const isPrincipal = practitioner?.isPrincipal === true;
+  const classroomListItems = useMemo(() => {
+    return classroomGroups?.map((item) => {
+      const practitioner = practitionersOnSite?.find(
+        (pract) => pract.userId == item.userId
+      );
+      return {
+        name: item.name,
+        practitioner:
+          practitioner?.user?.firstName! + ' ' + practitioner?.user?.surname,
+        id: item?.userId,
+      };
+    });
+  }, [practitioner?.user?.firstName]);
 
   const practitionersForCoachListItems = practitionersOnSite?.map((item) => {
     const titleStyle = 'text-textMid';
-    const [userRole] = item?.user?.roles || [];
-
-    const roleName =
-      userRole?.name === 'Practitioner' ? 'SmartStarter' : userRole?.name;
 
     return {
       title: item.user?.firstName + ' ' + item?.user?.surname,
       titleStyle,
-      subTitle: item?.isPrincipal ? 'Principal / owner' : roleName,
+      subTitle: item?.isPrincipal ? 'Principal' : 'Practitioner',
       avatarColor: '#6974af',
       alertSeverity: 'none',
       profileText:
@@ -132,20 +145,6 @@ export const CoachProgrammeInformation: React.FC = () => {
   };
 
   const { theme } = useTheme();
-
-  const classroomsDetailsForPractitioner = async () => {
-    // Needs to be updated
-    const classroomDetails = await new PractitionerService(
-      userAuth?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
-    setPractitionerClassroomDetails(classroomDetails);
-    return classroomDetails;
-  };
-
-  useEffect(() => {
-    classroomsDetailsForPractitioner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
@@ -191,7 +190,7 @@ export const CoachProgrammeInformation: React.FC = () => {
       <BannerWrapper
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
-        title={'Programme information'}
+        title={'Preschool'}
         subTitle={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
         color={'primary'}
         size="medium"
@@ -208,7 +207,7 @@ export const CoachProgrammeInformation: React.FC = () => {
           <ProfileAvatar
             hasConsent={true}
             canChangeImage={false}
-            dataUrl={practitioner?.user?.profileImageUrl || ''}
+            dataUrl={practitionerClassroom?.classroomImageUrl || ''}
             size={'header'}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onPressed={() => {}}
@@ -224,130 +223,86 @@ export const CoachProgrammeInformation: React.FC = () => {
             className={'mr-2 px-3 py-1.5'}
           />
         </div>
-        <div className={styles.contactButtons}>
-          <Button
-            color={'primary'}
-            type={'outlined'}
-            className={'rounded-2xl'}
-            size={'small'}
-            onClick={call}
-          >
-            <PhoneIcon className="text-primary h-5 w-5" aria-hidden="true" />
-          </Button>
-          <Button
-            color={'primary'}
-            type={'outlined'}
-            className={'rounded-2xl'}
-            size={'small'}
-            onClick={whatsapp}
-          >
-            <img
-              src={getLogo(LogoSvgs.whatsapp)}
-              alt="whatsapp"
-              className={styles.buttonIconStyle}
-            />
-          </Button>
-        </div>
       </BannerWrapper>
-      <div className="my-6 flex justify-center">
-        <Button
-          type="outlined"
-          color="primary"
-          className={'w-11/12'}
-          onClick={() => {}}
-        >
-          {renderIcon('EyeIcon', styles.buttonIcon)}
-          <Typography
-            type="help"
-            className="mx-2"
-            color="primary"
-            text={'View SmartSpace Licence '}
-          ></Typography>
-        </Button>
-      </div>
       <>
-        {practitionerClassroomDetails?.length > 0 && (
-          <>
-            <div className={styles.infoWrapper}>
-              <div>
-                <Typography
-                  text={'Programme name'}
-                  type="h5"
-                  color="textMid"
-                  className={'mt-4'}
-                />
-                <Typography
-                  text={practitionerClassroomDetails[0].classroom?.name || ''}
-                  type="h4"
-                  color="textDark"
-                  className={'mt-1'}
-                />
-              </div>
+        <>
+          <div className={styles.infoWrapper}>
+            <div>
+              <Typography
+                text={'Preschool name'}
+                type="h5"
+                color="textMid"
+                className={'mt-4'}
+              />
+              <Typography
+                text={siteName}
+                type="h4"
+                color="textDark"
+                className={'mt-1'}
+              />
             </div>
-            <Divider dividerType="dashed" className="my-4" />
-          </>
-        )}
+          </div>
+          <Divider dividerType="dashed" className="my-4" />
+        </>
         <div className={styles.infoWrapper}>
           <div>
             <Typography
-              text={'Programme location'}
+              text={'Preschool location'}
               type="h5"
               color="textMid"
               className={'mt-1'}
             />
-            <Typography
-              text={practitionerClassroomDetails?.siteAddress || ''}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
+            {siteAddress && siteAddress.length && (
+              <>
+                <Typography
+                  text={siteAddress}
+                  type="h4"
+                  color="textDark"
+                  className={'mt-1'}
+                />
+
+                <Button
+                  size="small"
+                  shape="normal"
+                  color="secondaryAccent2"
+                  type="filled"
+                  onClick={() => {
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        practitioner?.user?.phoneNumber!
+                      );
+                  }}
+                >
+                  <Typography
+                    className={'mr-1'}
+                    type="buttonSmall"
+                    color="secondary"
+                    text="Copy"
+                  />
+                  {renderIcon(
+                    'DocumentDuplicateIcon',
+                    'h-4 w-4 text-secondary'
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         </div>
         <Divider dividerType="dashed" className="my-4" />
         <div>
-          {practitionerClassroomDetails?.map((item: any, index: number) => {
-            const meetingDays = getClassroomGroupSchoolDays(
-              item?.classProgrammes
-            );
-
-            const weekMeetingDays = meetingDays
-              .sort()
-              .map((item) => weekday[item]);
-            const stringMeetingDays = weekMeetingDays.join(', ').toString();
-            const halfOrFullDayMeeting =
-              item?.classProgrammes.length > 0 &&
-              item?.classProgrammes[0].isFullDay === true
-                ? 'Full day'
-                : 'Half day';
-
+          {classroomListItems?.map((item: any, index: number) => {
             return (
               <div key={index}>
                 <div className={styles.infoWrapper}>
                   <div>
                     <Typography
-                      text={'Type of ECD service'}
-                      type="h5"
-                      color="textMid"
-                      className={'mt-1'}
-                    />
-                    <Typography
-                      text={item?.programmeType?.description || ''}
-                      type="h4"
-                      color="textDark"
-                      className={'mt-1'}
-                    />
-                  </div>
-                </div>
-                <div className={styles.infoWrapper}>
-                  <div className="ml-6">
-                    <Typography
-                      text={stringMeetingDays + ', ' + halfOrFullDayMeeting}
-                      type="h5"
-                      color="textMid"
-                      className={'mt-1'}
-                    />
-                    <Typography
                       text={`Class ${index + 1}: ${item?.name}`}
+                      type="h5"
+                      color="textMid"
+                      className={'mt-1'}
+                    />
+                    <Typography
+                      text={`${item?.practitioner}`}
                       type="h4"
                       color="textDark"
                       className={'mt-1'}
@@ -358,54 +313,6 @@ export const CoachProgrammeInformation: React.FC = () => {
               </div>
             );
           })}
-          <div className={styles.infoWrapper}>
-            <div>
-              <Typography
-                text={'Number of non-SmartStart assistants'}
-                type="h5"
-                color="textMid"
-                className={'mt-1'}
-              />
-              <Typography
-                text={
-                  practitionerClassroomDetails?.length > 0
-                    ? String(
-                        practitionerClassroomDetails[0].classroom
-                          ?.numberOfOtherAssistants
-                      )
-                    : ''
-                }
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
-              />
-            </div>
-          </div>
-          <Divider dividerType="dashed" className="my-4" />
-          <div className={styles.infoWrapper}>
-            <div>
-              <Typography
-                text={'Other assistants'}
-                type="h5"
-                color="textMid"
-                className={'mt-1'}
-              />
-              <Typography
-                text={
-                  practitionerClassroomDetails?.length > 0
-                    ? String(
-                        practitionerClassroomDetails[0].classroom
-                          ?.numberPractitioners
-                      )
-                    : ''
-                }
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
-              />
-            </div>
-          </div>
-          <Divider dividerType="dashed" className="my-4" />
           <div>
             <div className="my-4 ml-4 flex">
               <div className="bg-successMain mr-4 grid h-8 w-8 place-items-center rounded-full">
@@ -417,7 +324,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                 />
               </div>
               <Typography
-                text={'SmartStart practitioners on site'}
+                text={`Practitioners at ${siteName || 'this site'}`}
                 type="h4"
                 color="textDark"
                 className={'mt-1'}

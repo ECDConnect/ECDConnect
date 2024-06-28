@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -45,7 +46,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
 
-            if (!practitioner.IsPrincipalOrAdmin() && (practitioner.PrincipalHierarchy == null || practitioner.Progress < 2))
+            if (practitioner == null)
+            {
+                throw new QueryException("Practitioner not found.");
+            }
+
+          
+          if ((!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy == null) || 
+                (!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy.HasValue && practitioner.Progress < 2))
             {
                 return _classroomRepo.GetAll()
                     .Where(x =>
@@ -62,7 +70,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (principalUserId == null)
             {
-                return null;
+                 throw new QueryException("Principal not found.");
             }
 
             return _classroomRepo.GetAll()
@@ -78,6 +86,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
 
+            if (practitioner == null)
+            {
+               throw new QueryException("Practitioner not found.");
+            }
+
             // Principal can see all classroom groups for classroom (school)
             if (practitioner.IsPrincipalOrAdmin())
             {
@@ -85,6 +98,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     .Include(x => x.Learners
                         .Where(y => y.IsActive 
                             && (!y.StoppedAttendance.HasValue || y.StoppedAttendance > DateTime.Now)))
+                    .Include(x => x.Classroom)
                     .Where(x =>
                         x.IsActive
                         && x.Classroom.IsActive
@@ -95,7 +109,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // Practitioner can only see classroom groups assigned to them directly
             return _classroomGroupRepo.GetAll()
-                .Where(x => x.IsActive && x.UserId.HasValue && x.UserId.Value == userId)
+                .Include(x => x.Learners
+                    .Where(y => y.IsActive
+                    && (!y.StoppedAttendance.HasValue || y.StoppedAttendance > DateTime.Now)))
+                .Include(x => x.Classroom)
+                .Where(x => 
+                    x.IsActive 
+                    && x.UserId.HasValue 
+                    && x.UserId.Value == userId
+                    && x.Classroom.IsActive)
                 .ToList();
         }
 

@@ -1,9 +1,4 @@
-import {
-  ClassProgrammeDto,
-  ClassroomGroupDto,
-  LearnerDto,
-  SiteAddressDto,
-} from '@ecdlink/core';
+import { ClassroomGroupDto, LearnerDto, SiteAddressDto } from '@ecdlink/core';
 import {
   ClassProgrammeInput,
   ClassroomGroupInput,
@@ -147,9 +142,9 @@ export const upsertClassroom = createAsyncThunk<
             ? classroom.siteAddress?.id
             : null,
           Name: classroom.name,
-          ClassroomImageUrl: classroom.imageUrl,
-          NumberPractitioners: classroom.numberOfPractitioners,
-          NumberOfAssistants: classroom.numberOfPractitioners,
+          ClassroomImageUrl: classroom.classroomImageUrl,
+          NumberPractitioners: classroom.numberPractitioners,
+          NumberOfAssistants: classroom.numberPractitioners,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
           IsActive: true, // All classrooms/groups on FE will be active
           SiteAddress: classroom?.siteAddress?.addressLine1
