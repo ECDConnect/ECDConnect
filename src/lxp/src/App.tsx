@@ -79,11 +79,15 @@ const App: React.FC = () => {
             trackingId: tenant.tenant.googleAnalyticsTag,
             gaOptions: {
               debug_mode:
-                window.location.host.indexOf('localhost') > 0 ? true : false,
+                (window.location.host.indexOf('localhost') > 0
+                  ? true
+                  : false) || !!process.env.REACT_APP_GADEBUGMODE,
             },
             gtagOptions: {
               debug_mode:
-                window.location.host.indexOf('localhost') > 0 ? true : false,
+                (window.location.host.indexOf('localhost') > 0
+                  ? true
+                  : false) || !!process.env.REACT_APP_GADEBUGMODE,
             },
           },
           // {
