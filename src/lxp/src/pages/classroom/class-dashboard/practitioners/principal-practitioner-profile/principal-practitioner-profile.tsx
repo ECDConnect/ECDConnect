@@ -56,6 +56,7 @@ import { AbsencesView } from './components/absences-view/absences-view';
 import { BusinessTabItems } from '@/pages/business/business.types';
 import { staticDataSelectors } from '@/store/static-data';
 import EditPermissions from './components/edit-permissions/edit-permissions';
+import { ReassignClassPageState } from '../reassign-class/reassign-class.types';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -160,14 +161,16 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             practitionerId,
             allAbsenteeClasses,
             principalPractitioner: practitionerUser,
-          });
+            isFromPrincipalPractitionerProfile: true,
+          } as ReassignClassPageState);
           return;
         }
         if (allAbsenteeClasses)
           history.push('practitioner-reassign-class', {
             practitionerId,
             allAbsenteeClasses,
-          });
+            isFromPrincipalPractitionerProfile: true,
+          } as ReassignClassPageState);
 
         return;
       }
@@ -176,12 +179,14 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         history.push('practitioner-reassign-class', {
           practitionerId,
           allAbsenteeClasses,
+          isFromPrincipalPractitionerProfile: true,
         });
         return;
       }
 
       history.push('practitioner-reassign-class', {
         practitionerId,
+        isFromPrincipalPractitionerProfile: true,
       });
     },
     [history, practitionerUser]

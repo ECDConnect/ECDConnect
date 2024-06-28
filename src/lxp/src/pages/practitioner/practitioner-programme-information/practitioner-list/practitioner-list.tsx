@@ -21,7 +21,6 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
-import { classroomsSelectors } from '@/store/classroom';
 import { EditPractitionerModal } from './components/edit-practitioner-modal';
 
 export const PractitionerList: React.FC<PractitionerListProps> = () => {

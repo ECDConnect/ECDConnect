@@ -2,11 +2,13 @@ import { PractitionerDto } from '@ecdlink/core';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 
 export interface ReassignClassPageState {
-  practitionerId: number;
-  childId: string;
+  practitionerId: string;
+  childId?: string;
   reportingDate?: string | any;
   allAbsenteeClasses?: AbsenteeDto[];
   principalPractitioner?: PractitionerDto;
+  isFromEditPractitionersPage?: boolean;
+  isFromPrincipalPractitionerProfile?: boolean;
 }
 
 export const yesNoOptions = [

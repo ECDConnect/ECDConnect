@@ -42,7 +42,7 @@ export const PractitionersList: React.FC = () => {
     (item) => item.userId !== practitioner?.userId
   );
 
-  const { isLoading: isLoading, isRejected: isGetPractitionerRejected } =
+  const { isLoading, isRejected: isGetPractitionerRejected } =
     useThunkFetchCall(
       'practitioner',
       PractitionerActions.GET_ALL_PRACTITIONERS
@@ -229,7 +229,7 @@ export const PractitionersList: React.FC = () => {
             <div className="flex justify-center">
               <Button
                 type="filled"
-                color="primary"
+                color="quatenary"
                 className={'mt-6 mb-6 w-11/12 rounded-2xl'}
                 onClick={handleReassignClass}
               >

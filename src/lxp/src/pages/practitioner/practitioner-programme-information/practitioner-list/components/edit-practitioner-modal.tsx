@@ -11,6 +11,7 @@ import { useHistory } from 'react-router';
 import EditRemovePractitionerFromProgrammePrompt from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { classroomsSelectors } from '@/store/classroom';
 import { EditPractitionerPermissions } from './edit-practitioner-permissions';
+import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
 
 export const EditPractitionerModal = ({
   setEditPractitionerModal,
@@ -90,8 +91,9 @@ export const EditPractitionerModal = ({
 
   const handleReassignClass = () => {
     history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
-      practitionerId: practitioner?.id,
-    });
+      practitionerId: practitioner?.id!,
+      isFromEditPractitionersPage: true,
+    } as ReassignClassPageState);
   };
 
   return (
