@@ -75,7 +75,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
 
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
         name: item?.name?.split(' ')[0] || item?.nickName,
-        title: item?.title,
+        title: item?.title === 'Practitioner' ? 'Practitioner' : 'Principal',
         classroomNames: item?.classroomNames,
         contactNumber: item?.contactNumber,
         profilePhoto: item?.profilePhoto,
@@ -113,7 +113,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
           return {
             title: item?.name,
             subTitle: item?.title,
-            switchTextStyles: true,
+            switchTextStyles: false,
             actionName: 'View',
             actionIcon: 'PencilIcon',
             onActionClick: () => {
@@ -123,7 +123,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                 classroomNames: item?.classroomNames,
                 contactNumber: item?.contactNumber,
                 profilePhoto: item?.profilePhoto,
-                title: item?.title,
+                title:
+                  item?.title === 'Practitioner' ? 'Practitioner' : 'Principal',
                 nickName: item?.nickName,
               });
             },
