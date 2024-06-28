@@ -17,6 +17,7 @@ import ActivityDetails from '../activity-details/activity-details';
 import { ActivityCardProps } from './activity-card.types';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 const ActivityCard: React.FC<ActivityCardProps> = ({
   activity,
@@ -33,11 +34,14 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   );
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isTrialPeriod = useIsTrialPeriod();
 
   const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
 
   const hasPermissionToEdit =
-    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
 
   const handleDetailsClick = () => {
     setDisplayDetails(true);

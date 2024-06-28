@@ -5,6 +5,7 @@ import { nextMonday } from 'date-fns';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 interface PublicHolidayProps {
   date: Date;
@@ -20,9 +21,12 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+  const isTrialPeriod = useIsTrialPeriod();
 
   const hasPermissionToEdit =
-    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
 
   return (
     <div className={'flex flex-auto flex-col items-center justify-center'}>
