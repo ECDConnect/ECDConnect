@@ -1,4 +1,9 @@
-import { ChildDto, ClassProgrammeDto, LearnerDto } from '@ecdlink/core';
+import {
+  ChildDto,
+  ClassProgrammeDto,
+  LearnerDto,
+  ClassroomGroupDto,
+} from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -7,11 +12,14 @@ import {
 } from './classroomForCoach.actions';
 import { ClassroomForCoachState } from './classroomForCoach.types';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
-import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 const initialState: ClassroomForCoachState = {
   classroomForCoach: undefined,
-  classroomGroups: undefined,
+  classroomGroupData: {
+    classroomGroups: [],
+    dateRefreshed: undefined,
+  },
   classroomProgrammes: undefined,
   classroomGroupLearners: undefined,
 };
@@ -22,19 +30,27 @@ const classroomsSlice = createSlice({
   reducers: {
     resetClassroomState: (state) => {
       state.classroomForCoach = initialState.classroomForCoach;
-      state.classroomGroups = initialState.classroomGroups;
+      state.classroomGroupData = initialState.classroomGroupData;
       state.classroomProgrammes = initialState.classroomProgrammes;
       state.classroomGroupLearners = initialState.classroomGroupLearners;
     },
     updateClassroom: (state, action: PayloadAction<ClassroomDto[]>) => {
       state.classroomForCoach = action.payload;
     },
-    updateClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (state.classroomGroups) {
-        for (let i = 0; i < state.classroomGroups.length; i++) {
-          if (state.classroomGroups[i].id === action.payload.id)
-            state.classroomGroups[i] = action.payload;
-        }
+    updateClassroomGroup: (
+      state,
+      action: PayloadAction<SimpleClassroomGroupDto>
+    ) => {
+      const payloadUpdated = { ...action.payload, synced: false };
+      for (
+        let i = 0;
+        i < state.classroomGroupData.classroomGroups.length;
+        i++
+      ) {
+        if (
+          state.classroomGroupData.classroomGroups[i].id === action.payload.id
+        )
+          state.classroomGroupData.classroomGroups[i] = payloadUpdated;
       }
     },
     updateClassroomProgramme: (
@@ -61,10 +77,14 @@ const classroomsSlice = createSlice({
       }
     },
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      const index = state.classroomGroups?.findIndex(
-        (c) => c.id === action.payload.id
-      );
-      if (index && index > -1) state.classroomGroups?.splice(index, 1);
+      if (!!action.payload.id) {
+        const index = state.classroomGroupData.classroomGroups.findIndex(
+          (c) => c.id === action.payload.id
+        );
+        if (index > -1) {
+          state.classroomGroupData.classroomGroups.splice(index, 1);
+        }
+      }
     },
     deleteClassroomProgramme: (
       state,
@@ -118,7 +138,14 @@ const classroomsSlice = createSlice({
     });
     builder.addCase(getClassroomGroupsForCoach.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroomGroups = action.payload;
+        state.classroomGroupData = {
+          classroomGroups: action.payload.map((cg) => ({
+            ...cg,
+            synced: true,
+            learners: cg.learners.map((l) => ({ ...l, synced: true })),
+          })),
+          dateRefreshed: new Date().toDateString(),
+        };
       }
     });
   },

@@ -49,34 +49,46 @@ export const getClassroomGroupsForCoach = createAsyncThunk<
 >(
   ClassroomForCoachActions.GET_CLASSROOM_GROUPS_FOR_COACH,
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomForCoachData: { classroomGroups: cache },
+      classroomForCoachData: { classroomGroupData: cache },
     } = getState();
 
-    try {
-      let groups: SimpleClassroomGroupDto[] | undefined;
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-      if (userAuth?.auth_token) {
-        groups = await new CoachService(
-          userAuth?.auth_token
-        ).getClassroomGroupsForCoach(userAuth?.id);
-      } else {
-        return rejectWithValue('no access token, profile check required');
+    if (
+      !!overrideCache ||
+      !cache ||
+      !cache.dateRefreshed ||
+      new Date(cache.dateRefreshed) < oneDayAgo
+    ) {
+      try {
+        let groups: SimpleClassroomGroupDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          groups = await new CoachService(
+            userAuth?.auth_token
+          ).getClassroomGroupsForCoach(userAuth?.id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!groups) {
+          return rejectWithValue('Error getting Classroom Groups');
+        }
+
+        groups.sort((a, b) => {
+          return (a.name || '') > (b.name || '') ? 1 : -1;
+        });
+
+        return groups;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!groups) {
-        return rejectWithValue('Error getting Classroom Groups');
-      }
-
-      groups.sort((a, b) => {
-        return (a.name || '') > (b.name || '') ? 1 : -1;
-      });
-
-      return groups;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return cache.classroomGroups;
     }
   }
 );

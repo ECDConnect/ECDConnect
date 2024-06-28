@@ -29,9 +29,8 @@ export const CoachNotes: React.FC = () => {
   const [noteToView, setNoteToView] = useState<NoteDto>();
 
   const practitionerId = location.state.practitionerId;
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerId)
   );
 
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));

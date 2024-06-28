@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -46,7 +47,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (practitioner == null)
             {
-                return null;
+                throw new QueryException("Practitioner not found.");
             }
 
           
@@ -68,7 +69,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (principalUserId == null)
             {
-                return null;
+                 throw new QueryException("Principal not found.");
             }
 
             return _classroomRepo.GetAll()
@@ -88,7 +89,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (practitioner == null)
             {
-                return null;
+               throw new QueryException("Practitioner not found.");
             }
 
             // Principal can see all classroom groups for classroom (school)

@@ -10,7 +10,7 @@ export const getClassroomForCoach = (
 export const getClassroomGroups = (
   state: RootState
 ): ClassroomGroupDto[] | undefined =>
-  state.classroomForCoachData.classroomGroups;
+  state.classroomForCoachData.classroomGroupData.classroomGroups;
 
 export const getClassroomGroupById = (id?: string) =>
   createSelector(
@@ -33,9 +33,23 @@ export const getClassroomForPractitioner = (userId: string) =>
     }
   );
 
+export const getClassroomGroupsForClassroom = (classroomId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.classroomForCoachData.classroomGroupData.classroomGroups,
+    (classroomGroups) => {
+      return (
+        classroomGroups?.filter(
+          (classroomGroup) => classroomGroup.classroomId === classroomId
+        ) || []
+      );
+    }
+  );
+
 export const getClassroomGroupsForPractitioner = (userId: string) =>
   createSelector(
-    (state: RootState) => state.classroomForCoachData.classroomGroups,
+    (state: RootState) =>
+      state.classroomForCoachData.classroomGroupData.classroomGroups,
     (classroomGroups) => {
       return (
         classroomGroups?.filter(

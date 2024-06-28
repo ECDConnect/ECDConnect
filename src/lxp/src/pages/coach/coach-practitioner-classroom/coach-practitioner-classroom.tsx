@@ -15,6 +15,7 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const CoachPractitionerClassroom: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -26,9 +27,8 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const childrenForPractitioner = useSelector(childrenSelectors.getChildren);
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerUserId = location.state.practitionerId;
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerUserId
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerUserId)
   );
 
   const isPrincipal = practitioner?.isPrincipal === true;
@@ -36,14 +36,12 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
   );
-  const coachClassroomGroups = useSelector(
-    classroomsForCoachSelectors.getClassroomGroups
-  );
 
-  const practitionerClassroomGroups =
-    coachClassroomGroups?.filter(
-      (item) => item.userId === practitionerUserId
-    ) || [];
+  const practitionerClassroomGroups = useSelector(
+    classroomsForCoachSelectors.getClassroomGroupsForPractitioner(
+      practitionerUserId
+    )
+  );
 
   const practitionerClassroom = isPrincipal
     ? coachClassrooms?.find((item) => item?.userId === practitionerUserId)
@@ -51,17 +49,18 @@ export const CoachPractitionerClassroom: React.FC = () => {
         (item) => item?.id === practitionerClassroomGroups?.[0].classroomId
       );
 
-  const classroomGroups =
-    coachClassroomGroups?.filter(
-      (item) => item.classroomId === practitionerClassroom?.id
-    ) || [];
+  const classroomGroups = useSelector(
+    classroomsForCoachSelectors.getClassroomGroupsForClassroom(
+      practitionerClassroom?.id || ''
+    )
+  );
 
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
 
   const [practitionerClassroomsData, setPractitionerClassroomsData] =
-    useState<any[]>();
+    useState<ClassroomGroupDto[]>();
 
   const [classMetrics, setClassMetrics] = useState<any>();
 

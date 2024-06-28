@@ -40,9 +40,10 @@ export const CoachProgrammeInformation: React.FC = () => {
   const isFromProgrammeView = true;
   const userAuth = useSelector(authSelectors.getAuthUser);
 
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerId)
   );
+
   const isPrincipal = practitioner?.isPrincipal === true;
 
   const coachClassrooms = useSelector(
@@ -87,17 +88,19 @@ export const CoachProgrammeInformation: React.FC = () => {
     });
   });
 
-  const classroomListItems = classroomGroups?.map((item) => {
-    const practitioner = practitionersOnSite?.find(
-      (pract) => pract.userId == item.userId
-    );
-    return {
-      name: item.name,
-      practitioner:
-        practitioner?.user?.firstName! + ' ' + practitioner?.user?.surname,
-      id: item?.userId,
-    };
-  });
+  const classroomListItems = useMemo(() => {
+    return classroomGroups?.map((item) => {
+      const practitioner = practitionersOnSite?.find(
+        (pract) => pract.userId == item.userId
+      );
+      return {
+        name: item.name,
+        practitioner:
+          practitioner?.user?.firstName! + ' ' + practitioner?.user?.surname,
+        id: item?.userId,
+      };
+    });
+  }, [practitioner?.user?.firstName]);
 
   const practitionersForCoachListItems = practitionersOnSite?.map((item) => {
     const titleStyle = 'text-textMid';

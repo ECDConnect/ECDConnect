@@ -68,10 +68,8 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const practitionerId = location.state.practitionerId;
   const isFromProgrammeView = location.state.isFromProgrammeView;
   const isFromReassignView = location?.state?.isFromReassignView;
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerId)
   );
 
   const coachClassrooms = useSelector(
@@ -524,15 +522,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 textColour={'white'}
                 className={'px-3 py-1.5'}
               />
-              {isPrincipal && (
-                <StatusChip
-                  backgroundColour="secondary"
-                  borderColour="secondary"
-                  text={`Principal`}
-                  textColour={'white'}
-                  className={'mr-2 px-3 py-1.5'}
-                />
-              )}
             </div>
             <div className={styles.contactButtons}>
               <Button
