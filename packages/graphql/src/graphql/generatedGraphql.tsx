@@ -2000,7 +2000,6 @@ export type ClassroomGroupInput = {
 export type ClassroomGroupModel = {
   __typename?: 'ClassroomGroupModel';
   classProgrammes?: Maybe<Array<Maybe<ClassProgramme>>>;
-  classroom?: Maybe<ClassroomModel>;
   classroomId: Scalars['UUID'];
   id: Scalars['UUID'];
   learners?: Maybe<Array<Maybe<BaseLearnerModel>>>;
@@ -2065,13 +2064,13 @@ export type ClassroomMetricReport = {
 
 export type ClassroomModel = {
   __typename?: 'ClassroomModel';
+  classroomImageUrl?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
-  imageUrl?: Maybe<Scalars['String']>;
   isDummySchool?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
   numberOfAssistants?: Maybe<Scalars['Int']>;
   numberOfOtherAssistants?: Maybe<Scalars['Int']>;
-  numberOfPractitioners?: Maybe<Scalars['Int']>;
+  numberPractitioners?: Maybe<Scalars['Int']>;
   preschoolCode?: Maybe<Scalars['String']>;
   preschoolFeeAmount?: Maybe<Scalars['Float']>;
   preschoolFeeAmountLastUpdateDate?: Maybe<Scalars['DateTime']>;
@@ -14482,7 +14481,6 @@ export type Query = {
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   traineeByUserId?: Maybe<Trainee>;
-  trialPeriodClassroomForUser?: Maybe<ClassroomModel>;
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
   userCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
@@ -17546,10 +17544,6 @@ export type QueryTotalDaysAbsentArgs = {
 
 export type QueryTraineeByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryTrialPeriodClassroomForUserArgs = {
-  userId: Scalars['UUID'];
 };
 
 export type QueryUserByIdArgs = {
