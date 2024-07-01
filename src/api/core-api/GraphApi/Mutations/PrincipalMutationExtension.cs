@@ -81,12 +81,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                         group.ProgrammeTypeId = programmeTypeId;
                                     }    
                                     classroomGroupRepo.Update(group);
-                                    if (classroom != null && classroom.IsDummySchool.HasValue && classroom.IsDummySchool == false) {
+                                    if (classroom != null) {
                                         classroomIds.Add(classroom.Id);
                                     }                                    
                                 }
                             }
-                            if (classroomIds != null && classroomIds.Count() > 0)
+                            if (classroomIds != null && classroomIds.Count() > 0 && practitioner.Progress >= 2)
                             {
                                 personnelManager.RemovePractitionerClassrooms(classroomIds);
                             }
@@ -358,16 +358,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.Leaving = false;
 
                 notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
-
-                // if there is a dummy school linked to this user, delete the dummy school after acceptance
-                var classroom = classroomService.GetClassroomForUser((Guid)practitioner.UserId);
-                if (classroom != null && classroom.IsDummySchool.HasValue && classroom.IsDummySchool.Value)
-                {
-                    personnelManager.RemovePractitionerClassrooms(new List<Guid>()
-                    {
-                        classroom.Id
-                    });
-                }
+                
             }
 
             //update practitioner with column changes

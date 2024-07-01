@@ -45,15 +45,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public Classroom GetClassroomForUser(Guid userId)
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
-
             if (practitioner == null)
             {
                 throw new QueryException("Practitioner not found.");
             }
-
           
-          if ((!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy == null) || 
-                (!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy.HasValue && practitioner.Progress < 2))
+            if (!practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy == null || practitioner.Progress < 2)
             {
                 return _classroomRepo.GetAll()
                     .Where(x =>
