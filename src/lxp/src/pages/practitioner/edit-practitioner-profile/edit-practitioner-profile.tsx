@@ -26,6 +26,7 @@ import { useNotificationService } from '@/hooks/useNotificationService';
 import { PractitionerShareDetails } from './components/practitioner-share-details/practitioner-share-details';
 import { useTenant } from '@/hooks/useTenant';
 import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
+import { classroomsThunkActions } from '@/store/classroom';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -122,6 +123,9 @@ export const EditPractitionerProfile: React.FC = () => {
           practitionerThunkActions.getPractitionerByUserId({ userId: user.id })
         );
         appDispatch(practitionerThunkActions.getAllPractitioners({}));
+        appDispatch(
+          classroomsThunkActions.getClassroom({ overrideCache: true })
+        ).unwrap();
         stopService();
         history.push(ROUTES.ROOT);
       }
