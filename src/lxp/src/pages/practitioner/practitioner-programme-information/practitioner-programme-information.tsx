@@ -152,22 +152,22 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
   const saveClassroomPicture = async (imageBaseString: string) => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
-
-    if (classroomImage) {
-      await updateDocument(classroomImage, imageBaseString);
-    } else {
-      const fileName = `ClassroomPicture_${classroom?.id}.png`;
-      await createNewDocument(
-        {
-          data: imageBaseString,
-          fileName,
-          fileType: FileTypeEnum.ClassroomProfile,
-          userId: user?.id || '',
-          status: WorkflowStatusEnum.DocumentPendingVerification,
-        },
-        classroom?.id
-      );
-    }
+    // TODO Check if we'll need this create document for images
+    // if (classroomImage) {
+    //   await updateDocument(classroomImage, imageBaseString);
+    // } else {
+    //   const fileName = `ClassroomPicture_${classroom?.id}.png`;
+    //   await createNewDocument(
+    //     {
+    //       data: imageBaseString,
+    //       fileName,
+    //       fileType: FileTypeEnum.ClassroomProfile,
+    //       userId: user?.id || '',
+    //       status: WorkflowStatusEnum.DocumentPendingVerification,
+    //     },
+    //     classroom?.id
+    //   );
+    // }
 
     setClassImageBaseString(imageBaseString);
   };
