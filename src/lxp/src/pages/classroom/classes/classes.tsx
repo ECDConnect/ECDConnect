@@ -116,25 +116,24 @@ export const Classes = () => {
         />
       )}
 
-      {isPrincipal ||
-        (isTrialPeriod && (
-          <FADButton
-            title="Add a class"
-            icon="PlusIcon"
-            iconDirection="left"
-            textToggle={addChildButtonExpanded}
-            type="filled"
-            color="quatenary"
-            shape={'round'}
-            className="absolute bottom-6 right-0 z-10 m-3 px-3.5 py-2.5"
-            // TODO: when W3 (EC-2534) is done, please review this redirect
-            click={() =>
-              history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
-                redirectToClassesPage: true,
-              } as EditPlaygroupsRouteState)
-            }
-          />
-        ))}
+      {(isPrincipal || isTrialPeriod) && (
+        <FADButton
+          title="Add a class"
+          icon="PlusIcon"
+          iconDirection="left"
+          textToggle={addChildButtonExpanded}
+          type="filled"
+          color="quatenary"
+          shape={'round'}
+          className="absolute bottom-6 right-0 z-10 m-3 px-3.5 py-2.5"
+          // TODO: when W3 (EC-2534) is done, please review this redirect
+          click={() =>
+            history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
+              redirectToClassesPage: true,
+            } as EditPlaygroupsRouteState)
+          }
+        />
+      )}
     </div>
   );
 };
