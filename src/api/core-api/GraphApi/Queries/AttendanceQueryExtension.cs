@@ -65,12 +65,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
           DateTime endMonth)
         {
             startMonth = startMonth.GetStartOfMonth();
-            //endMonth = endMonth.GetEndOfMonth();
+
             //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1).Date : DateTime.Now.GetEndOfDay()) : endMonth.GetEndOfMonth().GetEndOfDay());
+            endMonth = endMonth.Month == DateTime.Now.Month 
+                ? DateTime.Now.GetEndOfDay()
+                : endMonth.GetEndOfMonth().GetEndOfDay();
 
 
-            return report.GenerateMonthlyAttendanceReport(userId, startMonth, endMonth);
+            var data = report.GenerateMonthlyAttendanceReport(userId, startMonth, endMonth);
+            return data;
         }
 
         public async Task<ChildAttendanceReportModel> ChildAttendanceReport(
