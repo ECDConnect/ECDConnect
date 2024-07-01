@@ -1,0 +1,2 @@
+update "MessageTemplate" mt set "Ordering"=15 where "TemplateType" = 'ProgrammeInvitation' and "Protocol" = 'hub';
+update "MessageTemplate" mt set "Ordering"=15 where "TemplateType" = 'ProgrammeInvitation' and "Protocol" = 'push';
