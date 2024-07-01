@@ -334,7 +334,8 @@ namespace ECDLink.Security.Api
                 });
             }
             // archive message records linked to user's number
-            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
+            var messages = _messageRepo.GetAll().Where(x => x.IsActive && (x.To == user.PhoneNumber || x.To == user.PendingPhoneNumber) 
+                                                        && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
             if (messages.Count != 0)
             {
                 foreach (var message in messages)
