@@ -366,11 +366,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     <>
       {practitioner?.isRegistered === null ||
       practitioner?.isRegistered === false ? (
-        <PractitionerNotRegistered
-          practitioner={practitioner}
-          classroom={classroom}
-          existingRemoval={existingRemoval}
-        />
+        <PractitionerNotRegistered practitioner={practitioner} />
       ) : (
         <div className={styles.contentWrapper}>
           <BannerWrapper
