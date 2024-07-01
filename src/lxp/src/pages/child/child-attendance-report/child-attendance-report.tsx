@@ -112,7 +112,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
       await new AttendanceService(authUser?.auth_token ?? '')
         .getChildAttendanceRecords(
-          child?.userId ?? childUserId ?? '',
+          child?.userId ?? childUserId ?? child?.user?.id ?? '',
           classroomGroupId,
           startDate,
           endDate
