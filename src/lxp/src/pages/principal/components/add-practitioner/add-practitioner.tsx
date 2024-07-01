@@ -456,7 +456,7 @@ export const AddPractitioner = ({
                     </div>
                   </>
                 )}
-              {isValidPractitioner === true && !isPrincipal && (
+              {isValidPractitioner === true && !isPrincipal && !addNote && (
                 <div className="mb-8">
                   <Alert type={'success'} title={'Practitioner found!'} />
                 </div>
