@@ -441,28 +441,31 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           />
         </div>
 
-        {!isPrincipal && !hasAccepted && !missingProgramme && (
-          <div className="flex justify-center">
-            <Alert
-              type="info"
-              title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
-              list={[`Connect with your principal & manage your classes.`]}
-              className={'mt-4 w-11/12'}
-              button={
-                <Button
-                  text="Edit profile"
-                  icon="PencilIcon"
-                  type={'filled'}
-                  color={'primary'}
-                  textColor={'white'}
-                  onClick={() =>
-                    history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
-                  }
-                />
-              }
-            />
-          </div>
-        )}
+        {!isPrincipal &&
+          !hasAccepted &&
+          !missingProgramme &&
+          !isTrialPeriod && (
+            <div className="flex justify-center">
+              <Alert
+                type="info"
+                title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
+                list={[`Connect with your principal & manage your classes.`]}
+                className={'mt-4 w-11/12'}
+                button={
+                  <Button
+                    text="Edit profile"
+                    icon="PencilIcon"
+                    type={'filled'}
+                    color={'primary'}
+                    textColor={'white'}
+                    onClick={() =>
+                      history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+                    }
+                  />
+                }
+              />
+            </div>
+          )}
 
         {!isPrincipal && missingProgramme && !isOpenAccess && (
           <div className="flex justify-center">
