@@ -8,10 +8,12 @@ import * as styles from './confirm-playgroup-list-item.styles';
 import { ConfirmPlaygroupListItemProps } from './confirm-playgroup-list-item.types';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const ConfirmPlayGroupListItem: React.FC<
   ConfirmPlaygroupListItemProps
 > = ({ index, playGroup, onPlayGroupEdit }) => {
+  const isTrialPeriod = useIsTrialPeriod();
   const getText = () => {
     return playGroup.meetingDays
       .map((day) => getWeekdayValue(day as Weekdays).substring(0, 3))
@@ -55,20 +57,21 @@ export const ConfirmPlayGroupListItem: React.FC<
           <Typography type={'span'} color={'textMid'} text={getText()} />
         </div>
       </div>
-      {isPrincipal && (
-        <div>
-          <Button
-            size="small"
-            shape="normal"
-            color="secondaryAccent2"
-            type="filled"
-            onClick={onPlayGroupEdit}
-          >
-            <Typography type="help" color="secondary" text="Edit" />
-            {renderIcon('PencilIcon', styles.buttonIcon)}
-          </Button>
-        </div>
-      )}
+      {isPrincipal ||
+        (isTrialPeriod && (
+          <div>
+            <Button
+              size="small"
+              shape="normal"
+              color="secondaryAccent2"
+              type="filled"
+              onClick={onPlayGroupEdit}
+            >
+              <Typography type="help" color="secondary" text="Edit" />
+              {renderIcon('PencilIcon', styles.buttonIcon)}
+            </Button>
+          </div>
+        ))}
     </div>
   );
 };

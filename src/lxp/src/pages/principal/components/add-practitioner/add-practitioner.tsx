@@ -239,7 +239,7 @@ export const AddPractitioner = ({
       setIsValidPractitioner(undefined);
       return;
     }
-    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: TabsItems.CLASSES });
+    history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
   };
 
   const callForHelp = () => {

@@ -19,7 +19,7 @@ export const OtherPractitionerProfile: React.FC<
 > = ({ setPractitionerInfo, colleagueProfile }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
-  console.log({ colleagueProfile });
+
   const call = () => {
     window.open(`tel:${colleagueProfile?.contactNumber}`);
   };
@@ -34,7 +34,7 @@ export const OtherPractitionerProfile: React.FC<
   const classroomGroups =
     colleagueProfile?.classroomNames &&
     colleagueProfile?.classroomNames.split(',');
-  console.log({ classroomGroups });
+
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper

@@ -137,9 +137,9 @@ export const EditPlaygroups: React.FC = () => {
     );
 
     await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-    // await appDispatch(
-    //   classroomsThunkActions.upsertClassroomGroupProgrammes({})
-    // );
+    await appDispatch(
+      classroomsThunkActions.upsertClassroomGroupProgrammes({})
+    );
   };
 
   const confirmPlaygroups = async (playgroups: EditPlaygroupModel[]) => {
@@ -220,7 +220,7 @@ export const EditPlaygroups: React.FC = () => {
             }
           });
 
-          appDispatch(
+          const updatedClassroom = await appDispatch(
             classroomsActions.updateClassroomGroup({
               ...currentPlayGroup,
               name: playGroup.name,
@@ -228,11 +228,16 @@ export const EditPlaygroups: React.FC = () => {
               classProgrammes: currentPlayGroupProgrammes,
             })
           );
+          if (updatedClassroom) {
+            await appDispatch(
+              classroomsThunkActions.upsertClassroomGroupProgrammes({})
+            );
+          }
 
           if (hasChanges) {
-            appDispatch(
+            await appDispatch(
               classroomsThunkActions.updateClassroomGroup({
-                id: currentPlayGroup.id!,
+                id: currentPlayGroup?.id!,
                 classroomGroup: {
                   ...currentPlayGroup,
                   classroomId: playGroup?.classroomId!,
@@ -244,10 +249,11 @@ export const EditPlaygroups: React.FC = () => {
                 },
               })
             );
+
+            await appDispatch(
+              classroomsThunkActions.upsertClassroomGroupProgrammes({})
+            );
           }
-          // appDispatch(
-          //   classroomsThunkActions.upsertClassroomGroupProgrammes({})
-          // );
         } else {
           createPlayGroup(playGroup);
         }
