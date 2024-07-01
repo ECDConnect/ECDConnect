@@ -65,6 +65,7 @@ export const ShareSomeDetails = ({
     }
     setIsLoading(false);
     onNext && onNext();
+    setShareSomeDetails && setShareSomeDetails(false);
   };
 
   return (
