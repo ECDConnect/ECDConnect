@@ -20,6 +20,6 @@ export const AddPractitinerInitialState = {
 export const PermissionsNames = {
   take_attendance: 'take_attendance',
   create_progress_reports: 'create_progress_reports',
-  plan_classroom_actitivies: 'plan_classroom_actitivies',
+  plan_classroom_actitivies: 'plan_classroom_activities',
   manage_children: 'manage_children',
 };
