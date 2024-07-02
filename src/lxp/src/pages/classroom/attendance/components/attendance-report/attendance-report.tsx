@@ -174,7 +174,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     }
   }, [isFulfilled, isToShowSeeMoreButton, showMessage, wasLoading]);
 
-  console.log({ formattedAttendanceSummary });
   if (isLoading) {
     return (
       <LoadingSpinner
