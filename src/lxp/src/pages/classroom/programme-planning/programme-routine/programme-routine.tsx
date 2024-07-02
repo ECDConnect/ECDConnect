@@ -55,6 +55,7 @@ import PosiviteIcon from '../../../../assets/positive-bonus-emoticon.png';
 import { practitionerSelectors } from '@/store/practitioner';
 import walkthroughImage from '../../../../assets/walktroughImage.png';
 import { parseISO } from 'date-fns';
+import { useAppContext } from '@/walkthrougContext';
 
 export const ProgrammeRoutine: React.FC = () => {
   const { state } = useLocation<ProgrammeRoutineRouteState>();
@@ -62,6 +63,11 @@ export const ProgrammeRoutine: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
+
+  const {
+    state: { run: isWalkthrough },
+  } = useAppContext();
+
   const { isOnline } = useOnlineStatus();
   const programme = useSelector(
     programmeSelectors.getProgrammeById(state.programmeId)
@@ -278,6 +284,8 @@ export const ProgrammeRoutine: React.FC = () => {
   };
 
   const onProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
+    if (isWalkthrough) return;
+
     const routineItemName = routineItem?.name;
 
     const currentDayDate = currentDay?.dayDate

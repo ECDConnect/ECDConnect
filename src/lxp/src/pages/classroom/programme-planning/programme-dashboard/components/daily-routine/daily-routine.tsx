@@ -7,6 +7,7 @@ import {
   Card,
   RoundIcon,
   Divider,
+  FADButton,
 } from '@ecdlink/ui';
 import { DateFormats } from '../../../../../../constants/Dates';
 import {
@@ -686,6 +687,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                             : currentDailyProgramme
                         }
                         selectedDate={selectedDate}
+                        disabled={isWalkthrough && state.stepIndex !== 4}
                         onClick={() => onProgrammeClick(routineItem)}
                       />
                       {index === programmeRoutine.routineItems.length - 1 && (
@@ -778,15 +780,18 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           </div>
         )}
         {!isPastDay() && hasPermissionToEdit && (
-          <Button
+          <FADButton
             id="walkthrough-start"
-            className={'absolute bottom-6 right-4 ml-2 mt-4 rounded-3xl'}
-            type={'filled'}
-            color={'quatenary'}
-            onClick={handleAddProgramme}
+            click={handleAddProgramme}
+            disabled={isWalkthrough}
             icon="PlusIcon"
-            text="Add new theme"
+            iconDirection="left"
+            textToggle
+            title="Add new theme"
             textColor="white"
+            type="filled"
+            color="quatenary"
+            className="fixed bottom-6 right-0 z-10 m-3 px-3.5 py-2.5"
           />
         )}
         <div

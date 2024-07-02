@@ -402,7 +402,8 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             <>
               {hasActiveFilters && filteredStories.length === 0 && (
                 <EmptyActivities
-                  title="Sorry, we couldn't find any activities!"
+                  className="mt-20"
+                  title="Sorry, no activities found!"
                   subTitle="Please choose a different theme, language, and/or type and try again."
                 />
               )}
@@ -430,22 +431,25 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
               filteredActivities={filteredActivities}
             />
           )}
-          <Divider className="my-2" />
-
-          <Button
-            type="filled"
-            className="mb-32 w-full"
-            color="primary"
-            icon="SaveIcon"
-            text={!selectedActivity ? submitButtonText : 'Save'}
-            textColor="white"
-            iconPosition="start"
-            onClick={() => {
-              onButtonClick();
-              setShowNextButton(false);
-            }}
-            disabled={!showNextButton}
-          />
+          {(!hasActiveFilters || filteredStories.length !== 0) && (
+            <>
+              <Divider className="my-2" />
+              <Button
+                type="filled"
+                className="mb-32 w-full"
+                color="primary"
+                icon="SaveIcon"
+                text={!selectedActivity ? submitButtonText : 'Save'}
+                textColor="white"
+                iconPosition="start"
+                onClick={() => {
+                  onButtonClick();
+                  setShowNextButton(false);
+                }}
+                disabled={!showNextButton}
+              />
+            </>
+          )}
         </div>
       </BannerWrapper>
       <Dialog
