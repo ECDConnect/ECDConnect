@@ -1,5 +1,8 @@
 import { Config } from '@ecdlink/core';
-import { ClassroomInput } from '@ecdlink/graphql';
+import {
+  ChildProgressReportPeriodModelInput,
+  ClassroomInput,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
@@ -43,6 +46,10 @@ class ClassroomService {
               phoneNumber
               email
               profileImageUrl
+            }
+            childProgressReportPeriods {
+              startDate
+              endDate
             }
           }
         }
@@ -224,53 +231,34 @@ class ClassroomService {
     return response.data.data.validatePreSchoolCode;
   }
 
-  async getClassroomForTrialPeriodUser(userId: string): Promise<ClassroomDto> {
+  async addChildProgressReportPeriods(
+    classroomId: string,
+    childProgressReportPeriods: {
+      startDate: Date;
+      endDate: Date;
+    }[]
+  ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { trialPeriodClassroomForUser: ClassroomDto };
+      data: { addChildPregressReportPeriods: boolean };
       errors?: {};
     }>(``, {
-      query: `query GetClassroomForUser($userId: UUID!) {
-          classroomForUser(userId: $userId) {            
-            id
-            name
-            imageUrl
-            numberOfPractitioners
-            numberOfAssistants
-            numberOfOtherAssistants
-            preschoolFeeAmount
-            preschoolFeeAmountLastUpdateDate
-            preschoolCode
-            siteAddress {
-              id
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              ward
-            }
-            principal {
-              userId
-              firstName
-              surname
-              phoneNumber
-              email
-              profileImageUrl
-            }
-          }
-        }
-      `,
+      query: `mutation AddChildProgressReportPeriods($classroomId: UUID!, $childProgressReportPeriods: [ChildProgressReportPeriodModelInput]) {
+          addChildProgressReportPeriods(classroomId: $classroomId, childProgressReportPeriods: $childProgressReportPeriods) {
+        }}`,
       variables: {
-        userId,
+        classroomId,
+        childProgressReportPeriods,
       },
     });
 
     if (response.status !== 200 || !!response.data.errors) {
-      throw new Error('GetClassroomForUser Failed - Server connection error');
+      throw new Error(
+        'addChildProgressReportPeriods Failed - Server connection error'
+      );
     }
 
-    return response.data.data.trialPeriodClassroomForUser;
+    return response.data.data.addChildPregressReportPeriods;
   }
 }
 

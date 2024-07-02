@@ -1,5 +1,6 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
@@ -52,6 +53,8 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public DateTime? PreschoolFeeAmountLastUpdateDate { get; set; }
         public string PreschoolCode { get; set; }
         public bool? IsDummySchool { get; set; } = false;
+
+        public virtual ICollection<ChildProgressReportPeriod> ChildProgressReportPeriods { get; set; }
     }
 
     public interface ClassroomJoin<TKey>

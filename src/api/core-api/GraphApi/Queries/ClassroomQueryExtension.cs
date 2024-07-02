@@ -52,7 +52,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     PhoneNumber = classroom.User.PhoneNumber,
                     ProfileImageUrl = classroom.User.ProfileImageUrl,
                     UserId = classroom.UserId.Value,
-                }
+                },
+                ChildProgressReportPeriods = classroom.ChildProgressReportPeriods.Select(x => new ChildProgressReportPeriodModel
+                {
+                    StartDate = x.StartDate,
+                    EndDate = x.EndDate
+                }).ToList(),
             };
         }
 

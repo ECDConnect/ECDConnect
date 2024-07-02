@@ -436,48 +436,6 @@ export const updatePreschoolFee = createAsyncThunk<
   }
 );
 
-export const getClassroomForTrialPeriodUser = createAsyncThunk<
-  SimpleClassroomDto,
-  {} & OverrideCache,
-  ThunkApiType<RootState>
->(
-  ClassroomActions.GET_CLASSROOM_FOR_TRIAL_PERIOD_USER,
-  // eslint-disable-next-line no-empty-pattern
-  async ({ overrideCache }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroom: cache },
-    } = getState();
-
-    let oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-
-    if (
-      !!overrideCache ||
-      !cache ||
-      !cache.dateRefreshed ||
-      new Date(cache.dateRefreshed) < oneDayAgo
-    ) {
-      try {
-        let classroom: SimpleClassroomDto | undefined;
-        if (userAuth?.auth_token) {
-          classroom = await new ClassroomService(
-            userAuth?.auth_token
-          ).getClassroomForTrialPeriodUser(userAuth?.id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        return classroom;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return cache;
-    }
-  }
-);
-
 const mapClassroomGroupInput = (
   x: Partial<ClassroomGroupDto>
 ): ClassroomGroupInput => ({

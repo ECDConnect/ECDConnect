@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
@@ -20,5 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public BaseSiteAddressModel SiteAddress { get; set; }
         public BasePractitionerModel Principal { get; set; }
+
+        public List<ChildProgressReportPeriodModel> ChildProgressReportPeriods { get; set; }
     }
 }

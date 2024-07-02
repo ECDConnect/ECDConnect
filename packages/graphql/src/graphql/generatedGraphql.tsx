@@ -1571,6 +1571,66 @@ export type ChildProgressReportInput = {
   UserId?: InputMaybe<Scalars['UUID']>;
 };
 
+export type ChildProgressReportPeriod = {
+  __typename?: 'ChildProgressReportPeriod';
+  classroom?: Maybe<Classroom>;
+  classroomId: Scalars['UUID'];
+  endDate: Scalars['DateTime'];
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  startDate: Scalars['DateTime'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type ChildProgressReportPeriodFilterInput = {
+  and?: InputMaybe<Array<ChildProgressReportPeriodFilterInput>>;
+  classroom?: InputMaybe<ClassroomFilterInput>;
+  classroomId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  endDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<ChildProgressReportPeriodFilterInput>>;
+  startDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type ChildProgressReportPeriodInput = {
+  Classroom?: InputMaybe<ClassroomInput>;
+  ClassroomId: Scalars['UUID'];
+  EndDate: Scalars['DateTime'];
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  StartDate: Scalars['DateTime'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type ChildProgressReportPeriodModel = {
+  __typename?: 'ChildProgressReportPeriodModel';
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
+};
+
+export type ChildProgressReportPeriodModelInput = {
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
+};
+
+export type ChildProgressReportPeriodSortInput = {
+  classroom?: InputMaybe<ClassroomSortInput>;
+  classroomId?: InputMaybe<SortEnumType>;
+  endDate?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  startDate?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+};
+
 export type ChildProgressReportSortInput = {
   child?: InputMaybe<ChildSortInput>;
   childId?: InputMaybe<SortEnumType>;
@@ -1874,6 +1934,7 @@ export type ClassReassignmentHistorySortInput = {
 
 export type Classroom = {
   __typename?: 'Classroom';
+  childProgressReportPeriods?: Maybe<Array<Maybe<ChildProgressReportPeriod>>>;
   classroomGroups?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomImageUrl?: Maybe<Scalars['String']>;
   doesOwnerTeach?: Maybe<Scalars['Boolean']>;
@@ -1900,6 +1961,7 @@ export type Classroom = {
 
 export type ClassroomFilterInput = {
   and?: InputMaybe<Array<ClassroomFilterInput>>;
+  childProgressReportPeriods?: InputMaybe<ListFilterInputTypeOfChildProgressReportPeriodFilterInput>;
   classroomGroups?: InputMaybe<ListFilterInputTypeOfClassroomGroupFilterInput>;
   classroomImageUrl?: InputMaybe<StringOperationFilterInput>;
   doesOwnerTeach?: InputMaybe<BooleanOperationFilterInput>;
@@ -2028,6 +2090,9 @@ export type ClassroomGroupSortInput = {
 };
 
 export type ClassroomInput = {
+  ChildProgressReportPeriods?: InputMaybe<
+    Array<InputMaybe<ChildProgressReportPeriodInput>>
+  >;
   ClassroomGroups?: InputMaybe<Array<InputMaybe<ClassroomGroupInput>>>;
   ClassroomImageUrl?: InputMaybe<Scalars['String']>;
   DoesOwnerTeach?: InputMaybe<Scalars['Boolean']>;
@@ -2064,6 +2129,9 @@ export type ClassroomMetricReport = {
 
 export type ClassroomModel = {
   __typename?: 'ClassroomModel';
+  childProgressReportPeriods?: Maybe<
+    Array<Maybe<ChildProgressReportPeriodModel>>
+  >;
   classroomImageUrl?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   isDummySchool?: Maybe<Scalars['Boolean']>;
@@ -6322,6 +6390,13 @@ export type ListFilterInputTypeOfCaregiverFilterInput = {
   some?: InputMaybe<CaregiverFilterInput>;
 };
 
+export type ListFilterInputTypeOfChildProgressReportPeriodFilterInput = {
+  all?: InputMaybe<ChildProgressReportPeriodFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ChildProgressReportPeriodFilterInput>;
+  some?: InputMaybe<ChildProgressReportPeriodFilterInput>;
+};
+
 export type ListFilterInputTypeOfClassProgrammeFilterInput = {
   all?: InputMaybe<ClassProgrammeFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -7088,6 +7163,7 @@ export type Mutation = {
   addBeCreativeActivity: Scalars['Boolean'];
   addBreastFeedingClub?: Maybe<BreastFeedingClubModel>;
   addCaregiverReportBackMeeting: Scalars['Boolean'];
+  addChildProgressReportPeriods: Scalars['Boolean'];
   addChildRegistrationPoints: Scalars['Boolean'];
   addClinic?: Maybe<Clinic>;
   addClinicMeeting?: Maybe<ClinicMeeting>;
@@ -7164,6 +7240,7 @@ export type Mutation = {
   createCaregiver?: Maybe<Caregiver>;
   createChild?: Maybe<Child>;
   createChildProgressReport?: Maybe<ChildProgressReport>;
+  createChildProgressReportPeriod?: Maybe<ChildProgressReportPeriod>;
   createClassProgramme?: Maybe<ClassProgramme>;
   createClassReassignmentHistory?: Maybe<ClassReassignmentHistory>;
   createClassroom?: Maybe<Classroom>;
@@ -7318,6 +7395,7 @@ export type Mutation = {
   deleteCaregiver?: Maybe<Scalars['Boolean']>;
   deleteChild?: Maybe<Scalars['Boolean']>;
   deleteChildProgressReport?: Maybe<Scalars['Boolean']>;
+  deleteChildProgressReportPeriod?: Maybe<Scalars['Boolean']>;
   deleteClassProgramme?: Maybe<Scalars['Boolean']>;
   deleteClassReassignmentHistory?: Maybe<Scalars['Boolean']>;
   deleteClassroom?: Maybe<Scalars['Boolean']>;
@@ -7610,6 +7688,7 @@ export type Mutation = {
   updateChild?: Maybe<Child>;
   updateChildAndCaregiver: Scalars['Boolean'];
   updateChildProgressReport?: Maybe<ChildProgressReport>;
+  updateChildProgressReportPeriod?: Maybe<ChildProgressReportPeriod>;
   updateClassProgramme?: Maybe<ClassProgramme>;
   updateClassReassignmentHistory?: Maybe<ClassReassignmentHistory>;
   updateClassroom?: Maybe<Classroom>;
@@ -7829,6 +7908,13 @@ export type MutationAddBreastFeedingClubArgs = {
 export type MutationAddCaregiverReportBackMeetingArgs = {
   clubId: Scalars['UUID'];
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddChildProgressReportPeriodsArgs = {
+  childProgressReportPeriods?: InputMaybe<
+    Array<InputMaybe<ChildProgressReportPeriodModelInput>>
+  >;
+  classroomId: Scalars['UUID'];
 };
 
 export type MutationAddChildRegistrationPointsArgs = {
@@ -8179,6 +8265,10 @@ export type MutationCreateChildArgs = {
 
 export type MutationCreateChildProgressReportArgs = {
   input?: InputMaybe<ChildProgressReportInput>;
+};
+
+export type MutationCreateChildProgressReportPeriodArgs = {
+  input?: InputMaybe<ChildProgressReportPeriodInput>;
 };
 
 export type MutationCreateClassProgrammeArgs = {
@@ -8859,6 +8949,10 @@ export type MutationDeleteChildArgs = {
 };
 
 export type MutationDeleteChildProgressReportArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteChildProgressReportPeriodArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -10238,6 +10332,11 @@ export type MutationUpdateChildAndCaregiverArgs = {
 export type MutationUpdateChildProgressReportArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ChildProgressReportInput>;
+};
+
+export type MutationUpdateChildProgressReportPeriodArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<ChildProgressReportPeriodInput>;
 };
 
 export type MutationUpdateClassProgrammeArgs = {
@@ -13838,6 +13937,9 @@ export type Query = {
   GetAllCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   GetAllChild?: Maybe<Array<Maybe<Child>>>;
   GetAllChildProgressReport?: Maybe<Array<Maybe<ChildProgressReport>>>;
+  GetAllChildProgressReportPeriod?: Maybe<
+    Array<Maybe<ChildProgressReportPeriod>>
+  >;
   GetAllClassProgramme?: Maybe<Array<Maybe<ClassProgramme>>>;
   GetAllClassReassignmentHistory?: Maybe<
     Array<Maybe<ClassReassignmentHistory>>
@@ -14012,6 +14114,7 @@ export type Query = {
   GetCaregiverById?: Maybe<Caregiver>;
   GetChildById?: Maybe<Child>;
   GetChildProgressReportById?: Maybe<ChildProgressReport>;
+  GetChildProgressReportPeriodById?: Maybe<ChildProgressReportPeriod>;
   GetClassProgrammeById?: Maybe<ClassProgramme>;
   GetClassReassignmentHistoryById?: Maybe<ClassReassignmentHistory>;
   GetClassroomById?: Maybe<Classroom>;
@@ -14258,6 +14361,7 @@ export type Query = {
   countCaregiver?: Maybe<Scalars['Int']>;
   countChild?: Maybe<Scalars['Int']>;
   countChildProgressReport?: Maybe<Scalars['Int']>;
+  countChildProgressReportPeriod?: Maybe<Scalars['Int']>;
   countClassProgramme?: Maybe<Scalars['Int']>;
   countClassReassignmentHistory?: Maybe<Scalars['Int']>;
   countClassroom?: Maybe<Scalars['Int']>;
@@ -14575,6 +14679,12 @@ export type QueryGetAllChildProgressReportArgs = {
   order?: InputMaybe<Array<ChildProgressReportSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ChildProgressReportFilterInput>;
+};
+
+export type QueryGetAllChildProgressReportPeriodArgs = {
+  order?: InputMaybe<Array<ChildProgressReportPeriodSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ChildProgressReportPeriodFilterInput>;
 };
 
 export type QueryGetAllClassProgrammeArgs = {
@@ -15426,6 +15536,11 @@ export type QueryGetChildByIdArgs = {
 export type QueryGetChildProgressReportByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<ChildProgressReportFilterInput>;
+};
+
+export type QueryGetChildProgressReportPeriodByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<ChildProgressReportPeriodFilterInput>;
 };
 
 export type QueryGetClassProgrammeByIdArgs = {
@@ -16598,6 +16713,11 @@ export type QueryCountChildArgs = {
 };
 
 export type QueryCountChildProgressReportArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountChildProgressReportPeriodArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
