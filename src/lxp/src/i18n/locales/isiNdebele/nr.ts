@@ -1,4 +1,4 @@
-import attendanceWalkthrough from '../../modules/attendance/walkthrough/en-za.json';
+import attendanceWalkthrough from '../../modules/attendance/walkthrough/nr.json';
 
 export const NR = {
   translation: {

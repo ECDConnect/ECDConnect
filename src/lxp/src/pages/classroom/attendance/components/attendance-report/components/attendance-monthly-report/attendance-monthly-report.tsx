@@ -56,7 +56,7 @@ export const AttendanceMonthlyReport: React.FC<
                   ></Typography>
 
                   <Typography
-                    text={`submitted registers`}
+                    text={`completed registers`}
                     weight={'bold'}
                     color={'black'}
                     type={'h3'}

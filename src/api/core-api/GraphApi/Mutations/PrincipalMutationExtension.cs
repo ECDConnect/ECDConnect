@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
@@ -29,15 +30,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     public class PrincipalMutationExtension
     {
         public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
-    [Service] ApplicationUserManager userManager,
-    [Service] PersonnelService personnelManager,
-    IGenericRepositoryFactory repoFactory,
-    [Service] INotificationService notificationService,
-    string firstName,
-    string lastName,
-    string idNumber,
-    string userId,
-    Guid? programmeTypeId)
+                                                        [Service] ApplicationUserManager userManager,
+                                                        [Service] PersonnelService personnelManager,
+                                                        IGenericRepositoryFactory repoFactory,
+                                                        [Service] INotificationService notificationService,
+                                                        string firstName,
+                                                        string lastName,
+                                                        string idNumber,
+                                                        string userId,
+                                                        Guid? programmeTypeId)
         {
             //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -85,7 +86,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     }                                    
                                 }
                             }
-                            if (classroomIds != null && classroomIds.Count() > 0)
+                            if (classroomIds != null && classroomIds.Count() > 0 && practitioner.Progress >= 2)
                             {
                                 personnelManager.RemovePractitionerClassrooms(classroomIds);
                             }
@@ -262,6 +263,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] PersonnelService personnelManager,
+            [Service] IClassroomService classroomService,
+            [Service] ApplicationUserManager userManager,
             string practitionerId, 
             string principalId, 
             bool accepted)
@@ -355,12 +358,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.Leaving = false;
 
                 notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
+                
             }
 
             //update practitioner with column changes
             practitionerRepo.Update(practitioner);
-            
-
             return status;
         }
 

@@ -1243,15 +1243,16 @@ class PractitionerService {
     return response.data.data.lastPractitionerInviteDate;
   }
 
-  async GetAllPractitionerInvites(userId: string): Promise<string> {
+  async GetAllPractitionerInvites(userId: string): Promise<Date[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllPractitionerInvites($userId: String) {
-        allPractitionerInvites(userId: $userId) {}
-    }
-      `,
+    const response = await apiInstance.post<{
+      data: { allPractitionerInvites: Date[] };
+      errors?: {};
+    }>(``, {
+      query: `query GetAllPractitionerInvites($userId: String) {
+          allPractitionerInvites(userId: $userId) {}
+        }`,
       variables: {
         userId,
       },

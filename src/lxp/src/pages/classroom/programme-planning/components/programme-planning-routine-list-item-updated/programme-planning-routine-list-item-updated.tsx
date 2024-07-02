@@ -24,6 +24,7 @@ import { dummyActivity } from '../../programme-dashboard/walkthrough/dummy-conte
 import { useMemo } from 'react';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
@@ -65,8 +66,12 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
 
   const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
 
+  const isTrialPeriod = useIsTrialPeriod();
+
   const hasPermissionToEdit =
-    practitioner?.isPrincipal || hasPermissionToPlanClassroomActivities;
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
 
   const isPastDay = () => {
     if (selectedDate) {

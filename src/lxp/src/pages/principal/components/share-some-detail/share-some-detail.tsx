@@ -21,7 +21,7 @@ export const ShareSomeDetails = ({
   setIsNotPrincipal,
   setShareSomeDetails,
 }: {
-  onNext: () => void;
+  onNext?: () => void;
   setIsNotPrincipal?: (item: boolean) => void;
   setShareSomeDetails?: (item: boolean) => void;
 }) => {
@@ -64,7 +64,8 @@ export const ShareSomeDetails = ({
       await appDispatch(userThunkActions.updateUser(copy));
     }
     setIsLoading(false);
-    onNext();
+    onNext && onNext();
+    setShareSomeDetails && setShareSomeDetails(false);
   };
 
   return (

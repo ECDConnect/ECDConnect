@@ -213,9 +213,10 @@ export const CoachAbout: React.FC = () => {
   };
 
   const handleSaveNewPhone = async () => {
-    await saveCoachUserData();
+    // await saveCoachUserData();
     const resendAuthCode = await new AuthService().SendOAAuthCode(
-      user?.userName!
+      user?.userName!,
+      coachAboutFormGetValues()?.cellphone
     );
 
     setOpenVerifyPhoneNumber(true);
@@ -366,7 +367,7 @@ export const CoachAbout: React.FC = () => {
     }
   };
 
-  const saveOldCoachUserData = async (imageBaseString: string = '') => {
+  const saveNewPractitionerUserData = async (imageBaseString: string = '') => {
     const coachForm = coachAboutFormGetValues();
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
@@ -374,7 +375,7 @@ export const CoachAbout: React.FC = () => {
     if (coachCopy && userCopy) {
       userCopy.firstName = coachForm.name;
       userCopy.surname = coachForm.surname;
-      userCopy.phoneNumber = oldUserNumber;
+      userCopy.phoneNumber = coachForm?.cellphone;
       userCopy.email = coachForm.email;
       userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
       if (imageBaseString?.length > 0) {
@@ -539,9 +540,9 @@ export const CoachAbout: React.FC = () => {
         <VerifyPhoneNumberAuthCode
           closeAction={setOpenVerifyPhoneNumber}
           username={user?.userName!}
-          savePractitionerUserData={saveCoachUserData}
+          handleChangePhoneNumber={saveCoachUserData}
           isFromEditCellPhone={true}
-          saveOldPractitionerUserData={saveOldCoachUserData}
+          saveNewPractitionerUserData={saveCoachUserData}
           setEditiCellPhoneNumber={setEditFieldVisible}
         />
       </Dialog>

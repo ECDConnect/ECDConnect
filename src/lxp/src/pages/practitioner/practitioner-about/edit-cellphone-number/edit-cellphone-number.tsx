@@ -71,7 +71,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     }
   }, []);
 
-  const savePractitionerUserData = async () => {
+  const handleChangePhoneNumber = async () => {
     setIsLoading(true);
     const practitionerForm = getPractitionerInfoFormValues();
     const copy = cloneDeep(user);
@@ -86,30 +86,29 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
 
-      await appDispatch(userActions.updateUser(copy));
-      const updatedUser = await appDispatch(userThunkActions.updateUser(copy));
-      setIsLoading(false);
+      // await appDispatch(userActions.updateUser(copy));
+      // const updatedUser = await appDispatch(userThunkActions.updateUser(copy));
+      // setIsLoading(false);
 
-      if (updatedUser) {
-        const resendAuthCode = await new AuthService().SendOAAuthCode(
-          user?.userName!
-        );
+      const resendAuthCode = await new AuthService().SendOAAuthCode(
+        user?.userName!,
+        practitionerForm.cellphone!
+      );
 
-        if (resendAuthCode) {
-          setOpenVerifyPhoneNumber(true);
-        }
+      if (resendAuthCode) {
+        setOpenVerifyPhoneNumber(true);
       }
     }
   };
 
-  const saveOldPractitionerUserData = async () => {
+  const saveNewPractitionerUserData = async () => {
     setIsLoading(true);
     const practitionerForm = getPractitionerInfoFormValues();
     const copy = cloneDeep(user);
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;
-      copy.phoneNumber = oldUserNumber;
+      copy.phoneNumber = cellphone;
       copy.email = practitionerForm.email!;
       if (isWhatsappNumber) {
         copy.whatsappNumber = undefined;
@@ -130,7 +129,6 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   }, [setPractitionerInfoFormValues, user?.phoneNumber]);
 
   const handleCloseEditCellphoneNumber = async () => {
-    await saveOldPractitionerUserData();
     setEditiCellPhoneNumber(false);
   };
 
@@ -186,7 +184,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                   cellphone === user?.phoneNumber
                 }
                 onClick={() => {
-                  savePractitionerUserData();
+                  handleChangePhoneNumber();
                 }}
               />
             </div>
@@ -202,10 +200,11 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         <VerifyPhoneNumberAuthCode
           closeAction={setOpenVerifyPhoneNumber}
           username={user?.userName!}
-          savePractitionerUserData={savePractitionerUserData}
+          handleChangePhoneNumber={handleChangePhoneNumber}
           isFromEditCellPhone={true}
-          saveOldPractitionerUserData={saveOldPractitionerUserData}
+          saveNewPractitionerUserData={saveNewPractitionerUserData}
           setEditiCellPhoneNumber={setEditiCellPhoneNumber}
+          phoneNumber={cellphone}
         />
       </Dialog>
     </div>

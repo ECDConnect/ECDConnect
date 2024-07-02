@@ -170,7 +170,7 @@ export const PasswordReset: React.FC = () => {
                     className={styles.submitButton}
                     type="filled"
                     isLoading={isLoading}
-                    color="primary"
+                    color="quatenary"
                     disabled={sendLinkButtonDisabled || !isValid}
                     onClick={() => submitForm(resetPasswordFormGetValues())}
                   >

@@ -16,12 +16,14 @@ import {
 import { useAppDispatch } from '@/store';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { useTranslation } from 'react-i18next';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export default function AttendanceWrapper() {
   const { t } = useTranslation();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isTrialPeriod = useIsTrialPeriod();
   const {
     setState,
     state: { run, stepIndex, attendanceStatus, enableButton },
@@ -138,7 +140,7 @@ export default function AttendanceWrapper() {
       (action === 'reset' || lifecycle === 'complete')
     ) {
       setState({ run: false, stepIndex: 0, tourActive: false });
-      if (practitioner?.progress! < 3) {
+      if (practitioner?.progress! < 3 && !isTrialPeriod) {
         await updatePractitionerProgress();
       }
       history.push(ROUTES.CLASSROOM.ROOT, {

@@ -83,7 +83,6 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
   return (
     <BannerWrapper
       size={'small'}
-      backgroundColour={'uiBg'}
       renderBorder={true}
       title={note.name}
       color={'primary'}
@@ -117,7 +116,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
           onClick={() => deletePrompt(note)}
           className="w-full rounded-2xl"
           size="small"
-          color="primary"
+          color="quatenary"
           type="filled"
           isLoading={isLoading}
           disabled={isLoading}

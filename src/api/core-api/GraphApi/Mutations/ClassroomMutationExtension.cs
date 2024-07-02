@@ -21,6 +21,9 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Managers;
 using Microsoft.EntityFrameworkCore;
+using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.DataAccessLayer.Entities.Reports;
+using ECDLink.Core.Extensions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -392,6 +395,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return childrenReassigned;
         }
 
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public bool UpdatePreschoolFeeForClassroom(
             [Service] IPointsEngineService pointsEngineService,
             [Service] IHttpContextAccessor contextAccessor,
@@ -415,6 +419,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 notificationService.ExpireNotificationsTypesForUser(classroom.UserId.ToString(), TemplateTypeConstants.UpdatePreschoolFee);
             }
+
+            return true;
+        }
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
+        public bool AddChildProgressReportPeriods(
+            [Service] IPointsEngineService pointsEngineService,
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] INotificationService notificationService,
+            Guid classroomId,
+            List<ChildProgressReportPeriodModel> childProgressReportPeriods)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            if (childProgressReportPeriods == null || childProgressReportPeriods.Count < 2 || childProgressReportPeriods.Count > 4)
+            {
+                throw new ArgumentException("Invalid number of reporting periods submitted", "childProgressReportingPeriods");
+            }
+
+            var reportPeriodRepo = repoFactory.CreateGenericRepository<ChildProgressReportPeriod>(userContext: uId);
+
+            reportPeriodRepo.InsertMany(childProgressReportPeriods.Select(x => new ChildProgressReportPeriod
+            {
+                ClassroomId = classroomId,
+                StartDate = x.StartDate,
+                EndDate = x.EndDate,
+            }));
 
             return true;
         }

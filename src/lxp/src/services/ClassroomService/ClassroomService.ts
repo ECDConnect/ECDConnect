@@ -1,5 +1,8 @@
 import { Config } from '@ecdlink/core';
-import { ClassroomInput } from '@ecdlink/graphql';
+import {
+  ChildProgressReportPeriodModelInput,
+  ClassroomInput,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
@@ -20,8 +23,8 @@ class ClassroomService {
           classroomForUser(userId: $userId) {            
             id
             name
-            imageUrl
-            numberOfPractitioners
+            classroomImageUrl
+            numberPractitioners
             numberOfAssistants
             numberOfOtherAssistants
             preschoolFeeAmount
@@ -43,6 +46,10 @@ class ClassroomService {
               phoneNumber
               email
               profileImageUrl
+            }
+            childProgressReportPeriods {
+              startDate
+              endDate
             }
           }
         }
@@ -121,7 +128,17 @@ class ClassroomService {
           userId
           name
           classroomImageUrl
+          numberPractitioners
           isPrinciple
+          siteAddress {
+            id
+            name
+            addressLine1
+            addressLine2
+            addressLine3
+            postalCode
+            ward
+          }
         }
       }
       `,
@@ -212,6 +229,36 @@ class ClassroomService {
     }
 
     return response.data.data.validatePreSchoolCode;
+  }
+
+  async addChildProgressReportPeriods(
+    classroomId: string,
+    childProgressReportPeriods: {
+      startDate: Date;
+      endDate: Date;
+    }[]
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addChildPregressReportPeriods: boolean };
+      errors?: {};
+    }>(``, {
+      query: `mutation AddChildProgressReportPeriods($classroomId: UUID!, $childProgressReportPeriods: [ChildProgressReportPeriodModelInput]) {
+          addChildProgressReportPeriods(classroomId: $classroomId, childProgressReportPeriods: $childProgressReportPeriods) {
+        }}`,
+      variables: {
+        classroomId,
+        childProgressReportPeriods,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'addChildProgressReportPeriods Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addChildPregressReportPeriods;
   }
 }
 

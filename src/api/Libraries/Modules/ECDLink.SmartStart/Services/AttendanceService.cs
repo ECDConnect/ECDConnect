@@ -148,11 +148,24 @@ namespace ECDLink.SmartStart.Services
 
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
+            Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => Guid.Parse(userId) == x.UserId);
+
+            if (practi != null && practi.IsPrincipal == true)
+            {
+               return _classGroupRepo.GetAll()
+              .Include(x => x.Classroom)
+              .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
+              .Where(x => x.IsActive && x.Classroom.UserId.ToString() == userId)
+              .OrderBy(x => x.Id)
+             .ToList();
+            }
+
+
             var groups = _classGroupRepo.GetAll()
-                .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
-                .Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
-                .OrderBy(x => x.Id)
-                .ToList();
+              .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
+              .Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
+              .OrderBy(x => x.Id)
+             .ToList();
 
             return groups;
         }

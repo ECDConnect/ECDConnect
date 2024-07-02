@@ -1,9 +1,4 @@
-import {
-  ClassProgrammeDto,
-  ClassroomGroupDto,
-  LearnerDto,
-  SiteAddressDto,
-} from '@ecdlink/core';
+import { ClassroomGroupDto, LearnerDto, SiteAddressDto } from '@ecdlink/core';
 import {
   ClassProgrammeInput,
   ClassroomGroupInput,
@@ -20,6 +15,7 @@ import { RootState, ThunkApiType } from '../types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
 import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { OverrideCache } from '@/models/sync/override-cache';
+import { SiteAddressService } from '@/services/SiteAddressService';
 
 export const ClassroomActions = {
   GET_CLASSROOM: 'getClassroom',
@@ -28,6 +24,7 @@ export const ClassroomActions = {
   UPSERT_CLASSROOM_GROUPS_LEARNERS: 'upsertClassroomGroupLearners',
   UPDATE_CLASSROOM_GROUP: 'updateClassroomGroup',
   UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
+  GET_CLASSROOM_FOR_TRIAL_PERIOD_USER: 'getClassroomForTrialPeriodUser',
 };
 
 export const getClassroom = createAsyncThunk<
@@ -141,11 +138,13 @@ export const upsertClassroom = createAsyncThunk<
         const input: ClassroomInput = {
           Id: classroom.id,
           UserId: classroom.principal.userId,
-          // SiteAddressId: classroom.siteAddress?.id,
+          SiteAddressId: classroom.siteAddress?.id
+            ? classroom.siteAddress?.id
+            : null,
           Name: classroom.name,
-          ClassroomImageUrl: classroom.imageUrl,
-          NumberPractitioners: classroom.numberOfPractitioners,
-          NumberOfAssistants: classroom.numberOfPractitioners,
+          ClassroomImageUrl: classroom.classroomImageUrl,
+          NumberPractitioners: classroom.numberPractitioners,
+          NumberOfAssistants: classroom.numberPractitioners,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
           IsActive: true, // All classrooms/groups on FE will be active
           SiteAddress: classroom?.siteAddress?.addressLine1
@@ -156,6 +155,16 @@ export const upsertClassroom = createAsyncThunk<
             classroom.preschoolFeeAmountLastUpdateDate,
           PreschoolCode: classroom?.preschoolCode,
         };
+
+        if (classroom?.siteAddress?.id) {
+          const addressInput = mapSiteAddress(classroom.siteAddress);
+
+          const updateAddress = await new SiteAddressService(
+            userAuth?.auth_token!
+          ).updateSiteAddress(classroom.siteAddress.id ?? '', addressInput);
+
+          input.SiteAddressId = addressInput.Id;
+        }
 
         const result = await new ClassroomService(
           userAuth?.auth_token

@@ -24,11 +24,15 @@ ALTER TABLE public."Classroom" ADD "PreschoolCode" varchar NULL;
 -- QA
 -- pre-school invite
 INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
-('c420b2e6-a91a-418f-8220-48348f3bbb1b','General.Callback.Invitations','General.Callback.Invitations.PreSchoolInvitation','PreSchoolInvitation','https://whitelabel-qa-app.azurewebsites.net/sign-up',true,true,'2024-05-31 00:00:00.000','2024-05-31 00:00:00.000',NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb');
+('c420b2e6-a91a-418f-8220-48348f3bbb1b','General.Callback.Invitations','General.Callback.Invitations.PreSchoolInvitation','PreSchoolInvitation','https://whitelabel-qa-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb');
+INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+('c420b2e6-a91a-418f-8220-48348f3bbb1b','General.Callback.Invitations','General.Callback.Invitations.PreSchoolInvitation','PreSchoolInvitation','https://ecdconnect-qa-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
+
 -- principal invite
 INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
 ('4246e432-528a-4765-87c1-2967726f0180','General.Callback.Invitations','General.Callback.Invitations.PrincipalSignup','PrincipalSignup','https://whitelabel-qa-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'e8f571eb-1972-4e71-a20f-347c65d059bb');
-
+INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
+('c420b2e6-a91a-418f-8220-48348f3bbb1b','General.Callback.Invitations','General.Callback.Invitations.PrincipalSignup','PrincipalSignup','https://ecdconnect-qa-app.azurewebsites.net/sign-up',true,true,current_date,current_date,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
 
 -- PROD
 --INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES

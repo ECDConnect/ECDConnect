@@ -11,6 +11,6 @@ export const initialOaLoginValues: OaLoginModel = {
 };
 
 export const oaLoginSchema = Yup.object().shape({
-  username: Yup.string().required().min(3, 'At least 8 characters'),
+  username: Yup.string().required(),
   password: Yup.string().required().min(8, 'At least 8 characters'),
 });

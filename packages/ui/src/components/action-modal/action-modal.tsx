@@ -15,6 +15,7 @@ export interface ActionModalProps extends ComponentBaseProps {
   iconColor?: Colours;
   iconBorderColor?: Colours;
   iconClassName?: string;
+  iconSize?: number;
   buttonClass?: string;
   customIcon?: ReactElement;
   title?: string;
@@ -54,6 +55,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
   hasAlert,
   alertMessage,
   alertType,
+  iconSize,
 }) => {
   return (
     <div
@@ -75,6 +77,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
           iconBorderColor={iconBorderColor}
           iconColor={iconColor}
           className={iconClassName}
+          iconSize={iconSize}
         />
       )}
       {title?.length > 0 && (

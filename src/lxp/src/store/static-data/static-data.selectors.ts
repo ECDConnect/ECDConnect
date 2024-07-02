@@ -51,8 +51,38 @@ export const getRaces = (state: RootState): RaceDto[] =>
 export const getLanguages = (state: RootState): LanguageDto[] =>
   state.staticData.languages || [];
 
-export const getEducationLevels = (state: RootState): EducationLevelDto[] =>
-  state.staticData.educationLevels || [];
+export const getEducationLevels = (state: RootState): EducationLevelDto[] => {
+  const educationLevels = !!state.staticData.educationLevels
+    ? [...state.staticData.educationLevels]
+    : [];
+
+  const getOrder = (id: string) => {
+    switch (id) {
+      case '9524e6be-b6ea-4b15-8200-9fee67d78935':
+        return 1; // No matric
+      case '2c09aaf9-f68e-45e7-871e-de0c2a6d27f2':
+        return 2; // Matric
+      case '42a1b3a3-bac6-03ce-0862-3243f81b0972':
+        return 3; // Higher certificate
+      case '68e7fb42-8db8-4798-8853-0fa9cc602981':
+        return 4; // Diploma
+      case 'e015e4e7-cab2-43f6-bbb8-3ea1100e3051':
+        return 5; // Bachelors
+      case '3b60119a-fadf-71e3-3ab0-1076bf48e954':
+        return 6; // Masters
+      case '0a946619-5a69-b3f6-b82e-907c647cacfe':
+        return 7; // Doctorate
+      default:
+        return 1000;
+    }
+  };
+
+  educationLevels.sort(function (a, b) {
+    return getOrder(a.id!) - getOrder(b.id!);
+  });
+
+  return educationLevels;
+};
 
 export const getProvinces = (state: RootState): ProvinceDto[] =>
   state.staticData.provinces || [];

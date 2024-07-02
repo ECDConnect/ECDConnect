@@ -44,10 +44,12 @@ import { WalkthroughModal } from '@/components/walkthrough/modal';
 import { InitialAttendanceTutorialModal } from '../attendance/components/attendance-tutorial/initial-tutorial-modal/initial-tutorial-modal';
 import { ActivitiesTab } from '../activities/activities';
 import { useTenant } from '@/hooks/useTenant';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
   const history = useHistory();
+  const isTrialPeriod = useIsTrialPeriod();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
   const [attendanceTutorialActive, setAttendanceTutorialActive] =
@@ -223,7 +225,9 @@ export const ClassDashboard: React.FC = () => {
     setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
     setAttendanceTutorialComplete(true);
     setAttendanceTutorialActive(false);
-    updatePractitionerProgress();
+    if (!isTrialPeriod) {
+      updatePractitionerProgress();
+    }
   };
 
   const handleDeclineAttendanceTutorial = useCallback(() => {

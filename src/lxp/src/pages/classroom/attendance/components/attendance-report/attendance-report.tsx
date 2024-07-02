@@ -29,6 +29,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -43,9 +44,10 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const { hasPermissionToTakeAttendance } = useUserPermissions();
+  const isTrialPeriod = useIsTrialPeriod();
 
   const hasPermissionToEdit =
-    practitioner?.isPrincipal || hasPermissionToTakeAttendance;
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
   const classroomGroup = classroomGroups?.find((x) => x.classroomId != null);
 

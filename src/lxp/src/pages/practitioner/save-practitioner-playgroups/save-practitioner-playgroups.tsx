@@ -26,6 +26,7 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { s } from 'msw/lib/glossary-297d38ba';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsRouteState>();
@@ -33,6 +34,7 @@ export const EditPlaygroups: React.FC = () => {
     ? location?.state?.returnRoute
     : null;
   const history = useHistory();
+  const isTrialPeriod = useIsTrialPeriod();
   const [isLoading, setIsLoading] = useState(false);
   const [activeClassroomGroupIndex, setActiveClassroomGroupIndex] =
     useState<number>();
@@ -135,9 +137,9 @@ export const EditPlaygroups: React.FC = () => {
     );
 
     await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
-    // await appDispatch(
-    //   classroomsThunkActions.upsertClassroomGroupProgrammes({})
-    // );
+    await appDispatch(
+      classroomsThunkActions.upsertClassroomGroupProgrammes({})
+    );
   };
 
   const confirmPlaygroups = async (playgroups: EditPlaygroupModel[]) => {
@@ -218,7 +220,7 @@ export const EditPlaygroups: React.FC = () => {
             }
           });
 
-          appDispatch(
+          const updatedClassroom = await appDispatch(
             classroomsActions.updateClassroomGroup({
               ...currentPlayGroup,
               name: playGroup.name,
@@ -226,11 +228,16 @@ export const EditPlaygroups: React.FC = () => {
               classProgrammes: currentPlayGroupProgrammes,
             })
           );
+          if (updatedClassroom) {
+            await appDispatch(
+              classroomsThunkActions.upsertClassroomGroupProgrammes({})
+            );
+          }
 
           if (hasChanges) {
-            appDispatch(
+            await appDispatch(
               classroomsThunkActions.updateClassroomGroup({
-                id: currentPlayGroup.id!,
+                id: currentPlayGroup?.id!,
                 classroomGroup: {
                   ...currentPlayGroup,
                   classroomId: playGroup?.classroomId!,
@@ -242,10 +249,11 @@ export const EditPlaygroups: React.FC = () => {
                 },
               })
             );
+
+            await appDispatch(
+              classroomsThunkActions.upsertClassroomGroupProgrammes({})
+            );
           }
-          // appDispatch(
-          //   classroomsThunkActions.upsertClassroomGroupProgrammes({})
-          // );
         } else {
           createPlayGroup(playGroup);
         }
@@ -288,7 +296,9 @@ export const EditPlaygroups: React.FC = () => {
           <ConfirmPlayGroups
             defaultPlayGroups={updatedClassroomGroups || []}
             onEditPlaygroup={onPlayGroupsEdit}
-            title={isPrincipal ? 'Edit classes' : 'View classes'}
+            title={
+              isPrincipal || isTrialPeriod ? 'Edit classes' : 'View classes'
+            }
             isLoading={isLoading}
             onSubmit={(value) => {
               confirmPlaygroups(value);
@@ -378,7 +388,7 @@ export const EditPlaygroups: React.FC = () => {
   return (
     <BannerWrapper
       title={
-        isPrincipal
+        isPrincipal || isTrialPeriod
           ? `Edit class${
               typeof activeClassroomGroupIndex === 'number' ? '' : 'es'
             }`

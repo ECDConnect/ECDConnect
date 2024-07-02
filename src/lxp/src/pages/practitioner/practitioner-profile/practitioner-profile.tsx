@@ -275,7 +275,9 @@ export const PractitionerProfile: React.FC = () => {
     <BannerWrapper
       size="normal"
       renderBorder={true}
-      title={`${user?.firstName} ${user?.surname ? user?.surname : ''}`}
+      title={`${user?.firstName || user?.userName} ${
+        user?.surname ? user?.surname : ''
+      }`}
       color={'primary'}
       onBack={() => history.push(ROUTES.ROOT)}
       backgroundColour="white"

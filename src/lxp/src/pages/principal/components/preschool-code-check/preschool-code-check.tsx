@@ -15,7 +15,7 @@ import {
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ClassroomService } from '@/services/ClassroomService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
@@ -33,6 +33,7 @@ import { notificationActions } from '@/store/notifications';
 import { useNotificationService } from '@/hooks/useNotificationService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
+import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
 
 export const PreschoolCodeCheck: React.FC<{
   onNext: OnNext;
@@ -57,6 +58,13 @@ export const PreschoolCodeCheck: React.FC<{
   const [classroomPrincipal, setClassroomPrincipal] = useState('');
   const [isLoadingPractitionerInvite, setIsLoadingPractitionerInvite] =
     useState(false);
+  const [shareSomeDetails, setShareSomeDetails] = useState(false);
+
+  useEffect(() => {
+    if (isOpenAccess && !user?.firstName) {
+      setShareSomeDetails(true);
+    }
+  }, []);
 
   const getPractitionerResponse = async () => {
     setIsLoadingPractitionerInvite(true);
@@ -316,6 +324,13 @@ export const PreschoolCodeCheck: React.FC<{
           onNext={onNext}
           setInvitePrincipal={setInvitePrincipal}
         />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={shareSomeDetails}
+        position={DialogPosition.Full}
+      >
+        <ShareSomeDetails setShareSomeDetails={setShareSomeDetails} />
       </Dialog>
     </div>
   );
