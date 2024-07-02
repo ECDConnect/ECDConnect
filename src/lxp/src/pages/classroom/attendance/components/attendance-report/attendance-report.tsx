@@ -30,6 +30,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -173,6 +174,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     }
   }, [isFulfilled, isToShowSeeMoreButton, showMessage, wasLoading]);
 
+  console.log({ formattedAttendanceSummary });
   if (isLoading) {
     return (
       <LoadingSpinner
@@ -199,21 +201,32 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           message={`Good job! All your attendance registers are up to date!`}
           icon={'SparklesIcon'}
         />
-        <AttendanceMonthlyReport
-          attendanceSummary={formattedAttendanceSummary}
-        />
+        {!formattedAttendanceSummary.length ||
+        (formattedAttendanceSummary?.length === 1 &&
+          formattedAttendanceSummary[0].percentageAttendance === 0) ? (
+          <IconInformationIndicator
+            title="You don't have saved any attendance registers yet!"
+            subTitle='Tap "Take attendance" to get started'
+          />
+        ) : (
+          <>
+            <AttendanceMonthlyReport
+              attendanceSummary={formattedAttendanceSummary}
+            />
+            {isToShowSeeMoreButton && (
+              <Button
+                className="mt-6"
+                type="outlined"
+                color="quatenary"
+                textColor="quatenary"
+                icon="EyeIcon"
+                text="See more registers"
+                onClick={onSeeMoreRegisters}
+              ></Button>
+            )}
+          </>
+        )}
       </div>
-      {isToShowSeeMoreButton && (
-        <Button
-          className="mt-6"
-          type="outlined"
-          color="quatenary"
-          textColor="quatenary"
-          icon="EyeIcon"
-          text="See more registers"
-          onClick={onSeeMoreRegisters}
-        ></Button>
-      )}
       {!isAllRegistersCompleted && hasPermissionToEdit && (
         <Button
           className="mt-auto"
