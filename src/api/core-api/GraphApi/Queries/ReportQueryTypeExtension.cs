@@ -39,6 +39,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -311,8 +312,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return metrics;
         }
 
-        // THIS IS ONLY FETCHING PROGRESS NOTIFICATION INFO FOR THE FIRST CLASS GROUP OF THE PRACTITIONER
-        // TODO - Need to update this to handle all classroom groups not just the first
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<NotificationDisplay>> GetClassroomActionItems(
             IGenericRepositoryFactory repoFactory,
@@ -322,6 +321,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHolidayService<Holiday> holidayService,
             [Service] IClassroomService classroomService,
             [Service] ChildAttendanceReport attendanceReportService,
+            [Service] AttendanceService attendanceService,
             HierarchyEngine hierarchyEngine,
             string practitionerId)
         {
@@ -368,7 +368,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 notifications.Add(new NotificationDisplay()
                 {
                     Subject = $"{missingRegisterDayCount} attendance registers not saved",
-                    // TODO: Warnings or errors?
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
                     Message = previousMonthStart.ToString("MMMM yyyy"),
@@ -381,23 +380,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Get Attendance Rate - why is this just for one classroom group. TODO - fix for multiple classes
             if (classroomGroups.Any())
             {
-                // The results of this seem wrong?
-                var attendanceReport = attendanceReportService.GetChildAttendance(classroomGroups.First().Id, practitionerId, previousMonthStart, previousMonthEnd);
-                var attendancePercentage = attendanceReport?.AttendancePercentage ?? 0;
-                if (attendancePercentage < 80)
+                var attendanceReports = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), previousMonthStart.Date, previousMonthEnd.GetEndOfDay());
+
+                if (attendanceReports.Any())
                 {
-                    notifications.Add(new NotificationDisplay()
+                    foreach (var attendanceReport in attendanceReports)
                     {
-                        Subject = $"{attendancePercentage}% attendance rate",
-                        // TODO: Warnings or errors?
-                        Icon = MetricsIconEnum.Error.ToString(),
-                        Color = MetricsColorEnum.Error.ToString(),
-                        Message = $"{classroomGroups.First().Name} - {previousMonthStart.ToString("MMMM yyyy")}",
-                        Notes = "",
-                        UserId = Guid.Parse(practitionerId),
-                        // TODO: Principal?
-                        UserType = "practitioner"
-                    });
+                        // The results of this seem wrong?
+                        var attendancePercentage = attendanceReport?.AttendancePercentage ?? 0;
+                        if (attendancePercentage < 50)
+                        {
+                            ClassroomGroup group = classroomGroups.Where(x => x.Id == Guid.Parse(attendanceReport.ClassroomGroupId)).FirstOrDefault();
+                            notifications.Add(new NotificationDisplay()
+                            {
+                                Subject = $"{attendancePercentage}% attendance rate",
+                                Icon = MetricsIconEnum.Error.ToString(),
+                                Color = MetricsColorEnum.Error.ToString(),
+                                Message = $"{group.Name} - {previousMonthStart.ToString("MMMM yyyy")}",
+                                Notes = "",
+                                UserId = Guid.Parse(practitionerId),
+                                UserType = "practitioner"
+                            });
+                        }
+                    }
                 }
             }
 
@@ -416,140 +421,43 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             // Notifications for child progress reports
             var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
-
-            // If any reports were submitted in the overdue period (2nd month of the submission window
-            if (reportCounts.reportsSubmittedOverdue > 0)
-            {
-                notifications.Add(new NotificationDisplay()
-                {
-                    Subject = $"{reportCounts.reportsSubmittedOverdue} overdue progress reports",
-                    // TODO: Warnings or errors?
-                    Icon = MetricsIconEnum.Error.ToString(),
-                    Color = MetricsColorEnum.Error.ToString(),
-                    Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
-                    Notes = "",
-                    UserId = Guid.Parse(practitionerId),
-                    // TODO: Principal?
-                    UserType = "practitioner"
-                });
-            }
+            var childCount = reportCounts.reportsSubmittedOnTime + reportCounts.reportsSubmittedOverdue;
 
             // If any children did not get a report submitted
-            if (reportCounts.reportsMissingOrIncomplete > 0
+            if (practitioner?.IsPrincipal == true && reportCounts.reportsMissingOrIncomplete > 0
                 && currentDate >= reportOverDueEnd)
             {
                 notifications.Add(new NotificationDisplay()
                 {
                     Subject = $"{reportCounts.reportsMissingOrIncomplete} missed progress reports",
-                    // TODO: Warnings or errors?
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
                     Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
                     Notes = "",
                     UserId = Guid.Parse(practitionerId),
-                    // TODO: Principal?
                     UserType = "practitioner"
                 });
             }
 
-            var children = await childRepo.GetAll()
-                .Where(c => c.IsActive == true
-                    && c.Hierarchy.StartsWith(practitionerHieracry))
-                .Include(c => c.User)
-                .ToListAsync();
-
-            // Get Child Age Groups
-            int percentOfChildrenOutsideAgeGroup = GetPercentChildrenOutsideAgeGroup(currentDate, children);
-
-            if (percentOfChildrenOutsideAgeGroup > 50)
+            // If any reports were submitted in the overdue period (2nd month of the submission window
+            if (reportCounts.reportsSubmittedOverdue > 0 && currentDate >= reportOverDueEnd)
             {
                 notifications.Add(new NotificationDisplay()
                 {
-                    Subject = $"{percentOfChildrenOutsideAgeGroup} of children in incorrect age group",
-                    Icon = MetricsIconEnum.Warning.ToString(),
-                    Color = MetricsColorEnum.Warning.ToString(),
-                    Message = $"SmartStart programmes are designed for 3 to 5 year olds.",
-                    Notes = "",
-                    UserId = Guid.Parse(practitionerId),
-                    UserType = "practitioner"
-                });
-            }
-
-            // Start Get Children not progressed
-            // Get children that haven't progressed for 2 or 3 periods
-            // but only if:
-            // Rule:
-            // Show only if the practitioner did not submit reports for the January to June reporting period by the deadline(31 July)
-            // or for the July to November reporting period by the deadline(20 Dec)"
-            if (reportCounts.reportsMissingOrIncomplete > 0
-                        && currentDate >= reportOverDueEnd)
-            {
-                var childProgress = GetChildProgress(repoFactory, reportPeriodStart, children);
-
-                // Rule:
-                // Only show this action if there is at least 1 child who did not progress from one reporting period to the next
-                // (for e.g.from Jan-Jun 2021 to Jul to Nov 2021) "
-                if (childProgress.notProgressedFor2Periods > 0)
-                {
-                    notifications.Add(new NotificationDisplay()
-                    {
-                        Subject = $"{childProgress.notProgressedFor2Periods} children havent progressed",
-                        // TODO: Warnings or errors?
-                        Icon = MetricsIconEnum.Warning.ToString(),
-                        Color = MetricsColorEnum.Warning.ToString(),
-                        Message = $"For 2 reporting periods.",
-                        Notes = "",
-                        UserId = Guid.Parse(practitionerId),
-                        // TODO: Principal?
-                        UserType = "practitioner"
-                    });
-                }
-
-                // Rule:
-                // Only show this action if there is at least 1 child who did not progress from one reporting period to the next
-                // (for e.g.from Jan-Jun 2021 to Jul to Nov 2021) "
-                if (childProgress.notProgressedFor3Periods > 0)
-                {
-                    notifications.Add(new NotificationDisplay()
-                    {
-                        Subject = $"{childProgress.notProgressedFor3Periods} children havent progressed",
-                        // TODO: Warnings or errors?
-                        Icon = MetricsIconEnum.Error.ToString(),
-                        Color = MetricsColorEnum.Error.ToString(),
-                        Message = $"For 2 reporting periods.",
-                        Notes = "",
-                        UserId = Guid.Parse(practitionerId),
-                        // TODO: Principal?
-                        UserType = "practitioner"
-                    });
-                }
-            }
-
-            var classReassignmentHistoryCount = classReassignmentHistoryRepo.GetAll().Count(ch => ch.IsActive
-                && ch.ReassignedToUser == Guid.Parse(practitionerId)
-                && ch.ReassignedToDate >= previousMonthStart
-                && ch.ReassignedToDate <= previousMonthEnd);
-
-            if (classReassignmentHistoryCount > 0)
-            {
-                notifications.Add(new NotificationDisplay()
-                {
-                    Subject = $"Class reassigned",
+                    Subject = $"See progress summary",
                     // TODO: Warnings or errors?
-                    Icon = MetricsIconEnum.Error.ToString(),
-                    Color = MetricsColorEnum.Error.ToString(),
-                    Message = classReassignmentHistoryCount > 1
-                        ? $"{classReassignmentHistoryCount} classes have been reassigned to other practitioners."
-                        : $"A class has been assigned to a different practitioner.",
+                    Icon = MetricsIconEnum.None.ToString(),
+                    Color = MetricsColorEnum.None.ToString(),
+                    Message = $"{childCount} children",
                     Notes = "",
                     UserId = Guid.Parse(practitionerId),
-                    // TODO: Principal?
                     UserType = "practitioner"
                 });
             }
 
             return notifications;
         }
+
 
         private static (int notProgressedFor2Periods, int notProgressedFor3Periods) GetChildProgress(
             IGenericRepositoryFactory repoFactory,
@@ -999,6 +907,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
 
                 var numberOfDaysNotAttendedForClassroomGroup = availableClassDays.Except(allAttendanceForPeriod.Select(a => a.AttendanceDate));
+                if (numberOfDaysNotAttendedForClassroomGroup.Any())
+                {
+                    missingRegisterDayCount += 1; 
+                }
             }
 
             return missingRegisterDayCount;
@@ -1387,8 +1299,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                     #endregion
                 }
-
-               
 
                 if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
                 {

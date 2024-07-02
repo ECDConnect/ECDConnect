@@ -1,31 +1,18 @@
-import ROUTES from '@/routes/routes';
 import {
   formatCurrentValue,
   getStatementExpenseTotal,
   getStatementIncomeTotal,
-  numberWithSpaces,
 } from '@/utils/statements/statements-utils';
-import { Typography, Button, Card } from '@ecdlink/ui';
+import { Typography, Card } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import React, { useEffect, useMemo } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import { useAppContext } from '@/walkthrougContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-  LocalStorageKeys,
-  getNextMonth,
-  getPreviousMonth,
-} from '@ecdlink/core';
-import { IncomeStatementDates } from '@/constants/Dates';
-import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
+import { IncomeStatementDto, LocalStorageKeys } from '@ecdlink/core';
 
 interface IncomeStatementProps {
   statements: IncomeStatementDto[];
-  isSubmitWindowOpen: boolean;
   isThisMonthSubmitted: boolean;
   isLastMonthSubmitted: boolean;
 }
@@ -33,73 +20,11 @@ interface IncomeStatementProps {
 export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   statements,
 }) => {
-  const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const offlineImg = window.localStorage.getItem(
     LocalStorageKeys.offlineStatments
   );
-  const { userId } = useParams<PractitionerBusinessParams>();
-
-  // const lastMonthStatement = statements[statements.length - 1];
-
-  // const previousMonthRecord = !!lastMonthStatement
-  //   ? `${getMonthName(lastMonthStatement.month! - 1).substring(0, 3)} ${
-  //       lastMonthStatement.year
-  //     }`
-  //   : `-`;
-
-  // const previousMonthTotalIncome = !!lastMonthStatement
-  //   ? lastMonthStatement.incomeTotal
-  //   : 0;
-
-  // const previousMonthTotalExpenses = !!lastMonthStatement
-  //   ? lastMonthStatement.expenseTotal
-  //   : 0;
-
-  // const previousMonthTotalBalance = !!lastMonthStatement
-  //   ? lastMonthStatement.balance
-  //   : 0;
-
-  // const currentMonthRecord = useMemo(() => {
-  //   var date = new Date();
-  //   if (isThisMonthSubmitted) {
-  //     return format(getNextMonth(date), 'MMM yyyy');
-  //   }
-  //   if (
-  //     !isLastMonthSubmitted &&
-  //     date.getDate() <= IncomeStatementDates.SubmitEndDay
-  //   ) {
-  //     return format(getPreviousMonth(date), 'MMM yyyy');
-  //   }
-
-  //   return format(date, 'MMM yyyy');
-  // }, [isThisMonthSubmitted, isLastMonthSubmitted]);
-
-  // const currentMonthTotalIncome = unsubmittedIncome.reduce((total, item) => {
-  //   return total + item.amount;
-  // }, 0);
-
-  // const currentMonthTotalExpenses = unsubmittedExpenses.reduce(
-  //   (total, item) => {
-  //     return total + item.amount;
-  //   },
-  //   0
-  // );
-
-  // const currentMonthTotalBalance =
-  //   currentMonthTotalIncome - currentMonthTotalExpenses;
-
-  // const formatCurrentValue = (value: number) => {
-  //   if (value === 0) return `R ${numberWithSpaces(String(value.toFixed(2)))}`;
-
-  //   if (value > 0) return `+ R ${numberWithSpaces(String(value.toFixed(2)))}`;
-
-  //   if (value < 0)
-  //     return `- R ${numberWithSpaces(String(Math.abs(value).toFixed(2)))}`;
-  // };
-
   const {
-    setState,
     state: { stepIndex },
   } = useAppContext();
 
@@ -136,11 +61,12 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   );
 
   const renderData = useMemo(() => {
-    function getStatementTitle(
-      lastMonthStatement: IncomeStatementDto
-    ): string | undefined {
-      throw new Error('Function not implemented.');
-    }
+    const getStatementTitle = (statement: IncomeStatementDto | undefined) =>
+      !!statement
+        ? `${getMonthName(statement.month! - 1).substring(0, 3)} ${
+            statement.year
+          }`
+        : `-`;
 
     return (
       <>
@@ -152,7 +78,9 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
               shadowSize={'md'}
             >
               <Typography
-                text={`${format(new Date(), 'LLLL')} balance`}
+                text={`${getMonthName(
+                  currentMonthStatement?.month! - 1
+                )} balance`}
                 type="h4"
                 color={'white'}
                 className="w-6/12"
@@ -168,7 +96,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
             </Card>
             <table className="mt-4">
               <tbody>
-                <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
+                <tr className="bg-uiBg text-textDark font-body border-quatenary h-12 w-1/3 border-b px-6 py-3">
                   <th className="w-1/3"></th>
                   <th className="text-textDark font-body">
                     <Typography
@@ -290,27 +218,6 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
       <div className="pb-180 flex flex-col justify-center p-4">
         {!isOnline && <img src={offlineImg!} alt="offline img" />}
         {renderData}
-
-        <Button
-          shape="normal"
-          color="primary"
-          type="filled"
-          icon="DocumentSearchIcon"
-          onClick={() =>
-            history.push(
-              ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS.replace(
-                ':userId',
-                userId
-              )
-            )
-          }
-          className={`mt-6 mb-8 rounded-2xl ${
-            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-          }`}
-          id="seeAllStatements"
-        >
-          <Typography type="help" color="white" text="See all statements" />
-        </Button>
       </div>
     </>
   );

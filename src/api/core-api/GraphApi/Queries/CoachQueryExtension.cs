@@ -211,7 +211,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
                 classrooms.AddRange(practitionerClasses);
             }
-            return classrooms;
+            return classrooms.DistinctBy(x => x.Id).ToList();
         }
 
         public CircleTabClubs GetAllCoachingCircleClubsForCoach(
