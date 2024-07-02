@@ -338,7 +338,7 @@ export const Dashboard: React.FC = () => {
         return (
           <ActionModal
             title={`Share more information to keep using ${appName}`}
-            detailText={`Don't worry, AppName will continue to be completely free. We manage your information responsibly.`}
+            detailText={`Don't worry, ${tenant.tenant?.applicationName} will continue to be completely free. We manage your information responsibly.`}
             actionButtons={[
               {
                 text: 'Join or set up a preschool',
@@ -369,7 +369,7 @@ export const Dashboard: React.FC = () => {
         new Date()
       );
 
-      if (diffDays > 30 && !classroom?.name) {
+      if (diffDays > 30 && !classroom?.preschoolCode && isOpenAccess) {
         handle30DaysExpired();
       }
     }
