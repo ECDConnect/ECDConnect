@@ -15,11 +15,12 @@ export const IconInformationIndicator: React.FC<
     <div className={classNames(styles.programmeContainer, className)}>
       <RoundIcon icon={icon} className={styles.programmeIcon} />
       <Typography
-        type="body"
+        type="h3"
         className="mt-4"
         fontSize="16"
         align="center"
         weight="bold"
+        color="textDark"
         text={title}
       />
       <Typography
