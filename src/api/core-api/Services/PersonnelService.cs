@@ -200,6 +200,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
             practitionerRecord.StipendType = practitioner.StipendType;
             practitionerRecord.Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList();
+            practitionerRecord.ClickedCommunityTab = practitioner.ClickedCommunityTab;
 
             ApplicationUser practitionerUser = _userManager.FindByIdAsync(practitioner.UserId).Result;
             if (practitionerUser != null) {
