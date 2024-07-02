@@ -160,7 +160,7 @@ const PublicRoutes: React.FC = () => {
       <Route path={ROUTES.LOGIN} component={OaLogin} exact={true} />
       <Route
         path={ROUTES.OA_SIGN_UP_OR_LOGIN}
-        component={isOpenAccess ? OASignUpOrLogin : SignUp}
+        component={isOpenAccessUrl ? OASignUpOrLogin : SignUp}
         exact={true}
       />
       <Route
@@ -174,7 +174,11 @@ const PublicRoutes: React.FC = () => {
         exact={true}
       />
       <Route path={ROUTES.NEW_PASSWORD} component={NewPassword} exact={true} />
-      <Route path={ROUTES.SIGN_UP} component={SignUp} exact={true} />
+      <Route
+        path={ROUTES.SIGN_UP}
+        component={isOpenAccessUrl ? OASignUpOrLogin : SignUp}
+        exact={true}
+      />
       <Route
         path={ROUTES.COACH_REGISTRATION}
         component={CoachRegistration}
