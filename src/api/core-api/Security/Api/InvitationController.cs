@@ -15,10 +15,12 @@ using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
+using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -268,8 +270,8 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            var result = await _securityCodeManager.GenerateTokenAsync(user);
-            if (string.IsNullOrWhiteSpace(result))
+            var token = await _securityCodeManager.GenerateTokenAsync(user);
+            if (string.IsNullOrWhiteSpace(token))
             {
                 return BadRequest(new FailedVerificationModel
                 {
@@ -278,9 +280,33 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            await _notificationManager.SendOAWLAuthenticationCodeAsync(user, result);
+            if (!string.IsNullOrEmpty(authModel.PhoneNumber) && user.PhoneNumber != authModel.PhoneNumber)
+            {
+                var userPhoneNumberBeforeChange = user.PhoneNumber;
+                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, authModel.PhoneNumber));
+                user.PendingPhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PendingPhoneNumber, authModel.PhoneNumber)); ;
+                user.PhoneNumberConfirmed = false;
+                var updatedUser = await _userManager.UpdateAsync(user);
+                if (updatedUser.Succeeded)
+                {
+                    await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
+                }
+                // revert phone number to old one
+                await Task.Delay(1000);
+                user.PhoneNumber = userPhoneNumberBeforeChange;
+                await _userManager.UpdateAsync(user);
+            } 
+            else
+            {
+                await _notificationManager.SendOAWLAuthenticationCodeAsync(user, token);
+            }
 
-            return new OkObjectResult(result);
+            return new OkObjectResult(token);
+        }
+
+        private static string replaceIfNotNullOrWhiteSpace(string original, string @new)
+        {
+            return string.IsNullOrWhiteSpace(@new) ? original : @new;
         }
 
         [Route("verify-oa-wl-auth-code")]
@@ -308,7 +334,8 @@ namespace ECDLink.Security.Api
                 });
             }
             // archive message records linked to user's number
-            var messages = _messageRepo.GetAll().Where(x => x.IsActive && x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
+            var messages = _messageRepo.GetAll().Where(x => x.IsActive && (x.To == user.PhoneNumber || x.To == user.PendingPhoneNumber) 
+                                                        && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode).ToList();
             if (messages.Count != 0)
             {
                 foreach (var message in messages)
@@ -329,6 +356,12 @@ namespace ECDLink.Security.Api
 
             // Update user, to save last login
             user.LastSeen = DateTime.Now;
+            if (user.PendingPhoneNumber != null)
+            {
+                user.PhoneNumber = user.PendingPhoneNumber;
+                user.PhoneNumberConfirmed = true;
+                user.PendingPhoneNumber = null;
+            }
             await _userManager.UpdateAsync(user);
 
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
@@ -355,7 +388,7 @@ namespace ECDLink.Security.Api
             // If the user reaches the confirm auth code screen, but for some reason leaves the flow. And after that, the user tries to log in directly with the username,
             // we should check the auth code status. If it's not confirmed yet, we should redirect the user to the confirm auth code screen again.
             var latestMessage = _messageRepo.GetAll()
-                .Where(x => x.To == user.PhoneNumber && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode)
+                .Where(x => (x.To == user.PendingPhoneNumber || x.To == user.PhoneNumber) && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode)
                 .OrderByDescending(x => x.InsertedDate).FirstOrDefault();
             if (latestMessage == null)
             {
@@ -368,7 +401,6 @@ namespace ECDLink.Security.Api
             {
                 return Ok(latestMessage.IsActive);
             }
-            
         }
 
         [Route("update-username-password")]

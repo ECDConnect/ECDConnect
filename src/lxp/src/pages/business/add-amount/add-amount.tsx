@@ -2,29 +2,22 @@ import {
   ComponentBaseProps,
   BannerWrapper,
   Typography,
-  renderIcon,
-  Button,
-  Alert,
   StackedList,
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import ROUTES from '@routes/routes';
-import * as styles from './add-amount.styles';
-import StatementsWrapper from '../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
+import StatementsWrapper from '../money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import { BusinessTabItems } from '../business.types';
 
 export const AddAmount: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
 
-  // TODO - Fix walkthrough
-  //const { setState, state } = useAppContext();
+  const { setState, state } = useAppContext();
 
-  // const nextStep = () => {
-  //   setState({ stepIndex: 3 });
-  // };
-  // const stateStepIndex1 = state?.stepIndex === 1 && state?.run === true;
-  // const stateStepIndex2 = state?.stepIndex === 2 && state?.run === true;
+  const nextWalkthroughStep = () => {
+    setState({ stepIndex: 3 });
+  };
 
   return (
     <BannerWrapper
@@ -40,7 +33,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
       className="w-full p-4"
     >
       <StatementsWrapper />
-      <div id="createStatements">
+      <div className="h-full">
         <div className="mb-3 flex w-full flex-wrap">
           <Typography
             type="h2"
@@ -49,17 +42,23 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
             className="mt-4"
           />
         </div>
-        <div className="flex gap-2">
+        <div className={`flex gap-2 ${state.stepIndex === 2 && 'h-full'}`}>
           <StackedList
-            className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+            id="createStatements"
+            className="-mt-0.5 flex h-full w-full flex-col gap-1 rounded-2xl"
             type="TitleList"
+            isFullHeight
             listItems={[
               {
+                id: 'createIncome',
                 title: 'Income (money in)',
                 titleIcon: 'ArrowCircleLeftIcon',
                 description: 'Preschool fees, donations, DBE subsidyu & others',
                 titleIconClassName: 'bg-tertiary text-white',
-                onActionClick: () => history.push(ROUTES.BUSINESS_ADD_INCOME),
+                onActionClick: () => {
+                  history.push(ROUTES.BUSINESS_ADD_INCOME);
+                  nextWalkthroughStep();
+                },
                 classNames: 'bg-successBg',
               },
               {

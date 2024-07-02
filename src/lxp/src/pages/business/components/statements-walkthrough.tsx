@@ -1,91 +1,34 @@
 import { useDialog } from '@ecdlink/core';
-import {
-  ActionModal,
-  Button,
-  Card,
-  DialogPosition,
-  Typography,
-} from '@ecdlink/ui';
-import { useEffect } from 'react';
-import walktroughImage from '../../../assets/walktroughImage.png';
-import ROUTES from '@/routes/routes';
+import { Button, Card, DialogPosition, Typography } from '@ecdlink/ui';
+import { useCallback } from 'react';
 import { useAppContext } from '@/walkthrougContext';
-import { useHistory } from 'react-router';
-import { BusinessTabItems } from '../business.types';
+import { WalkthroughModal } from '@/components/walkthrough/modal';
 
 interface WalkthroughProps {
-  setShowInfo: (item: boolean) => void;
-  setIsFromAutomaticallyStart: (item: boolean) => void;
-  isFromAutomaticallyStart: boolean;
-  updateWalkThroughStatus: (item: boolean) => void;
+  onBack: () => void;
 }
 
-export const Walkthrough: React.FC<WalkthroughProps> = ({
-  setShowInfo,
-  isFromAutomaticallyStart,
-  updateWalkThroughStatus,
-}) => {
+export const Walkthrough: React.FC<WalkthroughProps> = ({ onBack }) => {
   const dialog = useDialog();
-  const history = useHistory();
 
   const { setState } = useAppContext();
 
-  const handleClickStart = () => {
-    setState({ run: true, tourActive: true, stepIndex: 0 });
-    setShowInfo(false);
-    history.push(ROUTES.BUSINESS, { activeTabIndex: BusinessTabItems.MONEY });
-  };
-
-  const gotToStatementsWalkthrough = () => {
-    dialog({
+  const handleWalkthroughLanguage = useCallback(() => {
+    return dialog({
+      blocking: true,
       position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <ActionModal
-          customIcon={
-            <div className="flex">
-              <img src={walktroughImage} alt="profile" className="mb-2" />
-            </div>
-          }
-          importantText={`Welcome to the Money section of Funda App!`}
-          detailText={
-            'Would you like to see how to create your income statements?'
-          }
-          actionButtons={[
-            {
-              text: 'Yes, help me!',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                onSubmit();
-                handleClickStart();
-                updateWalkThroughStatus(true);
-              },
-              leadingIcon: 'CheckCircleIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                onCancel();
-                updateWalkThroughStatus(true);
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
+      color: 'bg-white',
+      render: (onClose) => (
+        <WalkthroughModal
+          onStart={() => {
+            onBack();
+            setState({ run: true, tourActive: true, stepIndex: 0 });
+            onClose();
+          }}
         />
       ),
     });
-  };
-
-  useEffect(() => {
-    if (isFromAutomaticallyStart) {
-      gotToStatementsWalkthrough();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dialog, onBack, setState]);
 
   return (
     <Card className="bg-uiBg my-4 flex flex-col justify-center rounded-2xl p-4">
@@ -105,11 +48,11 @@ export const Walkthrough: React.FC<WalkthroughProps> = ({
         text={`Start walkthrough`}
         icon={'ArrowCircleRightIcon'}
         type={'filled'}
-        color={'primary'}
+        color={'quatenary'}
         textColor={'white'}
         className={'mt-4 max-h-10'}
         iconPosition={'start'}
-        onClick={gotToStatementsWalkthrough}
+        onClick={handleWalkthroughLanguage}
       />
     </Card>
   );

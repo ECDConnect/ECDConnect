@@ -141,6 +141,10 @@ import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-ex
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
+  const url = window.location?.hostname;
+  const isOpenAccessUrl =
+    url === 'ecdconnect-develop-app.azurewebsites.net' ||
+    url === 'ecdconnect-develop-app';
 
   return (
     <Switch>
@@ -149,7 +153,7 @@ const PublicRoutes: React.FC = () => {
         path={ROUTES.ROOT}
         render={() => (
           <Redirect
-            to={isOpenAccess ? ROUTES.OA_SIGN_UP_OR_LOGIN : ROUTES.LOGIN}
+            to={isOpenAccessUrl ? ROUTES.OA_SIGN_UP_OR_LOGIN : ROUTES.LOGIN}
           />
         )}
       />

@@ -152,22 +152,22 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
   const saveClassroomPicture = async (imageBaseString: string) => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
-
-    if (classroomImage) {
-      await updateDocument(classroomImage, imageBaseString);
-    } else {
-      const fileName = `ClassroomPicture_${classroom?.id}.png`;
-      await createNewDocument(
-        {
-          data: imageBaseString,
-          fileName,
-          fileType: FileTypeEnum.ClassroomProfile,
-          userId: user?.id || '',
-          status: WorkflowStatusEnum.DocumentPendingVerification,
-        },
-        classroom?.id
-      );
-    }
+    // TODO Check if we'll need this create document for images
+    // if (classroomImage) {
+    //   await updateDocument(classroomImage, imageBaseString);
+    // } else {
+    //   const fileName = `ClassroomPicture_${classroom?.id}.png`;
+    //   await createNewDocument(
+    //     {
+    //       data: imageBaseString,
+    //       fileName,
+    //       fileType: FileTypeEnum.ClassroomProfile,
+    //       userId: user?.id || '',
+    //       status: WorkflowStatusEnum.DocumentPendingVerification,
+    //     },
+    //     classroom?.id
+    //   );
+    // }
 
     setClassImageBaseString(imageBaseString);
   };
@@ -175,7 +175,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const setClassImageBaseString = (imageBaseString?: string) => {
     const copy = Object.assign({}, classroom);
     if (copy) {
-      copy.imageUrl = imageBaseString || '';
+      copy.classroomImageUrl = imageBaseString || '';
     }
     setUpdatedClassroom(copy);
   };
@@ -235,10 +235,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       {
         title: 'Preschool name',
         subTitle:
-          classroomForPractitionerAnyType?.id &&
-          practitioner?.isPrincipal !== true &&
-          !missingProgramme &&
-          practitioner?.isRegistered
+          (classroomForPractitionerAnyType?.id &&
+            practitioner?.isPrincipal !== true &&
+            !missingProgramme &&
+            practitioner?.isRegistered) ||
+          isTrialPeriod
             ? classroomForPractitionerAnyType?.name
             : practitioner?.isRegistered && !missingProgramme
             ? classroom?.name || 'None'
@@ -297,11 +298,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           : 'EyeIcon',
         buttonColor: isTrialPeriod ? 'quatenary' : undefined,
         textColor: isTrialPeriod ? 'white' : undefined,
-        onActionClick: isTrialPeriod
-          ? () => showTrialPeriodCompleteProfileBlockingDialog()
-          : () => {
-              history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
-            },
+        onActionClick: () => {
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+        },
       });
     }
 
@@ -354,8 +353,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         title: 'Location',
         subTitle: classroom?.siteAddress?.addressLine1,
         switchTextStyles: true,
-        actionName: isPrincipal ? 'Add/Edit' : '',
-        actionIcon: 'PlusIcon',
+        actionName: isPrincipal
+          ? classroom?.siteAddress
+            ? 'Edit'
+            : 'Add'
+          : '',
+        actionIcon: classroom?.siteAddress ? 'PencilIcon' : 'PlusIcon',
         buttonColor:
           isTrialPeriod || !classroom?.siteAddress?.addressLine1
             ? 'quatenary'
@@ -429,37 +432,40 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       >
         <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
-            dataUrl={classroom?.imageUrl || ''}
+            dataUrl={classroom?.classroomImageUrl || ''}
             size={'header'}
-            onPressed={displayProfilePicturePrompt}
+            onPressed={isPrincipal ? displayProfilePicturePrompt : () => {}}
             hasConsent={true}
             isPreschoolImage={true}
             canChangeImage={practitioner?.isPrincipal ? true : false}
           />
         </div>
 
-        {!isPrincipal && !hasAccepted && !missingProgramme && (
-          <div className="flex justify-center">
-            <Alert
-              type="info"
-              title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
-              list={[`Connect with your principal & manage your classes.`]}
-              className={'mt-4 w-11/12'}
-              button={
-                <Button
-                  text="Edit profile"
-                  icon="PencilIcon"
-                  type={'filled'}
-                  color={'primary'}
-                  textColor={'white'}
-                  onClick={() =>
-                    history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
-                  }
-                />
-              }
-            />
-          </div>
-        )}
+        {!isPrincipal &&
+          !hasAccepted &&
+          !missingProgramme &&
+          !isTrialPeriod && (
+            <div className="flex justify-center">
+              <Alert
+                type="info"
+                title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
+                list={[`Connect with your principal & manage your classes.`]}
+                className={'mt-4 w-11/12'}
+                button={
+                  <Button
+                    text="Edit profile"
+                    icon="PencilIcon"
+                    type={'filled'}
+                    color={'primary'}
+                    textColor={'white'}
+                    onClick={() =>
+                      history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+                    }
+                  />
+                }
+              />
+            </div>
+          )}
 
         {!isPrincipal && missingProgramme && !isOpenAccess && (
           <div className="flex justify-center">

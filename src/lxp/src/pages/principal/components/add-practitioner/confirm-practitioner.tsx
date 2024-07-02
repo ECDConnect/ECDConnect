@@ -53,7 +53,7 @@ export default function ConfirmPractitioner({
     {
       title: user?.fullName ?? '',
       idNumber: user?.idNumber ?? '',
-      subTitle: 'Principal/owner',
+      subTitle: 'Principal',
       titleStyle:
         'text-textDark font-body text-base font-semibold leading-snug ',
       subTitleStyle: 'text-textMid font-body text-sm leading-5 ',

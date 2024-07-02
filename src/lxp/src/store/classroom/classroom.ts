@@ -59,7 +59,7 @@ const classroomsSlice = createSlice({
       action: PayloadAction<number>
     ) => {
       if (state.classroom) {
-        state.classroom.numberOfPractitioners = action.payload;
+        state.classroom.numberPractitioners = action.payload;
       }
     },
     updateClassroomGroup: (

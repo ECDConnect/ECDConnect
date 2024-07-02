@@ -1,4 +1,7 @@
-import { UpdateUserPermissionInputModelInput } from '@ecdlink/graphql';
+import {
+  UpdateUserPermissionInputModelInput,
+  UserPermissionModel,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { Config, PermissionDto } from '@ecdlink/core';
 class PermissionsService {
@@ -30,32 +33,33 @@ class PermissionsService {
 
   async UpdateUserPermission(
     input: UpdateUserPermissionInputModelInput
-  ): Promise<boolean> {
+  ): Promise<UserPermissionModel[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-          mutation UpdateUserPermission($input: UpdateUserPermissionInputModelInput) {
-      updateUserPermission(input: $input) {
-          id
-          userId
-          permissionId
-          isActive
-          permissionName
-          permissionNormalizedName
-          permissionGrouping
-      }
-  }
-        `,
+    const response = await apiInstance.post<{
+      data: { updateUserPermission: UserPermissionModel[] };
+      errors?: {};
+    }>(``, {
+      query: `mutation UpdateUserPermission($input: UpdateUserPermissionInputModelInput) {
+          updateUserPermission(input: $input) {
+            id
+            userId
+            permissionId
+            isActive
+            permissionName
+            permissionNormalizedName
+            permissionGrouping
+          }
+        }`,
       variables: {
         input: input,
       },
     });
 
-    if (response.status !== 200) {
-      throw new Error('Updating document failed - Server connection error');
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('UpdateUserPermission - Server connection error');
     }
 
-    return response.data.updateUserPermission;
+    return response.data.data.updateUserPermission;
   }
 }
 

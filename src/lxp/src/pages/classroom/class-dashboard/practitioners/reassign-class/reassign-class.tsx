@@ -10,6 +10,7 @@ import {
   ButtonGroupTypes,
   FormInput,
   Alert,
+  DropDownOption,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import { useHistory, useLocation } from 'react-router';
@@ -140,10 +141,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     },
   });
   const [practitionersList, setPractitionersList] = useState<
-    { label: string; value: any }[]
+    DropDownOption<string>[]
   >([]);
   const [practitionersTeachList, setPractitionersTeachList] = useState<
-    { label: string; value: any }[]
+    DropDownOption<string>[]
   >([]);
   const [classroomGroupsList, setClassroomGroupsList] = useState<
     { label: string; value: any }[]
@@ -200,6 +201,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   );
 
   const disableButton =
+    isLoading ||
     (!isOneDayLeave && !endDate) ||
     !practitioner ||
     !selectedDate ||
@@ -208,6 +210,20 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       reassignedClassroomGroups?.length !==
         practitionerClassroomGroups?.length);
   const reasonPayload = reason === 'Other' ? otherReason : reason;
+
+  const onBack = () => {
+    if (routeState?.isFromEditPractitionersPage) {
+      return history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
+    }
+
+    if (routeState?.isFromPrincipalPractitionerProfile) {
+      return history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+        practitionerId,
+      });
+    }
+
+    return history.push(ROUTES.BUSINESS);
+  };
 
   useEffect(() => {
     if (principalPractitioner) {
@@ -257,70 +273,23 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   }, [practitioner2, practitioners]);
 
   useEffect(() => {
-    const _list = practitioners
-      ?.filter((item) => item?.userId !== String(practitionerId))
-      ?.map((p) => {
-        if (p?.user?.firstName && p?.user?.surname) {
-          return {
-            label: `${p?.user?.firstName} ${p?.user?.surname}`,
-            value: p.userId,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
+    const _list =
+      [...(practitioners ?? []), practitionerUser]
+        ?.filter((p) => !!p?.user?.firstName)
+        ?.map(
+          (p): DropDownOption<string> =>
+            ({
+              label: `${p?.user?.firstName} ${p?.user?.surname ?? ''}`,
+              value: p?.userId!,
+            } as DropDownOption<string>)
+        ) ?? [];
 
     setPractitionersList(_list);
-    setPractitionersTeachList(_list);
+    setPractitionersTeachList(
+      _list?.filter((item) => item?.value !== String(practitionerId))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioners]);
-
-  useEffect(() => {
-    const _list = practitioners
-      ?.map((p) => {
-        if (p?.user?.firstName && p?.user?.surname) {
-          return {
-            label: `${p?.user?.firstName} ${p?.user?.surname}`,
-            value: p.userId,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
-
-    const practitionersTeachListUpdated = practitioners && [
-      ...practitioners,
-      practitionerUser,
-    ];
-
-    const _list2 = practitionersTeachListUpdated
-      ?.filter(
-        (item) => item?.userId !== String(practitionerId || practitioner)
-      )
-      ?.map((p) => {
-        if (p?.user?.firstName && p?.user?.surname) {
-          return {
-            label: `${p?.user?.firstName} ${p?.user?.surname}`,
-            value: p.userId,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
-
-    const _list2Updated = _list2?.filter(
-      (a, i) => _list2.findIndex((s) => a.value === s.value) === i
-    );
-
-    setPractitionersList(_list);
-    setPractitionersTeachList(_list2Updated);
-  }, [
-    practitioner,
-    practitioner?.userId,
-    practitionerId,
-    practitionerUser,
-    practitioners,
-  ]);
 
   useEffect(() => {
     const _list = absentInfo?.map((item) => {
@@ -622,11 +591,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() =>
-        history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: TabsItems.CLASSES,
-        })
-      }
+      onBack={onBack}
       displayOffline={!isOnline}
     >
       <div className="mb-3 flex w-full flex-wrap p-4">
@@ -636,7 +601,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           text={'Record absence/leave'}
           className="mt-6"
         />
-        <Dropdown
+        <Dropdown<string>
           placeholder={'Select practitioner'}
           list={practitionersList || []}
           fillType="clear"
@@ -652,7 +617,11 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               practitionersList.filter((prac) => prac.value !== item)
             );
           }}
-          disabled={hasAbsenteeClasses || principalPractitioner !== undefined}
+          disabled={
+            hasAbsenteeClasses ||
+            principalPractitioner !== undefined ||
+            !!routeState?.practitionerId
+          }
         />
         <label className={styles.label}>
           Will the practitioner be absent for one day or longer?
@@ -878,7 +847,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
         <Button
           type="filled"
-          color="primary"
+          color="quatenary"
           className={'mx-auto mt-4 w-full rounded-xl'}
           onClick={submitReassignClass}
           disabled={disableButton}

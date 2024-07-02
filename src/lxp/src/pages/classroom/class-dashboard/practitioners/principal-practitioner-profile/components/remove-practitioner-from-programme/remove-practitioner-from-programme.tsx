@@ -289,10 +289,7 @@ export const RemovePractitionerFromProgramme: React.FC<
     <>
       {practitioner?.isRegistered === null ||
       practitioner?.isRegistered === false ? (
-        <PractitionerNotRegistered
-          practitioner={practitioner}
-          classroom={classroom}
-        />
+        <PractitionerNotRegistered practitioner={practitioner} />
       ) : (
         <>
           <BannerWrapper

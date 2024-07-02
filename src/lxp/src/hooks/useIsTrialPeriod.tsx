@@ -13,11 +13,15 @@ export const useIsTrialPeriod = () => {
   const trialPeriod = useMemo(() => {
     if (practitioner?.startDate) {
       const differenceInDaysResult = differenceInDays(
-        new Date(practitioner?.startDate),
-        new Date()
+        new Date(),
+        new Date(practitioner?.startDate)
       );
 
-      if (differenceInDaysResult <= 30 && isOpenAccess && !clasroom?.name) {
+      if (
+        differenceInDaysResult <= 30 &&
+        isOpenAccess &&
+        !clasroom?.preschoolCode
+      ) {
         return true;
       } else {
         return false;

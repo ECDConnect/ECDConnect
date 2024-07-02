@@ -98,7 +98,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         if (p?.user?.fullName || p?.user?.userName) {
           return {
             label: `${p?.user?.firstName || p?.user?.userName} ${
-              p?.user?.surname
+              p?.user?.surname !== null ? p?.user?.surname : ''
             }`,
             value: p.userId,
           };
@@ -111,6 +111,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       label:
         currentPractitioner?.user?.fullName ||
         currentPractitioner?.user?.firstName ||
+        currentPractitioner?.user?.userName ||
         '',
       value: currentPractitioner?.userId,
     });
@@ -292,8 +293,10 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         className="text-errorMain -mb-4"
         type={'small'}
       />
-      <div className="mt-2">
-        <span>{`Does ${name ? `${name}` : 'this'} class meet everyday?`}</span>
+      <div className="mt-6">
+        <span className="text-textDark font-semibold">{`Does ${
+          name ? `${name}` : 'this'
+        } class meet everyday?`}</span>
         <div className="mt-2">
           <Controller
             name={'meetEveryday'}
@@ -313,7 +316,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         </div>
       </div>
       {meetEveryday === false && (
-        <div className="mt-5">
+        <div className="mt-4">
           <span className={styles.label}>{`When does ${
             name ? `"${name}"` : 'the'
           } class meet?`}</span>

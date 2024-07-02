@@ -12,7 +12,7 @@ import {
 } from '@ecdlink/ui';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
@@ -26,6 +26,8 @@ import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
+import { ClassroomService } from '@/services/ClassroomService';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -48,7 +50,7 @@ export const PractitionerSetup = ({
   });
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
-
+  const [principalClassroom, setPrincipalClassroom] = useState<ClassroomDto>();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
@@ -61,6 +63,20 @@ export const PractitionerSetup = ({
       updatePrincipalInvitation({ userId, principalHierarchy, accepted })
     );
   };
+
+  useEffect(() => {
+    getPrincipalClassroom();
+  }, []);
+
+  const getPrincipalClassroom = useCallback(async () => {
+    const classroom = await new ClassroomService(
+      userAuth?.auth_token!
+    ).getClassroomForUser(practitioner?.principalHierarchy!);
+
+    if (classroom) {
+      setPrincipalClassroom(classroom);
+    }
+  }, []);
 
   const { practitionerToProgramme, allowPermissions } = watch();
 
@@ -94,96 +110,95 @@ export const PractitionerSetup = ({
             </div>
           </div>
         </div>
-        <div>
+        {principalClassroom && (
           <div>
             <div>
-              <Typography
-                type="body"
-                text={`${
-                  classroom?.principal.firstName ||
-                  classroom?.principal.firstName
-                } has added you to`}
-              />
-              <Typography
-                type="body"
-                weight="bold"
-                color="primary"
-                text={classroom?.name}
-              />
-            </div>
-            <Divider dividerType="dashed" className="py-4" />
-          </div>
-          <div className={'w-full'}>
-            <label className={''}>
-              {`Are you a practitioner at ${classroom?.name}?`}
-            </label>
-            <div className="mt-1">
-              <Controller
-                name={'practitionerToProgramme'}
-                control={control}
-                render={({ field: { onChange, value, ref } }) => (
-                  <ButtonGroup<boolean>
-                    inputRef={ref}
-                    options={yesNoOptions}
-                    onOptionSelected={onChange}
-                    selectedOptions={value}
-                    color="quatenary"
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full'}
-                    notSelectedColor="quatenaryBg"
-                    textColor="quatenary"
-                  />
-                )}
-              ></Controller>
-            </div>
-          </div>
-
-          {practitionerToProgramme !== undefined && (
-            <Alert
-              type={practitionerToProgramme ? 'info' : 'warning'}
-              title={
-                practitionerToProgramme
-                  ? 'You need to accept the agreement below to continue'
-                  : `${classroom?.principal.firstName} will be notified and you will be removed from ${classroom?.name}.`
-              }
-              className="my-4"
-            />
-          )}
-
-          {practitionerToProgramme && (
-            <>
-              <Typography
-                type="h4"
-                text="Permission to share information with principal"
-              />
-              <div
-                className={`${false && 'border-errorDark border'} ${
-                  false ? 'border-quatenary bg-quatenaryBg border' : 'bg-uiBg'
-                } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
-              >
-                <div className="flex">
-                  <Checkbox
-                    register={register}
-                    checked={allowPermissions}
-                    nameProp="allowPermissions"
-                    className="mr-4 flex-1"
-                    description="I accept that my information will be shared with the programme principal"
-                  />
-                  &nbsp;
-                  <Button
-                    color={'secondaryAccent2'}
-                    type={'filled'}
-                    text="Read"
-                    textColor="secondary"
-                    className={'rounded-xl'}
-                    size={'small'}
-                    onClick={() => setViewPermissionToShare(true)}
-                  />
-                </div>
+              <div>
+                <Typography
+                  type="body"
+                  text={`${principalClassroom?.principal.firstName} has added you to`}
+                />
+                <Typography
+                  type="body"
+                  weight="bold"
+                  color="primary"
+                  text={principalClassroom?.name}
+                />
               </div>
-            </>
-          )}
-        </div>
+              <Divider dividerType="dashed" className="py-4" />
+            </div>
+            <div className={'w-full'}>
+              <label className={''}>
+                {`Are you a practitioner at ${principalClassroom?.name}?`}
+              </label>
+              <div className="mt-1">
+                <Controller
+                  name={'practitionerToProgramme'}
+                  control={control}
+                  render={({ field: { onChange, value, ref } }) => (
+                    <ButtonGroup<boolean>
+                      inputRef={ref}
+                      options={yesNoOptions}
+                      onOptionSelected={onChange}
+                      selectedOptions={value}
+                      color="quatenary"
+                      type={ButtonGroupTypes.Button}
+                      className={'w-full'}
+                      notSelectedColor="quatenaryBg"
+                      textColor="quatenary"
+                    />
+                  )}
+                ></Controller>
+              </div>
+            </div>
+
+            {practitionerToProgramme !== undefined && (
+              <Alert
+                type={practitionerToProgramme ? 'info' : 'warning'}
+                title={
+                  practitionerToProgramme
+                    ? 'You need to accept the agreement below to continue'
+                    : `${classroom?.principal.firstName} will be notified and you will be removed from ${classroom?.name}.`
+                }
+                className="my-4"
+              />
+            )}
+
+            {practitionerToProgramme && (
+              <>
+                <Typography
+                  type="h4"
+                  text="Permission to share information with principal"
+                />
+                <div
+                  className={`${false && 'border-errorDark border'} ${
+                    false ? 'border-quatenary bg-quatenaryBg border' : 'bg-uiBg'
+                  } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+                >
+                  <div className="flex">
+                    <Checkbox
+                      register={register}
+                      checked={allowPermissions}
+                      nameProp="allowPermissions"
+                      className="mr-4 flex-1"
+                      description="I accept that my information will be shared with the programme principal"
+                    />
+                    &nbsp;
+                    <Button
+                      color={'secondaryAccent2'}
+                      type={'filled'}
+                      text="Read"
+                      textColor="secondary"
+                      className={'rounded-xl'}
+                      size={'small'}
+                      onClick={() => setViewPermissionToShare(true)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="self-end">
           <Button

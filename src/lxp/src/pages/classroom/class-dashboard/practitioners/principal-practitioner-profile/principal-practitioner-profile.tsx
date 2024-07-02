@@ -54,6 +54,9 @@ import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
 import { AbsencesView } from './components/absences-view/absences-view';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import { staticDataSelectors } from '@/store/static-data';
+import EditPermissions from './components/edit-permissions/edit-permissions';
+import { ReassignClassPageState } from '../reassign-class/reassign-class.types';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -64,10 +67,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitionerUserId = location.state.practitionerId;
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerUserId
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerUserId)
   );
+
   const daysAbsentLastMonth = practitioner?.daysAbsentLastMonth;
   const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
 
@@ -158,14 +161,16 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             practitionerId,
             allAbsenteeClasses,
             principalPractitioner: practitionerUser,
-          });
+            isFromPrincipalPractitionerProfile: true,
+          } as ReassignClassPageState);
           return;
         }
         if (allAbsenteeClasses)
           history.push('practitioner-reassign-class', {
             practitionerId,
             allAbsenteeClasses,
-          });
+            isFromPrincipalPractitionerProfile: true,
+          } as ReassignClassPageState);
 
         return;
       }
@@ -174,12 +179,14 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         history.push('practitioner-reassign-class', {
           practitionerId,
           allAbsenteeClasses,
+          isFromPrincipalPractitionerProfile: true,
         });
         return;
       }
 
       history.push('practitioner-reassign-class', {
         practitionerId,
+        isFromPrincipalPractitionerProfile: true,
       });
     },
     [history, practitionerUser]
@@ -325,15 +332,46 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     },
   ];
 
+  const permissions = useSelector(staticDataSelectors.getPermissions);
+
+  const [allowedPermissions, setAllowedPermissions] = useState<
+    string[] | undefined
+  >();
+  const [notAllowedPermissions, setNotAllowedPermissions] = useState<
+    string[] | undefined
+  >();
+
+  useEffect(() => {
+    const allowed: string[] = [];
+    const notAllowed: string[] = [];
+
+    permissions
+      .filter((x) => x.grouping === 'Practitioner')
+      .forEach((permission) => {
+        if (
+          practitioner?.permissions?.some(
+            (userPermission) =>
+              userPermission?.permissionId === permission.id &&
+              userPermission.isActive
+          )
+        ) {
+          allowed.push(permission.normalizedName.toLowerCase());
+        } else {
+          notAllowed.push(permission.normalizedName.toLowerCase());
+        }
+      });
+    setAllowedPermissions(allowed);
+    setNotAllowedPermissions(notAllowed);
+  }, [practitioner, permissions]);
+
+  const [editPermissionsVisible, setEditPermissionsVisible] =
+    useState<boolean>(false);
+
   return (
     <>
       {practitioner?.isRegistered === null ||
       practitioner?.isRegistered === false ? (
-        <PractitionerNotRegistered
-          practitioner={practitioner}
-          classroom={classroom}
-          existingRemoval={existingRemoval}
-        />
+        <PractitionerNotRegistered practitioner={practitioner} />
       ) : (
         <div className={styles.contentWrapper}>
           <BannerWrapper
@@ -505,6 +543,82 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               />
             )}
           </div>
+          <div className="flex flex-wrap justify-center">
+            <Card className={styles.absentCard}>
+              <div className={styles.absentCardTitle}>
+                <Typography
+                  type={'h1'}
+                  color="textDark"
+                  text={'App Rules'}
+                  className={styles.absentCardTitle}
+                />
+                <div className="mt-2 mr-4 flex items-center">
+                  <div className="mx-4 mt-2 mb-4 w-full flex-col items-center">
+                    <p>
+                      <Typography
+                        type={'span'}
+                        color="textDark"
+                        className="font-bold"
+                        text={'Allowed: '}
+                      />
+                      <Typography
+                        type={'span'}
+                        color="textMid"
+                        text={
+                          !!allowedPermissions?.length
+                            ? allowedPermissions.join(', ')
+                            : 'none'
+                        }
+                      />
+                    </p>
+                    <p>
+                      <Typography
+                        type={'span'}
+                        color="textDark"
+                        className="font-bold"
+                        text={'Not Allowed: '}
+                      />
+                      <Typography
+                        type={'span'}
+                        color="textMid"
+                        text={
+                          !!notAllowedPermissions?.length
+                            ? notAllowedPermissions.join(', ')
+                            : 'none'
+                        }
+                      />
+                    </p>
+                  </div>
+                  <Button
+                    size="small"
+                    type="filled"
+                    color="quatenary"
+                    onClick={() => setEditPermissionsVisible(true)}
+                  >
+                    <Typography
+                      type="body"
+                      className="mr-1"
+                      color="white"
+                      text={'Edit'}
+                    />
+                    {renderIcon('PencilIcon', 'w-5 h-5 color-white text-white')}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+            <Dialog
+              fullScreen
+              visible={editPermissionsVisible}
+              position={DialogPosition.Middle}
+            >
+              <div className={styles.dialogContent}>
+                <EditPermissions
+                  practitioner={practitioner!}
+                  onClose={() => setEditPermissionsVisible(false)}
+                />
+              </div>
+            </Dialog>
+          </div>
           <>
             <div className={styles.infoWrapper}>
               <div>
@@ -662,7 +776,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   />
                   {renderIcon(
                     'TrashIcon',
-                    'w-5 h-5 color-quatenary text-quatenary mr-2'
+                    'w-5 h-5 color-white text-white mr-2'
                   )}
                 </Button>
               </div>

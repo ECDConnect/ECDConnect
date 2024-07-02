@@ -22,7 +22,6 @@ using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -516,22 +515,6 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            // If the input phone number is different from the user, we need to validate
-            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(input.PhoneNumber);
-            if (user.UserName != normalizePhoneNumber)
-            {
-                var userByPhoneNumber = _userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
-                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-                if (userByPhoneNumber != null)
-                {
-                    return BadRequest(new FailedVerificationModel
-                    {
-                        ErrorCode = 5,
-                        Error = "Invalid phone number"
-                    });
-                }
-            }
-
             // Change password
             if (string.IsNullOrWhiteSpace(user.PasswordHash))
             {
@@ -543,7 +526,7 @@ namespace ECDLink.Security.Api
             }
 
             // Change phone number
-            user.PhoneNumber = normalizePhoneNumber;
+            user.PhoneNumber = UserHelper.NormalizePhoneNumber(input.PhoneNumber);
             user.UpdatedDate = DateTime.Now;
             await _userManager.UpdateAsync(user);
 
@@ -553,7 +536,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 6,
+                    ErrorCode = 5,
                     Error = "Generate of token failure"
                 });
             }

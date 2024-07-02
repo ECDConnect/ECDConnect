@@ -23,7 +23,7 @@ export const WhatsappCall = () => {
     <>
       <div className="mt-10">
         <Typography
-          type="h4"
+          type="h2"
           weight="bold"
           lineHeight="snug"
           text={'Contact ' + practitionerFirstName}
@@ -32,7 +32,7 @@ export const WhatsappCall = () => {
           type="h5"
           weight="bold"
           lineHeight="snug"
-          color="secondary"
+          color="quatenary"
           text={`${
             practitionerNumber == null
               ? 'Number not available'
@@ -40,7 +40,7 @@ export const WhatsappCall = () => {
           }`}
         />
         <Button
-          color={'primary'}
+          color={'secondary'}
           type={'outlined'}
           className={'mr-4 mt-2'}
           size={'small'}
@@ -49,10 +49,10 @@ export const WhatsappCall = () => {
           <img
             src={getLogo(LogoSvgs.whatsapp)}
             alt="whatsapp"
-            className="text-primary mr-1 h-5 w-5"
+            className="text-secondary mr-1 h-5 w-5"
           />
           <Typography
-            color={'primary'}
+            color={'secondary'}
             type={'small'}
             weight="bold"
             text={`WhatsApp client`}
@@ -63,8 +63,8 @@ export const WhatsappCall = () => {
           icon="PhoneIcon"
           type="outlined"
           size="small"
-          color="primary"
-          textColor="primary"
+          color="secondary"
+          textColor="secondary"
           iconPosition="start"
           onClick={callForHelp}
           className="mt-2"

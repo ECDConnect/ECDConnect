@@ -29,9 +29,8 @@ export const CoachNotes: React.FC = () => {
   const [noteToView, setNoteToView] = useState<NoteDto>();
 
   const practitionerId = location.state.practitionerId;
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerId)
   );
 
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
@@ -65,14 +64,14 @@ export const CoachNotes: React.FC = () => {
         displayOffline={!isOnline}
       >
         <Typography
-          className={'pt-1 px-4'}
+          className={'px-4 pt-1'}
           type={'h1'}
           color={'primary'}
           text="Notes"
         />
         <div className="flex justify-center">
           <NotesList
-            className={'bg-white w-11/12'}
+            className={'w-11/12 bg-white'}
             notes={notes}
             viewToNote={(note: NoteDto) => viewNote(note)}
           />
@@ -83,7 +82,7 @@ export const CoachNotes: React.FC = () => {
           iconDirection={'left'}
           textToggle
           type={'filled'}
-          color={'secondary'}
+          color={'quatenary'}
           shape={'round'}
           className={styles.fadButton}
           click={() => openCreateNote()}

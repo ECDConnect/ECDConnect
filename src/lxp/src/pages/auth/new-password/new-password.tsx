@@ -37,13 +37,14 @@ export const NewPassword: React.FC = () => {
     register: newPasswordRegister,
     formState: newPasswordFormState,
     getValues: newPasswordFormGetValues,
+    watch,
   } = useForm({
     resolver: yupResolver(newPasswordSchema),
     defaultValues: initialNewPasswordValues,
     mode: 'onChange',
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
+  const { password } = watch();
   const { isValid } = newPasswordFormState;
   useEffect(() => {
     if (!hasSubmitted) {
@@ -80,7 +81,7 @@ export const NewPassword: React.FC = () => {
 
         const body: LoginRequestModel = {
           username: username,
-          password: newPasswordFormGetValues().password,
+          password: password,
         };
 
         const isAuthenticated: any = await appDispatch(
@@ -110,40 +111,11 @@ export const NewPassword: React.FC = () => {
         color="primary"
       >
         <div className={styles.wrapper}>
-          <Typography
-            type="body"
-            color="uiMidDark"
-            text={'Enter a new password that has:'}
-          ></Typography>
-
-          <ul className={styles.listStyles}>
-            <li>
-              <Typography
-                text={'At least 8 characters'}
-                type={'body'}
-                color={'uiMidDark'}
-              />
-            </li>
-            <li>
-              <Typography
-                text={'At least 1 number'}
-                type={'body'}
-                color={'uiMidDark'}
-              />
-            </li>
-            <li>
-              <Typography
-                text={'At least 1 capital letter'}
-                type={'body'}
-                color={'uiMidDark'}
-              />
-            </li>
-          </ul>
           <PasswordInput<NewPasswordModel>
             label={'Enter new password'}
             nameProp={'password'}
-            sufficIconColor={'secondary'}
-            value={newPasswordFormGetValues().password}
+            sufficIconColor={'primary'}
+            value={password}
             register={newPasswordRegister}
             strengthMeterVisible={true}
           />
@@ -170,7 +142,7 @@ export const NewPassword: React.FC = () => {
           <Button
             className={styles.formButton}
             type="filled"
-            color="primary"
+            color="quatenary"
             disabled={submitButtonDisabled}
             isLoading={isLoading}
             onClick={submitForm}

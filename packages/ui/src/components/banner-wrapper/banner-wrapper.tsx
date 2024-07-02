@@ -188,8 +188,8 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
         <LoadingSpinner
           size="medium"
           className="mt-4"
-          spinnerColor="primary"
-          backgroundColor="uiLight"
+          spinnerColor="quatenary"
+          backgroundColor="uiBg"
         />
       ) : (
         <div className={classNames(styles.content(renderOverflow), className)}>

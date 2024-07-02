@@ -163,5 +163,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string HealthCareWorkersOptedOut = "health-care-worker-opted-out";
         public const string ClinicMissingTeamLead = "clinic-missing-team-lead";
         public const string NoMeetingReportSubmittedForClinic = "no-meeting-report-submitted-for-clinic";
+
+        // Community to portal notification 
+        public const string NotifyAdminOnCoachFeedback = "notify-admin-on-coach-feedback";
     }
 }

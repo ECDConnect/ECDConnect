@@ -34,7 +34,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var userId = httpContextAccessor.HttpContext.GetUser().Id;
 
-            var classroomGroupIds = classroomService.GetClassroomGroupsForUser(userId).Select(x => x.Id).ToList();
+            var classroomGroups = classroomService.GetClassroomGroupsForUser(userId);
+
+            if (classroomGroups == null)
+            {
+                return null;
+            }
+
+            var classroomGroupIds = classroomGroups.Select(x => x.Id).ToList();
 
             var attendance = trackingRepository.GetAllAttendances(classroomGroupIds)
                 .Where(x => x.AttendanceDate.Date >= startDate.Date && x.AttendanceDate.Date <= endDate.Date);
@@ -58,12 +65,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
           DateTime endMonth)
         {
             startMonth = startMonth.GetStartOfMonth();
-            //endMonth = endMonth.GetEndOfMonth();
+
             //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1).Date : DateTime.Now.GetEndOfDay()) : endMonth.GetEndOfMonth().GetEndOfDay());
+            endMonth = endMonth.Month == DateTime.Now.Month 
+                ? DateTime.Now.GetEndOfDay()
+                : endMonth.GetEndOfMonth().GetEndOfDay();
 
 
-            return report.GenerateMonthlyAttendanceReport(userId, startMonth, endMonth);
+            var data = report.GenerateMonthlyAttendanceReport(userId, startMonth, endMonth);
+            return data;
         }
 
         public async Task<ChildAttendanceReportModel> ChildAttendanceReport(

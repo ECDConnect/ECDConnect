@@ -7,9 +7,8 @@ import {
   renderIcon,
   Button,
   LoadingSpinner,
-  DialogPosition,
-  ActionModal,
   RoundIcon,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';
@@ -26,9 +25,12 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
+  const isTrialPeriod = useIsTrialPeriod();
   const history = useHistory();
   const dialog = useDialog();
   const { errorDialog } = useRequestResponseDialog();
@@ -40,7 +42,7 @@ export const PractitionersList: React.FC = () => {
     (item) => item.userId !== practitioner?.userId
   );
 
-  const { isLoading: isLoading, isRejected: isGetPractitionerRejected } =
+  const { isLoading, isRejected: isGetPractitionerRejected } =
     useThunkFetchCall(
       'practitioner',
       PractitionerActions.GET_ALL_PRACTITIONERS
@@ -106,6 +108,16 @@ export const PractitionersList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const showTrialPeriodCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+      },
+    });
+  };
+
   const mapUserListDataItem = (
     practitionerRecord: PractitionerDto
   ): UserAlertListDataItem => {
@@ -148,8 +160,8 @@ export const PractitionersList: React.FC = () => {
       <LoadingSpinner
         className="mt-6"
         size={'medium'}
-        spinnerColor={'primary'}
-        backgroundColor={'uiLight'}
+        spinnerColor={'quatenary'}
+        backgroundColor={'uiBg'}
       />
     );
   }
@@ -172,7 +184,11 @@ export const PractitionersList: React.FC = () => {
           type="filled"
           color="quatenary"
           className={'mb-6 w-full'}
-          onClick={() => history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST)}
+          onClick={
+            isTrialPeriod
+              ? () => showTrialPeriodCompleteProfileBlockingDialog()
+              : () => history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST)
+          }
         >
           {renderIcon('PlusCircleIcon', 'w-5 h-5 color-white text-white mr-2')}
           <Typography
@@ -213,7 +229,7 @@ export const PractitionersList: React.FC = () => {
             <div className="flex justify-center">
               <Button
                 type="filled"
-                color="primary"
+                color="quatenary"
                 className={'mt-6 mb-6 w-11/12 rounded-2xl'}
                 onClick={handleReassignClass}
               >

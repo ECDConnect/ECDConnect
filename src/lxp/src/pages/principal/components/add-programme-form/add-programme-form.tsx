@@ -106,10 +106,10 @@ export const AddProgrammeForm: React.FC<{
       // if (classroomGroups?.[0]?.programmeType?.id) {
       //   setProgrammeFormValue('type', classroomGroups?.[0]?.programmeType?.id);
       // }
-      if (typeof classroom?.numberOfPractitioners === 'number') {
+      if (typeof classroom?.numberPractitioners === 'number') {
         setProgrammeFormValue(
           'smartStartPractitioners',
-          classroom?.numberOfPractitioners
+          classroom?.numberPractitioners
         );
       }
       if (typeof classroom?.numberOfOtherAssistants === 'number') {
@@ -122,7 +122,7 @@ export const AddProgrammeForm: React.FC<{
   }, [
     classroom?.name,
     classroom?.numberOfOtherAssistants,
-    classroom?.numberOfPractitioners,
+    classroom?.numberPractitioners,
     classroomGroups,
     isSmartLinkImported,
     setProgrammeFormValue,
@@ -161,7 +161,7 @@ export const AddProgrammeForm: React.FC<{
     smartStartPractitioners !== undefined &&
     smartStartPractitioners !== null;
 
-  const createClassroom = (
+  const createClassroom = async (
     programme: EditProgrammeModel,
     classroomId: string
   ) => {
@@ -170,13 +170,14 @@ export const AddProgrammeForm: React.FC<{
     const classroomInputModel: ClassroomDto = {
       id: classroomId,
       name: programme?.name ?? '',
-      numberOfPractitioners: programme?.smartStartPractitioners
+      isDummySchool: false,
+      numberPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,
       numberOfOtherAssistants: programme?.nonSmartStartPractitioners
         ? +programme?.nonSmartStartPractitioners
         : 0,
-      imageUrl: '',
+      classroomImageUrl: '',
       principal: {
         email: user?.email!,
         firstName: user?.firstName!,
@@ -198,12 +199,26 @@ export const AddProgrammeForm: React.FC<{
     };
 
     // TODO
-    appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
+    await appDispatch(classroomsActions.createClassroom(classroomInputModel));
+    await appDispatch(
+      classroomsThunkActions.upsertClassroom(classroomInputModel)
+    );
+
+    if (classroomGroups?.length > 0) {
+      for (const classroomGroup of classroomGroups) {
+        const classroomGroupInput = {
+          ...classroomGroup,
+          classroomId: classroom?.id!,
+        };
+        appDispatch(
+          classroomsActions.updateClassroomGroup(classroomGroupInput)
+        );
+      }
+    }
     // Should this upsert the classroom ???
   };
 
-  const updateClassroom = (
+  const updateClassroom = async (
     programme: EditProgrammeModel,
     classroomId: string
   ) => {
@@ -212,13 +227,14 @@ export const AddProgrammeForm: React.FC<{
     const classroomInputModel: ClassroomDto = {
       id: classroomId,
       name: programme?.name ?? '',
-      numberOfPractitioners: programme?.smartStartPractitioners
+      isDummySchool: false,
+      numberPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,
       numberOfOtherAssistants: programme?.nonSmartStartPractitioners
         ? +programme?.nonSmartStartPractitioners
         : 0,
-      imageUrl: '',
+      classroomImageUrl: '',
       siteAddress: classroom?.siteAddress!,
       preschoolFeeAmount: classroom?.preschoolFeeAmount,
       preschoolFeeAmountLastUpdateDate:
@@ -235,8 +251,22 @@ export const AddProgrammeForm: React.FC<{
     };
 
     // This won't actually call the BE
-    appDispatch(classroomsActions.updateClassroom(classroomInputModel));
-    appDispatch(classroomsThunkActions.upsertClassroom(classroomInputModel));
+    await appDispatch(classroomsActions.updateClassroom(classroomInputModel));
+    await appDispatch(
+      classroomsThunkActions.upsertClassroom(classroomInputModel)
+    );
+
+    if (classroomGroups?.length > 0) {
+      for (const classroomGroup of classroomGroups) {
+        const classroomGroupInput = {
+          ...classroomGroup,
+          classroomId: classroom?.id!,
+        };
+        appDispatch(
+          classroomsActions.updateClassroomGroup(classroomGroupInput)
+        );
+      }
+    }
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
@@ -244,10 +274,15 @@ export const AddProgrammeForm: React.FC<{
       setIsNotPrincipal(true);
       onNext(PractitionerSetupSteps.ADD_PHOTO);
       return;
+    } else {
+      if (classroom?.id) {
+        updateClassroom(e, classroom.id);
+      } else {
+        const classroomId = newGuid();
+        createClassroom(e, classroomId);
+      }
+      onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
     }
-    const classroomId = newGuid();
-    createClassroom(e, classroomId);
-    onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
 
   // Do we still have imported users?

@@ -23,7 +23,7 @@ import { PractitionerProfileRouteState } from './practitioner-profile-info.types
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './practitioner-profile-info.styles';
 import ROUTES from '@routes/routes';
-import { PhoneIcon } from '@heroicons/react/solid';
+import { PhoneIcon, ChatIcon } from '@heroicons/react/solid';
 import { CreateNote } from './components/create-note/create-note';
 import { RemovePractioner } from './components/remove-practitioner/remove-practitioner';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
@@ -34,10 +34,9 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
+import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
-import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
-import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
 import {
@@ -55,8 +54,6 @@ import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
-import { clubSelectors, clubThunkActions } from '@/store/club';
-import { getActivityMeetRegularDetails } from '@/store/club/club.actions';
 import { PractitionerDelicensed } from './practitioner-delicensed/practitioner-delicensed';
 import { authSelectors } from '@/store/auth';
 
@@ -71,67 +68,32 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const practitionerId = location.state.practitionerId;
   const isFromProgrammeView = location.state.isFromProgrammeView;
   const isFromReassignView = location?.state?.isFromReassignView;
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerId)
+  );
 
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+  const coachClassrooms = useSelector(
+    classroomsForCoachSelectors.getClassroomForCoach
+  );
+  const coachClassroomGroups = useSelector(
+    classroomsForCoachSelectors.getClassroomGroups
   );
 
   const isPrincipal = practitioner?.isPrincipal === true;
-  const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
-    useState<any>(); // TODO - Fix missing type
+
+  const practitionerClassroomGroups =
+    coachClassroomGroups?.filter((item) => item.userId === practitionerId) ||
+    [];
+
+  const practitionerClassroomDetails = isPrincipal
+    ? coachClassrooms?.find((item) => item?.userId === practitionerId)
+    : coachClassrooms?.find(
+        (item) => item?.id === practitionerClassroomGroups?.[0].classroomId
+      );
+
   const [isToRemoveSmartStarter, setIsToRemoveSmartStarter] =
     useState<boolean>(false);
   const [delicenseDate, setDelicenseDate] = useState<Date>();
-
-  const isTrainee = practitioner?.isTrainee;
-  const timeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
-
-  const showBusinessItem =
-    practitioner?.isFundaAppAdmin || practitioner?.isPrincipal;
-  const isOnStipend = practitioner?.isOnStipend;
-  const traineeVisits = timeline?.traineeVisits;
-  const traineeCurrentVisit = traineeVisits?.[0];
-
-  const practitionerClub = useSelector(
-    clubSelectors.getClubByIdSelector(practitioner?.clubId || '')
-  );
-
-  const timelineStepsArray = timelineSteps(
-    timeline!,
-    // @ts-ignore,
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined,
-    '',
-    isOnStipend
-  );
-  const completedSteps = timelineSteps(
-    timeline!,
-    () => {},
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined
-  ).filter(
-    (item) =>
-      item?.type === 'completed' ||
-      item?.title === 'Consolidation meeting attended'
-  );
-  const onboardingNotCompleted = completedSteps?.length < 8;
-  const twoWeeksAgo = addDays(new Date(), -14);
-  const fourWeeksAgo = addDays(new Date(), -28);
-  const starterLicenseDate = timeline?.starterLicenseDate
-    ? new Date(timeline?.starterLicenseDate)
-    : new Date();
-  const onboardingIncompleteAfter2Weeks =
-    onboardingNotCompleted && starterLicenseDate < twoWeeksAgo;
-  const onboardingIncompleteAfter4Weeks =
-    onboardingNotCompleted && starterLicenseDate < fourWeeksAgo;
-
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
   const { theme } = useTheme();
@@ -230,10 +192,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           days: 8,
         }) &&
         item?.absentDate !== item?.absentDateEnd)
-  );
-
-  const classroomGroupsForUser = useSelector(
-    classroomsSelectors.getClassroomGroupsForUser(practitionerId || '')
   );
 
   const currentDates = validAbsenteesDates?.map((item) => {
@@ -362,60 +320,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   };
 
   useEffect(() => {
-    if (practitioner?.isTrainee) {
-      const getTraineeTimeline = async () =>
-        await appDispatch(
-          traineeThunkActions.getTraineeTimeline({
-            userId: practitioner?.userId ? practitioner?.userId : '',
-          })
-        );
-
-      const getTraineeVisitDate = async () =>
-        await appDispatch(
-          traineeThunkActions.getTraineeVisitData({
-            visitId: traineeCurrentVisit?.id,
-          })
-        );
-      getTraineeTimeline();
-      getTraineeVisitDate();
-    }
-  }, [
-    appDispatch,
-    practitioner?.isTrainee,
-    practitioner?.userId,
-    traineeCurrentVisit?.id,
-  ]);
-
-  // Load club points, we need them so we can calculate action items for this practitioner
-  useEffect(() => {
-    if (isOnline && !!practitioner && !!practitioner.clubId) {
-      appDispatch(
-        clubThunkActions.getActivityHostFamilyDetails({
-          clubId: practitioner.clubId,
-        })
-      );
-
-      appDispatch(
-        getActivityMeetRegularDetails({
-          forceReload: true,
-          args: {
-            clubId: practitioner.clubId,
-            month: 0,
-            year: new Date().getFullYear(),
-          },
-        })
-      );
-    }
-  }, []);
-
-  const classroomsDetailsForPractitioner = async () => {
-    setPractitionerClassroomDetails(classroomGroupsForUser);
-
-    return classroomGroupsForUser;
-  };
-
-  useEffect(() => {
-    classroomsDetailsForPractitioner();
     getRemovalForPractitioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -475,110 +379,41 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const listItems: MenuListDataItem[] = [
     {
-      title: 'SmartStarter journey',
+      title: 'Site visits',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Training, PQA rating & performance',
+      subTitle: 'Milestones',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'BadgeCheckIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
-      iconBackgroundColor: 'tertiary',
-      onActionClick: () =>
-        onboardingNotCompleted && isTrainee
-          ? setShowTraineeDashboard(true)
-          : navigateJourney(),
+      iconBackgroundColor: 'quatenary',
+      onActionClick: () => navigateJourney(),
     },
-    {
+  ];
+
+  if (!!practitionerClassroomDetails) {
+    listItems?.push({
       title: 'Classroom',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: existingRemoval
         ? `${practitioner?.user?.firstName} removed from programme`
-        : !isTrainee
-        ? 'Children, progress & attendance'
-        : 'Children',
+        : 'Children, progress & attendance',
       subTitleStyle: existingRemoval
         ? 'text-sm font-h1 font-normal text-errorMain w-9/12 overflow-clip'
         : 'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'AcademicCapIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
-      iconBackgroundColor: 'tertiary',
+      iconBackgroundColor: 'quatenary',
       onActionClick: () => navigateClassroom(),
       backgroundColor: existingRemoval ? 'alertBg' : 'uiBg',
-    },
-  ];
-
-  if (!isTrainee) {
-    listItems?.push({
-      title: 'Programme Information',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: existingRemoval
-        ? `${practitioner?.user?.firstName} removed from programme`
-        : 'Location, classes & staff',
-      subTitleStyle: existingRemoval
-        ? 'text-sm font-h1 font-normal text-errorMain w-9/12 overflow-clip'
-        : 'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      backgroundColor: existingRemoval ? 'alertBg' : 'uiBg',
-      menuIcon: 'InformationCircleIcon',
-      menuIconClassName: 'text-white',
-      showIcon: true,
-      iconBackgroundColor: 'tertiary',
-      onActionClick: () => {
-        if (isOnline) {
-          if (existingRemoval) {
-            history.push(ROUTES.COACH.CONTACT_PRACTITIONER, {
-              practitionerId: practitionerId,
-              removePractitioner: true,
-            });
-          } else {
-            history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
-              practitionerId,
-            });
-          }
-        } else {
-          showOnlineOnly();
-        }
-      },
     });
   }
 
-  if (onboardingNotCompleted && isTrainee) {
-    listItems?.splice(0, 1, {
-      title: 'Trainee onboarding',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: onboardingIncompleteAfter4Weeks
-        ? 'Remove trainee'
-        : onboardingIncompleteAfter2Weeks
-        ? 'Incomplete after 2 weeks'
-        : `${completedSteps?.length + 1} of ${
-            timelineStepsArray?.length + 1
-          } steps completed`,
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: onboardingIncompleteAfter2Weeks
-        ? 'ExclamationIcon'
-        : 'BadgeCheckIcon',
-      menuIconClassName: 'text-white',
-      showIcon: true,
-      iconBackgroundColor: onboardingIncompleteAfter2Weeks
-        ? 'alertMain'
-        : 'tertiary',
-      onActionClick: () =>
-        onboardingNotCompleted && isTrainee
-          ? setShowTraineeDashboard(true)
-          : history.push(
-              ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
-                ':practitionerId',
-                practitionerId
-              )
-            ),
-    });
-  }
-
-  if (showBusinessItem && !isTrainee) {
+  if (isPrincipal) {
     listItems?.push({
-      title: 'Business',
+      title: 'Finances',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: `Business, Income & expenses`,
       subTitleStyle:
@@ -586,81 +421,41 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       menuIcon: 'BriefcaseIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
-      iconBackgroundColor: 'tertiary',
+      iconBackgroundColor: 'quatenary',
       onActionClick: () => navigateBusiness(),
     });
   }
 
-  const noClassroomGroupsListItems: MenuListDataItem[] = [
-    {
-      title: 'SmartStarter journey',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Training, PQA rating & performance',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'BadgeCheckIcon',
-      menuIconClassName: 'text-white',
-      showIcon: true,
-      iconBackgroundColor: 'tertiary',
-      onActionClick: () =>
-        history.push(
-          ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
-            ':practitionerId',
-            practitionerId
-          )
-        ),
-    },
-    {
-      title: 'Programme Information',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: existingRemoval
-        ? `${practitioner?.user?.firstName} removed from programme`
-        : 'Location, classes & staff',
-      subTitleStyle: existingRemoval
-        ? 'text-sm font-h1 font-normal text-errorMain w-9/12 overflow-clip'
-        : 'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      backgroundColor: existingRemoval ? 'alertBg' : 'uiBg',
-      menuIcon: 'InformationCircleIcon',
-      menuIconClassName: 'text-white',
-      showIcon: true,
-      iconBackgroundColor: 'tertiary',
-      onActionClick: () => {
-        if (isOnline) {
-          if (existingRemoval) {
-            history.push(ROUTES.COACH.CONTACT_PRACTITIONER, {
-              practitionerId: practitionerId,
-              removePractitioner: true,
-            });
-          } else {
-            history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
-              practitionerId,
-            });
-          }
-        } else {
-          showOnlineOnly();
-        }
-      },
-    },
-  ];
-
   listItems?.push({
-    title: 'Club',
+    title: 'Preschool',
     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-    subTitle: !!practitionerClub
-      ? practitionerClub.name
-      : 'Not assigned to a club',
-    subTitleStyle:
-      'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-    menuIcon: 'UserGroupIcon',
+    subTitle: existingRemoval
+      ? `${practitioner?.user?.firstName} removed from programme`
+      : 'Location, classes & staff',
+    subTitleStyle: existingRemoval
+      ? 'text-sm font-h1 font-normal text-errorMain w-9/12 overflow-clip'
+      : 'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+    backgroundColor: existingRemoval ? 'alertBg' : 'uiBg',
+    menuIcon: 'InformationCircleIcon',
     menuIconClassName: 'text-white',
     showIcon: true,
-    iconBackgroundColor: 'tertiary',
-    onActionClick: () =>
-      history.push(
-        ROUTES.COMMUNITY.CLUB.MEMBER[!!practitionerClub ? 'ROOT' : 'ADD']
-          .replace(':practitionerId', practitionerId)
-          .replace(':clubId', practitioner?.clubId || 'new')
-      ),
+    iconBackgroundColor: 'quatenary',
+    onActionClick: () => {
+      if (isOnline) {
+        if (existingRemoval) {
+          history.push(ROUTES.COACH.CONTACT_PRACTITIONER, {
+            practitionerId: practitionerId,
+            removePractitioner: true,
+          });
+        } else {
+          history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+            practitionerId,
+          });
+        }
+      } else {
+        showOnlineOnly();
+      }
+    },
   });
 
   const onCreatePractitionerNoteBack = () => {
@@ -676,9 +471,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   }, []);
 
   const practitionerNotRegistered =
-    (practitioner?.isRegistered === null ||
-      practitioner?.isRegistered === false) &&
-    !isTrainee;
+    practitioner?.isRegistered === null || practitioner?.isRegistered === false;
 
   return (
     <>
@@ -723,37 +516,28 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
             <div className={styles.chipsWrapper}>
               <StatusChip
-                backgroundColour="primary"
-                borderColour="primary"
-                text={isTrainee ? 'Trainee' : 'SmartStarter'}
+                backgroundColour={isPrincipal ? 'primary' : 'secondary'}
+                borderColour={isPrincipal ? 'primary' : 'secondary'}
+                text={isPrincipal ? 'Principal' : 'Practitioner'}
                 textColour={'white'}
                 className={'px-3 py-1.5'}
               />
-              {isPrincipal && (
-                <StatusChip
-                  backgroundColour="secondary"
-                  borderColour="secondary"
-                  text={`Owner`}
-                  textColour={'white'}
-                  className={'mr-2 px-3 py-1.5'}
-                />
-              )}
             </div>
             <div className={styles.contactButtons}>
               <Button
-                color={'primary'}
+                color={'quatenary'}
                 type={'outlined'}
                 className={'rounded-2xl'}
                 size={'small'}
                 onClick={call}
               >
                 <PhoneIcon
-                  className="text-primary h-5 w-5"
+                  className="text-quatenary h-5 w-5"
                   aria-hidden="true"
                 />
               </Button>
               <Button
-                color={'primary'}
+                color={'quatenary'}
                 type={'outlined'}
                 className={'rounded-2xl'}
                 size={'small'}
@@ -763,6 +547,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   src={getLogo(LogoSvgs.whatsapp)}
                   alt="whatsapp"
                   className={styles.buttonIconStyle}
+                  color={'quatenary'}
                 />
               </Button>
             </div>
@@ -1271,11 +1056,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               <StackedList
                 className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
                 type="MenuList"
-                listItems={
-                  practitionerClassroomDetails?.length > 0
-                    ? listItems
-                    : noClassroomGroupsListItems
-                }
+                listItems={listItems}
               />
             </div>
           </div>
@@ -1302,21 +1083,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   shape="normal"
                   color="secondaryAccent2"
                   type="filled"
-                  onClick={() => {
-                    //TODO: what if copy fails?
-                    navigator?.clipboard?.writeText &&
-                      navigator?.clipboard?.writeText(
-                        practitioner?.user?.phoneNumber!
-                      );
-                  }}
+                  onClick={call}
                 >
                   <Typography
                     className={'mr-1'}
                     type="buttonSmall"
                     color="secondary"
-                    text="Copy"
+                    text="Call"
                   />
-                  {renderIcon('DocumentDuplicateIcon', styles.actionIcon)}
+                  {renderIcon('PhoneIcon', styles.actionIcon)}
                 </Button>
               </div>
             </div>
@@ -1403,7 +1178,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             <div className="flex w-full justify-center">
               <Button
                 type="filled"
-                color="primary"
+                color="quatenary"
                 textColor="white"
                 className={`mt-6 w-11/12 ${
                   !practitioner?.isPrincipal &&
@@ -1419,31 +1194,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 text={`Remove ${practitioner?.user?.firstName}`}
               />
             </div>
-            {(practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) && (
-              <div className="flex w-full justify-center">
-                <Button
-                  type="outlined"
-                  color="primary"
-                  className={'mt-4 mb-6 w-11/12'}
-                  onClick={() =>
-                    history.push(ROUTES.COACH.PRACTITIONER_REASSIGN_CLASS, {
-                      practitionerId,
-                    })
-                  }
-                >
-                  {renderIcon(
-                    'PencilAltIcon',
-                    'w-5 h-5 color-primary text-primary mr-2'
-                  )}
-                  <Typography
-                    type="body"
-                    className="mr-4"
-                    color="primary"
-                    text={`Record leave`}
-                  ></Typography>
-                </Button>
-              </div>
-            )}
           </>
         </div>
       )}

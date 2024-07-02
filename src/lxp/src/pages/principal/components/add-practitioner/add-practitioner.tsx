@@ -239,7 +239,7 @@ export const AddPractitioner = ({
       setIsValidPractitioner(undefined);
       return;
     }
-    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: TabsItems.CLASSES });
+    history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
   };
 
   const callForHelp = () => {
@@ -456,7 +456,7 @@ export const AddPractitioner = ({
                     </div>
                   </>
                 )}
-              {isValidPractitioner === true && !isPrincipal && (
+              {isValidPractitioner === true && !isPrincipal && !addNote && (
                 <div className="mb-8">
                   <Alert type={'success'} title={'Practitioner found!'} />
                 </div>
