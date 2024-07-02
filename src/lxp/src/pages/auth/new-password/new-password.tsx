@@ -21,6 +21,7 @@ import { authThunkActions } from '@store/auth';
 import { useAppDispatch } from '@store';
 import AuthService from '@services/AuthService/AuthService';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import ROUTES from '@/routes/routes';
 
 export const NewPassword: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -79,22 +80,16 @@ export const NewPassword: React.FC = () => {
       if (response.valid) {
         setSubmitButtonDisabled(true);
 
-        const body: LoginRequestModel = {
-          username: username,
-          password: password,
-        };
+        // const body: LoginRequestModel = {
+        //   username: username,
+        //   password: password,
+        // };
 
-        const isAuthenticated: any = await appDispatch(
-          authThunkActions.login(body)
-        ).unwrap();
+        // const isAuthenticated: any = await appDispatch(
+        //   authThunkActions.login(body)
+        // ).unwrap();
 
-        if (isAuthenticated && isAuthenticated?.error === undefined) {
-          history.push('/');
-        } else {
-          console.log('Error signing in user');
-          setDisplaySuccess(false);
-          setDisplayError(true);
-        }
+        history.push(ROUTES.LOGIN);
       } else {
         setDisplayError(true);
       }
