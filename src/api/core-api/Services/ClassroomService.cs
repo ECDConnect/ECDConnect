@@ -50,7 +50,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 throw new QueryException("Practitioner not found.");
             }
           
-            if (!practitioner.IsPrincipalOrAdmin() && (practitioner.PrincipalHierarchy == null || practitioner.Progress < 2))
+            if (!practitioner.IsPrincipalOrAdmin() && (practitioner.PrincipalHierarchy == null || practitioner.Progress <= 2))
             {
                 return _classroomRepo.GetAll()
                     .Where(x =>
