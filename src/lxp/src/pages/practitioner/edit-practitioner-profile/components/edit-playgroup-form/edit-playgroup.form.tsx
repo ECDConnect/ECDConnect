@@ -109,7 +109,9 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
 
     _list.push({
       label:
-        currentPractitioner?.user?.fullName ||
+        (currentPractitioner?.user?.fullName !== ' ' &&
+          currentPractitioner?.user?.fullName !== '' &&
+          currentPractitioner?.user?.fullName) ||
         currentPractitioner?.user?.firstName ||
         currentPractitioner?.user?.userName ||
         '',

@@ -101,7 +101,9 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
     _list.push({
       label:
-        currentPractitioner?.user?.fullName ||
+        (currentPractitioner?.user?.fullName !== ' ' &&
+          currentPractitioner?.user?.fullName !== '' &&
+          currentPractitioner?.user?.fullName) ||
         currentPractitioner?.user?.firstName ||
         '',
       value: currentPractitioner?.userId,
