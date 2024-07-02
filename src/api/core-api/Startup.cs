@@ -181,6 +181,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ITeamLeadService, TeamLeadService>();
             services.AddTransient<IClassroomService, ClassroomService>();
             services.AddTransient<ICommunityService, CommunityService>();
+            services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
 
             // Notification tasks (All will be run daily)

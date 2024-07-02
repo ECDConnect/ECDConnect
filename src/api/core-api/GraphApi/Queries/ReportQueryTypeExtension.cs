@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -316,7 +317,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public async Task<List<NotificationDisplay>> GetClassroomActionItems(
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] ChildProgressReportService childProgressReportService,
+            [Service] IChildProgressReportService childProgressReportService,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] IClassroomService classroomService,
@@ -400,6 +401,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
 
+            // TODO: Need to refactor dates for reporting periods
             // Get Due/Overdue Reports
             // Get Children not progressed
             var isPeriod1 = previousMonthStart.Month <= 7;
@@ -648,6 +650,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (missingRegisterDayCount > 0)
             {
+                // TODO: Need to refactor dates for reporting periods
                 var isPeriod1 = currentDate.Month <= 7;
                 DateTime currentReportingPeriodEnd = ChildProgressReportService.GetReportDueEnd(currentDate.Year, isPeriod1);
                 var isPreviousMonthPeriod1 = previousMonthStart.Month <= 7;
@@ -683,6 +686,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             DateTime currentDate = DateTime.Now;
 
+            // TODO: Need to refactor for reporting periods
             DateTime currentMonthStart = currentDate.GetStartOfMonth();
             DateTime currentMonthEnd = currentDate.GetEndOfMonth();
 
@@ -1014,11 +1018,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return days.Where(d => !weekendDays.Contains(d.DayOfWeek));
         }
 
+        // TODO: Move to ChildProgressReportQuery
         public ChildProgressReportsStatus GetChildProgressReportsStatus(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             HierarchyEngine hierarchyEngine,
-            [Service] ChildProgressReportService childProgressReportService,
+            [Service] IChildProgressReportService childProgressReportService,
             string userId)
         {
             var user = contextAccessor.HttpContext.GetUser();
@@ -1058,7 +1063,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
-            [Service] ChildProgressReportService childProgressReportService,
+            [Service] IChildProgressReportService childProgressReportService,
             [Service] AttendanceService attendanceService,
             IGenericRepositoryFactory repoFactory,
             string type)
@@ -1170,7 +1175,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
-            [Service] ChildProgressReportService childProgressReportService,
+            [Service] IChildProgressReportService childProgressReportService,
             [Service] AttendanceService attendanceService,
             IGenericRepositoryFactory repoFactory,
             string uId,

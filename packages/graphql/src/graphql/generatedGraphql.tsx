@@ -14559,6 +14559,8 @@ export type Query = {
   previousVisitInformationForMother?: Maybe<Progress_VisitDataStatus>;
   principalByUserId?: Maybe<Practitioner>;
   principalProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
+  progressReportSummaryForPractitioner?: Maybe<PractitionerProgressReportSummaryModel>;
+  progressReportSummaryForPrincipalForPrincipal?: Maybe<PractitionerProgressReportSummaryModel>;
   ratingsAndFeedbackTypes?: Maybe<CoachFeedbackSetupModel>;
   referrals?: Maybe<Array<Maybe<PortalReferralModel>>>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
@@ -17586,6 +17588,18 @@ export type QueryPrincipalByUserIdArgs = {
 export type QueryPrincipalProgressReportSummaryArgs = {
   locale?: InputMaybe<Scalars['String']>;
   reportingPeriod?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryProgressReportSummaryForPractitionerArgs = {
+  endDate: Scalars['DateTime'];
+  locale?: InputMaybe<Scalars['String']>;
+  startDate: Scalars['DateTime'];
+};
+
+export type QueryProgressReportSummaryForPrincipalForPrincipalArgs = {
+  endDate: Scalars['DateTime'];
+  locale?: InputMaybe<Scalars['String']>;
+  startDate: Scalars['DateTime'];
 };
 
 export type QueryReferralsArgs = {
