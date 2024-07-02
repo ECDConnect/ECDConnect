@@ -15,7 +15,7 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using EcdLink.Api.CoreApi.Services.PointsEngine;
-using EcdLink.Api.CoreApi.Services.Training;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
@@ -30,7 +30,6 @@ using ECDLink.EGraphQL.Interceptors;
 using ECDLink.Moodle;
 using ECDLink.Notifications;
 using ECDLink.PDFGenerator;
-using ECDLink.PostgresTenancy;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
@@ -182,6 +181,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ITeamLeadService, TeamLeadService>();
             services.AddTransient<IClassroomService, ClassroomService>();
             services.AddTransient<ICommunityService, CommunityService>();
+            services.AddTransient<IAbsenteeService, AbsenteeService>();
 
             // Notification tasks (All will be run daily)
             foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()
