@@ -27,8 +27,6 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
   onSubmit,
   incomeItem,
 }) => {
-  const viewTitle = 'Other';
-
   const {
     control,
     setValue: setValue,
@@ -66,8 +64,9 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
     const incomeInput: IncomeItemDto = {
       id: incomeItem?.id ?? newGuid(),
       dateReceived: dateReceived!,
-      amount: moneyInputFormat(amount!),
+      amount: !!amount ? Number(moneyInputFormat(amount)) : 0,
       incomeTypeId: IncomeTypeIds.OTHER_INCOME_ID,
+      notes: notes,
     };
 
     onSubmit(incomeInput);
@@ -95,7 +94,7 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="primary" text={viewTitle} />
+        <Typography type="h2" color="primary" text={'Other income type'} />
         {disabled && (
           <Alert
             type={'warning'}
@@ -150,7 +149,7 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
         {!disabled && (
           <Button
             type="filled"
-            color="primary"
+            color="quatenary"
             className={'mx-auto mt-8 w-full rounded-2xl'}
             onClick={() => {
               sendIncomeUpdate();

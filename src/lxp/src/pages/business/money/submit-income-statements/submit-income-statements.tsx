@@ -76,12 +76,16 @@ export const SubmitIncomeStatements: React.FC = () => {
         }`
       : `-`;
 
-  const formatCurrentValue = (value: number) => {
+  const formatCurrentValue = (value: number, showSymbol: boolean = false) => {
     if (value === 0) return `R ${numberWithSpaces(value.toFixed(2))}`;
 
-    if (value > 0) return `+ R ${numberWithSpaces(value.toFixed(2))}`;
+    if (value > 0)
+      return `${showSymbol ? '+ ' : ''}R ${numberWithSpaces(value.toFixed(2))}`;
 
-    if (value < 0) return `- R ${numberWithSpaces(Math.abs(value).toFixed(2))}`;
+    if (value < 0)
+      return `${showSymbol ? '- ' : ''}R ${numberWithSpaces(
+        Math.abs(value).toFixed(2)
+      )}`;
   };
 
   const nextStep = () => {
@@ -302,7 +306,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                     </td>
                     <td className="w-1/3">
                       <Typography
-                        text={formatCurrentValue(lastMonthBalance)}
+                        text={formatCurrentValue(lastMonthBalance, true)}
                         type="body"
                         color={
                           lastMonthBalance === 0
@@ -316,7 +320,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                     </td>
                     <td className="w-1/3">
                       <Typography
-                        text={formatCurrentValue(currentMonthBalance)}
+                        text={formatCurrentValue(currentMonthBalance, true)}
                         type="body"
                         color={
                           currentMonthBalance === 0

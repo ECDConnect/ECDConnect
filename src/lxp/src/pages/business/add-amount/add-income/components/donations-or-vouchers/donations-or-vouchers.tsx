@@ -80,7 +80,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
     const incomeInput: IncomeItemDto = {
       id: !!incomeItem ? incomeItem.id : newGuid(),
       dateReceived: dateReceived!,
-      amount: moneyInputFormat(amount!),
+      amount: !!amount ? Number(moneyInputFormat(amount)) : 0,
       incomeTypeId: IncomeTypeIds.DONATION_ID,
       payTypeId: payType,
       notes: notes,

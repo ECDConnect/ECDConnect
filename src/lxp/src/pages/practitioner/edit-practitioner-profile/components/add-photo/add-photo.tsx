@@ -136,6 +136,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
             onAction={picturePromtOnAction}
             onDelete={userProfilePicture ? handleDelete : undefined}
             isProfileEmojis={true}
+            showEmojiOption={true}
           ></PhotoPrompt>
         </div>
       </Dialog>

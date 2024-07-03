@@ -159,9 +159,10 @@ export const upsertClassroom = createAsyncThunk<
         if (classroom?.siteAddress?.id) {
           const addressInput = mapSiteAddress(classroom.siteAddress);
 
-          const updateAddress = await new SiteAddressService(
-            userAuth?.auth_token!
-          ).updateSiteAddress(classroom.siteAddress.id ?? '', addressInput);
+          await new SiteAddressService(userAuth?.auth_token!).updateSiteAddress(
+            classroom.siteAddress.id ?? '',
+            addressInput
+          );
 
           input.SiteAddressId = addressInput.Id;
         }
@@ -309,8 +310,6 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
     const {
       auth: { userAuth },
       classroomData: { classroomGroupData },
-      children: { childData },
-      staticData: { WorkflowStatuses },
     } = getState();
 
     try {
