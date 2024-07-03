@@ -1,3 +1,4 @@
+using DotLiquid;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
@@ -122,16 +123,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public ApplicationUser GetPractitionerByIdNumberInternal(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] ApplicationUserManager userManager,
+            AuthenticationDbContext dbContext,
             IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practionerUser = userManager.FindByNameAsync(idNumber).Result;
-            if (practionerUser != null)
+            var practitionerUser = dbContext.Users.Where(user => (user.UserName == idNumber || user.IdNumber == idNumber) && user.TenantId == TenantExecutionContext.Tenant.Id).FirstOrDefault();
+
+            if (practitionerUser != null)
             {
                 var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-                var practitioner = practiRepo.GetByUserId(practionerUser.Id);
+                var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
                 if (practitioner != null)
                 {
                     return practitioner.User;
