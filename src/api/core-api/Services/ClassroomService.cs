@@ -117,57 +117,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     && x.Classroom.IsActive)
                 .ToList();
         }
-
-        // TODO: This is used in a few places still (like attendance). It makes no sense though and needs to be removed/rewritten when we get there
-        public PrincipalClassroom GetClassroomDetailsForPractitioner(string userId)
-        {
-            PrincipalClassroom principalClassroom = new PrincipalClassroom();
-            var practitioner = _practiGenericRepo.GetByUserId(userId);
-            if (practitioner != null)
-            {
-                var principal = ((bool)practitioner.IsPrincipal || (bool)practitioner.IsFundaAppAdmin || practitioner.PrincipalHierarchy == null
-                    ? practitioner
-                    : _practiGenericRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString()));
-
-                if (principal != null)
-                {
-                    principalClassroom.PrincipalName = string.IsNullOrWhiteSpace(principal.User.FullName) ? principal.User.FullName : principal.User.FullName;
-                    ClassroomGroup classroomGroup = _classroomGroupRepo.GetByUserId(userId);
-                    Classroom classroom = null;
-
-                    if (classroomGroup != null)
-                    {
-                        classroom = _classroomRepo.GetById(classroomGroup.ClassroomId);
-                        principalClassroom.ClassroomGroupName = classroomGroup.Name;
-                        principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
-                        ProgrammeType ptype = _programmeRepo.GetAll().Where(p => p.Id == classroomGroup.ProgrammeTypeId).FirstOrDefault();
-                        principalClassroom.ProgrammeTypeName = ptype != null ? ptype.Description : "";
-                        principalClassroom.ProgrammeTypeId = classroomGroup.ProgrammeTypeId.ToString();
-                    }
-                    else
-                    {
-                        //if no classroomgroup is available to look at, use the classroom for principal
-                        classroom = _classroomRepo.GetByUserId(principal.UserId.ToString());
-                    }
-                    if (classroom != null)
-                    {
-                        principalClassroom.Name = classroom.Name;
-                        principalClassroom.Id = classroom.Id.ToString();
-                        principalClassroom.InsertedDate = classroom.InsertedDate;
-                        principalClassroom.PreschoolFeeAmount = classroom.PreschoolFeeAmount;
-                        principalClassroom.PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate;
-
-                        if (classroom.SiteAddressId != null)
-                        {
-                            SiteAddress classAddress = _addressRepo.GetById((Guid)classroom.SiteAddressId);
-                            principalClassroom.ClassSiteAddress = classAddress.Name + " " + classAddress.AddressLine1 + " " + classAddress.AddressLine2 + " " + classAddress.AddressLine3 + " " + (classAddress.Province != null ? classAddress.Province.Description : string.Empty) + " " + classAddress.PostalCode;
-                            principalClassroom.ClassSiteAddressId = classAddress.Id.ToString();
-                        }
-                    }
-                }
-            }
-            return principalClassroom;
-        }
     }
 }
 
