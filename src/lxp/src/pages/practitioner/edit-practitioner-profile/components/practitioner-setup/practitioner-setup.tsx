@@ -35,6 +35,7 @@ import {
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
 import { ClassroomService } from '@/services/ClassroomService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { notificationActions } from '@/store/notifications';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -79,6 +80,8 @@ export const PractitionerSetup = ({
     await appDispatch(
       classroomsThunkActions.getClassroom({ overrideCache: true })
     ).unwrap();
+
+    appDispatch(notificationActions.resetNotificationState());
   };
 
   useEffect(() => {
