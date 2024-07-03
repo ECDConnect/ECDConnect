@@ -25,11 +25,13 @@ const statementsSlice = createSlice({
   name: 'statements',
   initialState,
   reducers: {
-    resetStatementsState: (state) => {
+    resetStatementsStaticState: (state) => {
       state.expensesTypes = initialState.expensesTypes;
       state.incomeTypes = initialState.incomeTypes;
-      state.incomeStatements = initialState.incomeStatements;
       state.payTypes = initialState.payTypes;
+    },
+    resetStatementsState: (state) => {
+      state.incomeStatements = initialState.incomeStatements;
     },
     createStatement: (state, action: PayloadAction<IncomeStatementDto>) => {
       state.incomeStatements = [

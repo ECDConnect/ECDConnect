@@ -1,12 +1,10 @@
-import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
+import { ClassroomGroupDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getClassroomGroups,
-  //getClassroomProgrammes,
   getClassroom,
   updatePreschoolFee,
-  createLearner,
   upsertClassroom,
   upsertClassroomGroups,
   updateClassroomGroup,
