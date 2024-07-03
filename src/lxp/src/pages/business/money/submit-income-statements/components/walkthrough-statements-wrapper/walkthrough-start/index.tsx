@@ -1,7 +1,7 @@
 import { ActionModal, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import robot from '@/assets/iconRobot.svg';
-import robotFullBody from '@/assets/ECD_Connect_robot1.svg';
+import robotBlueBg from '@/assets/iconRobotBlueBg.svg';
 import { LocalStorageKeys } from '@ecdlink/core';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { useAppContext } from '@/walkthrougContext';
@@ -74,9 +74,9 @@ export const StatementsWalkthroughStart = ({
   return (
     <Dialog visible position={DialogPosition.Middle} className="p-4">
       <ActionModal
-        customIcon={<img src={robotFullBody} alt="robot" className="mb-4" />}
-        title="Hello! Would you like me to show you how to use this section?"
-        detailText="I'll show you how to pick a theme and plan a programme."
+        customIcon={<img src={robotBlueBg} alt="robot" className="mb-4" />}
+        title="Manage your business like a boss!"
+        detailText="Would you like to see how to create your income statements?"
         actionButtons={[
           {
             type: 'filled',
@@ -91,7 +91,7 @@ export const StatementsWalkthroughStart = ({
             colour: 'quatenary',
             text: 'No, skip!',
             textColour: 'quatenary',
-            leadingIcon: 'XIcon',
+            leadingIcon: 'ClockIcon',
             onClick: () => {
               setIsSkipped(true);
             },

@@ -108,7 +108,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const subDay = useCallback(() => {
     var selectDate = new Date(selectedDate!);
 
-    if (isSameDay(selectDate, new Date())) {
+    if (isSameDay(selectDate, new Date()) && !isOnline) {
       return showOnlineOnly();
     }
 
@@ -126,6 +126,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
       }
     }
   }, [
+    isOnline,
     selectedDate,
     setSelectedDate,
     showOnlineOnly,

@@ -783,7 +783,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           <FADButton
             id="walkthrough-start"
             click={handleAddProgramme}
-            disabled={isWalkthrough}
+            disabled={isWalkthrough && state.stepIndex !== 0}
             icon="PlusIcon"
             iconDirection="left"
             textToggle
