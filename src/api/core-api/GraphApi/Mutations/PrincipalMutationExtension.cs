@@ -358,8 +358,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.Leaving = false;
 
                 notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
-                
             }
+
+            // expire the invite after accept or reject
+            notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation, null, null, practitioner.UserId);
 
             //update practitioner with column changes
             practitionerRepo.Update(practitioner);
