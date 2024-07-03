@@ -32,16 +32,12 @@ import {
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { InfoPage } from './components/info-page';
 import { CoachInfo } from '../../components/coach-info';
-import { newGuid } from '@/utils/common/uuid.utils';
-import { useAppDispatch } from '@/store';
 import { getStorageItem } from '@/utils/common/local-storage.utils';
 import { StatementsWalkthroughStart } from './components/walkthrough-statements-wrapper/walkthrough-start';
 import { practitionerSelectors } from '@/store/practitioner';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
-
-  const dispatch = useAppDispatch();
 
   const [isLearnMore, setIsLearnMore] = useState(false);
 
