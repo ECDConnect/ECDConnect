@@ -167,6 +167,7 @@ export const AddPractitioner = ({
           userPermissions: p?.appUser?.userPermissions,
         });
         setSearched(true);
+        setIsloading(false);
       });
     }
   };
@@ -222,7 +223,7 @@ export const AddPractitioner = ({
     setIsloading(true);
     const input: MutationAddPractitionerToPrincipalArgs = {
       userId: userData?.id,
-      idNumber: idNumber,
+      idNumber: idNumber || passport,
       firstName: newPractitioner?.firstName,
       lastName: newPractitioner?.surname,
     };
