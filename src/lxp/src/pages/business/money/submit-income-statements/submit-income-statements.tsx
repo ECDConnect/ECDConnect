@@ -167,8 +167,8 @@ export const SubmitIncomeStatements: React.FC = () => {
       <StatementsWrapper />
       <div className="pb-180 flex flex-col justify-center p-4">
         {!hasIncomeStatements && (
-          <div className="mt-2 flex flex-wrap justify-center p-8">
-            <div className="">
+          <div className="mt-2 flex flex-col justify-center p-8">
+            <div className="flex w-full justify-center">
               <MoneyIcon />
             </div>
             <div>
