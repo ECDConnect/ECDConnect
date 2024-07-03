@@ -40,36 +40,11 @@ export const CoachPractitionerBusiness = () => {
   const practitioner = useSelector(getPractitionerByUserId(userId));
   const practitionerFirstName = practitioner?.user?.firstName;
   const practitionerFullname = `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`;
-
-  const timeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
   const statements = useSelector(
     practitionerForCoachSelectors.getStatementsForUser(userId)
   );
 
   const currentDate = useMemo(() => new Date(), []);
-
-  const hasStartUpSupport =
-    timeline?.startUpSupportStartDate !== null &&
-    timeline?.startUpSupportEndDate !== null;
-
-  const startUpSupportEndDate = useMemo(
-    () => new Date(timeline?.startUpSupportEndDate),
-    [timeline?.startUpSupportEndDate]
-  );
-
-  const monthDifference = differenceInMonths(
-    currentDate,
-    startUpSupportEndDate
-  );
-
-  const isStartUpSupportEnding =
-    hasStartUpSupport && monthDifference >= -3 && monthDifference <= 0;
-
-  const isSubmitWindowOpen =
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
-    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
@@ -80,15 +55,19 @@ export const CoachPractitionerBusiness = () => {
 
   const [showProfitDialog, setShowProfitDialog] = useState(false);
   const [showNotSubmittedDialog, setShowNotSubmittedDialog] = useState(false);
-  const [showStartupSupportDialog, setShowStartupSupportDialog] =
-    useState(false);
 
-  var lastStatementsBalance = useMemo(
-    () =>
-      getStatementBalance(statements[statements.length - 1]) +
-      getStatementBalance(statements[statements.length - 2]),
+  var lastMonthStatementsBalance = useMemo(
+    () => getStatementBalance(statements[statements.length - 1]),
     [statements]
   );
+
+  var lastTwoMonthStatementsBalance = useMemo(
+    () => getStatementBalance(statements[statements.length - 2]),
+    [statements]
+  );
+
+  const hasProfit =
+    lastMonthStatementsBalance > 0 && lastTwoMonthStatementsBalance > 0;
 
   var lastStatementContactByCoach = useMemo(
     () =>
@@ -97,110 +76,6 @@ export const CoachPractitionerBusiness = () => {
         : statements[statements.length - 1]?.contactedByCoach,
     [statements]
   );
-
-  const renderData = useMemo(() => {
-    const listItems = [];
-
-    if (isThisMonthSubmitted && isSubmitWindowOpen) {
-      listItems.push({
-        title: 'Income Statement not submitted',
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitle: currentSubmitMonth,
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        menuIcon: 'ExclamationIcon',
-        menuIconClassName: 'text-white',
-        showIcon: true,
-        onActionClick: () => setShowNotSubmittedDialog(true),
-        iconBackgroundColor: 'alertMain',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-        },
-        text: '1',
-        classNames: 'bg-uiBg',
-      });
-    }
-
-    if (isStartUpSupportEnding) {
-      listItems.push({
-        title: 'Start-up support ending soon',
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitle: format(startUpSupportEndDate, 'LLL yyyy'),
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        menuIcon: 'ExclamationIcon',
-        menuIconClassName: 'text-white',
-        showIcon: true,
-        onActionClick: () => setShowStartupSupportDialog(true),
-        iconBackgroundColor: 'alertMain',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-        },
-        text: '1',
-        classNames: 'bg-uiBg',
-      });
-    }
-    if (
-      statements.length >= 2 &&
-      lastStatementsBalance !== 0 &&
-      !lastStatementContactByCoach
-    ) {
-      listItems.push({
-        title:
-          lastStatementsBalance > 0
-            ? `${practitionerFirstName} made a profit for 2 months in a row!`
-            : `Programme running at a loss`,
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitle: lossProfitMonths,
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        menuIcon:
-          lastStatementsBalance > 0 ? 'SparklesIcon' : 'ExclamationIcon',
-        menuIconClassName: 'text-white',
-        showIcon: true,
-        onActionClick: () => setShowProfitDialog(true),
-        iconBackgroundColor:
-          lastStatementsBalance > 0 ? 'successMain' : 'alertMain',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour:
-              lastStatementsBalance > 0 ? 'successMain' : 'alertMain',
-            textColour: 'white',
-          },
-        },
-        text: '1',
-        classNames: 'bg-uiBg',
-      });
-    }
-
-    return (
-      <StackedList
-        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
-        type="MenuList"
-        listItems={listItems}
-      />
-    );
-  }, [
-    currentSubmitMonth,
-    isStartUpSupportEnding,
-    isSubmitWindowOpen,
-    isThisMonthSubmitted,
-    lastStatementContactByCoach,
-    lastStatementsBalance,
-    lossProfitMonths,
-    practitionerFirstName,
-    startUpSupportEndDate,
-    statements.length,
-  ]);
 
   const updateStatements = useCallback(async () => {
     setIsLoading(true);
@@ -229,43 +104,16 @@ export const CoachPractitionerBusiness = () => {
   }, [statements]);
 
   useEffect(() => {
-    // Outside submit
-    if (!isSubmitWindowOpen) {
-      setIsThisMonthSubmitted(
-        !!statements?.find((x) => x.month === currentDate.getMonth() + 1)
-      );
-      setCurrentSubmitMonth(
-        `${getMonthName(currentDate.getMonth()).substring(
-          0,
-          3
-        )} ${currentDate.getFullYear()}`
-      );
-    } else {
-      // In window and current month
-      if (currentDate.getDate() >= IncomeStatementDates.SubmitStartDay) {
-        setIsThisMonthSubmitted(
-          !!statements?.find((x) => x.month === currentDate.getMonth() + 1)
-        );
-        setCurrentSubmitMonth(
-          `${getMonthName(currentDate.getMonth()).substring(
-            0,
-            3
-          )} ${currentDate.getFullYear()}`
-        );
-      } else {
-        // In window but next month
-        setIsThisMonthSubmitted(
-          !!statements?.find((x) => x.month === currentDate.getMonth())
-        );
-        setCurrentSubmitMonth(
-          `${getMonthName(currentDate.getMonth() - 1).substring(
-            0,
-            3
-          )} ${currentDate.getFullYear()}`
-        );
-      }
-    }
-  }, [currentDate, isSubmitWindowOpen, statements]);
+    setIsThisMonthSubmitted(
+      !!statements?.find((x) => x.month === currentDate.getMonth() + 1)
+    );
+    setCurrentSubmitMonth(
+      `${getMonthName(currentDate.getMonth()).substring(
+        0,
+        3
+      )} ${currentDate.getFullYear()}`
+    );
+  }, [currentDate, statements]);
 
   useEffect(() => {
     const secondLastStatementMonth = !!statements[statements.length - 2]
@@ -298,6 +146,75 @@ export const CoachPractitionerBusiness = () => {
     return !!statements?.find((x) => x.month === currentMonth);
   }, [statements]);
 
+  const renderData = useMemo(() => {
+    const listItems = [];
+
+    if (!isThisMonthSubmitted) {
+      listItems.push({
+        title: 'No income or expenses added',
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: currentSubmitMonth,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'ExclamationIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () => setShowNotSubmittedDialog(true),
+        iconBackgroundColor: 'alertMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
+        },
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
+
+    if (statements.length >= 2 && hasProfit) {
+      listItems.push({
+        title: hasProfit
+          ? `${practitionerFirstName} made a profit for 2 months in a row!`
+          : `Programme running at a loss`,
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: lossProfitMonths,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: hasProfit ? 'SparklesIcon' : 'ExclamationIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () => setShowProfitDialog(true),
+        iconBackgroundColor: hasProfit ? 'successMain' : 'alertMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: hasProfit ? 'successMain' : 'alertMain',
+            textColour: 'white',
+          },
+        },
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
+
+    return (
+      <StackedList
+        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+        type="MenuList"
+        listItems={listItems}
+      />
+    );
+  }, [
+    currentSubmitMonth,
+    isThisMonthSubmitted,
+    lastStatementContactByCoach,
+    lossProfitMonths,
+    practitionerFirstName,
+    statements.length,
+  ]);
+
   return (
     <>
       <BannerWrapper
@@ -311,8 +228,11 @@ export const CoachPractitionerBusiness = () => {
             practitionerId: userId,
           })
         }
-        className="p-4"
       >
+        <div className="mt-4 flex justify-center">
+          <div className="w-11/12">{renderData}</div>
+        </div>
+
         {isLoading ? (
           <LoadingSpinner
             size="big"
@@ -323,58 +243,11 @@ export const CoachPractitionerBusiness = () => {
         ) : hasIncomeStatements ? (
           <IncomeStatements
             statements={statements}
-            isSubmitWindowOpen={isSubmitWindowOpen}
             isThisMonthSubmitted={isThisMonthSubmitted}
             isLastMonthSubmitted={isLastMonthSubmitted}
           />
         ) : (
-          <div className="h-full px-2 py-2">
-            <div>
-              <Typography
-                className="mt-4"
-                color="textDark"
-                text={`No income or expenses added`}
-                type={'h3'}
-              />
-            </div>
-            <div>
-              <Typography
-                className="mt-4"
-                color="textMid"
-                text={format(new Date(), 'dd MMM yyyy')}
-                type={'body'}
-              />
-            </div>
-            <div>
-              <Typography
-                className="mt-4"
-                color="textDark"
-                text={`Remind ${practitionerFirstName} to complete income statements every month`}
-                type={'h2'}
-              />
-            </div>
-            <WhatsappCall />
-            <div className="flex flex-col justify-center">
-              <Button
-                shape="normal"
-                color="quatenary"
-                type="filled"
-                icon="CheckCircleIcon"
-                onClick={() =>
-                  history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
-                    practitionerId: userId,
-                  })
-                }
-                className="mt-6 rounded-2xl"
-              >
-                <Typography
-                  type="help"
-                  color="white"
-                  text={`I have contacted ${practitionerFirstName}`}
-                />
-              </Button>
-            </div>
-          </div>
+          <div></div>
         )}
       </BannerWrapper>
       <Dialog
@@ -396,15 +269,6 @@ export const CoachPractitionerBusiness = () => {
         <StatementNotSubmitted
           onBack={() => setShowNotSubmittedDialog(false)}
           month={currentSubmitMonth}
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showStartupSupportDialog}
-        position={DialogPosition.Full}
-      >
-        <StartupSupportEnding
-          onBack={() => setShowStartupSupportDialog(false)}
         />
       </Dialog>
     </>

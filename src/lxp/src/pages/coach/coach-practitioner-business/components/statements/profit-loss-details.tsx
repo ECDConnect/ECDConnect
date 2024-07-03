@@ -49,6 +49,8 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
   const lastStatementBalance = getStatementBalance(lastStatement);
   const previousStatementBalance = getStatementBalance(previousStatement);
   const balance = lastStatementBalance + previousStatementBalance;
+  const isProfit = balance > 0;
+
   const totalDiffDays = !!lastStatement
     ? differenceInBusinessDays(
         new Date(),
@@ -103,66 +105,79 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
         size="small"
         renderOverflow
         displayOffline={!isOnline}
-        title="Business Balance"
+        title={isProfit ? 'Profit made' : 'Running at a loss'}
         onBack={onBack}
         className="p-4"
       >
-        <div className="mt-4 flex justify-center">
+        <div className="mt-1 flex justify-center">
           <div className="w-11/12">
             <div className="flex items-center gap-2">
               {balance > 0 ? (
                 <>
                   <span
-                    className={`text-l bg-successMain rounded-full p-3 font-semibold text-white`}
+                    className={`text-l bg-successMain rounded-full p-2 font-semibold text-white`}
                   >
                     &nbsp;2&nbsp;
                   </span>
-                  <Typography type="h3" text={` Months of making a profit}`} />
-                </>
-              ) : !lastStatement.contactedByCoach ? (
-                <>
-                  <span
-                    className={`text-l bg-alertMain rounded-full p-3 font-semibold text-white`}
-                  >
-                    &nbsp;2&nbsp;
-                  </span>
-                  <Typography type="h3" text={` Months of making a loss`} />
+                  <Typography type="h3" text={` Months of making a profit`} />
                 </>
               ) : (
-                <div />
+                <>
+                  <span
+                    className={`text-l bg-alertMain rounded-full p-2 font-semibold text-white`}
+                  >
+                    &nbsp;2&nbsp;
+                  </span>
+                  <Typography type="h3" text={` Months running at a loss`} />
+                </>
               )}
             </div>
-
             <div>
               <Typography
-                className="mt-2 text-left"
+                className="text-center"
                 color="textMid"
-                text={`${previousMonth} to ${lastMonth}`}
-                type={'body'}
+                text={`${previousMonth} - ${lastMonth}`}
+                type={'h6'}
               />
             </div>
 
             <div>
               {balance > 0 ? (
-                <Alert
-                  type={'info'}
-                  className="items-left justify-left mt-4 flex"
-                  title={`Over the past two months ${practitionerFirstName} has made more money than they have spent.`}
-                />
-              ) : !lastStatement.contactedByCoach ? (
-                <Alert
-                  type={'warning'}
-                  className="items-left justify-left mt-4 flex"
-                  title={`Over the past two months ${practitionerFirstName} has made less money than they have earned.`}
-                />
+                <>
+                  <Typography
+                    className="mt-4"
+                    color="textDark"
+                    text={`Congratulate ${practitionerFirstName} for making a profit`}
+                    type={'h2'}
+                  />
+                  <Typography
+                    className="mt-4"
+                    color="textMid"
+                    text={`Over the past two months, ${practitionerFirstName} has made more money than they have spent. This means their business is making a profit.`}
+                    type={'body'}
+                  />
+                </>
               ) : (
-                <div />
+                <>
+                  <Typography
+                    className="mt-4"
+                    color="textDark"
+                    text={`Discuss ways that ${practitionerFirstName} can earn more money and spend less`}
+                    type={'h2'}
+                  />
+                  <Typography
+                    className="mt-4"
+                    color="textMid"
+                    text={`Over the past two months, ${practitionerFirstName} has made less money than they have earned. This means their business is running at a loss.`}
+                    type={'body'}
+                  />
+                </>
               )}
             </div>
 
             <table className="mt-4" width={`100%`}>
               <tbody>
-                <tr className="bg-uiBg text-textDark font-body border-secondary border-b px-6 py-3">
+                <tr className="bg-uiBg text-textDark font-body border-quatenary border-b px-6 py-3">
                   <th className="text-textDark font-body">
                     <Typography
                       text="MONTH"
@@ -228,11 +243,11 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
               </tbody>
             </table>
             <WhatsappCall />
-            {balance < 0 && !lastStatement.contactedByCoach && (
+            {balance < 0 && (
               <div className="flex flex-col justify-center">
                 <Button
                   shape="normal"
-                  color="primary"
+                  color="quatenary"
                   type="filled"
                   icon="CheckCircleIcon"
                   onClick={onDismiss}
