@@ -51,6 +51,7 @@ import {
 import { ChildData, ChildListRouteState } from './child-list.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -104,6 +105,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const previousChildrenClassroomGroupId = usePrevious(state?.classroomGroupId);
 
   const history = useHistory();
+  const isTrialPeriod = useIsTrialPeriod();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
 
   const children = useSelector(childrenSelectors.getChildren);
@@ -117,7 +119,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const { hasPermissionToManageChildren } = useUserPermissions();
 
   const hasPermissionToEdit =
-    hasPermissionToManageChildren || practitioner?.isPrincipal;
+    hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
 
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
