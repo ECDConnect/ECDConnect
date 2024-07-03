@@ -54,30 +54,24 @@ export const SubmitIncomeStatements: React.FC = () => {
     state: { stepIndex, run: isWalkthrough },
   } = useAppContext();
 
-  // If no statement for current month
-  // TODO if we ahven't fetched recently, do we need to force them to sync first? To ensure we don't create a statement for the month, if one exists on the server?
-  useEffect(() => {
-    const year = new Date().getFullYear();
-    const month = new Date().getMonth() + 1;
+  const currentMonth = new Date();
+  const lastMonth = getPreviousMonth(new Date());
+  const previousMonth = getPreviousMonth(lastMonth);
 
-    if (!statements.some((x) => x?.month === month && x.year === year)) {
-      dispatch(
-        statementsActions.createStatement({
-          id: newGuid(),
-          month: month,
-          year: year,
-          incomeItems: [],
-          expenseItems: [],
-          contactedByCoach: false,
-          downloaded: false,
-        })
-      );
-    }
-  }, []);
-
-  const currentMonthStatement = statements[statements.length - 1];
-  const lastMonthStatement = statements[statements.length - 2];
-  const previousMonthStatement = statements[statements.length - 2];
+  const currentMonthStatement = statements.find(
+    (x) =>
+      x.month === currentMonth.getMonth() + 1 &&
+      x.year === currentMonth.getFullYear()
+  );
+  const lastMonthStatement = statements.find(
+    (x) =>
+      x.month === lastMonth.getMonth() + 1 && x.year === lastMonth.getFullYear()
+  );
+  const previousMonthStatement = statements.find(
+    (x) =>
+      x.month === previousMonth.getMonth() + 1 &&
+      x.year === previousMonth.getFullYear()
+  );
 
   const getStatementTitle = (statement: IncomeStatementDto | undefined) =>
     !!statement
@@ -147,9 +141,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     !!lastMonthExpenseTotal ||
     !!currentMonthExpenseTotal ||
     !!currentMonthIncomeTotal;
-
-  const lastMonth = getPreviousMonth(new Date());
-  const previousMonth = getPreviousMonth(lastMonth);
 
   const hasLastTwoMonthsStatements =
     lastMonthStatement?.month === lastMonth.getMonth() &&
@@ -242,7 +233,9 @@ export const SubmitIncomeStatements: React.FC = () => {
                     </th>
                     <th className="w-1/3">
                       <Typography
-                        text={getStatementTitle(currentMonthStatement)}
+                        text={`${getMonthName(
+                          currentMonth.getMonth()
+                        ).substring(0, 3)} ${currentMonth.getFullYear()}`}
                         type="body"
                         color={'textDark'}
                       />
