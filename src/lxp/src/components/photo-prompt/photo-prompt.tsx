@@ -68,8 +68,8 @@ export interface PhotoPromptProps extends ComponentBaseProps {
   onClose?: () => void;
   onAction?: (imageBaseString: string) => void;
   onDelete?: () => void;
-  hideEmojiOption?: boolean;
   isProfileEmojis?: boolean;
+  showEmojiOption?: boolean;
 }
 
 /**
@@ -82,7 +82,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   onClose,
   onAction,
   onDelete,
-  hideEmojiOption,
+  showEmojiOption,
   isProfileEmojis,
 }) => {
   const [actions, setActions] = useState<
@@ -168,7 +168,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
       actionColour: 'secondary',
     });
 
-    if (!hideEmojiOption) {
+    if (!!showEmojiOption) {
       actionsList.push({
         icon: renderIcon('EmojiHappyIcon', styles.iconStyle),
         title: 'Emojis',

@@ -90,7 +90,7 @@ export const Rent: React.FC<AddExpenseState> = ({
       id: !!expenseItem ? expenseItem.id : newGuid(),
       datePaid: datePaid!,
       notes: notes,
-      amount: amount ? moneyInputFormat(amount) : 0,
+      amount: amount ? Number(moneyInputFormat(amount)) : 0,
       expenseTypeId: ExpenseTypeIds.RENT_EXPENSE_ID,
       photoProof: photoProof,
     };
@@ -188,7 +188,11 @@ export const Rent: React.FC<AddExpenseState> = ({
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}
-          overrideOnClick={() => setPhotoActionBarVisible(true)}
+          overrideOnClick={() => {
+            if (!disabled) {
+              setPhotoActionBarVisible(true);
+            }
+          }}
           onValueChange={(imageString: string) => {
             setFormValue('photoProof', imageString);
             trigger();

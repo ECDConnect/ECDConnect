@@ -182,64 +182,6 @@ export const calculateChildrenRegistrationRemoval = createAsyncThunk<
   }
 );
 
-// Removing this for now, its part of resitration, but we should also sync the child and user in one go. Neither makes sense without the other
-// export const upsertChildUsers = createAsyncThunk<
-//   boolean[],
-//   // eslint-disable-next-line @typescript-eslint/ban-types
-//   {},
-//   ThunkApiType<RootState>
-// >(
-//   'upsertChildUsers',
-//   // eslint-disable-next-line no-empty-pattern
-//   async ({}, { getState, rejectWithValue }) => {
-//     const {
-//       auth: { userAuth },
-//       children: { childUser, children },
-//       staticData: { WorkflowStatuses },
-//     } = getState();
-
-//     try {
-//       let promises: Promise<boolean>[] = [];
-//       const workflowStatus = WorkflowStatuses?.find(
-//         (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
-//       );
-//       if (userAuth?.auth_token && childUser) {
-//         promises = childUser
-//           .filter((childUser) => {
-//             const child = children?.find((x) => x.userId === childUser.id);
-//             return child && child.workflowStatusId !== workflowStatus?.id
-//               ? true
-//               : false;
-//           })
-//           .map(async (x) => {
-//             const input: UserModelInput = {
-//               isSouthAfricanCitizen: x.isSouthAfricanCitizen ?? false,
-//               idNumber: x.idNumber && x.idNumber.length > 0 ? x.idNumber : null,
-//               verifiedByHomeAffairs: x.verifiedByHomeAffairs!,
-//               dateOfBirth: x.dateOfBirth,
-//               genderId: x.genderId && x.genderId.length > 0 ? x.genderId : null,
-//               raceId: x.raceId && x.raceId.length > 0 ? x.raceId : null,
-//               firstName: x.firstName,
-//               surname: x.surname,
-//               contactPreference: x.contactPreference,
-//               phoneNumber: x.phoneNumber,
-//               email: x.email,
-//               profileImageUrl: x.profileImageUrl,
-//             };
-
-//             return await new UserService(userAuth?.auth_token).updateUser(
-//               x.id ?? '',
-//               input
-//             );
-//           });
-//       }
-//       return Promise.all(promises);
-//     } catch (err) {
-//       return rejectWithValue(err);
-//     }
-//   }
-// );
-
 // Syncs all children from state, calling updateChild
 export const upsertChildren = createAsyncThunk<
   boolean[],

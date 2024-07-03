@@ -178,6 +178,11 @@ export const MonthStatements: React.FC = () => {
                   colour: 'quatenary',
                   type: 'filled',
                   onClick: () => {
+                    appDispatch(
+                      statementsActions.markStatementAsDownloaded({
+                        statementId,
+                      })
+                    );
                     generatePdf();
                     setShowConfirmDialog(false);
                   },

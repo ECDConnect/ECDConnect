@@ -160,6 +160,7 @@ export const FormInput = <T extends FieldValues>({
                   : { paddingRight: 16 }
               }
               value={value}
+              decimalSeparator="."
               {...restProps}
             />
           );
@@ -187,6 +188,7 @@ export const FormInput = <T extends FieldValues>({
                 paddingRight: suffixIcon ? 38 : 16,
                 paddingLeft: prefixIcon || startIcon ? 20 : 16,
               }}
+              decimalSeparator="."
               {...restProps}
             />
           );

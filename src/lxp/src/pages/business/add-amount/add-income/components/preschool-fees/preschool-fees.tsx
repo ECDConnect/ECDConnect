@@ -13,6 +13,10 @@ import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
 import { endOfMonth, isBefore, startOfMonth } from 'date-fns';
 import { classroomsSelectors } from '@/store/classroom';
 import { useHistory } from 'react-router';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export type PreschoolFeesStep2 = {
   classroomGroupIds: string[];
@@ -25,10 +29,16 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
   month,
   year,
   classroomGroupIds,
-  onSubmit,
+  onSubmit: parentOnSubmit,
 }) => {
   const history = useHistory();
-  const [updatedFees, setUpdatedFees] = useState<IncomeItemDto[]>([]);
+  const [updatedFees, setUpdatedFees] = useState<
+    {
+      id: string;
+      childUserId: string;
+      amount: string;
+    }[]
+  >([]);
 
   const startDate = startOfMonth(new Date(year, month, 1));
   const endDate = endOfMonth(startDate);
@@ -46,6 +56,7 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
       startDate.getMonth() + 1
     )
   );
+  console.log('currentFees', currentFees);
 
   const groupedChildList = useMemo(() => {
     return learnersByClassroomGroup.map((group) => ({
@@ -60,7 +71,10 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
         return {
           name: `${learner.child?.user?.firstName} ${learner.child?.user?.surname}`,
           childUserId: learner.childUserId,
-          currentFee: currentFee,
+          currentFeeId: currentFee?.id,
+          currentFeeAmount: moneyInputFormat(
+            currentFee?.amount.toString() ?? '0'
+          ),
         };
       }),
     }));
@@ -70,6 +84,23 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
   sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
   const disabled = !!currentFees?.downloaded || isBefore(endDate, sixtyDaysAgo);
+
+  const onSubmit = () => {
+    const mappedFees = updatedFees
+      .filter((x) => isNumber(x.amount))
+      .map(
+        (x) =>
+          ({
+            id: x.id,
+            amount: Number(moneyInputFormat(x.amount)),
+            dateReceived: endDate.toISOString(),
+            incomeTypeId: IncomeTypeIds.PRESCHOOL_FEE_ID,
+            childUserId: x.childUserId,
+          } as IncomeItemDto)
+      );
+
+    parentOnSubmit(mappedFees, currentFees.statementId);
+  };
 
   return (
     <>
@@ -89,21 +120,19 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
               className="mt-2"
               type={'text'}
               textInputType={'moneyInput'}
-              value={child.currentFee?.amount ?? 0}
+              value={child.currentFeeAmount}
               prefixIcon={true}
               disabled={disabled}
               onChange={(event) => {
                 // Updated existing
                 setUpdatedFees([
                   ...updatedFees.filter(
-                    (x) => !child.currentFee || x.id !== child.currentFee.id
+                    (x) => !child.currentFeeId || x.id !== child.currentFeeId
                   ),
                   {
-                    id: child.currentFee?.id ?? newGuid(),
-                    amount: Number(event.target.value),
-                    incomeTypeId: IncomeTypeIds.PRESCHOOL_FEE_ID,
+                    id: child.currentFeeId ?? newGuid(),
+                    amount: event.target.value,
                     childUserId: child.childUserId,
-                    dateReceived: endDate.toISOString(),
                   },
                 ]);
               }}
@@ -119,7 +148,7 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
           icon="SaveIcon"
           className="mt-6 rounded-2xl"
           disabled={!classroomGroupIds.length}
-          onClick={() => onSubmit(updatedFees, currentFees.statementId)}
+          onClick={() => onSubmit()}
         >
           <Typography type="body" color="white" text="Save" />
         </Button>

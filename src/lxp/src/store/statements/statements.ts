@@ -1,8 +1,4 @@
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-} from '@/../../../packages/core/lib';
+import { ExpenseItemDto, IncomeItemDto } from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -32,16 +28,6 @@ const statementsSlice = createSlice({
     },
     resetStatementsState: (state) => {
       state.incomeStatements = initialState.incomeStatements;
-    },
-    createStatement: (state, action: PayloadAction<IncomeStatementDto>) => {
-      state.incomeStatements = [
-        ...state.incomeStatements,
-        {
-          ...action.payload,
-          synced: false,
-          dateRefreshed: new Date().toString(),
-        },
-      ];
     },
     markStatementAsDownloaded: (
       state,
