@@ -156,14 +156,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new ArgumentException("Principal with id not available in application");
             }
 
-            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber);
-            var userByPhoneNumber = userManager.Users.FirstOrDefault(user => user.PhoneNumber == normalizePhoneNumber
+            /*var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber);
+            var userByPhoneNumber = userManager.Users.FirstOrDefault(user => user.UserName == normalizePhoneNumber
                                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
             if (userByPhoneNumber != null)
             {
                 throw new ValidationException("User with phone number already exists");
-            }
+            }*/
 
             var userId = httpContext.HttpContext.GetUser().Id;
             var tenantId = TenantExecutionContext.Tenant.Id;
@@ -172,7 +172,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 UserName = $"External_Edit_{Guid.NewGuid()}",
                 IsActive = true,
                 TenantId = tenantId,
-                PhoneNumber = normalizePhoneNumber,
+                PhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber),
                 ContactPreference = MessageTypeConstants.SMS
             };
             await userManager.CreateAsync(user);
@@ -189,7 +189,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 throw new QueryException("Token generation failed");
             }
-
             
             await notificationManager.SendPreSchoolInvitationAsync(user, principal.FullName, preSchoolNameCode, token);
 
