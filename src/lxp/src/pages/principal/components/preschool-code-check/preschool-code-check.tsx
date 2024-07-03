@@ -34,6 +34,7 @@ import { useNotificationService } from '@/hooks/useNotificationService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { ShareSomeDetails } from '../share-some-detail/share-some-detail';
+import { classroomsThunkActions } from '@/store/classroom';
 
 export const PreschoolCodeCheck: React.FC<{
   onNext: OnNext;
@@ -69,10 +70,15 @@ export const PreschoolCodeCheck: React.FC<{
   const getPractitionerResponse = async () => {
     setIsLoadingPractitionerInvite(true);
     const input: MutationAddPractitionerToPrincipalArgs = {
-      userId: user?.id,
-      idNumber: user?.idNumber,
+      userId: classroomPrincipal,
+      idNumber: user?.idNumber || user?.userName,
       firstName: user?.firstName,
     };
+
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerProgress(user?.id!, 2.0);
+
     await new PractitionerService(
       userAuth?.auth_token!
     ).AddPractitionerToPrincipal(input);
@@ -95,15 +101,14 @@ export const PreschoolCodeCheck: React.FC<{
       userAuth?.auth_token!
     ).UpdatePractitionerRegistered(user?.id!, true);
 
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerProgress(user?.id!, 2.0);
-
     await appDispatch(notificationActions.resetFrontendNotificationState());
     await appDispatch(
       practitionerThunkActions.getPractitionerByUserId({ userId: user?.id! })
     );
     await appDispatch(practitionerThunkActions.getAllPractitioners({}));
+    await appDispatch(
+      classroomsThunkActions.getClassroom({ overrideCache: true })
+    ).unwrap();
     stopService();
     onNext(PractitionerSetupSteps.ADD_PHOTO);
     setIsLoading(false);

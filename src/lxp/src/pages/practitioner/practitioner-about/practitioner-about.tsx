@@ -426,16 +426,16 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userActions.updateUser(copy));
     }
 
-    if (!userProfilePicture) {
-      await createNewDocument({
-        data: imageBaseString,
-        userId: user?.id || '',
-        fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${user?.id}.png`,
-      });
-    } else {
-      updateDocument(userProfilePicture, imageBaseString);
-    }
+    // if (!userProfilePicture) {
+    //   await createNewDocument({
+    //     data: imageBaseString,
+    //     userId: user?.id || '',
+    //     fileType: FileTypeEnum.ProfileImage,
+    //     fileName: `ProfilePicture_${user?.id}.png`,
+    //   });
+    // } else {
+    //   updateDocument(userProfilePicture, imageBaseString);
+    // }
 
     await savePractitionerUserData(imageBaseString);
   };

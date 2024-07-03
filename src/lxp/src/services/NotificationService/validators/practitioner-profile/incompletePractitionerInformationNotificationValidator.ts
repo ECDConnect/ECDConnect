@@ -75,7 +75,8 @@ export class IncompletePractitionerInformationNotificationValidator
         (hasPrincipalRole && notRegistered && !addedByPrincipal) ||
         (!addedByPrincipal &&
           practitionerState?.practitioner?.progress === 0) ||
-        practitionerState?.practitioner?.progress === 1.0;
+        (practitionerState?.practitioner?.progress === 1.0 &&
+          !addedByPrincipal);
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (isTrainee) {
