@@ -1948,8 +1948,6 @@ export type Classroom = {
   numberOfOtherAssistants?: Maybe<Scalars['Int']>;
   numberPractitioners?: Maybe<Scalars['Int']>;
   preschoolCode?: Maybe<Scalars['String']>;
-  preschoolFeeAmount?: Maybe<Scalars['Float']>;
-  preschoolFeeAmountLastUpdateDate?: Maybe<Scalars['DateTime']>;
   programmes?: Maybe<Array<Maybe<Programme>>>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
@@ -1976,8 +1974,6 @@ export type ClassroomFilterInput = {
   numberPractitioners?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   or?: InputMaybe<Array<ClassroomFilterInput>>;
   preschoolCode?: InputMaybe<StringOperationFilterInput>;
-  preschoolFeeAmount?: InputMaybe<ComparableNullableOfDoubleOperationFilterInput>;
-  preschoolFeeAmountLastUpdateDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   programmes?: InputMaybe<ListFilterInputTypeOfProgrammeFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -2105,8 +2101,6 @@ export type ClassroomInput = {
   NumberOfOtherAssistants?: InputMaybe<Scalars['Int']>;
   NumberPractitioners?: InputMaybe<Scalars['Int']>;
   PreschoolCode?: InputMaybe<Scalars['String']>;
-  PreschoolFeeAmount?: InputMaybe<Scalars['Float']>;
-  PreschoolFeeAmountLastUpdateDate?: InputMaybe<Scalars['DateTime']>;
   Programmes?: InputMaybe<Array<InputMaybe<ProgrammeInput>>>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
@@ -2140,8 +2134,6 @@ export type ClassroomModel = {
   numberOfOtherAssistants?: Maybe<Scalars['Int']>;
   numberPractitioners?: Maybe<Scalars['Int']>;
   preschoolCode?: Maybe<Scalars['String']>;
-  preschoolFeeAmount?: Maybe<Scalars['Float']>;
-  preschoolFeeAmountLastUpdateDate?: Maybe<Scalars['DateTime']>;
   principal?: Maybe<BasePractitionerModel>;
   siteAddress?: Maybe<BaseSiteAddressModel>;
 };
@@ -2159,8 +2151,6 @@ export type ClassroomSortInput = {
   numberOfOtherAssistants?: InputMaybe<SortEnumType>;
   numberPractitioners?: InputMaybe<SortEnumType>;
   preschoolCode?: InputMaybe<SortEnumType>;
-  preschoolFeeAmount?: InputMaybe<SortEnumType>;
-  preschoolFeeAmountLastUpdateDate?: InputMaybe<SortEnumType>;
   siteAddress?: InputMaybe<SiteAddressSortInput>;
   siteAddressId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
@@ -7718,6 +7708,7 @@ export type Mutation = {
   updateCoach?: Maybe<Coach>;
   updateCoachAboutInfo?: Maybe<Coach>;
   updateCoachClubClicked: Scalars['Boolean'];
+  updateCoachCommunityTabStatus?: Maybe<Coach>;
   updateCoachFeedback?: Maybe<CoachFeedback>;
   updateCoachingCircleTopics?: Maybe<CoachingCircleTopics>;
   updateCommunityProfile?: Maybe<CommunityProfile>;
@@ -7792,6 +7783,7 @@ export type Mutation = {
   updatePointsUserSummary?: Maybe<PointsUserSummary>;
   updatePractitioner?: Maybe<Practitioner>;
   updatePractitionerBusinessWalkthrough: Scalars['Boolean'];
+  updatePractitionerCommunityTabStatus?: Maybe<Practitioner>;
   updatePractitionerContactInfo?: Maybe<ApplicationUser>;
   updatePractitionerEmergencyContact: Scalars['Boolean'];
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
@@ -7801,7 +7793,6 @@ export type Mutation = {
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<ClassroomGroup>;
   updatePractitionerUsePhotoInReport?: Maybe<Scalars['String']>;
-  updatePreschoolFeeForClassroom: Scalars['Boolean'];
   updatePrincipal?: Maybe<Principal>;
   updatePrincipalInvitation?: Maybe<PrincipalInvitationStatus>;
   updateProgramme?: Maybe<Programme>;
@@ -10466,6 +10457,10 @@ export type MutationUpdateCoachClubClickedArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationUpdateCoachCommunityTabStatusArgs = {
+  coachUserId: Scalars['UUID'];
+};
+
 export type MutationUpdateCoachFeedbackArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<CoachFeedbackInput>;
@@ -10866,6 +10861,10 @@ export type MutationUpdatePractitionerBusinessWalkthroughArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationUpdatePractitionerCommunityTabStatusArgs = {
+  practitionerUserId: Scalars['UUID'];
+};
+
 export type MutationUpdatePractitionerContactInfoArgs = {
   email?: InputMaybe<Scalars['String']>;
   firstName?: InputMaybe<Scalars['String']>;
@@ -10912,11 +10911,6 @@ export type MutationUpdatePractitionerToTeachClassroomArgs = {
 export type MutationUpdatePractitionerUsePhotoInReportArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
   usePhotoInReport?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdatePreschoolFeeForClassroomArgs = {
-  amount?: InputMaybe<Scalars['Float']>;
-  classroomId: Scalars['UUID'];
 };
 
 export type MutationUpdatePrincipalArgs = {
@@ -13098,6 +13092,7 @@ export type PractitionerModel = {
   absentees?: Maybe<Array<Maybe<AbsenteeDetail>>>;
   attendanceRegisterLink?: Maybe<Scalars['String']>;
   attendedChildProgress?: Maybe<Scalars['Boolean']>;
+  clickedCommunityTab?: Maybe<Scalars['Boolean']>;
   clubId?: Maybe<Scalars['UUID']>;
   clubName?: Maybe<Scalars['String']>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
@@ -19425,7 +19420,6 @@ export type ThemeInput = {
 export type TokenAccessChildDetailModel = {
   __typename?: 'TokenAccessChildDetailModel';
   firstname?: Maybe<Scalars['String']>;
-  groupFeeAmount?: Maybe<Scalars['Float']>;
   groupName?: Maybe<Scalars['String']>;
   surname?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;

@@ -113,7 +113,6 @@ import { LeagueLeaderBoard } from '@/pages/community/leagues-tab/league-leaderbo
 import { ActivityHelp } from '@/pages/community/clubs-tab/0-components/help-screen';
 import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add';
 import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
-import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-preschool-fee';
 import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
 import { AcceptClubLeaderRole } from '@/pages/practitioner/practitioner-community/accept-club-leader-role';
 import { PractitionerCommunity } from '@/pages/practitioner/practitioner-community';
@@ -549,11 +548,6 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT}
         component={ProgrammeDashboard}
-      />
-      <Route
-        exact
-        path={ROUTES.CLASSROOM.UPDATE_FEE}
-        component={UpdatePreschoolFee}
       />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />
       <Route

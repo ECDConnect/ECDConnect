@@ -8,8 +8,6 @@ export type ClassroomDto = {
   numberPractitioners?: number;
   numberOfAssistants?: number;
   numberOfOtherAssistants?: number;
-  preschoolFeeAmount?: number;
-  preschoolFeeAmountLastUpdateDate?: string;
   siteAddress: SiteAddressDto;
   principal: BasePractitionerDto;
   preschoolCode?: string;

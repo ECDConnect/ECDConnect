@@ -104,8 +104,6 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
     )
   );
 
-  console.log('statement', statement);
-
   const disabled =
     !!statement?.downloaded ||
     (!!expenseItem && isBefore(new Date(expenseItem.datePaid), sixtyDaysAgo));
