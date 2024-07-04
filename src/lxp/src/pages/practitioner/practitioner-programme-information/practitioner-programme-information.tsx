@@ -317,7 +317,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       stackedActionList.push({
         title: 'Other practitioners on site',
         subTitle: isPrincipal
-          ? practitionersList?.map((x) => x?.user?.firstName).join(', ')
+          ? practitionersList
+              ?.map((x) => x?.user?.firstName || x?.user?.userName)
+              .join(', ')
           : otherColleaguesFiltered?.map((x: any) => x?.name).join(', ') ||
             'None',
         switchTextStyles: true,
