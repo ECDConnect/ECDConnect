@@ -144,7 +144,9 @@ const PublicRoutes: React.FC = () => {
   const url = window.location?.hostname;
   const isOpenAccessUrl =
     url === 'ecdconnect-develop-app.azurewebsites.net' ||
-    url === 'ecdconnect-develop-app';
+    url === 'ecdconnect-develop-app' ||
+    url === 'ecdconnect-qa-app.azurewebsites.net' ||
+    url === 'ecdconnect-qa-app';
 
   return (
     <Switch>
