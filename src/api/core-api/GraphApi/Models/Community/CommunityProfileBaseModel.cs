@@ -11,6 +11,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public Guid ToUserId { get; set; }
         public string AboutShort { get; set; }
         public string AboutLong { get; set; }
+        public bool? ShareContactInfo { get; set; }
         public bool? ShareEmail { get; set; }
         public bool? SharePhoneNumber { get; set; }
         public bool? ShareProfilePhoto { get; set; }
@@ -29,6 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             ToUserId = profile.ToUserId;
             AboutShort = profile.AboutShort;
             AboutLong = profile.AboutLong;
+            ShareContactInfo = profile.ShareContactInfo;
             ShareEmail = profile.ShareEmail;
             SharePhoneNumber = profile.SharePhoneNumber;
             ShareProfilePhoto = profile.ShareProfilePhoto;
