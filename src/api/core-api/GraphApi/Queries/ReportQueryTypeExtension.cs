@@ -1147,10 +1147,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Include(x => x.ClubMeetingRegister)
                 .ToList();
 
-            var practitionerClubAbsenceDictionary = clubMeetingRegisterRepo.GetAll()
-                .Where(x => x.InsertedDate.Year == DateTime.Now.Year && x.IsActive && !x.Attended)
-                .GroupBy(x => x.PractitionerId)
-                .ToDictionary(x => x.First().PractitionerId, x => x.Count());
+      //      var practitionerClubAbsenceDictionary = clubMeetingRegisterRepo.GetAll()
+      //          .Where(x => x.InsertedDate.Year == DateTime.Now.Year && x.IsActive && !x.Attended)
+      //          .GroupBy(x => x.PractitionerId)
+      //          .ToDictionary(x => x.First().PractitionerId, x => x.Count());
 
             foreach (var practitioner in practitioners)
             {
