@@ -336,7 +336,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
         title={`${title} activity`}
         subTitle={subtitle}
         color={'primary'}
-        backgroundColour="uiBg"
+        backgroundColour="white"
         onHelp={onHelp}
         displayHelp
         onBack={onClose}
@@ -440,7 +440,8 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
 
           {hasActiveFilters && filteredActivities.length === 0 && (
             <EmptyActivities
-              title={`Sorry, we couldn't find any activities!`}
+              className="mt-20"
+              title={`Sorry, no activities found!`}
               subTitle={
                 'Please choose a different theme, skill, and/or language and try again.'
               }
@@ -478,7 +479,9 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
               />
             </>
           )}
-          <Divider className="my-4" dividerType="dashed" />
+          {(!hasActiveFilters || filteredActivities.length !== 0) && (
+            <Divider className="my-4" dividerType="dashed" />
+          )}
           {duplicatedActivity && (
             <Alert
               className="mb-4"
@@ -494,20 +497,22 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
               ]}
             />
           )}
-          <Button
-            type="filled"
-            className="mb-32 mt-auto w-full"
-            color="quatenary"
-            icon="SaveIcon"
-            text={submitButtonText}
-            textColor="white"
-            iconPosition="start"
-            disabled={
-              !selectedActivityId ||
-              (hasActiveFilters && filteredActivities.length === 0)
-            }
-            onClick={() => onSave(selectedActivityId)}
-          />
+          {(!hasActiveFilters || filteredActivities.length !== 0) && (
+            <Button
+              type="filled"
+              className="mb-32 mt-auto w-full"
+              color="quatenary"
+              icon="SaveIcon"
+              text={submitButtonText}
+              textColor="white"
+              iconPosition="start"
+              disabled={
+                !selectedActivityId ||
+                (hasActiveFilters && filteredActivities.length === 0)
+              }
+              onClick={() => onSave(selectedActivityId)}
+            />
+          )}
         </div>
       </BannerWrapper>
       <Dialog

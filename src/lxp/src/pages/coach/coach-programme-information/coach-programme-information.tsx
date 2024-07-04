@@ -60,7 +60,8 @@ export const CoachProgrammeInformation: React.FC = () => {
   const practitionerClassroom = isPrincipal
     ? coachClassrooms?.find((item) => item?.userId === practitionerId)
     : coachClassrooms?.find(
-        (item) => item?.id === practitionerClassroomGroups?.[0].classroomId
+        (item) =>
+          item?.id === practitionerClassroomGroups?.[0]?.classroomId || ''
       );
 
   const classroomGroups =
@@ -118,18 +119,6 @@ export const CoachProgrammeInformation: React.FC = () => {
       id: item?.userId,
     };
   });
-
-  const call = () => {
-    window.open(`tel:${practitioner?.user?.phoneNumber}`);
-  };
-
-  const whatsapp = () => {
-    window.open(
-      `https://wa.me/${formatPhonenumberInternational(
-        practitioner?.user?.phoneNumber ?? ''
-      )}`
-    );
-  };
 
   const handleClick = (practitionerId: string) => {
     if (isCoach) {

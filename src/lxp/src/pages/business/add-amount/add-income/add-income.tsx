@@ -158,7 +158,7 @@ export const AddIncome: React.FC = () => {
                 type="h4"
                 className={'pt-2'}
                 color={'textDark'}
-                text={'What type of money came in'}
+                text={'What type of money came in?'}
               />
             </div>
             <Divider dividerType="dashed" className="mt-4" />

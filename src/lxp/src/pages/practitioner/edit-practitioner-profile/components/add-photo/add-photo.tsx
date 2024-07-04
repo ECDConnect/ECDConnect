@@ -45,16 +45,16 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
       appDispatch(userActions.updateUser(copy));
     }
 
-    if (!userProfilePicture) {
-      await createNewDocument({
-        data: imageBaseString,
-        userId: user?.id || '',
-        fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${user?.id}.png`,
-      });
-    } else {
-      updateDocument(userProfilePicture, imageBaseString);
-    }
+    // if (!userProfilePicture) {
+    //   await createNewDocument({
+    //     data: imageBaseString,
+    //     userId: user?.id || '',
+    //     fileType: FileTypeEnum.ProfileImage,
+    //     fileName: `ProfilePicture_${user?.id}.png`,
+    //   });
+    // } else {
+    //   updateDocument(userProfilePicture, imageBaseString);
+    // }
 
     // save details with request updateUser
     const userCopy = cloneDeep(user);
@@ -136,6 +136,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
             onAction={picturePromtOnAction}
             onDelete={userProfilePicture ? handleDelete : undefined}
             isProfileEmojis={true}
+            showEmojiOption={true}
           ></PhotoPrompt>
         </div>
       </Dialog>

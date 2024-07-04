@@ -3,14 +3,10 @@ using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
@@ -19,7 +15,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     public class AbsenteeMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-
         public Absentees AddAbsenteeForPractitioner(
             [Service] IAbsenteeService absenteeService,
             string practitionerId,
@@ -38,15 +33,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Absentees EditAbsentee(
-    [Service] IAbsenteeService absenteetService,
-    string absenteeId,
-    bool deleteAbsentee = false,
-    string reassignedToPractitioner = null,
-    string reason = null,
-    DateTime? absentDate = null,
-    DateTime? absentDateEnd = null,
-    bool isRoleAssign = false,
-    string roleAssignedToUser = null)
+            [Service] IAbsenteeService absenteetService,
+            string absenteeId,
+            bool deleteAbsentee = false,
+            string reassignedToPractitioner = null,
+            string reason = null,
+            DateTime? absentDate = null,
+            DateTime? absentDateEnd = null,
+            bool isRoleAssign = false,
+            string roleAssignedToUser = null)
         {
             return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd, isRoleAssign, roleAssignedToUser);
         }
@@ -56,6 +51,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             return reassignmentService.ReassignClassroomsFromHistory(userId);
         }
-
     }
 }

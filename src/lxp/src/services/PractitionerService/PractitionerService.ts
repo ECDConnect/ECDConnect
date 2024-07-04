@@ -1062,7 +1062,7 @@ class PractitionerService {
   // Can we remove this now?
   async classroomActionItems(
     practitionerId: string
-  ): Promise<PractitionerDto[]> {
+  ): Promise<NotificationDisplay[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -1087,7 +1087,7 @@ class PractitionerService {
       throw new Error('Display metrics Failed - Server connection error');
     }
 
-    return response.data.data.displayMetrics;
+    return response.data.data.classroomActionItems;
   }
 
   async practitionerColleagues(

@@ -390,7 +390,7 @@ export const ClassDashboard: React.FC = () => {
       state?.activeTabIndex !== undefined &&
       state?.activeTabIndex !== selectedTabIndex
     ) {
-      setSelectedTabIndex(state?.activeTabIndex || 0);
+      setSelectedTabIndex(state?.activeTabIndex || selectedTabIndex);
       history.replace({
         state: {
           ...state,

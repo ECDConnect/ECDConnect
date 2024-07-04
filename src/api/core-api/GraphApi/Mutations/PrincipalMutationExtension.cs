@@ -34,6 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                                         [Service] PersonnelService personnelManager,
                                                         IGenericRepositoryFactory repoFactory,
                                                         [Service] INotificationService notificationService,
+                                                        AuthenticationDbContext dbContext,
                                                         string firstName,
                                                         string lastName,
                                                         string idNumber,
@@ -43,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumberInternal(contextAccessor, userManager, repoFactory, idNumber);
+            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumberInternal(contextAccessor, dbContext, repoFactory, idNumber);
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
@@ -358,8 +359,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.Leaving = false;
 
                 notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
-                
             }
+
+            // expire the invite after accept or reject
+            notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation, null, null, practitioner.UserId);
 
             //update practitioner with column changes
             practitionerRepo.Update(practitioner);

@@ -8,4 +8,5 @@ export interface ProgrammePlanningRoutineListItemProps
   selectedDate?: Date;
   storyBookId?: number;
   onClick: () => void;
+  disabled?: boolean;
 }

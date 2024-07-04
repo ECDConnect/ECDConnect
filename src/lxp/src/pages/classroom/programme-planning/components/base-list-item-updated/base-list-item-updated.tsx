@@ -24,6 +24,7 @@ interface BaseListItemPropsUpdated extends ComponentBaseProps {
   actionIconColor?: Colours;
   borderRadius?: string;
   routineItem?: ProgrammeRoutineItemDto;
+  disabled?: boolean;
   onClick?: () => void;
   overwritePreSlotRender?: () => JSX.Element;
   overwriteTextSlotRender?: () => JSX.Element;
@@ -44,6 +45,7 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
   iconColor = 'white',
   borderRadius = '',
   routineItem,
+  disabled,
   onClick,
   overwritePreSlotRender,
   overwriteTextSlotRender,
@@ -61,7 +63,8 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
     routineItem?.name === DailyRoutineItemType.freePlay;
 
   return (
-    <div
+    <button
+      disabled={disabled}
       onClick={onClick}
       className={classNames(
         className,
@@ -102,7 +105,7 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
         {overwritePostSlotRender === undefined &&
           renderIcon(actionIconName, styles.icon(actionIconColor))}
       </div>
-    </div>
+    </button>
   );
 };
 

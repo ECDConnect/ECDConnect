@@ -28,7 +28,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
-> = ({ routineItem, onClick, day, selectedDate, storyBookId }) => {
+> = ({ routineItem, onClick, disabled, day, selectedDate, storyBookId }) => {
   const dialog = useDialog();
 
   const { isOnline } = useOnlineStatus();
@@ -316,6 +316,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
       }}
       overwritePostSlotRender={getRoutineItemPostSlotRender}
       dividerColor={'uiLight'}
+      disabled={disabled}
       onClick={handleOnClick}
       routineItem={routineItem}
     />

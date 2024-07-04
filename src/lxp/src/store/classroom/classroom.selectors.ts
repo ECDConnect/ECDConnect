@@ -1,4 +1,4 @@
-import { ChildDto, ClassProgrammeDto } from '@ecdlink/core';
+import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';

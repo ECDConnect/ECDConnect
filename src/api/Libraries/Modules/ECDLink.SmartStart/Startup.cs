@@ -12,7 +12,6 @@ namespace ECDLink.SmartStart
         {
             services.AddTransient<MonthlyAttendanceReport>();
             services.AddTransient<ChildAttendanceReport>();
-            services.AddTransient<ChildProgressReportService>();
         }
 
         public static void AddSmartStartConfiguration(IApplicationBuilder app, IWebHostEnvironment env)

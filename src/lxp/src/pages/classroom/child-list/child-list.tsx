@@ -50,6 +50,8 @@ import {
 } from '../class-dashboard/class-dashboard.types';
 import { ChildData, ChildListRouteState } from './child-list.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -89,6 +91,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const coach = useSelector(coachSelectors.getCoach);
+
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
@@ -102,6 +105,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const previousChildrenClassroomGroupId = usePrevious(state?.classroomGroupId);
 
   const history = useHistory();
+  const isTrialPeriod = useIsTrialPeriod();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
 
   const children = useSelector(childrenSelectors.getChildren);
@@ -111,6 +115,11 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const { hasPermissionToManageChildren } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
 
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
@@ -504,17 +513,19 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
           />
         )}
-        <FADButton
-          title={'Add a child'}
-          icon={'PlusIcon'}
-          iconDirection={'left'}
-          textToggle={addChildButtonExpanded}
-          type={'filled'}
-          color={'quatenary'}
-          shape={'round'}
-          className={styles.fadButton}
-          click={registerNewChild}
-        />
+        {hasPermissionToEdit && (
+          <FADButton
+            title={'Add a child'}
+            icon={'PlusIcon'}
+            iconDirection={'left'}
+            textToggle={addChildButtonExpanded}
+            type={'filled'}
+            color={'quatenary'}
+            shape={'round'}
+            className={styles.fadButton}
+            click={registerNewChild}
+          />
+        )}
       </div>
     </BannerWrapper>
   );

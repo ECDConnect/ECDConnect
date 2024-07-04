@@ -1,5 +1,6 @@
-import { classNames, RoundIcon, Typography } from '@ecdlink/ui';
+import { classNames, Typography } from '@ecdlink/ui';
 import { EmprtActivitiesProps } from './empty-activity-filter-result.types';
+import { ReactComponent as Emoji4 } from '@/assets/ECD_Connect_emoji4.svg';
 
 export const EmptyActivities: React.FC<EmprtActivitiesProps> = ({
   title,
@@ -9,25 +10,23 @@ export const EmptyActivities: React.FC<EmprtActivitiesProps> = ({
   return (
     <div
       className={classNames(
-        'flex flex-auto flex-col pb-6 justify-center items-center',
+        'flex flex-auto flex-col items-center justify-center pb-6',
         className
       )}
     >
-      <RoundIcon
-        icon="ExclamationCircleIcon"
-        className={'bg-alertMain text-white mt-6'}
-      />
+      <Emoji4 className="h-28 w-28" />
       <Typography
-        type="body"
+        type="h2"
         className="mt-4"
         fontSize="16"
         align="center"
         weight="bold"
+        color="textDark"
         text={title}
       />
       <Typography
         type="body"
-        className="mt-1 w-1/2"
+        className="mt-1"
         align={'center'}
         weight="skinny"
         text={subTitle}

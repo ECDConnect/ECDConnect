@@ -87,14 +87,16 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const practitionerClassroomDetails = isPrincipal
     ? coachClassrooms?.find((item) => item?.userId === practitionerId)
-    : coachClassrooms?.find(
-        (item) => item?.id === practitionerClassroomGroups?.[0].classroomId
-      );
+    : practitionerClassroomGroups && practitionerClassroomGroups.length > 0
+    ? coachClassrooms?.find(
+        (item) =>
+          item?.id === practitionerClassroomGroups?.[0].classroomId! || ''
+      )
+    : null;
 
   const [isToRemoveSmartStarter, setIsToRemoveSmartStarter] =
     useState<boolean>(false);
   const [delicenseDate, setDelicenseDate] = useState<Date>();
-  const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
   const { theme } = useTheme();
   const { showMessage } = useSnackbar();
@@ -1224,18 +1226,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 message: `${practitioner?.user?.firstName} removed`,
               })
             }
-          />
-        </div>
-      </Dialog>
-      <Dialog
-        fullScreen
-        visible={showTraineeDashboard}
-        position={DialogPosition.Top}
-      >
-        <div className={styles.dialogContent}>
-          <CoachTraineeOnboarding
-            practitioner={practitioner}
-            setShowTraineeDashboard={setShowTraineeDashboard}
           />
         </div>
       </Dialog>
