@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ECDLink.SmartStart.Reports.ChildProgressReport
+namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class ChildProgressReportDetailedModel
     {

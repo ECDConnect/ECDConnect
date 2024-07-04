@@ -503,7 +503,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     ReplacementValue = "Principal"
                 });
 
-                var classroom = _classroomService.GetClassroomDetailsForPractitioner(practitionerToDemote.UserId.ToString());
+                var classroom = _classroomService.GetClassroomForUser(practitionerToDemote.UserId.Value);
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",

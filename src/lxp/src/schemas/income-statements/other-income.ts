@@ -8,6 +8,6 @@ export interface OtherIncomeModel {
 
 export const otherIncomeSchema = Yup.object().shape({
   dateReceived: Yup.string().required(),
-  amount: Yup.number().required(),
+  amount: Yup.string().required(),
   notes: Yup.string(),
 });

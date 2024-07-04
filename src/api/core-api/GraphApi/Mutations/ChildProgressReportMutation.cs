@@ -16,9 +16,10 @@ using System.Threading.Tasks;
 
 namespace ECDLink.SmartStart.GraphQL.Mutations
 {
+    // TODO: Is this needed???
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ChildProgressReportMutation
-    {
+    {        
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.Create)]
         public async Task<bool> UploadChildProgressReport(
             [Service] IHttpContextAccessor httpContextAccessor,
@@ -61,7 +62,6 @@ namespace ECDLink.SmartStart.GraphQL.Mutations
             {
                 CreatedUserId = httpContextAccessor.HttpContext.GetUser().Id,
                 DocumentTypeId = documentType.Id,
-                //Id = Guid.NewGuid(),
                 Name = ReportConstants.ChildProgressReport,
                 Reference = document.Url.TrimEnd('/'),
                 WorkflowStatusId = workflow.Id

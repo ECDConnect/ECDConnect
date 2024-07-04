@@ -13,6 +13,6 @@ export const dbeSubsidySchema = Yup.object().shape({
     .integer()
     .positive()
     .max(100),
-  amount: Yup.number().required(),
+  amount: Yup.string().required(),
   notes: Yup.string(),
 });

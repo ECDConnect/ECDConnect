@@ -53,7 +53,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
                 id: 'createIncome',
                 title: 'Income (money in)',
                 titleIcon: 'ArrowCircleLeftIcon',
-                description: 'Preschool fees, donations, DBE subsidyu & others',
+                description: 'Preschool fees, donations, DBE subsidy & others',
                 titleIconClassName: 'bg-tertiary text-white',
                 onActionClick: () => {
                   history.push(ROUTES.BUSINESS_ADD_INCOME);

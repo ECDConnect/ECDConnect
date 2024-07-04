@@ -101,13 +101,13 @@ const ProgrammeTheme: React.FC = () => {
   const handelThemeSelected = (theme: ProgrammeThemeModel) => {
     setState({ stepIndex: 2 });
     history.push(ROUTES.PROGRAMMES.TIMING, {
+      ...location.state,
       theme,
       classroomGroupId: classroomGroup?.id,
     } as ProgrammeTimingRouteState);
   };
 
   const themeList: UserAlertListDataItem[] = themes?.map((theme) => ({
-    // id: theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : '',
     title: theme.name,
     profileText: theme.name.slice(0, 2).toUpperCase(),
     alertSeverity: 'none',

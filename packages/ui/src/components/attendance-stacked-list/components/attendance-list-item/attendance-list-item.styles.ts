@@ -19,6 +19,7 @@ export const absentListItemContainer =
   'block bg-errorBg cursor-pointer rounded-10';
 export const absentListItemContainerLight =
   'block bg-uiBg cursor-pointer rounded-10';
+export const noneListItemContainer = 'block bg-uiBg cursor-pointer rounded-10';
 
 export const avatarColor = (
   status?: AttendanceStatus,
@@ -40,6 +41,8 @@ export const menulistItemContainer = (
 ) => {
   if (status) {
     switch (status) {
+      case AttendanceStatus.None:
+        return noneListItemContainer;
       case AttendanceStatus.Absent:
         return type === 'light'
           ? absentListItemContainerLight

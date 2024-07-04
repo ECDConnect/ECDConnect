@@ -3,7 +3,7 @@ import { ActivityDto, DailyProgrammeDto, LanguageDto } from '@ecdlink/core';
 export const dummyThemes = [
   {
     id: 1,
-    name: 'Nature tree',
+    name: 'Nature',
     color: '#FFD700',
     imageUrl: '',
     themeDays: [],

@@ -9,12 +9,5 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
     {
         Classroom GetClassroomForUser(Guid userId);
         List<ClassroomGroup> GetClassroomGroupsForUser(Guid userId);
-
-        /// <summary>
-        /// NOTE: This method is to be removed after some future refactoring
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        PrincipalClassroom GetClassroomDetailsForPractitioner(string userId);
     }
 }

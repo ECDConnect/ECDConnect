@@ -610,8 +610,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             onClose={displayProfilePicturePrompt}
             onAction={saveClassroomPicture}
             onDelete={classroomImage ? deleteClassroomPicture : undefined}
-            hideEmojiOption={true}
-          ></PhotoPrompt>
+          />
         </div>
       </Dialog>
     </div>

@@ -66,7 +66,7 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
     const incomeInput: IncomeItemDto = {
       id: !!incomeItem ? incomeItem.id : newGuid(),
       dateReceived: dateReceived!,
-      amount: moneyInputFormat(amount!),
+      amount: !!amount ? Number(moneyInputFormat(amount)) : 0,
       numberOfChildrenCovered: Number(numberOfChildrenSupported),
       incomeTypeId: IncomeTypeIds.DBE_SUBSIDY_ID,
       notes: notes,
@@ -178,7 +178,7 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
         {!disabled && (
           <Button
             type="filled"
-            color="primary"
+            color="quatenary"
             className={'mx-auto mt-8 w-full rounded-2xl'}
             onClick={() => {
               sendIncomeUpdate();
