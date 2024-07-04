@@ -3,6 +3,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Community;
+using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
@@ -11,10 +12,14 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Execution.Processing;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Runtime.Intrinsics.X86;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -123,6 +128,7 @@ namespace EcdLink.Api.CoreApi.Services
                 ToUserId = input.ToUserId,
                 AboutShort = input.AboutShort,
                 AboutLong = input.AboutLong,
+                ShareContactInfo = input.ShareContactInfo,
                 ShareEmail = input.ShareEmail,
                 SharePhoneNumber = input.SharePhoneNumber,
                 ShareProfilePhoto = input.ShareProfilePhoto,
@@ -134,31 +140,123 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (communityProfile != null )
             {
-                return GetCommunityProfile(input.FromUserId);
+                return GetCommunityProfile(input.ToUserId);
             }
             return null;
         }
 
         public CommunityProfileModel GetCommunityProfile(Guid userId)
         {
-            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.FromUserId == userId).ToList();
+            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ToUserId == userId).ToList();
 
             var userCommunityProfile = allConnections.Where(x => x.IsActive && x.ToUserId == userId).FirstOrDefault();
             if (userCommunityProfile != null )
             {
                 var acceptedConnections = allConnections
-                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true && x.ToUserId != userId)
-                    .Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.ToUser).Result.ToList()) )
+                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
+                    .Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.ToUser).Result.ToList()))
+                    .OrderByDescending(x => x.InsertedDate)
                     .ToList();
                 var pendingConnections = allConnections
-                    .Where(x => !x.InviteAccepted.HasValue && x.ToUserId != userId)
+                    .Where(x => !x.InviteAccepted.HasValue && x.ToUserId != x.FromUserId)
                     .Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.ToUser).Result.ToList()))
+                    .OrderByDescending(x => x.InsertedDate)
                     .ToList();
 
-                return new CommunityProfileModel(userCommunityProfile, acceptedConnections, pendingConnections, _userManager.GetRolesAsync(userCommunityProfile.ToUser).Result.ToList());
+
+                // Users will always have 10% complete.
+                var totalPoints = 10;
+                // -Edit contact details -user saves form(note that they're not required to select any of the boxes) - 18 percentage points
+                if (userCommunityProfile.ShareContactInfo.HasValue && userCommunityProfile.ShareContactInfo.Value)
+                {
+                    totalPoints += 18;
+                }
+                //- Edit basic info -user has filled in short description and province -18 percentage points
+                if (!string.IsNullOrEmpty(userCommunityProfile.AboutShort) && userCommunityProfile.ProvinceId != null)
+                {
+                    totalPoints += 18;
+                }
+                //-About - user has filled in the field -18 percentage points
+                if (!string.IsNullOrEmpty(userCommunityProfile.AboutLong))
+                {
+                    totalPoints += 18;
+                }
+                //-ECD skills - user has checked at least 1 skill - 18 percentage points
+                if (userCommunityProfile.ProfileSkills.Count > 0)
+                {
+                    totalPoints += 18;
+                }
+                //-Photo - user has added a photo -18 percentage points
+                if (!string.IsNullOrEmpty(userCommunityProfile.ToUser.ProfileImageUrl))
+                {
+                    totalPoints += 18;
+                }
+                // (61% or more = green; 11-60% = blue; 0-10% = amber)
+                var completenessAvg = (decimal)totalPoints / 100 * 100;
+                var completenessPerc = Math.Round(completenessAvg);
+                var completenessPercColor = Constants.CSSColorClasses.Orange;
+                var completenessPercImage = "need image names from FE";
+                if (completenessPerc >= 61)
+                {
+                    completenessPercColor = Constants.CSSColorClasses.Green;
+                    completenessPercImage = "ECD_Connect_emoji1.svg";
+                } 
+                else if (completenessPerc >= 11)
+                {
+                    completenessPercColor = Constants.CSSColorClasses.Blue;
+                }
+
+                return new CommunityProfileModel(userCommunityProfile, 
+                                                 acceptedConnections, 
+                                                 pendingConnections, 
+                                                 _userManager.GetRolesAsync(userCommunityProfile.ToUser).Result.ToList(),
+                                                 completenessPerc,
+                                                 completenessPercColor,
+                                                 completenessPercImage);
             }
 
             return null;
+        }
+
+        public List<CommunityConnectionModel> GetUsersToConnectWith(Guid? provinceId, Guid? communitySkillId, string connectionType, Guid userId)
+        {
+            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ToUserId != userId && x.FromUserId != userId).ToList();
+            var filteredConnection = new List<CommunityProfile>();
+
+            if (!string.IsNullOrEmpty(provinceId.ToString()))
+            {
+                filteredConnection.AddRange(allConnections.Where(x => x.ProvinceId == provinceId).ToList());
+            }
+            if (!string.IsNullOrEmpty(communitySkillId.ToString()))
+            {
+                // ProfileSkills
+            }
+
+            if (!string.IsNullOrEmpty(connectionType))
+            {
+                if (connectionType == "Connected")
+                {
+                    // Connected = people user currently connected with
+                    filteredConnection.AddRange(allConnections.Where(x => x.ToUserId == userId && x.InviteAccepted.HasValue && x.InviteAccepted.Value).ToList());
+                }
+                else if (connectionType == "Received requests")
+                {
+                    // Received requests = all people who have sent the user a request and the user has not accepted yet, ie users with active requests
+                    filteredConnection.AddRange(allConnections.Where(x => x.ToUserId == userId && !x.InviteAccepted.HasValue).ToList());
+                }
+                else if (connectionType == "Sent requests")
+                {
+                    // Sent requests = all people the user has sent requests to, who haven't accepted yet
+                    filteredConnection.AddRange(allConnections.Where(x => x.FromUserId == userId && x.InviteAccepted.HasValue && !x.InviteAccepted.Value).ToList());
+                }
+            }
+
+            if (provinceId != null || communitySkillId != null || connectionType != "")
+            {
+                return filteredConnection.Select(x => new CommunityConnectionModel(x, null)).ToList();
+            }
+
+            return allConnections.Select(x => new CommunityConnectionModel(x, null)).ToList();
         }
 
     }

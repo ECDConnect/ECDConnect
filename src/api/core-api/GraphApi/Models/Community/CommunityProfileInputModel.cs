@@ -8,6 +8,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public Guid ToUserId { get; set; }
         public string AboutShort { get; set; }
         public string AboutLong { get; set; }
+        public bool? ShareContactInfo { get; set; }
         public bool? ShareEmail { get; set; }
         public bool? SharePhoneNumber { get; set; }
         public bool? ShareProfilePhoto { get; set; }

@@ -1042,7 +1042,14 @@ namespace EcdLink.Api.CoreApi
             public const string usage_orange = "alertMain";
             public const string usage_red = "errorMain";
             public const string usage_blue = "infoMain";
+        }
 
+        public static class CSSColorClasses
+        {
+            public const string Green = "successMain";
+            public const string Orange = "alertMain";
+            public const string Red = "errorMain";
+            public const string Blue = "infoMain";
         }
 
         public static class MeetingTypes

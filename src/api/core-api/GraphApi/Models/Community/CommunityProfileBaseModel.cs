@@ -20,6 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public bool? ShareRole { get; set; }
         public bool? InviteAccepted { get; set; }
         public CommunityUserModel CommunityUser { get; set; }
+        public DateTime InsertedDate { get; set; }
 
         public CommunityProfileBaseModel(CommunityProfile profile, List<string> userRoles)
         {
@@ -36,7 +37,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             ProvinceName = profile.Province != null ? profile.Province.Description: "";
             ShareRole = profile.ShareRole;
             InviteAccepted = profile.InviteAccepted;
-            CommunityUser = new CommunityUserModel(profile.ToUser, profile.ShareEmail, profile.SharePhoneNumber, profile.ShareProfilePhoto, profile.ShareRole, userRoles);
+            CommunityUser = new CommunityUserModel(profile.ToUser, userRoles);
+            InsertedDate = profile.InsertedDate;
         }
 
         public CommunityProfileBaseModel()
