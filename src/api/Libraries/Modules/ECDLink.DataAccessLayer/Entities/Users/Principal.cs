@@ -75,6 +75,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? AttendedFirstAidCourse { get; set; }
         public bool? SetupTraineeInitiated { get; set; }
         public bool? IsCompletedBusinessWalkThrough { get; set; }
+        public bool? ClickedCommunityTab { get; set; } = false;
     }
 
     public interface PrincipalJoin<TKey>

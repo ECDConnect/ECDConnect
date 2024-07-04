@@ -89,7 +89,7 @@ export const MonthlyAttendanceReport = ({
     today.getMonth() === startDate.getMonth() &&
     today.getFullYear() === startDate.getFullYear();
   const is30DaysWindow =
-    !isCurrentMonth && isAfter(endDate, subDays(today, 31));
+    isCurrentMonth || (!isCurrentMonth && isAfter(endDate, subDays(today, 31)));
 
   const monthlyReport = useSelector(
     attendanceSelectors.getClassroomAttendanceOverviewReportByPeriod(

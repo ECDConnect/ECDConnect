@@ -38,8 +38,12 @@ import {
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ProgrammeActions } from '@/store/programme/programme.actions';
 import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
+import { useAppContext } from '@/walkthrougContext';
 
 const ProgrammeTiming: React.FC = () => {
+  const {
+    state: { run: isWalkthrough },
+  } = useAppContext();
   const history = useHistory();
   const { state } = useLocation<ProgrammeTimingRouteState>();
 
@@ -251,6 +255,12 @@ const ProgrammeTiming: React.FC = () => {
     }
   }, [programmeToEdit, setValue]);
 
+  useEffect(() => {
+    if (state.initialDate) {
+      setValue('date', state.initialDate.toString().replace('Z', ''));
+    }
+  }, [setValue, state.initialDate]);
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -311,6 +321,7 @@ const ProgrammeTiming: React.FC = () => {
             }}
             dateFormat="EEE, dd MMM yyyy"
             minDate={new Date()}
+            disabled={isWalkthrough}
           />
           <Typography
             className="mt-4"
@@ -319,7 +330,7 @@ const ProgrammeTiming: React.FC = () => {
           />
           <DatePicker
             disabledKeyboardNavigation
-            disabled={selectedDate == null}
+            disabled={selectedDate == null || isWalkthrough}
             placeholderText={`Please select a date`}
             className="border-uiLight text-textMid w-full rounded-md"
             selected={endDate ? new Date(endDate) : undefined}
@@ -350,7 +361,7 @@ const ProgrammeTiming: React.FC = () => {
             fillType="clear"
             placeholder="Tap to choose language"
             selectedValue={selectedLanguage}
-            disabled={!!programmeToEdit}
+            disabled={!!programmeToEdit || isWalkthrough}
             list={
               (languages &&
                 languages

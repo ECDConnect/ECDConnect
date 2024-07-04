@@ -32,16 +32,12 @@ import {
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { InfoPage } from './components/info-page';
 import { CoachInfo } from '../../components/coach-info';
-import { newGuid } from '@/utils/common/uuid.utils';
-import { useAppDispatch } from '@/store';
 import { getStorageItem } from '@/utils/common/local-storage.utils';
 import { StatementsWalkthroughStart } from './components/walkthrough-statements-wrapper/walkthrough-start';
 import { practitionerSelectors } from '@/store/practitioner';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
-
-  const dispatch = useAppDispatch();
 
   const [isLearnMore, setIsLearnMore] = useState(false);
 
@@ -54,30 +50,24 @@ export const SubmitIncomeStatements: React.FC = () => {
     state: { stepIndex, run: isWalkthrough },
   } = useAppContext();
 
-  // If no statement for current month
-  // TODO if we ahven't fetched recently, do we need to force them to sync first? To ensure we don't create a statement for the month, if one exists on the server?
-  useEffect(() => {
-    const year = new Date().getFullYear();
-    const month = new Date().getMonth() + 1;
+  const currentMonth = new Date();
+  const lastMonth = getPreviousMonth(new Date());
+  const previousMonth = getPreviousMonth(lastMonth);
 
-    if (!statements.some((x) => x?.month === month && x.year === year)) {
-      dispatch(
-        statementsActions.createStatement({
-          id: newGuid(),
-          month: month,
-          year: year,
-          incomeItems: [],
-          expenseItems: [],
-          contactedByCoach: false,
-          downloaded: false,
-        })
-      );
-    }
-  }, []);
-
-  const currentMonthStatement = statements[statements.length - 1];
-  const lastMonthStatement = statements[statements.length - 2];
-  const previousMonthStatement = statements[statements.length - 2];
+  const currentMonthStatement = statements.find(
+    (x) =>
+      x.month === currentMonth.getMonth() + 1 &&
+      x.year === currentMonth.getFullYear()
+  );
+  const lastMonthStatement = statements.find(
+    (x) =>
+      x.month === lastMonth.getMonth() + 1 && x.year === lastMonth.getFullYear()
+  );
+  const previousMonthStatement = statements.find(
+    (x) =>
+      x.month === previousMonth.getMonth() + 1 &&
+      x.year === previousMonth.getFullYear()
+  );
 
   const getStatementTitle = (statement: IncomeStatementDto | undefined) =>
     !!statement
@@ -86,12 +76,16 @@ export const SubmitIncomeStatements: React.FC = () => {
         }`
       : `-`;
 
-  const formatCurrentValue = (value: number) => {
+  const formatCurrentValue = (value: number, showSymbol: boolean = false) => {
     if (value === 0) return `R ${numberWithSpaces(value.toFixed(2))}`;
 
-    if (value > 0) return `+ R ${numberWithSpaces(value.toFixed(2))}`;
+    if (value > 0)
+      return `${showSymbol ? '+ ' : ''}R ${numberWithSpaces(value.toFixed(2))}`;
 
-    if (value < 0) return `- R ${numberWithSpaces(Math.abs(value).toFixed(2))}`;
+    if (value < 0)
+      return `${showSymbol ? '- ' : ''}R ${numberWithSpaces(
+        Math.abs(value).toFixed(2)
+      )}`;
   };
 
   const nextStep = () => {
@@ -148,9 +142,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     !!currentMonthExpenseTotal ||
     !!currentMonthIncomeTotal;
 
-  const lastMonth = getPreviousMonth(new Date());
-  const previousMonth = getPreviousMonth(lastMonth);
-
   const hasLastTwoMonthsStatements =
     lastMonthStatement?.month === lastMonth.getMonth() &&
     lastMonthStatement?.year === lastMonth.getFullYear() &&
@@ -180,8 +171,8 @@ export const SubmitIncomeStatements: React.FC = () => {
       <StatementsWrapper />
       <div className="pb-180 flex flex-col justify-center p-4">
         {!hasIncomeStatements && (
-          <div className="mt-2 flex flex-wrap justify-center p-8">
-            <div className="">
+          <div className="mt-2 flex flex-col justify-center p-8">
+            <div className="flex w-full justify-center">
               <MoneyIcon />
             </div>
             <div>
@@ -242,7 +233,9 @@ export const SubmitIncomeStatements: React.FC = () => {
                     </th>
                     <th className="w-1/3">
                       <Typography
-                        text={getStatementTitle(currentMonthStatement)}
+                        text={`${getMonthName(
+                          currentMonth.getMonth()
+                        ).substring(0, 3)} ${currentMonth.getFullYear()}`}
                         type="body"
                         color={'textDark'}
                       />
@@ -313,7 +306,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                     </td>
                     <td className="w-1/3">
                       <Typography
-                        text={formatCurrentValue(lastMonthBalance)}
+                        text={formatCurrentValue(lastMonthBalance, true)}
                         type="body"
                         color={
                           lastMonthBalance === 0
@@ -327,7 +320,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                     </td>
                     <td className="w-1/3">
                       <Typography
-                        text={formatCurrentValue(currentMonthBalance)}
+                        text={formatCurrentValue(currentMonthBalance, true)}
                         type="body"
                         color={
                           currentMonthBalance === 0

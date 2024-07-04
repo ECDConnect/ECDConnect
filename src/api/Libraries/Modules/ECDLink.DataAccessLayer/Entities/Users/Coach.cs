@@ -43,9 +43,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [NotMapped]
         public virtual ICollection<Visit> PractitionerVisits { get; set; }
         public string AboutInfo { get; set; }
-        public Boolean? ClickedClubTab { get; set; } = false;
-        public Boolean? IsRegistered { get; set; } = false;
-        public Boolean? ShareInfo { get; set; } = false;
+        public bool? ClickedClubTab { get; set; } = false;
+        public bool? IsRegistered { get; set; } = false;
+        public bool? ShareInfo { get; set; } = false;
+        public bool? ClickedCommunityTab { get; set; } = false;
     }
 
     public interface CoachJoin<TKey>

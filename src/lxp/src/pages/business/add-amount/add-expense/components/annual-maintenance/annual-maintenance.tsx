@@ -88,7 +88,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
       id: !!expenseItem ? expenseItem.id : newGuid(),
       datePaid: datePaid!,
       notes: notes,
-      amount: moneyInputFormat(amount!),
+      amount: !!amount ? Number(moneyInputFormat(amount)) : 0,
       expenseTypeId: ExpenseTypeIds.MAINTENANCE_ID,
       photoProof: photoProof,
     };
@@ -103,6 +103,8 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
       statementDate.getMonth() + 1
     )
   );
+
+  console.log('statement', statement);
 
   const disabled =
     !!statement?.downloaded ||
@@ -190,7 +192,11 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}
-          overrideOnClick={() => setPhotoActionBarVisible(true)}
+          overrideOnClick={() => {
+            if (!disabled) {
+              setPhotoActionBarVisible(true);
+            }
+          }}
           onValueChange={(imageString: string) => {
             setFormValue('photoProof', imageString);
             trigger();

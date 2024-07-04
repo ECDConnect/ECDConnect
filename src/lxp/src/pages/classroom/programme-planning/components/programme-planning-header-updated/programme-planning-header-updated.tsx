@@ -25,6 +25,8 @@ import { useAppDispatch } from '@/store';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
 import { ProgrammeTimingRouteState } from '../../programme-timing/programme-timing.types';
+import { ProgrammeThemeRouteState } from '../../programme-theme/programme-theme.types';
+import { useAppContext } from '@/walkthrougContext';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -44,6 +46,10 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   isWeekendDay,
 }) => {
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
+
+  const {
+    state: { run: isWalkthrough },
+  } = useAppContext();
 
   const { isOnline } = useOnlineStatus();
   const dailyProgramme = theme?.dailyProgrammes?.find((item) => {
@@ -89,8 +95,23 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     }
   }, [selectedDate, setSelectedDate, sixMonthsForward, threeMonthsBack]);
 
+  const showOnlineOnly = useCallback(() => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit} />;
+      },
+    });
+  }, [dialog]);
+
   const subDay = useCallback(() => {
     var selectDate = new Date(selectedDate!);
+
+    if (isSameDay(selectDate, new Date()) && !isOnline) {
+      return showOnlineOnly();
+    }
+
     if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
       // skip weekends
       var dayNr = selectDate.getDay();
@@ -104,7 +125,14 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
         setSelectedDate(subDays(selectedDate!, 1));
       }
     }
-  }, [selectedDate, setSelectedDate, sixMonthsForward, threeMonthsBack]);
+  }, [
+    isOnline,
+    selectedDate,
+    setSelectedDate,
+    showOnlineOnly,
+    sixMonthsForward,
+    threeMonthsBack,
+  ]);
 
   const setDayCurrentDate = () => {
     setSelectedDate(new Date());
@@ -116,28 +144,26 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   >([]);
   const [monthDropdownLabel, setMonthDropdownLabel] = useState('');
 
-  const showOnlineOnly = () => {
-    dialog({
-      color: 'bg-white',
-      position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit} />;
-      },
-    });
-  };
-
-  const handleEditProgramme = async () => {
+  const onClickTheme = async () => {
     if (isOnline) {
       if (themes.length === 0) {
         await appDispatch(
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
         );
       }
-      history.push(ROUTES.PROGRAMMES.TIMING, {
-        classroomGroupId,
-        theme: themes.find((item) => item?.name === theme?.name),
-        programmeToEdit: theme,
-      } as ProgrammeTimingRouteState);
+
+      if (!themeName || themeName === 'No theme') {
+        history.push(ROUTES.PROGRAMMES.THEME, {
+          classroomGroupId,
+          initialDate: selectedDate,
+        } as ProgrammeThemeRouteState);
+      } else {
+        history.push(ROUTES.PROGRAMMES.TIMING, {
+          classroomGroupId,
+          theme: themes.find((item) => item?.name === theme?.name),
+          programmeToEdit: theme,
+        } as ProgrammeTimingRouteState);
+      }
     } else {
       showOnlineOnly();
     }
@@ -250,7 +276,8 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
         {!isWeekendDay && showChips && (
           <button
             className={`flex w-full items-center rounded-xl ${themeColour()}`}
-            onClick={handleEditProgramme}
+            disabled={isWalkthrough}
+            onClick={onClickTheme}
           >
             {chosenTheme && (
               <img

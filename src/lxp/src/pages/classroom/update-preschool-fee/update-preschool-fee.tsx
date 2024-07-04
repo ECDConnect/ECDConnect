@@ -69,7 +69,7 @@ export const UpdatePreschoolFee: React.FC = () => {
     await appDispatch(
       classroomsThunkActions.updatePreschoolFee({
         classroomId: classroom?.id as string,
-        amount: askForFee ? moneyInputFormat(amount!) : undefined,
+        amount: askForFee ? Number(moneyInputFormat(amount!)) : undefined,
       })
     );
     if (notification) {

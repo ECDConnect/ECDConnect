@@ -209,6 +209,7 @@ export const SetupPrincipal: React.FC = () => {
     }
 
     appDispatch(notificationActions.resetFrontendNotificationState());
+    appDispatch(notificationActions.resetNotificationState());
 
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {

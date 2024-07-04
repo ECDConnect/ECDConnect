@@ -218,8 +218,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public bool UpdateCoachClubClicked([Service] IHttpContextAccessor contextAccessor,
-    IGenericRepositoryFactory repoFactory,
-    string userId)
+                                           IGenericRepositoryFactory repoFactory,
+                                           string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
@@ -234,6 +234,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             }
             return true;
+        }
+
+        public Coach UpdateCoachCommunityTabStatus(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid coachUserId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            var coach = coachRepo.GetByUserId(coachUserId);
+            if (coach != null)
+            {
+                coach.ClickedCommunityTab = true;
+                coach.UpdatedDate = DateTime.Now;
+                coach.UpdatedBy = uId.ToString();
+                return coachRepo.Update(coach);
+            }
+            return null;
         }
 
 

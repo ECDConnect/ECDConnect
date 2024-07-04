@@ -12,6 +12,6 @@ export const donationsOrVouchersSchema = Yup.object().shape({
   dateReceived: Yup.string().required(),
   payType: Yup.string().required(),
   description: Yup.string(),
-  amount: Yup.number(),
+  amount: Yup.string().required(),
   notes: Yup.string(),
 });

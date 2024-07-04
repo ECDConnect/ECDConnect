@@ -4,7 +4,6 @@ import {
   BannerWrapper,
   Typography,
   Dropdown,
-  renderIcon,
   Button,
   ButtonGroup,
   ButtonGroupTypes,
@@ -256,15 +255,23 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     }
   }, []);
 
-  const practitionerAbsentName = useMemo(() => {
+  const practitionerAbsent = useMemo(() => {
+    if (practitionerUser?.userId === practitioner) {
+      return practitionerUser;
+    }
+
     return practitioners?.find((item) => {
       if (item?.userId === practitioner) {
-        return item?.user?.fullName;
+        return item;
       } else return null;
     });
-  }, [practitioner, practitioners]);
+  }, [practitioner, practitionerUser, practitioners]);
 
-  const practitionerPresentName = useMemo(() => {
+  const practitionerPresent = useMemo(() => {
+    if (practitionerUser?.userId === practitioner) {
+      return practitionerUser;
+    }
+
     return practitioners?.find((item) => {
       if (item?.userId === practitioner2) {
         return item?.user?.fullName;
@@ -594,20 +601,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       onBack={onBack}
       displayOffline={!isOnline}
     >
-      <div className="mb-3 flex w-full flex-wrap p-4">
-        <Typography
-          type="h2"
-          color="textMid"
-          text={'Record absence/leave'}
-          className="mt-6"
-        />
+      <div className="mb-3 flex h-full w-full flex-col p-4 pt-6">
+        <Typography type="h2" color="textMid" text={'Record absence/leave'} />
         <Dropdown<string>
           placeholder={'Select practitioner'}
           list={practitionersList || []}
           fillType="clear"
-          label={
-            'Which practitioner would you like to record a leave/absence for?'
-          }
+          label={'Which practitioner is taking leave'}
           fullWidth
           className={'mt-3 w-full'}
           selectedValue={practitioner}
@@ -738,7 +738,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         fillType="clear"
                         label={`Who will teach the ${item?.className} class instead?`}
                         fullWidth
-                        className={'mt-3 w-full'}
+                        className={'mt-3 w-full pb-4'}
                         onChange={(practitioner: any) => {
                           const reassignedData = {
                             practitioner,
@@ -751,14 +751,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                           );
                         }}
                       />
-                      {practitionerPresentName?.user?.fullName && (
+                      {practitionerPresent && (
                         <Alert
                           className={'mt-5 mb-3'}
                           title={`You are reassigning ${
-                            practitionerAbsentName?.user?.fullName || ''
-                          }'s class ${item?.className} to ${
-                            practitionerPresentName?.user?.fullName || ''
-                          } for ${format(
+                            practitionerAbsent?.user?.fullName || ''
+                          }'s ${item?.className} class to ${
+                            practitionerPresent?.user?.firstName || ''
+                          } from ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
                           )}${
@@ -812,10 +812,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         <Alert
                           className={'mt-5 mb-3'}
                           title={`You are reassigning ${
-                            practitionerAbsentName?.user?.fullName || ''
-                          }'s class ${item?.name} to ${
+                            practitionerAbsent?.user?.firstName || ''
+                          }'s ${item?.name} class to ${
                             selectedPractitioner?.label || ''
-                          } for ${format(
+                          } from ${format(
                             new Date(selectedDate!),
                             'EEEE, d LLLL'
                           )}${
@@ -832,35 +832,32 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                     </Fragment>
                   );
                 })}
-            {practitionerClassroomGroups?.length === 0 && (
-              <Alert
-                className={'mt-5 mb-3'}
-                title="No class reassignment needed."
-                list={[
-                  `${practitionerAbsentName?.user?.firstName} is not currently assigned to a class.`,
-                ]}
-                type={'success'}
-              />
-            )}
+            {practitionerClassroomGroups?.length === 0 &&
+              practitionerAbsent &&
+              !isLoading && (
+                <Alert
+                  className={'mt-5 mb-3'}
+                  title="No class reassignment needed."
+                  list={[
+                    `${practitionerAbsent?.user?.firstName} is not currently assigned to a class.`,
+                  ]}
+                  type={'success'}
+                />
+              )}
           </>
         )}
 
         <Button
           type="filled"
           color="quatenary"
-          className={'mx-auto mt-4 w-full rounded-xl'}
+          className={'mx-auto mt-auto w-full rounded-xl'}
           onClick={submitReassignClass}
           disabled={disableButton}
           isLoading={isLoading}
-        >
-          {renderIcon('SaveIcon', styles.buttonIcon)}
-          <Typography
-            type="help"
-            className="mr-2"
-            color="white"
-            text={'Save'}
-          ></Typography>
-        </Button>
+          icon="SaveIcon"
+          text="Save"
+          textColor="white"
+        />
       </div>
     </BannerWrapper>
   );

@@ -4,8 +4,6 @@ using HotChocolate;
 using System;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Abstractrions.Constants;
-using Microsoft.AspNetCore.Identity;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using System.Collections.Generic;
 using ECDLink.DataAccessLayer.Hierarchy;

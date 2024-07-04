@@ -30,6 +30,8 @@ import { ProgrammeDashboardRouteParams } from './programme-dashboard.types';
 import { useProgrammePlanning } from '@/hooks/useProgrammePlanning';
 import ProgrammeWrapper from './walkthrough/programme-wrapper';
 import { ProgrammeWalkthroughStart } from './walkthrough/components/walkthrough-start';
+import { useAppContext } from '@/walkthrougContext';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -44,6 +46,8 @@ export const ProgrammeDashboard: React.FC = () => {
   const programmeStartDate = new Date();
 
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
+
+  const { isOnline } = useOnlineStatus();
   const history = useHistory();
 
   const classroomGroup = useSelector(
@@ -78,6 +82,10 @@ export const ProgrammeDashboard: React.FC = () => {
   );
 
   const { checkIfWholeWeekIsPlanned } = useProgrammePlanning();
+
+  const {
+    state: { run: isWalkthrough },
+  } = useAppContext();
 
   const { isWholeWeekPlanned, dailyProgrammesUnplanned } =
     checkIfWholeWeekIsPlanned(selectedDate, classroomGroupId);
@@ -184,8 +192,10 @@ export const ProgrammeDashboard: React.FC = () => {
   }, [checkIfToShowInitialWalkthrough]);
 
   useEffect(() => {
-    showStartPlanning();
-  }, [showStartPlanning]);
+    if (!isWalkthrough) {
+      showStartPlanning();
+    }
+  }, [isWalkthrough, showStartPlanning]);
 
   useEffect(() => {
     if (!progressSummary) {
@@ -325,8 +335,10 @@ export const ProgrammeDashboard: React.FC = () => {
   return (
     <BannerWrapper
       size="small"
+      renderBorder
       title="Activities"
       subTitle={classroomGroup?.name}
+      displayOffline={!isOnline}
       displayHelp
       onHelp={() =>
         history.push(

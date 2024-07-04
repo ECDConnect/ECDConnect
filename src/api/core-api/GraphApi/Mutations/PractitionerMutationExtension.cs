@@ -445,5 +445,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return personnelService.UpdatePractitionerBusinessWalkthrough(userId);
         }
 
+        public Practitioner UpdatePractitionerCommunityTabStatus(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid practitionerUserId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var practitioner = practitionerRepo.GetByUserId(practitionerUserId);
+            if (practitioner != null)
+            {
+                practitioner.ClickedCommunityTab = true;
+                practitioner.UpdatedDate = DateTime.Now;
+                practitioner.UpdatedBy = uId.ToString();
+                return practitionerRepo.Update(practitioner);
+            }
+            return null;
+        }
+
     }
 }

@@ -118,6 +118,8 @@ export default function ProgrammeWrapper() {
       offset: 10,
       disableBeacon: true,
       disableOverlay: false,
+      disableOverlayClose: true,
+      disableCloseOnEsc: true,
     },
     {
       target: '#walkthrough-last-step',

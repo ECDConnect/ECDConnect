@@ -59,7 +59,7 @@ import { calendarThunkActions } from './store/calendar';
 import { getClubForUser } from './store/club/club.actions';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
-import { statementsThunkActions } from '@store/statements';
+import { statementsActions, statementsThunkActions } from '@store/statements';
 import { RoleSystemNameEnum } from '@ecdlink/core';
 
 type IntialStoreSetupContextValues = {
@@ -132,6 +132,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(settingActions.resetSettingsState());
     appDispatch(analyticsActions.resetAnalyticsState());
     appDispatch(programmeActions.resetProgrammeState());
+    appDispatch(statementsActions.resetStatementsStaticState());
   };
 
   const resetAdditionalStoreSetup = async (isSync?: boolean) => {
@@ -149,6 +150,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(contentReportActions.resetContentReportState());
     appDispatch(clubActions.resetClubState());
+    appDispatch(statementsActions.resetStatementsState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -165,13 +167,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-
-  // useEffect(() => {
-  //   if (shouldSaveStateHash) {
-  //     localforage.setItem('state:hash', hash(state));
-  //     setShouldSaveStateHash(false);
-  //   }
-  // }, [state, shouldSaveStateHash]);
 
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA

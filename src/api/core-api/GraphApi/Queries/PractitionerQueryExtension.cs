@@ -1,3 +1,4 @@
+using DotLiquid;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
@@ -122,16 +123,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public ApplicationUser GetPractitionerByIdNumberInternal(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] ApplicationUserManager userManager,
+            AuthenticationDbContext dbContext,
             IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practionerUser = userManager.FindByNameAsync(idNumber).Result;
-            if (practionerUser != null)
+            var practitionerUser = dbContext.Users.Where(user => (user.UserName == idNumber || user.IdNumber == idNumber) && user.TenantId == TenantExecutionContext.Tenant.Id).FirstOrDefault();
+
+            if (practitionerUser != null)
             {
                 var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-                var practitioner = practiRepo.GetByUserId(practionerUser.Id);
+                var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
                 if (practitioner != null)
                 {
                     return practitioner.User;
@@ -176,6 +178,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return await fileService.FieldsToExcelTemplate(fieldList, fieldDefinitionList, languageList, reportName);
         }
 
+
+        // This needs to be removed, data should already be available on FE
         public PractitionerReportDetails GetReportDetailsForPractitioner(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IClassroomService classroomService,
@@ -185,20 +189,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var practitioner = practitionerRepo.GetByUserId(userId);
-            var classDetails = classroomService.GetClassroomDetailsForPractitioner(userId);
+            var classroom = classroomService.GetClassroomForUser(Guid.Parse(userId));
+            var classroomGroup = classroomService.GetClassroomGroupsForUser(Guid.Parse(userId)).FirstOrDefault();
 
             var details = new PractitionerReportDetails() { 
-                ClassroomGroupId = classDetails.ClassroomGroupId, 
-                ClassroomGroupName = classDetails.ClassroomGroupName, 
-                Id = classDetails.Id, 
+                ClassroomGroupId = classroomGroup?.Id.ToString(), 
+                ClassroomGroupName = classroomGroup?.Name, 
+                Id = classroom.Id.ToString(), 
                 IdNumber = practitioner.User.IdNumber, 
-                InsertedDate = classDetails.InsertedDate, 
+                InsertedDate = classroom.InsertedDate, 
                 Name = practitioner.User.FullName, 
                 Phone = practitioner.User.PhoneNumber, 
-                PrincipalName = classDetails.PrincipalName, 
+                PrincipalName = $"{classroom.User.FirstName} {classroom.User.Surname}", 
                 ProgrammeDays = "Monday to Friday", 
-                ProgrammeTypeName = classDetails.ProgrammeTypeName,
-                ClassSiteAddress = classDetails.ClassSiteAddress
+                ProgrammeTypeName = classroomGroup?.ProgrammeType?.Description,
+                ClassSiteAddress = classroom.SiteAddress != null 
+                    ? classroom.SiteAddress.Name + " " + classroom.SiteAddress.AddressLine1 + " " + classroom.SiteAddress.AddressLine2 + " " + classroom.SiteAddress.AddressLine3 + " " + (classroom.SiteAddress.Province != null ? classroom.SiteAddress.Province.Description : string.Empty) + " " + classroom.SiteAddress.PostalCode
+                    : ""
             };
 
             return details;

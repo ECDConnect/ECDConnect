@@ -23,11 +23,19 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { practitionerSelectors } from '@/store/practitioner';
-import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
 import { ClassroomService } from '@/services/ClassroomService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { notificationActions } from '@/store/notifications';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -59,9 +67,21 @@ export const PractitionerSetup = ({
     const principalHierarchy = practitioner?.principalHierarchy!;
     const userId = user?.id!;
     const accepted = practitionerToProgramme!;
+
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: userId,
+        progress: 2.0,
+      })
+    );
     await appDispatch(
       updatePrincipalInvitation({ userId, principalHierarchy, accepted })
     );
+    await appDispatch(
+      classroomsThunkActions.getClassroom({ overrideCache: true })
+    ).unwrap();
+
+    appDispatch(notificationActions.resetNotificationState());
   };
 
   useEffect(() => {
