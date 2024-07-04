@@ -78,6 +78,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IReassignmentService __reassignmentService;
         private IServiceProvider _services;
         private IClassroomService _classroomService;
+        private IAbsenteeService _absenteeService;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -92,8 +93,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             ApplicationUserManager userManager,
             [Service] HierarchyEngine hierarchyEngine,
             [Service] ILogger<UserMutationExtension> logger,
-            IServiceProvider services
-            )
+            IServiceProvider services,
+            [Service] IAbsenteeService absenteeService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -128,6 +129,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _logger = logger;
             _services = services;
             _classroomService = classroomService;
+            _absenteeService = absenteeService;
         }
 
         private IReassignmentService _reassignmentService
@@ -169,38 +171,43 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
         {
-            PractitionerModel practitionerRecord = new PractitionerModel();
+            var practitionerRecord = new PractitionerModel
+            {
+                Id = practitioner.Id,
+                UserId = practitioner.UserId.Value,
+                IsPrincipal = practitioner.IsPrincipal,
+                IsRegistered = practitioner.IsRegistered,
+                PrincipalHierarchy = practitioner.PrincipalHierarchy,
+                AttendanceRegisterLink = practitioner.AttendanceRegisterLink,
+                MaxChildren = practitioner.MaxChildren,
+                ConsentForPhoto = practitioner.ConsentForPhoto,
+                ParentFees = practitioner.ParentFees,
+                LanguageUsedInGroups = practitioner.LanguageUsedInGroups,
+                SigningSignature = practitioner.SigningSignature,
+                StartDate = practitioner.StartDate,
+                MonthSinceFranchisee = practitioner.MonthSinceFranchisee,
+                ShareInfo = practitioner.ShareInfo,
+                DateLinked = practitioner.DateLinked,
+                DateAccepted = practitioner.DateAccepted,
+                DateToBeRemoved = practitioner.DateToBeRemoved,
+                IsLeaving = practitioner.IsLeaving,
+                Progress = practitioner.Progress,
+                IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough,
+                ProgrammeType = practitioner.ProgrammeType,
+                IsTrainee = practitioner.IsTrainee,
+                CoachHierarchy = practitioner.CoachHierarchy,
+                AttendedChildProgress = practitioner.AttendedChildProgress,
+                UsePhotoInReport = practitioner.UsePhotoInReport,
+                SetupTraineeInitiated = practitioner.SetupTraineeInitiated,
+                IsOnStipend = practitioner.IsOnStipend,
+                StipendType = practitioner.StipendType,
+                Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList(),
+                ClickedCommunityTab = practitioner.ClickedCommunityTab,
+            };
 
-            practitionerRecord.Id = practitioner.Id;
-            practitionerRecord.UserId = practitioner.UserId.Value;
-            practitionerRecord.IsPrincipal = practitioner.IsPrincipal;
-            practitionerRecord.IsRegistered = practitioner.IsRegistered;
-            practitionerRecord.PrincipalHierarchy = practitioner.PrincipalHierarchy;
-            practitionerRecord.AttendanceRegisterLink = practitioner.AttendanceRegisterLink;
-            practitionerRecord.MaxChildren = practitioner.MaxChildren;
-            practitionerRecord.ConsentForPhoto = practitioner.ConsentForPhoto;
-            practitionerRecord.ParentFees = practitioner.ParentFees;
-            practitionerRecord.LanguageUsedInGroups = practitioner.LanguageUsedInGroups;
-            practitionerRecord.SigningSignature = practitioner.SigningSignature;
-            practitionerRecord.StartDate = practitioner.StartDate;
-            practitionerRecord.MonthSinceFranchisee = practitioner.MonthSinceFranchisee;
-            practitionerRecord.ShareInfo = practitioner.ShareInfo;
-            practitionerRecord.DateLinked = practitioner.DateLinked;
-            practitionerRecord.DateAccepted = practitioner.DateAccepted;
-            practitionerRecord.DateToBeRemoved = practitioner.DateToBeRemoved;
-            practitionerRecord.IsLeaving = practitioner.IsLeaving;
-            practitionerRecord.Progress = practitioner.Progress;
-            practitionerRecord.IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough;
-            practitionerRecord.ProgrammeType = practitioner.ProgrammeType;
-            practitionerRecord.IsTrainee = practitioner.IsTrainee;
-            practitionerRecord.CoachHierarchy = practitioner.CoachHierarchy;
-            practitionerRecord.AttendedChildProgress = practitioner.AttendedChildProgress;
-            practitionerRecord.UsePhotoInReport = practitioner.UsePhotoInReport;
-            practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
-            practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
-            practitionerRecord.StipendType = practitioner.StipendType;
-            practitionerRecord.Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList();
-            practitionerRecord.ClickedCommunityTab = practitioner.ClickedCommunityTab;
+
+            practitionerRecord.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
+            
 
             ApplicationUser practitionerUser = _userManager.FindByIdAsync(practitioner.UserId).Result;
             if (practitionerUser != null) {
