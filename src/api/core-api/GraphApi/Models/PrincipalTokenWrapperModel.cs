@@ -7,5 +7,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public Guid AddedByUserId { get; set; }
         public Guid AddedToUserId { get; set; }
         public string Token { get; set; }
+        public string PreSchoolNameCode { get; set; }
+        public string PhoneNumber { get; set; }
     }
 }
