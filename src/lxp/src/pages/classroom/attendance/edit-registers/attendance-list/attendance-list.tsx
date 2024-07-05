@@ -101,10 +101,11 @@ export const EditRegistersAttendanceList = ({
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
       allAttendedChildren,
-      attendanceDate.toISOString(),
+      attendanceDate.toISOString().replace('Z', ''),
       currentProgramme.id ?? ''
     );
 
+    console.log({ trackAttendanceInput });
     appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
     appDispatch(
       attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)

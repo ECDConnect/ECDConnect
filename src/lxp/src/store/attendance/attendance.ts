@@ -103,16 +103,31 @@ const attendanceSlice = createSlice({
     builder.addCase(trackAttendanceSync.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
-      const programmeOwnerId = action.meta.arg.programmeOwnerId;
-      // reset the dateRefreshed for the monthly attendance report
-      if (
-        state.monthlyAttendanceRecordsByUser &&
-        state.monthlyAttendanceRecordsByUser[programmeOwnerId]
-      ) {
-        state.monthlyAttendanceRecordsByUser[programmeOwnerId].dateRefreshed =
-          undefined;
+      for (const register of action?.payload ?? []) {
+        const programmeOwnerId = register.programmeOwnerId;
+        const date = register.attendanceDate.split('T')[0];
+        console.log({ programmeOwnerId, date, action });
+        // reset the dateRefreshed for the monthly attendance report
+        if (
+          programmeOwnerId &&
+          state.monthlyAttendanceRecordsByUser &&
+          state.monthlyAttendanceRecordsByUser[programmeOwnerId]
+        ) {
+          state.monthlyAttendanceRecordsByUser[programmeOwnerId].dateRefreshed =
+            undefined;
+        }
+        state.classroomAttendanceOverviewReport = [];
+        state.attendanceTracked = state.attendanceTracked?.map((x) => {
+          const currentDate = (x.attendanceDate as string).split('T')[0];
+          if (currentDate === date) {
+            return {
+              ...x,
+              synced: true,
+            };
+          }
+          return x;
+        });
       }
-      state.classroomAttendanceOverviewReport = [];
     });
     builder.addCase(getAttendance.fulfilled, (state, action) => {
       state.attendance = action.payload;
