@@ -13,11 +13,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public string WhatsAppNumber { get; set; }
         public string ProfilePhoto { get; set; }
         public string RoleName { get; set; }
+        public string UserName { get; set; }
         
         public CommunityUserModel(ApplicationUser user, List<string> userRoles)
         {
             Id = user.Id;
             FullName = user.FullName;
+            UserName = user.UserName;
             Email = user.Email;
             PhoneNumber = user.PhoneNumber;
             WhatsAppNumber = user.WhatsAppNumber;

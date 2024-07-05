@@ -3583,6 +3583,7 @@ export type CommunityConnectionModel = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   inviteAccepted?: Maybe<Scalars['Boolean']>;
+  profileSkills?: Maybe<Array<Maybe<CommunityProfileSkillModel>>>;
   provinceId?: Maybe<Scalars['UUID']>;
   provinceName?: Maybe<Scalars['String']>;
   shareContactInfo?: Maybe<Scalars['Boolean']>;
@@ -3673,6 +3674,7 @@ export type CommunityProfileInput = {
 export type CommunityProfileInputModelInput = {
   aboutLong?: InputMaybe<Scalars['String']>;
   aboutShort?: InputMaybe<Scalars['String']>;
+  communitySkillIds?: InputMaybe<Array<Scalars['UUID']>>;
   fromUserId: Scalars['UUID'];
   inviteAccepted?: InputMaybe<Scalars['Boolean']>;
   provinceId?: InputMaybe<Scalars['UUID']>;
@@ -3702,6 +3704,7 @@ export type CommunityProfileModel = {
   insertedDate: Scalars['DateTime'];
   inviteAccepted?: Maybe<Scalars['Boolean']>;
   pendingConnectionsTo?: Maybe<Array<Maybe<CommunityConnectionModel>>>;
+  profileSkills?: Maybe<Array<Maybe<CommunityProfileSkillModel>>>;
   provinceId?: Maybe<Scalars['UUID']>;
   provinceName?: Maybe<Scalars['String']>;
   shareContactInfo?: Maybe<Scalars['Boolean']>;
@@ -3748,6 +3751,16 @@ export type CommunityProfileSkillInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type CommunityProfileSkillModel = {
+  __typename?: 'CommunityProfileSkillModel';
+  description?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  imageName?: Maybe<Scalars['String']>;
+  isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  ordering: Scalars['Int'];
 };
 
 export type CommunityProfileSkillSortInput = {
@@ -3823,6 +3836,15 @@ export type CommunitySkillInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type CommunitySkillModel = {
+  __typename?: 'CommunitySkillModel';
+  description?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  imageName?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  ordering: Scalars['Int'];
+};
+
 export type CommunitySkillSortInput = {
   description?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -3843,6 +3865,7 @@ export type CommunityUserModel = {
   phoneNumber?: Maybe<Scalars['String']>;
   profilePhoto?: Maybe<Scalars['String']>;
   roleName?: Maybe<Scalars['String']>;
+  userName?: Maybe<Scalars['String']>;
   whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
@@ -14395,6 +14418,7 @@ export type Query = {
   coachNameByUserId?: Maybe<Scalars['String']>;
   coachTemplateGenerator?: Maybe<FileModel>;
   communityProfile?: Maybe<CommunityProfileModel>;
+  communitySkills?: Maybe<Array<Maybe<CommunitySkillModel>>>;
   completedReferralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   completedReferralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
   completedVisitsForVisitId?: Maybe<Array<Maybe<Scalars['String']>>>;

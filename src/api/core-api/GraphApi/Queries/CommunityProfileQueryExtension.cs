@@ -39,6 +39,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return communionService.GetUsersToConnectWith(provinceId, communitySkillId, connectionType, userId);
         }
 
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
+        public List<CommunitySkillModel> GetCommunitySkills(
+            [Service] ICommunityService communionService)
+        {
+            return communionService.GetCommunitySkills();
+        }
+        
+
 
 
     }

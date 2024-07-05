@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
@@ -16,5 +17,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public bool? ShareRole { get; set; }
         public Guid? ProvinceId { get; set; }
         public bool? InviteAccepted { get; set; }
+        public List<Guid> CommunitySkillIds { get; set; }
     }
 }

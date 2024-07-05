@@ -2,7 +2,6 @@
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Community;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -71,7 +70,8 @@ namespace EcdLink.Api.CoreApi.Services
         }
         public List<CommunitySkillModel> GetCommunitySkills()
         {
-            return _communitySkillRepo.GetAll().Where(x => x.IsActive).Select(x => new CommunitySkillModel(x)).OrderBy(x => x.Ordering).ToList();
+            var result = _communitySkillRepo.GetAll().Where(x => x.IsActive).OrderBy(x => x.Ordering).ToList();
+            return result.Select(x => new CommunitySkillModel(x)).ToList();
         }
         public CoachFeedback SaveCoachFeedback(CoachFeedbackInputModel input)
         {
@@ -162,10 +162,11 @@ namespace EcdLink.Api.CoreApi.Services
                     ProvinceId = input.ProvinceId,
                     InviteAccepted = input.InviteAccepted,
                 });
-
             }
+
             if (communityProfile != null )
             {
+                UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
                 return GetCommunityProfile(input.ToUserId);
             } 
             else
@@ -174,21 +175,87 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
+        public void UpdateProfileSkills(Guid communityProfileId, List<Guid> communitySkillIds)
+        {
+            var linkedSkills = _communityProfileSkillRepo.GetAll().Where(x => x.CommunityProfileId == communityProfileId).ToList();
+            var linkedSkillIds = linkedSkills.Select(x => x.CommunitySkillId).ToList();
+
+            if (linkedSkills.Count > 0 )
+            {
+                
+                foreach (var item in linkedSkills)
+                {
+                    _communityProfileSkillRepo.Delete(item.Id);
+                }
+
+                var skillsToAdd = new List<CommunityProfileSkill>();
+                foreach (var itemId in communitySkillIds)
+                {
+                    var skill = linkedSkills.Where(x => x.CommunitySkillId == itemId).FirstOrDefault();
+                    if (skill != null)
+                    {
+                        skill.IsActive = true;
+                        skill.UpdatedDate = DateTime.UtcNow;
+                        skill.UpdatedBy = _applicationUserId.ToString();
+                        _communityProfileSkillRepo.Update(skill);
+
+                    } 
+                    else
+                    {
+                        skillsToAdd.Add(new CommunityProfileSkill()
+                        {
+                            Id = Guid.NewGuid(),
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedBy = _applicationUserId.ToString(),
+                            CommunityProfileId = communityProfileId,
+                            CommunitySkillId = itemId,
+                            IsActive = true
+                        });
+                    }
+                }
+                if (skillsToAdd.Count > 0)
+                {
+                    _communityProfileSkillRepo.InsertMany(skillsToAdd);
+                }
+            } 
+            else
+            {
+                var skillsToAdd = new List<CommunityProfileSkill>();
+                foreach (var item in communitySkillIds)
+                {
+                    skillsToAdd.Add(new CommunityProfileSkill()
+                    {
+                        Id = Guid.NewGuid(),
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = _applicationUserId.ToString(),
+                        CommunityProfileId = communityProfileId,
+                        CommunitySkillId = item
+                    });
+                }
+                if (skillsToAdd.Count > 0)
+                {
+                    _communityProfileSkillRepo.InsertMany(skillsToAdd);
+                }
+            }
+        }
+
         public CommunityProfileModel GetCommunityProfile(Guid userId)
         {
-            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && (x.FromUserId == userId || x.ToUserId == userId) && x.FromUserId != x.ToUserId).ToList();
+            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && (x.FromUserId == userId || x.ToUserId == userId)).ToList();
 
             var userCommunityProfile = allConnections.Where(x => x.IsActive && x.ToUserId == userId && x.FromUserId == userId).FirstOrDefault();
             if (userCommunityProfile != null )
             {
+
                 var acceptedConnections = allConnections
-                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
+                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true && x.ToUserId != x.FromUserId)
                     .Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.ToUser).Result.ToList()))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();
                 
                 var pendingConnectionsTo = allConnections
-                    .Where(x => !x.InviteAccepted.HasValue && x.ToUserId == userId)
+                    .Where(x => !x.InviteAccepted.HasValue && x.ToUserId == userId && x.ToUserId != x.FromUserId)
                     .Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.ToUser).Result.ToList()))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();

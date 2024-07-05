@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Community;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
@@ -14,6 +15,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public string CompletenessPercImage { get; set; }
         public List<CommunityConnectionModel> AcceptedConnections { get; set; }
         public List<CommunityConnectionModel> PendingConnectionsTo { get; set; }
+        
 
         public CommunityProfileModel(CommunityProfile profile, 
                                      List<CommunityConnectionModel> acceptedConnections, 

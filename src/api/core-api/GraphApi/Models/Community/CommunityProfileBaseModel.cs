@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Community;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
@@ -22,6 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public bool? InviteAccepted { get; set; }
         public CommunityUserModel CommunityUser { get; set; }
         public DateTime InsertedDate { get; set; }
+        public List<CommunityProfileSkillModel> ProfileSkills { get; set; }
 
         public CommunityProfileBaseModel(CommunityProfile profile, List<string> userRoles)
         {
@@ -41,6 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             InviteAccepted = profile.InviteAccepted;
             CommunityUser = new CommunityUserModel(profile.ToUser, userRoles);
             InsertedDate = profile.InsertedDate;
+            ProfileSkills = profile.ProfileSkills.Select(x => new CommunityProfileSkillModel(x.CommunitySkill, x.IsActive)).ToList();
         }
 
         public CommunityProfileBaseModel()
