@@ -996,7 +996,7 @@ export const Dashboard: React.FC = () => {
 
     history.push(profileRoute);
   };
-  console.log(classroom && !!classroom.id);
+
   const goToClassroom = () => {
     if (
       (classroom && !!classroom.id) ||
