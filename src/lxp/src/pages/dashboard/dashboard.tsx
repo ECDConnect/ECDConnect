@@ -999,8 +999,9 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (((classroom && !!classroom.id) ||
-        (classroomGroups && classroomGroups.length > 0)) &&
+      (classroom && !!classroom.id) ||
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
@@ -1008,6 +1009,7 @@ export const Dashboard: React.FC = () => {
         !missingProgramme) ||
       isTrialPeriod
     ) {
+      console.log('hihih');
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.CLASSES,
       });
