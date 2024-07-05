@@ -256,6 +256,7 @@ export const useProgrammePlanning = () => {
         dayDate: dayDate.toISOString(),
         programmeId: programme.id ?? '',
         messageBoardText: '',
+        isActive: true,
       });
       themeDay += 1;
     }

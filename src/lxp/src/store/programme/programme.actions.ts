@@ -27,28 +27,24 @@ export const getProgrammes = createAsyncThunk<
       programmeData: { programmes: programmeCache },
     } = getState();
 
-    if (!programmeCache) {
-      try {
-        let programmes: ProgrammeDto[] | undefined;
+    try {
+      let programmes: ProgrammeDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          programmes = await new ProgrammeService(
-            userAuth?.auth_token
-          ).getUserProgrammes();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!programmes) {
-          return rejectWithValue('Error getting programmes');
-        }
-
-        return programmes;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        programmes = await new ProgrammeService(
+          userAuth?.auth_token
+        ).getUserProgrammes();
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return programmeCache;
+
+      if (!programmes) {
+        return rejectWithValue('Error getting programmes');
+      }
+
+      return programmes;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
@@ -236,7 +232,8 @@ export const formatDailyProgrammes = (
       isActive:
         daily.isActive === false
           ? false
-          : isBefore(new Date(), new Date(programme.endDate)),
+          : isSameDay(new Date(), new Date(programme.endDate)) ||
+            isBefore(new Date(), new Date(programme.endDate)),
     };
   });
 };
