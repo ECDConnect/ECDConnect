@@ -11,10 +11,12 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Execution;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -68,7 +70,8 @@ namespace EcdLink.Api.CoreApi.Services
         }
         public List<CommunitySkillModel> GetCommunitySkills()
         {
-            return _communitySkillRepo.GetAll().Where(x => x.IsActive).Select(x => new CommunitySkillModel(x)).OrderBy(x => x.Ordering).ToList();
+            var result = _communitySkillRepo.GetAll().Where(x => x.IsActive).OrderBy(x => x.Ordering).ToList();
+            return result.Select(x => new CommunitySkillModel(x)).ToList();
         }
         public CoachFeedback SaveCoachFeedback(CoachFeedbackInputModel input)
         {
@@ -106,59 +109,280 @@ namespace EcdLink.Api.CoreApi.Services
                 };
                 _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NotifyAdminOnCoachFeedback, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements);
             }
+            else
+            {
+                throw new QueryException("Coach Feedback could not be saved.");
+            }
 
             return coachFeedback;
         }
 
         public CommunityProfileModel SaveCommunityProfile(CommunityProfileInputModel input)
         {
-            var communityProfile = _communityProfileRepo.Insert(new CommunityProfile()
+            // first validate to see if there is maybe an archived profile for this user.
+            var communityProfile = _communityProfileRepo.GetAll().Where(x => x.FromUserId == input.FromUserId && x.ToUserId == input.ToUserId).FirstOrDefault();
+            
+            if (communityProfile != null)
             {
-                Id = Guid.NewGuid(),
-                InsertedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId.ToString(),
-                IsActive = true,
-                FromUserId = input.FromUserId,
-                ToUserId = input.ToUserId,
-                AboutShort = input.AboutShort,
-                AboutLong = input.AboutLong,
-                ShareEmail = input.ShareEmail,
-                SharePhoneNumber = input.SharePhoneNumber,
-                ShareProfilePhoto = input.ShareProfilePhoto,
-                ShareProvince = input.ShareProvince,
-                ShareRole = input.ShareRole,
-                ProvinceId = input.ProvinceId,
-                InviteAccepted = input.InviteAccepted,
-            });
+                communityProfile.IsActive = true;
+                communityProfile.FromUserId = input.FromUserId;
+                communityProfile.ToUserId = input.ToUserId;
+                communityProfile.AboutShort = input.AboutShort;
+                communityProfile.AboutLong = input.AboutLong;
+                communityProfile.ShareContactInfo = input.ShareContactInfo;
+                communityProfile.ShareEmail = input.ShareEmail;
+                communityProfile.SharePhoneNumber = input.SharePhoneNumber;
+                communityProfile.ShareProfilePhoto = input.ShareProfilePhoto;
+                communityProfile.ShareProvince = input.ShareProvince;
+                communityProfile.ShareRole = input.ShareRole;
+                communityProfile.ProvinceId = input.ProvinceId;
+                communityProfile.InviteAccepted = input.InviteAccepted;
+
+                _communityProfileRepo.Update(communityProfile);
+            } 
+            else
+            {
+                communityProfile = _communityProfileRepo.Insert(new CommunityProfile()
+                {
+                    Id = Guid.NewGuid(),
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = _applicationUserId.ToString(),
+                    IsActive = true,
+                    FromUserId = input.FromUserId,
+                    ToUserId = input.ToUserId,
+                    AboutShort = input.AboutShort,
+                    AboutLong = input.AboutLong,
+                    ShareContactInfo = input.ShareContactInfo,
+                    ShareEmail = input.ShareEmail,
+                    SharePhoneNumber = input.SharePhoneNumber,
+                    ShareProfilePhoto = input.ShareProfilePhoto,
+                    ShareProvince = input.ShareProvince,
+                    ShareRole = input.ShareRole,
+                    ProvinceId = input.ProvinceId,
+                    InviteAccepted = input.InviteAccepted,
+                });
+            }
 
             if (communityProfile != null )
             {
-                return GetCommunityProfile(input.FromUserId);
+                UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
+                return GetCommunityProfile(input.ToUserId);
+            } 
+            else
+            {
+                throw new QueryException("Community Profile could not be saved.");
             }
-            return null;
+        }
+
+        public void UpdateProfileSkills(Guid communityProfileId, List<Guid> communitySkillIds)
+        {
+            var linkedSkills = _communityProfileSkillRepo.GetAll().Where(x => x.CommunityProfileId == communityProfileId).ToList();
+            var linkedSkillIds = linkedSkills.Select(x => x.CommunitySkillId).ToList();
+
+            if (linkedSkills.Count > 0 )
+            {
+                
+                foreach (var item in linkedSkills)
+                {
+                    _communityProfileSkillRepo.Delete(item.Id);
+                }
+
+                var skillsToAdd = new List<CommunityProfileSkill>();
+                foreach (var itemId in communitySkillIds)
+                {
+                    var skill = linkedSkills.Where(x => x.CommunitySkillId == itemId).FirstOrDefault();
+                    if (skill != null)
+                    {
+                        skill.IsActive = true;
+                        skill.UpdatedDate = DateTime.UtcNow;
+                        skill.UpdatedBy = _applicationUserId.ToString();
+                        _communityProfileSkillRepo.Update(skill);
+
+                    } 
+                    else
+                    {
+                        skillsToAdd.Add(new CommunityProfileSkill()
+                        {
+                            Id = Guid.NewGuid(),
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedBy = _applicationUserId.ToString(),
+                            CommunityProfileId = communityProfileId,
+                            CommunitySkillId = itemId,
+                            IsActive = true
+                        });
+                    }
+                }
+                if (skillsToAdd.Count > 0)
+                {
+                    _communityProfileSkillRepo.InsertMany(skillsToAdd);
+                }
+            } 
+            else
+            {
+                var skillsToAdd = new List<CommunityProfileSkill>();
+                foreach (var item in communitySkillIds)
+                {
+                    skillsToAdd.Add(new CommunityProfileSkill()
+                    {
+                        Id = Guid.NewGuid(),
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = _applicationUserId.ToString(),
+                        CommunityProfileId = communityProfileId,
+                        CommunitySkillId = item
+                    });
+                }
+                if (skillsToAdd.Count > 0)
+                {
+                    _communityProfileSkillRepo.InsertMany(skillsToAdd);
+                }
+            }
         }
 
         public CommunityProfileModel GetCommunityProfile(Guid userId)
         {
-            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.FromUserId == userId).ToList();
+            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && (x.FromUserId == userId || x.ToUserId == userId)).ToList();
 
-            var userCommunityProfile = allConnections.Where(x => x.IsActive && x.ToUserId == userId).FirstOrDefault();
+            var userCommunityProfile = allConnections.Where(x => x.IsActive && x.ToUserId == userId && x.FromUserId == userId).FirstOrDefault();
             if (userCommunityProfile != null )
             {
+
                 var acceptedConnections = allConnections
-                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true && x.ToUserId != userId)
-                    .Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.ToUser).Result.ToList()) )
-                    .ToList();
-                var pendingConnections = allConnections
-                    .Where(x => !x.InviteAccepted.HasValue && x.ToUserId != userId)
+                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true && x.ToUserId != x.FromUserId)
                     .Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.ToUser).Result.ToList()))
+                    .OrderByDescending(x => x.InsertedDate)
+                    .ToList();
+                
+                var pendingConnectionsTo = allConnections
+                    .Where(x => !x.InviteAccepted.HasValue && x.ToUserId == userId && x.ToUserId != x.FromUserId)
+                    .Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.ToUser).Result.ToList()))
+                    .OrderByDescending(x => x.InsertedDate)
                     .ToList();
 
-                return new CommunityProfileModel(userCommunityProfile, acceptedConnections, pendingConnections, _userManager.GetRolesAsync(userCommunityProfile.ToUser).Result.ToList());
+                // Users will always have 10% complete.
+                var totalPoints = 10;
+                // -Edit contact details -user saves form(note that they're not required to select any of the boxes) - 18 percentage points
+                if (userCommunityProfile.ShareContactInfo.HasValue && userCommunityProfile.ShareContactInfo.Value)
+                {
+                    totalPoints += 18;
+                }
+                //- Edit basic info -user has filled in short description and province -18 percentage points
+                if (!string.IsNullOrEmpty(userCommunityProfile.AboutShort) && userCommunityProfile.ProvinceId != null)
+                {
+                    totalPoints += 18;
+                }
+                //-About - user has filled in the field -18 percentage points
+                if (!string.IsNullOrEmpty(userCommunityProfile.AboutLong))
+                {
+                    totalPoints += 18;
+                }
+                //-ECD skills - user has checked at least 1 skill - 18 percentage points
+                if (userCommunityProfile.ProfileSkills.Count > 0)
+                {
+                    totalPoints += 18;
+                }
+                //-Photo - user has added a photo -18 percentage points
+                if (!string.IsNullOrEmpty(userCommunityProfile.ToUser.ProfileImageUrl))
+                {
+                    totalPoints += 18;
+                }
+                // (61% or more = green; 11-60% = blue; 0-10% = amber)
+                var completenessAvg = (decimal)totalPoints / 100 * 100;
+                var completenessPerc = Math.Round(completenessAvg);
+                var completenessPercColor = Constants.CSSColorClasses.Orange;
+                var completenessPercImage = "need image names from FE";
+                if (completenessPerc >= 61)
+                {
+                    completenessPercColor = Constants.CSSColorClasses.Green;
+                    completenessPercImage = "ECD_Connect_emoji1.svg";
+                } 
+                else if (completenessPerc >= 11)
+                {
+                    completenessPercColor = Constants.CSSColorClasses.Blue;
+                }
+
+                return new CommunityProfileModel(userCommunityProfile, 
+                                                 acceptedConnections,
+                                                 pendingConnectionsTo, 
+                                                 _userManager.GetRolesAsync(userCommunityProfile.ToUser).Result.ToList(),
+                                                 completenessPerc,
+                                                 completenessPercColor,
+                                                 completenessPercImage);
+            } 
+            else
+            {
+                throw new QueryException("Community Profile not found.");
+            }
+        }
+
+        public List<CommunityConnectionModel> GetUsersToConnectWith(Guid? provinceId, Guid? communitySkillId, string connectionType, Guid userId)
+        {
+            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ToUserId != userId && x.FromUserId != userId).ToList();
+            var filteredConnection = new List<CommunityProfile>();
+
+            if (!string.IsNullOrEmpty(provinceId.ToString()))
+            {
+                filteredConnection.AddRange(allConnections.Where(x => x.ProvinceId == provinceId).ToList());
+            }
+            if (!string.IsNullOrEmpty(communitySkillId.ToString()))
+            {
+                // ProfileSkills
+                // filteredConnection.AddRange(allConnections.Where(x => x.ProvinceId == p).ToList());
             }
 
-            return null;
+            if (!string.IsNullOrEmpty(connectionType))
+            {
+                if (connectionType == "Connected")
+                {
+                    // Connected = people user currently connected with
+                    filteredConnection.AddRange(allConnections.Where(x => x.ToUserId == userId && x.InviteAccepted.HasValue && x.InviteAccepted.Value).ToList());
+                }
+                else if (connectionType == "Received requests")
+                {
+                    // Received requests = all people who have sent the user a request and the user has not accepted yet, ie users with active requests
+                    filteredConnection.AddRange(allConnections.Where(x => x.ToUserId == userId && !x.InviteAccepted.HasValue).ToList());
+                }
+                else if (connectionType == "Sent requests")
+                {
+                    // Sent requests = all people the user has sent requests to, who haven't accepted yet
+                    filteredConnection.AddRange(allConnections.Where(x => x.FromUserId == userId && x.InviteAccepted.HasValue && !x.InviteAccepted.Value).ToList());
+                }
+            }
+
+            if (provinceId != null || communitySkillId != null || connectionType != "")
+            {
+                return filteredConnection.Select(x => new CommunityConnectionModel(x, null)).ToList();
+            }
+
+            return allConnections.Select(x => new CommunityConnectionModel(x, null)).ToList();
+        }
+
+        public CommunityProfileModel AcceptRejectCommunityRequests(AcceptRejectCommunityRequestsInputModel input)
+        {
+            var accepted = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ToUserId == input.UserId && input.UserIdsToAccept.Contains(x.FromUserId)).ToList();
+            foreach (var item in accepted)
+            {
+                item.InviteAccepted = true;
+                item.UpdatedDate = DateTime.Now;
+                item.UpdatedBy = _applicationUserId.ToString();
+                _communityProfileRepo.Update(item);
+            }
+            var rejected = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ToUserId == input.UserId && input.UserIdsToReject.Contains(x.FromUserId)).ToList();
+            foreach (var item in rejected)
+            {
+                item.InviteAccepted = false;
+                item.UpdatedDate = DateTime.Now;
+                item.UpdatedBy = _applicationUserId.ToString();
+                _communityProfileRepo.Update(item);
+            }
+            return GetCommunityProfile(input.UserId);
+        }
+
+        public bool DeleteCommunityProfile(Guid communityProfileId)
+        {
+            _communityProfileRepo.Delete(communityProfileId);
+            return true;
         }
 
     }

@@ -13,5 +13,8 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
         public CoachFeedback SaveCoachFeedback(CoachFeedbackInputModel input);
         public CommunityProfileModel SaveCommunityProfile(CommunityProfileInputModel input);
         public CommunityProfileModel GetCommunityProfile(Guid userId);
+        public List<CommunityConnectionModel> GetUsersToConnectWith(Guid? provinceId, Guid? communitySkillId, string connectionType, Guid userId);
+        public CommunityProfileModel AcceptRejectCommunityRequests(AcceptRejectCommunityRequestsInputModel input);
+        public bool DeleteCommunityProfile(Guid communityProfileId);
     }
 }

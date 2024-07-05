@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Community;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
@@ -11,6 +12,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public Guid ToUserId { get; set; }
         public string AboutShort { get; set; }
         public string AboutLong { get; set; }
+        public bool? ShareContactInfo { get; set; }
         public bool? ShareEmail { get; set; }
         public bool? SharePhoneNumber { get; set; }
         public bool? ShareProfilePhoto { get; set; }
@@ -20,6 +22,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public bool? ShareRole { get; set; }
         public bool? InviteAccepted { get; set; }
         public CommunityUserModel CommunityUser { get; set; }
+        public DateTime InsertedDate { get; set; }
+        public List<CommunityProfileSkillModel> ProfileSkills { get; set; }
 
         public CommunityProfileBaseModel(CommunityProfile profile, List<string> userRoles)
         {
@@ -28,6 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             ToUserId = profile.ToUserId;
             AboutShort = profile.AboutShort;
             AboutLong = profile.AboutLong;
+            ShareContactInfo = profile.ShareContactInfo;
             ShareEmail = profile.ShareEmail;
             SharePhoneNumber = profile.SharePhoneNumber;
             ShareProfilePhoto = profile.ShareProfilePhoto;
@@ -36,7 +41,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             ProvinceName = profile.Province != null ? profile.Province.Description: "";
             ShareRole = profile.ShareRole;
             InviteAccepted = profile.InviteAccepted;
-            CommunityUser = new CommunityUserModel(profile.ToUser, profile.ShareEmail, profile.SharePhoneNumber, profile.ShareProfilePhoto, profile.ShareRole, userRoles);
+            CommunityUser = new CommunityUserModel(profile.ToUser, userRoles);
+            InsertedDate = profile.InsertedDate;
+            ProfileSkills = profile.ProfileSkills.Select(x => new CommunityProfileSkillModel(x.CommunitySkill, x.IsActive)).ToList();
         }
 
         public CommunityProfileBaseModel()

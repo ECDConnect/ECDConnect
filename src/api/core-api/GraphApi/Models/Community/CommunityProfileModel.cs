@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Community;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
@@ -9,17 +10,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public Guid? CoachUserId { get; set; }
         public string CoachName { get; set; }
         public bool? ClickedECDHeros { get; set; }
+        public decimal? CompletenessPerc { get; set; }
+        public string CompletenessPercColor { get; set; }
+        public string CompletenessPercImage { get; set; }
         public List<CommunityConnectionModel> AcceptedConnections { get; set; }
-        public List<CommunityConnectionModel> PendingConnections { get; set; }
+        public List<CommunityConnectionModel> PendingConnectionsTo { get; set; }
+        
 
-        public CommunityProfileModel(CommunityProfile profile, List<CommunityConnectionModel> acceptedConnections, List<CommunityConnectionModel> pendingConnections, List<string> userRoles)
+        public CommunityProfileModel(CommunityProfile profile, 
+                                     List<CommunityConnectionModel> acceptedConnections, 
+                                     List<CommunityConnectionModel> pendingConnectionsTo, 
+                                     List<string> userRoles,
+                                     decimal completenessPerc,
+                                     string completenessPercColor,
+                                     string completenessPercImage)
             : base(profile, userRoles)
         {
             ClickedECDHeros = profile.ClickedECDHeros;
             AcceptedConnections = acceptedConnections;
-            PendingConnections = pendingConnections;
+            PendingConnectionsTo = pendingConnectionsTo;
             CoachUserId = profile.FromUser.coachObjectData != null ? profile.FromUser.coachObjectData.User.Id : null;
             CoachName = profile.FromUser.coachObjectData != null ? profile.FromUser.coachObjectData.User.FullName : "";
+            CompletenessPerc = completenessPerc;
+            CompletenessPercColor = completenessPercColor;
+            CompletenessPercImage = completenessPercImage;
         }
 
         public CommunityProfileModel()
