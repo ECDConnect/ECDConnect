@@ -242,7 +242,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 throw new QueryException("Token generation failed");
             }
-            await notificationManager.SendPrincipalInvitationAsync(user, practitionerUser.FullName, token);
+            var practitionerName = string.IsNullOrEmpty(practitionerUser.FullName) ? practitionerUser.UserName : practitionerUser.FullName;
+            await notificationManager.SendPrincipalInvitationAsync(user, practitionerName, token);
 
             await Task.Delay(1000);
             user.IsActive = false;
