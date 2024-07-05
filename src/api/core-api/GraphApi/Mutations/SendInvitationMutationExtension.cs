@@ -232,7 +232,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 AddedByUserId = practitionerUserId,
                 Token = await tokenManager.GenerateTokenAsync(user),
-                AddedToUserId = user.Id,
                 PhoneNumber = user.PhoneNumber,
                 IdNumber = practitionerUser.IdNumber,
                 UserName = practitionerUser.UserName
