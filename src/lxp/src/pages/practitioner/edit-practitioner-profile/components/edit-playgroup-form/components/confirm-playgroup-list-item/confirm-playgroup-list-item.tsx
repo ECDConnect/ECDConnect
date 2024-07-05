@@ -57,21 +57,20 @@ export const ConfirmPlayGroupListItem: React.FC<
           <Typography type={'span'} color={'textMid'} text={getText()} />
         </div>
       </div>
-      {isPrincipal ||
-        (isTrialPeriod && (
-          <div>
-            <Button
-              size="small"
-              shape="normal"
-              color="secondaryAccent2"
-              type="filled"
-              onClick={onPlayGroupEdit}
-            >
-              <Typography type="help" color="secondary" text="Edit" />
-              {renderIcon('PencilIcon', styles.buttonIcon)}
-            </Button>
-          </div>
-        ))}
+      {(isPrincipal || isTrialPeriod) && (
+        <div>
+          <Button
+            size="small"
+            shape="normal"
+            color="secondaryAccent2"
+            type="filled"
+            onClick={onPlayGroupEdit}
+          >
+            <Typography type="help" color="secondary" text="Edit" />
+            {renderIcon('PencilIcon', styles.buttonIcon)}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
