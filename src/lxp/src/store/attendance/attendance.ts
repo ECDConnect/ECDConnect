@@ -106,7 +106,7 @@ const attendanceSlice = createSlice({
       for (const register of action?.payload ?? []) {
         const programmeOwnerId = register.programmeOwnerId;
         const date = register.attendanceDate.split('T')[0];
-        console.log({ programmeOwnerId, date, action });
+
         // reset the dateRefreshed for the monthly attendance report
         if (
           programmeOwnerId &&

@@ -105,7 +105,6 @@ export const EditRegistersAttendanceList = ({
       currentProgramme.id ?? ''
     );
 
-    console.log({ trackAttendanceInput });
     appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
     appDispatch(
       attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
