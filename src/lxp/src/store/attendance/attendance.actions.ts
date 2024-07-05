@@ -182,7 +182,7 @@ export const getChildAttendanceRecords = createAsyncThunk<
 );
 
 export const trackAttendanceSync = createAsyncThunk<
-  boolean[],
+  TrackAttendanceModelInput[] | undefined,
   any,
   ThunkApiType<RootState>
 >(
@@ -193,10 +193,12 @@ export const trackAttendanceSync = createAsyncThunk<
       attendanceData: { attendanceTracked },
     } = getState();
     try {
-      let promises: Promise<boolean>[] = [];
+      let promises: Promise<TrackAttendanceModelInput>[] = [];
 
       if (userAuth && attendanceTracked) {
         promises = attendanceTracked.map(async (x) => {
+          if (x?.synced) return Promise.resolve(x);
+
           const trackAttendanceModelInput: TrackAttendanceModelInput = {
             classroomProgrammeId: x.classroomProgrammeId,
             programmeOwnerId: x.programmeOwnerId,
@@ -217,9 +219,11 @@ export const trackAttendanceSync = createAsyncThunk<
             );
           });
 
-          return await new AttendanceService(
-            userAuth?.auth_token
-          ).trackAttendance([trackAttendanceModelInput]);
+          await new AttendanceService(userAuth?.auth_token).trackAttendance([
+            trackAttendanceModelInput,
+          ]);
+
+          return trackAttendanceModelInput;
         });
       }
       return Promise.all(promises);
