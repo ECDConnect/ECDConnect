@@ -9,5 +9,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Token { get; set; }
         public string PreSchoolNameCode { get; set; }
         public string PhoneNumber { get; set; }
+        public string IdNumber { get; set; }
     }
 }
