@@ -70,6 +70,10 @@ const programmeSlice = createSlice({
       );
 
       if (indexOfDay < 0) return;
+      state.programmes[indexOfProgramme] = {
+        ...state.programmes[indexOfProgramme],
+        synced: false,
+      };
 
       state.programmes[indexOfProgramme].dailyProgrammes[indexOfDay] =
         action.payload.programmeDay;
@@ -81,10 +85,14 @@ const programmeSlice = createSlice({
     setThunkActionStatus(builder, upsertProgrammes);
     setThunkActionStatus(builder, updateProgrammes);
     builder.addCase(getProgrammes.fulfilled, (state, action) => {
-      state.programmes = action.payload?.map((programme) => ({
+      const localProgrammes =
+        state.programmes?.filter((programme) => !programme?.synced) ?? [];
+      const syncedProgrammes = action.payload?.map((programme) => ({
         ...programme,
         synced: true,
       }));
+
+      state.programmes = [...localProgrammes, ...syncedProgrammes];
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getUserProgrammes.fulfilled, (state, action) => {
