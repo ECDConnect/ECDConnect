@@ -43,7 +43,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                     else
                     {
                         // Add new record
-                        _context.Attendances.AddRange(attendances);
+                        _context.Attendances.Add(attendance);
                     }
                 }
 
