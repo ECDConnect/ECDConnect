@@ -3,9 +3,10 @@ using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
-    public class AcceptCommunityRequestsInputModel
+    public class AcceptRejectCommunityRequestsInputModel
     {
         public List<Guid> UserIdsToAccept { get; set; }
-        public Guid UserIdAccepting { get; set; }
+        public List<Guid> UserIdsToReject { get; set; }
+        public Guid UserId { get; set; }
     }
 }

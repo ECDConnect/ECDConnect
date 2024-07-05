@@ -358,17 +358,25 @@ namespace EcdLink.Api.CoreApi.Services
             return allConnections.Select(x => new CommunityConnectionModel(x, null)).ToList();
         }
 
-        public CommunityProfileModel AcceptCommunityRequests(AcceptCommunityRequestsInputModel input)
+        public CommunityProfileModel AcceptRejectCommunityRequests(AcceptRejectCommunityRequestsInputModel input)
         {
-            var allConnections = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ToUserId == input.UserIdAccepting && input.UserIdsToAccept.Contains(x.FromUserId)).ToList();
-            foreach (var item in allConnections)
+            var accepted = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ToUserId == input.UserId && input.UserIdsToAccept.Contains(x.FromUserId)).ToList();
+            foreach (var item in accepted)
             {
                 item.InviteAccepted = true;
                 item.UpdatedDate = DateTime.Now;
                 item.UpdatedBy = _applicationUserId.ToString();
                 _communityProfileRepo.Update(item);
             }
-            return GetCommunityProfile(input.UserIdAccepting);
+            var rejected = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ToUserId == input.UserId && input.UserIdsToReject.Contains(x.FromUserId)).ToList();
+            foreach (var item in rejected)
+            {
+                item.InviteAccepted = false;
+                item.UpdatedDate = DateTime.Now;
+                item.UpdatedBy = _applicationUserId.ToString();
+                _communityProfileRepo.Update(item);
+            }
+            return GetCommunityProfile(input.UserId);
         }
 
         public bool DeleteCommunityProfile(Guid communityProfileId)

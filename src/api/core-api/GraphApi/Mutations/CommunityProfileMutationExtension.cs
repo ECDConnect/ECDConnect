@@ -26,20 +26,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Create)]
-        public CommunityProfileModel AcceptCommunityRequests(
+        public CommunityProfileModel AcceptRejectCommunityRequests(
           [Service] ICommunityService communionService,
-          AcceptCommunityRequestsInputModel input)
+          AcceptRejectCommunityRequestsInputModel input)
         {
-            if (!string.IsNullOrEmpty(input.UserIdAccepting.ToString()))
+            if (!string.IsNullOrEmpty(input.UserId.ToString()))
             {
-                new ArgumentException("UserIdAccepting is empty.");
+                new ArgumentException("UserId is empty.");
             }
-            if (input.UserIdsToAccept.Count == 0)
-            {
-                new ArgumentException("UserIdsToAccept is empty.");
-            }
-
-            return communionService.AcceptCommunityRequests(input);
+            return communionService.AcceptRejectCommunityRequests(input);
         }
 
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Create)]

@@ -118,9 +118,10 @@ export type AbsenteesSortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
-export type AcceptCommunityRequestsInputModelInput = {
-  userIdAccepting: Scalars['UUID'];
+export type AcceptRejectCommunityRequestsInputModelInput = {
+  userId: Scalars['UUID'];
   userIdsToAccept?: InputMaybe<Array<Scalars['UUID']>>;
+  userIdsToReject?: InputMaybe<Array<Scalars['UUID']>>;
 };
 
 export type ActionItemMissedProgressReportsDisplay = {
@@ -7201,8 +7202,8 @@ export type MotherSortInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  acceptCommunityRequests?: Maybe<CommunityProfileModel>;
   acceptNewClubLeaderRole: Scalars['Boolean'];
+  acceptRejectCommunityRequests?: Maybe<CommunityProfileModel>;
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
@@ -7916,14 +7917,14 @@ export type Mutation = {
   uploadChildProgressReport: Scalars['Boolean'];
 };
 
-export type MutationAcceptCommunityRequestsArgs = {
-  input?: InputMaybe<AcceptCommunityRequestsInputModelInput>;
-};
-
 export type MutationAcceptNewClubLeaderRoleArgs = {
   clubId: Scalars['UUID'];
   clubSupportPractitionerId: Scalars['UUID'];
   practitionerId: Scalars['UUID'];
+};
+
+export type MutationAcceptRejectCommunityRequestsArgs = {
+  input?: InputMaybe<AcceptRejectCommunityRequestsInputModelInput>;
 };
 
 export type MutationAddAbsenteeForPractitionerArgs = {
