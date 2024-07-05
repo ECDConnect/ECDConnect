@@ -234,7 +234,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 Token = await tokenManager.GenerateTokenAsync(user),
                 AddedToUserId = user.Id,
                 PhoneNumber = user.PhoneNumber,
-                IdNumber = user.IdNumber
+                IdNumber = practitionerUser.IdNumber,
+                UserName = practitionerUser.UserName
             };
 
             var token = TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
