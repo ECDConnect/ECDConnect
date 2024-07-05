@@ -55,8 +55,8 @@ import { AbsenceCard } from './components/absence-card/absence-card';
 import { AbsencesView } from './components/absences-view/absences-view';
 import { BusinessTabItems } from '@/pages/business/business.types';
 import { staticDataSelectors } from '@/store/static-data';
-import EditPermissions from './components/edit-permissions/edit-permissions';
 import { ReassignClassPageState } from '../reassign-class/reassign-class.types';
+import { EditPractitionerPermissions } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/components/edit-practitioner-permissions';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -607,16 +607,15 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               </div>
             </Card>
             <Dialog
-              fullScreen
+              stretch={true}
               visible={editPermissionsVisible}
-              position={DialogPosition.Middle}
+              position={DialogPosition.Full}
             >
-              <div className={styles.dialogContent}>
-                <EditPermissions
-                  practitioner={practitioner!}
-                  onClose={() => setEditPermissionsVisible(false)}
-                />
-              </div>
+              <EditPractitionerPermissions
+                setEditPractitionerModal={() => {}}
+                setEditPractitionerPermissions={setEditPermissionsVisible}
+                practitioner={practitioner}
+              />
             </Dialog>
           </div>
           <>
@@ -649,7 +648,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     className={'mr-1'}
                     type="buttonSmall"
                     color="secondary"
-                    text="Phone"
+                    text="Call"
                   />
                   {renderIcon('PhoneIcon', 'h-4 w-4 text-secondary')}
                 </Button>

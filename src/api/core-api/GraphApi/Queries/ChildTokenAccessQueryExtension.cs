@@ -66,7 +66,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     Surname = appUser.Surname,
                     GroupName = classRoom?.Name ?? classGroup.Name,
                     UserId = appUser.Id.ToString(),
-                    GroupFeeAmount = classRoom?.PreschoolFeeAmount,
                 },
                 Practitoner = new TokenAccessPractitionerDetailModel
                 {

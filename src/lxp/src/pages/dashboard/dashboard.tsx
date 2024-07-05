@@ -32,11 +32,7 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 
-import {
-  practitionerActions,
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { staticDataThunkActions } from '@store/static-data';
@@ -59,7 +55,6 @@ import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
-import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
 import { notificationTagConfig } from '@/constants/notifications';

@@ -4,7 +4,6 @@ import localForage from 'localforage';
 import {
   getClassroomGroups,
   getClassroom,
-  updatePreschoolFee,
   upsertClassroom,
   upsertClassroomGroups,
   updateClassroomGroup,
@@ -173,15 +172,6 @@ const classroomsSlice = createSlice({
             })),
           })),
           dateRefreshed: new Date().toDateString(),
-        };
-      }
-    });
-    builder.addCase(updatePreschoolFee.fulfilled, (state, action) => {
-      if (action.payload && !!state.classroom) {
-        state.classroom = {
-          ...state.classroom,
-          preschoolFeeAmount: action.meta.arg.amount,
-          preschoolFeeAmountLastUpdateDate: new Date() as unknown as string,
         };
       }
     });

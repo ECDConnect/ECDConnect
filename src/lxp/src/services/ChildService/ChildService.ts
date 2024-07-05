@@ -279,7 +279,6 @@ class ChildService {
               surname
               groupName
               userId
-              groupFeeAmount
             }
             practitoner {
               firstname

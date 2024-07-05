@@ -236,9 +236,6 @@ export const AddProgrammeForm: React.FC<{
         : 0,
       classroomImageUrl: '',
       siteAddress: classroom?.siteAddress!,
-      preschoolFeeAmount: classroom?.preschoolFeeAmount,
-      preschoolFeeAmountLastUpdateDate:
-        classroom?.preschoolFeeAmountLastUpdateDate,
       principal: {
         email: user?.email!,
         firstName: user?.firstName!,
