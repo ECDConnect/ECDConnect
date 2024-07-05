@@ -29,6 +29,7 @@ import StatementsWrapper from '../../../../money/submit-income-statements/compon
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
   onBack,
@@ -41,17 +42,18 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
 
   const history = useHistory();
 
-  const { control, setValue, register } = useForm<DonationsOrVouchersModel>({
-    resolver: yupResolver(donationsOrVouchersSchema),
-    mode: 'onBlur',
-    defaultValues: {
-      dateReceived: incomeItem?.dateReceived,
-      description: incomeItem?.description,
-      amount: incomeItem?.amount.toString(),
-      notes: incomeItem?.notes,
-      payType: incomeItem?.payTypeId,
-    },
-  });
+  const { trigger, control, setValue, register } =
+    useForm<DonationsOrVouchersModel>({
+      resolver: yupResolver(donationsOrVouchersSchema),
+      mode: 'onChange',
+      defaultValues: {
+        dateReceived: incomeItem?.dateReceived,
+        description: incomeItem?.description,
+        amount: incomeItem?.amount.toString(),
+        notes: incomeItem?.notes,
+        payType: incomeItem?.payTypeId,
+      },
+    });
 
   const { isValid, errors } = useFormState({
     control: control,
@@ -110,19 +112,24 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
     };
   });
 
+  const month = !!dateReceived
+    ? getMonthName(new Date(dateReceived).getMonth())
+    : '';
+
   return (
     <BannerWrapper
       title={`Add donations or vouchers`}
       color={'primary'}
       size="medium"
       renderBorder={true}
+      showBackground={false}
       onBack={onBack}
       className="p-4"
     >
       <StatementsWrapper />
       <div className="mb-3 w-full justify-center">
         <Typography type="h2" color="primary" text={viewTitle} />
-        {disabled && (
+        {disabled && !!incomeItem && (
           <Alert
             type={'warning'}
             title={
@@ -150,12 +157,20 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
             onChange={(date: Date) => {
               date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
               setValue('dateReceived', !!date ? date.toISOString() : '');
+              trigger();
             }}
             dateFormat="EEE, dd MMM yyyy"
             minDate={minEditDate}
             maxDate={maxEditDate}
-            disabled={disabled || isWalkthrough}
+            disabled={(disabled && !!incomeItem) || isWalkthrough}
           />
+          {disabled && !incomeItem && (
+            <Alert
+              type={'warning'}
+              title={`You cannot add an item in ${month} because you have already downloaded the ${month} statement.`}
+              className="mt-6"
+            />
+          )}
           <label className={classNames(styles.label, 'mt-4')}>
             {
               'Was the donation an item like groceries or toys, money, or a voucher for a particular shop? '
@@ -170,7 +185,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
               })) || []
             }
             onOptionSelected={(value: string | string[]) => {
-              if (isWalkthrough) return;
+              if (isWalkthrough || disabled) return;
 
               setValue('payType', value as string);
             }}

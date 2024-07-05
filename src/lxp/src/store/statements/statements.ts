@@ -77,6 +77,10 @@ const statementsSlice = createSlice({
             (x) => x.month === receivedMonth && x.year === receivedYear
           );
 
+      if (!!updatedStatement?.downloaded) {
+        return;
+      }
+
       // If nothing found, then create one
       if (!updatedStatement) {
         updatedStatement = {
@@ -93,7 +97,7 @@ const statementsSlice = createSlice({
       }
 
       state.incomeStatements = [
-        ...state.incomeStatements.filter((x) => x.id !== statementId),
+        ...state.incomeStatements.filter((x) => x.id !== updatedStatement!.id),
         {
           ...updatedStatement,
           synced: false,
@@ -117,6 +121,10 @@ const statementsSlice = createSlice({
       const updatedStatement = state.incomeStatements.find(
         (x) => x.month === paidMonth && x.year === paidYear
       );
+
+      if (!!updatedStatement?.downloaded) {
+        return;
+      }
 
       if (!updatedStatement) {
         // No statement for the month yet, so add one
@@ -156,7 +164,7 @@ const statementsSlice = createSlice({
       const updatedStatement = state.incomeStatements.find(
         (x) => x.id === action.payload.statementId
       );
-      if (!updatedStatement) {
+      if (!updatedStatement || updatedStatement.downloaded) {
         return;
       }
       state.incomeStatements = [

@@ -21,6 +21,7 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
+import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const OtherIncome: React.FC<AddIncomeProps> = ({
   onBack,
@@ -28,6 +29,7 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
   incomeItem,
 }) => {
   const {
+    trigger,
     control,
     setValue: setValue,
     register,
@@ -84,18 +86,23 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
     !!statement?.downloaded ||
     (!!incomeItem && isBefore(new Date(incomeItem.dateReceived), sixtyDaysAgo));
 
+  const month = !!dateReceived
+    ? getMonthName(new Date(dateReceived).getMonth())
+    : '';
+
   return (
     <BannerWrapper
       title={`Other income`}
       color={'primary'}
       size="medium"
       renderBorder={true}
+      showBackground={false}
       onBack={onBack}
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
         <Typography type="h2" color="primary" text={'Other income type'} />
-        {disabled && (
+        {disabled && !!incomeItem && (
           <Alert
             type={'warning'}
             title={
@@ -115,12 +122,20 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
             setValue('dateReceived', date ? date.toISOString() : '');
+            trigger();
           }}
           dateFormat="EEE, dd MMM yyyy"
           minDate={minEditDate}
           maxDate={maxEditDate}
-          disabled={disabled}
+          disabled={disabled && !!incomeItem}
         />
+        {disabled && !incomeItem && (
+          <Alert
+            type={'warning'}
+            title={`You cannot add an item in ${month} because you have already downloaded the ${month} statement.`}
+            className="mt-6"
+          />
+        )}
         <FormInput<OtherIncomeModel>
           label={'How much do you get from this income type?'}
           visible={true}

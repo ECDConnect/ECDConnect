@@ -232,24 +232,27 @@ class IncomeStatementsService {
         mutation UpdateUserContactStatusForStatement($statementId: UUID!) {
           updateUserContactStatusForStatement(statementId: $statementId) {
             id 
-            incomeTotal
-            expenseTotal
-            balance
             month
             year
-            contactedByCoach
+            downloaded
             incomeItems {
               incomeTypeId
               id
               dateReceived
               amount
               childUserId
+              notes
+              numberOfChildrenCovered
+              payTypeId
+              photoProof
             } 
             expenseItems {
               expenseTypeId
               id
               datePaid
               amount
+              notes
+              photoProof
             }
           }
         }
