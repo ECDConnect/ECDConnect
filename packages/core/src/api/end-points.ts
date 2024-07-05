@@ -21,4 +21,5 @@ export const APIs = {
   verifyOAWLAuthCode: 'api/invitation/verify-oa-wl-auth-code',
   verifyOAWLAuthCodeStatus: 'api/invitation/verify-oa-wl-auth-code-status',
   verifyOAPrincipalInvitation: 'api/invitation/verify-oa-principal-invitation',
+  verifyPrincipalToken: 'api/invitation/verify-principal-token',
 };

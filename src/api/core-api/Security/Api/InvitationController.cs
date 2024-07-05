@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -500,6 +501,16 @@ namespace ECDLink.Security.Api
             }
 
             return Ok();
+        }
+
+        [Route("verify-principal-token")]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult VerifyPrincipalToken([FromBody] VerifyInvitationModel verifyModel)
+        {
+            var tokenModel = JsonConvert.DeserializeObject<PrincipalPractitionerTokenWrapperModel>(TokenHelper.DecodeToken(verifyModel.Token));
+
+            return Ok(tokenModel);
         }
 
     }
