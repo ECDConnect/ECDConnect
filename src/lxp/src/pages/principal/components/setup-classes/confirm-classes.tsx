@@ -112,7 +112,7 @@ export const ConfirmClasses = ({
           </div>
         </div>
       </div>
-      <div className="pb-20">
+      <div className="pb-8">
         <Typography
           type={'h2'}
           text={classroomGroups.length > 0 ? '' : 'Add a class'}
@@ -141,7 +141,7 @@ export const ConfirmClasses = ({
       </div>
 
       {classroomGroups.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 max-h-20 bg-white p-4">
+        <div className="max-h-20 bg-white p-4">
           <Button
             size="normal"
             className="w-full"
