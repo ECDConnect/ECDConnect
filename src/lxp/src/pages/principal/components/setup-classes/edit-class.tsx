@@ -26,6 +26,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { buttonDays } from '../setup-classes/setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
 import { userSelectors } from '@/store/user';
+import { useTenant } from '@/hooks/useTenant';
 
 // TODO: Refactor this into add-class component
 export const EditClass = ({
@@ -38,6 +39,8 @@ export const EditClass = ({
   onSubmit: () => void;
 }) => {
   const appDispatch = useAppDispatch();
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
   const practitioners = useSelector(
     practitionerSelectors?.getPrincipalPractitioners
   );
@@ -70,7 +73,12 @@ export const EditClass = ({
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
-        if (p.firstName && p.surname) {
+        if (isOpenAccess) {
+          if (p.firstName) {
+            return { label: `${p.firstName}`, value: p.userId };
+          }
+        }
+        if (p.firstName && p.surname && !isOpenAccess) {
           return { label: `${p.firstName} ${p.surname}`, value: p.userId };
         }
         return undefined;

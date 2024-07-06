@@ -225,6 +225,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
         name: item?.name?.split(' ')[0] || item?.username,
         title: item?.title,
+        nickName: item?.nickName,
       }));
       setOtherColleaguesFiltered(firstNameFilteredColleagues);
     }
@@ -320,8 +321,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           ? practitionersList
               ?.map((x) => x?.user?.firstName || x?.user?.userName)
               .join(', ')
-          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', ') ||
-            'None',
+          : otherColleaguesFiltered
+              ?.map((x: any) => x?.name || x?.nickName)
+              .join(', ') || 'None',
         switchTextStyles: true,
         actionName:
           practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0
