@@ -27,6 +27,7 @@ import {
   TabsItemForPrincipal,
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
@@ -103,15 +104,14 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   };
 
   const createLink = async () => {
-    const response = await dispatch(
+    const response: ChildRegistrationDto = await dispatch(
       childrenThunkActions.refreshCaregiverChildToken({
         classgroupId: childClassroomGroup?.id || classroomGroupId,
         childId: child.id,
       })
-    );
+    ).unwrap();
     const caregiverChildregUrl = history.createHref({
-      pathname: `${window.location.host}/child-registration-landing`,
-      search: `?token=${response.payload}`,
+      pathname: `${response?.caregiverRegistrationUrl}`,
     });
 
     const linkCopied = await copyToClip(caregiverChildregUrl);
