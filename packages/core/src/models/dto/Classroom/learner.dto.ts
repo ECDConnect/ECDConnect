@@ -10,7 +10,7 @@ export interface LearnerDto extends EntityBase {
   classroomGroup?: ClassroomGroupDto;
   reasonForAttendance?: ProgrammeAttendanceReasonDto;
   attendanceReasonId?: string;
-  otherAttendanceReason: string;
+  otherAttendanceReason?: string;
   startedAttendance: Date | string;
   stoppedAttendance: Date | string | null;
 }
