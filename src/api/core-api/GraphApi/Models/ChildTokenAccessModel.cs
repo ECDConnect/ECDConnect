@@ -18,8 +18,6 @@
         public string GroupName { get; set; }
 
         public string UserId { get; set; }
-
-        public double? GroupFeeAmount { get; set; }
     }
 
     public class TokenAccessPractitionerDetailModel

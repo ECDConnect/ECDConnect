@@ -132,7 +132,9 @@ export const PractitionersList: React.FC = () => {
     return {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl!,
-      title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
+      title: `${practitioner?.user?.firstName}${
+        !!practitioner?.user?.surname ? ` ${practitioner.user.surname}` : ''
+      }`,
       ...(isOnline && !!currentPractitionerMessage?.subject
         ? { subTitle: `${currentPractitionerMessage?.subject}` }
         : {}),

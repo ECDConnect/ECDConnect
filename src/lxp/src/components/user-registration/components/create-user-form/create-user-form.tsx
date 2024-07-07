@@ -55,6 +55,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const [phoneMessageError, setPhoneMessageError] = useState('');
   const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
   const usernameMessageErrorText = `Username already exists! Try using your email address, phone number, or add a number/letter`;
+  const specialCharactersMessageErrorText = `Usernames can only include letters, numbers, . , and @. Please remove any other special characters.`;
   const [isFromAuthCodeScreen, setIsFromAuthCodeScreen] = useState(false);
 
   const {
@@ -130,10 +131,17 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       };
 
       if (checkUsername) {
-        const userCreated = await new AuthService()?.RegisterOpenAccessUser(
-          Config?.authApi,
-          registerOpenAccessUserInput
-        );
+        const userCreated = await new AuthService()
+          ?.RegisterOpenAccessUser(Config?.authApi, registerOpenAccessUserInput)
+          .catch((error) => {
+            setMessageError(specialCharactersMessageErrorText);
+            setNotification({
+              title: ` Failed to create the username!`,
+              variant: NOTIFICATION.ERROR,
+            });
+            setIsLoading(false);
+            return;
+          });
 
         if (userCreated) {
           setIsLoading(false);

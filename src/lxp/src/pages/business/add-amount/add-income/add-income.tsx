@@ -141,7 +141,6 @@ export const AddIncome: React.FC = () => {
           color={'primary'}
           size="medium"
           renderBorder={true}
-          renderOverflow={false}
           onBack={() => history.push(ROUTES.BUSINESS_ADD_AMOUNT)}
           displayOffline={!isOnline}
           className="p-4"

@@ -147,7 +147,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowPreschoolDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(preschoolFees)}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(preschoolFees))}`,
       notRounded: true,
     },
     {
@@ -158,7 +158,9 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowDonationsOrVouchersDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(donationsOrVouchers)}`,
+      subItem: `R ${formatCurrency(
+        sumIncomeOrExpenseItems(donationsOrVouchers)
+      )}`,
       notRounded: true,
     },
     {
@@ -169,7 +171,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowDbeSubsidyDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(dbeSubsidy)}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(dbeSubsidy))}`,
       notRounded: true,
     },
     {
@@ -180,7 +182,9 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowOtherIncomeDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(otherIncomeValues)}`,
+      subItem: `R ${formatCurrency(
+        sumIncomeOrExpenseItems(otherIncomeValues)
+      )}`,
       notRounded: true,
     },
   ];
@@ -194,7 +198,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowRentDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(rent)}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(rent))}`,
       notRounded: true,
     },
     {
@@ -205,7 +209,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowSalaryDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(salary)}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(salary))}`,
       notRounded: true,
     },
     {
@@ -216,7 +220,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowFoodDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(food)}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(food))}`,
       notRounded: true,
     },
     {
@@ -227,7 +231,9 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowLearningMaterialsDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(learningMaterials)}`,
+      subItem: `R ${formatCurrency(
+        sumIncomeOrExpenseItems(learningMaterials)
+      )}`,
       notRounded: true,
     },
     {
@@ -238,7 +244,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowMaintenaceDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(maintenance)}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(maintenance))}`,
       notRounded: true,
     },
     {
@@ -249,7 +255,9 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowOtherExpensesDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(otherExpenseValues)}`,
+      subItem: `R ${formatCurrency(
+        sumIncomeOrExpenseItems(otherExpenseValues)
+      )}`,
       notRounded: true,
     },
     {
@@ -260,7 +268,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
       text: '1',
       onActionClick: () => setShowUtilitiesDetails(true),
       classNames: 'bg-uiBg',
-      subItem: `R ${sumIncomeOrExpenseItems(utilities)}`,
+      subItem: `R ${formatCurrency(sumIncomeOrExpenseItems(utilities))}`,
       notRounded: true,
     },
   ];

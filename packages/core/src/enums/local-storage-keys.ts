@@ -19,4 +19,5 @@ export enum LocalStorageKeys {
   pointsSubmitStatementsMessageDismissed = 'PointsSubmitStatementsMessageDismissed',
   askToJoinClubViewed = 'AskToJoinClubViewed',
   hasVisitedProgrammeDashboard = 'HasVisitedProgrammeDashboard',
+  practitionerInvitedPrincipalIdNumber = 'practitionerInvitedPrincipal',
 }

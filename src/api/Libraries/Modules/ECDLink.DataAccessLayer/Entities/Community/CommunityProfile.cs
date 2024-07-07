@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Community
@@ -25,6 +26,7 @@ namespace ECDLink.DataAccessLayer.Entities.Community
         public Guid ToUserId { get; set; }
         public string AboutShort { get; set; }
         public string AboutLong { get; set; }
+        public bool? ShareContactInfo { get; set; } = false;
         public bool? ShareEmail { get; set; } = false;
         public bool? SharePhoneNumber { get; set; } = false;
         public bool? ShareProfilePhoto { get; set; } = false;
@@ -36,6 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities.Community
         public Guid? ProvinceId { get; set; }
         public bool? InviteAccepted { get; set; }
         public bool? ClickedECDHeros { get; set; } = false;
+        public virtual ICollection<CommunityProfileSkill> ProfileSkills { get; set; }
     }
 
     public interface CommunityProfileJoin<TKey>

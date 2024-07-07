@@ -181,10 +181,10 @@ export const ShareSomeDetails = ({
             )}
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 max-h-20 p-4">
+          <div className="mb-4 flex w-full justify-center">
             <Button
               size="normal"
-              className="w-full"
+              className="w-11/12"
               type="filled"
               color="quatenary"
               text="Next"

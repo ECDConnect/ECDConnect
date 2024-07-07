@@ -96,7 +96,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
       </div>
       <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
         <ProfileAvatar
-          dataUrl={userProfilePicture?.file ?? ''}
+          dataUrl={userProfilePicture?.file ?? user?.profileImageUrl ?? ''}
           size={'header'}
           onPressed={displayProfilePicturePrompt}
           hasConsent={true}
@@ -115,13 +115,17 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
         isLoading={isLoading}
       >
         {renderIcon(
-          userProfilePicture?.file ? 'SaveIcon' : 'ClockIcon',
+          userProfilePicture?.file || user?.profileImageUrl
+            ? 'SaveIcon'
+            : 'ClockIcon',
           'mr-2 text-white w-5'
         )}
         <Typography
           type="h6"
           className="ml-2"
-          text={userProfilePicture?.file ? 'Save' : 'Skip'}
+          text={
+            userProfilePicture?.file || user?.profileImageUrl ? 'Save' : 'Skip'
+          }
           color="white"
         />
       </Button>
@@ -134,7 +138,11 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
             title="Profile Photo"
             onClose={displayProfilePicturePrompt}
             onAction={picturePromtOnAction}
-            onDelete={userProfilePicture ? handleDelete : undefined}
+            onDelete={
+              userProfilePicture || user?.profileImageUrl
+                ? handleDelete
+                : undefined
+            }
             isProfileEmojis={true}
             showEmojiOption={true}
           ></PhotoPrompt>

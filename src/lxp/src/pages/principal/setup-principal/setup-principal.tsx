@@ -3,6 +3,7 @@ import {
   useDialog,
   ClassroomGroupDto,
   usePrevious,
+  LocalStorageKeys,
 } from '@ecdlink/core';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import {
@@ -208,6 +209,9 @@ export const SetupPrincipal: React.FC = () => {
       );
     }
 
+    localStorage.removeItem(
+      LocalStorageKeys.practitionerInvitedPrincipalIdNumber
+    );
     appDispatch(notificationActions.resetFrontendNotificationState());
     appDispatch(notificationActions.resetNotificationState());
 
