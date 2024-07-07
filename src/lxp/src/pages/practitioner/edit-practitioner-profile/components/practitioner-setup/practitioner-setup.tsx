@@ -81,6 +81,12 @@ export const PractitionerSetup = ({
       classroomsThunkActions.getClassroom({ overrideCache: true })
     ).unwrap();
 
+    await appDispatch(
+      practitionerThunkActions.getPractitionerByUserId({
+        userId: user?.id!,
+      })
+    );
+
     appDispatch(notificationActions.resetNotificationState());
   };
 
@@ -178,7 +184,7 @@ export const PractitionerSetup = ({
                 title={
                   practitionerToProgramme
                     ? 'You need to accept the agreement below to continue'
-                    : `${classroom?.principal.firstName} will be notified and you will be removed from ${classroom?.name}.`
+                    : `${principalClassroom?.principal.firstName} will be notified and you will be removed from ${classroom?.name}.`
                 }
                 className="my-4"
               />

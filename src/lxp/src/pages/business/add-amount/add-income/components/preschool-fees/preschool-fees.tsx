@@ -56,7 +56,6 @@ export const PreschoolFees: React.FC<PreschoolFeesStep2> = ({
       startDate.getMonth() + 1
     )
   );
-  console.log('currentFees', currentFees);
 
   const groupedChildList = useMemo(() => {
     return learnersByClassroomGroup.map((group) => ({

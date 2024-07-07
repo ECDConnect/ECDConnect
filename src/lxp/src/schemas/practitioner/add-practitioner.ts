@@ -7,7 +7,7 @@ export interface AddPractitionerModel {
   idNumber: string;
   passport: string;
   firstName: string;
-  surname: string;
+  surname?: string;
   preferId: boolean;
   phoneNumber?: string;
 }

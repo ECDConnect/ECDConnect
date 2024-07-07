@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
 using HotChocolate;
@@ -25,9 +26,10 @@ namespace ECDLink.SmartStart.Reports
         {         
             var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
 
-            var attendanceForPeriod = base.GetAttendanceRecordsForPeriod(
+            var attendanceForPeriod = GetAttendanceTakenRecordsForPeriod(
                 classroomGroups.SelectMany(x => x.ClassProgrammes).Select(x => x.Id), 
-                userId, startMonth.Date, endMonth.GetEndOfDay());
+                startMonth, 
+                endMonth);
 
 
             var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
@@ -47,12 +49,11 @@ namespace ECDLink.SmartStart.Reports
                         
                         if(daysOfClass.Count() > 0)
                         {
-                            // TODO - I think this needs to check the year as well
-                            var attendedClasses = attendanceForPeriod
-                                              .Where(x => x.UserId == Guid.Parse(userId)
-                                              && x.ClassroomProgrammeId == programme.Id
-                                              && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
-                                              && x.MonthOfYear == dt.Month);
+                            var attendedClasses = attendanceForPeriod.Where(x => 
+                                x.ClassroomProgrammeId == programme.Id
+                                && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
+                                && x.MonthOfYear == dt.Month
+                                && x.Year == dt.Year);
 
                             attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                         }
@@ -87,6 +88,15 @@ namespace ECDLink.SmartStart.Reports
             }
 
             return report;
+        }
+
+        private List<Attendance> GetAttendanceTakenRecordsForPeriod(IEnumerable<Guid> ClassroomProgrammeIds, DateTime startMonth, DateTime endMonth)
+        {
+            return _dbContext.Attendances
+              .Include(i => i.ClassroomProgramme)
+              .Where(a => a.UserId.HasValue && a.ParentRecordId == a.UserId.Value.ToString() && ClassroomProgrammeIds.Contains(a.ClassroomProgrammeId))
+              .Where(f => f.AttendanceDate >= startMonth.Date && f.AttendanceDate < endMonth.GetEndOfDay())
+              .ToList();
         }
     }
 }

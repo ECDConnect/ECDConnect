@@ -40,8 +40,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 NumberOfAssistants = classroom.NumberOfAssistants,
                 NumberOfOtherAssistants = classroom.NumberOfOtherAssistants,
                 NumberPractitioners = classroom.NumberPractitioners,
-                PreschoolFeeAmount = classroom.PreschoolFeeAmount,
-                PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate,
                 IsDummySchool = classroom.IsDummySchool,
                 SiteAddress = classroom.SiteAddress != null ? new BaseSiteAddressModel(classroom.SiteAddress) : null,
                 Principal = new BasePractitionerModel()

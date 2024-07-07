@@ -396,34 +396,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
-        public bool UpdatePreschoolFeeForClassroom(
-            [Service] IPointsEngineService pointsEngineService,
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            [Service] INotificationService notificationService,
-            Guid classroomId,
-            double? amount)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-
-            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
-            var classroom = classroomRepo.GetById(classroomId);
-
-            classroom.PreschoolFeeAmount = amount;
-            classroom.PreschoolFeeAmountLastUpdateDate = DateTime.Now;
-
-            classroomRepo.Update(classroom);
-
-            pointsEngineService.CalculatePreSchoolFees(uId.ToString(), DateTime.Now);
-            //if (classroom.UserId != null)
-            {
-                notificationService.ExpireNotificationsTypesForUser(classroom.UserId.ToString(), TemplateTypeConstants.UpdatePreschoolFee);
-            }
-
-            return true;
-        }
-
-        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public bool AddChildProgressReportPeriods(
             [Service] IPointsEngineService pointsEngineService,
             [Service] IHttpContextAccessor contextAccessor,

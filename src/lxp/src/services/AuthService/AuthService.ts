@@ -12,6 +12,7 @@ import {
   UpdateUsernameModel,
   AuthCodeModel,
   ResendAuthCodeModel,
+  VerifyPrincipalInvitationModel,
 } from '@ecdlink/core';
 import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
 import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
@@ -209,6 +210,19 @@ class AuthService {
   async VerifyAuthCode(baseEndPoint: string, body: AuthCodeModel) {
     return await api(baseEndPoint).post(
       APIs.verifyOAWLAuthCode,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
+  }
+
+  async VerifyPrincipalToken(
+    baseEndPoint: string,
+    body: VerifyPrincipalInvitationModel
+  ) {
+    return await api(baseEndPoint).post(
+      APIs.verifyPrincipalToken,
       JSON.stringify(body),
       {
         headers: headers,

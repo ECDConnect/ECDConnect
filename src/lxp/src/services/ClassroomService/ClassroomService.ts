@@ -27,8 +27,6 @@ class ClassroomService {
             numberPractitioners
             numberOfAssistants
             numberOfOtherAssistants
-            preschoolFeeAmount
-            preschoolFeeAmountLastUpdateDate
             preschoolCode
             siteAddress {
               id
@@ -156,33 +154,6 @@ class ClassroomService {
     return response.data.data.allClassroomsForCoach;
   }
 
-  async updatePreschoolFee(
-    classroomId: string,
-    amount: number | undefined
-  ): Promise<boolean> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updatePreschoolFeeForClassroom($classroomId: UUID!, $amount: Float) {
-          updatePreschoolFeeForClassroom(classroomId: $classroomId, amount: $amount) {
-          }
-        }
-      `,
-      variables: {
-        classroomId: classroomId,
-        amount: amount,
-      },
-    });
-
-    if (response.status !== 200 || !!response.data.error) {
-      throw new Error(
-        'Updating preschool fee failed - Server connection error'
-      );
-    }
-
-    return response.data.data.updatePreschoolFeeForClassroom;
-  }
-
   async getClassroomForPreschoolCode(
     preSchoolCode: string
   ): Promise<ClassroomDto> {
@@ -198,8 +169,6 @@ class ClassroomService {
             userId
             numberOfAssistants
             numberOfOtherAssistants
-            preschoolFeeAmount
-            preschoolFeeAmountLastUpdateDate
             siteAddress {
               id
               name

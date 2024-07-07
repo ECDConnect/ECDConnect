@@ -56,6 +56,7 @@ export const EditPreschoolFees: React.FC<EditPreschoolFeeProps> = ({
       color={'primary'}
       size="medium"
       renderBorder={true}
+      showBackground={false}
       onBack={onBack}
       className="p-4"
     >

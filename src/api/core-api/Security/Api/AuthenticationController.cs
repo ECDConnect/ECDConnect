@@ -331,14 +331,26 @@ namespace ECDLink.Security.Api
                 var userByUsername = _dbContext.Users.Where(user => user.UserName == verifyModel.Username).FirstOrDefault();
                 if (userByUsername != null)
                 {
-                    var userWithIdNumberExists = !string.IsNullOrEmpty(userByUsername.IdNumber) && userByUsername.IdNumber == verifyModel.Username;
-                    if (!userWithIdNumberExists)
+                    if (TenantExecutionContext.Tenant.TenantType == Tenancy.Enums.TenantType.OpenAccess)
                     {
                         return BadRequest(new FailedVerificationModel
                         {
                             ErrorCode = 2,
                             Error = "Invalid Username"
                         });
+                    } 
+                    else
+                    {
+                        // On WL the user is created in the portal and we need to check if the input username is equal to user's id number
+                        var userWithIdNumberExists = !string.IsNullOrEmpty(userByUsername.IdNumber) && userByUsername.IdNumber == verifyModel.Username;
+                        if (!userWithIdNumberExists)
+                        {
+                            return BadRequest(new FailedVerificationModel
+                            {
+                                ErrorCode = 2,
+                                Error = "Invalid Username"
+                            });
+                        }
                     }
                 }
             }

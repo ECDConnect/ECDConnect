@@ -26,6 +26,7 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { ExpenseTypeIds } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
+import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const AnnualMaintenance: React.FC<AddExpenseState> = ({
   onBack,
@@ -104,11 +105,11 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
     )
   );
 
-  console.log('statement', statement);
-
   const disabled =
     !!statement?.downloaded ||
     (!!expenseItem && isBefore(new Date(expenseItem.datePaid), sixtyDaysAgo));
+
+  const month = !!datePaid ? getMonthName(new Date(datePaid).getMonth()) : '';
 
   return (
     <BannerWrapper
@@ -116,6 +117,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
       color={'primary'}
       size="medium"
       renderBorder={true}
+      showBackground={false}
       onBack={onBack}
       className="p-4"
     >
@@ -125,7 +127,7 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
           color="textMid"
           text={'Annual maintenance & purchases'}
         />
-        {disabled && (
+        {disabled && !!expenseItem && (
           <Alert
             type={'warning'}
             title={
@@ -152,12 +154,20 @@ export const AnnualMaintenance: React.FC<AddExpenseState> = ({
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
             setFormValue('datePaid', date ? date.toISOString() : '');
+            trigger();
           }}
           dateFormat="EEE, dd MMM yyyy"
           minDate={minEditDate}
           maxDate={maxEditDate}
-          disabled={disabled}
+          disabled={disabled && !!expenseItem}
         />
+        {disabled && !expenseItem && (
+          <Alert
+            type={'warning'}
+            title={`You cannot add an item in ${month} because you have already downloaded the ${month} statement.`}
+            className="mt-6"
+          />
+        )}
         <FormInput<ExpensesModel>
           label={'How much did you pay?'}
           visible={true}

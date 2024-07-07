@@ -7,6 +7,7 @@ using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -16,7 +17,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
         public CommunityProfileModel GetCommunityProfile([Service] ICommunityService communionService, Guid userId)
         {
+            if (string.IsNullOrEmpty(userId.ToString()))
+            {
+                throw new ArgumentException("UserId is empty");
+            }
             return communionService.GetCommunityProfile(userId);
         }
+
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
+        public List<CommunityConnectionModel> GetUsersToConnectWith(
+            [Service] ICommunityService communionService,
+            Guid? provinceId,
+            Guid? communitySkillId,
+            string connectionType,
+            Guid userId)
+        {
+            if (string.IsNullOrEmpty(userId.ToString()))
+            {
+                throw new ArgumentException("UserId is empty");
+            }
+            return communionService.GetUsersToConnectWith(provinceId, communitySkillId, connectionType, userId);
+        }
+
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
+        public List<CommunitySkillModel> GetCommunitySkills(
+            [Service] ICommunityService communionService)
+        {
+            return communionService.GetCommunitySkills();
+        }
+        
+
+
+
     }
 }

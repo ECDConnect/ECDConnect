@@ -101,7 +101,7 @@ export const EditRegistersAttendanceList = ({
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
       allAttendedChildren,
-      attendanceDate.toISOString(),
+      attendanceDate.toISOString().replace('Z', ''),
       currentProgramme.id ?? ''
     );
 

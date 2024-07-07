@@ -225,6 +225,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
         name: item?.name?.split(' ')[0] || item?.username,
         title: item?.title,
+        nickName: item?.nickName,
       }));
       setOtherColleaguesFiltered(firstNameFilteredColleagues);
     }
@@ -317,9 +318,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       stackedActionList.push({
         title: 'Other practitioners on site',
         subTitle: isPrincipal
-          ? practitionersList?.map((x) => x?.user?.firstName).join(', ')
-          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', ') ||
-            'None',
+          ? practitionersList
+              ?.map((x) => x?.user?.firstName || x?.user?.userName)
+              .join(', ')
+          : otherColleaguesFiltered
+              ?.map((x: any) => x?.name || x?.nickName)
+              .join(', ') || 'None',
         switchTextStyles: true,
         actionName:
           practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0
@@ -370,28 +374,6 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         onActionClick: () => setShowEditAddress(true),
       });
     }
-
-    // if (!!classroom && (isPrincipal || practitioner?.isFundaAppAdmin)) {
-    //   const feeUpdatedThisYear =
-    //     !!classroom?.preschoolFeeAmountLastUpdateDate &&
-    //     new Date(classroom.preschoolFeeAmountLastUpdateDate).getFullYear() ===
-    //       new Date().getFullYear();
-
-    //   stackedActionList.push({
-    //     title: 'Monthly preschool fee',
-    //     subTitle: !!classroom.preschoolFeeAmount
-    //       ? `R ${classroom.preschoolFeeAmount}`
-    //       : feeUpdatedThisYear
-    //       ? 'No fee'
-    //       : 'Add the preschool fee',
-    //     switchTextStyles: true,
-    //     actionName: !!classroom.preschoolFeeAmount ? 'Edit' : 'Add',
-    //     actionIcon: !!classroom.preschoolFeeAmount ? 'PencilIcon' : 'PlusIcon',
-    //     onActionClick: () => {
-    //       history.push(ROUTES.CLASSROOM.UPDATE_FEE);
-    //     },
-    //   });
-    // }
 
     setListItems(stackedActionList);
   };
