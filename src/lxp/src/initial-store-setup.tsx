@@ -37,7 +37,7 @@ import {
   progressTrackingThunkActions,
 } from './store/progress-tracking';
 import { settingActions } from './store/settings';
-import { staticDataActions } from './store/static-data';
+import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
 import {
@@ -178,6 +178,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
       appDispatch(contentReportThunkActions.getDetailedProgressReports(50)),
       appDispatch(
         contentReportThunkActions.getChildProgressReportSummary(50)

@@ -115,8 +115,10 @@ const classroomsSlice = createSlice({
                   childUserId: action.payload.childUserId,
                   startedAttendance: formatISO(new Date()),
                   isActive: true,
-                  stoppedAttendance: undefined,
+                  stoppedAttendance: null,
                   synced: false,
+                  classroomGroupId: classroomGroup.id,
+                  userId: action.payload.childUserId,
                 }),
               }
             : classroomGroup
