@@ -32,6 +32,7 @@ export interface UserPanelSaveProps {
   user?: UserDto;
   disabled: boolean;
   onSave: () => void;
+  isLoading?: boolean;
 }
 
 export interface UserPanelTabsProps {

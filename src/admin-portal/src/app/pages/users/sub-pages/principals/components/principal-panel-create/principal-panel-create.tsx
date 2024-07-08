@@ -67,6 +67,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
+    watch,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
@@ -275,8 +276,6 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   };
 
   const getIsValid = () => {
-    console.log(userDetailFormErrors);
-    console.log(practitionerFormErrors);
     let isValid = isUserDetailValid;
     if (!isPractitionerValid) isValid = false;
     return isValid ? true : false;
@@ -298,6 +297,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
             control={control}
+            watch={watch}
           />
         </div>
 

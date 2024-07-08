@@ -35,7 +35,14 @@ import UserDetailsForm from '../../../../components/user-details-form/user-detai
 import UserPanelSave from '../../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../../components/users';
 import { XIcon } from '@heroicons/react/solid';
-import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Alert,
+  Dialog,
+  DialogPosition,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 
 export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -70,11 +77,14 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
+    trigger,
+    watch,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
+  // const { firstName, surname, phoneNumber, idNumber } = useWatch({ control });
   const {
     errors: userDetailFormErrors,
     isValid: isUserDetailValid,
@@ -115,6 +125,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       mode: 'onBlur',
     });
   const { errors: siteAddressFormErrors } = practitionerFormState;
+  const [isLoading, setIsLoading] = useState(false);
 
   const onSave = async () => {
     await saveUser();
@@ -124,7 +135,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
     const passwordForm = passwordGetValues();
-
+    setIsLoading(true);
     const userInputModel: UserModelInput = {
       id: newGuid(),
       isSouthAfricanCitizen: userDetailForm.isSouthAfricanCitizen,
@@ -159,9 +170,11 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
         const userId = response.data.addUser.id;
         await saveSiteAddress(userId);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.log(error);
+        setIsLoading(false);
       });
   };
 
@@ -298,7 +311,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
   const getIsValid = () => {
     let isValid = isUserDetailValid;
-    if (!isPractitionerValid) isValid = false;
+    // if (!isPractitionerValid) isValid = false;
     return isValid ? true : false;
   };
 
@@ -316,11 +329,13 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             </button>
           </div>
         )}
-        <div className=" rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className=" rounded-lg">
           <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
+            <h3 className="text-Primary text-lg font-medium leading-6">
+              Practitioner Details
             </h3>
+            <Typography color={'textMid'} type="help" text={'Step 1 of 1'} />
+            <Divider dividerType="dashed" className="py-6" />
           </div>
 
           <UserDetailsForm
@@ -329,16 +344,13 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
             control={control}
+            watch={watch}
+            trigger={trigger}
+            useWatch={useWatch}
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Practitioner Detail
-            </h3>
-          </div>
-
+        <div className="rounded-lg bg-white py-2">
           <PractitionerForm
             formKey={`createPractitioner-${new Date().getTime()}`}
             register={practitionerRegister}
@@ -346,7 +358,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        {/* <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Address Detail
@@ -357,9 +369,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             register={siteAddressRegister}
             errors={siteAddressFormErrors}
           />
-        </div>
+        </div> */}
 
-        <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        {/* <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Password
@@ -372,7 +384,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             register={passwordRegister}
             errors={passwordFormErrors}
           />
-        </div>
+        </div> */}
         <Dialog
           className={'mb-16 px-4'}
           stretch
@@ -413,9 +425,17 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
   return (
     <article>
-      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
-
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      <Alert
+        className="mt-2 mb-2 rounded-md"
+        title={`An invitation will be sent to the new user when you click save.`}
+        type="info"
+      />
+      <UserPanelSave
+        disabled={!getIsValid()}
+        onSave={onSave}
+        isLoading={isLoading}
+      />
     </article>
   );
 }

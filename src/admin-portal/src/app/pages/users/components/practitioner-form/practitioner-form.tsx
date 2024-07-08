@@ -2,8 +2,14 @@ import { useQuery } from '@apollo/client';
 import { UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
-import { GetAllCoach, GetAllPractitioner } from '@ecdlink/graphql';
+import {
+  GetAllCoach,
+  GetAllHealthCareWorker,
+  GetAllPractitioner,
+} from '@ecdlink/graphql';
 import { CoachDto, PractitionerDto } from '@ecdlink/core';
+import { Dropdown } from '@ecdlink/ui';
+import { useMemo } from 'react';
 
 export interface PractitionerFormProps {
   formKey: string;
@@ -19,14 +25,16 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
   const { data: coachData } = useQuery(GetAllCoach, {
     fetchPolicy: 'cache-and-network',
   });
-  const { data: principalData } = useQuery(GetAllPractitioner, {
-    fetchPolicy: 'cache-and-network',
-  });
+
+  // const { data: principalData } = useQuery(GetAllPractitioner, {
+  //   fetchPolicy: 'cache-and-network',
+  // });
+
   return (
-    <form key={formKey} className="space-y-8 divide-y divide-gray-200">
-      <div className="space-y-8 divide-y divide-gray-200">
-        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-          <div className="sm:col-span-3">
+    <form key={formKey} className="w-full space-y-4">
+      <div className="space-y-4">
+        <div className="w-full">
+          {/* <div className="sm:col-span-3">
             <FormField
               label={'Attendance Register Link'}
               nameProp={'attendanceRegisterLink'}
@@ -113,10 +121,11 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               register={register}
               error={errors.isFundaAppAdmin?.message}
             />
-          </div>
-          <div className="sm:col-span-3">
+          </div> */}
+          <div className="w-full">
             <FormSelectorField
-              label="Coach *"
+              label="Practitioner’s coach"
+              subLabel="Optional. You will need to add the coach to the admin portal before you can connect them to a practitioner."
               nameProp={'coachHierarchy'}
               register={register}
               options={
@@ -133,7 +142,7 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               }
             />
           </div>
-          <div className="sm:col-span-3">
+          {/* <div className="sm:col-span-3">
             <FormSelectorField
               label="Principal"
               nameProp={'principalHierarchy'}
@@ -162,7 +171,7 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               register={register}
               error={errors.sendInvite?.message}
             />
-          </div>
+          </div> */}
         </div>
       </div>
     </form>
