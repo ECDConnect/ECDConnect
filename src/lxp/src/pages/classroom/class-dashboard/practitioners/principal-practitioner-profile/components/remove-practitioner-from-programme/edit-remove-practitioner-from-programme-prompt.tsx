@@ -26,7 +26,7 @@ export const RemovePractitionerFromProgrammePrompt: React.FC<
 }) => {
   return (
     <ActionModal
-      icon={'InformationCircleIcon'}
+      icon={'QuestionMarkCircleIcon'}
       className={className}
       iconColor="infoDark"
       iconBorderColor="infoBb"
@@ -42,7 +42,7 @@ export const RemovePractitionerFromProgrammePrompt: React.FC<
         {
           text: 'Edit details',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'quatenary',
           type: 'filled',
           onClick: () => onEdit && onEdit(),
           leadingIcon: 'ArrowCircleRightIcon',
@@ -50,15 +50,15 @@ export const RemovePractitionerFromProgrammePrompt: React.FC<
         {
           text: 'Cancel removal',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'quatenary',
           type: 'filled',
           onClick: () => onCancel && onCancel(),
           leadingIcon: 'XIcon',
         },
         {
           text: 'Close',
-          textColour: 'primary',
-          colour: 'primary',
+          textColour: 'quatenary',
+          colour: 'quatenary',
           type: 'outlined',
           onClick: () => onClose && onClose(),
           leadingIcon: 'XIcon',

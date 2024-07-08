@@ -1,41 +1,43 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { ActionModal, ComponentBaseProps } from '@ecdlink/ui';
+import { staticDataSelectors } from '@/store/static-data';
+import { useSelector } from 'react-redux';
+import { format } from 'date-fns';
 
 interface RemovePractitionerFromProgrammePromptProps
   extends ComponentBaseProps {
   practitioner?: PractitionerDto;
+  leavingDate: Date;
   onProceed?: () => void;
   onClose?: () => void;
 }
 
 export const RemovePractitionerFromProgrammePrompt: React.FC<
   RemovePractitionerFromProgrammePromptProps
-> = ({ practitioner, onClose, onProceed, className }) => {
+> = ({ practitioner, onProceed, className, leavingDate }) => {
+  const role = useSelector(staticDataSelectors.geCoachRole);
+
+  const date = new Date(leavingDate);
+
   return (
     <ActionModal
       icon={'XCircleIcon'}
       className={className}
       iconColor="errorMain"
       iconBorderColor="errorBg"
-      importantText={`Are you sure you want to remove ${practitioner?.user?.firstName}?`}
-      detailText={
-        'This profile will be deactivated immediately and you will no longer be able to view it.'
-      }
+      importantText={`${
+        practitioner?.user?.firstName
+      } will be removed from your programme on ${format(date, 'd MMMM')} `}
+      detailText={`We have sent a message to your ${
+        role?.systemName || 'coach'
+      } to let them know ${practitioner?.user?.firstName} is leaving.`}
       actionButtons={[
         {
-          text: 'Yes, remove',
+          text: 'Close',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'quatenary',
           type: 'filled',
           onClick: () => onProceed && onProceed(),
-          leadingIcon: 'ArrowCircleRightIcon',
-        },
-        {
-          text: 'Close',
-          textColour: 'primary',
-          colour: 'primary',
-          type: 'outlined',
-          onClick: () => onClose && onClose(),
           leadingIcon: 'XIcon',
         },
       ]}

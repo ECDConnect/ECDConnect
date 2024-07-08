@@ -18,6 +18,7 @@ import {
   getReasonsForPractitionerLeavingProgramme,
   getRelations,
   getWorkflowStatuses,
+  getRoles,
 } from './static-data.actions';
 import { StaticDataState } from './static-data.types';
 
@@ -39,6 +40,7 @@ const initialState: StaticDataState = {
   WorkflowStatuses: undefined,
   noteTypes: undefined,
   permissions: undefined,
+  roles: undefined,
 };
 
 const staticDataSlice = createSlice({
@@ -65,6 +67,7 @@ const staticDataSlice = createSlice({
       state.WorkflowStatuses = initialState.WorkflowStatuses;
       state.noteTypes = initialState.noteTypes;
       state.permissions = initialState.permissions;
+      state.roles = initialState.roles;
     },
   },
   extraReducers: (builder) => {
@@ -127,6 +130,9 @@ const staticDataSlice = createSlice({
     });
     builder.addCase(getPermissions.fulfilled, (state, action) => {
       state.permissions = action.payload;
+    });
+    builder.addCase(getRoles.fulfilled, (state, action) => {
+      state.roles = action.payload;
     });
   },
 });
