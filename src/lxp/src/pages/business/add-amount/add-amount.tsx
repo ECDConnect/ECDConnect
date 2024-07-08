@@ -39,7 +39,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
         <div className="mb-3 flex w-full flex-wrap">
           <Typography
             type="h2"
-            color="textMid"
+            color="textDark"
             text={'What would you like to record?'}
             className="mt-4"
           />

@@ -64,13 +64,13 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
     >
       <StatementsWrapper />
       <div className="flex flex-col justify-center p-4">
-        <Typography type="h2" color="textMid" text={'Preschool fees'} />
+        <Typography type="h2" color="textDark" text={'Preschool fees'} />
         {step === 1 && (
           <>
             <Typography
-              className={'mr-1'}
-              type={'h2'}
-              color={'primary'}
+              className={'mr-1 mt-6'}
+              type={'h3'}
+              color={'textDark'}
               text={'Which classes would you like to record fees for?'}
             />
             {!classroomGroups.length && (
@@ -101,7 +101,6 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
                 key={classroomGroup.id}
                 description={classroomGroup.name}
                 checkboxColor="quatenary"
-                checkedFocusColour="uiMid"
               />
             ))}
             <Button
