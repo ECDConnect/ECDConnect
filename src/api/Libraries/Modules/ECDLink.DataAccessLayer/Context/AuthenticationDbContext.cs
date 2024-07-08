@@ -216,7 +216,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<CommunitySkill> CommunitySkills { get; set; }
         public DbSet<CommunityProfile> CommunityProfile { get; set; }
         public DbSet<CommunityProfileSkill> CommunityProfileSkill { get; set; }
-
+        public DbSet<CommunityProfileConnection> CommunityProfileConnections { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

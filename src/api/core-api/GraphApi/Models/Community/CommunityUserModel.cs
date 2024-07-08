@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             PhoneNumber = user.PhoneNumber;
             WhatsAppNumber = user.WhatsAppNumber;
             ProfilePhoto = user.ProfileImageUrl;
-            RoleName = string.Join(", ", userRoles);
+            RoleName = userRoles != null ? string.Join(", ", userRoles) : "";
         }
 
         public CommunityUserModel()

@@ -1,7 +1,6 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Community;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
@@ -14,12 +13,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public string CompletenessPercColor { get; set; }
         public string CompletenessPercImage { get; set; }
         public List<CommunityConnectionModel> AcceptedConnections { get; set; }
-        public List<CommunityConnectionModel> PendingConnectionsTo { get; set; }
+        public List<CommunityConnectionModel> PendingConnections { get; set; }
         
 
         public CommunityProfileModel(CommunityProfile profile, 
                                      List<CommunityConnectionModel> acceptedConnections, 
-                                     List<CommunityConnectionModel> pendingConnectionsTo, 
+                                     List<CommunityConnectionModel> pendingConnections, 
                                      List<string> userRoles,
                                      decimal completenessPerc,
                                      string completenessPercColor,
@@ -28,9 +27,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         {
             ClickedECDHeros = profile.ClickedECDHeros;
             AcceptedConnections = acceptedConnections;
-            PendingConnectionsTo = pendingConnectionsTo;
-            CoachUserId = profile.FromUser.coachObjectData != null ? profile.FromUser.coachObjectData.User.Id : null;
-            CoachName = profile.FromUser.coachObjectData != null ? profile.FromUser.coachObjectData.User.FullName : "";
+            PendingConnections = pendingConnections;
+            CoachUserId = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.Id : null;
+            CoachName = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.FullName : "";
             CompletenessPerc = completenessPerc;
             CompletenessPercColor = completenessPercColor;
             CompletenessPercImage = completenessPercImage;

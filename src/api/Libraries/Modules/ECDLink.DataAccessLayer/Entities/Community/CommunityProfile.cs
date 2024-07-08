@@ -14,16 +14,12 @@ namespace ECDLink.DataAccessLayer.Entities.Community
 
     }
 
-    public class CommunityProfile<TKey> : EntityBase<TKey>
+    public class CommunityProfile<TKey> : EntityBase<TKey>, ApplicationUserJoin
         where TKey : IEquatable<TKey>
     {
-        [ForeignKey(nameof(FromUserId))]
-        public virtual ApplicationUser FromUser { get; set; }
-        public Guid FromUserId { get; set; }
-
-        [ForeignKey(nameof(ToUserId))]
-        public virtual ApplicationUser ToUser { get; set; }
-        public Guid ToUserId { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public virtual ApplicationUser User { get; set; }
+        public Guid? UserId { get; set; }
         public string AboutShort { get; set; }
         public string AboutLong { get; set; }
         public bool? ShareContactInfo { get; set; } = false;
@@ -36,7 +32,6 @@ namespace ECDLink.DataAccessLayer.Entities.Community
         [ForeignKey(nameof(ProvinceId))]
         public virtual Province Province { get; set; }
         public Guid? ProvinceId { get; set; }
-        public bool? InviteAccepted { get; set; }
         public bool? ClickedECDHeros { get; set; } = false;
         public virtual ICollection<CommunityProfileSkill> ProfileSkills { get; set; }
     }

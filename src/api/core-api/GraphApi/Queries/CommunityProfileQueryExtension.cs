@@ -15,35 +15,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class CommunityProfileQueryExtension
     {
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
-        public CommunityProfileModel GetCommunityProfile([Service] ICommunityService communionService, Guid userId)
+        public CommunityProfileModel GetCommunityProfile([Service] ICommunityService communityService, Guid userId)
         {
             if (string.IsNullOrEmpty(userId.ToString()))
             {
                 throw new ArgumentException("UserId is empty");
             }
-            return communionService.GetCommunityProfile(userId);
+            return communityService.GetCommunityProfile(userId);
         }
 
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
         public List<CommunityConnectionModel> GetUsersToConnectWith(
-            [Service] ICommunityService communionService,
-            Guid? provinceId,
-            Guid? communitySkillId,
-            string connectionType,
-            Guid userId)
+            [Service] ICommunityService communityService,
+            Guid userId,
+            List<Guid> provinceIds = null,
+            List<Guid> communitySkillIds = null,
+            List<string> connectionTypes = null)
         {
             if (string.IsNullOrEmpty(userId.ToString()))
             {
                 throw new ArgumentException("UserId is empty");
             }
-            return communionService.GetUsersToConnectWith(provinceId, communitySkillId, connectionType, userId);
+            return communityService.GetUsersToConnectWith(userId, provinceIds, communitySkillIds, connectionTypes);
         }
 
         [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
         public List<CommunitySkillModel> GetCommunitySkills(
-            [Service] ICommunityService communionService)
+            [Service] ICommunityService communityService)
         {
-            return communionService.GetCommunitySkills();
+            return communityService.GetCommunitySkills();
         }
         
 
