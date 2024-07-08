@@ -63,10 +63,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var tenantId = TenantExecutionContext.Tenant.Id;
             var userId = httpContext.HttpContext.GetUser().Id;
 
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
-            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: userId);
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: userId);
             var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).OrderBy(x => x.Id).FirstOrDefault();
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
+
+            var classroomGroup = classroomGroupRepo.GetById(classgroupId);
+
+            // Create these repos in the context of the class owner, so the hierarchy gets setup correctly
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: classroomGroup.UserId);
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: classroomGroup.UserId);
+
             var addedByUser = httpContext.HttpContext.GetUser();
 
             var user = new ApplicationUser
@@ -99,7 +105,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ClassroomGroupId = classgroupId,
                 UserId = child.UserId,
                 StartedAttendance = DateTime.Now,
-                Hierarchy = child.Hierarchy
             });
 
             var tokenWrapper = new ChildTokenWrapperModel
