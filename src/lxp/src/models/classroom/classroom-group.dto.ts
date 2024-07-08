@@ -13,7 +13,9 @@ export type ClassroomGroupDto = {
 export type LearnerDto = OfflineUpdate & {
   learnerId: string;
   childUserId: string;
-  startedAttendance: string;
+  startedAttendance: Date | string;
   isActive: boolean;
-  stoppedAttendance: string | undefined;
+  stoppedAttendance: Date | string | null;
+  userId: string;
+  classroomGroupId: string;
 };

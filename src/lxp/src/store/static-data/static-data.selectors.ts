@@ -15,7 +15,9 @@ import {
   ReasonForPractitionerLeavingDto,
   ReasonForPractitionerLeavingProgrammeDto,
   RelationDto,
+  RoleSystemNameEnum,
   WorkflowStatusDto,
+  RoleDto,
 } from '@ecdlink/core';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { createSelector } from 'reselect';
@@ -129,3 +131,11 @@ export const getNoteTypes = (state: RootState): NoteTypeDto[] =>
 
 export const getPermissions = (state: RootState): PermissionDto[] =>
   state.staticData.permissions || [];
+
+export const geCoachRole = (state: RootState): RoleDto => {
+  const roles = state.staticData.roles || [];
+  const [coachRole] = roles.filter(
+    (x) => x?.systemName === RoleSystemNameEnum.Coach
+  );
+  return coachRole;
+};

@@ -476,7 +476,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 <div className="mt-2 mr-4 mb-2 flex items-center">
                   <div className="mx-4 mt-2 mb-4 flex w-full items-center">
                     <XCircleIcon
-                      className="text-errorMain mt-2 h-5 w-5"
+                      className="text-errorMain mt-2 h-7 w-7"
                       aria-hidden="true"
                     />
                     <Typography
@@ -497,7 +497,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   <Button
                     size="small"
                     shape="normal"
-                    color="primary"
+                    color="quatenary"
                     type="filled"
                     onClick={() => setEditRemovalDialogVisable(true)}
                   >
@@ -767,16 +767,16 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     )
                   }
                 >
+                  {renderIcon(
+                    'TrashIcon',
+                    'w-5 h-5 color-white text-white mr-2'
+                  )}
                   <Typography
                     type="body"
                     className="mr-4"
                     color="white"
                     text={'Remove practitioner'}
                   />
-                  {renderIcon(
-                    'TrashIcon',
-                    'w-5 h-5 color-white text-white mr-2'
-                  )}
                 </Button>
               </div>
             )}

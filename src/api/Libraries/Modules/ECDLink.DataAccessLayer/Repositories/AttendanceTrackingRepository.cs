@@ -27,10 +27,9 @@ namespace ECDLink.DataAccessLayer.Repositories
                 foreach (var attendance in attendances)
                 {
                     var existingRecord = _context.Attendances.FirstOrDefault(x =>
-                        x.AttendanceDate.Date == attendance.AttendanceDate.Date
-                        && x.UserId == attendance.UserId
-                        && x.ParentRecordId == attendance.ParentRecordId
-                        && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId);
+                        x.UserId == attendance.UserId
+                        && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId 
+                        && x.WeekOfYear == attendance.WeekOfYear);
 
                     if (existingRecord != null)
                     {

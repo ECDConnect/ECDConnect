@@ -23,7 +23,7 @@ import { PractitionerProfileRouteState } from './practitioner-profile-info.types
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './practitioner-profile-info.styles';
 import ROUTES from '@routes/routes';
-import { PhoneIcon, ChatIcon } from '@heroicons/react/solid';
+import { PhoneIcon } from '@heroicons/react/solid';
 import { CreateNote } from './components/create-note/create-note';
 import { RemovePractioner } from './components/remove-practitioner/remove-practitioner';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
@@ -37,7 +37,6 @@ import { classroomsSelectors } from '@/store/classroom';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
-import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
 import {
   addDays,

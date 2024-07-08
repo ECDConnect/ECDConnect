@@ -15,13 +15,13 @@ import {
   classNames,
   Dropdown,
   Alert,
+  DatePicker,
   DialogPosition,
 } from '@ecdlink/ui';
 import { useAppDispatch } from '@store/config';
 import { authSelectors } from '@store/auth';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
-import DatePicker from 'react-datepicker';
 import { useSelector } from 'react-redux';
 import * as styles from './remove-practitioner-from-programme.styles';
 import { RemovePractionerFromProgrammeProps } from './remove-practitioner-from-programme.types';
@@ -294,7 +294,6 @@ export const RemovePractitionerFromProgramme: React.FC<
         <>
           <BannerWrapper
             size={'small'}
-            backgroundColour={'uiBg'}
             renderBorder={true}
             title={`Remove ${practitioner?.user?.firstName}`}
             color={'primary'}
@@ -346,18 +345,19 @@ export const RemovePractitionerFromProgramme: React.FC<
                   error={errors.reasonDetail}
                 />
               )}
-              <label className="text-md mt-2 mb-1 block w-11/12 font-medium text-gray-700">
+              <label className="text-md text-textDark mt-2 mb-1 block w-11/12 font-medium">
                 {`When would you like ${
                   practitioner?.user?.firstName || practitioner?.user?.userName
                 } to be removed?`}
               </label>
               <div className="mb-3 flex w-full flex-wrap justify-center">
                 <DatePicker
-                  placeholderText={'Please select a date'}
+                  placeholderText={'Choose a date'}
                   wrapperClassName="text-center"
-                  className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
+                  hideCalendarIcon={false}
+                  className="border-uiLight text-textMid mx-auto w-full rounded-md"
                   selected={removalDate ? new Date(removalDate) : undefined}
-                  onChange={(date: Date) => {
+                  onChange={(date) => {
                     setRemovePractionerFormValues(
                       'removalDate',
                       date ? date.toString() : ''
@@ -375,7 +375,7 @@ export const RemovePractitionerFromProgramme: React.FC<
                   <div>
                     <Divider dividerType="dashed" className="my-4" />
                     <Typography
-                      type={'h1'}
+                      type={'h2'}
                       text={`Reassign ${practitioner?.user?.firstName} classes`}
                       color={'primary'}
                       className={'pt-1'}
@@ -405,12 +405,12 @@ export const RemovePractitionerFromProgramme: React.FC<
                                     x?.reassignedClass === classroomGroup.id
                                 )?.reassignedToPractitioner
                               }
-                              placeholder={'Select practitioner'}
+                              placeholder={'Choose a practitioner'}
                               list={practitionersList || []}
                               fillType="clear"
                               label={`Which practitioner will teach ${classroomGroup.name}?`}
                               fullWidth
-                              className={'mt-3 w-11/12'}
+                              className={'mt-3 w-full'}
                               onChange={(item: any) => {
                                 const existingReassignments =
                                   getRemovePractionerFormValues()
@@ -474,7 +474,7 @@ export const RemovePractitionerFromProgramme: React.FC<
                 )}
               <div className="flex w-full justify-center">
                 <Alert
-                  className="mt-10 w-11/12 rounded-xl"
+                  className="mt-5 rounded-xl"
                   type={'error'}
                   title={`${
                     practitioner?.user?.firstName ||
@@ -488,9 +488,7 @@ export const RemovePractitionerFromProgramme: React.FC<
                   ]}
                 />
               </div>
-              <div className={'py-4'}>
-                <Divider></Divider>
-              </div>
+              <div className={'py-4'}></div>
               <Button
                 onClick={() => setRemovePractionerPromptVisible(true)}
                 className="mb-2 w-full"
@@ -532,6 +530,7 @@ export const RemovePractitionerFromProgramme: React.FC<
           >
             <RemovePractitionerFromProgrammePrompt
               practitioner={practitioner}
+              leavingDate={removalDate as Date}
               onProceed={() => {
                 removeNotifications();
                 handleFormSubmit(getRemovePractionerFormValues());
