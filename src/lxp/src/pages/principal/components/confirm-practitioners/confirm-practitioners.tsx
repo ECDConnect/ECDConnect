@@ -2,6 +2,7 @@ import {
   SetStateAction,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
 } from 'react';
@@ -13,6 +14,7 @@ import {
   ActionListDataItem,
   Alert,
   Card,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
@@ -83,8 +85,10 @@ export default function ConfirmPractitioners({
       listItems?.find((item) => item?.idNumber === inviTePractitionerIdNumber),
     [listItems, inviTePractitionerIdNumber]
   );
+  const [isLoadingInvitingPractitioner, setIsLoadingInvitingPractitioner] =
+    useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (inviTePractitionerIdNumber) {
       if (inviTePractitionerIdNumber && !hasInvitingPractitioner) {
         handleInvitingPractitioner();
@@ -93,6 +97,7 @@ export default function ConfirmPractitioners({
   }, [inviTePractitionerIdNumber, hasInvitingPractitioner]);
 
   const handleInvitingPractitioner = useCallback(async () => {
+    setIsLoadingInvitingPractitioner(true);
     const _practitioner: any = await new PractitionerService(
       userAuth?.auth_token!
     ).getPractitionerByIdNumber(inviTePractitionerIdNumber!);
@@ -102,9 +107,11 @@ export default function ConfirmPractitioners({
       idNumber: _practitioner?.appUser?.idNumber,
       firstName: _practitioner?.appUser?.firstName,
     });
+
+    setIsLoadingInvitingPractitioner(false);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (invitingPractitioner) {
       listItems.push(createStackItem(invitingPractitioner as any));
 
@@ -350,10 +357,21 @@ export default function ConfirmPractitioners({
                 }
                 color={'textDark'}
               />
-              <StackedList<ActionListDataItem>
-                listItems={listItems}
-                type={'ActionList'}
-              />
+
+              {isLoadingInvitingPractitioner ? (
+                <div className="mt-16">
+                  <LoadingSpinner
+                    size="medium"
+                    backgroundColor="uiBg"
+                    spinnerColor="quatenary"
+                  />
+                </div>
+              ) : (
+                <StackedList<ActionListDataItem>
+                  listItems={listItems}
+                  type={'ActionList'}
+                />
+              )}
               <div>
                 <Button
                   size="small"
@@ -367,6 +385,7 @@ export default function ConfirmPractitioners({
                       ConfirmPractitionersSteps.ADD_PRACTITIONER
                     )
                   }
+                  disabled={isLoadingInvitingPractitioner}
                 />
               </div>
             </div>
