@@ -3740,6 +3740,7 @@ export type CommunityProfileModel = {
   acceptedConnections?: Maybe<Array<Maybe<CommunityConnectionModel>>>;
   clickedECDHeros?: Maybe<Scalars['Boolean']>;
   coachName?: Maybe<Scalars['String']>;
+  coachPhoneNumber?: Maybe<Scalars['String']>;
   coachUserId?: Maybe<Scalars['UUID']>;
   communityUser?: Maybe<CommunityUserModel>;
   completenessPerc?: Maybe<Scalars['Decimal']>;
@@ -4845,7 +4846,6 @@ export type ExpenseItemModelInput = {
 
 export type FeedbackType = {
   __typename?: 'FeedbackType';
-  description?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -4857,7 +4857,6 @@ export type FeedbackType = {
 
 export type FeedbackTypeFilterInput = {
   and?: InputMaybe<Array<FeedbackTypeFilterInput>>;
-  description?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -4869,7 +4868,6 @@ export type FeedbackTypeFilterInput = {
 };
 
 export type FeedbackTypeInput = {
-  Description?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Name?: InputMaybe<Scalars['String']>;
@@ -4879,14 +4877,12 @@ export type FeedbackTypeInput = {
 
 export type FeedbackTypeModel = {
   __typename?: 'FeedbackTypeModel';
-  description?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   name?: Maybe<Scalars['String']>;
   ordering: Scalars['Int'];
 };
 
 export type FeedbackTypeSortInput = {
-  description?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
@@ -7311,6 +7307,7 @@ export type Mutation = {
   calculateMeetRegularly: Scalars['Boolean'];
   calculateProgressReports: Scalars['Boolean'];
   cancelCalendarEvent?: Maybe<CalendarEvent>;
+  cancelCommunityRequest?: Maybe<CommunityProfileConnection>;
   cancelRemovalFromProgramme: Scalars['Boolean'];
   changeClubName?: Maybe<Club>;
   changeClubSupportRole: Scalars['Boolean'];
@@ -8296,6 +8293,10 @@ export type MutationCalculateMeetRegularlyArgs = {
 
 export type MutationCancelCalendarEventArgs = {
   id: Scalars['UUID'];
+};
+
+export type MutationCancelCommunityRequestArgs = {
+  input?: InputMaybe<CommunityConnectInputModelInput>;
 };
 
 export type MutationCancelRemovalFromProgrammeArgs = {
@@ -14626,6 +14627,7 @@ export type Query = {
   downloadGGStatsFile?: Maybe<FileModel>;
   entityChangesToSync?: Maybe<Array<Maybe<Scalars['String']>>>;
   eventRecordForClient?: Maybe<Array<Maybe<EventRecord>>>;
+  feedbackTypes?: Maybe<Array<Maybe<FeedbackTypeModel>>>;
   franchisorByUserId?: Maybe<Franchisor>;
   franchisorSiteAddressById?: Maybe<SiteAddress>;
   generateChildProgressReport?: Maybe<Scalars['String']>;
@@ -14724,6 +14726,7 @@ export type Query = {
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
   subDistrictsAndStats?: Maybe<Array<Maybe<SubDistrictStatsModel>>>;
+  supportRatings?: Maybe<Array<Maybe<SupportRatingModel>>>;
   teamLeadById?: Maybe<PortalUsersTlModel>;
   teamLeadSummary?: Maybe<PortalTeamLeadModel>;
   teamLeadTemplateGenerator?: Maybe<FileModel>;

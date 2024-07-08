@@ -45,8 +45,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             return communityService.GetCommunitySkills();
         }
-        
 
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
+        public List<SupportRatingModel> GetSupportRatings(
+            [Service] ICommunityService communityService)
+        {
+            return communityService.GetSupportRatings();
+        }
+
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
+        public List<FeedbackTypeModel> GetFeedbackTypes(
+            [Service] ICommunityService communityService)
+        {
+            return communityService.GetFeedbackTypes();
+        }
 
 
     }

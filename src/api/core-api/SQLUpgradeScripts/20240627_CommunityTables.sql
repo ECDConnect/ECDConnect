@@ -150,7 +150,7 @@ ALTER TABLE public."CommunityProfileConnection" ADD CONSTRAINT "FK_CommunityProf
 
 -- notification
 INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
-	 (uuid_generate_v4(),true,current_date,current_date,NULL,'portal','notify-admin-on-coach-feedback','New coach feedback was logged for [[FirstName]] on [[OrganisationName]]','39077d0e-e443-4076-aaf2-978dc6805aa0','New Coach Feedback logged','[[SeeCoachFeedback]]','See coach feedback',NULL,'blue',0,'');
+	 (uuid_generate_v4(),true,current_date,current_date,NULL,'portal','notify-admin-on-coach-feedback','New coach feedback was logged for [[FirstName]] on [[OrganisationName]]',null,'New Coach Feedback logged','[[SeeCoachFeedback]]','See coach feedback',NULL,'blue',0,'');
 -- permissions
 INSERT INTO "Permission" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Name","NormalizedName","Grouping","TenantId") VALUES
 	 ('b651d875-dfcb-4bdf-b828-b2ca92661121',true,current_date,current_date, NULL,'view_community','View Community','Community',NULL),

@@ -62,11 +62,13 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<SupportRatingModel> GetSupportRatings()
         {
-            return _supportRatingRepo.GetAll().Where(x => x.IsActive).Select(x => new SupportRatingModel(x)).OrderBy(x => x.Ordering).ToList();
+            var result = _supportRatingRepo.GetAll().Where(x => x.IsActive).OrderBy(x => x.Ordering).ToList();
+            return result.Select(x => new SupportRatingModel(x)).ToList();
         }
         public List<FeedbackTypeModel> GetFeedbackTypes()
         {
-            return _feedbackTypeRepo.GetAll().Where(x => x.IsActive).Select(x => new FeedbackTypeModel(x)).OrderBy(x => x.Ordering).ToList();
+            var result = _feedbackTypeRepo.GetAll().Where(x => x.IsActive).OrderBy(x => x.Ordering).ToList();
+            return result.Select(x => new FeedbackTypeModel(x)).ToList();
         }
         public List<CommunitySkillModel> GetCommunitySkills()
         {
@@ -91,7 +93,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (coachFeedback != null )
             {
-                var userToSend = _userManager.FindByIdAsync(_hierarchyEngine.GetAdminUserId()).Result;
+                var userToSend = _userManager.FindByIdAsync(input.FromUserId).Result;
                 var coach = _userManager.FindByIdAsync(coachFeedback.ToUserId).Result;
 
                 List<TagsReplacements> replacements = new List<TagsReplacements>()
@@ -107,7 +109,9 @@ namespace EcdLink.Api.CoreApi.Services
                         ReplacementValue = TenantExecutionContext.Tenant.OrganisationName
                     }
                 };
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NotifyAdminOnCoachFeedback, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements);
+
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NotifyAdminOnCoachFeedback, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, null, false, true, null,
+                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(coachFeedback.Id, "CoachFeedback") });
             }
             else
             {
@@ -240,18 +244,23 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (userCommunityProfile != null )
             {
+                DateTime? lastViewed = DateTime.Now.AddDays(-60);
                 var allConnections = _communityProfileConnectionRepo.GetAll()
                                         .Where(x => x.IsActive && (x.FromCommunityProfileId == userCommunityProfile.Id || x.ToCommunityProfileId == userCommunityProfile.Id))
                                         .ToList();
-                
+                if (userCommunityProfile?.User?.practitionerObjectData?.CommunitySectionViewDate != null)
+                {
+                    lastViewed = userCommunityProfile?.User?.practitionerObjectData?.CommunitySectionViewDate;
+                }
+
                 var acceptedConnections = allConnections
                     .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true && x.ToCommunityProfileId == userCommunityProfile.Id)
                     .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList()))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();
                 
-                var pendingConnectionsTo = allConnections
-                    .Where(x => !x.InviteAccepted.HasValue && x.FromCommunityProfileId == userCommunityProfile.Id)
+                var pendingConnections = allConnections
+                    .Where(x => !x.InviteAccepted.HasValue && x.FromCommunityProfileId == userCommunityProfile.Id && x.InsertedDate >= lastViewed)
                     .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList()))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();
@@ -300,7 +309,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 return new CommunityProfileModel(userCommunityProfile, 
                                                  acceptedConnections,
-                                                 pendingConnectionsTo, 
+                                                 pendingConnections, 
                                                  _userManager.GetRolesAsync(userCommunityProfile.User).Result.ToList(),
                                                  completenessPerc,
                                                  completenessPercColor,
@@ -418,6 +427,23 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             return null;
+        }
+
+
+        public CommunityProfileConnection CancelCommunityRequest(CommunityConnectInputModel input)
+        {
+            var connectionRequest = _communityProfileConnectionRepo.GetAll()
+                                        .Where(x => x.IsActive && x.FromCommunityProfileId == input.FromCommunityProfileId && x.ToCommunityProfileId == input.ToCommunityProfileId)
+                                        .FirstOrDefault();
+            if (connectionRequest != null)
+            {
+                _communityProfileConnectionRepo.Delete(connectionRequest.Id);
+                return connectionRequest;
+            } else
+            {
+                throw new QueryException("Connection Request not found.");
+
+            }
         }
 
     }

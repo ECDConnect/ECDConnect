@@ -8,6 +8,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
     {
         public Guid? CoachUserId { get; set; }
         public string CoachName { get; set; }
+        public string CoachPhoneNumber { get; set; }
         public bool? ClickedECDHeros { get; set; }
         public decimal? CompletenessPerc { get; set; }
         public string CompletenessPercColor { get; set; }
@@ -30,6 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             PendingConnections = pendingConnections;
             CoachUserId = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.Id : null;
             CoachName = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.FullName : "";
+            CoachPhoneNumber = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.PhoneNumber : "";
             CompletenessPerc = completenessPerc;
             CompletenessPercColor = completenessPercColor;
             CompletenessPercImage = completenessPercImage;

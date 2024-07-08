@@ -65,5 +65,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return communityService.SaveCommunityProfileConnections(input);
         }
 
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Create)]
+        public CommunityProfileConnection CancelCommunityRequest(
+          [Service] ICommunityService communityService,
+          CommunityConnectInputModel input
+          )
+        {
+            if (input == null)
+            {
+                new ArgumentException("input is empty.");
+            }
+
+            return communityService.CancelCommunityRequest(input);
+        }
+
     }
 }
