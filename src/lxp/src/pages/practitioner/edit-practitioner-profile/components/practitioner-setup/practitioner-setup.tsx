@@ -190,7 +190,7 @@ export const PractitionerSetup = ({
               />
             )}
 
-            {practitionerToProgramme && (
+            {practitionerToProgramme && practitioner?.shareInfo !== true && (
               <>
                 <Typography
                   type="h4"
@@ -236,7 +236,9 @@ export const PractitionerSetup = ({
             textColor="white"
             icon="ArrowCircleRightIcon"
             disabled={
-              (practitionerToProgramme === true && !allowPermissions) ||
+              (practitionerToProgramme === true &&
+                !allowPermissions &&
+                practitioner?.shareInfo !== true) ||
               practitionerToProgramme === null ||
               practitionerToProgramme === undefined
             }
