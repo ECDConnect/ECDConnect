@@ -3,9 +3,9 @@ import { classNames } from '../../utils/style-class.utils';
 import { DropDownFillType } from './models/DropDownOption';
 
 export const dropdownWrapper =
-  'font-body mt-1 inline-flex items-center justify-between origin-top-right right-0 w-full rounded-md border border-transparent font-medium hover:bg-gray-50 focus:border-secondary focus:ring-1 focus:ring-secondary';
+  'font-body mt-1 inline-flex items-center justify-between origin-top-right right-0 w-full rounded-md font-medium hover:bg-gray-50 focus:border-secondary focus:ring-1 focus:ring-secondary';
 export const dropdownClearWrapper =
-  'font-body mt-1 inline-flex items-center justify-between origin-top-right right-0 w-full rounded-md border border-secondary font-medium hover:bg-gray-50 focus:border-secondary focus:ring-1 focus:ring-secondary';
+  'font-body mt-1 inline-flex items-center justify-between origin-top-right right-0 w-full rounded-md font-medium hover:bg-gray-50 focus:border-secondary focus:ring-1 focus:ring-secondary';
 export const menu = 'relative inline-block text-left w-full';
 export const icon = 'h-6 w-6 pr-2 text-white';
 export const iconClear = 'h-6 w-6 mr-2 text-uiMid';

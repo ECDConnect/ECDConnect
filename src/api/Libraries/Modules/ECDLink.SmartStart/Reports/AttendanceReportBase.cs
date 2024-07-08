@@ -63,7 +63,7 @@ namespace ECDLink.SmartStart.Reports
             return activeClasses;
         }
 
-        protected virtual IEnumerable<DateTime> CalculateDaysOfClassForMonth(DateTime month, int day, IEnumerable<DateTime> validClassdays, DateTime? startBound, DateTime? endBound)
+        public virtual IEnumerable<DateTime> CalculateDaysOfClassForMonth(DateTime month, int day, IEnumerable<DateTime> validClassdays, DateTime? startBound, DateTime? endBound)
         {
             var actualStart = month;
 
