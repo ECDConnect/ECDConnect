@@ -58,12 +58,17 @@ export const InvitePrincipal: React.FC<{
     } else {
       setError('');
     }
-    const principalInvite = await new PractitionerService(userAuth?.auth_token!)
+
+    await new PractitionerService(userAuth?.auth_token!)
       .practitionerInvitePrincipal(principalPhoneNumber, user?.id!)
       .catch((error) => {
         setIsLoading(false);
         return;
       });
+
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerShareInfo(user?.id!);
 
     await appDispatch(
       practitionerThunkActions.updatePractitionerProgress({
