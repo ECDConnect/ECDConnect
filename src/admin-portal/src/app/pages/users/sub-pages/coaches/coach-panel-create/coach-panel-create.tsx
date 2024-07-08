@@ -26,7 +26,7 @@ import {
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import CoachForm from '../../../components/coach-form/coach-form';
 import SiteAddressForm from '../../../components/site-address-form/site-address-form';
 import PasswordForm from '../../../components/password-form/password-form';
@@ -34,6 +34,7 @@ import UserDetailsForm from '../../../components/user-details-form/user-details-
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../components/users';
 import { newGuid } from '../../../../../utils/uuid.utils';
+import { Alert, Divider, Typography } from '@ecdlink/ui';
 
 export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -60,6 +61,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   // FORMS
   // USER FORM DETAILS
   const {
@@ -68,6 +71,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
+    watch,
+    trigger,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
@@ -121,6 +126,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
     const passwordForm = passwordGetValues();
+    setIsLoading(true);
 
     const userInputModel: UserModelInput = {
       id: newGuid(),
@@ -154,9 +160,11 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
         const userId = response.data.addUser.id;
         await saveRoles(userId);
         await saveSiteAddress(userId);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.log(error);
+        setIsLoading(false);
       });
   };
 
@@ -220,19 +228,17 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       variant: NOTIFICATION.SUCCESS,
     });
 
-    if (coachForm.sendInvite) {
-      await sendInviteToApplication({
-        variables: {
-          userId: userId,
-          inviteToPortal: false,
-        },
-      });
+    await sendInviteToApplication({
+      variables: {
+        userId: userId,
+        inviteToPortal: false,
+      },
+    });
 
-      setNotification({
-        title: 'Successfully Sent Coach Invite!',
-        variant: NOTIFICATION.SUCCESS,
-      });
-    }
+    setNotification({
+      title: 'Successfully Sent Coach Invite!',
+      variant: NOTIFICATION.SUCCESS,
+    });
   };
 
   const saveRoles = async (userId: string) => {
@@ -279,11 +285,13 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className="rounded-lg border-b border-gray-200 bg-white px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
+              Coach details
             </h3>
+            <Typography color={'textMid'} type="help" text={'Step 1 of 1'} />
+            <Divider dividerType="dashed" className="py-6" />
           </div>
 
           <UserDetailsForm
@@ -292,23 +300,27 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
             control={control}
+            watch={watch}
+            trigger={trigger}
+            useWatch={useWatch}
+            isCoachForm={true}
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        {/* <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Coach Detail
             </h3>
-          </div>
+          </div> */}
 
-          <CoachForm
+        {/* <CoachForm
             formKey={`createCoach-${new Date().getTime()}`}
             register={coachRegister}
             errors={coachFormErrors}
-          />
+          /> */}
 
-          <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        {/* <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
             <div className="pb-2">
               <h3 className="text-uiMidDark text-lg font-medium leading-6">
                 Address Detail
@@ -320,8 +332,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
               errors={siteAddressFormErrors}
             />
           </div>
-        </div>
-
+        </div> */}
+        {/* 
         <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
@@ -335,16 +347,24 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             register={passwordRegister}
             errors={passwordFormErrors}
           />
-        </div>
+        </div> */}
       </>
     );
   };
 
   return (
     <article>
-      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
-
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      <Alert
+        className="mt-2 mb-2 rounded-md"
+        title={`An invitation will be sent to the new user when you click save.`}
+        type="info"
+      />
+      <UserPanelSave
+        disabled={!getIsValid()}
+        onSave={onSave}
+        isLoading={isLoading}
+      />
     </article>
   );
 }
