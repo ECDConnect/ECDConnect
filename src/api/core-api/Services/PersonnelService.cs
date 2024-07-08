@@ -203,11 +203,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 StipendType = practitioner.StipendType,
                 Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList(),
                 ClickedCommunityTab = practitioner.ClickedCommunityTab,
+                CommunitySectionViewDate = practitioner.CommunitySectionViewDate
             };
 
-
             practitionerRecord.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
-            
 
             ApplicationUser practitionerUser = _userManager.FindByIdAsync(practitioner.UserId).Result;
             if (practitionerUser != null) {
