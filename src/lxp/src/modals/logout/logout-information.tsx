@@ -1,5 +1,6 @@
 import { ActionModal } from '@ecdlink/ui';
 import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 
 export type LogoutInformationProps = {
   onSubmit: () => void;
@@ -36,9 +37,11 @@ export const LogoutInformation: React.FC<LogoutInformationProps> = ({
 
   return (
     <ActionModal
-      icon={'SwitchVerticalIcon'}
-      iconColor="primary"
-      iconBorderColor="errorBg"
+      customIcon={
+        <ExclamationCircleIcon className="text-alertMain h-12 w-12" />
+      }
+      iconColor="white"
+      iconBorderColor="alertMain"
       title={'Are you sure you want to log out?'}
       actionButtons={actionButtons}
     />
