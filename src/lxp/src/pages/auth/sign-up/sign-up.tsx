@@ -273,7 +273,7 @@ export const SignUp: React.FC = () => {
             nameProp={'cellphone'}
             placeholder="E.g. 012 345 6789"
             visible={true}
-            type={'text'}
+            type={'number'}
             register={signUpRegister}
             error={errors?.cellphone}
           />

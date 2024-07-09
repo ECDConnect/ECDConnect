@@ -174,7 +174,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       const updateUsername = await new AuthService()
         ?.UpdateUsername(Config?.authApi, updateUserInputModel)
         .catch((error) => {
-          setMessageError(error?.message);
+          setMessageError('Something went wrong!');
           setIsLoading(false);
           return;
         });
