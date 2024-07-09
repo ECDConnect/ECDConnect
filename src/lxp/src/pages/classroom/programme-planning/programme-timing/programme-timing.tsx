@@ -28,7 +28,6 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ROUTES from '@routes/routes';
 import { useAppDispatch } from '@/store';
 import { programmeThunkActions } from '@/store/programme';
-import { format } from 'date-fns';
 import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
 import { classroomsSelectors } from '@/store/classroom';
 import {
@@ -222,24 +221,7 @@ const ProgrammeTiming: React.FC = () => {
       }
 
       setAlertState({
-        title: 'No conflicts for these dates',
-        message: selectedTheme
-          ? `Your ${selectedTheme.name} programme will start on <b>${
-              selectedDate
-                ? format(new Date(selectedDate!), 'EEEE, d LLLL')
-                : ''
-            }</b> and end on <b>${
-              date ? format(new Date(date!), 'EEEE, d LLLL') : ''
-            }.</>`
-          : `Your programme will be <b>${
-              selectedTheme ? 20 : 20
-            } day(s)</b> long, starting on <b>${
-              selectedDate
-                ? format(new Date(selectedDate!), 'EEEE, d LLLL')
-                : ''
-            }</b> and ending on <b>${
-              date ? format(new Date(date!), 'EEEE, d LLLL') : ''
-            }</b>.`,
+        title: 'These dates are available',
         type: 'success',
       });
     },

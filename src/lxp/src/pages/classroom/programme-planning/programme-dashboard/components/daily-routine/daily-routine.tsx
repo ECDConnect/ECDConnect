@@ -274,7 +274,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
 
     if (!activityId) {
-      onEditActivityItem(routineItem);
+      onEditActivityItem(routineItem, day);
       return;
     }
 
@@ -669,6 +669,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
                   return (
                     <div
+                      key={routineItem.id}
                       id={
                         index === 2
                           ? state.stepIndex < 5

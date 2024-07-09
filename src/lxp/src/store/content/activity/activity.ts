@@ -2,6 +2,10 @@ import { createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { getActivities } from './activity.actions';
 import { ActivityState } from './activity.types';
+import {
+  setFulfilledThunkActionStatus,
+  setThunkActionStatus,
+} from '@/store/utils';
 
 const initialState: ActivityState = {
   activities: undefined,
@@ -16,8 +20,11 @@ const activitySlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, getActivities);
     builder.addCase(getActivities.fulfilled, (state, action) => {
       state.activities = action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

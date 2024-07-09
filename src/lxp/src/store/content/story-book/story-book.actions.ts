@@ -3,13 +3,16 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ContentStoryBookService } from '@services/ContentStoryBookService';
 import { RootState, ThunkApiType } from '../../types';
 
+export const StoryBookActions = {
+  GET_STORY_BOOKS: 'getStoryBooks',
+};
+
 export const getStoryBooks = createAsyncThunk<
   StoryBookDto[],
   { locale: string },
   ThunkApiType<RootState>
 >(
-  'getStoryBooks',
-  // eslint-disable-next-line no-empty-pattern
+  StoryBookActions.GET_STORY_BOOKS,
   async ({ locale }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
