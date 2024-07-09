@@ -16,7 +16,7 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
-import { useHistory, useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
 import robot from '../../../../assets/iconRobot.svg';
@@ -26,7 +26,10 @@ import {
   ClassDashboardRouteState,
   TabsItems,
 } from '../../class-dashboard/class-dashboard.types';
-import { ProgrammeDashboardRouteParams } from './programme-dashboard.types';
+import {
+  ProgrammeDashboardRouteParams,
+  ProgrammeDashboardRouteState,
+} from './programme-dashboard.types';
 import { useProgrammePlanning } from '@/hooks/useProgrammePlanning';
 import ProgrammeWrapper from './walkthrough/programme-wrapper';
 import { ProgrammeWalkthroughStart } from './walkthrough/components/walkthrough-start';
@@ -61,6 +64,7 @@ export const ProgrammeDashboard: React.FC = () => {
   const programmeStartDate = new Date();
 
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
+  const { state } = useLocation<ProgrammeDashboardRouteState>();
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -104,6 +108,16 @@ export const ProgrammeDashboard: React.FC = () => {
 
   const { isWholeWeekPlanned, dailyProgrammesUnplanned } =
     checkIfWholeWeekIsPlanned(selectedDate, classroomGroupId);
+
+  useEffect(() => {
+    if (state?.selectedDate) {
+      setSelectedDate(state.selectedDate);
+      history.replace(history.location.pathname, {
+        ...state,
+        selectedDate: undefined,
+      });
+    }
+  }, [history, state]);
 
   const fetchData = useCallback(
     async (reportDate: string) => {
