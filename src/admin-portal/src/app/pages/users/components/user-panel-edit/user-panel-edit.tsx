@@ -58,7 +58,6 @@ export default function UserPanelEdit(props: UserPanelProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
-    watch,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
@@ -290,7 +289,6 @@ export default function UserPanelEdit(props: UserPanelProps) {
                 setValue={userDetailSetValue}
                 user={props.user}
                 control={control}
-                watch={watch}
               />
             </div>
 

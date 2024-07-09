@@ -15,10 +15,9 @@ export interface UserDetailsFormProps {
   register: UseFormRegister<any>;
   setValue: UseFormSetValue<any>;
   control: any;
-  watch?: any;
-  trigger?: any;
-  useWatch?: any;
-  isCoachForm?: boolean;
+  setIdType?: (item: string) => void;
+  idType?: string;
+  clearErrors?: any;
 }
 
 const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
@@ -28,10 +27,9 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
   register,
   setValue,
   control,
-  watch,
-  trigger,
-  useWatch,
-  isCoachForm,
+  setIdType,
+  idType,
+  clearErrors,
 }) => {
   useEffect(() => {
     if (user) {
@@ -39,16 +37,6 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-
-  const identification = watch('idNumber');
-  const [idType, setIdType] = useState<string>('idNumber');
-  const [identificationInUse, setIdentificationInUse] = useState<string>();
-  const isIdentificationInUse =
-    !!identificationInUse && identificationInUse === identification;
-
-  const { firstName, surname, phoneNumber, idNumber } = useWatch({
-    control,
-  });
 
   return (
     <form key={formKey}>
@@ -72,7 +60,7 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
               placeholder="Surname/family name"
             />
           </div>
-          {!isCoachForm && (
+          {/* {!isCoachForm && (
             <div className="my-4 sm:col-span-3">
               <FormField
                 label={'Work email address *'}
@@ -82,7 +70,7 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
                 placeholder="e.g name@email.com"
               />
             </div>
-          )}
+          )} */}
           <div className="my-4 sm:col-span-3">
             <FormField
               label={'Cellphone number *'}
@@ -90,7 +78,7 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
               register={register}
               error={errors?.phoneNumber?.message}
               placeholder="eg. 0650025055"
-              type="number"
+              type="text"
             />
           </div>
           {/* <div className="my-4 sm:col-span-3">
@@ -113,7 +101,10 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
                 className={'mt-3 mr-1 w-full rounded-md '}
                 type={'filled'}
                 color={idType === 'idNumber' ? 'tertiary' : 'errorBg'}
-                onClick={() => setIdType('idNumber')}
+                onClick={() => {
+                  setIdType('idNumber');
+                  clearErrors('idNumber');
+                }}
               >
                 <Typography
                   type="help"
@@ -126,7 +117,10 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
                 className={'mt-3 mr-1 w-full rounded-md '}
                 type={'filled'}
                 color={idType === 'idNumber' ? 'errorBg' : 'tertiary'}
-                onClick={() => setIdType('Passport')}
+                onClick={() => {
+                  setIdType('Passport');
+                  clearErrors('idNumber');
+                }}
               >
                 <Typography
                   type="help"
@@ -135,23 +129,15 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
                 ></Typography>
               </Button>
             </div>
-            <FormInput
+            <FormField
               label={idType === 'idNumber' ? 'ID number *' : 'Passport *'}
               nameProp={'idNumber'}
               register={register}
-              error={
-                isIdentificationInUse
-                  ? `A user already exists with this ${
-                      idType === idTypeEnum.idNumber ? 'ID' : 'passport'
-                    } number.`
-                  : errors.idNumber?.message
-              }
+              error={errors.idNumber?.message}
               placeholder={
                 idType === 'idNumber' ? 'e.g 6201014800088' : 'e.g EN000666'
               }
-              value={idNumber}
-              isAdminPortalInput={true}
-              color="white"
+              type="text"
             />
           </div>
         </div>

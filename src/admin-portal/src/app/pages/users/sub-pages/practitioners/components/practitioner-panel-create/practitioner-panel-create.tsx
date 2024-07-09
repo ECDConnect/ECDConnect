@@ -13,6 +13,7 @@ import {
   useNotifications,
   userSchema,
 } from '@ecdlink/core';
+import * as yup from 'yup';
 import {
   AddUsersToRole,
   CreatePractitioner,
@@ -41,8 +42,12 @@ import {
   Dialog,
   DialogPosition,
   Divider,
+  SA_CELL_REGEX,
+  SA_ID_REGEX,
+  SA_PASSPORT_REGEX,
   Typography,
 } from '@ecdlink/ui';
+import { idTypeEnum } from '../../../../../view-user/view-user.types';
 
 export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -68,6 +73,24 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
+  const [idType, setIdType] = useState<string>('idNumber');
+
+  const localUserSchema = yup.object().shape({
+    firstName: yup.string().required('First name is Required'),
+    surname: yup.string().required('Surname is Required'),
+    email: yup.string().email('Invalid email'),
+    phoneNumber: yup
+      .string()
+      .matches(SA_CELL_REGEX, 'Phone number is not valid')
+      .required('Cellphone number is required'),
+    idNumber:
+      idType === idTypeEnum.idNumber
+        ? yup
+            .string()
+            .matches(SA_ID_REGEX, 'Id number is not valid')
+            .required('ID Number is Required')
+        : yup.string().required('ID Number is Required'),
+  });
 
   // FORMS
   // USER FORM DETAILS
@@ -76,11 +99,12 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     setValue: userDetailSetValue,
     formState: userDetailFormState,
     getValues: userDetailGetValues,
+    clearErrors,
     control,
     trigger,
     watch,
   } = useForm({
-    resolver: yupResolver(userSchema),
+    resolver: yupResolver(localUserSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
@@ -258,19 +282,17 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       variant: NOTIFICATION.SUCCESS,
     });
 
-    if (practitionerForm.sendInvite) {
-      await sendInviteToApplication({
-        variables: {
-          userId: userId,
-          inviteToPortal: false,
-        },
-      });
+    await sendInviteToApplication({
+      variables: {
+        userId: userId,
+        inviteToPortal: false,
+      },
+    });
 
-      setNotification({
-        title: 'Successfully Sent Practitioner Invite!',
-        variant: NOTIFICATION.SUCCESS,
-      });
-    }
+    setNotification({
+      title: 'Successfully Sent Practitioner Invite!',
+      variant: NOTIFICATION.SUCCESS,
+    });
   };
 
   const saveRoles = async (userId: string, isPrincipal: boolean) => {
@@ -344,9 +366,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
             control={control}
-            watch={watch}
-            trigger={trigger}
-            useWatch={useWatch}
+            setIdType={setIdType}
+            idType={idType}
+            clearErrors={clearErrors}
           />
         </div>
 

@@ -375,6 +375,7 @@ export default function Practitioners() {
     panel({
       noPadding: true,
       title: '',
+      overlay: true,
       render: (onSubmit: any) => (
         <PractitionerPanelCreate
           key={`userPanelCreate`}
