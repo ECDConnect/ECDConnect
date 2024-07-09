@@ -5,7 +5,6 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -673,7 +672,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
-          AuthenticationDbContext dbContext,
           ApplicationUserManager userManager,
           string file)
         {
