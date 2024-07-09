@@ -90,8 +90,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     title,
   ]);
 
-  console.log({ allActivities });
-
   const [activities, setActivities] = useState<ActivityDto[]>(allActivities);
   const [filteredActivities, setFilteredActivities] =
     useState<ActivityDto[]>(allActivities);
@@ -103,7 +101,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const dispatch = useAppDispatch();
   const [selectedThemeFilterOptions, setSelectedThemeFilterOptions] =
     useState<SearchDropDownOption<number>[]>();
-  console.log({ filteredActivities });
   const [selectedLanguageFilterOptions, setSelectedLanguageFilterOptions] =
     useState<SearchDropDownOption<string>[]>();
 
@@ -289,7 +286,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   }, [selectedLanguageFilterOptions, routineItem]);
 
   const applyFilters = (activities: ActivityDto[]) => {
-    console.log('applyFilters', { activities });
     let activitiesCopy = [...activities];
 
     if (selectedThemeFilterOptions && selectedThemeFilterOptions.length > 0) {

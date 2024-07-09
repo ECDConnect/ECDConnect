@@ -8,6 +8,7 @@ import { activitySelectors } from '@store/content/activity';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { getAllGroupActivityIds } from '@utils/classroom/programme-planning/programmes.utils';
 import { getDay, isBefore, parseISO } from 'date-fns';
+import { ActivityType } from '@/constants/ActivitySearch';
 
 export type RecommendedActivity = {
   subCategory?: ProgressTrackingSubCategoryDto;
@@ -59,7 +60,7 @@ export const useProgrammePlanningRecommendations = () => {
 
     return [];
   };
-  console.log({ activities });
+
   const getActivitiesWithLowPercentageSubcategories = (
     programme?: ProgrammeDto
   ) => {
@@ -90,7 +91,6 @@ export const useProgrammePlanningRecommendations = () => {
       .filter(({ percentage }) => percentage < 5)
       .map(({ subCategory }) => subCategory.id);
 
-    console.log({ lowPercentageSubCategoryIds, selectedActivities });
     // Return activities containing at least one low percentage subcategory
     return selectedActivities.filter((activity) =>
       activity.subCategories.some((subCat) =>
@@ -206,7 +206,7 @@ export const useProgrammePlanningRecommendations = () => {
   const getSortedActivities = (
     activities: ActivityDto[],
     programme: ProgrammeDto,
-    type: 'Small group' | 'Large group' | 'Story time'
+    type: ActivityType
   ) => {
     const topIds = getActivitiesWithLowPercentageSubcategories(programme)?.map(
       (activity) => activity.id
