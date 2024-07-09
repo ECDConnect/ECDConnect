@@ -32,6 +32,10 @@ import ProgrammeWrapper from './walkthrough/programme-wrapper';
 import { ProgrammeWalkthroughStart } from './walkthrough/components/walkthrough-start';
 import { useAppContext } from '@/walkthrougContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ProgrammeThemeRouteState } from '../programme-theme/programme-theme.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ActivitiesActions } from '@/store/content/activity/activity.actions';
+import { StoryBookActions } from '@/store/content/story-book/story-book.actions';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -42,6 +46,17 @@ export interface iSkills {
 
 export const ProgrammeDashboard: React.FC = () => {
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+
+  const { isLoading: isLoadingActivities } = useThunkFetchCall(
+    'activityData',
+    ActivitiesActions.GET_ACTIVITIES
+  );
+  const { isLoading: isLoadingStoryBooks } = useThunkFetchCall(
+    'storyBookData',
+    StoryBookActions.GET_STORY_BOOKS
+  );
+
+  const isLoading = isLoadingActivities || isLoadingStoryBooks;
 
   const programmeStartDate = new Date();
 
@@ -144,7 +159,9 @@ export const ProgrammeDashboard: React.FC = () => {
                     true,
                     LocalStorageKeys.hasVisitedProgrammeDashboard
                   );
-                  history.push(ROUTES.PROGRAMMES.THEME);
+                  history.push(ROUTES.PROGRAMMES.THEME, {
+                    classroomGroupId,
+                  } as ProgrammeThemeRouteState);
                   onCancel();
                 },
                 leadingIcon: 'ColorSwatchIcon',
@@ -169,6 +186,7 @@ export const ProgrammeDashboard: React.FC = () => {
       });
     }
   }, [
+    classroomGroupId,
     dailyProgrammesUnplanned,
     dialog,
     history,
@@ -334,6 +352,7 @@ export const ProgrammeDashboard: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       size="small"
       renderBorder
       title="Activities"
