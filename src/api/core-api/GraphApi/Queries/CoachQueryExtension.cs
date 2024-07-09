@@ -14,6 +14,7 @@ using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -23,6 +24,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
@@ -401,7 +403,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<FileModel> CoachTemplateGenerator(
-          [Service] IFileGenerationService fileService)
+            [Service] IFileGenerationService fileService)
         {
             var fieldDefinitionSheet = $"Field Definition";
             var fieldDefinitionList = new List<List<string>>
@@ -415,10 +417,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
             };
 
-            var templateHeaderSheet = $"Coach Template";
+            var templateHeaderSheet = $"{TenantExecutionContext.Tenant.Modules.CoachRoleName} Template";
             var templateHeaders = new List<List<string>>()
             {
-                new List<string> {
+                new List<string> 
+                {
                     "Type of identification",
                     "ID number",
                     "Passport",
