@@ -62,7 +62,7 @@ export const PractitionerSetup = ({
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
-  console.log({ principalClassroom });
+
   const getPractitionerResponse = async () => {
     const principalHierarchy = practitioner?.principalHierarchy!;
     const userId = user?.id!;
