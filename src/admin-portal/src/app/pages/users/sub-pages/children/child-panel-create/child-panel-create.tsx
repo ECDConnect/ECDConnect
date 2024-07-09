@@ -223,7 +223,6 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
             control={control}
-            watch={watch}
           />
         </div>
 

@@ -297,7 +297,6 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
             control={control}
-            watch={watch}
           />
         </div>
 

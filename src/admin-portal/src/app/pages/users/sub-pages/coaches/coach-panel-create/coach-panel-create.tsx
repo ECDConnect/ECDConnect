@@ -26,7 +26,7 @@ import {
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import CoachForm from '../../../components/coach-form/coach-form';
 import SiteAddressForm from '../../../components/site-address-form/site-address-form';
 import PasswordForm from '../../../components/password-form/password-form';
@@ -71,8 +71,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
-    watch,
-    trigger,
+    clearErrors,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
@@ -115,6 +114,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       mode: 'onBlur',
     });
   const { errors: siteAddressFormErrors } = coachFormState;
+  const [idType, setIdType] = useState<string>('idNumber');
 
   // END FORMS
 
@@ -300,10 +300,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
             control={control}
-            watch={watch}
-            trigger={trigger}
-            useWatch={useWatch}
-            isCoachForm={true}
+            setIdType={setIdType}
+            idType={idType}
+            clearErrors={clearErrors}
           />
         </div>
 

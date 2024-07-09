@@ -326,6 +326,7 @@ export default function Coaches() {
     panel({
       noPadding: true,
       title: '',
+      overlay: true,
       render: (onSubmit: any) => (
         <CoachPanelCreate
           key={`userPanelCreate`}
