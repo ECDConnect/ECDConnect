@@ -12,8 +12,11 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
+using HotChocolate.Types.Pagination;
+using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -444,6 +447,41 @@ namespace EcdLink.Api.CoreApi.Services
                 throw new QueryException("Connection Request not found.");
 
             }
+        }
+
+        public List<CommunityConnectionModel> GetOtherConnections(Guid userId, List<Guid> provinceIds = null, List<Guid> communitySkillIds = null)
+        {
+            var allConnections = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId != userId || x.FromProfile.UserId != userId).ToList();
+            var filteredConnection = new List<CommunityProfile>();
+
+            if (provinceIds != null && provinceIds.Any())
+            {
+                filteredConnection.AddRange(allConnections.Where(x => x.ToProfile.ProvinceId.HasValue && provinceIds.Contains(x.ToProfile.ProvinceId.Value)).Select(x => x.ToProfile).ToList());
+            }
+
+            if (communitySkillIds != null && communitySkillIds.Any())
+            {
+                foreach (var item in allConnections)
+                {
+                    if (item.ToProfile.ProfileSkills.Any())
+                    {
+                        foreach (var skill in item.ToProfile.ProfileSkills)
+                        {
+                            if (communitySkillIds.Contains(skill.CommunitySkillId))
+                            {
+                                filteredConnection.Add(item.ToProfile);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ((provinceIds != null && provinceIds.Any()) || (communitySkillIds != null && communitySkillIds.Any()))
+            {
+                return filteredConnection.Select(x => new CommunityConnectionModel(x, null)).Distinct().ToList();
+            }
+
+            return allConnections.Select(x => new CommunityConnectionModel(x.ToProfile, null)).Distinct().ToList();
         }
 
     }
