@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -672,6 +673,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
+          AuthenticationDbContext dbContext,
           ApplicationUserManager userManager,
           string file)
         {
@@ -719,6 +721,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
                 var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                 var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
+                var coachIdOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(6));
 
                 if (idOrPassport is null
                     && id is null
@@ -728,7 +731,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && cellphone is null)
                     continue;
 
-                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone);
+                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, coachIdOrPassport);
 
                 if (idPassportDuplications.Any())
                 {
@@ -753,6 +756,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // Do not continue processing if errors.
                     continue;
                 }
+
+                var coachHierarchy = Guid.Empty;
                 var insertedDate = DateTime.UtcNow;
                 var userId = Guid.NewGuid();
                 var user = new ApplicationUser()
@@ -774,6 +779,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 };
                 userImportList.Add(user);
 
+                if (!string.IsNullOrEmpty(coachIdOrPassport))
+                {
+                    var coachUser = userManager.FindByNameAsync(coachIdOrPassport).Result;
+
+                    if (coachUser != null)
+                    {
+                        coachHierarchy = coachUser.Id;
+                    } 
+                    else
+                    {
+                        validationErrors.Add(
+                            new InputValidationError(row, new List<string> { }, $"Coach does not exist for id/passport {coachIdOrPassport}")
+                        );
+                    }
+                }
                 practitionerUsers.Add(user.UserName,
                     new Practitioner()
                     {
@@ -782,7 +802,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         IsRegistered = false,
                         InsertedDate = insertedDate,
                         TenantId = tenantId,
-                        IsActive = true
+                        IsActive = true,
+                        CoachHierarchy = coachHierarchy == Guid.Empty ? null : coachHierarchy
                     });
             }
 
@@ -894,7 +915,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 string passport,
                 string firstName,
                 string surname,
-                string cellphone)
+                string cellphone,
+                string coachIdOrPassport)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -922,6 +944,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
+
+                if (TenantExecutionContext.Tenant.Modules.CoachRoleEnabled)
+                {
+                    if (!string.IsNullOrEmpty(coachIdOrPassport) && !UserHelper.IsSAIDValid(coachIdOrPassport))
+                    {
+                        errors.Add("Coach Id is empty or invalid");
+                    }
+                }
+
+
                 return errors;
             }
         }
