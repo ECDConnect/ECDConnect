@@ -103,6 +103,10 @@ export const OASignUpOrLogin: React.FC = () => {
           LocalStorageKeys.practitionerInvitedPrincipalIdNumber,
           JSON.stringify(principalToken.data?.idNumber)
         );
+        localStorage.setItem(
+          LocalStorageKeys.practitionerInvitedPrincipalUserId,
+          JSON.stringify(principalToken.data?.addedByUserId)
+        );
       }
     } else {
       console.log('user not found');
