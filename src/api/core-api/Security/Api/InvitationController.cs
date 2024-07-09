@@ -407,7 +407,7 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> UpdateUsernamePassword([FromBody] UpdateUserNameModel input)
         {
-            if (!string.IsNullOrEmpty(input.UserId.ToString())) {
+            if (string.IsNullOrEmpty(input.UserId.ToString())) {
                 return BadRequest(new FailedVerificationModel
                 {
                     ErrorCode = 1,
