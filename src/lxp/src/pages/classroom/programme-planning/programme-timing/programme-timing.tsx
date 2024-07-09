@@ -38,6 +38,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ProgrammeActions } from '@/store/programme/programme.actions';
 import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
 import { useAppContext } from '@/walkthrougContext';
+import { ProgrammeDashboardRouteState } from '../programme-dashboard/programme-dashboard.types';
 
 const ProgrammeTiming: React.FC = () => {
   const {
@@ -106,6 +107,7 @@ const ProgrammeTiming: React.FC = () => {
 
   const onSuccess = useCallback(() => {
     dialog({
+      blocking: true,
       position: DialogPosition.Middle,
       color: 'bg-white',
       render: (onClose) => (
@@ -126,7 +128,10 @@ const ProgrammeTiming: React.FC = () => {
                   ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
                     ':classroomGroupId',
                     state.classroomGroupId
-                  )
+                  ),
+                  {
+                    selectedDate: new Date(selectedDate!),
+                  } as ProgrammeDashboardRouteState
                 );
               },
               leadingIcon: 'ClipboardListIcon',
