@@ -60,6 +60,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return communityService.GetFeedbackTypes();
         }
 
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.View)]
+        public List<CommunityConnectionModel> GetOtherConnections(
+            [Service] ICommunityService communityService,
+            Guid userId,
+            List<Guid> provinceIds = null,
+            List<Guid> communitySkillIds = null)
+        {
+            if (string.IsNullOrEmpty(userId.ToString()))
+            {
+                throw new ArgumentException("UserId is empty");
+            }
+            return communityService.GetOtherConnections(userId, provinceIds, communitySkillIds);
+        }
+
 
     }
 }
