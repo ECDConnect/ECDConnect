@@ -7300,6 +7300,7 @@ export type Mutation = {
   addVisitData: Scalars['Boolean'];
   bulkDeleteCoachingCircleTopics?: Maybe<BulkDeactivateResult>;
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
+  bulkReactivateUsers: Scalars['Boolean'];
   bulkUpdateCoachingCircleTopicDates: Scalars['Boolean'];
   bulkUpdateConsentImages: Scalars['Boolean'];
   bulkUpdateProgressTrackingCategoryImages: Scalars['Boolean'];
@@ -8255,6 +8256,10 @@ export type MutationBulkDeleteCoachingCircleTopicsArgs = {
 
 export type MutationBulkDeleteUserArgs = {
   ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type MutationBulkReactivateUsersArgs = {
+  userIds?: InputMaybe<Array<Scalars['UUID']>>;
 };
 
 export type MutationBulkUpdateCoachingCircleTopicDatesArgs = {
