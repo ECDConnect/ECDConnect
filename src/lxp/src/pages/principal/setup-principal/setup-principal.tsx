@@ -221,7 +221,8 @@ export const SetupPrincipal: React.FC = () => {
         principalPractitioners.forEach(async (principalPractitioner) => {
           if (
             !principalPractitioner?.userId &&
-            principalPractitioner?.phoneNumber
+            principalPractitioner?.phoneNumber &&
+            principalPractitioner?.userId !== inviTePractitionerUserId
           ) {
             const principalInvite = await new PractitionerService(
               userAuth?.auth_token!
@@ -237,7 +238,7 @@ export const SetupPrincipal: React.FC = () => {
               });
           } else {
             const input: MutationAddPractitionerToPrincipalArgs = {
-              userId: user?.id,
+              userId: inviTePractitionerUserId,
               idNumber: principalPractitioner.idNumber,
               firstName: principalPractitioner.firstName,
               lastName: principalPractitioner.surname,
@@ -253,7 +254,7 @@ export const SetupPrincipal: React.FC = () => {
               practitionerId: inviTePractitionerUserId,
               progress: 2.0,
             })
-          );
+          ).unwrap();
 
           await appDispatch(
             updatePrincipalInvitation({
@@ -261,7 +262,7 @@ export const SetupPrincipal: React.FC = () => {
               principalHierarchy: user?.id!,
               accepted: true,
             })
-          );
+          ).unwrap();
         }
         await appDispatch(
           practitionerThunkActions.getAllPractitioners({})
