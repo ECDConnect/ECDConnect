@@ -21,8 +21,10 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -362,12 +364,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
 
             // expire the invite after accept or reject
-            notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation, null, null, practitioner.UserId);
+            notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation);
 
             //update practitioner with column changes
             practitionerRepo.Update(practitioner);
             return status;
         }
-
     }
 }
