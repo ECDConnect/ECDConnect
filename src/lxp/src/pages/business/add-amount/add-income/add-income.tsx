@@ -133,7 +133,7 @@ export const AddIncome: React.FC = () => {
   return (
     <div className={styles.container}>
       {type ? (
-        <div>{incomeType(type)}</div>
+        <>{incomeType(type)}</>
       ) : (
         <BannerWrapper
           showBackground={false}
