@@ -148,6 +148,7 @@ export type Activity = {
   materials?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   subCategories?: Maybe<Array<Maybe<ProgressTrackingSubCategory>>>;
   subType?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
@@ -232,6 +233,7 @@ export type ActivityInput = {
   materials?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   notes?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   subCategories?: InputMaybe<Scalars['String']>;
   subType?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
@@ -12614,18 +12616,6 @@ export type PortalLeagueModelSortInput = {
   name?: InputMaybe<SortEnumType>;
 };
 
-export type PortalNatalModel = {
-  __typename?: 'PortalNatalModel';
-  availableLanguages?: Maybe<Array<Maybe<Scalars['String']>>>;
-  childContentTypeId?: Maybe<Scalars['String']>;
-  childContentTypeName?: Maybe<Scalars['String']>;
-  childId?: Maybe<Scalars['String']>;
-  childType?: Maybe<Scalars['String']>;
-  section?: Maybe<Scalars['String']>;
-  title?: Maybe<Scalars['String']>;
-  updatedDate: Scalars['DateTime'];
-};
-
 export type PortalPractitionerModel = {
   __typename?: 'PortalPractitionerModel';
   id: Scalars['UUID'];
@@ -13787,6 +13777,7 @@ export type ProgrammeRoutine = {
   id?: Maybe<Scalars['Int']>;
   name?: Maybe<Scalars['String']>;
   routineItems?: Maybe<Array<Maybe<ProgrammeRoutineItem>>>;
+  shareContent?: Maybe<Scalars['String']>;
 };
 
 export type ProgrammeRoutineInput = {
@@ -13794,6 +13785,7 @@ export type ProgrammeRoutineInput = {
   headerBanner?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   routineItems?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
 };
 
 export type ProgrammeRoutineItem = {
@@ -13808,6 +13800,7 @@ export type ProgrammeRoutineItem = {
   name?: Maybe<Scalars['String']>;
   routineSubItems?: Maybe<Array<Maybe<ProgrammeRoutineSubItem>>>;
   sequence?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   timeSpan?: Maybe<Scalars['String']>;
 };
 
@@ -13821,6 +13814,7 @@ export type ProgrammeRoutineItemInput = {
   name?: InputMaybe<Scalars['String']>;
   routineSubItems?: InputMaybe<Scalars['String']>;
   sequence?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   timeSpan?: InputMaybe<Scalars['String']>;
 };
 
@@ -13831,6 +13825,7 @@ export type ProgrammeRoutineSubItem = {
   image?: Maybe<Scalars['String']>;
   imageBackgroundColor?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   timeSpan?: Maybe<Scalars['String']>;
 };
 
@@ -13839,6 +13834,7 @@ export type ProgrammeRoutineSubItemInput = {
   image?: InputMaybe<Scalars['String']>;
   imageBackgroundColor?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   timeSpan?: InputMaybe<Scalars['String']>;
 };
 
@@ -13933,6 +13929,7 @@ export type ProgressTrackingCategory = {
   id?: Maybe<Scalars['Int']>;
   imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   subCategories?: Maybe<Array<Maybe<ProgressTrackingSubCategory>>>;
   subTitle?: Maybe<Scalars['String']>;
 };
@@ -13942,6 +13939,7 @@ export type ProgressTrackingCategoryInput = {
   description?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   subCategories?: InputMaybe<Scalars['String']>;
   subTitle?: InputMaybe<Scalars['String']>;
 };
@@ -13954,6 +13952,7 @@ export type ProgressTrackingLevel = {
   imageUrlDim?: Maybe<Scalars['String']>;
   imageUrlDone?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
 };
 
 export type ProgressTrackingLevelInput = {
@@ -13962,6 +13961,7 @@ export type ProgressTrackingLevelInput = {
   imageUrlDim?: InputMaybe<Scalars['String']>;
   imageUrlDone?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
 };
 
 export type ProgressTrackingSkill = {
@@ -13969,12 +13969,14 @@ export type ProgressTrackingSkill = {
   id?: Maybe<Scalars['Int']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
   name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   value?: Maybe<Scalars['String']>;
 };
 
 export type ProgressTrackingSkillInput = {
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -13985,6 +13987,7 @@ export type ProgressTrackingSubCategory = {
   imageHexColor?: Maybe<Scalars['String']>;
   imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   skills?: Maybe<Array<Maybe<ProgressTrackingSkill>>>;
 };
 
@@ -13993,6 +13996,7 @@ export type ProgressTrackingSubCategoryInput = {
   imageHexColor?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   skills?: InputMaybe<Scalars['String']>;
 };
 
@@ -14673,11 +14677,11 @@ export type Query = {
   motherSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
   motherSummaryByPriority?: Maybe<Array<Maybe<ClientSummaryByPriority>>>;
   motherVisits?: Maybe<Array<Maybe<BasicVisitModel>>>;
-  natalRecordsForType?: Maybe<Array<Maybe<PortalNatalModel>>>;
   onBoardTraineeTimeline?: Maybe<TraineeOnBoardTimeline>;
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
   openLanguage: Array<Maybe<Language>>;
+  otherConnections?: Maybe<Array<Maybe<CommunityConnectionModel>>>;
   ownershipMetrics?: Maybe<PractitionerMetricReport>;
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
   pointsForHealthCareWorker?: Maybe<Array<Maybe<PointsActivityModel>>>;
@@ -17659,12 +17663,6 @@ export type QueryMotherVisitsArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryNatalRecordsForTypeArgs = {
-  contentTypeId: Scalars['Int'];
-  localeId: Scalars['UUID'];
-  natalType?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryOnBoardTraineeTimelineArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -17676,6 +17674,12 @@ export type QueryOpenAccessAddChildDetailArgs = {
 export type QueryOpenConsentArgs = {
   locale?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryOtherConnectionsArgs = {
+  communitySkillIds?: InputMaybe<Array<Scalars['UUID']>>;
+  provinceIds?: InputMaybe<Array<Scalars['UUID']>>;
+  userId: Scalars['UUID'];
 };
 
 export type QueryPointsForHealthCareWorkerArgs = {
@@ -19159,6 +19163,7 @@ export type StoryBook = {
   illustrator?: Maybe<Scalars['String']>;
   keywords?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   storyBookParts?: Maybe<Array<Maybe<StoryBookParts>>>;
   type?: Maybe<Scalars['String']>;
 };
@@ -19170,6 +19175,7 @@ export type StoryBookInput = {
   illustrator?: InputMaybe<Scalars['String']>;
   keywords?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   storyBookParts?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
 };
@@ -19192,11 +19198,13 @@ export type StoryBookPartQuestion = {
   id?: Maybe<Scalars['Int']>;
   name?: Maybe<Scalars['String']>;
   question?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
 };
 
 export type StoryBookPartQuestionInput = {
   name?: InputMaybe<Scalars['String']>;
   question?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
 };
 
 export type StoryBookParts = {
@@ -19205,6 +19213,7 @@ export type StoryBookParts = {
   name?: Maybe<Scalars['String']>;
   part?: Maybe<Scalars['String']>;
   partText?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   storyBookPartQuestions?: Maybe<Array<Maybe<StoryBookPartQuestion>>>;
 };
 
@@ -19212,6 +19221,7 @@ export type StoryBookPartsInput = {
   name?: InputMaybe<Scalars['String']>;
   part?: InputMaybe<Scalars['String']>;
   partText?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   storyBookPartQuestions?: InputMaybe<Scalars['String']>;
 };
 
@@ -19550,6 +19560,7 @@ export type Theme = {
   id?: Maybe<Scalars['Int']>;
   imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   themeDays?: Maybe<Array<Maybe<ThemeDay>>>;
 };
 
@@ -19559,6 +19570,7 @@ export type ThemeDay = {
   id?: Maybe<Scalars['Int']>;
   largeGroupActivity?: Maybe<Array<Maybe<Activity>>>;
   name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
   smallGroupActivity?: Maybe<Array<Maybe<Activity>>>;
   storyActivity?: Maybe<Array<Maybe<Activity>>>;
   storyBook?: Maybe<Array<Maybe<StoryBook>>>;
@@ -19568,6 +19580,7 @@ export type ThemeDayInput = {
   day?: InputMaybe<Scalars['String']>;
   largeGroupActivity?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   smallGroupActivity?: InputMaybe<Scalars['String']>;
   storyActivity?: InputMaybe<Scalars['String']>;
   storyBook?: InputMaybe<Scalars['String']>;
@@ -19577,6 +19590,7 @@ export type ThemeInput = {
   color?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   themeDays?: InputMaybe<Scalars['String']>;
 };
 
