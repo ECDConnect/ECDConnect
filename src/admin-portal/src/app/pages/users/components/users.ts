@@ -1,4 +1,4 @@
-import { UserDto } from '@ecdlink/core';
+import { PractitionerDto, UserDto } from '@ecdlink/core';
 import { TabItem } from '@ecdlink/ui';
 
 export const defaultTabItems = [
@@ -26,6 +26,7 @@ export interface UserPanelProps {
 export interface UserPanelCreateProps {
   closeDialog: (value: boolean) => void;
   setFormIsDirty?: (value: boolean) => void;
+  practitioners?: PractitionerDto[];
 }
 
 export interface UserPanelSaveProps {
