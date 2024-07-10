@@ -16,7 +16,7 @@ import {
   ChildRegistrationRouteState,
   ChildRegistrationSteps,
 } from '../../child-registration/child-registration.types';
-import { classroomsThunkActions } from '@store/classroom';
+import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
@@ -64,6 +64,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
       (role) => role.systemName === RoleSystemNameEnum.Practitioner
     ) || isPrincipal;
   const practitionerId = location?.state?.practitionerId;
+  const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const getChildToken = async () => {
     if (childId) {
@@ -132,7 +133,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
     const whatsapp = () => {
       window.open(
-        `whatsapp://send?text=${childRegistrationDetails.caregiverRegistrationUrl}`
+        `whatsapp://send?text=${practitioner?.user?.firstName} practitioner has invited you to register you child at their care centre. Tap this link to register ${childDetails.firstName} for ${classroom?.name}: ${childRegistrationDetails.caregiverRegistrationUrl}`
       );
     };
 
