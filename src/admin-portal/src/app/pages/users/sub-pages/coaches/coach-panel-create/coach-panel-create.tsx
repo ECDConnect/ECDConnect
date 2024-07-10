@@ -11,6 +11,7 @@ import {
   CreateSiteAddress,
   GetAllPortalCoaches,
 } from '@ecdlink/graphql';
+import * as yup from 'yup';
 import {
   NOTIFICATION,
   useNotifications,
@@ -35,7 +36,14 @@ import UserDetailsForm from '../../../components/user-details-form/user-details-
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../components/users';
 import { newGuid } from '../../../../../utils/uuid.utils';
-import { Alert, Divider, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  Divider,
+  SA_CELL_REGEX,
+  SA_ID_REGEX,
+  Typography,
+} from '@ecdlink/ui';
+import { idTypeEnum } from '../../../../view-user/view-user.types';
 
 export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -90,6 +98,24 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [idType, setIdType] = useState<string>('idNumber');
+
+  const localUserSchema = yup.object().shape({
+    firstName: yup.string().required('First name is Required'),
+    surname: yup.string().required('Surname is Required'),
+    email: yup.string().email('Invalid email'),
+    phoneNumber: yup
+      .string()
+      .matches(SA_CELL_REGEX, 'Phone number is not valid')
+      .required('Cellphone number is required'),
+    idNumber:
+      idType === idTypeEnum.idNumber
+        ? yup
+            .string()
+            .matches(SA_ID_REGEX, 'Id number is not valid')
+            .required('ID Number is Required')
+        : yup.string().required('ID Number is Required'),
+  });
 
   // FORMS
   // USER FORM DETAILS
@@ -101,7 +127,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     control,
     clearErrors,
   } = useForm({
-    resolver: yupResolver(userSchema),
+    resolver: yupResolver(localUserSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
@@ -142,7 +168,6 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       mode: 'onBlur',
     });
   const { errors: siteAddressFormErrors } = coachFormState;
-  const [idType, setIdType] = useState<string>('idNumber');
 
   // END FORMS
 
