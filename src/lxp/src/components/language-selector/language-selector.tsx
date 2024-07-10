@@ -47,8 +47,6 @@ export const LanguageSelector = ({
     [languages, availableLanguages]
   );
 
-  console.log({ x: currentLanguages, availableLanguages, languages });
-
   const setLanguage = (nextLocale: string) => {
     if (!isOnline && showOfflineAlert) {
       return setIsOfflineAlert(true);
@@ -84,8 +82,6 @@ export const LanguageSelector = ({
     // trigger only once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  console.log({ currentLanguages });
 
   return (
     <div className={classNames(styles.localeDropDownWrapper, className)}>
