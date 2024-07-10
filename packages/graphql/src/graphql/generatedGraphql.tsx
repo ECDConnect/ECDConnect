@@ -151,6 +151,7 @@ export type Activity = {
   shareContent?: Maybe<Scalars['String']>;
   subCategories?: Maybe<Array<Maybe<ProgressTrackingSubCategory>>>;
   subType?: Maybe<Scalars['String']>;
+  themes?: Maybe<Array<Maybe<Theme>>>;
   type?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
 };
@@ -237,6 +238,7 @@ export type ActivityInput = {
   shareContent?: InputMaybe<Scalars['String']>;
   subCategories?: InputMaybe<Scalars['String']>;
   subType?: InputMaybe<Scalars['String']>;
+  themes?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
