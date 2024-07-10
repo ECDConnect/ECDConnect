@@ -26,7 +26,7 @@ import {
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import PasswordForm from '../../../../components/password-form/password-form';
@@ -71,6 +71,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+  const [userAlreadyExits, setUserAlreadyExits] = useState(false);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
   const [idType, setIdType] = useState<string>('idNumber');
@@ -130,6 +131,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     register: practitionerRegister,
     formState: practitionerFormState,
     getValues: practitionerGetValues,
+    setValue: practitionerSetValue,
   } = useForm({
     resolver: yupResolver(practitionerSchema),
     defaultValues: { ...initialPractitionerValues, sendInvite: false },
@@ -140,6 +142,23 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     isValid: isPractitionerValid,
     isDirty,
   } = practitionerFormState;
+
+  const coachQueryVariables = useMemo(
+    () => ({
+      search: '',
+      connectUsageSearch: [],
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
+      order: [
+        {
+          insertedDate: 'DESC',
+        },
+      ],
+    }),
+    []
+  );
 
   // SITE ADDRESS FORMS
   const { register: siteAddressRegister, getValues: siteAddressGetValues } =
@@ -369,6 +388,10 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             setIdType={setIdType}
             idType={idType}
             clearErrors={clearErrors}
+            watch={watch}
+            coachQueryVariables={coachQueryVariables}
+            practitioners={props?.practitioners}
+            setUserAlreadyExits={setUserAlreadyExits}
           />
         </div>
 
@@ -377,6 +400,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             formKey={`createPractitioner-${new Date().getTime()}`}
             register={practitionerRegister}
             errors={practitionerFormErrors}
+            coachQueryVariables={coachQueryVariables}
+            practitionerGetValues={practitionerGetValues}
+            practitionerSetValue={practitionerSetValue}
           />
         </div>
 
@@ -454,7 +480,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
         type="info"
       />
       <UserPanelSave
-        disabled={!getIsValid()}
+        disabled={!getIsValid() || userAlreadyExits}
         onSave={onSave}
         isLoading={isLoading}
       />

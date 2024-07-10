@@ -378,6 +378,7 @@ export default function Practitioners() {
       overlay: true,
       render: (onSubmit: any) => (
         <PractitionerPanelCreate
+          practitioners={data?.allPortalPractitioners}
           key={`userPanelCreate`}
           closeDialog={(userCreated: boolean) => {
             onSubmit();

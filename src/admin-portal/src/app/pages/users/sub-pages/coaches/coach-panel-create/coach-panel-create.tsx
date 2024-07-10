@@ -9,6 +9,7 @@ import {
   SiteAddressInput,
   SendInviteToApplication,
   CreateSiteAddress,
+  GetAllPortalCoaches,
 } from '@ecdlink/graphql';
 import {
   NOTIFICATION,
@@ -25,7 +26,7 @@ import {
   RoleSystemNameEnum,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import CoachForm from '../../../components/coach-form/coach-form';
 import SiteAddressForm from '../../../components/site-address-form/site-address-form';
@@ -46,6 +47,32 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     fetchPolicy: 'cache-and-network',
   });
 
+  const coachQueryVariables = useMemo(
+    () => ({
+      search: '',
+      connectUsageSearch: [],
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
+      order: [
+        {
+          insertedDate: 'DESC',
+        },
+      ],
+    }),
+    []
+  );
+
+  const {
+    data: coachData,
+    refetch,
+    loading,
+  } = useQuery(GetAllPortalCoaches, {
+    variables: coachQueryVariables,
+    fetchPolicy: 'network-only',
+  });
+
   useEffect(() => {
     if (roleData && roleData.roles) {
       addUserRole();
@@ -58,6 +85,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  const [userAlreadyExits, setUserAlreadyExits] = useState(false);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
 
@@ -303,6 +331,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             setIdType={setIdType}
             idType={idType}
             clearErrors={clearErrors}
+            setUserAlreadyExits={setUserAlreadyExits}
+            practitioners={coachData?.allPortalCoaches}
+            typeofUser="coach"
           />
         </div>
 
@@ -360,7 +391,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
         type="info"
       />
       <UserPanelSave
-        disabled={!getIsValid()}
+        disabled={!getIsValid() || userAlreadyExits}
         onSave={onSave}
         isLoading={isLoading}
       />
