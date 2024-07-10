@@ -275,7 +275,7 @@ export default function ContentList({
         // setTableData(
         //   anteNatalData?.length > 0 ? anteNatalData : moreInforItems
         // );
-        console.log('Programme data', moreInforItems);
+        // console.log('Programme data', moreInforItems);
         setTableData(moreInforItems);
       } else if (selectedTab === 4) {
         const getFormattedDateString = (mDate: String) => {
@@ -346,20 +346,20 @@ export default function ContentList({
   const viewSelectedRow = useCallback(
     (item?: any) => {
       if (selectedTab === 2 || selectedTab === 3) {
-        // const selecteditem = natalData?.natalRecordsForType?.find((record) => {
-        //   return record?.childId === item?.childId;
-        // });
-        // const currentType = dataTypes.contentTypes.find(
-        //   (x: ContentTypeDto) =>
-        //     Number(x.id) === Number(selecteditem?.childContentTypeId)
-        // );
-        // setSelectedType(currentType);
-        // setNatalType(Number(selecteditem?.childContentTypeId));
-        // const model: ContentManagementView = {
-        //   content: selecteditem,
-        //   languageId: languageId,
-        // };
-        // viewContent(model);
+        const selecteditem = tableData?.find((record) => {
+          return record?.childId === item?.childId;
+        });
+        const currentType = dataTypes.contentTypes.find(
+          (x: ContentTypeDto) =>
+            Number(x.id) === Number(selecteditem?.childContentTypeId)
+        );
+        setSelectedType(currentType);
+        setNatalType(Number(selecteditem?.childContentTypeId));
+        const model: ContentManagementView = {
+          content: selecteditem,
+          languageId: languageId,
+        };
+        viewContent(model);
 
         return;
       }
