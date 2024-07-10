@@ -73,7 +73,7 @@ export const PractitionerSetup = ({
         practitionerId: userId,
         progress: 2.0,
       })
-    );
+    ).unwrap();
     await appDispatch(
       updatePrincipalInvitation({ userId, principalHierarchy, accepted })
     );
