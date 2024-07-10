@@ -682,6 +682,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
   };
 
   const availableLanguages: LanguageCode[] = activity?.availableLanguages
+    ?.length
     ? activity.availableLanguages?.map((item) => {
         return item?.locale as LanguageCode;
       })
@@ -694,7 +695,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
           <LanguageSelector
             labelClassName="text-textDark mr-2"
             currentLocale={'en-za'}
-            availableLanguages={availableLanguages || [defaultLanguage]}
+            availableLanguages={availableLanguages}
             selectLanguage={getDataByLanguage}
           />
         </div>
