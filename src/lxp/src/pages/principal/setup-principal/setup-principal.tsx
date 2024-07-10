@@ -238,7 +238,7 @@ export const SetupPrincipal: React.FC = () => {
               });
           } else {
             const input: MutationAddPractitionerToPrincipalArgs = {
-              userId: inviTePractitionerUserId,
+              userId: user?.id,
               idNumber: principalPractitioner.idNumber,
               firstName: principalPractitioner.firstName,
               lastName: principalPractitioner.surname,

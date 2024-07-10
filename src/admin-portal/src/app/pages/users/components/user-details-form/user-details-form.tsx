@@ -99,7 +99,7 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
   };
 
   return (
-    <form key={formKey}>
+    <form>
       <div className="space-y-0">
         <div className="grid grid-cols-1 ">
           <div className="my-4 sm:col-span-3">
