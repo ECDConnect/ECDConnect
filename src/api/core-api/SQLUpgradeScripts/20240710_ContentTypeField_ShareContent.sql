@@ -81,4 +81,9 @@ select nextval('public."ContentTypeField_Id_seq"'), 11, 'updatedDate', 1, true, 
 -- activities and themes
 INSERT INTO public."ContentTypeField"
 ("Id", "FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
-VALUES(nextval('public."ContentTypeField_Id_seq"'), 12, 'themes', 4, true, 'Themes', 13, current_date, current_date, NULL, null, 'Themes', true, true, false);
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 12, 'themes', 4, true, 'Theme', 13, current_date, current_date, NULL, null, 'Themes', true, true, false);
+
+-- story books and themes
+INSERT INTO public."ContentTypeField"
+("Id", "FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "DisplayName", "DisplayMainTable", "DisplayPage", "IsRequired")
+VALUES(nextval('public."ContentTypeField_Id_seq"'), 11, 'themes', 4, true, 'Theme', 10, current_date, current_date, NULL, null, 'Themes', true, true, false);

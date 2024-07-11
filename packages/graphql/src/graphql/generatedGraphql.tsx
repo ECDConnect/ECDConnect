@@ -7273,9 +7273,6 @@ export type Mutation = {
   addInfant?: Maybe<Infant>;
   addLeagues: Scalars['Boolean'];
   addMother?: Maybe<Mother>;
-  addNatalGraphic: Scalars['Boolean'];
-  addNatalInfo: Scalars['Boolean'];
-  addNatalVideo: Scalars['Boolean'];
   addNewClub?: Maybe<Club>;
   addNewClubLeader?: Maybe<ClubLeader>;
   addNewClubMembers: Scalars['Boolean'];
@@ -7301,6 +7298,7 @@ export type Mutation = {
   addVisitBackReferralAdminComment: Scalars['Boolean'];
   addVisitData: Scalars['Boolean'];
   bulkDeleteCoachingCircleTopics?: Maybe<BulkDeactivateResult>;
+  bulkDeleteContentTypes?: Maybe<BulkDeactivateResult>;
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   bulkReactivateUsers: Scalars['Boolean'];
   bulkUpdateCoachingCircleTopicDates: Scalars['Boolean'];
@@ -7767,11 +7765,6 @@ export type Mutation = {
   switchPrincipal: Scalars['Boolean'];
   testPointEngine: Scalars['Boolean'];
   trackAttendance: Scalars['Boolean'];
-  transferHealthPromotionToNatalHealth: Scalars['Boolean'];
-  transferInfoGraphicsToNatalGraphics: Scalars['Boolean'];
-  transferMoreInformationToNatal: Scalars['Boolean'];
-  transferMoreInformationToNatalInfo: Scalars['Boolean'];
-  transferVisitVideosToNatalVideos: Scalars['Boolean'];
   updateAbsentees?: Maybe<Absentees>;
   updateActivity?: Maybe<Activity>;
   updateAuditLogType?: Maybe<AuditLogType>;
@@ -8101,42 +8094,6 @@ export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
 };
 
-export type MutationAddNatalGraphicArgs = {
-  contentTypeId: Scalars['Int'];
-  image?: InputMaybe<Scalars['String']>;
-  localeId: Scalars['UUID'];
-  section?: InputMaybe<Scalars['String']>;
-  title?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationAddNatalInfoArgs = {
-  contentTypeId: Scalars['Int'];
-  discussionA?: InputMaybe<Scalars['String']>;
-  discussionB?: InputMaybe<Scalars['String']>;
-  discussionC?: InputMaybe<Scalars['String']>;
-  discussionD?: InputMaybe<Scalars['String']>;
-  discussionE?: InputMaybe<Scalars['String']>;
-  discussionF?: InputMaybe<Scalars['String']>;
-  discussionG?: InputMaybe<Scalars['String']>;
-  discussionH?: InputMaybe<Scalars['String']>;
-  discussionI?: InputMaybe<Scalars['String']>;
-  discussionJ?: InputMaybe<Scalars['String']>;
-  localeId: Scalars['UUID'];
-  section?: InputMaybe<Scalars['String']>;
-  title?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationAddNatalVideoArgs = {
-  contentTypeId: Scalars['Int'];
-  localeId: Scalars['UUID'];
-  section?: InputMaybe<Scalars['String']>;
-  title?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-  video?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationAddNewClubArgs = {
   input?: InputMaybe<NewClubInput>;
 };
@@ -8253,6 +8210,10 @@ export type MutationAddVisitDataArgs = {
 };
 
 export type MutationBulkDeleteCoachingCircleTopicsArgs = {
+  contentIds?: InputMaybe<Array<Scalars['Int']>>;
+};
+
+export type MutationBulkDeleteContentTypesArgs = {
   contentIds?: InputMaybe<Array<Scalars['Int']>>;
 };
 
@@ -19188,6 +19149,7 @@ export type StoryBook = {
   name?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
   storyBookParts?: Maybe<Array<Maybe<StoryBookParts>>>;
+  themes?: Maybe<Array<Maybe<Theme>>>;
   type?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
 };
@@ -19201,6 +19163,7 @@ export type StoryBookInput = {
   name?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Scalars['String']>;
   storyBookParts?: InputMaybe<Scalars['String']>;
+  themes?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
