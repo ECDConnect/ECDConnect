@@ -114,8 +114,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
                             }
                         };
-                        //send message of invitation
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                        // send message of invitation only if principal is adding the practitioner to the programme
+                        // not sending message when the practitioner has joined the preschool on their own
+                        if (uId != practitionerUser.Id)
+                        {
+                            notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                        }
 
                         return practitioner;
                     }
