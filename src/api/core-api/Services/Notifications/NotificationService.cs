@@ -252,11 +252,12 @@ namespace EcdLink.Api.CoreApi.Services
                 CTAText = notification.CTAText,
                 ToGroups = notification.ToGroups,
                 Action = notification.Action,
-                MessageLogRelatedTos = notification.RelatedEntities.Select(x => new MessageLogRelatedTo
+                MessageLogRelatedTos = notification.RelatedEntities != null ? notification.RelatedEntities.Select(x => new MessageLogRelatedTo
                 {
                     RelatedEntityId = x.RelatedToEntityId,
                     EntityType = x.EntityType,
-                }).ToList(),
+                }).ToList()
+                : new List<MessageLogRelatedTo>(),
                 GroupingId = notification.GroupingId,
             });
         }
