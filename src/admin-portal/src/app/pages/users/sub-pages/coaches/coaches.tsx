@@ -98,6 +98,9 @@ export default function Coaches() {
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const inactiveUsers = selectedUsers?.filter(
+    (item) => item?.isActive === false
+  );
   const disableInviteBulkAction =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
 
@@ -490,9 +493,9 @@ export default function Coaches() {
             ` before deactivating them.`
           }
           btnText={['Yes, deactivate ' + coachPluralName, 'No, Cancel']}
-          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
+          hasAlert={isAllInactive || inactiveUsers?.length > 0}
           alertMessage={
-            `Note: ${registeredOrInactiveUsers?.length} ` +
+            `Note: ${inactiveUsers?.length} ` +
             coachPluralName +
             ` selected have already been deactivated.`
           }
@@ -563,7 +566,6 @@ export default function Coaches() {
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
         <div className="rounded-xl bg-white p-12">
           <Table
-            watchMode
             ref={tableRef}
             rows={rows}
             columns={columns}

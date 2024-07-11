@@ -48,9 +48,11 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { idTypeEnum } from '../../../../../view-user/view-user.types';
+import { useTenant } from '../../../../../../hooks/useTenant';
 
 export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
+  const tenant = useTenant();
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
   };
@@ -72,6 +74,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [userAlreadyExits, setUserAlreadyExits] = useState(false);
+  const isCoachRoleEnabled = tenant?.modules?.coachRoleEnabled;
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
   const [idType, setIdType] = useState<string>('idNumber');
@@ -395,16 +398,18 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="rounded-lg bg-white py-2">
-          <PractitionerForm
-            formKey={`createPractitioner-${new Date().getTime()}`}
-            register={practitionerRegister}
-            errors={practitionerFormErrors}
-            coachQueryVariables={coachQueryVariables}
-            practitionerGetValues={practitionerGetValues}
-            practitionerSetValue={practitionerSetValue}
-          />
-        </div>
+        {isCoachRoleEnabled && (
+          <div className="rounded-lg bg-white py-2">
+            <PractitionerForm
+              formKey={`createPractitioner-${new Date().getTime()}`}
+              register={practitionerRegister}
+              errors={practitionerFormErrors}
+              coachQueryVariables={coachQueryVariables}
+              practitionerGetValues={practitionerGetValues}
+              practitionerSetValue={practitionerSetValue}
+            />
+          </div>
+        )}
 
         {/* <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">

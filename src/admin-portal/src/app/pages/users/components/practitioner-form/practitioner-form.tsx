@@ -11,6 +11,7 @@ import {
 import { CoachDto, PractitionerDto } from '@ecdlink/core';
 import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
 import { useMemo } from 'react';
+import { useTenant } from '../../../../hooks/useTenant';
 
 export interface PractitionerFormProps {
   formKey: string;
@@ -37,6 +38,9 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
     variables: coachQueryVariables,
     fetchPolicy: 'network-only',
   });
+
+  const tenant = useTenant();
+  const coachRoleName = tenant?.modules?.coachRoleName;
 
   const coachesDropdownArray: SearchDropDownOption<string>[] =
     coachData?.allPortalCoaches?.map((item) => ({
@@ -161,8 +165,8 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               }
             /> */}
             <Dropdown<string>
-              label="Practitioner's coach"
-              subLabel="Optional. You will need to add the coach to the admin portal before you can connect them to a practitioner."
+              label={`Practitioner's ${coachRoleName?.toLowerCase()}`}
+              subLabel={`Optional. You will need to add the ${coachRoleName?.toLowerCase()} to the admin portal before you can connect them to a practitioner.`}
               fillType="filled"
               textColor="textLight"
               fillColor="adminPortalBg"
