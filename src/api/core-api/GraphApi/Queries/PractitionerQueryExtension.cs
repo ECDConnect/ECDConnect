@@ -98,22 +98,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
                     if (practitioner != null)
                     {
-                        if (practitioner.PrincipalHierarchy == null && practitioner.CoachHierarchy == principal.CoachHierarchy) // only allow practitioners assigned to same coach and where they are not assigned to any otehr practitioners
+                        if (practitioner.PrincipalHierarchy == null)
                         {
                             return new PractitionerUserAndNote() { AppUser = practitioner.User };
                         }
                         else
                         {
-                            if (practitioner.CoachHierarchy == null || practitioner.CoachHierarchy != principal.CoachHierarchy) 
-                            {
-                                return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "Oh no! You can't add this practitioner to your programme. They don't have the same coach that you have. If you need more help, please contact the SmartStart call centre."};
-                            }
                             return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
                         }
                     }
                     else
                     {
-                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on Funda App" };
+                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app" };
                     }
                 }
             }
