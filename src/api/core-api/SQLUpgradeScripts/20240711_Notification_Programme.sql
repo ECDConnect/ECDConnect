@@ -1,0 +1,1 @@
+update "MessageTemplate" mt set "IsActive"=false where "TemplateType" = 'ProgrammeInvitation' and "Protocol" = 'sms';
