@@ -118,7 +118,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
             else
             {
-                throw new QueryException("Coach Feedback could not be saved.");
+                return null;
             }
 
             return coachFeedback;
@@ -320,7 +320,7 @@ namespace EcdLink.Api.CoreApi.Services
             } 
             else
             {
-                throw new QueryException("Community Profile not found.");
+                return null;
             }
         }
 
