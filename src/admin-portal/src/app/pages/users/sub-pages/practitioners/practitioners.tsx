@@ -115,6 +115,9 @@ export default function Practitioners() {
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const inactiveUsers = selectedUsers?.filter(
+    (item) => item?.isActive === false
+  );
   const disableInviteBulkAction =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
 
@@ -555,8 +558,8 @@ export default function Practitioners() {
           } Practitioners?`}
           message={`Are you sure you want to deactivate these Practitioners? Practitioners will lose their access to the app immediately. Make sure you have communicated this to Practitioners before deactivating them.`}
           btnText={['Yes, deactivate Practitioners', 'No, Cancel']}
-          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
-          alertMessage={`Note: ${registeredOrInactiveUsers?.length} Practitioners selected have already been deactivated.`}
+          hasAlert={isAllInactive || inactiveUsers?.length > 0}
+          alertMessage={`Note: ${inactiveUsers?.length} Practitioners selected have already been deactivated.`}
           alertType="error"
           onCancel={() => {
             onClose();
@@ -618,7 +621,6 @@ export default function Practitioners() {
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
         <div className="rounded-xl bg-white p-12">
           <Table
-            watchMode
             ref={tableRef}
             rows={rows}
             columns={columns}
