@@ -1,0 +1,108 @@
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useTenant } from '@/hooks/useTenant';
+import { useTheme } from '@ecdlink/core';
+import {
+  BannerWrapper,
+  Button,
+  ButtonGroup,
+  ButtonGroupTypes,
+  Card,
+  Typography,
+} from '@ecdlink/ui';
+import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { yesOrNoOptions } from '../community-welcome.types';
+import { Control, FieldValues, UseFormSetValue } from 'react-hook-form';
+
+interface Step1Props {
+  setStep: (item: number) => void;
+  setValue: UseFormSetValue<any>;
+  shareContactInfo: boolean | undefined;
+  step: number;
+  setJoinCommunity: (item: boolean) => void;
+}
+
+export const Step1: React.FC<Step1Props> = ({
+  setStep,
+  setValue,
+  shareContactInfo,
+  step,
+  setJoinCommunity,
+}) => {
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+
+  console.log({ tenant });
+
+  const handleNextAction = () => {
+    if (shareContactInfo === true) {
+      setStep(step + 1);
+    } else {
+      setJoinCommunity(false);
+    }
+  };
+  return (
+    <div className={'h-screen overflow-auto px-4'}>
+      <div className="h-screen overflow-auto pt-2">
+        <div className="flex flex-col gap-11">
+          <div className="flex w-full justify-center">
+            <Card
+              className="bg-uiBg fixed flex w-11/12 flex-col items-center gap-3 p-6"
+              borderRaduis="xl"
+              shadowSize="lg"
+            >
+              <div className="">
+                <JoinCommunity />
+              </div>
+              <Typography
+                color="textDark"
+                text={`Join your AppName ${appName} community!`}
+                type={'h3'}
+                align="center"
+              />
+            </Card>
+          </div>
+        </div>
+        <div className="mt-56 py-4">
+          <Typography
+            type={'h4'}
+            text={`Would you like to share your information with other ECD Heroes and join the ${appName} community?`}
+            className={'text-sm font-normal'}
+            color={'textDark'}
+          />
+          <Typography
+            type={'help'}
+            text={'You can choose which information is shared.'}
+            className={'mb-2 text-sm font-normal'}
+            color={'textMid'}
+          />
+          <ButtonGroup<boolean>
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            options={yesOrNoOptions}
+            onOptionSelected={(option: boolean | boolean[]) => {
+              console.log({ option });
+              setValue('shareContactInfo', option);
+            }}
+            selectedOptions={shareContactInfo}
+            notSelectedColor="secondaryAccent2"
+            textColor="secondary"
+          />
+        </div>
+        <div className="absolute right-0 left-0  bottom-0 mb-20 max-h-20 w-full p-4">
+          <Button
+            size="normal"
+            className="w-full"
+            type="filled"
+            color="quatenary"
+            text="Next"
+            textColor="white"
+            icon="ArrowCircleRightIcon"
+            disabled={shareContactInfo === undefined}
+            onClick={handleNextAction}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -14,6 +14,7 @@ import {
   updatePrincipalInvitation,
   getPractitionerDisplayMetrics,
   updatePractitionerPermissions,
+  updatePractitionerCommunityTabStatus,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -104,6 +105,15 @@ const practitionerSlice = createSlice({
     builder.addCase(updatePractitionerProgress.fulfilled, (state, action) => {
       state.practitioner = { ...state.practitioner, progress: action.payload };
     });
+    builder.addCase(
+      updatePractitionerCommunityTabStatus.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          clickedCommunityTab: action.payload,
+        };
+      }
+    );
     builder.addCase(updatePrincipalInvitation.fulfilled, (state, action) => {
       state.practitioner = {
         ...state.practitioner,

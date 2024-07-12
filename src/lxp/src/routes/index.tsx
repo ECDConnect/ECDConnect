@@ -136,6 +136,7 @@ import { EditRegisters } from '@/pages/classroom/attendance/edit-registers/edit-
 import { UpdateIncome } from '@/pages/business/add-amount/add-income/update-income';
 import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
 import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-expense';
+import { NewCommunity } from '@/pages/new-community/new-community';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -264,6 +265,11 @@ const AuthRoutes: React.FC = () => {
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact />
+      <Route
+        path={ROUTES.NEW_COMMUNITY.WELCOME}
+        component={NewCommunity}
+        exact
+      />
       <Route path={ROUTES.COMMUNITY.ROOT} component={Community} exact />
       <Route
         path={ROUTES.COMMUNITY.WELCOME}

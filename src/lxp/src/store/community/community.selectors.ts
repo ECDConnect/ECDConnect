@@ -1,4 +1,4 @@
-import { Connect, ConnectItem } from '@ecdlink/graphql';
+import { CommunityProfile, Connect, ConnectItem } from '@ecdlink/graphql';
 import { RootState } from '../types';
 
 export const getConnectData = (state: RootState): Connect[] | undefined =>
@@ -11,4 +11,10 @@ export const getConnectItems = (
   state: RootState
 ): ConnectItem[] | undefined => {
   return state.community?.connectItem?.filter((item) => item?.link !== '');
+};
+
+export const getCommunityProfile = (
+  state: RootState
+): CommunityProfile | undefined => {
+  return state.community?.communityProfile;
 };

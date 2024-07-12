@@ -1,4 +1,4 @@
-import AlienImage from '@/assets/ECD_Connect_alien.svg';
+import AlienImage from '@/assets/ECD_Connect_alien2.svg';
 import ROUTES from '@/routes/routes';
 import {
   AlertSeverityType,
