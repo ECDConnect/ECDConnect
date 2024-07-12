@@ -1,7 +1,13 @@
-import { Typography, Card, Button, BannerWrapper } from '@ecdlink/ui';
+import {
+  Typography,
+  Card,
+  Button,
+  BannerWrapper,
+  DialogPosition,
+} from '@ecdlink/ui';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { useTenant } from '@/hooks/useTenant';
-import { Step1 } from './components/step1';
+import { Step1 } from './components/step1/step1';
 import { useCallback, useState } from 'react';
 import {
   WelcomeMessageModel,
@@ -10,8 +16,8 @@ import {
 } from '@/schemas/community/welcome/welcome-message';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Step2 } from './components/step2';
-import { useTheme } from '@ecdlink/core';
+import { Step2 } from './components/step2/step2';
+import { useDialog, useTheme } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -20,9 +26,10 @@ import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { communityThunkActions } from '@/store/community';
+import { communitySelectors, communityThunkActions } from '@/store/community';
 import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
+import { AddPhotoDialog } from './components/add-photo-dialog';
 
 export const NewCommunityWelcome = ({
   setJoinCommunity,
@@ -33,10 +40,14 @@ export const NewCommunityWelcome = ({
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
   const history = useHistory();
+  const dialog = useDialog();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const communityProfile = useSelector(communitySelectors.getCommunityProfile);
+  const profilePhoto = communityProfile?.communityUser?.profilePhoto;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { getValues, setValue, register, trigger, formState, watch, control } =
     useForm<WelcomeMessageModel>({
@@ -55,13 +66,14 @@ export const NewCommunityWelcome = ({
   } = watch();
 
   const onAllStepsComplete = async () => {
+    setIsLoading(true);
     const saveCommunityProfileInput: CommunityProfileInputModelInput = {
       userId: practitioner?.userId!,
       aboutShort: aboutShort,
       shareContactInfo: shareContactInfo,
       shareProfilePhoto: shareProfilePhoto,
       shareProvince: shareProvince,
-      provinceId: provinceId,
+      provinceId: provinceId || '',
       communitySkillIds: [],
     };
 
@@ -76,6 +88,31 @@ export const NewCommunityWelcome = ({
         practitionerUserId: practitioner?.userId!,
       })
     );
+
+    setIsLoading(false);
+
+    if (!profilePhoto) {
+      return dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render: (onClose) => (
+          <AddPhotoDialog
+            onClose={() => {
+              history.push(ROUTES.COMMUNITY.ROOT);
+              onClose();
+            }}
+            onSubmit={() => {
+              history.push(ROUTES.PRACTITIONER.ABOUT.ROOT, {
+                isFromCommunityWelcome: true,
+              });
+              onClose();
+            }}
+          />
+        ),
+      });
+    } else {
+      setJoinCommunity(false);
+    }
 
     setJoinCommunity(false);
   };
@@ -105,6 +142,7 @@ export const NewCommunityWelcome = ({
             aboutShort={aboutShort}
             errors={errors}
             setJoinCommunity={setJoinCommunity}
+            isLoading={isLoading}
           />
         );
     }
