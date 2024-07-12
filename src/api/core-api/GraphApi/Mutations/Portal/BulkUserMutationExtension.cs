@@ -691,7 +691,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var userImportList = new List<ApplicationUser>();
             var practitionerUsers = new Dictionary<string, Practitioner>();
-            var createdUsers = new List<string>();
+            var createdUsers = new List<ApplicationUser>();
+            var createdUserNames = new List<string>();
 
             var validationErrors = new List<InputValidationError>();
 
@@ -880,11 +881,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     continue;
                 }
 
-                createdUsers.Add(user.UserName);
+                createdUserNames.Add(user.UserName);
+                createdUsers.Add(user);
+            }
 
+            foreach (var user in createdUsers)
+            {
                 try
                 {
-                    var token = await invitationManager.GenerateTokenAsync(user);
+                    var token = invitationManager.GenerateTokenAsync(user).Result;
 
                     if (string.IsNullOrWhiteSpace(token))
                     {
@@ -892,6 +897,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         continue;
                     }
                     await notificationManager.SendInvitationAsync(user, token);
+                    await Task.Delay(2000);
                 }
                 catch (Exception ex)
                 {
@@ -900,9 +906,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
+
             return new UserImportModel()
             {
-                CreatedUsers = createdUsers,
+                CreatedUsers = createdUserNames,
                 ValidationErrors = validationErrors
             };
 
@@ -950,8 +957,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         errors.Add("Coach Id is empty or invalid");
                     }
                 }
-
-
                 return errors;
             }
         }
@@ -982,7 +987,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var userImportList = new List<ApplicationUser>();
             var coachUsers = new Dictionary<string, Coach>();
-            var createdUsers = new List<string>();
+            var createdUsers = new List<ApplicationUser>();
+            var createdUserNames = new List<string>();
 
             var validationErrors = new List<InputValidationError>();
 
@@ -1070,6 +1076,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         Id = user.Id,
                         User = user,
+                        UserId = user.Id,
                         IsRegistered = false,
                         InsertedDate = insertedDate,
                         TenantId = tenantId,
@@ -1152,11 +1159,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     continue;
                 }
 
-                createdUsers.Add(user.UserName);
+                createdUserNames.Add(user.UserName);
+                createdUsers.Add(user);
+            }
 
+            foreach (var user in createdUsers)
+            {
                 try
                 {
-                    var token = await invitationManager.GenerateTokenAsync(user);
+                    var token = invitationManager.GenerateTokenAsync(user).Result;
 
                     if (string.IsNullOrWhiteSpace(token))
                     {
@@ -1164,17 +1175,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         continue;
                     }
                     await notificationManager.SendInvitationAsync(user, token);
+                    await Task.Delay(2000);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Could not send invitation to user: {user?.UserName}");
-                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user?.UserName}"));
+                     _logger.LogError(ex, $"Could not send invitation to user: {user?.UserName}");
+                     validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user?.UserName}"));
                 }
             }
 
+
             return new UserImportModel()
             {
-                CreatedUsers = createdUsers,
+                CreatedUsers = createdUserNames,
                 ValidationErrors = validationErrors
             };
 
