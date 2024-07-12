@@ -952,12 +952,6 @@ export const Dashboard: React.FC = () => {
         !missingProgramme) ||
       isTrialPeriod
     ) {
-      // history.push(
-      //   isFirstTimeCommunitySection
-      //     ? ROUTES.COMMUNITY.WELCOME
-      //     : ROUTES.COMMUNITY.ROOT,
-      //   { isFromDashboard: true } as CommunityRouteState
-      // );
       history?.push(ROUTES.NEW_COMMUNITY.WELCOME);
     } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
