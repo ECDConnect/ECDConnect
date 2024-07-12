@@ -1,16 +1,12 @@
 import { Typography, Card } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import * as styles from './childrenPerAgeGroup.styles';
 import { ChildrenPerAgeGroupProps } from './childrenperAgeGroup.types';
 import { differenceInCalendarMonths } from 'date-fns';
-import { childrenSelectors } from '@/store/children';
 
 export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
-  practitionerId,
+  childrenForPractitionerList,
 }) => {
-  const childrenForPractitioner = useSelector(childrenSelectors.getChildren);
-
   const [ageGroup1, setAgeGroup1] = useState(0);
   const [ageGroup2, setAgeGroup2] = useState(0);
   const [ageGroup3, setAgeGroup3] = useState(0);
@@ -33,8 +29,8 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
   };
 
   useEffect(() => {
-    if (!!childrenForPractitioner?.length) {
-      childrenForPractitioner?.map((item) => {
+    if (!!childrenForPractitionerList?.length) {
+      childrenForPractitionerList?.map((item) => {
         const childBirthDate = item?.user?.dateOfBirth
           ? new Date(item?.user?.dateOfBirth)
           : undefined;
@@ -54,7 +50,7 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
         setAgeGroup4(0);
       };
     }
-  }, [childrenForPractitioner]);
+  }, [childrenForPractitionerList]);
 
   return (
     <div>
