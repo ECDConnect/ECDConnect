@@ -88,6 +88,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
+  const [openChangeCommunityPic, setOpenChangeCommunityPic] = useState(false);
 
   const [dialogFormInput, setDialogFormInput] = useState<
     DialogFormInput<PractitionerAccountModel>
@@ -384,7 +385,7 @@ export const PractitionerAbout: React.FC = () => {
                 ) : undefined
               }
               onSubmit={() => {
-                history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT, {
+                history.push(ROUTES.COMMUNITY.ROOT, {
                   isFromCommunityWelcome: false,
                 } as PractitionerAboutRouteState);
                 onClose();
@@ -419,7 +420,6 @@ export const PractitionerAbout: React.FC = () => {
   const picturePromtOnAction = async (imageBaseString: string) => {
     setStorageItem(imageBaseString, pictureStorageKey);
     setEditProfilePictureVisible(!editProfilePictureVisible);
-
     const copy = Object.assign({}, user);
     if (copy) {
       copy.profileImageUrl = imageBaseString;
@@ -456,6 +456,9 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userThunkActions.updateUser(copy));
 
       setNewStackListItems(copy);
+      if (isFromCommunityWelcome) {
+        setOpenChangeCommunityPic(true);
+      }
     }
   };
 
@@ -621,6 +624,36 @@ export const PractitionerAbout: React.FC = () => {
             ></Typography>
           </Button>
         </div>
+      </Dialog>
+      <Dialog
+        borderRadius="normal"
+        className="rounded-2xl p-4"
+        visible={openChangeCommunityPic}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          className="text-textDark bg-white p-4"
+          customIcon={
+            <ProfileAvatar size="header" hasConsent={true} dataUrl={avatar} />
+          }
+          icon={'QuestionMarkIcon'}
+          iconColor="white"
+          iconBorderColor="infoMain"
+          // importantText={'Looking good!'}
+          title="Looking good"
+          actionButtons={[
+            {
+              text: 'Go back to Community page',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                history?.push(ROUTES.COMMUNITY.ROOT);
+              },
+              leadingIcon: 'ArrowCircleLeftIcon',
+            },
+          ]}
+        />
       </Dialog>
     </div>
   );

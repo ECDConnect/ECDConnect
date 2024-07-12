@@ -13,7 +13,7 @@ import {
 } from '@ecdlink/ui';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
-import { yesOrNoOptions } from '../community-welcome.types';
+import { yesOrNoOptions } from '../../community-welcome.types';
 import { FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import {
@@ -38,6 +38,7 @@ interface Step1Props {
   aboutShort: string | undefined;
   errors: FieldErrors;
   setJoinCommunity?: (item: boolean) => void;
+  isLoading: boolean;
 }
 
 export const Step2: React.FC<Step1Props> = ({
@@ -51,6 +52,7 @@ export const Step2: React.FC<Step1Props> = ({
   provinceId,
   aboutShort,
   setJoinCommunity,
+  isLoading,
 }) => {
   const dispatch = useAppDispatch();
   const tenant = useTenant();
@@ -197,7 +199,8 @@ export const Step2: React.FC<Step1Props> = ({
             text="Save"
             textColor="white"
             icon="SaveIcon"
-            disabled={disableButton}
+            isLoading={isLoading}
+            disabled={disableButton || isLoading}
             onClick={onAllStepsComplete}
           />
           <Button

@@ -11,7 +11,7 @@ import {
 } from '@ecdlink/ui';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
-import { yesOrNoOptions } from '../community-welcome.types';
+import { yesOrNoOptions } from '../../community-welcome.types';
 import { Control, FieldValues, UseFormSetValue } from 'react-hook-form';
 
 interface Step1Props {
