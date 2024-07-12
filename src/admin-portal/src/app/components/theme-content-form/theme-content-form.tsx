@@ -140,27 +140,19 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     },
   });
 
-  const { data: storyActivitiesData } = useQuery(
-    smallLargeActivitiesQuery,
+  const { data: storyActivitiesData } = useQuery(smallLargeActivitiesQuery, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: languageId?.toString(),
+    },
+  });
 
-    {
-      fetchPolicy: 'cache-and-network',
-      variables: {
-        localeId: languageId?.toString(),
-      },
-    }
-  );
-
-  const { data: storyBookActivitiesData } = useQuery(
-    storiesActivitiesQuery,
-
-    {
-      fetchPolicy: 'cache-and-network',
-      variables: {
-        localeId: languageId?.toString(),
-      },
-    }
-  );
+  const { data: storyBookActivitiesData } = useQuery(storiesActivitiesQuery, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: languageId?.toString(),
+    },
+  });
 
   const smallGroupOptions: SearchDropDownOption<any>[] =
     storyActivitiesData?.GetAllActivity?.filter(
@@ -368,6 +360,11 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
 
         <div className="mt-4 sm:rounded-lg">
           {tableData &&
+            themeDaysArr &&
+            smallGroupOptions &&
+            largeGroupOptions &&
+            storyBookOptions &&
+            storyTimeOptions &&
             tableData.map((item: any, idx: number) => (
               <>
                 <div

@@ -13,6 +13,7 @@ import { ContentLoader } from '../../../../components/content-loader/content-loa
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
+  ActivitiesTitles,
   ContentManagementView,
   FieldType,
 } from '../../content-management-models';
@@ -59,14 +60,11 @@ export default function ContentList({
   selectedTab,
   contentType,
   languages,
-  optionDefinitions,
   viewContent,
   refreshParent,
   onSearch,
   searchValue,
   choosedSectionTitle,
-  specialType,
-  setNatalType,
   setSelectedType,
   dataTypes,
 }: ContentListProps) {
@@ -175,7 +173,8 @@ export default function ContentList({
 
       if (choosedSectionTitle === 'Small/large group activities') {
         const smallLargeGroupsDisplayFields = displayFields?.filter(
-          (item) => item?.fieldName !== 'subType'
+          (item) =>
+            item?.fieldName !== 'subType' && item?.fieldName !== 'themes'
         );
         setDisplayFields(smallLargeGroupsDisplayFields);
         return;
@@ -268,14 +267,25 @@ export default function ContentList({
         // );
         setTableData(moreInforItems);
       } else if (selectedTab === 3) {
-        // let anteNatalData = moreInforItems.filter(
-        //   (item: { type: string }) => item.type === 'antenatal'
-        // );
+        if (
+          choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+        ) {
+          setTableData(
+            moreInforItems?.filter(
+              (item) =>
+                item?.type === 'Small group' || item?.type === 'Large group'
+            )
+          );
+          return;
+        }
 
-        // setTableData(
-        //   anteNatalData?.length > 0 ? anteNatalData : moreInforItems
-        // );
-        // console.log('Programme data', moreInforItems);
+        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+          setTableData(
+            moreInforItems?.filter((item) => item?.type === 'Story time')
+          );
+          return;
+        }
+
         setTableData(moreInforItems);
       } else if (selectedTab === 4) {
         const getFormattedDateString = (mDate: String) => {
@@ -299,15 +309,6 @@ export default function ContentList({
         const copyItems = contentData[getAllCall].map((item: any) => ({
           ...item,
         }));
-
-        // let clientProfileData = copyItems.filter(
-        //   (item: { type: string; name: string }) => {
-        //     return (
-        //       item.type !== 'TermsAndConditions' &&
-        //       item.name !== 'Personal Information'
-        //     );
-        //   }
-        // );
 
         setTableData(copyItems);
       }
@@ -336,55 +337,14 @@ export default function ContentList({
     }
   }, [contentType.name]);
 
-  const getContentGroupContentByLanguageId = (languageId: string) => {
-    setLanguageId(languageId);
-    refetchContent({
-      localeId: languageId.toString(),
-    });
+  const viewSelectedRow = (item?: any) => {
+    const model: ContentManagementView = {
+      content: item,
+      languageId: languageId,
+    };
+
+    viewContent(model);
   };
-
-  const viewSelectedRow = useCallback(
-    (item?: any) => {
-      if (selectedTab === 2 || selectedTab === 3) {
-        const selecteditem = tableData?.find((record) => {
-          return record?.childId === item?.childId;
-        });
-        const currentType = dataTypes.contentTypes.find(
-          (x: ContentTypeDto) =>
-            Number(x.id) === Number(selecteditem?.childContentTypeId)
-        );
-        setSelectedType(currentType);
-        setNatalType(Number(selecteditem?.childContentTypeId));
-        const model: ContentManagementView = {
-          content: selecteditem,
-          languageId: languageId,
-        };
-        viewContent(model);
-
-        return;
-      }
-      const currentType = dataTypes.contentTypes.find(
-        (x: ContentTypeDto) => x.id === item?.childContentTypeId
-      );
-      setSelectedType(currentType);
-      setNatalType(Number(item?.childContentTypeId));
-
-      const model: ContentManagementView = {
-        content: item,
-        languageId: languageId,
-      };
-
-      viewContent(model);
-    },
-    [
-      dataTypes.contentTypes,
-      languageId,
-      selectedTab,
-      setNatalType,
-      setSelectedType,
-      viewContent,
-    ]
-  );
 
   const onBulkActionCallback = useCallback(
     (status: BulkActionStatus) => {
@@ -397,114 +357,6 @@ export default function ContentList({
     },
     [languageId, refetchContent, refreshParent]
   );
-  // const natalDataFiltered = useMemo(() => {
-  //   return searchValue !== 'Search by title or content...'
-  //     ? filterByValue(natalData?.natalRecordsForType, searchValue)
-  //     : natalData?.natalRecordsForType;
-  // }, [filterByValue, natalData?.natalRecordsForType, searchValue]);
-
-  // const filteredData = useMemo(() => {
-  //   // const filteredByDate = natalDataFiltered?.filter((d) => {
-  //   //   return (
-  //   //     new Date(d?.updatedDate).getTime() >= new Date(startDate)?.getTime() &&
-  //   //     new Date(d?.updatedDate).getTime() <= new Date(endDate)?.getTime()
-  //   //   );
-  //   // });
-
-  //   if (startDate && endDate) {
-  //     // const filteredByType =
-  //     //   typeFilterValues?.length > 0
-  //     //     ? filteredByDate?.filter((el) => {
-  //     //         return typeFilterValues?.some((f) => {
-  //     //           return f === el.childType;
-  //     //         });
-  //     //       })
-  //     //     : filteredByDate;
-
-  //     // if (languageFilter?.length > 0) {
-  //     //   const filteredbyLanguageObjects = filteredByType.filter((item) =>
-  //     //     item.availableLanguages.some((languageId) =>
-  //     //       languageFilterValues.includes(languageId)
-  //     //     )
-  //     //   );
-  //     //   return filteredbyLanguageObjects;
-  //     // }
-
-  //     return [];
-  //   }
-
-  //   if (typeFilterValues?.length > 0) {
-  //     // const typeFilterValue = natalDataFiltered?.filter((el) => {
-  //     //   return typeFilterValues?.some((f) => {
-  //     //     return f === el.childType;
-  //     //   });
-  //     // });
-
-  //     // if (languageFilter?.length > 0) {
-  //     //   const filteredbyLanguageObjects = typeFilterValue.filter((item) =>
-  //     //     item.availableLanguages.some((languageId) =>
-  //     //       languageFilterValues.includes(languageId)
-  //     //     )
-  //     //   );
-  //     //   return filteredbyLanguageObjects;
-  //     // }
-
-  //     return [];
-  //   }
-
-  //   if (languageFilter?.length > 0) {
-  //     // const filteredbyLanguageObjects = natalDataFiltered.filter((item) =>
-  //     //   item.availableLanguages.some((languageId) =>
-  //     //     languageFilterValues.includes(languageId)
-  //     //   )
-  //     // );
-  //     // return filteredbyLanguageObjects;
-  //     return []
-  //   }
-
-  //   return [];
-  // }, [endDate, languageFilter?.length, startDate, typeFilterValues]);
-
-  // const handleTypesStyles = useCallback((type: string) => {
-  //   return (
-  //     <div
-  //       className={
-  //         // `${chipColor(type)}` +
-  //         ' m-1 rounded-full py-1 px-3 text-xs text-white'
-  //       }
-  //     >
-  //       {type}
-  //     </div>
-  //   );
-  // }, []);
-
-  // const rows =
-  //   filteredData?.map((item) => ({
-  //     childId: item?.childId,
-  //     title: item?.title,
-  //     section: item?.section,
-  //     availableLanguages: (
-  //       <div className="ml-0 flex cursor-pointer flex-row items-center">
-  //         {item?.availableLanguages?.map((item: any, index: number) => {
-  //           const language = languages?.find(
-  //             (language) => language?.id === item?.id || language?.id === item
-  //           );
-  //           return (
-  //             <div
-  //               key={`language_` + item}
-  //               className={' text-textMid m-1 rounded-full py-1 text-xs'}
-  //             >
-  //               {index === item?.availableLanguages?.length - 1
-  //                 ? `${language?.locale}`
-  //                 : `${language?.locale};`}
-  //             </div>
-  //           );
-  //         })}
-  //       </div>
-  //     ),
-  //     childType: handleTypesStyles(item?.childType),
-  //     updatedDate: formatDate(item?.updatedDate),
-  //   }));
 
   const renderTables = useMemo(() => {
     return (
