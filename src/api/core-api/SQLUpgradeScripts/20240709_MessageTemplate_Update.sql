@@ -1,0 +1,1 @@
+update "MessageTemplate" set "TenantId" = null where "TenantId" = '258a15e6-3736-45ea-875c-48d9377de4c8';
