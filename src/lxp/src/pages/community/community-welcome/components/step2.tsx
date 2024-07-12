@@ -33,6 +33,7 @@ interface Step1Props {
   step: number;
   onAllStepsComplete: () => void;
   shareProvince: boolean | undefined;
+  shareProfilePhoto?: boolean | undefined;
   provinceId: string | undefined;
   aboutShort: string | undefined;
   errors: FieldErrors;
@@ -46,6 +47,7 @@ export const Step2: React.FC<Step1Props> = ({
   step,
   onAllStepsComplete,
   shareProvince,
+  shareProfilePhoto,
   provinceId,
   aboutShort,
   setJoinCommunity,
@@ -61,6 +63,9 @@ export const Step2: React.FC<Step1Props> = ({
   const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
     []
   );
+
+  const disableButton =
+    shareProvince === undefined || shareProfilePhoto === undefined;
 
   useEffect(() => {
     if (provincesData?.length > 0) {
@@ -192,7 +197,7 @@ export const Step2: React.FC<Step1Props> = ({
             text="Save"
             textColor="white"
             icon="SaveIcon"
-            disabled={!shareContactInfo}
+            disabled={disableButton}
             onClick={onAllStepsComplete}
           />
           <Button
