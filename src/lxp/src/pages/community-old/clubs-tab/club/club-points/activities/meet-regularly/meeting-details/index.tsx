@@ -3,8 +3,8 @@ import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import ROUTES from '@/routes/routes';
-import { ClubsRouteState } from '@/pages/community/clubs-tab/index.types';
-import { getPointsActivityDateDetails } from '@/pages/community/clubs-tab/index.filters';
+import { ClubsRouteState } from '@/pages/community-old/clubs-tab/index.types';
+import { getPointsActivityDateDetails } from '@/pages/community-old/clubs-tab/index.filters';
 import { ActivityMeetRegularDetail } from '@ecdlink/graphql';
 
 export const MeetingDetails: React.FC = () => {

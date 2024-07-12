@@ -30,7 +30,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CaregiverMeeting } from '../0-components/caregiver-meeting';
 import { ClubActivitiesPointsPerLeague } from '@/constants/club';
 import PositiveEmoticon from '@/assets/positive-bonus-emoticon.png';
-import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
+import { getScoreBarColor } from '@/pages/community-old/clubs-tab/index.filters';
 
 export const CompleteChildProgressReports: React.FC = () => {
   const [isLogCaregiverMeeting, setIsLogCaregiverMeeting] = useState(false);

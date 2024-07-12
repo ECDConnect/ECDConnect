@@ -27,7 +27,7 @@ import {
   getActivityBeCreativeDetails,
 } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
+import { getScoreBarColor } from '@/pages/community-old/clubs-tab/index.filters';
 import { getAlertType } from '../0-components/alert-card/utils';
 import { ActivityBeCreativeDetail } from '@ecdlink/graphql';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';

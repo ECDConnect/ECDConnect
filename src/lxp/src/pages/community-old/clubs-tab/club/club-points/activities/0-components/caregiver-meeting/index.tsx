@@ -4,7 +4,7 @@ import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
 import { useSnackbar } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
 import { useHistory, useParams } from 'react-router';
-import { ClubsRouteState } from '@/pages/community/clubs-tab/index.types';
+import { ClubsRouteState } from '@/pages/community-old/clubs-tab/index.types';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { clubActions, clubSelectors } from '@/store/club';

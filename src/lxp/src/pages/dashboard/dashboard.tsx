@@ -53,10 +53,10 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { CommunityRouteState } from '../community/community.types';
+import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../community-old/clubs-tab/club/individual-club-view';
 import { notificationTagConfig } from '@/constants/notifications';
 import { childrenThunkActions } from '@/store/children';
 import {

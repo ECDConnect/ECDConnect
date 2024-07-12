@@ -20,7 +20,7 @@ import { Header } from '../0-components/header';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
+import { getScoreBarColor } from '@/pages/community-old/clubs-tab/index.filters';
 import { useCallback, useEffect, useMemo } from 'react';
 import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';

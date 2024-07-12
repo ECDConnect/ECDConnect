@@ -16,7 +16,7 @@ import { useEffect } from 'react';
 import { useAppDispatch } from '@/store';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { ClubActivitiesPointsPerLeague } from '@/constants/club';
-import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
+import { getScoreBarColor } from '@/pages/community-old/clubs-tab/index.filters';
 import { addMonths, format } from 'date-fns';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';

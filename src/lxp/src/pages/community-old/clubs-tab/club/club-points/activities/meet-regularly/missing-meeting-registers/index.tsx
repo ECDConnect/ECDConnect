@@ -1,6 +1,6 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { ClubsRouteState } from '@/pages/community/clubs-tab/index.types';
+import { ClubsRouteState } from '@/pages/community-old/clubs-tab/index.types';
 import { useAppDispatch } from '@/store';
 import { clubSelectors, clubThunkActions } from '@/store/club';
 import { ClubActions } from '@/store/club/club.actions';

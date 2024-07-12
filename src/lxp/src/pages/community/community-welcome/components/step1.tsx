@@ -54,7 +54,7 @@ export const Step1: React.FC<Step1Props> = ({
               </div>
               <Typography
                 color="textDark"
-                text={`Join your AppName ${appName} community!`}
+                text={`Join your ${appName} community!`}
                 type={'h3'}
                 align="center"
               />

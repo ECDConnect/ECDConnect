@@ -1,12 +1,12 @@
 import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { Connect } from '../../community/connect-tab/connect';
+import { Connect } from '../../community-old/connect-tab/connect';
 import { useState } from 'react';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
-import { ClubsTab } from '../../community/clubs-tab';
-import { LeaguesTab } from '../../community/leagues-tab';
+import { ClubsTab } from '../../community-old/clubs-tab';
+import { LeaguesTab } from '../../community-old/leagues-tab';
 import { CommunityItem } from './components/community-item/community-item';
 
 export const COMMUNITY_TABS = {

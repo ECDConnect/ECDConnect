@@ -31,7 +31,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
   getPointsActivityDateDetails,
   getScoreBarColor,
-} from '@/pages/community/clubs-tab/index.filters';
+} from '@/pages/community-old/clubs-tab/index.filters';
 import { getAlertSeverity } from '@/utils/common/string.utils';
 import { ClubActivitiesPointsPerLeague } from '@/constants/club';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';

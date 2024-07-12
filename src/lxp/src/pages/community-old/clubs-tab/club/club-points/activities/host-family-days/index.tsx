@@ -18,7 +18,7 @@ import familyIcon from '@/assets/icon/family.svg';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { HostFamilyDaysRouteState } from './index.types';
 import { userSelectors } from '@/store/user';
-import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
+import { getScoreBarColor } from '@/pages/community-old/clubs-tab/index.filters';
 import { ClubActivitiesPointsPerLeague } from '@/constants/club';
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/store';
