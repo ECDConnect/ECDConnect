@@ -86,14 +86,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var userToInvite = await userManager.FindByIdAsync(userId);
                     if (userToInvite == null)
                     {
-                        result.Failed.Add(userId);
+                        result.Failed.Add($"{userId} : user not found for id");
+                        continue;
+                    }
+                    if (userToInvite != null && string.IsNullOrWhiteSpace(userToInvite.PhoneNumber))
+                    {
+                        result.Failed.Add($"{userId} : phone number not found for id");
                         continue;
                     }
 
                     var token = await invitationManager.GenerateTokenAsync(userToInvite);
                     if (string.IsNullOrWhiteSpace(token))
                     {
-                        result.Failed.Add(userToInvite.Id.ToString());
+                        result.Failed.Add($"{userToInvite.Id} : token failure");
                         continue;
                     }
 
@@ -121,7 +126,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
                 catch
                 {
-                    result.Failed.Add(userId);
+                    result.Failed.Add($"{userId} : failure on sending sms");
                 }
             }
 
