@@ -110,6 +110,7 @@ const persistedReducers = {
   ),
   clubs: persistReducer(clubPersistConfig, clubReducer),
   coach: persistReducer(coachPersistConfig, coachReducer),
+  community: persistReducer(communityPersistConfig, communityReducer),
   contentConsentData: persistReducer(
     contentConsentPersistConfig,
     contentConsentReducer
@@ -146,7 +147,6 @@ const persistedReducers = {
   tenant: persistReducer(tenantPersistConfig, tenantReducer),
   trainee: persistReducer(traineePersistConfig, traineerReducer),
   user: persistReducer(userPersistConfig, userReducer),
-  community: persistReducer(communityPersistConfig, communityReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);

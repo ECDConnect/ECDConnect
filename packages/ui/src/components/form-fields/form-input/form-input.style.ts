@@ -52,6 +52,6 @@ export function getBorderClass(
   if (value && value.toString().length > maxCharacters) {
     return 'border-errorMain';
   } else {
-    return 'border-secondary';
+    return '';
   }
 }

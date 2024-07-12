@@ -61,6 +61,7 @@ import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
 import { RoleSystemNameEnum } from '@ecdlink/core';
+import { communityThunkActions } from './store/community';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -198,6 +199,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (!isCoach) {
       promises.push(
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          communityThunkActions.getCommunityProfile({ userId: userData?.id! })
+        ).unwrap()
       );
       promises.push(
         appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()

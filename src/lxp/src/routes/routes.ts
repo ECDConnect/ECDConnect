@@ -46,6 +46,9 @@ const ROUTES = {
     UPDATE_FEE: '/preschool-fee',
   }),
   TRAINING: '/training',
+  NEW_COMMUNITY: addPrefix('/community', {
+    WELCOME: '/welcome',
+  }),
   COMMUNITY: addPrefix('/community', {
     HELP: '/help/:helpSection',
     WELCOME: '/welcome',

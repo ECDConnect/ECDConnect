@@ -21,7 +21,7 @@ import { PractitionerLeagueView } from './league-tab';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { useWindowSize } from '@reach/window-size';
 import { practitionerSelectors } from '@/store/practitioner';
-import { Connect } from '@/pages/community/connect-tab/connect';
+import { Connect } from '@/pages/community-old/connect-tab/connect';
 
 export const PractitionerCommunity: React.FC = () => {
   const { isOnline } = useOnlineStatus();
