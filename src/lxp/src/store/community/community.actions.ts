@@ -2,6 +2,7 @@ import { CommunityProfile, Connect, ConnectItem } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
+import { CommunityProfileDto } from '@ecdlink/core';
 
 export interface CommunityConnectDataForGGWithLocale {
   locale: string;
@@ -11,6 +12,7 @@ export const CommunityActions = {
   GET_ALL_CONNECT: 'getAllConnect',
   GET_ALL_CONNECT_ITEM: 'getAllConnectItem',
   GET_COMMUNITY_PROFILE: 'getCommunityProfile',
+  SAVE_COMMUNITY_PROFILE: 'saveCommunityProfile',
 };
 
 export const getAllConnect = createAsyncThunk<
@@ -71,7 +73,7 @@ export const getAllConnectItem = createAsyncThunk<
 );
 
 export const getCommunityProfile = createAsyncThunk<
-  CommunityProfile,
+  any,
   { userId: string },
   ThunkApiType<RootState>
 >(
@@ -82,17 +84,38 @@ export const getCommunityProfile = createAsyncThunk<
     } = getState();
 
     try {
-      let content: CommunityProfile | undefined = undefined;
+      // let content: CommunityProfileDto | undefined = undefined;
 
       if (userAuth?.auth_token) {
-        content = await new CommunityService(
+        return await new CommunityService(
           userAuth?.auth_token ?? ''
         ).getCommunityProfile(userId);
-        console.log({ content });
-        return content;
       } else {
         return rejectWithValue('no access token, profile check required');
       }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const saveCommunityProfile = createAsyncThunk<
+  any,
+  { input: any },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.SAVE_COMMUNITY_PROFILE,
+  async ({ input }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const response = await new CommunityService(
+          userAuth?.auth_token
+        ).saveCommunityProfile(input);
+        return response;
+      } else return rejectWithValue('no access token, profile check required');
     } catch (err) {
       return rejectWithValue(err);
     }

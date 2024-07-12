@@ -1,5 +1,6 @@
 import { CommunityProfile, Connect, ConnectItem } from '@ecdlink/graphql';
 import { RootState } from '../types';
+import { CommunityProfileDto } from '@ecdlink/core';
 
 export const getConnectData = (state: RootState): Connect[] | undefined =>
   state.community.connect;
@@ -15,6 +16,6 @@ export const getConnectItems = (
 
 export const getCommunityProfile = (
   state: RootState
-): CommunityProfile | undefined => {
+): CommunityProfileDto | undefined => {
   return state.community?.communityProfile;
 };

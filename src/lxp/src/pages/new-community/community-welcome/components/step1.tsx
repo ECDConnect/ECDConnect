@@ -32,8 +32,6 @@ export const Step1: React.FC<Step1Props> = ({
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
 
-  console.log({ tenant });
-
   const handleNextAction = () => {
     if (shareContactInfo === true) {
       setStep(step + 1);
@@ -81,7 +79,6 @@ export const Step1: React.FC<Step1Props> = ({
             type={ButtonGroupTypes.Button}
             options={yesOrNoOptions}
             onOptionSelected={(option: boolean | boolean[]) => {
-              console.log({ option });
               setValue('shareContactInfo', option);
             }}
             selectedOptions={shareContactInfo}

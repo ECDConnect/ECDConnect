@@ -9,11 +9,12 @@ export const NewCommunity: React.FC = () => {
   const [joinCommunity, setJoinCommunity] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isFirstTimeInCommunity = practitioner?.clickedCommunityTab;
+
   const renderCommunityScreen = useMemo(() => {
     if (!isFirstTimeInCommunity || joinCommunity) {
       return <NewCommunityWelcome setJoinCommunity={setJoinCommunity} />;
     } else return <CommunityTabs setJoinCommunity={setJoinCommunity} />;
-  }, []);
+  }, [joinCommunity, isFirstTimeInCommunity]);
 
   return <div>{renderCommunityScreen}</div>;
 };

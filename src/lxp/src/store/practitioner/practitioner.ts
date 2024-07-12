@@ -110,7 +110,7 @@ const practitionerSlice = createSlice({
       (state, action) => {
         state.practitioner = {
           ...state.practitioner,
-          clickedCommunityTab: action.payload,
+          clickedCommunityTab: action.payload?.clickedCommunityTab,
         };
       }
     );

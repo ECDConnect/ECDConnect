@@ -15,6 +15,14 @@ import { useTheme } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { useSelector } from 'react-redux';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { communityThunkActions } from '@/store/community';
+import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
+import { useAppDispatch } from '@/store';
 
 export const NewCommunityWelcome = ({
   setJoinCommunity,
@@ -23,18 +31,21 @@ export const NewCommunityWelcome = ({
 }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
+  const dispatch = useAppDispatch();
   const history = useHistory();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [step, setStep] = useState(1);
-  console.log({ step });
+
   const { getValues, setValue, register, trigger, formState, watch, control } =
     useForm<WelcomeMessageModel>({
       resolver: yupResolver(welcomeMessageSchema),
       mode: 'onChange',
       defaultValues: initialWelcomeMessageModel,
     });
-  console.log(getValues().shareContactInfo);
+
+  const { errors } = formState;
   const {
     shareContactInfo,
     aboutShort,
@@ -42,16 +53,31 @@ export const NewCommunityWelcome = ({
     shareProvince,
     provinceId,
   } = watch();
-  console.log({ shareContactInfo });
 
-  const onAllStepsComplete = () => {
-    console.log(
-      shareContactInfo,
-      aboutShort,
-      shareProfilePhoto,
-      shareProvince,
-      provinceId
+  const onAllStepsComplete = async () => {
+    const saveCommunityProfileInput: CommunityProfileInputModelInput = {
+      userId: practitioner?.userId!,
+      aboutShort: aboutShort,
+      shareContactInfo: shareContactInfo,
+      shareProfilePhoto: shareProfilePhoto,
+      shareProvince: shareProvince,
+      provinceId: provinceId,
+      communitySkillIds: [],
+    };
+
+    await dispatch(
+      communityThunkActions.saveCommunityProfile({
+        input: saveCommunityProfileInput,
+      })
     );
+
+    await dispatch(
+      practitionerThunkActions.updatePractitionerCommunityTabStatus({
+        practitionerUserId: practitioner?.userId!,
+      })
+    );
+
+    setJoinCommunity(false);
   };
   const renderStep = (step: number) => {
     switch (step) {
@@ -73,18 +99,31 @@ export const NewCommunityWelcome = ({
             shareContactInfo={shareContactInfo}
             setValue={setValue}
             onAllStepsComplete={onAllStepsComplete}
+            shareProvince={shareProvince}
+            provinceId={provinceId}
+            aboutShort={aboutShort}
+            errors={errors}
+            setJoinCommunity={setJoinCommunity}
           />
         );
     }
   };
 
-  const handleBackButtoon = useCallback(() => {
+  const handleBackButtoon = useCallback(async () => {
     if (step === 1) {
+      if (!practitioner?.clickedCommunityTab) {
+        await dispatch(
+          practitionerThunkActions.updatePractitionerCommunityTabStatus({
+            practitionerUserId: practitioner?.userId!,
+          })
+        );
+      }
       history?.push(ROUTES.DASHBOARD);
     } else {
       setStep(step - 1);
     }
-  }, [step]);
+  }, [step, practitioner?.clickedCommunityTab]);
+
   return (
     <>
       <BannerWrapper

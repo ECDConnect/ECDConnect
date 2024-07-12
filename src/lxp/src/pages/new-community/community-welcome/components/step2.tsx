@@ -1,21 +1,30 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
-import { useTheme } from '@ecdlink/core';
+import { ProvinceDto, useTheme } from '@ecdlink/core';
 import {
-  BannerWrapper,
   Button,
   ButtonGroup,
   ButtonGroupTypes,
   Card,
+  Dropdown,
   FormInput,
+  SearchDropDownOption,
   Typography,
 } from '@ecdlink/ui';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { yesOrNoOptions } from '../community-welcome.types';
-import { Control, FieldValues, UseFormSetValue } from 'react-hook-form';
+import { FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@apollo/client';
+import { GetAllProvince } from '@ecdlink/graphql';
+import { staticDataSelectors } from '@/store/static-data';
+import { useAppDispatch } from '@/store';
 
 interface Step1Props {
   setStep: (item: number) => void;
@@ -23,6 +32,11 @@ interface Step1Props {
   shareContactInfo: boolean | undefined;
   step: number;
   onAllStepsComplete: () => void;
+  shareProvince: boolean | undefined;
+  provinceId: string | undefined;
+  aboutShort: string | undefined;
+  errors: FieldErrors;
+  setJoinCommunity?: (item: boolean) => void;
 }
 
 export const Step2: React.FC<Step1Props> = ({
@@ -31,14 +45,59 @@ export const Step2: React.FC<Step1Props> = ({
   shareContactInfo,
   step,
   onAllStepsComplete,
+  shareProvince,
+  provinceId,
+  aboutShort,
+  setJoinCommunity,
 }) => {
+  const dispatch = useAppDispatch();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  console.log({ tenant });
+  const provincesData = useSelector(staticDataSelectors.getProvinces);
+  const [provinces, setProvinces] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+
+  useEffect(() => {
+    if (provincesData?.length > 0) {
+      const provincesSorted = provincesData
+        ?.slice()
+        ?.sort((a: ProvinceDto, b: ProvinceDto) =>
+          a.description < b.description
+            ? -1
+            : a.description > b.description
+            ? 1
+            : 0
+        );
+
+      setProvinces(
+        provincesSorted
+          ?.filter((prov: ProvinceDto) => prov?.description !== 'N/A')
+          ?.map((item: ProvinceDto) => {
+            return {
+              value: item?.id as string,
+              label: item?.description,
+              id: item?.id,
+            };
+          })
+      );
+    }
+  }, [provincesData]);
+
+  const handleDoThisLater = async () => {
+    await dispatch(
+      practitionerThunkActions.updatePractitionerCommunityTabStatus({
+        practitionerUserId: practitioner?.userId!,
+      })
+    );
+
+    setJoinCommunity && setJoinCommunity(false);
+  };
+
   return (
     <div className={'h-screen overflow-auto px-4'}>
       <div className="h-screen overflow-auto pt-2">
@@ -72,8 +131,11 @@ export const Step2: React.FC<Step1Props> = ({
             label={`Share something about yourself with other ${appName} practitioners!`}
             hint="Optional - you can change this at any time."
             placeholder="E.g. Love working with kids"
-            //   value={value}
+            value={aboutShort}
             onChange={(event) => setValue('aboutShort', event.target.value)}
+            maxCharacters={125}
+            maxLength={125}
+            type="text"
           />
           <Typography
             type={'h4'}
@@ -88,13 +150,12 @@ export const Step2: React.FC<Step1Props> = ({
             onOptionSelected={(option: boolean | boolean[]) => {
               setValue('shareProfilePhoto', option);
             }}
-            selectedOptions={shareContactInfo}
             notSelectedColor="secondaryAccent2"
             textColor="secondary"
           />
           <Typography
             type={'h4'}
-            text={`Would you like to share your profile photo with other ${appName} users?`}
+            text={`Would you like to share your province with other ${appName} users?`}
             className={'text-sm font-normal'}
             color={'textDark'}
           />
@@ -105,10 +166,22 @@ export const Step2: React.FC<Step1Props> = ({
             onOptionSelected={(option: boolean | boolean[]) => {
               setValue('shareProvince', option);
             }}
-            selectedOptions={shareContactInfo}
             notSelectedColor="secondaryAccent2"
             textColor="secondary"
           />
+          {shareProvince && (
+            <Dropdown
+              placeholder={'Tap to choose province'}
+              className={'justify-between px-2'}
+              label={'Which province are you in?'}
+              selectedValue={provinceId}
+              list={provinces}
+              onChange={(item) => setValue('provinceId', item)}
+              fullWidth
+              labelColor="textMid"
+              fillColor="adminPortalBg"
+            />
+          )}
         </div>
         <div className="mb-24 mt-12 flex max-h-20 w-full flex-col gap-3">
           <Button
@@ -130,8 +203,7 @@ export const Step2: React.FC<Step1Props> = ({
             text="Do this later"
             textColor="quatenary"
             icon="ClockIcon"
-            disabled={!shareContactInfo}
-            onClick={onAllStepsComplete}
+            onClick={handleDoThisLater}
           />
         </div>
       </div>

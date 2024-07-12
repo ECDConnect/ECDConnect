@@ -8,6 +8,7 @@ import {
   getAllConnect,
   getAllConnectItem,
   getCommunityProfile,
+  saveCommunityProfile,
 } from './community.actions';
 
 const initialState: CommunityState & ThunkStateStatus = {
@@ -38,6 +39,10 @@ const communitySlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getCommunityProfile.fulfilled, (state, action) => {
+      state.communityProfile = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(saveCommunityProfile.fulfilled, (state, action) => {
       state.communityProfile = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
