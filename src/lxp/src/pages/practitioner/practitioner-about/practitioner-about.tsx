@@ -639,7 +639,6 @@ export const PractitionerAbout: React.FC = () => {
           icon={'QuestionMarkIcon'}
           iconColor="white"
           iconBorderColor="infoMain"
-          // importantText={'Looking good!'}
           title="Looking good"
           actionButtons={[
             {
