@@ -106,7 +106,7 @@ export default function Coaches() {
 
   const userIdsToSendInvitation = selectedUsers
     ?.filter((item) => !item?.isRegistered && item?.user?.phoneNumber)
-    ?.map((item) => item?.id);
+    ?.map((item) => item?.userId);
 
   const [sendInvitations, { loading: invitationsLoading }] = useMutation(
     sentInviteToMultipleUsers,
