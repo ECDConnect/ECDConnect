@@ -121,7 +121,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         await notificationManager.SendInvitationAsync(userToInvite, token);
                     }
-
+                    await Task.Delay(1000);
                     result.Success.Add(userToInvite.Id.ToString());
                 }
                 catch
