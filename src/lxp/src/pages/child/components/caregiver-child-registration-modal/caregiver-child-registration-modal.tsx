@@ -52,7 +52,7 @@ You can also access this link on ${childDetails.firstName}'s profile.
         },
       ]}
     >
-      <Typography
+      {/* <Typography
         className="mb-2"
         onClick={async () => {
           window.prompt('Copy value from input', caregiverUrl);
@@ -61,7 +61,7 @@ You can also access this link on ${childDetails.firstName}'s profile.
         color="primary"
         type="unspecified"
         hasMarkup
-      />
+      /> */}
     </ActionModal>
   );
 };
