@@ -33,8 +33,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const children = useSelector(childrenSelectors.getChildren);
-  // TODO - this might need updates
-  const childrenForPractitioner = useSelector(childrenSelectors.getChildren);
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerUserId = location.state.practitionerId;
   const practitioner = useSelector(
@@ -65,9 +63,15 @@ export const CoachPractitionerClassroom: React.FC = () => {
     )
   );
 
-  const childrenForPractitionerList = children?.filter((item) =>
-    childrenForPractitioner?.find((item2) => item.id === item2.id)
-  );
+  const learnersForPractitioner = isPrincipal
+    ? classroomGroups.flatMap((x) => x.learners)
+    : practitionerClassroomGroups.flatMap((x) => x.learners);
+
+  const childrenForPractitionerList = children?.filter((el) => {
+    return learnersForPractitioner?.some((f) => {
+      return f.childUserId === el.userId;
+    });
+  });
 
   const [practitionerClassroomsData, setPractitionerClassroomsData] =
     useState<ClassroomGroupDto[]>();

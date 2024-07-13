@@ -86,8 +86,8 @@ const practitionerForCoachSlice = createSlice({
         ) as PractitionerDto[];
 
         state.practitionersForCoach = practitionersForCoach;
-        setFulfilledThunkActionStatus(state, action);
       }
+      setFulfilledThunkActionStatus(state, action);
     });
 
     builder.addCase(getUserPointsSummaryForCoach.fulfilled, (state, action) => {

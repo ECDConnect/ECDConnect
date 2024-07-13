@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     var learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
 
-                    int childCount = learners.Count;
+                    int childCount = 0;
                     int month = fromDate.Month;
                     int year = fromDate.Year;
                     int weekOfYear = fromDate.GetWeekOfYear();
@@ -233,23 +233,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
-                            if (attendanceData.Any())
+                            if (learner.StartedAttendance > fromDate)
                             {
-                                var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
-                                var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
-                                if (attendanceAttended > 0)
+                                childCount++;
+                                var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
+                                if (attendanceData.Any())
                                 {
-                                    attendancePercentage =
-                                        (int)(childCount > 0 && attendanceAttended > 0
-                                            ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100)
-                                            : 0);
-                                }
+                                    var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
+                                    var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
+                                    if (attendanceAttended > 0)
+                                    {
+                                        attendancePercentage =
+                                            (int)(childCount > 0 && attendanceAttended > 0
+                                                ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100)
+                                                : 0);
+                                    }
 
-                                //override month and year to attendance month and year
-                                month = attendanceData.FirstOrDefault().MonthOfYear;
-                                year = attendanceData.FirstOrDefault().Year;
-                                weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
+                                    //override month and year to attendance month and year
+                                    month = attendanceData.FirstOrDefault().MonthOfYear;
+                                    year = attendanceData.FirstOrDefault().Year;
+                                    weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
+                                }
                             }
                         }
                     }
@@ -323,6 +327,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IClassroomService classroomService,
             [Service] ChildAttendanceReport attendanceReportService,
             [Service] AttendanceService attendanceService,
+            [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
             HierarchyEngine hierarchyEngine,
             string practitionerId)
         {
@@ -382,17 +387,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Get Attendance Rate - why is this just for one classroom group. TODO - fix for multiple classes
             if (classroomGroups.Any())
             {
-                var attendanceReports = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), previousMonthStart.Date, previousMonthEnd.GetEndOfDay());
+                var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
 
-                if (attendanceReports.Any())
+                if (monthlyReport != null)
                 {
-                    foreach (var attendanceReport in attendanceReports)
+                    if (monthlyReport.TotalScheduledSessions > 0)
                     {
-                        // The results of this seem wrong?
-                        var attendancePercentage = attendanceReport?.AttendancePercentage ?? 0;
+                        var attendancePercentage = monthlyReport.PercentageAttendance;
                         if (attendancePercentage < 50)
                         {
-                            ClassroomGroup group = classroomGroups.Where(x => x.Id == Guid.Parse(attendanceReport.ClassroomGroupId)).FirstOrDefault();
+                            ClassroomGroup group = classroomGroups.FirstOrDefault();
                             notifications.Add(new NotificationDisplay()
                             {
                                 Subject = $"{attendancePercentage}% attendance rate",
@@ -407,6 +411,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
             }
+                       
 
             // TODO: Need to refactor dates for reporting periods
             // Get Due/Overdue Reports
@@ -885,7 +890,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             foreach (var classroomGroupId in classroomGroupIds)
             {
-                var learners = attendanceService.GetAllLearnerInstances(practitioner.UserId.ToString(), classroomGroupId);
+                var learners = attendanceService.GetAllLearnerGroupInstances(classroomGroupId);
                 foreach (var learner in learners)
                 {
                     var attendanceForPeriod = attendanceService.GetAttendanceRecordsForPeriod(learner, practitioner.UserId.ToString(), reportingPeriodStart, reportingPeriodEnd);
@@ -1343,8 +1348,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
 
                 notification.Subject = "";
-                notification.Icon = MetricsIconEnum.Success.ToString();
-                notification.Color = MetricsColorEnum.Success.ToString();
+                notification.Icon = MetricsIconEnum.None.ToString();
+                notification.Color = MetricsColorEnum.None.ToString();
                 notification.Message = "";
                 notification.Notes = "";
                 notification.GroupingName = "Practitioner";
