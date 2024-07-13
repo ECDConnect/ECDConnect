@@ -1200,7 +1200,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
-                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval}";
+                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval.ToString("dd MMMM yyyy")}";
                     notification.GroupingName = "Removed from preschool";
                     yield return notification;
                     continue;
@@ -1417,11 +1417,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 if (removalHistory != null)
                 {
-                    notification.Subject = $"Leaving on {removalHistory.DateOfRemoval.ToShortDateString()}";
+                    notification.Subject = $"Practitioner is leaving on {removalHistory.DateOfRemoval.ToString("dd MMMM yyyy")}";
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
-                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval.ToShortDateString()}";
+                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval.ToString("dd MMMM yyyy")}";
                     notification.GroupingName = "Removed from preschool";
                     yield return notification;
                     continue;
