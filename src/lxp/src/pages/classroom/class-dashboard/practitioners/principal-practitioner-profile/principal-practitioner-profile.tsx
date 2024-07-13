@@ -476,7 +476,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 <div className="mt-2 mr-4 mb-2 flex items-center">
                   <div className="mx-4 mt-2 mb-4 flex w-full items-center">
                     <XCircleIcon
-                      className="text-errorMain mt-2 h-7 w-7"
+                      className="text-errorMain mt-2 h-12 w-12"
                       aria-hidden="true"
                     />
                     <Typography
