@@ -186,11 +186,11 @@ export const ContactPractitioner: React.FC<ContactPractitionerProps> = ({
                   color={'secondary'}
                   type={'small'}
                   weight="bold"
-                  text={`WhatsApp client`}
+                  text={`WhatsApp ${practitioner?.user?.firstName}`}
                 />
               </Button>
               <Button
-                text="Call client"
+                text={`Call ${practitioner?.user?.firstName}`}
                 icon="PhoneIcon"
                 type="outlined"
                 size="small"
