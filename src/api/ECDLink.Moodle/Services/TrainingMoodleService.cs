@@ -59,8 +59,8 @@ namespace EcdLink.Api.CoreApi.Services.Training
                 UserName = _user.Id.ToString(),
                 Password = _config.Site.DefaultPassword,
                 IdNumber = _user.IdNumber ?? "",
-                Firstname = _user.FirstName ?? "",
-                Lastname = _user.Surname ?? "",
+                Firstname = _user.FirstName ?? " ",
+                Lastname = _user.Surname ?? " ",
                 Email = $"{_user.Id.ToString()}@ecdconnect.co.za",
                 Phone1 = _user.PhoneNumber ?? ""
             };
