@@ -39,6 +39,9 @@ import { ProgrammeThemeRouteState } from '../programme-theme/programme-theme.typ
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ActivitiesActions } from '@/store/content/activity/activity.actions';
 import { StoryBookActions } from '@/store/content/story-book/story-book.actions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -73,9 +76,20 @@ export const ProgrammeDashboard: React.FC = () => {
     classroomsSelectors.getClassroomGroupById(classroomGroupId)
   );
   const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
+
+  const isTrialPeriod = useIsTrialPeriod();
+
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
+
   const [showReport, setShowReport] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     programmeStartDate || new Date()
@@ -142,6 +156,7 @@ export const ProgrammeDashboard: React.FC = () => {
 
   const showStartPlanning = useCallback(() => {
     if (
+      hasPermissionToEdit &&
       !isWholeWeekPlanned &&
       dailyProgrammesUnplanned.every(
         (day) => isToday(day.date) || isAfter(day.date, new Date())

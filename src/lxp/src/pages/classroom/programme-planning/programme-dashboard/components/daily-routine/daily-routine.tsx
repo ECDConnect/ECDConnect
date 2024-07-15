@@ -604,7 +604,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 type={'body'}
               />
               <Button
-                color={'primary'}
+                color={'secondaryAccent2'}
                 type={'outlined'}
                 onClick={() =>
                   setSelectedDate && nextProgrammeDaysWithoutActivity?.length
@@ -618,7 +618,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 className={'w-25 mt-6 mb-4'}
                 icon="ClipboardListIcon"
                 text="Start planning"
-                textColor="primary"
+                textColor="secondaryAccent2"
               />
             </>
           )}
