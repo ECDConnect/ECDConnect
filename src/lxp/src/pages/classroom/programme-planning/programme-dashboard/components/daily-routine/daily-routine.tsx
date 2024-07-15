@@ -72,6 +72,7 @@ import {
 import { practitionerSelectors } from '@/store/practitioner';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { ro } from 'date-fns/locale';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -304,6 +305,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         ) : (
           <StoryActivityDetails
             selected={true}
+            storyBookId={currentDailyProgramme?.storyBookId}
             activityId={activityId}
             disabled={false}
             viewType={'StoryActivity'}
@@ -377,7 +379,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       openActivityItem(routineItem, currentDailyProgramme);
       return;
     }
-
     openActivityItem(routineItem);
   };
 
