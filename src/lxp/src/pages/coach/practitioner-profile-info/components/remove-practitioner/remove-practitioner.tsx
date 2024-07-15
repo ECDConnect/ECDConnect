@@ -265,14 +265,13 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
           />
           {reasonDetailsVisible && (
             <FormInput<RemovePractionerModel>
-              label={'Please add details'}
+              label={'Explain reason for leaving'}
               className={'mt-3'}
-              textInputType="textarea"
+              textInputType="input"
               register={removePractionerFormRegister}
               nameProp={'reasonDetail'}
               hint={'Optional'}
-              placeholder={'E.g. Found the daily routine too difficult'}
-              onChange={() => triggerRemovePractionerForm()}
+              placeholder={'E.g. Wants to pursue a different opportunity'}
               error={errors.reasonDetail}
             />
           )}
@@ -297,7 +296,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                     className="mt-10 rounded-xl"
                     type={'info'}
                     title={
-                      'If the programme is closing down, please remove all other SmartStarters before removing the principal.'
+                      'If the programme is closing down, please remove all other practitioners before removing the principal.'
                     }
                   />
                 </div>

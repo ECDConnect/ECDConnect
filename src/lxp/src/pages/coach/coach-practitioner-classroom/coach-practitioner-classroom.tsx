@@ -26,6 +26,8 @@ import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { ContactPractitioner } from './components/contact-practitioner/contact-practitioner';
+import { WorkflowStatusEnum } from '@ecdlink/graphql';
+import { useStaticData } from '@hooks/useStaticData';
 
 export const CoachPractitionerClassroom: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -34,6 +36,12 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const children = useSelector(childrenSelectors.getChildren);
   const location = useLocation<PractitionerProfileRouteState>();
+
+  const { getWorkflowStatusIdByEnum } = useStaticData();
+  const activeStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildActive
+  );
+
   const practitionerUserId = location.state.practitionerId;
   const practitioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(practitionerUserId)
@@ -69,7 +77,9 @@ export const CoachPractitionerClassroom: React.FC = () => {
 
   const childrenForPractitionerList = children?.filter((el) => {
     return learnersForPractitioner?.some((f) => {
-      return f.childUserId === el.userId;
+      return (
+        f.childUserId === el.userId && el.workflowStatusId === activeStatusId
+      );
     });
   });
 
