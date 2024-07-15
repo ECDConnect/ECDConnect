@@ -1133,9 +1133,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   className={'mr-1'}
                   type="buttonSmall"
                   color="secondary"
-                  text="Copy"
+                  text="Email"
                 />
-                {renderIcon('DocumentDuplicateIcon', styles.actionIcon)}
+                {renderIcon('MailIcon', styles.actionIcon)}
               </Button>
             </div>
             <Divider dividerType="dashed" className="my-4" />

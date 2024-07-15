@@ -79,25 +79,8 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
   }, [totalDiffDays, balance, appDispatch, lastStatement, userId]);
 
   const onDismiss = useCallback(() => {
-    // Dismiss the alert when the user taps "I have contacted ....."
-    if (balance < 0 && !lastStatement.contactedByCoach) {
-      appDispatch(
-        practitionerForCoachThunkActions.updateUserContactStatusForStatement({
-          statementId: lastStatement.id,
-        })
-      )
-        .unwrap()
-        .then((result) =>
-          appDispatch(
-            practitionerForCoachActions.updateStatementForPractitioner({
-              userId: userId,
-              statementId: result.id,
-            })
-          )
-        );
-    }
     onBack();
-  }, [appDispatch, balance, lastStatement, onBack, userId]);
+  }, []);
 
   return (
     <>
