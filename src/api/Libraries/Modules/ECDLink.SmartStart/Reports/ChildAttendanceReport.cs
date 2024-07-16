@@ -183,7 +183,7 @@ namespace ECDLink.SmartStart.Reports
             endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
             overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(userId, startMonth, endMonth);
 
-            var totalAttendance = new SortedDictionary<int, int>();
+            var totalAttendance = new SortedDictionary<int, int?>();
             int totalExpectedAttendance = 0;
 
             var sessions = new HashSet<int>();
@@ -194,11 +194,20 @@ namespace ECDLink.SmartStart.Reports
                 {
                     if (totalAttendance.ContainsKey(dayAttendance.Key))
                     {
-                        totalAttendance[dayAttendance.Key] = totalAttendance[dayAttendance.Key] + (dayAttendance.Value.HasValue ? dayAttendance.Value.Value : 0);
+                        if (!totalAttendance[dayAttendance.Key].HasValue) //current value is null
+                        {
+                            totalAttendance[dayAttendance.Key] = dayAttendance.Value;
+                        }else
+                        {
+                            if (dayAttendance.Value.HasValue) // current day has a value
+                            {
+                                totalAttendance[dayAttendance.Key] = totalAttendance[dayAttendance.Key] + dayAttendance.Value.Value;
+                            }
+                        }
                     }
                     else
                     {
-                        totalAttendance.Add(dayAttendance.Key, dayAttendance.Value.HasValue ? dayAttendance.Value.Value : 0);
+                        totalAttendance.Add(dayAttendance.Key, dayAttendance.Value ?? null);
                     }
                     
                     if (dayAttendance.Value.HasValue)
@@ -218,7 +227,7 @@ namespace ECDLink.SmartStart.Reports
             // Total children who were not absent on any day
             stats.TotalChildrenAttendedAllSessions = overviewReport.ClassroomAttendanceReport.Where(x => x.Attendance.All(y => !y.Value.HasValue || y.Value.Value != 0)).Select(x => x.ChildUserId).Distinct().Count();
 
-            stats.TotalMonthlyAttendance = totalAttendance.Values.Sum();
+            stats.TotalMonthlyAttendance = (int)totalAttendance.Values.Sum();
             overviewReport.TotalAttendanceStatsReport = stats;
 
             return overviewReport;
