@@ -54,7 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (practitionerUser != null)
                 {
                     Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
-                    if (practitioner != null && practitioner.CoachHierarchy == principalUser.CoachHierarchy && principalUser.UserId != practitioner.UserId) //only allow the same coach line sto be added to each other,a nd the user ids are different
+                    if (practitioner != null && principalUser.UserId != practitioner.UserId) 
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = principalUser.UserId;
