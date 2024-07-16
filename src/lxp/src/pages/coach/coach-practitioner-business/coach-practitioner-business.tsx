@@ -192,7 +192,11 @@ export const CoachPractitionerBusiness = () => {
       });
     }
 
-    if (statements.length >= 2 && hasTwoMonthsLoss) {
+    if (
+      statements.length >= 2 &&
+      hasTwoMonthsLoss &&
+      !lastStatementContactByCoach
+    ) {
       listItems.push({
         title: `Programme running at a loss`,
         titleStyle: 'text-textDark font-semibold text-base leading-snug',

@@ -17,5 +17,7 @@ namespace ECDLink.Core.Services.Interfaces
         Document CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement);
         List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId);
         List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(StatementsIncomeStatement statement);
+
+        StatementsIncomeStatement UpdateUserContactStatusForStatement(Guid statementId);
     }
 }

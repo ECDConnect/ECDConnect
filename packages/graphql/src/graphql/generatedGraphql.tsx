@@ -7421,6 +7421,7 @@ export type Mutation = {
   createProgrammeRoutineItem?: Maybe<Scalars['String']>;
   createProgrammeRoutineSubItem?: Maybe<Scalars['String']>;
   createProgrammeType?: Maybe<ProgrammeType>;
+  createProgressTrackingAgeGroup?: Maybe<Scalars['String']>;
   createProgressTrackingCategory?: Maybe<Scalars['String']>;
   createProgressTrackingLevel?: Maybe<Scalars['String']>;
   createProgressTrackingSkill?: Maybe<Scalars['String']>;
@@ -7581,6 +7582,7 @@ export type Mutation = {
   deleteProgrammeRoutineItem?: Maybe<Scalars['Boolean']>;
   deleteProgrammeRoutineSubItem?: Maybe<Scalars['Boolean']>;
   deleteProgrammeType?: Maybe<Scalars['Boolean']>;
+  deleteProgressTrackingAgeGroup?: Maybe<Scalars['Boolean']>;
   deleteProgressTrackingCategory?: Maybe<Scalars['Boolean']>;
   deleteProgressTrackingLevel?: Maybe<Scalars['Boolean']>;
   deleteProgressTrackingSkill?: Maybe<Scalars['Boolean']>;
@@ -7649,9 +7651,7 @@ export type Mutation = {
   gGBottom75PercPointsTeam: Scalars['Boolean'];
   generateCaregiverChildToken?: Maybe<InitialChildRegistrationModel>;
   importCoaches?: Maybe<UserImportModel>;
-  importHealthCareWorkers?: Maybe<UserImportModel>;
   importPractitioners?: Maybe<UserImportModel>;
-  importTeamLeads?: Maybe<UserImportModel>;
   markAsReadNotification: Scalars['Boolean'];
   moveClubMembers: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
@@ -7898,6 +7898,7 @@ export type Mutation = {
   updateProgrammeRoutineSubItem?: Maybe<ProgrammeRoutineSubItem>;
   updateProgrammeType?: Maybe<ProgrammeType>;
   updateProgrammes: Scalars['Boolean'];
+  updateProgressTrackingAgeGroup?: Maybe<ProgressTrackingAgeGroup>;
   updateProgressTrackingCategory?: Maybe<ProgressTrackingCategory>;
   updateProgressTrackingLevel?: Maybe<ProgressTrackingLevel>;
   updateProgressTrackingSkill?: Maybe<ProgressTrackingSkill>;
@@ -7941,6 +7942,7 @@ export type Mutation = {
   updateTraineeAddress?: Maybe<Trainee>;
   updateUser?: Maybe<ApplicationUser>;
   updateUserConsent?: Maybe<UserConsent>;
+  updateUserContactStatusForStatement?: Maybe<StatementsIncomeStatement>;
   updateUserHelp?: Maybe<UserHelp>;
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   updateUserPermission?: Maybe<Array<Maybe<UserPermissionModel>>>;
@@ -8742,6 +8744,12 @@ export type MutationCreateProgrammeTypeArgs = {
   input?: InputMaybe<ProgrammeTypeInput>;
 };
 
+export type MutationCreateProgressTrackingAgeGroupArgs = {
+  input: ProgressTrackingAgeGroupInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationCreateProgressTrackingCategoryArgs = {
   input: ProgressTrackingCategoryInput;
   locale?: InputMaybe<Scalars['String']>;
@@ -9453,6 +9461,12 @@ export type MutationDeleteProgrammeTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
+export type MutationDeleteProgressTrackingAgeGroupArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationDeleteProgressTrackingCategoryArgs = {
   id: Scalars['String'];
   locale?: InputMaybe<Scalars['String']>;
@@ -9761,15 +9775,7 @@ export type MutationImportCoachesArgs = {
   file?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationImportHealthCareWorkersArgs = {
-  file?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationImportPractitionersArgs = {
-  file?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationImportTeamLeadsArgs = {
   file?: InputMaybe<Scalars['String']>;
 };
 
@@ -11058,6 +11064,13 @@ export type MutationUpdateProgrammesArgs = {
   programmeInput?: InputMaybe<ProgrammeModelInput>;
 };
 
+export type MutationUpdateProgressTrackingAgeGroupArgs = {
+  id: Scalars['String'];
+  input: ProgressTrackingAgeGroupInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationUpdateProgressTrackingCategoryArgs = {
   id: Scalars['String'];
   input: ProgressTrackingCategoryInput;
@@ -11298,6 +11311,10 @@ export type MutationUpdateUserArgs = {
 export type MutationUpdateUserConsentArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<UserConsentInput>;
+};
+
+export type MutationUpdateUserContactStatusForStatementArgs = {
+  statementId: Scalars['UUID'];
 };
 
 export type MutationUpdateUserHelpArgs = {
@@ -13898,6 +13915,20 @@ export type ProgressSubCategoryModelInput = {
   subCatId: Scalars['Int'];
 };
 
+export type ProgressTrackingAgeGroup = {
+  __typename?: 'ProgressTrackingAgeGroup';
+  endAgeInMonths?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
+  startAgeInMonths?: Maybe<Scalars['String']>;
+};
+
+export type ProgressTrackingAgeGroupInput = {
+  endAgeInMonths?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  startAgeInMonths?: InputMaybe<Scalars['String']>;
+};
+
 export type ProgressTrackingCategory = {
   __typename?: 'ProgressTrackingCategory';
   color?: Maybe<Scalars['String']>;
@@ -13946,6 +13977,7 @@ export type ProgressTrackingLevelInput = {
 
 export type ProgressTrackingSkill = {
   __typename?: 'ProgressTrackingSkill';
+  ageGroups?: Maybe<Array<Maybe<ProgressTrackingAgeGroup>>>;
   id?: Maybe<Scalars['Int']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
   name?: Maybe<Scalars['String']>;
@@ -13955,6 +13987,7 @@ export type ProgressTrackingSkill = {
 };
 
 export type ProgressTrackingSkillInput = {
+  ageGroups?: InputMaybe<Scalars['String']>;
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Scalars['String']>;
@@ -14172,6 +14205,7 @@ export type Query = {
   GetAllProgrammeRoutineItem: Array<Maybe<ProgrammeRoutineItem>>;
   GetAllProgrammeRoutineSubItem: Array<Maybe<ProgrammeRoutineSubItem>>;
   GetAllProgrammeType?: Maybe<Array<Maybe<ProgrammeType>>>;
+  GetAllProgressTrackingAgeGroup: Array<Maybe<ProgressTrackingAgeGroup>>;
   GetAllProgressTrackingCategory: Array<Maybe<ProgressTrackingCategory>>;
   GetAllProgressTrackingLevel: Array<Maybe<ProgressTrackingLevel>>;
   GetAllProgressTrackingSkill: Array<Maybe<ProgressTrackingSkill>>;
@@ -14334,6 +14368,7 @@ export type Query = {
   GetProgrammeRoutineItemById: Array<Maybe<ProgrammeRoutineItem>>;
   GetProgrammeRoutineSubItemById: Array<Maybe<ProgrammeRoutineSubItem>>;
   GetProgrammeTypeById?: Maybe<ProgrammeType>;
+  GetProgressTrackingAgeGroupById: Array<Maybe<ProgressTrackingAgeGroup>>;
   GetProgressTrackingCategoryById: Array<Maybe<ProgressTrackingCategory>>;
   GetProgressTrackingLevelById: Array<Maybe<ProgressTrackingLevel>>;
   GetProgressTrackingSkillById: Array<Maybe<ProgressTrackingSkill>>;
@@ -15346,6 +15381,11 @@ export type QueryGetAllProgrammeTypeArgs = {
   where?: InputMaybe<ProgrammeTypeFilterInput>;
 };
 
+export type QueryGetAllProgressTrackingAgeGroupArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryGetAllProgressTrackingCategoryArgs = {
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
@@ -16152,6 +16192,12 @@ export type QueryGetProgrammeRoutineSubItemByIdArgs = {
 export type QueryGetProgrammeTypeByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<ProgrammeTypeFilterInput>;
+};
+
+export type QueryGetProgressTrackingAgeGroupByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetProgressTrackingCategoryByIdArgs = {

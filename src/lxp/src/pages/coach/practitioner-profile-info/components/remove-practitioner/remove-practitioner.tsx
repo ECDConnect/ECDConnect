@@ -270,7 +270,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
               textInputType="input"
               register={removePractionerFormRegister}
               nameProp={'reasonDetail'}
-              hint={'Optional'}
               placeholder={'E.g. Wants to pursue a different opportunity'}
               error={errors.reasonDetail}
             />
