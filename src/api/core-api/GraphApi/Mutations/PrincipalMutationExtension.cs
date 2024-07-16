@@ -339,6 +339,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
                     practitioner.DateAccepted = null;
                     practitioner.IsLeaving = true;
+                    practitioner.PrincipalHierarchy = null;
+                    practitioner.ShareInfo = false;
 
                     status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                     status.Leaving = true;
