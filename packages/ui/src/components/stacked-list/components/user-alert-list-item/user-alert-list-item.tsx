@@ -66,8 +66,10 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
   return (
     <div
       className={
-        item?.successColor
-          ? styles.menuItemIconContainerCoachCirclesNoAction
+        item?.successColor || item?.backgroundColor
+          ? styles.menuItemIconContainerCoachCirclesNoAction(
+              item?.backgroundColor || 'successMain'
+            )
           : hasClickHandler
           ? styles.menulistItemContainer
           : styles.menuItemIconContainerNoAction

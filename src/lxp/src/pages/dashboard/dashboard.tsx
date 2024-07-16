@@ -468,6 +468,7 @@ export const Dashboard: React.FC = () => {
       appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+      appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
       appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
       appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
       appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
@@ -952,7 +953,7 @@ export const Dashboard: React.FC = () => {
         !missingProgramme) ||
       isTrialPeriod
     ) {
-      history?.push(ROUTES.NEW_COMMUNITY.WELCOME);
+      history?.push(ROUTES.COMMUNITY.WELCOME);
     } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     }

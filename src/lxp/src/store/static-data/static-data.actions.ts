@@ -17,6 +17,7 @@ import {
   ReasonForPractitionerLeavingProgrammeDto,
   PermissionDto,
   RoleDto,
+  ProfileSkillsDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DocumentTypeService } from '@services/DocumentTypeService';
@@ -38,6 +39,7 @@ import { RootState, ThunkApiType } from '../types';
 import { ReasonForPractitionerLeavingProgrammeService } from '@/services/ReasonForPractitionerLeavingProgrammeService';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { RoleService } from '@/services/RoleService';
+import { SkillsService } from '@/services/SkillsService';
 
 export const getRelations = createAsyncThunk<
   RelationDto[],
@@ -748,5 +750,38 @@ export const getRoles = createAsyncThunk<
     }
   } else {
     return rolesCache;
+  }
+});
+
+export const getCommunitySkills = createAsyncThunk<
+  ProfileSkillsDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>('getCommunitySkills', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    staticData: { communitySkills: communitySkillsCache },
+  } = getState();
+
+  if (!communitySkillsCache) {
+    try {
+      let communitySkills: ProfileSkillsDto[] | undefined;
+      if (userAuth?.auth_token) {
+        communitySkills = await new SkillsService(
+          userAuth?.auth_token
+        ).getCommunitySkills();
+      }
+
+      if (!communitySkills) {
+        return rejectWithValue('Error communitySkills');
+      }
+
+      return communitySkills;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  } else {
+    return communitySkillsCache;
   }
 });

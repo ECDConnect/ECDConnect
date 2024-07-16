@@ -18,13 +18,13 @@ export interface CommunityProfileDto {
   completenessPercColor?: string;
   completenessPercImage?: string;
   insertedDate?: string;
-  profileSkills?: any[];
-  communityUser?: CommunityUser;
+  profileSkills?: ProfileSkillsDto[];
+  communityUser?: CommunityUserDto;
   acceptedConnections?: any[];
   pendingConnections?: any[];
 }
 
-export interface CommunityUser {
+export interface CommunityUserDto {
   id?: string;
   fullName?: string;
   email?: any;
@@ -32,4 +32,13 @@ export interface CommunityUser {
   whatsAppNumber?: any;
   profilePhoto?: string;
   roleName?: string;
+}
+
+export interface ProfileSkillsDto {
+  id: string;
+  name: string;
+  imageName: string;
+  description: string;
+  isActive: boolean;
+  ordering: number;
 }

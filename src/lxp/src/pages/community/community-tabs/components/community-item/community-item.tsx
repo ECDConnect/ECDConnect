@@ -4,7 +4,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { communitySelectors } from '@/store/community';
-import { CommunityProfile } from '../community-profile/community-profile';
+import { CommunityDashboard } from '../community-dashboard/community-dashboard';
 
 export const CommunityItem = ({
   setJoinCommunity,
@@ -38,7 +38,7 @@ export const CommunityItem = ({
         </div>
       );
     } else {
-      return <CommunityProfile />;
+      return <CommunityDashboard />;
     }
   }, [communityProfile]);
   return <div>{renderCommunityItemScreen}</div>;

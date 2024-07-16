@@ -18,6 +18,7 @@ import {
   RoleSystemNameEnum,
   WorkflowStatusDto,
   RoleDto,
+  ProfileSkillsDto,
 } from '@ecdlink/core';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { createSelector } from 'reselect';
@@ -157,3 +158,6 @@ export const geCoachRole = (state: RootState): RoleDto => {
   );
   return coachRole;
 };
+
+export const getCommunitySkills = (state: RootState): ProfileSkillsDto[] =>
+  state.staticData.communitySkills || [];

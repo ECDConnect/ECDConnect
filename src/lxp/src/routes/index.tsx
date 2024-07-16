@@ -136,6 +136,7 @@ import { UpdateIncome } from '@/pages/business/add-amount/add-income/update-inco
 import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
 import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-expense';
 import { Community } from '@/pages/community/community';
+import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -381,6 +382,11 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.PRACTITIONER.COMMUNITY.WELCOME}
         component={PractitionerCommunityWelcome}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.PROFILE}
+        component={CommunityProfile}
         exact
       />
       <Route
