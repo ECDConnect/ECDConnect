@@ -118,7 +118,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         // not sending message when the practitioner has joined the preschool on their own
                         if (uId != practitionerUser.Id)
                         {
-                            notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                            if (practitioner.Progress >= 0 && practitioner.Progress < 2)
+                            {
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                            } else
+                            {
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                            }
                         }
 
                         return practitioner;
