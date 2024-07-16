@@ -79,6 +79,22 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
   }, [totalDiffDays, balance, appDispatch, lastStatement, userId]);
 
   const onDismiss = useCallback(() => {
+    if (balance < 0 && !lastStatement.contactedByCoach) {
+      appDispatch(
+        practitionerForCoachThunkActions.updateUserContactStatusForStatement({
+          statementId: lastStatement.id,
+        })
+      )
+        .unwrap()
+        .then((result) =>
+          appDispatch(
+            practitionerForCoachActions.updateStatementForPractitioner({
+              userId: userId,
+              statementId: result.id,
+            })
+          )
+        );
+    }
     onBack();
   }, []);
 
@@ -104,7 +120,7 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
                   </span>
                   <Typography type="h3" text={` Months of making a profit`} />
                 </>
-              ) : (
+              ) : !lastStatement.contactedByCoach ? (
                 <>
                   <span
                     className={`text-l bg-alertMain rounded-full font-semibold text-white`}
@@ -113,6 +129,8 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
                   </span>
                   <Typography type="h3" text={` Months running at a loss`} />
                 </>
+              ) : (
+                <div />
               )}
             </div>
             <div>
