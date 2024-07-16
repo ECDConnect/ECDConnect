@@ -39,7 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             ShareRole = profile.ShareRole;
             CommunityUser = new CommunityUserModel(profile.User, userRoles);
             InsertedDate = profile.InsertedDate;
-            ProfileSkills = profile.ProfileSkills.Select(x => new CommunityProfileSkillModel(x.CommunitySkill, x.IsActive)).OrderBy(x => x.Ordering).ToList();
+            ProfileSkills = profile.ProfileSkills.Select(x => new CommunityProfileSkillModel(x.CommunitySkill, x.IsActive)).Where(x => x.IsActive).OrderBy(x => x.Ordering).ToList();
         }
 
         public CommunityProfileBaseModel()
