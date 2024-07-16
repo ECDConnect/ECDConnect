@@ -230,6 +230,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
     // PROGRESS TRACKING
     await appDispatch(
+      progressTrackingThunkActions.getProgressTrackingAgeGroups({
+        locale: 'en-za',
+      })
+    ).unwrap();
+    await appDispatch(
       progressTrackingThunkActions.getProgressTrackingCategories({
         locale: 'en-za',
       })
