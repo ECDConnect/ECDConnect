@@ -81,6 +81,7 @@ import {
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ChildAttendanceReportState } from '../child-attendance-report/child-attendance-report.types';
+import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -149,6 +150,10 @@ export const ChildProfile: React.FC = () => {
       child?.userId,
       ContentConsentTypeEnum.PhotoPermissions
     )
+  );
+
+  const isReportWindowSet = useSelector(
+    classroomsSelectors.getIsReportingPeriodsSet()
   );
 
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
@@ -500,6 +505,64 @@ export const ChildProfile: React.FC = () => {
     history.push(ROUTES.CHILD_CAREGIVERS, { childId: child?.id });
   };
 
+  const showNoReportingPeriodsDialog = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          customIcon={<RobotIcon />}
+          importantText={
+            !!isPrincipal
+              ? 'Choose child progress reporting periods'
+              : `Your principal has not chosen reporting periods for ${new Date().getFullYear()} yet.`
+          }
+          detailText={
+            !!isPrincipal
+              ? 'To start creating child progress reports, choose the start and end dates for each reporting period.'
+              : `To start creating child progress, ask your principal to choose reporting dates on ${tenant.tenant?.applicationName}. `
+          }
+          actionButtons={
+            !!isPrincipal
+              ? [
+                  {
+                    colour: 'quatenary',
+                    text: 'Choose reporting dates',
+                    onClick: () => {
+                      history.push(ROUTES.CHILD_PROGRESS_REPORTING_PERIODS);
+                    },
+                    textColour: 'white',
+                    type: 'filled',
+                    leadingIcon: 'PresentationChartBarIcon',
+                  },
+                  {
+                    colour: 'quatenary',
+                    text: 'Do this later',
+                    onClick: () => {
+                      onCancel();
+                    },
+                    textColour: 'quatenary',
+                    type: 'outlined',
+                    leadingIcon: 'ClockIcon',
+                  },
+                ]
+              : [
+                  {
+                    colour: 'quatenary',
+                    text: 'Close',
+                    onClick: () => {
+                      onCancel();
+                    },
+                    textColour: 'quatenary',
+                    type: 'outlined',
+                    leadingIcon: 'XIcon',
+                  },
+                ]
+          }
+        />
+      ),
+    });
+  };
+
   const options = useMemo((): ListItemProps[] => {
     const attendancePercentage = attendanceReport?.attendancePercentage;
 
@@ -553,7 +616,9 @@ export const ChildProfile: React.FC = () => {
         dividerType: 'dashed',
         withPaddingY: true,
         onButtonClick: () => {
-          if (progressTrainingDone) {
+          if (!isReportWindowSet) {
+            showNoReportingPeriodsDialog();
+          } else if (progressTrainingDone) {
             viewChildProgressObservationReports();
           } else {
             progressTrackerNotAvailablePrompt();

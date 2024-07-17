@@ -70,6 +70,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           wrapperClassName="w-full"
           onCalendarOpen={() => setIsOpen(true)}
           onCalendarClose={() => setIsOpen(false)}
+          onFocus={(e) => (e.target.readOnly = true)}
         />
         {!hideCalendarIcon &&
           renderIcon(
