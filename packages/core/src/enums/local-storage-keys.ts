@@ -20,4 +20,5 @@ export enum LocalStorageKeys {
   askToJoinClubViewed = 'AskToJoinClubViewed',
   hasVisitedProgrammeDashboard = 'HasVisitedProgrammeDashboard',
   practitionerInvitedPrincipalIdNumber = 'practitionerInvitedPrincipal',
+  practitionerInvitedPrincipalUserId = 'practitionerInvitedPrincipalUserId',
 }

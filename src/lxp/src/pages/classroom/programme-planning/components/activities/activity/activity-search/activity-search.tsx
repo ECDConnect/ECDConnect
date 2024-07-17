@@ -39,9 +39,13 @@ import {
 } from '@utils/classroom/programme-planning/programmes.utils';
 import { programmeSelectors } from '@store/programme';
 import { EmptyActivities } from '../../components/empty-activity-filter-result/empty-activity-filter-result';
-import { ACTIVITY_PAGE_SIZE } from '../../../../../../../constants/ActivitySearch';
+import {
+  ACTIVITY_PAGE_SIZE,
+  ActivityType,
+} from '../../../../../../../constants/ActivitySearch';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { format, isSameDay, isSameWeek, parseISO } from 'date-fns';
+import { useProgrammePlanningRecommendations } from '@/hooks/useProgrammePlanningRecommendations';
 
 const ActivitySearch: React.FC<ActivitySearchProps> = ({
   title,
@@ -66,13 +70,25 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     activitySelectors.getActivitiesByType(title)
   );
 
-  const allActivities = activitiesByType.filter(
-    (activity) => activity.id !== recommendedActivity?.activity?.id
-  );
-
   const programme = useSelector(
     programmeSelectors.getProgrammeById(programmeId)
   );
+
+  const { getSortedActivities } = useProgrammePlanningRecommendations();
+
+  const allActivities = useMemo(() => {
+    const activities = activitiesByType.filter(
+      (activity) => activity.id !== recommendedActivity?.activity?.id
+    );
+
+    return getSortedActivities(activities, programme!, title as ActivityType);
+  }, [
+    activitiesByType,
+    programme,
+    recommendedActivity?.activity?.id,
+    getSortedActivities,
+    title,
+  ]);
 
   const [activities, setActivities] = useState<ActivityDto[]>(allActivities);
   const [filteredActivities, setFilteredActivities] =
@@ -85,7 +101,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const dispatch = useAppDispatch();
   const [selectedThemeFilterOptions, setSelectedThemeFilterOptions] =
     useState<SearchDropDownOption<number>[]>();
-
   const [selectedLanguageFilterOptions, setSelectedLanguageFilterOptions] =
     useState<SearchDropDownOption<string>[]>();
 
@@ -246,10 +261,17 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
       const result = await dispatch(
         activityThunkActions.getActivities({ locale })
       ).unwrap();
-      setActivities(
+      const currentActivities =
         filterActivitiesByType(title, result)?.filter(
           (activity) => activity.id !== recommendedActivity?.activity?.id
-        ) || []
+        ) || [];
+
+      return setActivities(
+        getSortedActivities(
+          currentActivities,
+          programme!,
+          title as ActivityType
+        )
       );
     };
 

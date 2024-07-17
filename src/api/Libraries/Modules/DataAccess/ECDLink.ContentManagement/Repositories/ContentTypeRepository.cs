@@ -117,9 +117,23 @@ namespace ECDLink.ContentManagement.Repositories
             }
             else
             {
-                result = _context.ContentTypes
-                    .Include(x => x.Content.Where(f => f.TenantId == tenantId))
-                        .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
+                if (string.IsNullOrWhiteSpace(search))
+                {
+                    result = _context.ContentTypes
+                  .Include(x => x.Content.Where(f => f.TenantId == tenantId || f.TenantId == null))
+                      .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId || f.TenantId == null))
+                          .ThenInclude(x => x.ContentTypeField)
+                  .Include(x => x.Fields)
+                      .ThenInclude(x => x.FieldType)
+                  .Where(ct =>
+                  (ct.TenantId == null || ct.TenantId == tenantId)
+                  && ct.IsActive == true);
+                }
+                else
+                {
+                    result = _context.ContentTypes
+                    .Include(x => x.Content.Where(f => f.TenantId == tenantId || f.TenantId == null))
+                        .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId || f.TenantId == null))
                             .ThenInclude(x => x.ContentTypeField)
                     .Include(x => x.Fields)
                         .ThenInclude(x => x.FieldType)
@@ -129,6 +143,7 @@ namespace ECDLink.ContentManagement.Repositories
                     && (EF.Functions.ILike(ct.Name, $"%{search}%")
                         || EF.Functions.ILike(ct.Description, $"%{search}%"))
                     );
+                }
             }
             return result;
         }

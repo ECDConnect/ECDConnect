@@ -34,6 +34,7 @@ export const PractitionerActions = {
   GET_PRACTITIONERS_FOR_COACH: 'getPractitionersForCoach',
   GET_ALL_PRACTITIONERS: 'getAllPractitioners',
   UPDATE_PRACTITIONER_PERMISSIONS: 'updateUserPermission',
+  UPDATE_PRACTITIONER_COMMUNITY_STATUS: 'updatePractitionerCommunityTabStatus',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -509,6 +510,29 @@ export const updatePractitionerPermissions = createAsyncThunk<
         });
       }
       return rejectWithValue('No auth');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerCommunityTabStatus = createAsyncThunk<
+  any,
+  { practitionerUserId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_COMMUNITY_STATUS,
+  async ({ practitionerUserId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token && practitionerUserId) {
+        return await new PractitionerService(
+          userAuth?.auth_token
+        ).updatePractitionerCommunityTabStatus(practitionerUserId);
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

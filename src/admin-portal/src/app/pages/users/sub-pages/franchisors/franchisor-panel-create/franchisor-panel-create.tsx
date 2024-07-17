@@ -66,6 +66,7 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
+    watch,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,

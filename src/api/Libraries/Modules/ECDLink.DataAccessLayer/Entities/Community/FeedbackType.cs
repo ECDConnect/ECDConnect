@@ -13,7 +13,6 @@ namespace ECDLink.DataAccessLayer.Entities.Community
         where TKey : IEquatable<TKey>
     {
         public string Name { get; set; }
-        public string Description { get; set; }
         public int Ordering { get; set; }
     }
 

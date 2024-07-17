@@ -204,8 +204,16 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         (formattedAttendanceSummary?.length === 1 &&
           formattedAttendanceSummary[0].percentageAttendance === 0) ? (
           <IconInformationIndicator
-            title="You don't have any saved attendance registers yet!"
-            subTitle='Tap "Take attendance" to get started'
+            title={
+              hasPermissionToEdit
+                ? "You don't have saved any attendance registers yet!"
+                : 'No registers to view yet!'
+            }
+            subTitle={
+              hasPermissionToEdit
+                ? 'Tap "Take attendance" to get started'
+                : "When attendance registers are added for your class, you'll be able to see them here"
+            }
           />
         ) : (
           <>

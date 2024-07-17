@@ -186,7 +186,6 @@ export default function EditTopicsForm({
                           choosedSectionTitle={choosedSectionTitle}
                           setSearchValue={setSearchValue}
                           contentView={contentView}
-                          postNatalType={postNatalType}
                           selectedTab={selectedTab}
                           languages={languages}
                           setOpenTopic={setOpenTopic}

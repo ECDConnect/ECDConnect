@@ -97,8 +97,7 @@ create table public."CommunityProfile" (
 	"UpdatedDate" timestamp NOT NULL,
 	"UpdatedBy" text NULL,
 	"TenantId" uuid NULL,
-	"FromUserId" uuid NOT NULL,
-	"ToUserId" uuid NOT NULL,	
+	"UserId" uuid NOT NULL,
 	"AboutShort" text NULL,
 	"AboutLong" text NULL,
 	"ShareEmail" bool NOT NULL default false,
@@ -107,12 +106,10 @@ create table public."CommunityProfile" (
 	"ShareProvince" bool NOT NULL default false,
 	"ShareRole" bool NOT NULL default false,	
 	"ProvinceId" uuid NULL,	
-	"InviteAccepted" bool NULL,
 	"ClickedECDHeros" bool NOT NULL default false,
 	CONSTRAINT "PK_CommunityProfile" PRIMARY KEY ("Id")
 );
-ALTER TABLE "CommunityProfile" ADD CONSTRAINT "FK_CommunityProfile_FromUserId" FOREIGN KEY ("FromUserId") REFERENCES "AspNetUsers"("Id") ON DELETE RESTRICT;
-ALTER TABLE "CommunityProfile" ADD CONSTRAINT "FK_CommunityProfile_ToUserId" FOREIGN KEY ("ToUserId") REFERENCES "AspNetUsers"("Id") ON DELETE RESTRICT;
+ALTER TABLE "CommunityProfile" ADD CONSTRAINT "FK_CommunityProfile_UserId" FOREIGN KEY ("UserId") REFERENCES "AspNetUsers"("Id") ON DELETE RESTRICT;
 ALTER TABLE "CommunityProfile" ADD CONSTRAINT "FK_CommunityProfile_ProvinceId" FOREIGN KEY ("ProvinceId") REFERENCES "Province"("Id") ON DELETE RESTRICT;
 
 
@@ -130,9 +127,30 @@ create table public."CommunityProfileSkill" (
 ALTER TABLE "CommunityProfileSkill" ADD CONSTRAINT "FK_CommunityProfileSkill_CommunitySkillId" FOREIGN KEY ("CommunitySkillId") REFERENCES "CommunitySkill"("Id") ON DELETE RESTRICT;
 ALTER TABLE "CommunityProfileSkill" ADD CONSTRAINT "FK_CommunityProfileSkill_CommunityProfileId" FOREIGN KEY ("CommunityProfileId") REFERENCES "CommunityProfile"("Id") ON DELETE RESTRICT;
 
+
+CREATE TABLE public."CommunityProfileConnection" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"TenantId" uuid NULL,
+	"FromCommunityProfileId" uuid NOT NULL,
+	"ToCommunityProfileId" uuid NOT NULL,
+	"InviteAccepted" bool NULL,
+	CONSTRAINT "PK_CommunityProfileConnection" PRIMARY KEY ("Id")
+);
+
+
+-- public."CommunityProfileConnection" foreign keys
+
+ALTER TABLE public."CommunityProfileConnection" ADD CONSTRAINT "FK_CommunityProfileConnection_FromCommunityProfileId" FOREIGN KEY ("FromCommunityProfileId") REFERENCES public."CommunityProfile"("Id") ON DELETE RESTRICT;
+ALTER TABLE public."CommunityProfileConnection" ADD CONSTRAINT "FK_CommunityProfileConnection_ToCommunityProfileId" FOREIGN KEY ("ToCommunityProfileId") REFERENCES public."CommunityProfile"("Id") ON DELETE RESTRICT;
+
+
 -- notification
 INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
-	 (uuid_generate_v4(),true,current_date,current_date,NULL,'portal','notify-admin-on-coach-feedback','New coach feedback was logged for [[FirstName]] on [[OrganisationName]]','39077d0e-e443-4076-aaf2-978dc6805aa0','New Coach Feedback logged','[[SeeCoachFeedback]]','See coach feedback',NULL,'blue',0,'');
+	 (uuid_generate_v4(),true,current_date,current_date,NULL,'portal','notify-admin-on-coach-feedback','New coach feedback was logged for [[FirstName]] on [[OrganisationName]]',null,'New Coach Feedback logged','[[SeeCoachFeedback]]','See coach feedback',NULL,'blue',0,'');
 -- permissions
 INSERT INTO "Permission" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Name","NormalizedName","Grouping","TenantId") VALUES
 	 ('b651d875-dfcb-4bdf-b828-b2ca92661121',true,current_date,current_date, NULL,'view_community','View Community','Community',NULL),

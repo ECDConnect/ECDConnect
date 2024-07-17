@@ -18,13 +18,11 @@ import {
   RoleSystemNameEnum,
   WorkflowStatusDto,
   RoleDto,
+  ProfileSkillsDto,
 } from '@ecdlink/core';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
-
-export const getRelations = (state: RootState): RelationDto[] =>
-  state.staticData.relations || [];
 
 export const getProgrammeTypes = (state: RootState): ProgrammeTypeDto[] =>
   state.staticData.programmeTypes || [];
@@ -52,6 +50,27 @@ export const getRaces = (state: RootState): RaceDto[] =>
 
 export const getLanguages = (state: RootState): LanguageDto[] =>
   state.staticData.languages || [];
+
+export const getRelations = (state: RootState): RelationDto[] => {
+  const relations = !!state.staticData.relations
+    ? [...state.staticData.relations]
+    : [];
+
+  const getOrder = (id: string) => {
+    switch (id) {
+      case '742bbf23-30b4-4eb8-9aed-08bd2d36fe81':
+        return 1000; // Other
+      default:
+        return 0;
+    }
+  };
+
+  relations.sort(function (a, b) {
+    return getOrder(a.id!) - getOrder(b.id!);
+  });
+
+  return relations;
+};
 
 export const getEducationLevels = (state: RootState): EducationLevelDto[] => {
   const educationLevels = !!state.staticData.educationLevels
@@ -139,3 +158,6 @@ export const geCoachRole = (state: RootState): RoleDto => {
   );
   return coachRole;
 };
+
+export const getCommunitySkills = (state: RootState): ProfileSkillsDto[] =>
+  state.staticData.communitySkills || [];

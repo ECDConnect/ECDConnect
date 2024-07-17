@@ -55,11 +55,11 @@ export const WhatsappCall = () => {
             color={'secondary'}
             type={'small'}
             weight="bold"
-            text={`WhatsApp client`}
+            text={`WhatsApp ${practitionerFirstName}`}
           />
         </Button>
         <Button
-          text="Call client"
+          text={`Call ${practitionerFirstName}`}
           icon="PhoneIcon"
           type="outlined"
           size="small"

@@ -17,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Community
         public Guid CommunitySkillId { get; set; }
 
         [ForeignKey(nameof(CommunityProfileId))]
-        public virtual CommunityProfile CommunityProfile { get; set; }
+        public virtual CommunityProfile Profile { get; set; }
         public Guid CommunityProfileId { get; set; }
     }
 

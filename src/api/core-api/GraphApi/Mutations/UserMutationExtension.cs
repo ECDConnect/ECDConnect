@@ -6,6 +6,7 @@ using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -425,26 +426,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);
-            DoAudit(currentUserId, repoFactory, null, Guid.Parse(id));
-
-            // Manage points for user
-            pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId.ToString(), DateTime.UtcNow);
 
             return updateResult.Succeeded;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public async Task<BulkDeactivateResult> BulkDeleteUser(
-          [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] ILogger<UserMutationExtension> _logger,
-          IGenericRepositoryFactory repoFactory,
-          [Service] IPointsEngineService pointsEngineService,
-          ApplicationUserManager userManager,
-          List<string> ids)
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] ILogger<UserMutationExtension> _logger,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IPointsEngineService pointsEngineService,
+            ApplicationUserManager userManager,
+            List<string> ids)
         {
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
-            bool? executorIsSuperAdmin = null;
+            bool executorIsSuperAdmin = await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
             if (ids is null || ids.Count == 0)
             {
@@ -468,11 +465,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
                 if (isAdmin)
                 {
-                    if (executorIsSuperAdmin == null)
-                    {
-                        executorIsSuperAdmin = await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
-                    }
-                    if (!executorIsSuperAdmin.GetValueOrDefault(false))
+                    if (!executorIsSuperAdmin)
                     {
                         failed.Add(user.Id.ToString());
                         continue;
@@ -482,17 +475,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.LockoutEnabled = true;
                 user.LockoutEnd = DateTime.MaxValue;
                 user.IsActive = false;
-                user.UpdatedDate = DateTime.UtcNow;
 
                 var updateResult = await userManager.UpdateAsync(user);
                 
                 if (updateResult.Succeeded)
                 {
-                    // Manage points for user
-                    var isPractitioner = await userManager.IsInRoleAsync(user, Roles.PRACTITIONER);
-                    if (isPractitioner)
-                        pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId.ToString(), DateTime.UtcNow);
-
                     // Remove any roles
                     var roles = userManager.GetRolesAsync(user).Result;
                     foreach (var role in roles)
@@ -502,14 +489,68 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
 
                     success.Add(user.Id.ToString());
-                    DoAudit(currentUserId, repoFactory, null, user.Id, "Delete"); 
-                } else
+                } 
+                else
                 {
                     failed.Add(user.Id.ToString());
                 }
             }
 
             return new BulkDeactivateResult() { Failed = failed, Success = success };
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public bool BulkReactivateUsers(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] ILogger<UserMutationExtension> _logger,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IPointsEngineService pointsEngineService,
+            ApplicationUserManager userManager,
+            List<Guid> userIds)
+        {
+            if (userIds == null)
+            {
+                throw new ArgumentNullException(nameof(userIds));
+            }
+
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: currentUserId);
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: currentUserId);
+
+            var users = userManager.Users.Where(u => userIds.Contains(u.Id)).ToList();
+
+            foreach (var user in users)
+            {
+                // Reactivate user record
+                user.LockoutEnabled = false;
+                user.LockoutEnd = DateTime.UtcNow;
+                user.IsActive = true;
+
+                // Reset Roles
+                var practitioner = practitionerRepo.GetByUserId(user.Id);
+
+                if (practitioner != null)
+                {
+                    // If principal add to the principal role
+                    if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value)
+                    {
+                        userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+                    }
+                    else
+                    {
+                        userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
+                    }
+                }
+
+                var coach = coachRepo.GetByUserId(user.Id);
+
+                if (coach != null)
+                {
+                    userManager.AddToRoleAsync(user, Roles.COACH);
+                }
+            }
+
+            return true;
         }
 
         // TODO: Shouldn't we check Hierarchy here?

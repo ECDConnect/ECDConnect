@@ -8,6 +8,7 @@ using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.Core.Services.Interfaces;
@@ -220,7 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     var learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
 
-                    int childCount = learners.Count;
+                    int childCount = 0;
                     int month = fromDate.Month;
                     int year = fromDate.Year;
                     int weekOfYear = fromDate.GetWeekOfYear();
@@ -232,23 +233,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
-                            if (attendanceData.Any())
+                            if (learner.StartedAttendance > fromDate)
                             {
-                                var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
-                                var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
-                                if (attendanceAttended > 0)
+                                childCount++;
+                                var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
+                                if (attendanceData.Any())
                                 {
-                                    attendancePercentage =
-                                        (int)(childCount > 0 && attendanceAttended > 0
-                                            ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100)
-                                            : 0);
-                                }
+                                    var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
+                                    var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
+                                    if (attendanceAttended > 0)
+                                    {
+                                        attendancePercentage =
+                                            (int)(childCount > 0 && attendanceAttended > 0
+                                                ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100)
+                                                : 0);
+                                    }
 
-                                //override month and year to attendance month and year
-                                month = attendanceData.FirstOrDefault().MonthOfYear;
-                                year = attendanceData.FirstOrDefault().Year;
-                                weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
+                                    //override month and year to attendance month and year
+                                    month = attendanceData.FirstOrDefault().MonthOfYear;
+                                    year = attendanceData.FirstOrDefault().Year;
+                                    weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
+                                }
                             }
                         }
                     }
@@ -322,6 +327,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IClassroomService classroomService,
             [Service] ChildAttendanceReport attendanceReportService,
             [Service] AttendanceService attendanceService,
+            [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
             HierarchyEngine hierarchyEngine,
             string practitionerId)
         {
@@ -381,17 +387,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Get Attendance Rate - why is this just for one classroom group. TODO - fix for multiple classes
             if (classroomGroups.Any())
             {
-                var attendanceReports = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), previousMonthStart.Date, previousMonthEnd.GetEndOfDay());
+                var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
 
-                if (attendanceReports.Any())
+                if (monthlyReport != null)
                 {
-                    foreach (var attendanceReport in attendanceReports)
+                    if (monthlyReport.TotalScheduledSessions > 0)
                     {
-                        // The results of this seem wrong?
-                        var attendancePercentage = attendanceReport?.AttendancePercentage ?? 0;
+                        var attendancePercentage = monthlyReport.PercentageAttendance;
                         if (attendancePercentage < 50)
                         {
-                            ClassroomGroup group = classroomGroups.Where(x => x.Id == Guid.Parse(attendanceReport.ClassroomGroupId)).FirstOrDefault();
+                            ClassroomGroup group = classroomGroups.FirstOrDefault();
                             notifications.Add(new NotificationDisplay()
                             {
                                 Subject = $"{attendancePercentage}% attendance rate",
@@ -406,6 +411,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
             }
+                       
 
             // TODO: Need to refactor dates for reporting periods
             // Get Due/Overdue Reports
@@ -884,7 +890,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             foreach (var classroomGroupId in classroomGroupIds)
             {
-                var learners = attendanceService.GetAllLearnerInstances(practitioner.UserId.ToString(), classroomGroupId);
+                var learners = attendanceService.GetAllLearnerGroupInstances(classroomGroupId);
                 foreach (var learner in learners)
                 {
                     var attendanceForPeriod = attendanceService.GetAttendanceRecordsForPeriod(learner, practitioner.UserId.ToString(), reportingPeriodStart, reportingPeriodEnd);
@@ -979,6 +985,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHolidayService<Holiday> holidayService,
             [Service] AttendanceService attendanceService,
             [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
+            [Service] IAbsenteeService absenteeService,
             IGenericRepositoryFactory repoFactory,
             string type)
         {
@@ -991,8 +998,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     return childResults;
                 case "practitioner":
                 case "principal":
+                    var principalResults = GetPractitionerNotificationsForPrincipal(
+                        monthlyAttendanceReportService,
+                        absenteeService,
+                        repoFactory,
+                        uId.ToString(),
+                        type).ToList();
+                    return principalResults;
                 case "coach":
-                    var practitionerResults = GetPractitionerNotifications(
+                    var coachResults = GetPractitionerNotificationsForCoach(
                         attendanceRepo,
                         incomeManager,
                         holidayService,
@@ -1001,7 +1015,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         repoFactory,
                         uId.ToString(),
                         type).ToList();
-                    return practitionerResults;
+                    return coachResults;
                 default:
                     return new List<NotificationDisplay>(); // THIS SHOULD 400
             }
@@ -1083,7 +1097,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
         }
 
-        private IEnumerable<NotificationDisplay> GetPractitionerNotifications(
+        private IEnumerable<NotificationDisplay> GetPractitionerNotificationsForCoach(
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
@@ -1097,19 +1111,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var visitRepo = repoFactory.CreateRepository<Visit>(userContext: uId);
-            var visitGenRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
             var licenseRepo = repoFactory.CreateRepository<License>(userContext: uId);
-            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
-            var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
-            var clubMeetingRegisterRepo = repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: uId);
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
-            var pqaRatingRepo = repoFactory.CreateGenericRepository<PQARating>(userContext: uId);
-            var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
-            var clubMemberRepo = repoFactory.CreateGenericRepository<ClubMember>(userContext: uId);
-            var clubMeetingRepo = repoFactory.CreateGenericRepository<ClubMeeting>(userContext: uId);
 
             var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
             var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
@@ -1137,18 +1142,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
             var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId.ToString())).ToList();
             var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
-            var clubMemberDictionary = clubMemberRepo.GetAll().Where(x => x.IsActive).Select(x => new { x.PractitionerId, x.ClubId }).ToList();
-
-            var lastMonthClubMeetings = clubMeetingRepo.GetAll()
-                .Where(x => x.IsActive && x.MeetingDate.HasValue && x.MeetingDate.Value.Month == DateTime.Now.Month && x.MeetingDate.Value.Year == DateTime.Now.Year)
-                .Include(x => x.ClubMeetingRegister)
-                .ToList();
-
-      //      var practitionerClubAbsenceDictionary = clubMeetingRegisterRepo.GetAll()
-      //          .Where(x => x.InsertedDate.Year == DateTime.Now.Year && x.IsActive && !x.Attended)
-      //          .GroupBy(x => x.PractitionerId)
-      //          .ToDictionary(x => x.First().PractitionerId, x => x.Count());
-
+            
             foreach (var practitioner in practitioners)
             {
                 var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
@@ -1206,7 +1200,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";
-                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval}";
+                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval.ToString("dd MMMM yyyy")}";
                     notification.GroupingName = "Removed from preschool";
                     yield return notification;
                     continue;
@@ -1352,6 +1346,162 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         }
                     }
                 }
+
+                notification.Subject = "";
+                notification.Icon = MetricsIconEnum.None.ToString();
+                notification.Color = MetricsColorEnum.None.ToString();
+                notification.Message = "";
+                notification.Notes = "";
+                notification.GroupingName = "Practitioner";
+                yield return notification;
+                continue;
+            }
+        }
+
+        private IEnumerable<NotificationDisplay> GetPractitionerNotificationsForPrincipal(
+            [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
+            [Service] IAbsenteeService absenteeService,
+            IGenericRepositoryFactory repoFactory,
+            string uId,
+            string mode)
+        {
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+
+            var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
+            var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
+            var currentMonthEnd = DateTime.Now.GetEndOfMonth();
+
+            var mondayOfLastWeek = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek - 6); 
+            var sundayOfLastWeek = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek);
+
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+
+            List<Practitioner> practitioners;
+            switch (mode)
+            {
+                case "coach":
+                    practitioners = practitionerRepo.GetAll().Where(x => x.IsActive && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(uId)).ToList();
+                    break;
+                case "principal":
+                    practitioners = practitionerRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(uId)).ToList();
+                    break;
+                default:
+                    practitioners = practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(uId)).ToList();
+                    break;
+            }
+
+            var pracitionerUserIds = practitioners.Select(y => y.UserId.ToString());
+            var classrooms = classroomRepo.GetAll().ToList();
+            var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+            
+            foreach (var practitioner in practitioners)
+            {
+                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
+                var practitionerClassroomGroupIds = classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == practitioner.UserId.Value).Select(x => x.Id).ToList();
+                var classroom = practitionerClassrooms.FirstOrDefault();
+
+                var notification = new NotificationDisplay()
+                {
+                    UserId = practitioner.UserId,
+                    UserType = "practitioner"
+                };
+
+                #region REMOVED FROM PRESCHOOL
+                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId.Value)
+                    .Where(x => x.IsActive)
+                    .OrderByDescending(x => x.InsertedDate)
+                    .FirstOrDefault();
+
+                if (removalHistory != null)
+                {
+                    notification.Subject = $"Practitioner is leaving on {removalHistory.DateOfRemoval.ToString("dd MMMM yyyy")}";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval.ToString("dd MMMM yyyy")}";
+                    notification.GroupingName = "Removed from preschool";
+                    yield return notification;
+                    continue;
+                }
+                #endregion                             
+
+                #region NOT REGISTERED ON APP
+                if (
+                    // If they are a trainee, check if they have logged in
+                    (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value && practitioner.User.LastSeen == DateTime.MinValue)
+                    // If they are a practitioner, check is registered
+                    || ((!practitioner.IsTrainee.HasValue || !practitioner.IsTrainee.Value) && (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)))
+                {
+                    notification.Subject = $"Not registered on {applicationName}";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "Request registration";
+                    notification.GroupingName = "Not registered on app";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region LEAVE
+                var absentDays = absenteeService.GetAbsentDayCountForUser(practitioner.UserId.Value, previousMonthStart, previousMonthEnd);
+                if (absentDays > 0)
+                {
+
+                    notification.Subject = $"{absentDays} days absent last month";
+                    notification.Icon = MetricsIconEnum.Warning.ToString();
+                    notification.Color = MetricsColorEnum.Warning.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Absent";
+                    yield return notification;
+                    continue;
+                }
+
+                #endregion
+
+                #region ATTENDANCE
+                var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), mondayOfLastWeek, sundayOfLastWeek).SingleOrDefault();
+
+                if (monthlyReport != null)
+                {
+                    if (monthlyReport.TotalScheduledSessions > 0)
+                    {
+                        var attendancePercentage = monthlyReport.PercentageAttendance;
+
+                        #region LOW CHILD ATTENDENCE
+                        if (attendancePercentage < 75)
+                        {
+                            notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Warning.ToString();
+                            notification.Color = MetricsColorEnum.Warning.ToString();
+                            notification.Message = "";
+                            notification.Notes = "Improve attendance";
+                            notification.GroupingName = "Less than 75% child attendance last month";
+                            yield return notification;
+                            continue;
+                        }
+                        #endregion
+
+                        #region GOOD CHILD ATTENDANCE
+                        if (attendancePercentage >= 75)
+                        {
+                            notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Success.ToString();
+                            notification.Color = MetricsColorEnum.Success.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Better than 75% child attendance last month";
+                            yield return notification;
+                            continue;
+                        }
+                        #endregion
+                    }
+                }
+                #endregion
 
                 notification.Subject = "";
                 notification.Icon = MetricsIconEnum.Success.ToString();

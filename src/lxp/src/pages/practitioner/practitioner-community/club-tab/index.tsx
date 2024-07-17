@@ -31,7 +31,7 @@ import partnershipIcon from '@/assets/icon/partnership.svg';
 import { ClubActions } from '@/store/club/club.actions';
 import { useSelector } from 'react-redux';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '@/pages/community/clubs-tab/club/individual-club-view';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '@/pages/community-old/clubs-tab/club/individual-club-view';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { userSelectors } from '@/store/user';
 import { coachSelectors } from '@/store/coach';
@@ -44,7 +44,7 @@ import { SupportRoleAlert } from './0-components/support-role-alert';
 import { getAllNotifications } from '@/store/notifications/notifications.selectors';
 import { notificationTagConfig } from '@/constants/notifications';
 import { PractitionerCommunityRouteState } from '../index.types';
-import { CaregiverMeeting } from '@/pages/community/clubs-tab/club/club-points/activities/0-components/caregiver-meeting';
+import { CaregiverMeeting } from '@/pages/community-old/clubs-tab/club/club-points/activities/0-components/caregiver-meeting';
 import { Notification } from '@/store/notifications';
 
 export const ClubTab: React.FC = () => {

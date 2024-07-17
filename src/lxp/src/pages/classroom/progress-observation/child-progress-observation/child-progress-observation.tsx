@@ -278,19 +278,19 @@ export const ChildProgressObservationPage: React.FC = () => {
       await appDispatch(
         progressTrackingThunkActions.getProgressTrackingCategories({
           locale: language.locale,
-          force: true,
+          overrideCache: true,
         })
       ).unwrap();
       await appDispatch(
         progressTrackingThunkActions.getProgressTrackingSubCategories({
           locale: language.locale,
-          force: true,
+          overrideCache: true,
         })
       ).unwrap();
       await appDispatch(
         progressTrackingThunkActions.getProgressTrackingSkills({
           locale: language.locale,
-          force: true,
+          overrideCache: true,
         })
       ).unwrap();
       await appDispatch(

@@ -43,6 +43,7 @@ export interface FormFieldProps<T extends FieldValues>
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
+  isAdminPortalInput?: boolean;
 }
 
 export const FormInput = <T extends FieldValues>({
@@ -70,6 +71,7 @@ export const FormInput = <T extends FieldValues>({
   color,
   isAdminPortalField,
   readonly,
+  isAdminPortalInput,
   ...restProps
 }: FormFieldProps<T>) => {
   const getInputStyle = () => {
@@ -89,6 +91,10 @@ export const FormInput = <T extends FieldValues>({
 
     if (isAdminPortalField) {
       return styles.portalDdefaultInputStyle;
+    }
+
+    if (isAdminPortalInput) {
+      return styles.adminPortalInputStyle;
     }
 
     return styles.defaultInputStyle;
@@ -247,7 +253,13 @@ export const FormInput = <T extends FieldValues>({
           {label && (
             <label
               htmlFor={nameProp}
-              className={disabled ? styles.disabledLabel : styles.label}
+              className={
+                disabled
+                  ? styles.disabledLabel
+                  : isAdminPortalInput
+                  ? styles.adminPortalLabel
+                  : styles.label
+              }
             >
               {label}
             </label>

@@ -20,7 +20,10 @@ export const getTableData = ({
   practitioner,
 }: TableDataProps) => {
   const reportData = monthlyReport?.classroomAttendanceReport ?? [];
-  const totalAttendance = monthlyReport?.totalAttendance ?? [];
+  const totalAttendance =
+    monthlyReport?.totalAttendance.filter(
+      (attendance) => attendance.value !== null
+    ) ?? [];
   const totalAttendanceStatsReport = monthlyReport?.totalAttendanceStatsReport;
 
   const numDays = totalAttendance.length;

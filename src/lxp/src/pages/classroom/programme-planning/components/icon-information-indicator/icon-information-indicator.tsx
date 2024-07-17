@@ -28,6 +28,7 @@ export const IconInformationIndicator: React.FC<
         className="mt-1"
         weight="skinny"
         text={subTitle}
+        align="center"
         color={'textMid'}
         fontSize="14"
       />

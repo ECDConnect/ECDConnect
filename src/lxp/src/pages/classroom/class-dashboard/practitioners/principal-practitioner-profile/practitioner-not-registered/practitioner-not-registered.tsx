@@ -179,12 +179,9 @@ export const PractitionerNotRegistered: React.FC<
                 type="body"
                 color="textMid"
                 className="w-11/12"
-                text={`• You sent ${
+                text={`• An invitation was sent to ${
                   practitioner?.user?.firstName
-                } an invitation on ${format(
-                  new Date(invite as Date),
-                  'LLLL d yyyy'
-                )}`}
+                } on ${format(new Date(invite as Date), 'LLLL d yyyy')}`}
               />
             </div>
           ))}

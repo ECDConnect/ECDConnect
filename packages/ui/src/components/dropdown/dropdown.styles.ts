@@ -28,6 +28,7 @@ export const leaveFrom = 'transform opacity-100 scale-100';
 export const leaveTo = 'transform opacity-0 scale-95';
 export const label =
   'font-semibold block text-base font-body leading-snug text-textDark';
+export const adminPortalLabel = 'block text-lg font-medium text-gray-800"';
 export const subLabel =
   'block text-base font-body leading-snug text-textMid self-stretch';
 

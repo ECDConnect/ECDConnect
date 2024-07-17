@@ -273,6 +273,7 @@ export default function MessageList() {
             <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
               <NavigationTable
                 columns={[
+                  { field: 'subject', use: 'Message title' },
                   { field: 'message', use: 'Message text' },
                   {
                     field: 'roleNames',

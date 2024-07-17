@@ -72,9 +72,6 @@ export const ChildRegistration: React.FC = () => {
   const isPractitioner = !!practitioner;
   const dialog = useDialog();
 
-  const pointsLibraryRegisterChild = useSelector(
-    pointsSelectors.getPointsLibraryById(SmartStartPointsLibrary.REGISTER_CHILD)
-  );
   const existingClassroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupByChildUserId(existingChild?.userId!)
   );
@@ -231,6 +228,7 @@ export const ChildRegistration: React.FC = () => {
 
     const child: ChildDto = {
       ...childInputModel,
+      userId: userId,
       isActive: true,
       user: {
         ...userInputModel,
@@ -238,7 +236,6 @@ export const ChildRegistration: React.FC = () => {
       },
       caregiver: caregiverDto,
     };
-
     updateChild(child);
 
     if (formState.childRegistrationFormModel?.childPhotoConsentAccepted) {

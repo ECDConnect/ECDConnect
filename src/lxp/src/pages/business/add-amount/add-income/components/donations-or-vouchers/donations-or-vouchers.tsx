@@ -182,6 +182,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
               payTypesList?.map((type) => ({
                 text: type.label,
                 value: type.value ?? '',
+                disabled: isWalkthrough,
               })) || []
             }
             onOptionSelected={(value: string | string[]) => {

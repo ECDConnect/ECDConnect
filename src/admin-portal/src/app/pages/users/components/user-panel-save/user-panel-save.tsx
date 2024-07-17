@@ -1,5 +1,5 @@
 import { getAvatarColor } from '@ecdlink/core';
-import { UserAvatar } from '@ecdlink/ui';
+import { Button, UserAvatar } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { UserPanelSaveProps } from '../users';
 
@@ -9,6 +9,7 @@ export default function UserPanelSave(props: UserPanelSaveProps) {
   };
 
   const [userAvatar, setUserAvatar] = useState<string>();
+  // const disablebutton = props?.disabled?.
 
   useEffect(() => {
     if (props.user) {
@@ -22,11 +23,11 @@ export default function UserPanelSave(props: UserPanelSaveProps) {
     <article>
       {/* Profile header */}
       <div>
-        <div className="bg-uiBg h-28 w-full rounded-lg object-cover"></div>
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="-mt-12 sm:-mt-16 sm:flex sm:items-end sm:space-x-5">
-            <div className="flex">
-              {props.user ? (
+        <div className="h-12 w-full rounded-lg bg-white object-cover"></div>
+        <div className="w-full">
+          <div className="-mt-12 w-full">
+            <div className="flex w-full">
+              {/* {props.user ? (
                 <UserAvatar
                   className="ring-4 ring-white"
                   size={'header'}
@@ -44,23 +45,26 @@ export default function UserPanelSave(props: UserPanelSaveProps) {
                     <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 </span>
-              )}
+              )} */}
             </div>
-            <div className="mt-6 sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
+            <div className="W-full mt-6">
               <div className="mt-6 min-w-0 flex-1 sm:hidden 2xl:block">
                 <h1 className="truncate text-2xl font-bold text-gray-900">
                   {props.user?.firstName} {props.user?.surname}
                 </h1>
               </div>
-              <div className="justify-stretch mt-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-                <button
-                  // disabled={props.disabled}
+              <div className="justify-stretch bg-quatenary mt-6 flex w-full flex-col">
+                <Button
+                  color="quatenary"
                   onClick={() => emitSave()}
-                  type="submit"
-                  className="bg-primary hover:bg-uiLight focus:outline-none focus:ring-primary-dark ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
+                  type="filled"
+                  buttonType="submit"
+                  className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-primary-dark inline-flex justify-center rounded-xl border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
+                  disabled={props?.disabled || props?.isLoading}
+                  isLoading={props?.isLoading}
                 >
                   Save
-                </button>
+                </Button>
 
                 {/* <Menu as="div" className="relative inline-block text-left">
                   {({ open }) => (
