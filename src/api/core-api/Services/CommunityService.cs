@@ -141,11 +141,10 @@ namespace EcdLink.Api.CoreApi.Services
                 communityProfile.ProvinceId = input.ProvinceId;
 
                 _communityProfileRepo.Update(communityProfile);
-                UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
             } 
             else
             {
-                var newCommunityProfile = new CommunityProfile()
+                communityProfile = _communityProfileRepo.Insert(new CommunityProfile()
                 {
                     Id = Guid.NewGuid(),
                     InsertedDate = DateTime.Now,
@@ -153,8 +152,8 @@ namespace EcdLink.Api.CoreApi.Services
                     UpdatedBy = _applicationUserId.ToString(),
                     IsActive = true,
                     UserId = input.UserId,
-                    AboutShort = string.IsNullOrEmpty(input.AboutShort) ? "": input.AboutShort,
-                    AboutLong = string.IsNullOrEmpty(input.AboutLong) ? "" : input.AboutLong,
+                    AboutShort = input.AboutShort,
+                    AboutLong = input.AboutLong,
                     ShareContactInfo = input.ShareContactInfo,
                     ShareEmail = input.ShareEmail,
                     SharePhoneNumber = input.SharePhoneNumber,
@@ -162,9 +161,12 @@ namespace EcdLink.Api.CoreApi.Services
                     ShareProvince = input.ShareProvince,
                     ShareRole = input.ShareRole,
                     ProvinceId = input.ProvinceId,
-                };
-
-                communityProfile = _communityProfileRepo.Insert(newCommunityProfile);
+                });
+               
+            }
+            // Update skills if available
+            if (input.CommunitySkillIds.Count > 0)
+            {
                 UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
             }
 
