@@ -227,12 +227,13 @@ export const ProgrammeDashboard: React.FC = () => {
 
   const checkIfToShowInitialWalkthrough = useCallback(() => {
     if (
+      hasPermissionToEdit &&
       classroomGroup?.classProgrammes.length &&
       !getStorageItem(LocalStorageKeys.programmeWalkthroughComplete)
     ) {
       setShowInitialWalkthrough(true);
     }
-  }, [classroomGroup?.classProgrammes.length]);
+  }, [classroomGroup?.classProgrammes.length, hasPermissionToEdit]);
 
   useEffect(() => {
     checkIfToShowInitialWalkthrough();
@@ -387,7 +388,7 @@ export const ProgrammeDashboard: React.FC = () => {
       title="Activities"
       subTitle={classroomGroup?.name}
       displayOffline={!isOnline}
-      displayHelp
+      displayHelp={hasPermissionToEdit}
       onHelp={() =>
         history.push(
           ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.TUTORIAL.GETTING_STARTED.replace(
