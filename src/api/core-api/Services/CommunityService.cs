@@ -485,5 +485,19 @@ namespace EcdLink.Api.CoreApi.Services
             return allConnections.Select(x => new CommunityConnectionModel(x.ToProfile, null)).Distinct().ToList();
         }
 
+        public bool UpdateClickedECDHeros(Guid userId)
+        {
+            var recordToUpdate = _communityProfileRepo.GetByUserId(userId);
+            if (recordToUpdate != null)
+            {
+                recordToUpdate.ClickedECDHeros = true;
+                recordToUpdate.UpdatedDate = DateTime.Now;
+                recordToUpdate.UpdatedBy = _applicationUserId.ToString();
+                _communityProfileRepo.Update(recordToUpdate);
+                return true;
+            }
+            return false;
+        }
+
     }
 }
