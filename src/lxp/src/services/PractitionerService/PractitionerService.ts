@@ -1627,6 +1627,30 @@ class PractitionerService {
 
     return response.data.data.updatePractitionerCommunityTabStatus;
   }
+
+  async updateClickedECDHeros(userId: string): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation UpdateClickedECDHeros($userId: UUID!) {
+    updateClickedECDHeros(userId: $userId) {
+        
+    }
+}
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Updating practitioner clicked ECD heroes status failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateClickedECDHeros;
+  }
 }
 
 export default PractitionerService;

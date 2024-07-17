@@ -137,6 +137,7 @@ import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-d
 import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-expense';
 import { Community } from '@/pages/community/community';
 import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
+import { ConnectionProfile } from '@/pages/community/connection-profile/connection-profile';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -270,6 +271,11 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.COMMUNITY.WELCOME}
         component={CommunityWelcome}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CONNECTION_PROFILE}
+        component={ConnectionProfile}
         exact
       />
       <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />

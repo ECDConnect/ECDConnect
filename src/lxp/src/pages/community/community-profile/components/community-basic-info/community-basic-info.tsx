@@ -24,7 +24,7 @@ import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import { ProvinceDto, useSnackbar } from '@ecdlink/core';
 import { staticDataSelectors } from '@/store/static-data';
-import { BasicInfoItems } from './community-basic-info.types';
+import { BasicInfoItems } from '../../../community.types';
 
 interface ContactDetailsProps {
   onClose?: (item: boolean) => void;

@@ -6,12 +6,14 @@ interface ProfileSkillsProps {
   userName: string;
   skills: ProfileSkillsDto[];
   action?: (item: boolean) => void;
+  connectionProfile?: boolean;
 }
 
 export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
   userName,
   skills,
   action,
+  connectionProfile,
 }) => {
   const renderProfileSkills = useMemo(() => {
     if (skills?.length > 0) {
@@ -60,7 +62,7 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
               text={`${userName}'s skills`}
               color={'textDark'}
             />
-            {skills?.length === 0 && (
+            {skills?.length === 0 && !connectionProfile && (
               <div className="flex w-full justify-end">
                 <Button
                   className={'mt-3 rounded-xl'}
@@ -77,7 +79,7 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
             )}
           </div>
           {renderProfileSkills}
-          {skills?.length > 0 && (
+          {skills?.length > 0 && !connectionProfile && (
             <div className="flex w-full justify-end">
               <Button
                 className={'mt-3 rounded-xl'}

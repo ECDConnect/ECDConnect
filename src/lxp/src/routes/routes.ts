@@ -50,6 +50,7 @@ const ROUTES = {
     HELP: '/help/:helpSection',
     WELCOME: '/welcome',
     PROFILE: '/profile',
+    CONNECTION_PROFILE: '/connection-profile',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
       EDIT: '/edit',
