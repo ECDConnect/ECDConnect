@@ -19,5 +19,6 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
         public bool DeleteCommunityProfile(Guid communityProfileId);
         public List<CommunityProfileConnection> SaveCommunityProfileConnections(List<CommunityConnectInputModel> input);
         public CommunityProfileConnection CancelCommunityRequest(CommunityConnectInputModel input);
+        public bool UpdateClickedECDHeros(Guid userId);
     }
 }
