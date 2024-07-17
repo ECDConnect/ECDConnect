@@ -9,7 +9,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class AbsenteeMutationExtension
@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string toRole = null,
             string roleAssignedToUser = null)
         {
-          return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleAssign, fromRole, toRole,roleAssignedToUser, null);
+            return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleAssign, fromRole, toRole, roleAssignedToUser, null);
         }
 
         public Absentees EditAbsentee(
