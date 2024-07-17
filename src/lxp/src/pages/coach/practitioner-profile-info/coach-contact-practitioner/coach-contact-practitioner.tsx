@@ -99,7 +99,7 @@ export const CoachContactPractitioner: React.FC = () => {
               <div>
                 <Typography
                   text={`Removed from ${
-                    practitionerClassroom?.name || `their programme`
+                    practitionerClassroom?.name || `their preschool`
                   }.`}
                   type="h1"
                   color="textDark"
@@ -111,7 +111,7 @@ export const CoachContactPractitioner: React.FC = () => {
                   text={`${
                     principal?.user?.firstName || `The principal`
                   } has removed ${practitioner?.user?.firstName} from ${
-                    practitionerClassroom?.name || `their programme`
+                    practitionerClassroom?.name || `their preschool`
                   }.`}
                   type="h2"
                   color="textDark"

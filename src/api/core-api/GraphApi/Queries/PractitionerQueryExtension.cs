@@ -248,7 +248,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                             }
                             if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal != false)
                             {
-                                practiType = "Principal/Owner";
+                                practiType = "Principal";
                             }
                             if (practiType == "")//if neither of the above, its a default
                             {
@@ -262,7 +262,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                                 practiClassroomNames = string.Join(",", classNames);
                             }
 
-                            practitionerColleagues.Add(new PractitionerColleagues() { Name = practiName, NickName = practiNickName, Title = practiType, ProfilePhoto = practiProfile, ContactNumber = practiNumber, ClassroomNames = practiClassroomNames });
+                            practitionerColleagues.Add(new PractitionerColleagues() { Name = practiName, NickName = practiNickName, Title = practiType, ProfilePhoto = practiProfile, ContactNumber = practiNumber, ClassroomNames = practiClassroomNames, UserId = practitioner.User.Id.ToString() });
                         }
                     }
                 }

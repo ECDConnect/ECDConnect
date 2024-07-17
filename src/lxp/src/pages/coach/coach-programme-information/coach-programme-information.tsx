@@ -18,7 +18,7 @@ import * as styles from './coach-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { authSelectors } from '@store/auth';
 import { userSelectors } from '@store/user';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
@@ -32,6 +32,11 @@ export const CoachProgrammeInformation: React.FC = () => {
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
+
+  const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
+  const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
+    []
   );
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
@@ -83,9 +88,14 @@ export const CoachProgrammeInformation: React.FC = () => {
   );
 
   const practitionersOnSite = practitioners?.filter((el) => {
-    return classroomGroups.some((f) => {
-      return f.userId === el.userId;
-    });
+    return (
+      otherColleagues?.some((f) => {
+        return f.userId === el.userId;
+      }) ||
+      classroomGroups?.some((cg) => {
+        return cg.userId === el.userId;
+      })
+    );
   });
 
   const classroomListItems = useMemo(() => {
@@ -144,6 +154,7 @@ export const CoachProgrammeInformation: React.FC = () => {
       ).practitionerColleagues(practitioner?.userId!);
     }
 
+    setOtherColleagues(practitionerColleagues);
     return practitionerColleagues;
   };
 
@@ -153,6 +164,26 @@ export const CoachProgrammeInformation: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (otherColleagues && practitioner?.user?.firstName) {
+      const filteredColleagues = otherColleagues?.filter(
+        (item) =>
+          !item?.name?.includes(practitioner?.user?.firstName) ||
+          item?.username?.includes(practitioner?.user?.userName)
+      );
+      const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
+        name: item?.name?.split(' ')[0] || item?.username,
+        title: item?.title,
+        nickName: item?.nickName,
+      }));
+      setOtherColleaguesFiltered(firstNameFilteredColleagues);
+    }
+  }, [
+    otherColleagues,
+    practitioner?.user?.firstName,
+    practitioner?.user?.userName,
+  ]);
 
   useEffect(() => {
     if (!isOnline) {
