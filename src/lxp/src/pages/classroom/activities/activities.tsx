@@ -13,12 +13,15 @@ import { useHistory } from 'react-router';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { useState } from 'react';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const ActivitiesTab = () => {
   const [displayCelebrationCard, setDisplayCelebrationCard] = useState(true);
 
   const classes = useSelector(classroomsSelectors.getClassroomGroups);
   const programmes = useSelector(programmeSelectors.getProgrammes);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const history = useHistory();
 
@@ -104,9 +107,9 @@ export const ActivitiesTab = () => {
       ),
   }));
 
-  const isToShowCelebratoryCard = classList?.every(
-    (item) => item.subTitle !== 'No theme'
-  );
+  const isToShowCelebratoryCard =
+    classList?.length &&
+    classList?.every((item) => item.subTitle !== 'No theme');
 
   return (
     <div className="p-4">
@@ -122,11 +125,22 @@ export const ActivitiesTab = () => {
           primaryMessage="Great job! You have activities planned for all classes!"
         />
       )}
-      <StackedList
-        className="mb-20 flex flex-col gap-1"
-        type="UserAlertList"
-        listItems={classList}
-      />
+      {classList.length ? (
+        <StackedList
+          className="mb-20 flex flex-col gap-1"
+          type="UserAlertList"
+          listItems={classList}
+        />
+      ) : (
+        <IconInformationIndicator
+          title="You don't have any classes yet!"
+          subTitle={
+            practitioner?.isPrincipal
+              ? 'Go to the "Classes" tab to add a class.'
+              : 'Ask your principal to assign you to a class.'
+          }
+        />
+      )}
     </div>
   );
 };
