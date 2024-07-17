@@ -359,7 +359,14 @@ export const RemovePractitionerFromProgramme: React.FC<
                   onChange={(date) => {
                     setRemovePractionerFormValues(
                       'removalDate',
-                      date ? date.toString() : ''
+                      date
+                        ? new Date(
+                            date.getFullYear(),
+                            date.getMonth(),
+                            date.getDate(),
+                            12
+                          ).toString()
+                        : ''
                     );
                     triggerRemovePractionerForm();
                   }}

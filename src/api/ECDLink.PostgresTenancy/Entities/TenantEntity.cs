@@ -19,5 +19,8 @@ namespace ECDLink.PostgresTenancy.Entities
         public string MoodleConfig { get; set; }
         public string GoogleAnalyticsTag { get; set; }
         public string GoogleTagManager { get; set; }
+        public string OrganisationEmail { get; set; }
+        public string DefaultSystemSettings { get; set; }
+        public string BlobStorageAddress { get; set; }
     }
 }

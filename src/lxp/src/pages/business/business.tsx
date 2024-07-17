@@ -88,7 +88,7 @@ export const Business: React.FC = () => {
   const { setState } = useAppContext();
 
   return (
-    <div className="h-screen">
+    <>
       <BannerWrapper
         showBackground={false}
         size="medium"
@@ -120,7 +120,7 @@ export const Business: React.FC = () => {
           <Walkthrough onBack={() => setShowInfo(false)} />
         </InfoPage>
       </Dialog>
-    </div>
+    </>
   );
 };
 

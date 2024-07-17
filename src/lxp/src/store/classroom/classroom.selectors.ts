@@ -1,7 +1,10 @@
 import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
-import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import {
+  ClassroomDto,
+  ClassroomDto as SimpleClassroomDto,
+} from '@/models/classroom/classroom.dto';
 import {
   ClassroomGroupDto,
   LearnerDto,
@@ -12,6 +15,18 @@ import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
 export const getClassroom = (
   state: RootState
 ): SimpleClassroomDto | undefined => state.classroomData.classroom;
+
+export const getIsReportingPeriodsSet = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined): boolean => {
+      console.log('classroom', classroom);
+      return (
+        !!classroom?.childProgressReportPeriods &&
+        !!classroom?.childProgressReportPeriods.length
+      );
+    }
+  );
 
 export const getClassroomGroups = (
   state: RootState

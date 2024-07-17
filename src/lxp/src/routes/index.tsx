@@ -136,6 +136,7 @@ import { UpdateIncome } from '@/pages/business/add-amount/add-income/update-inco
 import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
 import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-expense';
 import { Community } from '@/pages/community/community';
+import { ChildProgressReportingPeriods } from '@/pages/classroom/progress-observation/child-progress-reporting-period/child-progress-reporting-window';
 import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
 
 const PublicRoutes: React.FC = () => {
@@ -578,6 +579,10 @@ const AuthRoutes: React.FC = () => {
         component={ChildAttendanceReportPage}
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
+      <Route
+        path={ROUTES.CHILD_PROGRESS_REPORTING_PERIODS}
+        component={ChildProgressReportingPeriods}
+      />
       <Route
         path={ROUTES.PROGRESS_TRACKING_CATEGORY}
         component={ProgressObservationCategory}

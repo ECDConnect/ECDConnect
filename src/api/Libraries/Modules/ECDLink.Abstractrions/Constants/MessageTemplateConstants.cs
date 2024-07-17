@@ -22,6 +22,6 @@
         public const string HelpContactDetail = "HelpContactDetail";
         public const string HelpCategory = "HelpCategory";
         public const string HelpDescription = "HelpDescription";
-        public const string HelpLoginStatus = "HelpStatus";
+        public const string HelpLoginStatus = "HelpLoginStatus";
     }
 }

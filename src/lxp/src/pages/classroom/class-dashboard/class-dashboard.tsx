@@ -45,6 +45,7 @@ import { InitialAttendanceTutorialModal } from '../attendance/components/attenda
 import { ActivitiesTab } from '../activities/activities';
 import { useTenant } from '@/hooks/useTenant';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { ChildProgressLanding } from '../progress-observation/child-progress-landing/child-progress-landing';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -157,11 +158,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: NavigationNames.Classroom.Progress,
       initActive: false,
-      child: (
-        <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
-        </div>
-      ),
+      child: <ChildProgressLanding />,
     },
     {
       title: NavigationNames.Classroom.Activities,

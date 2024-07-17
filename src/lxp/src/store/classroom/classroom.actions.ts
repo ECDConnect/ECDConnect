@@ -25,6 +25,7 @@ export const ClassroomActions = {
   UPDATE_CLASSROOM_GROUP: 'updateClassroomGroup',
   UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
   GET_CLASSROOM_FOR_TRIAL_PERIOD_USER: 'getClassroomForTrialPeriodUser',
+  ADD_CHILD_PROGRESS_REPORT_PERIODS: 'addChildProgressReportPeriods',
 };
 
 export const getClassroom = createAsyncThunk<
@@ -403,6 +404,44 @@ export const createLearner = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
+
+export const addChildProgressReportPeriods = createAsyncThunk<
+  boolean,
+  {
+    classroomId: string;
+    childProgressReportPeriods: {
+      startDate: Date;
+      endDate: Date;
+    }[];
+  },
+  ThunkApiType<RootState>
+>(
+  ClassroomActions.ADD_CHILD_PROGRESS_REPORT_PERIODS,
+  async (
+    { classroomId, childProgressReportPeriods },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        await new ClassroomService(
+          userAuth?.auth_token
+        ).addChildProgressReportPeriods(
+          classroomId,
+          childProgressReportPeriods
+        );
+
+        return true;
+      }
+      return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 const mapClassroomGroupInput = (
   x: Partial<ClassroomGroupDto>
