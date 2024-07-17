@@ -1100,7 +1100,7 @@ class PractitionerService {
       query: `
       query practitionerColleagues($userId: String) {
         practitionerColleagues(userId: $userId) {
-          name title nickName contactNumber classroomNames profilePhoto
+          name title nickName contactNumber classroomNames profilePhoto userId
         }
       }
       `,
