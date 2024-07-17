@@ -12,11 +12,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
-using HotChocolate.Types.Pagination;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -148,7 +145,7 @@ namespace EcdLink.Api.CoreApi.Services
             } 
             else
             {
-                communityProfile = _communityProfileRepo.Insert(new CommunityProfile()
+                var newCommunityProfile = new CommunityProfile()
                 {
                     Id = Guid.NewGuid(),
                     InsertedDate = DateTime.Now,
@@ -156,8 +153,8 @@ namespace EcdLink.Api.CoreApi.Services
                     UpdatedBy = _applicationUserId.ToString(),
                     IsActive = true,
                     UserId = input.UserId,
-                    AboutShort = input.AboutShort,
-                    AboutLong = input.AboutLong,
+                    AboutShort = string.IsNullOrEmpty(input.AboutShort) ? "": input.AboutShort,
+                    AboutLong = string.IsNullOrEmpty(input.AboutLong) ? "" : input.AboutLong,
                     ShareContactInfo = input.ShareContactInfo,
                     ShareEmail = input.ShareEmail,
                     SharePhoneNumber = input.SharePhoneNumber,
@@ -165,7 +162,9 @@ namespace EcdLink.Api.CoreApi.Services
                     ShareProvince = input.ShareProvince,
                     ShareRole = input.ShareRole,
                     ProvinceId = input.ProvinceId,
-                });
+                };
+
+                communityProfile = _communityProfileRepo.Insert(newCommunityProfile);
                 UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
             }
 

@@ -3,12 +3,10 @@ using ECDLink.Core.Extensions;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Tenancy.Model;
 using ECDLink.Tenancy.Services;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace ECDLink.PostgresTenancy.Caching
@@ -110,5 +108,6 @@ namespace ECDLink.PostgresTenancy.Caching
             }
             return tenant;
         }
+
     }
 }
