@@ -2031,7 +2031,7 @@ export type ClassroomGroupChildAttendanceReportOverviewModel = {
   classroomAttendanceReport?: Maybe<
     Array<Maybe<ClassroomGroupChildAttendanceReportModel>>
   >;
-  totalAttendance?: Maybe<Array<KeyValuePairOfInt32AndInt32>>;
+  totalAttendance?: Maybe<Array<KeyValuePairOfInt32AndNullableOfInt32>>;
   totalAttendanceStatsReport?: Maybe<TotalAttendanceStatsReport>;
 };
 
@@ -5995,12 +5995,6 @@ export type IssueTask = {
   secondaryTextColor?: Maybe<Scalars['String']>;
 };
 
-export type KeyValuePairOfInt32AndInt32 = {
-  __typename?: 'KeyValuePairOfInt32AndInt32';
-  key: Scalars['Int'];
-  value: Scalars['Int'];
-};
-
 export type KeyValuePairOfInt32AndNullableOfInt32 = {
   __typename?: 'KeyValuePairOfInt32AndNullableOfInt32';
   key: Scalars['Int'];
@@ -7670,6 +7664,7 @@ export type Mutation = {
   removeUserFromRoles: Scalars['Boolean'];
   resetUserPassword: Scalars['Boolean'];
   restartVisit?: Maybe<BasicVisitModel>;
+  revertTenantSettingsToDefault?: Maybe<TenantInternalModel>;
   saveBulkMessagesForAdmin: Scalars['Boolean'];
   saveCoachFeedback?: Maybe<CoachFeedback>;
   saveCommunityProfile?: Maybe<CommunityProfileModel>;
@@ -7934,7 +7929,8 @@ export type Mutation = {
   updateSystemSetting?: Maybe<SystemSetting>;
   updateTeamLead?: Maybe<TeamLead>;
   updateTeamLeadMessage?: Maybe<TeamLead>;
-  updateTenantTheme: Scalars['Boolean'];
+  updateTenantInfo?: Maybe<TenantInternalModel>;
+  updateTenantTheme?: Maybe<Scalars['String']>;
   updateTheme?: Maybe<Theme>;
   updateThemeDay?: Maybe<ThemeDay>;
   updateTopic?: Maybe<Topic>;
@@ -11266,6 +11262,10 @@ export type MutationUpdateTeamLeadArgs = {
 export type MutationUpdateTeamLeadMessageArgs = {
   teamLeadUserId: Scalars['UUID'];
   welcomeMessage?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateTenantInfoArgs = {
+  input?: InputMaybe<TenantInfoInputModelInput>;
 };
 
 export type MutationUpdateTenantThemeArgs = {
@@ -14644,6 +14644,7 @@ export type Query = {
   countWorkflowStatusType?: Maybe<Scalars['Int']>;
   currentUserCompletedTrainingCourses?: Maybe<Array<Maybe<UserTrainingCourse>>>;
   dangerSignTranslations?: Maybe<Array<Maybe<DangerSignTranslation>>>;
+  defaultSettingsForTenant?: Maybe<Scalars['String']>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   districtsAndStats?: Maybe<Array<Maybe<DistrictStatsModel>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
@@ -19556,15 +19557,47 @@ export type TeamStandingModel = {
   percentageMembersWithMorePointsForCurrentYear: Scalars['Int'];
 };
 
+export type TenantInfoInputModelInput = {
+  applicationName?: InputMaybe<Scalars['String']>;
+  organisationEmail?: InputMaybe<Scalars['String']>;
+  organisationName?: InputMaybe<Scalars['String']>;
+};
+
+export type TenantInternalModel = {
+  __typename?: 'TenantInternalModel';
+  adminSiteAddress?: Maybe<Scalars['String']>;
+  adminTestSiteAddress?: Maybe<Scalars['String']>;
+  applicationName?: Maybe<Scalars['String']>;
+  blobStorageAddress?: Maybe<Scalars['String']>;
+  claimString?: Maybe<Scalars['String']>;
+  defaultSystemSettings?: Maybe<Scalars['String']>;
+  googleAnalyticsTag?: Maybe<Scalars['String']>;
+  googleTagManager?: Maybe<Scalars['String']>;
+  host?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  modules?: Maybe<TenantModuleModel>;
+  moodleConfig?: Maybe<Scalars['String']>;
+  moodleUrl?: Maybe<Scalars['String']>;
+  organisationEmail?: Maybe<Scalars['String']>;
+  organisationName?: Maybe<Scalars['String']>;
+  path?: Maybe<Scalars['String']>;
+  siteAddress?: Maybe<Scalars['String']>;
+  tenantType: TenantType;
+  testSiteAddress?: Maybe<Scalars['String']>;
+  themePath?: Maybe<Scalars['String']>;
+};
+
 export type TenantModel = {
   __typename?: 'TenantModel';
   adminSiteAddress?: Maybe<Scalars['String']>;
   applicationName?: Maybe<Scalars['String']>;
+  blobStorageAddress?: Maybe<Scalars['String']>;
   googleAnalyticsTag?: Maybe<Scalars['String']>;
   googleTagManager?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   modules?: Maybe<TenantModuleModel>;
   moodleUrl?: Maybe<Scalars['String']>;
+  organisationEmail?: Maybe<Scalars['String']>;
   organisationName?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<Scalars['String']>;
   tenantType: TenantType;

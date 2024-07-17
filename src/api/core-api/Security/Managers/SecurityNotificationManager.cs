@@ -197,9 +197,20 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         {
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationEmail = TenantExecutionContext.Tenant.OrganisationEmail;
+
             var helpLoginStatus = userHelp.IsLoggedIn  ? "Yes" : "No";
             var helpContactDetail = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber;
             var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
+            var adminEmail = adminUser.Email;
+
+            if (organisationEmail != null)
+            {
+                // We need to update the admin user's email with the organisationEmail, send the mail and then revert
+                adminUser.Email = organisationEmail;
+                await _userManager.UpdateNormalizedEmailAsync(adminUser);
+            }
+
             var affectedUserFullName = "anonymous";
             if (userHelp.UserId != null)
             {
@@ -218,6 +229,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpLoginStatus, helpLoginStatus)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
+
+            if (organisationEmail != null)
+            {
+                // revert admin email address to previous
+                adminUser.Email = adminEmail;
+                await _userManager.UpdateNormalizedEmailAsync(adminUser);
+            }
+
         }
     }
 }

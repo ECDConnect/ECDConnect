@@ -12,11 +12,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
-using HotChocolate.Types.Pagination;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -144,7 +141,6 @@ namespace EcdLink.Api.CoreApi.Services
                 communityProfile.ProvinceId = input.ProvinceId;
 
                 _communityProfileRepo.Update(communityProfile);
-                UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
             } 
             else
             {
@@ -166,6 +162,11 @@ namespace EcdLink.Api.CoreApi.Services
                     ShareRole = input.ShareRole,
                     ProvinceId = input.ProvinceId,
                 });
+               
+            }
+            // Update skills if available
+            if (input.CommunitySkillIds.Count > 0)
+            {
                 UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
             }
 
