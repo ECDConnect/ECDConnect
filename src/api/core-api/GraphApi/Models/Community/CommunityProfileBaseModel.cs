@@ -8,8 +8,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
     public class CommunityProfileBaseModel
     {
         public Guid Id { get; set; }
-        public Guid FromUserId { get; set; }
-        public Guid ToUserId { get; set; }
+        public Guid? UserId { get; set; }
         public string AboutShort { get; set; }
         public string AboutLong { get; set; }
         public bool? ShareContactInfo { get; set; }
@@ -20,7 +19,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public Guid? ProvinceId { get; set; }
         public string ProvinceName { get; set; }
         public bool? ShareRole { get; set; }
-        public bool? InviteAccepted { get; set; }
         public CommunityUserModel CommunityUser { get; set; }
         public DateTime InsertedDate { get; set; }
         public List<CommunityProfileSkillModel> ProfileSkills { get; set; }
@@ -28,8 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public CommunityProfileBaseModel(CommunityProfile profile, List<string> userRoles)
         {
             Id = profile.Id;
-            FromUserId = profile.FromUserId;
-            ToUserId = profile.ToUserId;
+            UserId = profile.UserId;
             AboutShort = profile.AboutShort;
             AboutLong = profile.AboutLong;
             ShareContactInfo = profile.ShareContactInfo;
@@ -40,10 +37,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             ProvinceId = profile.ProvinceId;
             ProvinceName = profile.Province != null ? profile.Province.Description: "";
             ShareRole = profile.ShareRole;
-            InviteAccepted = profile.InviteAccepted;
-            CommunityUser = new CommunityUserModel(profile.ToUser, userRoles);
+            CommunityUser = new CommunityUserModel(profile.User, userRoles);
             InsertedDate = profile.InsertedDate;
-            ProfileSkills = profile.ProfileSkills.Select(x => new CommunityProfileSkillModel(x.CommunitySkill, x.IsActive)).ToList();
+            ProfileSkills = profile.ProfileSkills.Select(x => new CommunityProfileSkillModel(x.CommunitySkill, x.IsActive)).Where(x => x.IsActive).OrderBy(x => x.Ordering).ToList();
         }
 
         public CommunityProfileBaseModel()

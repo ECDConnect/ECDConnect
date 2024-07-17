@@ -1,4 +1,4 @@
-import { HostFamilyDaysRouteState } from '@/pages/community/clubs-tab/club/club-points/activities/host-family-days/index.types';
+import { HostFamilyDaysRouteState } from '@/pages/community-old/clubs-tab/club/club-points/activities/host-family-days/index.types';
 import ROUTES from '@/routes/routes';
 import { clubSelectors } from '@/store/club';
 import { ActionModal } from '@ecdlink/ui';

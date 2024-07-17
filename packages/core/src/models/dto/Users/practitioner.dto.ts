@@ -45,6 +45,8 @@ export interface PractitionerDto extends EntityBase {
   absentees?: AbsenteeDto[];
   daysAbsentLastMonth?: number | string;
   permissions?: UserPermissionDto[];
+  communitySectionViewDate?: string;
+  clickedCommunityTab?: boolean;
 }
 
 export interface UserPermissionDto {

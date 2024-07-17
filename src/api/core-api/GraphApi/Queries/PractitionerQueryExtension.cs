@@ -1,4 +1,4 @@
-using DotLiquid;
+using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
@@ -18,7 +18,6 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -99,22 +98,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
                     if (practitioner != null)
                     {
-                        if (practitioner.PrincipalHierarchy == null && practitioner.CoachHierarchy == principal.CoachHierarchy) // only allow practitioners assigned to same coach and where they are not assigned to any otehr practitioners
+                        if (practitioner.PrincipalHierarchy == null)
                         {
                             return new PractitionerUserAndNote() { AppUser = practitioner.User };
                         }
                         else
                         {
-                            if (practitioner.CoachHierarchy == null || practitioner.CoachHierarchy != principal.CoachHierarchy) 
-                            {
-                                return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "Oh no! You can't add this practitioner to your programme. They don't have the same coach that you have. If you need more help, please contact the SmartStart call centre."};
-                            }
                             return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
                         }
                     }
                     else
                     {
-                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on Funda App" };
+                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app" };
                     }
                 }
             }
@@ -490,7 +485,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<FileModel> PractitionerTemplateGenerator(
-          [Service] IFileGenerationService fileService)
+          [Service] IFileGenerationService fileService,
+          [Service] IHttpContextAccessor contextAccessor,
+          IGenericRepositoryFactory repoFactory)
         {
             var fieldDefinitionSheet = $"Field Definition";
             var fieldDefinitionList = new List<List<string>>
@@ -521,6 +518,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 { templateHeaderSheet, templateHeaders },
                 { fieldDefinitionSheet, fieldDefinitionList }
             };
+
+            if (TenantExecutionContext.Tenant.Modules.CoachRoleEnabled)
+            {
+                var uId = contextAccessor.HttpContext.GetUser()?.Id;
+                var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+
+                fieldDefinitionList.Add(new List<string>
+                {
+                    TenantExecutionContext.Tenant.Modules.CoachRoleName + " ID/passport number", "Text, (optional)"
+                });
+                templateHeaders.GetItemByIndex(0).Add(TenantExecutionContext.Tenant.Modules.CoachRoleName + " ID/passport number");
+
+                var coachNameSheet = $"{TenantExecutionContext.Tenant.Modules.CoachRoleName}";
+                var coachNames = coachRepo.GetAll().Where(c => c.IsActive).Select(c => new List<string> { c.User.IdNumber, c.User.FullName, "" }).ToList();
+
+                spreadSheets.Add(coachNameSheet, coachNames);
+            }
 
             var fileName = templateHeaderSheet.Replace(" ", "_");
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);

@@ -28,9 +28,6 @@ export const RemovePractitionerFromProgrammePrompt: React.FC<
       importantText={`${
         practitioner?.user?.firstName
       } will be removed from your programme on ${format(date, 'd MMMM')} `}
-      detailText={`We have sent a message to your ${
-        role?.systemName || 'coach'
-      } to let them know ${practitioner?.user?.firstName} is leaving.`}
       actionButtons={[
         {
           text: 'Close',

@@ -209,6 +209,8 @@ export const Practitioners: React.FC = () => {
           ? 'success'
           : currentPractitionerMessage?.color === 'Warning'
           ? 'warning'
+          : currentPractitionerMessage?.color === 'None'
+          ? 'none'
           : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
@@ -300,12 +302,8 @@ export const Practitioners: React.FC = () => {
       result.sort((a, b) => {
         switch (sortBy) {
           case 'priority':
-            const as = AlertSeverityMapping[a.alertSeverity] || 4;
-            const bs = AlertSeverityMapping[b.alertSeverity] || 4;
-            if (as > bs) return 1;
-            if (bs < as) return -1;
-            return (a.extraData?.firstName || '') >
-              (b.extraData?.firstName || '')
+            return AlertSeverityMapping[a.alertSeverity] >
+              AlertSeverityMapping[b.alertSeverity]
               ? 1
               : -1;
           case 'surname':

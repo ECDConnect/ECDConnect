@@ -44,6 +44,7 @@ import { notificationActions } from '@/store/notifications';
 import { PractitionerSignature } from '../components/practitioner-signature/practitioner-signature';
 import { SelectPractitionerRole } from '../components/select-practitioner-role/select-practitioner-role';
 import { PreschoolCodeCheck } from '../components/preschool-code-check/preschool-code-check';
+import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -67,6 +68,9 @@ export const SetupPrincipal: React.FC = () => {
     PractitionerSetupSteps.WELCOME
   );
   const [isLoading, setIsLoading] = useState(false);
+  const inviTePractitionerUserId = localStorage
+    .getItem(LocalStorageKeys.practitionerInvitedPrincipalUserId)
+    ?.replace(/['"]+/g, '');
 
   const [confirmPractitionerPage, setConfirmPractitionerPage] =
     useState<ConfirmPractitionersSteps>(
@@ -209,9 +213,6 @@ export const SetupPrincipal: React.FC = () => {
       );
     }
 
-    localStorage.removeItem(
-      LocalStorageKeys.practitionerInvitedPrincipalIdNumber
-    );
     appDispatch(notificationActions.resetFrontendNotificationState());
     appDispatch(notificationActions.resetNotificationState());
 
@@ -220,7 +221,8 @@ export const SetupPrincipal: React.FC = () => {
         principalPractitioners.forEach(async (principalPractitioner) => {
           if (
             !principalPractitioner?.userId &&
-            principalPractitioner?.phoneNumber
+            principalPractitioner?.phoneNumber &&
+            principalPractitioner?.userId !== inviTePractitionerUserId
           ) {
             const principalInvite = await new PractitionerService(
               userAuth?.auth_token!
@@ -246,11 +248,33 @@ export const SetupPrincipal: React.FC = () => {
             ).AddPractitionerToPrincipal(input);
           }
         });
+        if (inviTePractitionerUserId) {
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerProgress({
+              practitionerId: inviTePractitionerUserId,
+              progress: 2.0,
+            })
+          ).unwrap();
+
+          await appDispatch(
+            updatePrincipalInvitation({
+              userId: inviTePractitionerUserId,
+              principalHierarchy: user?.id!,
+              accepted: true,
+            })
+          ).unwrap();
+        }
         await appDispatch(
           practitionerThunkActions.getAllPractitioners({})
         ).unwrap();
       }
     }
+    localStorage.removeItem(
+      LocalStorageKeys.practitionerInvitedPrincipalIdNumber
+    );
+    localStorage.removeItem(
+      LocalStorageKeys.practitionerInvitedPrincipalUserId
+    );
     setIsLoading(false);
     stopService();
     history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });

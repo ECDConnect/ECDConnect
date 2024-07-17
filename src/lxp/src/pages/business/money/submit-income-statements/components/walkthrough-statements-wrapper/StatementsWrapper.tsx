@@ -81,7 +81,7 @@ export default function StatementsWrapper() {
       target: '#donationsOrVouchers',
       content: t('You will need to fill in all the info on this screen'),
       placement: 'bottom-end',
-      offset: 20,
+      // offset: 20,
       spotlightClicks: true,
       disableBeacon: true,
     },

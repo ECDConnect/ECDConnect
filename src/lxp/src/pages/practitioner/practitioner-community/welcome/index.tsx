@@ -26,7 +26,7 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
-import { AddPhotoDialog } from '@/pages/community/welcome/add-photo-dialog';
+import { AddPhotoDialog } from '@/pages/community-old/welcome/add-photo-dialog';
 import { PractitionerAboutRouteState } from '../../practitioner-about/practitioner-about.types';
 import { PractitionerCommunityRouteState } from '../index.types';
 import {

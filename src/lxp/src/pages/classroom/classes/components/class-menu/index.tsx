@@ -1,4 +1,6 @@
 import { DeleteClassActionModal } from '@/components/delete-class/delete-class';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import {
   ClassDashboardRouteState,
@@ -6,10 +8,12 @@ import {
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { EditPlaygroupsRouteState } from '@/pages/practitioner/save-practitioner-playgroups/save-practitioner-playgroups.types';
 import ROUTES from '@/routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
 import { useSnackbar } from '@ecdlink/core';
 import { ActionModal } from '@ecdlink/ui';
 import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 
 interface ClassMenuProps {
@@ -27,9 +31,17 @@ export const ClassMenu = ({
 }: ClassMenuProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
   const history = useHistory();
 
   const { showMessage } = useSnackbar();
+
+  const { hasPermissionToTakeAttendance } = useUserPermissions();
+  const isTrialPeriod = useIsTrialPeriod();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
   if (isDeleteModalOpen) {
     return (
@@ -57,20 +69,24 @@ export const ClassMenu = ({
           },
           textColour: 'white',
         },
-        {
-          leadingIcon: 'ClipboardCheckIcon',
-          colour: 'quatenary',
-          text: 'Take attendance',
-          type: 'outlined',
-          onClick: () => {
-            history.push(ROUTES.CLASSROOM.ROOT, {
-              activeTabIndex: TabsItems.ATTENDANCE,
-              classroomGroupIdFromClassTab: classroomGroupId,
-            } as ClassDashboardRouteState);
-            onClose();
-          },
-          textColour: 'quatenary',
-        },
+        ...(hasPermissionToEdit
+          ? ([
+              {
+                leadingIcon: 'ClipboardCheckIcon',
+                colour: 'quatenary',
+                text: 'Take attendance',
+                type: 'outlined',
+                onClick: () => {
+                  history.push(ROUTES.CLASSROOM.ROOT, {
+                    activeTabIndex: TabsItems.ATTENDANCE,
+                    classroomGroupIdFromClassTab: classroomGroupId,
+                  } as ClassDashboardRouteState);
+                  onClose();
+                },
+                textColour: 'quatenary',
+              },
+            ] as ActionModalButton[])
+          : []),
         {
           leadingIcon: 'PresentationChartBarIcon',
           colour: 'quatenary',

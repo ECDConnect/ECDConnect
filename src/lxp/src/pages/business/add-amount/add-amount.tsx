@@ -39,7 +39,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
         <div className="mb-3 flex w-full flex-wrap">
           <Typography
             type="h2"
-            color="textMid"
+            color="textDark"
             text={'What would you like to record?'}
             className="mt-4"
           />
@@ -60,8 +60,10 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
                 showIcon: true,
                 subTitle: 'Preschool fees, donations, DBE subsidy & others',
                 onActionClick: () => {
-                  history.push(ROUTES.BUSINESS_ADD_INCOME);
-                  nextWalkthroughStep();
+                  if (!state.run || state?.stepIndex === 2) {
+                    history.push(ROUTES.BUSINESS_ADD_INCOME);
+                    nextWalkthroughStep();
+                  }
                 },
                 backgroundColor: 'successBg',
                 titleStyle: 'text-textDark font-bold',
@@ -75,7 +77,9 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
                 showIcon: true,
                 subTitle:
                   'Rent, utilities, food, educational supplies & others',
-                onActionClick: () => history.push(ROUTES.BUSINESS_ADD_EXPENSE),
+                onActionClick: () => {
+                  !state.run && history.push(ROUTES.BUSINESS_ADD_EXPENSE);
+                },
                 backgroundColor: 'secondaryAccent2',
                 titleStyle: 'text-textDark font-bold',
                 subTitleStyle: 'text-textDark',

@@ -24,6 +24,7 @@ class ContentStoryBookService {
             availableLanguages {
               id
               description
+              locale
             }
             storyBookParts {
               id

@@ -2,6 +2,7 @@ import { UseFormRegister } from 'react-hook-form';
 
 export interface FormSelectorFieldProps {
   label: string;
+  subLabel?: string;
   options: any[]; // KEY / VALUE
   nameProp: string;
   error?: string;
@@ -18,6 +19,7 @@ const defaultInputStyle =
 
 const FormSelectorField: React.FC<FormSelectorFieldProps> = ({
   label,
+  subLabel,
   nameProp,
   error,
   options,
@@ -30,10 +32,18 @@ const FormSelectorField: React.FC<FormSelectorFieldProps> = ({
     <>
       <label
         htmlFor={nameProp}
-        className="block text-sm font-medium text-gray-700"
+        className="block text-lg font-medium text-gray-700"
       >
         {label}
       </label>
+      {subLabel && (
+        <label
+          htmlFor={nameProp}
+          className="text-textLight block text-sm font-medium"
+        >
+          {subLabel}
+        </label>
+      )}
       <div className="mt-1">
         <select
           disabled={disabled}

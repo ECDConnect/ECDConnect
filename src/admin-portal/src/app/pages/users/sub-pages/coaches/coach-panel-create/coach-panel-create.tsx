@@ -9,7 +9,9 @@ import {
   SiteAddressInput,
   SendInviteToApplication,
   CreateSiteAddress,
+  GetAllPortalCoaches,
 } from '@ecdlink/graphql';
+import * as yup from 'yup';
 import {
   NOTIFICATION,
   useNotifications,
@@ -25,7 +27,7 @@ import {
   RoleSystemNameEnum,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import CoachForm from '../../../components/coach-form/coach-form';
 import SiteAddressForm from '../../../components/site-address-form/site-address-form';
@@ -34,6 +36,14 @@ import UserDetailsForm from '../../../components/user-details-form/user-details-
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../components/users';
 import { newGuid } from '../../../../../utils/uuid.utils';
+import {
+  Alert,
+  Divider,
+  SA_CELL_REGEX,
+  SA_ID_REGEX,
+  Typography,
+} from '@ecdlink/ui';
+import { idTypeEnum } from '../../../../view-user/view-user.types';
 
 export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -43,6 +53,32 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
   const { data: roleData } = useQuery(RoleList, {
     fetchPolicy: 'cache-and-network',
+  });
+
+  const coachQueryVariables = useMemo(
+    () => ({
+      search: '',
+      connectUsageSearch: [],
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
+      order: [
+        {
+          insertedDate: 'DESC',
+        },
+      ],
+    }),
+    []
+  );
+
+  const {
+    data: coachData,
+    refetch,
+    loading,
+  } = useQuery(GetAllPortalCoaches, {
+    variables: coachQueryVariables,
+    fetchPolicy: 'network-only',
   });
 
   useEffect(() => {
@@ -57,8 +93,29 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  const [userAlreadyExits, setUserAlreadyExits] = useState(false);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [idType, setIdType] = useState<string>('idNumber');
+
+  const localUserSchema = yup.object().shape({
+    firstName: yup.string().required('First name is Required'),
+    surname: yup.string().required('Surname is Required'),
+    email: yup.string().email('Invalid email'),
+    phoneNumber: yup
+      .string()
+      .matches(SA_CELL_REGEX, 'Phone number is not valid')
+      .required('Cellphone number is required'),
+    idNumber:
+      idType === idTypeEnum.idNumber
+        ? yup
+            .string()
+            .matches(SA_ID_REGEX, 'Id number is not valid')
+            .required('ID Number is Required')
+        : yup.string().required('ID Number is Required'),
+  });
 
   // FORMS
   // USER FORM DETAILS
@@ -68,8 +125,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
+    clearErrors,
   } = useForm({
-    resolver: yupResolver(userSchema),
+    resolver: yupResolver(localUserSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
@@ -121,6 +179,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
     const passwordForm = passwordGetValues();
+    setIsLoading(true);
 
     const userInputModel: UserModelInput = {
       id: newGuid(),
@@ -154,9 +213,11 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
         const userId = response.data.addUser.id;
         await saveRoles(userId);
         await saveSiteAddress(userId);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.log(error);
+        setIsLoading(false);
       });
   };
 
@@ -220,19 +281,17 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       variant: NOTIFICATION.SUCCESS,
     });
 
-    if (coachForm.sendInvite) {
-      await sendInviteToApplication({
-        variables: {
-          userId: userId,
-          inviteToPortal: false,
-        },
-      });
+    await sendInviteToApplication({
+      variables: {
+        userId: userId,
+        inviteToPortal: false,
+      },
+    });
 
-      setNotification({
-        title: 'Successfully Sent Coach Invite!',
-        variant: NOTIFICATION.SUCCESS,
-      });
-    }
+    setNotification({
+      title: 'Successfully Sent Coach Invite!',
+      variant: NOTIFICATION.SUCCESS,
+    });
   };
 
   const saveRoles = async (userId: string) => {
@@ -279,11 +338,13 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className="rounded-lg border-b border-gray-200 bg-white px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
+              Coach details
             </h3>
+            <Typography color={'textMid'} type="help" text={'Step 1 of 1'} />
+            <Divider dividerType="dashed" className="py-6" />
           </div>
 
           <UserDetailsForm
@@ -292,23 +353,29 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
             control={control}
+            setIdType={setIdType}
+            idType={idType}
+            clearErrors={clearErrors}
+            setUserAlreadyExits={setUserAlreadyExits}
+            practitioners={coachData?.allPortalCoaches}
+            typeofUser="coach"
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        {/* <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Coach Detail
             </h3>
-          </div>
+          </div> */}
 
-          <CoachForm
+        {/* <CoachForm
             formKey={`createCoach-${new Date().getTime()}`}
             register={coachRegister}
             errors={coachFormErrors}
-          />
+          /> */}
 
-          <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        {/* <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
             <div className="pb-2">
               <h3 className="text-uiMidDark text-lg font-medium leading-6">
                 Address Detail
@@ -320,8 +387,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
               errors={siteAddressFormErrors}
             />
           </div>
-        </div>
-
+        </div> */}
+        {/* 
         <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
@@ -335,16 +402,24 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             register={passwordRegister}
             errors={passwordFormErrors}
           />
-        </div>
+        </div> */}
       </>
     );
   };
 
   return (
     <article>
-      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
-
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      <Alert
+        className="mt-2 mb-2 rounded-md"
+        title={`An invitation will be sent to the new user when you click save.`}
+        type="info"
+      />
+      <UserPanelSave
+        disabled={!getIsValid() || userAlreadyExits}
+        onSave={onSave}
+        isLoading={isLoading}
+      />
     </article>
   );
 }

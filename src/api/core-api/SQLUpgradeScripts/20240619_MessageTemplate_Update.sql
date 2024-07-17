@@ -1,2 +1,2 @@
 update "MessageTemplate" set "Message" = 'You have been added to a programme on [[ApplicationName]]. Update your profile now: [[LoginLink:shorturl]]' 
-where "TemplateType"='ProgrammeInvitation';
+where "TemplateType"='ProgrammeInvitation' and "Protoco"='sms';

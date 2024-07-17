@@ -23,4 +23,5 @@ export interface UserAlertListDataItem<T = {}> extends ListItem {
   subItem?: string;
   successColor?: boolean;
   hideAvatar?: boolean;
+  backgroundColor?: Colours;
 }

@@ -61,6 +61,7 @@ import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
 import { RoleSystemNameEnum } from '@ecdlink/core';
+import { communityThunkActions } from './store/community';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -200,6 +201,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
       );
       promises.push(
+        appDispatch(
+          communityThunkActions.getCommunityProfile({ userId: userData?.id! })
+        ).unwrap()
+      );
+      promises.push(
         appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
       );
       promises.push(
@@ -223,6 +229,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
 
     // PROGRESS TRACKING
+    await appDispatch(
+      progressTrackingThunkActions.getProgressTrackingAgeGroups({
+        locale: 'en-za',
+      })
+    ).unwrap();
     await appDispatch(
       progressTrackingThunkActions.getProgressTrackingCategories({
         locale: 'en-za',

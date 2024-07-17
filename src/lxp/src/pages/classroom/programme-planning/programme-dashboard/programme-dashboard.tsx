@@ -16,7 +16,7 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
-import { useHistory, useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
 import robot from '../../../../assets/iconRobot.svg';
@@ -26,12 +26,22 @@ import {
   ClassDashboardRouteState,
   TabsItems,
 } from '../../class-dashboard/class-dashboard.types';
-import { ProgrammeDashboardRouteParams } from './programme-dashboard.types';
+import {
+  ProgrammeDashboardRouteParams,
+  ProgrammeDashboardRouteState,
+} from './programme-dashboard.types';
 import { useProgrammePlanning } from '@/hooks/useProgrammePlanning';
 import ProgrammeWrapper from './walkthrough/programme-wrapper';
 import { ProgrammeWalkthroughStart } from './walkthrough/components/walkthrough-start';
 import { useAppContext } from '@/walkthrougContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ProgrammeThemeRouteState } from '../programme-theme/programme-theme.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ActivitiesActions } from '@/store/content/activity/activity.actions';
+import { StoryBookActions } from '@/store/content/story-book/story-book.actions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -43,9 +53,21 @@ export interface iSkills {
 export const ProgrammeDashboard: React.FC = () => {
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
 
+  const { isLoading: isLoadingActivities } = useThunkFetchCall(
+    'activityData',
+    ActivitiesActions.GET_ACTIVITIES
+  );
+  const { isLoading: isLoadingStoryBooks } = useThunkFetchCall(
+    'storyBookData',
+    StoryBookActions.GET_STORY_BOOKS
+  );
+
+  const isLoading = isLoadingActivities || isLoadingStoryBooks;
+
   const programmeStartDate = new Date();
 
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
+  const { state } = useLocation<ProgrammeDashboardRouteState>();
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -54,9 +76,20 @@ export const ProgrammeDashboard: React.FC = () => {
     classroomsSelectors.getClassroomGroupById(classroomGroupId)
   );
   const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
+
+  const isTrialPeriod = useIsTrialPeriod();
+
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
+
   const [showReport, setShowReport] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     programmeStartDate || new Date()
@@ -90,6 +123,16 @@ export const ProgrammeDashboard: React.FC = () => {
   const { isWholeWeekPlanned, dailyProgrammesUnplanned } =
     checkIfWholeWeekIsPlanned(selectedDate, classroomGroupId);
 
+  useEffect(() => {
+    if (state?.selectedDate) {
+      setSelectedDate(state.selectedDate);
+      history.replace(history.location.pathname, {
+        ...state,
+        selectedDate: undefined,
+      });
+    }
+  }, [history, state]);
+
   const fetchData = useCallback(
     async (reportDate: string) => {
       await appDispatch(
@@ -113,6 +156,7 @@ export const ProgrammeDashboard: React.FC = () => {
 
   const showStartPlanning = useCallback(() => {
     if (
+      hasPermissionToEdit &&
       !isWholeWeekPlanned &&
       dailyProgrammesUnplanned.every(
         (day) => isToday(day.date) || isAfter(day.date, new Date())
@@ -144,7 +188,9 @@ export const ProgrammeDashboard: React.FC = () => {
                     true,
                     LocalStorageKeys.hasVisitedProgrammeDashboard
                   );
-                  history.push(ROUTES.PROGRAMMES.THEME);
+                  history.push(ROUTES.PROGRAMMES.THEME, {
+                    classroomGroupId,
+                  } as ProgrammeThemeRouteState);
                   onCancel();
                 },
                 leadingIcon: 'ColorSwatchIcon',
@@ -169,6 +215,7 @@ export const ProgrammeDashboard: React.FC = () => {
       });
     }
   }, [
+    classroomGroupId,
     dailyProgrammesUnplanned,
     dialog,
     history,
@@ -334,6 +381,7 @@ export const ProgrammeDashboard: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       size="small"
       renderBorder
       title="Activities"

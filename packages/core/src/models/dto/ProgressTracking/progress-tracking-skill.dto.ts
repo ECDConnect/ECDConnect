@@ -1,3 +1,4 @@
+import { ProgressTrackingAgeGroupDto } from './progress-tracking-age-group.dto';
 import { ProgressTrackingLevelDto } from './progress-tracking-level.dto';
 
 export interface ProgressTrackingSkillDto {
@@ -5,5 +6,6 @@ export interface ProgressTrackingSkillDto {
   description: string;
   name: string;
   level: ProgressTrackingLevelDto[];
+  ageGroups: ProgressTrackingAgeGroupDto[] | null;
   value: string;
 }

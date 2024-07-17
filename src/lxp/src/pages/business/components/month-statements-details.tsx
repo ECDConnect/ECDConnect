@@ -298,7 +298,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
                 color={'textDark'}
                 type={'h3'}
                 text={`You haven't added any income for ${getMonthName(
-                  Number(statement.month)
+                  statement.month - 1
                 )}!`}
               />
             </div>
@@ -358,7 +358,7 @@ export const MonthStatementsDetails: React.FC<MonthStatementsDetailsProps> = ({
                 color={'textDark'}
                 type={'h3'}
                 text={`You haven't added any expenses for ${getMonthName(
-                  Number(statement.month)
+                  statement.month - 1
                 )}!`}
               />
             </div>

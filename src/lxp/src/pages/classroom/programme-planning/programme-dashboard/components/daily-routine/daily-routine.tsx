@@ -72,6 +72,7 @@ import {
 import { practitionerSelectors } from '@/store/practitioner';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { ro } from 'date-fns/locale';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -274,7 +275,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
 
     if (!activityId) {
-      onEditActivityItem(routineItem);
+      onEditActivityItem(routineItem, day);
       return;
     }
 
@@ -304,6 +305,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         ) : (
           <StoryActivityDetails
             selected={true}
+            storyBookId={currentDailyProgramme?.storyBookId}
             activityId={activityId}
             disabled={false}
             viewType={'StoryActivity'}
@@ -377,7 +379,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       openActivityItem(routineItem, currentDailyProgramme);
       return;
     }
-
     openActivityItem(routineItem);
   };
 
@@ -603,7 +604,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 type={'body'}
               />
               <Button
-                color={'primary'}
+                color={'secondaryAccent2'}
                 type={'outlined'}
                 onClick={() =>
                   setSelectedDate && nextProgrammeDaysWithoutActivity?.length
@@ -617,7 +618,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 className={'w-25 mt-6 mb-4'}
                 icon="ClipboardListIcon"
                 text="Start planning"
-                textColor="primary"
+                textColor="secondaryAccent2"
               />
             </>
           )}
@@ -669,6 +670,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
                   return (
                     <div
+                      key={routineItem.id}
                       id={
                         index === 2
                           ? state.stepIndex < 5
