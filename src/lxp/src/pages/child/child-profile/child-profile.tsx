@@ -200,6 +200,8 @@ export const ChildProfile: React.FC = () => {
     ChildrenActions.UPDATE_CHILD
   );
 
+  const avatar = profilePicture?.file || child?.user?.profileImageUrl || '';
+
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -465,9 +467,23 @@ export const ChildProfile: React.FC = () => {
   };
 
   const deleteProfileImage = async () => {
-    if (!profilePicture) return;
+    const updatedChild = {
+      ...child,
+      user: { ...child?.user, profileImageUrl: '' },
+    };
 
-    appDispatch(documentActions.deleteDocument(profilePicture));
+    appDispatch(childrenActions.updateChild(updatedChild));
+    await appDispatch(
+      childrenThunkActions.updateChild({
+        id: updatedChild.id as string,
+        child: updatedChild,
+      })
+    );
+
+    if (profilePicture) {
+      appDispatch(documentActions.deleteDocument(profilePicture));
+    }
+
     setEditProfilePictureVisible(false);
   };
 
@@ -746,7 +762,7 @@ export const ChildProfile: React.FC = () => {
           <ProfileAvatar
             hasConsent={!!childPhotoConsent}
             canChangeImage={!!childPhotoConsent}
-            dataUrl={profilePicture?.file || child?.user?.profileImageUrl || ''}
+            dataUrl={avatar}
             size={'header'}
             onPressed={() => setEditProfilePictureVisible(true)}
           />
@@ -844,7 +860,7 @@ export const ChildProfile: React.FC = () => {
             title="Profile Photo"
             onClose={() => setEditProfilePictureVisible(false)}
             onAction={picturePromptOnAction}
-            onDelete={profilePicture?.file ? deleteProfileImage : undefined}
+            onDelete={avatar ? deleteProfileImage : undefined}
           ></PhotoPrompt>
         </div>
       </Dialog>
