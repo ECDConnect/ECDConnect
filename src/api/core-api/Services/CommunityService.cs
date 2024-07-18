@@ -17,6 +17,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ECDLink.Core.SystemSettings.SettingGroups.CallBacks;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -334,8 +336,11 @@ namespace EcdLink.Api.CoreApi.Services
                                             .ToList();
 
             var connectionsToBeAccepted = allConnections
-                                            .Where(x => x.IsActive && x.FromProfile.UserId == userId && !x.InviteAccepted.HasValue)
-                                            .Select(x => x.ToCommunityProfileId).ToList();
+                                            .Where(x => x.IsActive && x.FromProfile.UserId == userId)
+                                            .Select(x => new { x.ToCommunityProfileId, x.InviteAccepted})
+                                            .ToList();
+
+            var dict = connectionsToBeAccepted.ToDictionary(x => x.ToCommunityProfileId, x => x.InviteAccepted);
 
             var filteredConnection = new List<CommunityProfile>();
 
@@ -380,10 +385,10 @@ namespace EcdLink.Api.CoreApi.Services
 
             if ((provinceIds != null && provinceIds.Any()) || (communitySkillIds != null && communitySkillIds.Any()) || (connectionTypes != null && connectionTypes.Any()))
             {
-                return filteredConnection.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), connectionsToBeAccepted.Contains(x.Id) ? false : null)).Distinct().ToList();
+                return filteredConnection.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), dict.ContainsKey(x.Id) ? dict[x.Id] == null? false: true  : null)).Distinct().ToList();
             }
 
-            return allCommunityProfiles.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), connectionsToBeAccepted.Contains(x.Id) ? false : null)).Distinct().ToList();
+            return allCommunityProfiles.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), dict.ContainsKey(x.Id) ? dict[x.Id] == null ? false : true : null)).Distinct().ToList();
         }
 
         public CommunityProfileModel AcceptRejectCommunityRequests(AcceptRejectCommunityRequestsInputModel input)
@@ -464,8 +469,8 @@ namespace EcdLink.Api.CoreApi.Services
                                     .Where(x => x.IsActive && x.FromProfile.UserId == userId || x.ToProfile.UserId == userId)
                                     .ToList();
 
-            var fromConnections = allConnections.Where(x => x.FromProfile.UserId == userId).Select(x => x.FromCommunityProfileId).ToList();
-            var toConnections = allConnections.Where(x => x.ToProfile.UserId == userId).Select(x => x.FromCommunityProfileId).ToList();
+            var fromConnections = allConnections.Where(x => x.FromProfile.UserId == userId).Select(x => x.ToCommunityProfileId).Distinct().ToList();
+            var toConnections = allConnections.Where(x => x.ToProfile.UserId == userId).Select(x => x.FromCommunityProfileId).Distinct().ToList();
             
             var allCommunityProfiles = _communityProfileRepo.GetAll().Where(x => x.IsActive && 
                                 x.ShareContactInfo.HasValue && 
