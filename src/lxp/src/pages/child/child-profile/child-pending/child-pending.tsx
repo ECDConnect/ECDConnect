@@ -9,7 +9,7 @@ import {
 import { format, addDays } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { childrenThunkActions } from '@store/children';
@@ -28,11 +28,17 @@ import {
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
+import { ChildProfileRouteState } from '../child-profile.types';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
   childUser,
 }) => {
+  const location = useLocation<ChildProfileRouteState>();
+
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const [deadlineDateText, setDeadlineDateText] = useState<string>('');
@@ -56,6 +62,13 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   )?.filter((x) => {
     return x.user?.id !== practitioner?.user?.id;
   });
+
+  const isTrialPeriod = useIsTrialPeriod();
+
+  const { hasPermissionToManageChildren } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
 
   useEffect(() => {
     if (!child || !child.insertedDate) return;
@@ -143,6 +156,11 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   return (
     <BannerWrapper
       onBack={() => {
+        if (location.state?.classroomGroupIdFromRedirect) {
+          return history.push(ROUTES.CLASSROOM.CHILDREN, {
+            classroomGroupId: location.state?.classroomGroupIdFromRedirect,
+          } as ChildListRouteState);
+        }
         if (isPrincipal && practitioners?.length! > 1) {
           history.push(ROUTES.CLASSROOM.ROOT, {
             activeTabIndex: TabsItemForPrincipal.CLASSES,
@@ -185,31 +203,32 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
           type="body"
           color="textMid"
         />
+        {!!hasPermissionToEdit && (
+          <div className="mt-auto">
+            <Button
+              className="w-full"
+              id="gtm-share-caregiver"
+              type="filled"
+              color="quatenary"
+              text="Copy link to send to caregiver"
+              textColor="white"
+              icon="LinkIcon"
+              iconPosition="start"
+              onClick={onSendCaregiverLink}
+            />
 
-        <div className="mt-auto">
-          <Button
-            className="w-full"
-            id="gtm-share-caregiver"
-            type="filled"
-            color="quatenary"
-            text="Copy link to send to caregiver"
-            textColor="white"
-            icon="LinkIcon"
-            iconPosition="start"
-            onClick={onSendCaregiverLink}
-          />
-
-          <Button
-            type="outlined"
-            className="mt-4 w-full"
-            color="quatenary"
-            text="Fill child's registration form"
-            textColor="quatenary"
-            icon="DocumentDuplicateIcon"
-            iconPosition="start"
-            onClick={completeRegistration}
-          />
-        </div>
+            <Button
+              type="outlined"
+              className="mt-4 w-full"
+              color="quatenary"
+              text="Fill child's registration form"
+              textColor="quatenary"
+              icon="DocumentDuplicateIcon"
+              iconPosition="start"
+              onClick={completeRegistration}
+            />
+          </div>
+        )}
       </div>
     </BannerWrapper>
   );

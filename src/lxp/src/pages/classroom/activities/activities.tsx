@@ -113,7 +113,7 @@ export const ActivitiesTab = () => {
 
   return (
     <div className="p-4">
-      {isToShowCelebratoryCard && displayCelebrationCard && (
+      {!!isToShowCelebratoryCard && !!displayCelebrationCard && (
         <CelebrationCard
           className="mb-4"
           onDismiss={() => setDisplayCelebrationCard(false)}
