@@ -295,9 +295,11 @@ export const ConnectionProfile = () => {
           />
           <div>{renderConnectionCard(connectionAccepted)}</div>
           {connectionAccepted && (
-            <ConnectionContactDetails
-              connectionCommunityProfile={communityProfile}
-            />
+            <div className="mb-4">
+              <ConnectionContactDetails
+                connectionCommunityProfile={communityProfile}
+              />
+            </div>
           )}
           <DetailsCard
             title={`About ${communityProfile?.communityUser?.fullName}`}

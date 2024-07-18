@@ -1,7 +1,7 @@
 import { formatPhonenumberInternational } from '@/utils/common/contact-details.utils';
 import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { CommunityProfileDto } from '@ecdlink/core';
-import { Button, Typography } from '@ecdlink/ui';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 import { MailIcon, PhoneIcon } from '@heroicons/react/solid';
 
 interface ConnectionContactDetailsProps {
@@ -109,6 +109,11 @@ export const ConnectionContactDetails: React.FC<
               </Button>
             )}
           </div>
+          <Alert
+            type={'info'}
+            className="items-left justify-left mt-4 flex"
+            title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
+          />
         </div>
       )}
     </div>
