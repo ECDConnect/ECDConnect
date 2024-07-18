@@ -47,6 +47,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { ChildProgressLanding } from '../progress-observation/child-progress-landing/child-progress-landing';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useAppContext } from '@/walkthrougContext';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -78,6 +79,8 @@ export const ClassDashboard: React.FC = () => {
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+
+  const { setState } = useAppContext();
 
   const isToShowAttendanceTutorial = useMemo(
     () =>
@@ -216,14 +219,14 @@ export const ClassDashboard: React.FC = () => {
     setAttendanceTutorialActive(false);
   }, [attendanceTutorialComplete, previousTabIndex]);
 
-  const updatePractitionerProgress = async () => {
+  const updatePractitionerProgress = useCallback(async () => {
     await appDispatch(
       practitionerThunkActions.updatePractitionerProgress({
         practitionerId: practitioner?.userId,
         progress: 3.0,
       })
     );
-  };
+  }, [appDispatch, practitioner?.userId]);
 
   const completeTutorial = () => {
     setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
@@ -274,6 +277,12 @@ export const ClassDashboard: React.FC = () => {
     });
   }, [dialog]);
 
+  const handleWalkthroughStart = useCallback(() => {
+    setState({ run: true, tourActive: true, stepIndex: 0 });
+    updatePractitionerProgress();
+    history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
+  }, [history, setState, updatePractitionerProgress]);
+
   const handleAttendanceWalkthroughLanguage = useCallback(() => {
     setShowAttendanceWalkthrough(false);
 
@@ -284,13 +293,13 @@ export const ClassDashboard: React.FC = () => {
       render: (onClose) => (
         <WalkthroughModal
           onStart={() => {
-            setAttendanceTutorialActive(true);
+            handleWalkthroughStart();
             onClose();
           }}
         />
       ),
     });
-  }, [dialog]);
+  }, [dialog, handleWalkthroughStart]);
 
   useEffect(() => {
     if (

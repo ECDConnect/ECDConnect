@@ -33,6 +33,7 @@ const ROUTES = {
     CHILDREN: '/children',
     ATTENDANCE: addPrefix('/attendance', {
       EDIT_REGISTERS: '/edit-registers',
+      MONTHLY_REPORT: '/monthly-report',
     }),
     ACTIVITIES: addPrefix('/activities', {
       PROGRAMME_DASHBOARD: addPrefix('/programme-dashboard/:classroomGroupId', {

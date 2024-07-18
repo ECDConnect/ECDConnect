@@ -1,12 +1,5 @@
-import { MonthlyAttendanceRecord } from '@ecdlink/core';
-import {
-  ComponentBaseProps,
-  BannerWrapper,
-  Typography,
-  Divider,
-  Button,
-} from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { BannerWrapper, Typography, Divider, Button } from '@ecdlink/ui';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -23,7 +16,7 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import ROUTES from '@routes/routes';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { classroomsSelectors } from '@/store/classroom';
 import { childrenSelectors } from '@/store/children';
 import { endOfMonth, startOfMonth, subDays, isAfter } from 'date-fns';
@@ -38,27 +31,28 @@ import { getTableData } from './table-data';
 import { PractitionerReportDetails } from '@ecdlink/graphql';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { MonthlyAttendanceReportRouteState } from './attendance-report.types';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export interface ChildAttendanceReportState {
   childId: string;
   classroomGroupId: string;
 }
 
-export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
-  selectedMonth: MonthlyAttendanceRecord;
-  onDownloadReport: (date: Date) => void;
-  onBack: () => void;
-}
-
-export const MonthlyAttendanceReport = ({
-  selectedMonth,
-  onBack,
-}: MonthlyAttendanceReportProps) => {
+export const MonthlyAttendanceReport = () => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const today = new Date();
   const history = useHistory();
+
+  const location = useLocation<MonthlyAttendanceReportRouteState>();
+
+  const selectedMonth = location.state?.selectedMonth;
+
   const { errorDialog } = useRequestResponseDialog();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -177,7 +171,12 @@ export const MonthlyAttendanceReport = ({
       size={'small'}
       showBackground={false}
       color={'primary'}
-      onBack={onBack}
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItems.ATTENDANCE,
+          fromChildAttendanceReport: true,
+        } as ClassDashboardRouteState)
+      }
       title={`View ${selectedMonth.month} Report `}
       subTitle={''}
       className={'flex h-full flex-col p-4'}
@@ -195,7 +194,7 @@ export const MonthlyAttendanceReport = ({
       />
       <Divider className="mt-4" dividerType="dashed" />
       {reportDataWithClassroomGroup?.map((classroomGroupReport) => (
-        <>
+        <Fragment key={classroomGroupReport.classroomGroupId}>
           <Typography
             type="h2"
             color="textDark"
@@ -244,7 +243,7 @@ export const MonthlyAttendanceReport = ({
               );
             })}
           </table>
-        </>
+        </Fragment>
       ))}
 
       <div className={'mt-auto w-full py-4'}>
@@ -260,6 +259,7 @@ export const MonthlyAttendanceReport = ({
               history.push(ROUTES.CLASSROOM.ATTENDANCE.EDIT_REGISTERS, {
                 startDate,
                 endDate,
+                selectedMonth,
               } as EditRegistersRouteState)
             }
           />
