@@ -139,6 +139,7 @@ import { Community } from '@/pages/community/community';
 import { ChildProgressReportingPeriods } from '@/pages/classroom/progress-observation/child-progress-reporting-period/child-progress-reporting-window';
 import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
 import { ConnectionProfile } from '@/pages/community/connection-profile/connection-profile';
+import MonthlyAttendanceReport from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -557,6 +558,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.CLASSROOM.ATTENDANCE.EDIT_REGISTERS}
         component={EditRegisters}
+      />
+      <Route
+        exact
+        path={ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT}
+        component={MonthlyAttendanceReport}
       />
       <Route
         exact
