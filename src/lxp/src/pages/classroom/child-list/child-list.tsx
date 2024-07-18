@@ -45,13 +45,13 @@ import { coachSelectors } from '@/store/coach';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import {
   ClassDashboardRouteState,
-  TabsItemForPrincipal,
   TabsItems,
 } from '../class-dashboard/class-dashboard.types';
 import { ChildData, ChildListRouteState } from './child-list.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { ChildProfileRouteState } from '@/pages/child/child-profile/child-profile.types';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -161,9 +161,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       history.push(ROUTES.CHILD_PROFILE, {
         childId,
         practitionerIsOnLeave,
-      });
+        classroomGroupIdFromRedirect: state?.classroomGroupId,
+      } as ChildProfileRouteState);
     },
-    [history, practitionerIsOnLeave]
+    [history, practitionerIsOnLeave, state]
   );
 
   const onFilterClasses = (
@@ -440,9 +441,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       subTitle={format(today, 'EEEE, dd MMMM')}
       onBack={() =>
         history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: isPrincipal
-            ? TabsItemForPrincipal.CLASSES
-            : TabsItems.CLASSES,
+          activeTabIndex: TabsItems.CLASSES,
         } as ClassDashboardRouteState)
       }
       size="small"
