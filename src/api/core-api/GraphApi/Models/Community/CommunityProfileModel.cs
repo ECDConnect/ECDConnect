@@ -44,13 +44,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 
     public class CommunityConnectionModel : CommunityProfileBaseModel
     {
-        public CommunityConnectionModel(CommunityProfile profile, List<string> userRoles) :
+        public bool? ConnectionAccepted { get; set; } = null;
+
+        public CommunityConnectionModel(CommunityProfile profile, List<string> userRoles, bool? connectionAccepted) :
             base(profile, userRoles)
         {
+            ConnectionAccepted = connectionAccepted;
         }
 
         public CommunityConnectionModel()
         {
         }
     }
+    
 }

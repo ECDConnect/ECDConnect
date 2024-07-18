@@ -3591,6 +3591,7 @@ export type CommunityConnectionModel = {
   aboutLong?: Maybe<Scalars['String']>;
   aboutShort?: Maybe<Scalars['String']>;
   communityUser?: Maybe<CommunityUserModel>;
+  connectionAccepted?: Maybe<Scalars['Boolean']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   profileSkills?: Maybe<Array<Maybe<CommunityProfileSkillModel>>>;
@@ -7286,6 +7287,7 @@ export type Mutation = {
   addSupportVisitData: Scalars['Boolean'];
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<PortalUserTlModel>;
+  addTenantSetupInfo?: Maybe<TenantSetupInfo>;
   addUser?: Maybe<ApplicationUser>;
   addUsersToRole: Scalars['Boolean'];
   addVisitBackReferral?: Maybe<VisitBackReferral>;
@@ -7446,6 +7448,7 @@ export type Mutation = {
   createSupportRating?: Maybe<SupportRating>;
   createSystemSetting?: Maybe<SystemSetting>;
   createTeamLead?: Maybe<TeamLead>;
+  createTenantSetupInfo?: Maybe<TenantSetupInfo>;
   createTheme?: Maybe<Scalars['String']>;
   createThemeDay?: Maybe<Scalars['String']>;
   createTopic?: Maybe<Scalars['String']>;
@@ -7608,6 +7611,7 @@ export type Mutation = {
   deleteSupportRating?: Maybe<Scalars['Boolean']>;
   deleteSystemSetting?: Maybe<Scalars['Boolean']>;
   deleteTeamLead?: Maybe<Scalars['Boolean']>;
+  deleteTenantSetupInfo?: Maybe<Scalars['Boolean']>;
   deleteTheme?: Maybe<Scalars['Boolean']>;
   deleteThemeDay?: Maybe<Scalars['Boolean']>;
   deleteTopic?: Maybe<Scalars['Boolean']>;
@@ -7778,6 +7782,7 @@ export type Mutation = {
   updateClassroom?: Maybe<Classroom>;
   updateClassroomGroup?: Maybe<ClassroomGroup>;
   updateClassroomSiteAddress?: Maybe<Classroom>;
+  updateClickedECDHeros: Scalars['Boolean'];
   updateClinic?: Maybe<Clinic>;
   updateClinicLeague?: Maybe<ClinicLeague>;
   updateClinicMeeting?: Maybe<ClinicMeeting>;
@@ -7930,6 +7935,7 @@ export type Mutation = {
   updateTeamLead?: Maybe<TeamLead>;
   updateTeamLeadMessage?: Maybe<TeamLead>;
   updateTenantInfo?: Maybe<TenantInternalModel>;
+  updateTenantSetupInfo?: Maybe<TenantSetupInfo>;
   updateTenantTheme?: Maybe<Scalars['String']>;
   updateTheme?: Maybe<Theme>;
   updateThemeDay?: Maybe<ThemeDay>;
@@ -8183,6 +8189,10 @@ export type MutationAddSupportVisitForPractitionerArgs = {
 
 export type MutationAddTeamLeadArgs = {
   input?: InputMaybe<AddTeamLeadInputModelInput>;
+};
+
+export type MutationAddTenantSetupInfoArgs = {
+  setupInfo?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddUserArgs = {
@@ -8878,6 +8888,10 @@ export type MutationCreateSystemSettingArgs = {
 
 export type MutationCreateTeamLeadArgs = {
   input?: InputMaybe<TeamLeadInput>;
+};
+
+export type MutationCreateTenantSetupInfoArgs = {
+  input?: InputMaybe<TenantSetupInfoInput>;
 };
 
 export type MutationCreateThemeArgs = {
@@ -9599,6 +9613,10 @@ export type MutationDeleteSystemSettingArgs = {
 };
 
 export type MutationDeleteTeamLeadArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteTenantSetupInfoArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -10450,6 +10468,10 @@ export type MutationUpdateClassroomSiteAddressArgs = {
   input?: InputMaybe<ClassroomInput>;
 };
 
+export type MutationUpdateClickedEcdHerosArgs = {
+  userId: Scalars['UUID'];
+};
+
 export type MutationUpdateClinicArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ClinicInput>;
@@ -11266,6 +11288,11 @@ export type MutationUpdateTeamLeadMessageArgs = {
 
 export type MutationUpdateTenantInfoArgs = {
   input?: InputMaybe<TenantInfoInputModelInput>;
+};
+
+export type MutationUpdateTenantSetupInfoArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<TenantSetupInfoInput>;
 };
 
 export type MutationUpdateTenantThemeArgs = {
@@ -14246,6 +14273,7 @@ export type Query = {
   GetAllSupportRating?: Maybe<Array<Maybe<SupportRating>>>;
   GetAllSystemSetting?: Maybe<Array<Maybe<SystemSetting>>>;
   GetAllTeamLead?: Maybe<Array<Maybe<TeamLead>>>;
+  GetAllTenantSetupInfo?: Maybe<Array<Maybe<TenantSetupInfo>>>;
   GetAllTheme: Array<Maybe<Theme>>;
   GetAllThemeDay: Array<Maybe<ThemeDay>>;
   GetAllTopic: Array<Maybe<Topic>>;
@@ -14399,6 +14427,7 @@ export type Query = {
   GetSupportRatingById?: Maybe<SupportRating>;
   GetSystemSettingById?: Maybe<SystemSetting>;
   GetTeamLeadById?: Maybe<TeamLead>;
+  GetTenantSetupInfoById?: Maybe<TenantSetupInfo>;
   GetThemeById: Array<Maybe<Theme>>;
   GetThemeDayById: Array<Maybe<ThemeDay>>;
   GetTopicById: Array<Maybe<Topic>>;
@@ -14625,6 +14654,7 @@ export type Query = {
   countSystemSetting?: Maybe<Scalars['Int']>;
   countTeamLead?: Maybe<Scalars['Int']>;
   countTeamLeads: Scalars['Int'];
+  countTenantSetupInfo?: Maybe<Scalars['Int']>;
   countTrainee?: Maybe<Scalars['Int']>;
   countUserConsent?: Maybe<Scalars['Int']>;
   countUserHelp?: Maybe<Scalars['Int']>;
@@ -15560,6 +15590,12 @@ export type QueryGetAllTeamLeadArgs = {
   where?: InputMaybe<TeamLeadFilterInput>;
 };
 
+export type QueryGetAllTenantSetupInfoArgs = {
+  order?: InputMaybe<Array<TenantSetupInfoSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<TenantSetupInfoFilterInput>;
+};
+
 export type QueryGetAllThemeArgs = {
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
@@ -16356,6 +16392,11 @@ export type QueryGetSystemSettingByIdArgs = {
 export type QueryGetTeamLeadByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<TeamLeadFilterInput>;
+};
+
+export type QueryGetTenantSetupInfoByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<TenantSetupInfoFilterInput>;
 };
 
 export type QueryGetThemeByIdArgs = {
@@ -17405,6 +17446,11 @@ export type QueryCountTeamLeadsArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   provinceSearch?: InputMaybe<Scalars['String']>;
   search?: InputMaybe<Scalars['String']>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountTenantSetupInfoArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
 
@@ -19614,6 +19660,47 @@ export type TenantModuleModel = {
   coachRoleName?: Maybe<Scalars['String']>;
   progressEnabled: Scalars['Boolean'];
   trainingEnabled: Scalars['Boolean'];
+};
+
+export type TenantSetupInfo = {
+  __typename?: 'TenantSetupInfo';
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  organisationName?: Maybe<Scalars['String']>;
+  setupJsonData?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type TenantSetupInfoFilterInput = {
+  and?: InputMaybe<Array<TenantSetupInfoFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<TenantSetupInfoFilterInput>>;
+  organisationName?: InputMaybe<StringOperationFilterInput>;
+  setupJsonData?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type TenantSetupInfoInput = {
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  OrganisationName?: InputMaybe<Scalars['String']>;
+  SetupJsonData?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type TenantSetupInfoSortInput = {
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  organisationName?: InputMaybe<SortEnumType>;
+  setupJsonData?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
 };
 
 export enum TenantType {

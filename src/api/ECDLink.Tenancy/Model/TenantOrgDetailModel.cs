@@ -1,6 +1,6 @@
 ﻿namespace ECDLink.Tenancy.Model
 {
-    public class TenantDefaultSettingsModel
+    public class TenantOrgDetailModel
     {
         public string OrganisationName { get; set; }
         public string ApplicationName { get; set; }
