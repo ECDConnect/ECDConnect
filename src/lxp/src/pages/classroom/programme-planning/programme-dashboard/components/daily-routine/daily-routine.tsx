@@ -72,7 +72,6 @@ import {
 import { practitionerSelectors } from '@/store/practitioner';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
-import { ro } from 'date-fns/locale';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
