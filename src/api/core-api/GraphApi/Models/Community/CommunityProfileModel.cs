@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Community;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
@@ -44,13 +45,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 
     public class CommunityConnectionModel : CommunityProfileBaseModel
     {
-        public CommunityConnectionModel(CommunityProfile profile, List<string> userRoles) :
+
+        public List<CommunityUserModel> ConnectionsToBeAccepted { get; set; }
+        public bool? ConnectionAccepted { get; set; } = null;
+
+        public CommunityConnectionModel(CommunityProfile profile, List<string> userRoles, bool? connectionAccepted) :
             base(profile, userRoles)
         {
+            ConnectionAccepted = connectionAccepted;
         }
 
         public CommunityConnectionModel()
         {
         }
     }
+    
 }
