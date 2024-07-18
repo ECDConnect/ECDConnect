@@ -22,7 +22,8 @@ import { ContactDetails } from './components/contact-details/contact-details';
 import { AboutDescription } from './components/about-description/about-description';
 import { EditCommunitySkills } from './components/edit-community-skills/edit-community-skills';
 import { CommunityBasicInfo } from './components/community-basic-info/community-basic-info';
-import { BasicInfoItems } from './components/community-basic-info/community-basic-info.types';
+import { BasicInfoItems } from '../community.types';
+import ROUTES from '@/routes/routes';
 
 export const CommunityProfile = () => {
   const { isOnline } = useOnlineStatus();
@@ -75,7 +76,7 @@ export const CommunityProfile = () => {
       >
         <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
-            hasConsent={true}
+            hasConsent={communityProfile?.shareProfilePhoto || false}
             canChangeImage={false}
             dataUrl={communityProfile?.communityUser?.profilePhoto || ''}
             size={'header'}
@@ -143,7 +144,7 @@ export const CommunityProfile = () => {
               text={`Edit my ${appName} profile`}
               icon="UserIcon"
               iconPosition="start"
-              onClick={() => {}}
+              onClick={() => history.push(ROUTES.PRACTITIONER.ABOUT.ROOT)}
             />
           </div>
         </div>

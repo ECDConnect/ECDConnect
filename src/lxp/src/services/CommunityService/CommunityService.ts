@@ -1,4 +1,5 @@
 import {
+  CommunityConnectInputModelInput,
   CommunityProfile,
   CommunityProfileInputModelInput,
   Connect,
@@ -267,11 +268,148 @@ class CommunityService {
 
     if (response.status !== 200 || response.data.errors) {
       throw new Error(
-        'Updating practitioner community status failed - Server connection error'
+        'Saving practitioner community profile failed - Server connection error'
       );
     }
 
     return response.data.data.saveCommunityProfile;
+  }
+
+  async getUsersToConnectWith(
+    userId: string,
+    provinceIds: string[],
+    communitySkillIds: string[],
+    connectionTypes: string[]
+  ): Promise<CommunityProfile[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post(``, {
+      query: `
+      query GetUsersToConnectWith($userId: UUID!, $provinceIds: [UUID!], $communitySkillIds: [UUID!], $connectionTypes: [String]) {
+    usersToConnectWith(userId: $userId, provinceIds: $provinceIds, communitySkillIds: $communitySkillIds, connectionTypes: $connectionTypes) {
+        id
+            userId
+            aboutShort
+            aboutLong
+            shareContactInfo
+            shareEmail            
+            sharePhoneNumber
+            shareProfilePhoto
+            shareProvince
+                        profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
+            provinceId
+            provinceName
+            shareRole
+            insertedDate
+             communityUser {
+                id
+                fullName
+                email
+                phoneNumber
+                whatsAppNumber
+                profilePhoto
+                roleName
+            }
+    }
+}
+      `,
+      variables: {
+        userId,
+        provinceIds,
+        communitySkillIds,
+        connectionTypes,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get community ECD heroes Failed - Server connection error'
+      );
+    }
+    return response.data.data.usersToConnectWith;
+  }
+
+  async getOtherConnections(
+    userId: string,
+    provinceIds: string[],
+    communitySkillIds: string[]
+  ): Promise<CommunityProfile[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post(``, {
+      query: `
+      query GetOtherConnections($userId: UUID!, $provinceIds: [UUID!], $communitySkillIds: [UUID!]) {
+    otherConnections(userId: $userId, provinceIds: $provinceIds, communitySkillIds: $communitySkillIds) {
+ id
+            userId
+            aboutShort
+            aboutLong
+            shareContactInfo
+            shareEmail            
+            sharePhoneNumber
+            shareProfilePhoto
+            shareProvince
+            provinceId
+            provinceName
+            shareRole
+            insertedDate
+             communityUser {
+                id
+                fullName
+                email
+                phoneNumber
+                whatsAppNumber
+                profilePhoto
+                roleName
+            }
+    }
+}
+      `,
+      variables: {
+        userId,
+        provinceIds,
+        communitySkillIds,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get community ECD heroes Failed - Server connection error'
+      );
+    }
+    return response.data.data.otherConnections;
+  }
+
+  async saveCommunityProfileConnections(
+    input: CommunityConnectInputModelInput[]
+  ): Promise<CommunityConnectInputModelInput[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation SaveCommunityProfileConnections($input: [CommunityConnectInputModelInput]) {
+    saveCommunityProfileConnections(input: $input) {
+        fromCommunityProfileId
+        toCommunityProfileId
+    }
+}
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Updating practitioner community connections failed - Server connection error'
+      );
+    }
+
+    return response.data.data.saveCommunityProfileConnections;
   }
 }
 
