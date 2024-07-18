@@ -1,9 +1,13 @@
 import {
+  CoachFeedbackInputModelInput,
   CommunityConnectInputModelInput,
   CommunityProfile,
   CommunityProfileInputModelInput,
   Connect,
   ConnectItem,
+  FeedbackTypeSortInput,
+  SupportRatingModel,
+  SupportRatingSortInput,
 } from '@ecdlink/graphql/lib';
 import { api } from '../axios.helper';
 import { CommunityProfileDto, Config } from '@ecdlink/core';
@@ -316,6 +320,7 @@ class CommunityService {
                 profilePhoto
                 roleName
             }
+            connectionAccepted
     }
 }
       `,
@@ -410,6 +415,106 @@ class CommunityService {
     }
 
     return response.data.data.saveCommunityProfileConnections;
+  }
+
+  async cancelCommunityRequest(
+    input: CommunityConnectInputModelInput
+  ): Promise<CommunityConnectInputModelInput> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation CancelCommunityRequest($input: CommunityConnectInputModelInput) {
+    cancelCommunityRequest(input: $input) {
+        fromCommunityProfileId
+        toCommunityProfileId
+        isActive
+    }
+}
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Updating cancel community connection failed - Server connection error'
+      );
+    }
+
+    return response.data.data.saveCommunityProfileConnections;
+  }
+
+  async saveCoachFeedback(
+    input: CoachFeedbackInputModelInput
+  ): Promise<CoachFeedbackInputModelInput> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation SaveCoachFeedback($input: CoachFeedbackInputModelInput) {
+    saveCoachFeedback(input: $input) {
+        id
+        fromUserId
+        toUserId
+        feedbackTypeId
+        supportRatingId
+        feedbackDetails
+    }
+}
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Saving coach feedback failed - Server connection error');
+    }
+
+    return response.data.data.saveCoachFeedback;
+  }
+
+  async getFeedbackTypes(): Promise<FeedbackTypeSortInput> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post(``, {
+      query: `
+      query GetFeedbackTypes() {
+    feedbackTypes() {
+        id
+        name
+        ordering
+    }
+}
+      `,
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get community ECD heroes Failed - Server connection error'
+      );
+    }
+    return response.data.data.feedbackTypes;
+  }
+
+  async getSupportRatings(): Promise<SupportRatingSortInput> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post(``, {
+      query: `
+      query GetSupportRatings() {
+    supportRatings() {
+        id
+        name
+        imageName
+        ordering
+    }
+}
+      `,
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get support ratings Failed - Server connection error');
+    }
+    return response.data.data.supportRatings;
   }
 }
 

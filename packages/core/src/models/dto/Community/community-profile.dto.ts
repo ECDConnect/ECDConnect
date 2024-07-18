@@ -22,6 +22,7 @@ export interface CommunityProfileDto {
   communityUser?: CommunityUserDto;
   acceptedConnections?: any[];
   pendingConnections?: any[];
+  connectionAccepted?: boolean | null;
 }
 
 export interface CommunityUserDto {

@@ -1,4 +1,5 @@
 import {
+  CoachFeedbackInputModelInput,
   CommunityConnectInputModelInput,
   CommunityProfile,
   Connect,
@@ -21,6 +22,10 @@ export const CommunityActions = {
   GET_USERS_TO_CONNECT_WITH: 'getUsersToConnectWith',
   GET_OTHER_CONNECTIONS: 'getOtherConnections',
   SAVE_COMMUNITY_PROFILE_CONNECTIONS: 'saveCommunityProfileConnections',
+  CANCEL_COMMUNITY_REQUEST: 'cancelCommunityRequest',
+  SAVE_COACH_FEEDBACK: 'saveCoachFeedback',
+  GET_FEEDBACK_TYPES: 'getFeedbackTypes',
+  GET_SUPPORT_RATINGS: 'getSupportRatings',
 };
 
 export const getAllConnect = createAsyncThunk<
@@ -211,6 +216,102 @@ export const saveCommunityProfileConnections = createAsyncThunk<
         ).saveCommunityProfileConnections(input);
         return response;
       } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const cancelCommunityRequest = createAsyncThunk<
+  any,
+  { input: CommunityConnectInputModelInput },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.CANCEL_COMMUNITY_REQUEST,
+  async ({ input }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const response = await new CommunityService(
+          userAuth?.auth_token
+        ).cancelCommunityRequest(input);
+        return response;
+      } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const saveCoachFeedback = createAsyncThunk<
+  any,
+  { input: CoachFeedbackInputModelInput },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.SAVE_COACH_FEEDBACK,
+  async ({ input }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const response = await new CommunityService(
+          userAuth?.auth_token
+        ).saveCoachFeedback(input);
+        return response;
+      } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getFeedbackTypes = createAsyncThunk<
+  any,
+  {},
+  ThunkApiType<RootState>
+>(
+  CommunityActions.GET_FEEDBACK_TYPES,
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new CommunityService(
+          userAuth?.auth_token ?? ''
+        ).getFeedbackTypes();
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getSupportRatings = createAsyncThunk<
+  any,
+  {},
+  ThunkApiType<RootState>
+>(
+  CommunityActions.GET_SUPPORT_RATINGS,
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new CommunityService(
+          userAuth?.auth_token ?? ''
+        ).getSupportRatings();
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

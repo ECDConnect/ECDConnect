@@ -1,7 +1,9 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { userSelectors } from '@/store/user';
-import { CommunityProfileDto, useTheme } from '@ecdlink/core';
+import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
+  ActionModal,
+  Alert,
   BannerWrapper,
   Button,
   Dialog,
@@ -12,23 +14,217 @@ import {
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { BasicInfoItems } from '../community.types';
 import ROUTES from '@/routes/routes';
 import { DetailsCard } from '../community-profile/components/details-card';
 import { ProfileSkills } from '../community-profile/components/profile-skills';
 import { ConnectionProfileRouteState } from './connection-profile.types';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import { useAppDispatch } from '@/store';
+import { communitySelectors, communityThunkActions } from '@/store/community';
+import { useState } from 'react';
+import { ConnectionContactDetails } from './connection-contact-details/connection-contact-details';
 
 export const ConnectionProfile = () => {
   const { isOnline } = useOnlineStatus();
-  const user = useSelector(userSelectors.getUser);
+  const dialog = useDialog();
+  const dispatch = useAppDispatch();
+  const loggedUserCommunityProfile = useSelector(
+    communitySelectors.getCommunityProfile
+  );
   const { state } = useLocation<ConnectionProfileRouteState>();
   const communityProfile = state?.connectionProfile;
   const { theme } = useTheme();
   const history = useHistory();
+  const { showMessage } = useSnackbar();
+  const [connectionAccepted, setConnectionAccepted] = useState<
+    boolean | null | undefined
+  >(communityProfile?.connectionAccepted);
 
   const handleGoBack = () => {
     history?.push(ROUTES.COMMUNITY.WELCOME, { isFromConnectProfile: true });
   };
+
+  const handleCancelConnectionRequest = (isRemoval: boolean) => {
+    const cancelledConnection = {
+      fromCommunityProfileId: loggedUserCommunityProfile?.id,
+      toCommunityProfileId: communityProfile?.id,
+    };
+
+    dispatch(
+      communityThunkActions.cancelCommunityRequest({
+        input: cancelledConnection,
+      })
+    ).then(() => {
+      setConnectionAccepted(null);
+      showMessage({
+        message: isRemoval ? 'Connection Removed' : 'Request cancelled',
+        type: 'success',
+        duration: 3000,
+      });
+    });
+  };
+
+  const saveNewConnection = async () => {
+    const addConnectionInput = {
+      fromCommunityProfileId: loggedUserCommunityProfile?.id,
+      toCommunityProfileId: communityProfile?.id,
+    };
+    dispatch(
+      communityThunkActions.saveCommunityProfileConnections({
+        input: [addConnectionInput],
+      })
+    ).then(() => {
+      setConnectionAccepted(false);
+      showMessage({
+        message: 'Request sent',
+        type: 'success',
+        duration: 3000,
+      });
+    });
+  };
+
+  const handleOpenCancelRequestModal = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onClose) => {
+        return (
+          <ActionModal
+            customIcon={
+              <ExclamationCircleIcon className="text-alertMain h-10 w-10 rounded-full" />
+            }
+            title="Are you sure you want to cancel the request?"
+            actionButtons={[
+              {
+                colour: 'quatenary',
+                type: 'filled',
+                text: 'Yes, cancel request',
+                textColour: 'white',
+                onClick: () => {
+                  handleCancelConnectionRequest(false);
+                  onClose();
+                },
+                leadingIcon: 'ArrowLeftIcon',
+              },
+              {
+                colour: 'quatenary',
+                type: 'outlined',
+                text: 'No, exit',
+                textColour: 'quatenary',
+                onClick: () => {
+                  onClose();
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const handleOpenRemoveConnectionModal = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onClose) => {
+        return (
+          <ActionModal
+            customIcon={
+              <ExclamationCircleIcon className="text-alertMain h-10 w-10 rounded-full" />
+            }
+            title={`Are you sure you want to remove ${communityProfile?.communityUser?.fullName}?`}
+            actionButtons={[
+              {
+                colour: 'quatenary',
+                type: 'filled',
+                text: 'Yes, remove connection',
+                textColour: 'white',
+                onClick: () => {
+                  handleCancelConnectionRequest(true);
+                  onClose();
+                },
+                leadingIcon: 'ArrowLeftIcon',
+              },
+              {
+                colour: 'quatenary',
+                type: 'outlined',
+                text: 'No, cancel',
+                textColour: 'quatenary',
+                onClick: () => {
+                  onClose();
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const renderConnectionCard = (
+    connectionAccepted: boolean | null | undefined
+  ) => {
+    switch (connectionAccepted) {
+      case false:
+        return (
+          <Alert
+            className="mb-4 mt-2 rounded-2xl"
+            title={`Request sent! Waiting for ${communityProfile?.communityUser?.fullName} to accept.`}
+            type="info"
+            button={
+              <Button
+                className={'my-2 w-full rounded-2xl'}
+                type="outlined"
+                color="secondary"
+                onClick={() => handleOpenCancelRequestModal()}
+                text="Cancel request"
+                textColor="secondary"
+                background="transparent"
+                icon="TrashIcon"
+                size="small"
+              />
+            }
+          />
+        );
+      case true:
+        return (
+          <Alert
+            className="mb-4 mt-2 rounded-2xl"
+            title={`Connect with ${communityProfile?.communityUser?.fullName}`}
+            type="success"
+            button={
+              <Button
+                className={'my-2 w-full rounded-2xl'}
+                type="outlined"
+                color="secondary"
+                onClick={() => handleOpenRemoveConnectionModal()}
+                text="Remove connection"
+                textColor="secondary"
+                background="transparent"
+                icon="TrashIcon"
+                size="small"
+              />
+            }
+          />
+        );
+      default:
+        return (
+          <div className="mb-4 mt-2 flex w-full flex-col justify-center gap-3">
+            <Button
+              className="w-full rounded-2xl px-2"
+              type="filled"
+              color="quatenary"
+              textColor="white"
+              text={`Connect with ${communityProfile?.communityUser?.fullName}`}
+              icon="ShareIcon"
+              iconPosition="start"
+              onClick={() => saveNewConnection()}
+            />
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="flex h-screen flex-1 flex-col overflow-y-auto bg-white">
       <BannerWrapper
@@ -65,8 +261,16 @@ export const ConnectionProfile = () => {
             }
           >
             <StatusChip
-              backgroundColour="quatenary"
-              borderColour="quatenary"
+              backgroundColour={
+                communityProfile?.communityUser?.roleName === 'Principal'
+                  ? 'infoDark'
+                  : 'quatenary'
+              }
+              borderColour={
+                communityProfile?.communityUser?.roleName === 'Principal'
+                  ? 'infoDark'
+                  : 'quatenary'
+              }
               text={communityProfile?.communityUser?.roleName || 'Practitioner'}
               textColour={'white'}
               className={'mr-2'}
@@ -89,6 +293,12 @@ export const ConnectionProfile = () => {
             align="center"
             className="my-2"
           />
+          <div>{renderConnectionCard(connectionAccepted)}</div>
+          {connectionAccepted && (
+            <ConnectionContactDetails
+              connectionCommunityProfile={communityProfile}
+            />
+          )}
           <DetailsCard
             title={`About ${communityProfile?.communityUser?.fullName}`}
             textOne={communityProfile?.aboutLong}

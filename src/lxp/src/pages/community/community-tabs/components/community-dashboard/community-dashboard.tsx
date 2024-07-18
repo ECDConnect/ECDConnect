@@ -28,6 +28,7 @@ import { useHistory, useLocation } from 'react-router';
 import { ECDHeroes } from './components/ecd-heroes/ecd-heroes';
 import AlienImage from '@/assets/ECD_Connect_alien2.svg';
 import { CommunityDashboardRouteState } from './community-dashboard.types';
+import { CommunityCoachProfile } from './components/community-coach-profile/community-coach-profile';
 
 export const CommunityDashboard = () => {
   const dispatch = useAppDispatch();
@@ -43,6 +44,7 @@ export const CommunityDashboard = () => {
   const tenant = useTenant();
   const coach = useSelector(coachSelectors?.getCoach);
   const [openECDHeroes, setOpenECDHeroes] = useState(false);
+  const [openCoachProfile, setOpenCoachProfile] = useState(false);
 
   useEffect(() => {
     if (practitioner) {
@@ -67,7 +69,7 @@ export const CommunityDashboard = () => {
   const coachItem: UserAlertListDataItem = {
     title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
     titleStyle: 'text-textDark',
-    profileDataUrl: '',
+    profileDataUrl: coach?.user?.profileImageUrl || '',
     profileText:
       (coach?.user?.firstName?.charAt(0) || '') +
       (coach?.user?.surname?.charAt(0) || ''),
@@ -76,25 +78,30 @@ export const CommunityDashboard = () => {
     hideAlertSeverity: true,
     menuIconClassName: 'bg-secondaryAccent2',
     backgroundColor: 'secondaryAccent2',
-    onActionClick: () => {},
+    onActionClick: () => setOpenCoachProfile(true),
   };
 
   const communityAcceptedConnections: UserAlertListDataItem[] = useMemo(() => {
     return (
       communityProfile?.acceptedConnections?.map((item) => {
         return {
-          title: item?.fullName,
+          title: item?.communityUser?.fullName,
           titleStyle: 'text-textDark',
-          profileDataUrl: '',
-          profileText:
-            (item?.fullName?.user?.firstName?.charAt(0) || '') +
-            (item?.fullName?.user?.surname?.charAt(0) || ''),
+          profileDataUrl: item?.communityUser?.profilePhoto || '',
+          profileText: item?.communityUser?.fullName
+            ?.match(/^(\w)\w*\s+(\w{1,2})/)
+            ?.slice(1)
+            .join('')
+            ?.toLocaleUpperCase(),
           avatarColor: getAvatarColor(),
           alertSeverity: 'none',
           hideAlertSeverity: true,
           menuIconClassName: 'bg-secondaryAccent2',
           backgroundColor: 'adminBackground',
-          onActionClick: () => {},
+          onActionClick: () =>
+            history.push(ROUTES.COMMUNITY.CONNECTION_PROFILE, {
+              connectionProfile: item,
+            }),
         };
       }) || []
     );
@@ -189,6 +196,13 @@ export const CommunityDashboard = () => {
       </div>
       <Dialog fullScreen visible={openECDHeroes} position={DialogPosition.Full}>
         <ECDHeroes onClose={setOpenECDHeroes} />
+      </Dialog>
+      <Dialog
+        fullScreen
+        visible={openCoachProfile}
+        position={DialogPosition.Full}
+      >
+        <CommunityCoachProfile onClose={setOpenCoachProfile} />
       </Dialog>
     </div>
   );

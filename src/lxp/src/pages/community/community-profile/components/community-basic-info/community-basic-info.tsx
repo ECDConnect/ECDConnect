@@ -17,7 +17,6 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { MailIcon } from '@heroicons/react/solid';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
