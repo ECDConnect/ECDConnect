@@ -44,8 +44,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 
     public class CommunityConnectionModel : CommunityProfileBaseModel
     {
-
-        public List<CommunityUserModel> ConnectionsToBeAccepted { get; set; }
         public bool? ConnectionAccepted { get; set; } = null;
 
         public CommunityConnectionModel(CommunityProfile profile, List<string> userRoles, bool? connectionAccepted) :

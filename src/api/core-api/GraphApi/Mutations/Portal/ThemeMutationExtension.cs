@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             [Service] TenantService tenantService,
             [Service] IFileService fileService)
         {
-            var defaultSettings = JsonConvert.DeserializeObject<TenantDefaultSettingsModel>(TenantExecutionContext.Tenant.DefaultSystemSettings);
+            var orgDetail = JsonConvert.DeserializeObject<TenantOrgDetailModel>(TenantExecutionContext.Tenant.DefaultSystemSettings);
 
             // reverting all colours, images
             await UpdateTenantTheme(tenantService, fileService, TenantExecutionContext.Tenant.DefaultSystemSettings);
@@ -65,9 +65,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             // reverting names and email
             TenantInfoInputModel input = new TenantInfoInputModel()
             {
-                ApplicationName = defaultSettings.ApplicationName,
-                OrganisationEmail = defaultSettings.OrganisationEmail,
-                OrganisationName = defaultSettings.OrganisationName
+                ApplicationName = orgDetail.ApplicationName,
+                OrganisationEmail = orgDetail.OrganisationEmail,
+                OrganisationName = orgDetail.OrganisationName
             };
             return tenantService.UpdateTenantInfo(TenantExecutionContext.Tenant.Id, input);
         }

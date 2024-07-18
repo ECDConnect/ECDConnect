@@ -39,6 +39,7 @@ namespace ECDLink.DataAccessLayer.Context
     public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>
     {
         public DbSet<TenantEntity> Tenants { get; set; }
+        public DbSet<TenantSetupInfo> TenantSetupInfo { get; set; }
         public DbSet<Module> Modules { get; set; }
         public DbSet<TenantHasModule> TenantHasModules { get; set; } 
         public DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
