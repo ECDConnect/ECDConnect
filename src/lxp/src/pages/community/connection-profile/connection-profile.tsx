@@ -103,7 +103,7 @@ export const ConnectionProfile = () => {
                   handleCancelConnectionRequest(false);
                   onClose();
                 },
-                leadingIcon: 'ArrowLeftIcon',
+                leadingIcon: 'TrashIcon',
               },
               {
                 colour: 'quatenary',
@@ -113,7 +113,7 @@ export const ConnectionProfile = () => {
                 onClick: () => {
                   onClose();
                 },
-                leadingIcon: 'TrashIcon',
+                leadingIcon: 'ArrowLeftIcon',
               },
             ]}
           />
