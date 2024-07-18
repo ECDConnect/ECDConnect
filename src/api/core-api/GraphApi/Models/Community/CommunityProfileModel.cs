@@ -1,7 +1,6 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Community;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 {
