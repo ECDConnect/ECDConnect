@@ -36,6 +36,8 @@ import { AttendanceActions } from '@/store/attendance/attendance.actions';
 import { EditRegistersRouteState } from '@/pages/classroom/attendance/edit-registers/edit-registers.types';
 import { getTableData } from './table-data';
 import { PractitionerReportDetails } from '@ecdlink/graphql';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -62,6 +64,12 @@ export const MonthlyAttendanceReport = ({
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const children = useSelector(childrenSelectors.getChildren);
+
+  const { hasPermissionToTakeAttendance } = useUserPermissions();
+  const isTrialPeriod = useIsTrialPeriod();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
   const [isLoadingReportDetails, setIsLoadingReportDetails] = useState(true);
   const [reportDetails, setReportDetails] =
@@ -240,7 +248,7 @@ export const MonthlyAttendanceReport = ({
       ))}
 
       <div className={'mt-auto w-full py-4'}>
-        {is30DaysWindow && (
+        {is30DaysWindow && !!hasPermissionToEdit && (
           <Button
             className="mb-4 w-full"
             type="outlined"
