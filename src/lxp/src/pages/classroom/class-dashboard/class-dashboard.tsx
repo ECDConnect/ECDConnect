@@ -46,6 +46,7 @@ import { ActivitiesTab } from '../activities/activities';
 import { useTenant } from '@/hooks/useTenant';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { ChildProgressLanding } from '../progress-observation/child-progress-landing/child-progress-landing';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -92,6 +93,11 @@ export const ClassDashboard: React.FC = () => {
   );
 
   const { practitionerIsOnLeave } = usePractitionerAbsentees(practitioner!);
+
+  const { hasPermissionToTakeAttendance } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
   const hasCreatedReportForCurrentPeriod = useSelector(
     contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
@@ -191,7 +197,7 @@ export const ClassDashboard: React.FC = () => {
   const displayTutorial = (type?: string) => {
     switch (type) {
       case NavigationNames.Classroom.Attendance:
-        setAttendanceTutorialActive(true);
+        setAttendanceTutorialActive(!!hasPermissionToEdit);
         break;
       default:
         break;
@@ -199,8 +205,9 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const displayHelp =
-    currentTab?.title === NavigationNames.Classroom.Attendance ||
-    currentTab?.title === NavigationNames.Classroom.Programme;
+    hasPermissionToEdit &&
+    (currentTab?.title === NavigationNames.Classroom.Attendance ||
+      currentTab?.title === NavigationNames.Classroom.Programme);
 
   const closeAttendanceTutorial = useCallback(() => {
     if (!attendanceTutorialComplete && previousTabIndex) {
@@ -287,6 +294,7 @@ export const ClassDashboard: React.FC = () => {
 
   useEffect(() => {
     if (
+      hasPermissionToEdit &&
       isToShowAttendanceTutorial &&
       !attendanceTutorialComplete &&
       !practitionerIsOnLeave
@@ -294,6 +302,7 @@ export const ClassDashboard: React.FC = () => {
       setShowAttendanceWalkthrough(true);
     }
   }, [
+    hasPermissionToEdit,
     attendanceTutorialComplete,
     practitionerIsOnLeave,
     isToShowAttendanceTutorial,

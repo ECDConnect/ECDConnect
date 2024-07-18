@@ -69,6 +69,7 @@ export interface PhotoPromptProps extends ComponentBaseProps {
   onAction?: (imageBaseString: string) => void;
   onDelete?: () => void;
   isProfileEmojis?: boolean;
+  isLoading?: boolean;
   showEmojiOption?: boolean;
 }
 
@@ -84,6 +85,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   onDelete,
   showEmojiOption,
   isProfileEmojis,
+  isLoading,
 }) => {
   const [actions, setActions] = useState<
     ActionSelectItem<PhotoPromptActionType>[]
@@ -237,6 +239,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   return (
     <>
       <ActionSelect
+        isLoading={isLoading}
         actions={actions}
         title={title}
         onActionSelected={actionSelected}
