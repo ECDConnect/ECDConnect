@@ -61,43 +61,44 @@ export const useProgrammePlanningRecommendations = () => {
     return [];
   };
 
-  const getActivitiesWithLowPercentageSubcategories = (
-    programme?: ProgrammeDto
-  ) => {
-    if (!programme) return [];
+  // TODO: Remove this function if not needed (EC-2594)
+  // const getActivitiesWithLowPercentageSubcategories = (
+  //   programme?: ProgrammeDto
+  // ) => {
+  //   if (!programme) return [];
 
-    const plannedActivities = getAllGroupActivityIds(programme);
+  //   const plannedActivities = getAllGroupActivityIds(programme);
 
-    // Filtering activities based on the programme's planned activities
-    const selectedActivities = activities.filter((activity) =>
-      plannedActivities.includes(activity.id)
-    );
+  //   // Filtering activities based on the programme's planned activities
+  //   const selectedActivities = activities.filter((activity) =>
+  //     plannedActivities.includes(activity.id)
+  //   );
 
-    const selectedSubCategories = selectedActivities.flatMap(
-      (activity) => activity.subCategories
-    );
+  //   const selectedSubCategories = selectedActivities.flatMap(
+  //     (activity) => activity.subCategories
+  //   );
 
-    // Calculate subcategory percentages
-    const subCategoryPercentages = subCategories.map((subCategory) => {
-      const count = selectedSubCategories.filter(
-        (selectedSubCategory) => selectedSubCategory?.id === subCategory?.id
-      ).length;
-      const percentage = (count / (selectedSubCategories.length || 1)) * 100;
-      return { subCategory, percentage };
-    });
+  //   // Calculate subcategory percentages
+  //   const subCategoryPercentages = subCategories.map((subCategory) => {
+  //     const count = selectedSubCategories.filter(
+  //       (selectedSubCategory) => selectedSubCategory?.id === subCategory?.id
+  //     ).length;
+  //     const percentage = (count / (selectedSubCategories.length || 1)) * 100;
+  //     return { subCategory, percentage };
+  //   });
 
-    // Filter subcategories with less than 5% representation
-    const lowPercentageSubCategoryIds = subCategoryPercentages
-      .filter(({ percentage }) => percentage < 5)
-      .map(({ subCategory }) => subCategory.id);
+  //   // Filter subcategories with less than 5% representation
+  //   const lowPercentageSubCategoryIds = subCategoryPercentages
+  //     .filter(({ percentage }) => percentage < 5)
+  //     .map(({ subCategory }) => subCategory.id);
 
-    // Return activities containing at least one low percentage subcategory
-    return selectedActivities.filter((activity) =>
-      activity.subCategories.some((subCat) =>
-        lowPercentageSubCategoryIds.includes(subCat.id)
-      )
-    );
-  };
+  //   // Return activities containing at least one low percentage subcategory
+  //   return selectedActivities.filter((activity) =>
+  //     activity.subCategories.some((subCat) =>
+  //       lowPercentageSubCategoryIds.includes(subCat.id)
+  //     )
+  //   );
+  // };
 
   const getCurrentProgrammeRecommendedActivitiesBySubcategory = (
     programme?: ProgrammeDto
@@ -203,14 +204,61 @@ export const useProgrammePlanningRecommendations = () => {
     return recommendedSubCategories;
   };
 
+  const countSubCategoryFrequency = (
+    programme: ProgrammeDto,
+    activities: ActivityDto[]
+  ): Map<number, number> => {
+    const frequency = new Map<number, number>();
+
+    programme?.dailyProgrammes?.forEach((day) => {
+      [day.smallGroupActivityId, day.largeGroupActivityId].forEach(
+        (activityId) => {
+          const activity = activities.find((a) => a.id === activityId);
+          activity?.subCategories.forEach((subCategory) => {
+            frequency.set(
+              subCategory.id,
+              (frequency.get(subCategory.id) || 0) + 1
+            );
+          });
+        }
+      );
+    });
+
+    return frequency;
+  };
+
   const getSortedActivities = (
     activities: ActivityDto[],
     programme: ProgrammeDto,
     type: ActivityType
   ) => {
-    const topIds = getActivitiesWithLowPercentageSubcategories(programme)?.map(
-      (activity) => activity.id
-    );
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // TODO: Remove this function if not needed (EC-2594)
+    // const topIds = getActivitiesWithLowPercentageSubcategories(programme)?.map(
+    //   (activity) => activity.id
+    // );
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let topActivities = activities;
+
+    if (type !== 'Story time') {
+      const frequency = countSubCategoryFrequency(programme, activities);
+
+      topActivities = activities
+        ?.filter((a) => a.type === type)
+        .sort((a, b) => {
+          const aMinFrequency = Math.min(
+            ...a.subCategories.map((sc) => frequency.get(sc.id) || Infinity)
+          );
+          const bMinFrequency = Math.min(
+            ...b.subCategories.map((sc) => frequency.get(sc.id) || Infinity)
+          );
+
+          return aMinFrequency - bMinFrequency; // Prioritize activities with least frequent subcategories
+        });
+    }
 
     const endIds = programme?.dailyProgrammes?.map((day) => {
       switch (type) {
@@ -223,31 +271,35 @@ export const useProgrammePlanningRecommendations = () => {
       }
     });
 
-    return activities
-      .sort((a, b) => {
-        const aIsEnd = endIds?.includes(a.id);
-        const bIsEnd = endIds?.includes(b.id);
+    return topActivities.sort((a, b) => {
+      const aIsEnd = endIds?.includes(a.id);
+      const bIsEnd = endIds?.includes(b.id);
 
-        if (aIsEnd && !bIsEnd) {
-          return 1; // Move 'a' to the end
-        } else if (!aIsEnd && bIsEnd) {
-          return -1; // Keep 'b' at the end
-        } else {
-          return 0; // keep the original order for unaffected items
-        }
-      })
-      .sort((a, b) => {
-        const aIsTop = topIds.includes(a.id);
-        const bIsTop = topIds.includes(b.id);
+      if (aIsEnd && !bIsEnd) {
+        return 1; // Move 'a' to the end
+      } else if (!aIsEnd && bIsEnd) {
+        return -1; // Keep 'b' at the end
+      } else {
+        return 0; // keep the original order for unaffected items
+      }
+    });
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        if (aIsTop && !bIsTop) {
-          return -1; // Move 'a' to the top
-        } else if (!aIsTop && bIsTop) {
-          return 1; // Keep 'b' at the top
-        } else {
-          return 0; // keep the original order for unaffected items
-        }
-      });
+    // TODO: Remove this function if not needed (EC-2594)
+    // .sort((a, b) => {
+    //   const aIsTop = topIds.includes(a.id);
+    //   const bIsTop = topIds.includes(b.id);
+
+    //   if (aIsTop && !bIsTop) {
+    //     return -1; // Move 'a' to the top
+    //   } else if (!aIsTop && bIsTop) {
+    //     return 1; // Keep 'b' at the top
+    //   } else {
+    //     return 0; // keep the original order for unaffected items
+    //   }
+    // });
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
   };
 
   return {
