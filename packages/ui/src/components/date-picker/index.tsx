@@ -16,6 +16,7 @@ interface BaseDatePickerProps
   colour?: Colours;
   textColour?: Colours;
   isFullWidth?: boolean;
+  withPortal?: boolean;
 }
 
 export interface DatePickerSingleProps extends BaseDatePickerProps {
@@ -46,6 +47,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   showChevronIcon,
   isFullWidth = true,
   chevronIconColour = 'white',
+  withPortal,
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -71,6 +73,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           onCalendarOpen={() => setIsOpen(true)}
           onCalendarClose={() => setIsOpen(false)}
           onFocus={(e) => (e.target.readOnly = true)}
+          withPortal={withPortal}
+          portalId={!!withPortal ? 'root-portal' : undefined}
         />
         {!hideCalendarIcon &&
           renderIcon(

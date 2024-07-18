@@ -1,4 +1,5 @@
 import { Alert, DatePicker, Divider, Typography } from '@ecdlink/ui';
+import { differenceInDays, format } from 'date-fns';
 import { useMemo } from 'react';
 
 export type ChildProgressReportingPeriodsTimingsProps = {
@@ -126,6 +127,7 @@ export const ChildProgressReportingPeriodsTimings: React.FC<
               dateFormat="EEE, dd MMM yyyy"
               minDate={getPreviousDate(index, true)}
               maxDate={getNextDate(index, true)}
+              withPortal={true}
             />
             <Typography
               className="mt-2"
@@ -170,7 +172,31 @@ export const ChildProgressReportingPeriodsTimings: React.FC<
               dateFormat="EEE, dd MMM yyyy"
               minDate={getPreviousDate(index, false)}
               maxDate={getNextDate(index, false)}
+              withPortal={true}
             />
+            {!!reportingPeriod.startDate &&
+              !!reportingPeriod.endDate &&
+              differenceInDays(
+                new Date(reportingPeriod.endDate),
+                new Date(reportingPeriod.startDate)
+              ) < 21 && (
+                <Alert
+                  className="mt-4"
+                  type={'warning'}
+                  title={`Report ${
+                    index + 1
+                  } start and end dates are very close together!`}
+                  list={[
+                    `Check the dates - you might not have enough time to finish all reports between ${format(
+                      new Date(reportingPeriod.startDate),
+                      'd MMM'
+                    )} and ${format(
+                      new Date(reportingPeriod.endDate),
+                      'd MMM'
+                    )}.`,
+                  ]}
+                />
+              )}
           </div>
         ))}
       </div>

@@ -2,6 +2,7 @@ import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import {
+  ChildProgressReportPeriod,
   ClassroomDto,
   ClassroomDto as SimpleClassroomDto,
 } from '@/models/classroom/classroom.dto';
@@ -20,10 +21,28 @@ export const getIsReportingPeriodsSet = () =>
   createSelector(
     (state: RootState) => state.classroomData.classroom,
     (classroom: ClassroomDto | undefined): boolean => {
-      console.log('classroom', classroom);
+      const currentYear = new Date().getFullYear();
       return (
         !!classroom?.childProgressReportPeriods &&
-        !!classroom?.childProgressReportPeriods.length
+        !!classroom?.childProgressReportPeriods.some(
+          (x) => new Date(x.startDate).getFullYear() === currentYear
+        )
+      );
+    }
+  );
+
+export const getPreviousYearsReportingPeriods = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined): ChildProgressReportPeriod[] => {
+      const lastYear = new Date().getFullYear() - 1;
+      return (
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === lastYear)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          ) || []
       );
     }
   );
