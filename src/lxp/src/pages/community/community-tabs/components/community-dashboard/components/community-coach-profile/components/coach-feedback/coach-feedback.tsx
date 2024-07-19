@@ -1,0 +1,244 @@
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import {
+  BannerWrapper,
+  Button,
+  CheckboxGroup,
+  FormInput,
+  LoadingSpinner,
+  Radio,
+  SA_CELL_REGEX,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
+import { ReactComponent as VeryHappy } from '@/assets/emoji_yellow_bigsmile.svg';
+import { ReactComponent as Happy } from '@/assets/ECD_Connect_emoji1.svg';
+import { ReactComponent as Neutral } from '@/assets/ECD_Connect_emoji_neutral.svg';
+import { ReactComponent as Unhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
+import { ReactComponent as VeryUnhappy } from '@/assets/red_rating.svg';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Config,
+  HelpFormModel,
+  NOTIFICATION,
+  useNotifications,
+  useSnackbar,
+} from '@ecdlink/core';
+import { HelpService } from '@/services/HelpService';
+import { isEmail } from '@/utils/common/string.utils';
+import { useTenant } from '@/hooks/useTenant';
+import { useSelector } from 'react-redux';
+import { coachSelectors } from '@/store/coach';
+import {
+  CoachFeedbackInputModelInput,
+  FeedbackTypeSortInput,
+  SupportRatingModel,
+  SupportRatingSortInput,
+} from '@ecdlink/graphql';
+import { useAppDispatch } from '@/store';
+import { communityThunkActions } from '@/store/community';
+import { CoachSupportRatingsTypes } from './coach-feedback.types';
+import { userSelectors } from '@/store/user';
+import { CommunityService } from '@/services/CommunityService';
+
+interface HelpFormProps {
+  closeAction?: (item: boolean) => void;
+}
+
+export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
+  const { isOnline } = useOnlineStatus();
+  const dispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
+  const { setNotification } = useNotifications();
+  const [feedBackTypeId, setFeedBackTypeId] = useState('');
+  const coach = useSelector(coachSelectors?.getCoach);
+  const user = useSelector(userSelectors.getUser);
+  const [isPhoneSelected, setIsPhoneSelected] = useState<boolean | undefined>(
+    undefined
+  );
+  const [feedbackValue, setFeedbackValue] = useState('');
+
+  const [email, setEmail] = useState('');
+  const [isValidEmail, setIsValidEmail] = useState(true);
+  const [cellphone, setCellphone] = useState('');
+  const [isValidCellphone, setIsValidCellphone] = useState(true);
+  const [isLoadingTypes, setIsLoadingTypes] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const tenant = useTenant();
+  const orgName = tenant?.tenant?.organisationName;
+  const [feedbackTypes, setFeedbackTypes] = useState<FeedbackTypeSortInput[]>();
+  const [supportRatings, setSupportRatings] =
+    useState<SupportRatingSortInput[]>();
+  const [supportRatingId, setSupportRatingId] = useState('');
+  const disableButton = !feedBackTypeId || !feedbackValue || !supportRatingId;
+
+  useEffect(() => {
+    handleCoachFeedBackQueries();
+  }, []);
+
+  const handleCoachFeedBackQueries = useCallback(async () => {
+    setIsLoadingTypes(true);
+    const feedBackTypesResponse = await dispatch(
+      communityThunkActions.getFeedbackTypes({})
+    );
+
+    const supportRatingsResponse = await dispatch(
+      communityThunkActions.getSupportRatings({})
+    );
+
+    if (feedBackTypesResponse) {
+      setFeedbackTypes(feedBackTypesResponse?.payload);
+    }
+
+    if (supportRatingsResponse) {
+      setSupportRatings(supportRatingsResponse?.payload);
+    }
+    setIsLoadingTypes(false);
+  }, []);
+
+  const sendCoachFeedback = async () => {
+    const input: CoachFeedbackInputModelInput = {
+      feedbackTypeId: feedBackTypeId,
+      fromUserId: user?.id,
+      supportRatingId: supportRatingId,
+      feedbackDetails: feedbackValue,
+      toUserId: coach?.user?.id,
+    };
+    setIsLoading(true);
+    const feedbackResponse = await dispatch(
+      communityThunkActions?.saveCoachFeedback({ input })
+    ).catch(() => {
+      showMessage({
+        message: 'Feedback not sent!',
+        type: 'error',
+      });
+    });
+
+    if (feedbackResponse) {
+      showMessage({
+        message: 'Feedback sent!',
+        type: 'success',
+      });
+      setIsLoading(false);
+    }
+    setIsLoading(false);
+    closeAction && closeAction(false);
+  };
+
+  const handleSupportRatingsImage = (name: string) => {
+    switch (name) {
+      case CoachSupportRatingsTypes?.VeryHappy:
+        return <VeryHappy className="h-10 w-10" />;
+      case CoachSupportRatingsTypes?.Happy:
+        return <Happy className="h-10 w-10" />;
+      case CoachSupportRatingsTypes?.Neutral:
+        return <Neutral className="h-10 w-10" />;
+      case CoachSupportRatingsTypes?.Neutral:
+        return <Neutral className="h-10 w-10" />;
+      case CoachSupportRatingsTypes?.Unhappy:
+        return <Unhappy className="h-10 w-10" />;
+      default:
+        return <VeryUnhappy className="h-10 w-10" />;
+    }
+  };
+
+  return (
+    <div>
+      <BannerWrapper
+        size="small"
+        onBack={() => closeAction && closeAction(false)}
+        color="primary"
+        className={'h-screen'}
+        title={`Coach feedback`}
+        subTitle={'Step 1 of 1'}
+        displayOffline={!isOnline}
+        onClose={() => closeAction && closeAction(false)}
+      >
+        {isLoadingTypes && (
+          <div className="flex h-full items-center justify-center">
+            <LoadingSpinner
+              size="big"
+              spinnerColor="quatenary"
+              backgroundColor="uiLight"
+            />
+          </div>
+        )}
+        {!isLoadingTypes && (
+          <div className={'flex h-full flex-col overflow-y-scroll p-4'}>
+            <Typography
+              type="h2"
+              color={'textDark'}
+              text={`Give feedback about ${coach?.user?.firstName}`}
+            />
+            <Typography
+              type="body"
+              color={'textMid'}
+              text={`This feedback is private and goes to the ${orgName} admin team. It helps us support you better.`}
+            />
+            <fieldset className="my-4 flex flex-col gap-2">
+              <Typography
+                type="h4"
+                text={'What type of feedback would you like to share?'}
+              />
+              {feedbackTypes &&
+                feedbackTypes?.map((item) => (
+                  <CheckboxGroup
+                    title=""
+                    key={item?.id}
+                    description={item?.name!}
+                    value={item?.id!}
+                    checked={feedBackTypeId === item?.id}
+                    onChange={() => setFeedBackTypeId(item?.id!)}
+                  />
+                ))}
+            </fieldset>
+            <FormInput
+              textInputType="textarea"
+              label="Details"
+              subLabel="Please share more information."
+              placeholder="Add text..."
+              onChange={(e) => setFeedbackValue(e?.target?.value)}
+            />
+            <fieldset className="my-4 flex flex-col gap-2">
+              <Typography
+                type="h4"
+                text={'What type of feedback would you like to share?'}
+              />
+              {supportRatings &&
+                supportRatings?.map((item) => (
+                  <CheckboxGroup
+                    key={item?.id}
+                    title=""
+                    description={item?.name!}
+                    value={item?.id!}
+                    checked={item?.id === supportRatingId}
+                    onChange={(e) => setSupportRatingId(String(e.value))}
+                    icon={
+                      <div className="ml-4 mr-2">
+                        {handleSupportRatingsImage(item?.name!)}
+                      </div>
+                    }
+                    isIconFullWidth={true}
+                  />
+                ))}
+            </fieldset>
+            <div className={'w-full py-4'}>
+              <Button
+                type={'filled'}
+                color={'quatenary'}
+                className={'mb-20 w-full'}
+                disabled={disableButton}
+                isLoading={isLoading}
+                onClick={() => {
+                  sendCoachFeedback();
+                }}
+              >
+                {renderIcon('SaveIcon', 'w-5 h-5 text-white mr-1')}
+                <Typography type="help" color={'white'} text={`Save`} />
+              </Button>
+            </div>
+          </div>
+        )}
+      </BannerWrapper>
+    </div>
+  );
+};
