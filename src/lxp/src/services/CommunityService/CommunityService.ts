@@ -1,4 +1,5 @@
 import {
+  AcceptRejectCommunityRequestsInputModelInput,
   CoachFeedbackInputModelInput,
   CommunityConnectInputModelInput,
   CommunityProfile,
@@ -128,6 +129,7 @@ class CommunityService {
                 provinceId
                 provinceName
                 shareRole
+                connectionAccepted
                 communityUser {
                     id
                     fullName
@@ -150,6 +152,30 @@ class CommunityService {
                 provinceId
                 provinceName
                 shareRole
+                connectionAccepted
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
+            receivedConnections {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                connectionAccepted
                 communityUser {
                     id
                     fullName
@@ -515,6 +541,111 @@ class CommunityService {
       throw new Error('Get support ratings Failed - Server connection error');
     }
     return response.data.data.supportRatings;
+  }
+
+  async acceptCommunityRequests(
+    input: AcceptRejectCommunityRequestsInputModelInput
+  ): Promise<CommunityProfileDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation AcceptRejectCommunityRequests($input: AcceptRejectCommunityRequestsInputModelInput) {
+    acceptCommunityRequests(input: $input) {
+        id
+            userId
+            aboutShort
+            aboutLong
+            shareContactInfo
+            shareEmail            
+            sharePhoneNumber
+            shareProfilePhoto
+            shareProvince
+            provinceId
+            provinceName
+            shareRole
+            clickedECDHeros
+            coachUserId
+            coachName
+            completenessPerc
+            completenessPercColor
+            completenessPercImage
+            insertedDate
+            profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
+            communityUser {
+                id
+                fullName
+                email
+                phoneNumber
+                whatsAppNumber
+                profilePhoto
+                roleName
+            }
+            acceptedConnections {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
+            pendingConnections {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
+    }
+}
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Accepting community connections requests failed - Server connection error'
+      );
+    }
+
+    return response.data.data.acceptCommunityRequests;
   }
 }
 

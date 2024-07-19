@@ -1,9 +1,14 @@
+import { CommunityProfileDto } from '@ecdlink/core';
 import { Button, Card, Typography, renderIcon } from '@ecdlink/ui';
+import { useHistory } from 'react-router';
 interface ConnectionsCardProps {
   title: string;
   subtitle: string;
   icon: string;
   connectionsNumber: number | undefined;
+  route?: string;
+  usersData?: CommunityProfileDto[];
+  isConnectedScreen?: boolean;
 }
 
 export const ConnectionsCard: React.FC<ConnectionsCardProps> = ({
@@ -11,7 +16,12 @@ export const ConnectionsCard: React.FC<ConnectionsCardProps> = ({
   subtitle,
   icon,
   connectionsNumber,
+  route,
+  usersData,
+  isConnectedScreen,
 }) => {
+  const history = useHistory();
+
   return (
     <div>
       <Card className="bg-infoBb rounded-2xl p-4">
@@ -45,7 +55,13 @@ export const ConnectionsCard: React.FC<ConnectionsCardProps> = ({
               className={'mt-3 rounded-xl'}
               type="filled"
               color="quatenary"
-              onClick={() => {}}
+              onClick={() =>
+                route &&
+                history.push(route, {
+                  usersData: usersData,
+                  isConnectedScreen: isConnectedScreen,
+                })
+              }
               icon={connectionsNumber ? 'EyeIcon' : 'ShareIcon'}
               textColor="white"
               text={connectionsNumber ? 'View' : 'Connect'}

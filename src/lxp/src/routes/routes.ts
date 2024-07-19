@@ -52,6 +52,8 @@ const ROUTES = {
     WELCOME: '/welcome',
     PROFILE: '/profile',
     CONNECTION_PROFILE: '/connection-profile',
+    ECD_HEROES_LIST: '/ecd-heroes-list',
+    RECEIVED_REQUESTS: '/received-requests',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
       EDIT: '/edit',

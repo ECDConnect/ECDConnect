@@ -44,7 +44,7 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
       return (
         <Typography
           type={'body'}
-          text={'None - please add your skills.'}
+          text={connectionProfile ? 'None' : 'None - please add your skills.'}
           color={'textMid'}
           className="mt-2"
         />

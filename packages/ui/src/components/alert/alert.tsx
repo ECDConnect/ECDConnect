@@ -8,6 +8,7 @@ import { AlertProps } from './alert.types';
 export const Alert: React.FC<AlertProps> = ({
   type,
   title,
+  titleType,
   titleColor,
   message,
   messageColor,
@@ -56,7 +57,7 @@ export const Alert: React.FC<AlertProps> = ({
           <div className={styles.messageWrapper}>
             {title && (
               <Typography
-                type={'help'}
+                type={titleType ? titleType : 'help'}
                 text={title}
                 weight="normal"
                 className={styles.title}

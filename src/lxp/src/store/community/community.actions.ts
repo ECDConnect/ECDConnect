@@ -1,4 +1,5 @@
 import {
+  AcceptRejectCommunityRequestsInputModelInput,
   CoachFeedbackInputModelInput,
   CommunityConnectInputModelInput,
   CommunityProfile,
@@ -26,6 +27,7 @@ export const CommunityActions = {
   SAVE_COACH_FEEDBACK: 'saveCoachFeedback',
   GET_FEEDBACK_TYPES: 'getFeedbackTypes',
   GET_SUPPORT_RATINGS: 'getSupportRatings',
+  ACCEPT_COMMUNITY_REQUESTS: 'acceptCommunityRequests',
 };
 
 export const getAllConnect = createAsyncThunk<
@@ -312,6 +314,29 @@ export const getSupportRatings = createAsyncThunk<
       } else {
         return rejectWithValue('no access token, profile check required');
       }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const acceptOrRejectCommunityRequests = createAsyncThunk<
+  any,
+  { input: AcceptRejectCommunityRequestsInputModelInput },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.ACCEPT_COMMUNITY_REQUESTS,
+  async ({ input }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const response = await new CommunityService(
+          userAuth?.auth_token
+        ).acceptCommunityRequests(input);
+        return response;
+      } else return rejectWithValue('no access token, profile check required');
     } catch (err) {
       return rejectWithValue(err);
     }
