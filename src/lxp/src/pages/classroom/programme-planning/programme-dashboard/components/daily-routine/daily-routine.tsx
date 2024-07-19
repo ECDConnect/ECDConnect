@@ -52,7 +52,6 @@ import { WeekendDayIndicator } from '../../../programme-routine/components/weeke
 import {
   addWeeks,
   isSameWeek,
-  isThisWeek,
   isWeekend,
   nextMonday,
   parseISO,
@@ -447,14 +446,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   useEffect(() => {
     // Celebrate message
-    if (
-      plannedWeeksCount > 1 &&
-      weeksStartDates?.some((date) => isThisWeek(date))
-    ) {
+    if (plannedWeeksCount > 1) {
       setCelebrateMessage(
         `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
       );
-    } else if (selectedDate && isThisWeek(selectedDate) && isWholeWeekPlanned) {
+    } else if (selectedDate && isWholeWeekPlanned) {
       setCelebrateMessage(
         `Great job ${userData?.firstName}! Your whole week is planned.`
       );
@@ -473,10 +469,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         );
       }
       // Improve programme
-      if (
-        plannedActivities.length <= 10 &&
-        recommendedActivities.length !== 0
-      ) {
+      if (plannedActivities.length < 10 && recommendedActivities.length !== 0) {
         setImproveProgrammeMessage('Want to improve your programme?');
       }
     }
@@ -603,7 +596,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 type={'body'}
               />
               <Button
-                color={'secondaryAccent2'}
+                color={'secondary'}
                 type={'outlined'}
                 onClick={() =>
                   setSelectedDate && nextProgrammeDaysWithoutActivity?.length
@@ -617,7 +610,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 className={'w-25 mt-6 mb-4'}
                 icon="ClipboardListIcon"
                 text="Start planning"
-                textColor="secondaryAccent2"
+                textColor="secondary"
               />
             </>
           )}
