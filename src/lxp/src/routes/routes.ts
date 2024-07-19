@@ -33,6 +33,7 @@ const ROUTES = {
     CHILDREN: '/children',
     ATTENDANCE: addPrefix('/attendance', {
       EDIT_REGISTERS: '/edit-registers',
+      MONTHLY_REPORT: '/monthly-report',
     }),
     ACTIVITIES: addPrefix('/activities', {
       PROGRAMME_DASHBOARD: addPrefix('/programme-dashboard/:classroomGroupId', {
@@ -50,6 +51,7 @@ const ROUTES = {
     HELP: '/help/:helpSection',
     WELCOME: '/welcome',
     PROFILE: '/profile',
+    CONNECTION_PROFILE: '/connection-profile',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
       EDIT: '/edit',

@@ -1,7 +1,5 @@
 import { MonthlyAttendanceRecord } from '@ecdlink/core';
 
-export interface EditRegistersRouteState {
-  startDate: Date;
-  endDate: Date;
+export interface MonthlyAttendanceReportRouteState {
   selectedMonth: MonthlyAttendanceRecord;
 }

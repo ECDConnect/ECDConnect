@@ -5,7 +5,6 @@ import {
   BannerWrapper,
   DialogPosition,
 } from '@ecdlink/ui';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { useTenant } from '@/hooks/useTenant';
 import { Step1 } from './components/step1/step1';
 import { useCallback, useState } from 'react';

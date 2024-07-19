@@ -52,7 +52,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     UserId = classroom.UserId.Value,
                 },
                 ChildProgressReportPeriods = classroom.ChildProgressReportPeriods
-                    .Where(x => x.EndDate.Year == DateTime.Now.Year)
                     .Select(x => new ChildProgressReportPeriodModel
                 {
                     StartDate = x.StartDate,

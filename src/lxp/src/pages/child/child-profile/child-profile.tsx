@@ -85,6 +85,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ChildrenActions } from '@/store/children/children.actions';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -740,6 +741,11 @@ export const ChildProfile: React.FC = () => {
         renderBorder={true}
         renderOverflow={false}
         onBack={() => {
+          if (location.state?.classroomGroupIdFromRedirect) {
+            return history.push(ROUTES.CLASSROOM.CHILDREN, {
+              classroomGroupId: location.state?.classroomGroupIdFromRedirect,
+            } as ChildListRouteState);
+          }
           if (isPrincipal && practitioners?.length! > 1) {
             history.push(ROUTES.CLASSROOM.ROOT, {
               activeTabIndex: TabsItemForPrincipal.CLASSES,

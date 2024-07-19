@@ -7,19 +7,33 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { getAvatarColor } from '@ecdlink/core';
 import {
   Button,
+  Dialog,
+  DialogPosition,
+  EmptyPage,
   ProfileAvatar,
   StackedList,
   StackedListType,
   Typography,
   UserAlertListDataItem,
 } from '@ecdlink/ui';
-import { useCallback, useEffect } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
+import { ECDHeroes } from './components/ecd-heroes/ecd-heroes';
+import AlienImage from '@/assets/ECD_Connect_alien2.svg';
+import { CommunityDashboardRouteState } from './community-dashboard.types';
 
 export const CommunityDashboard = () => {
   const dispatch = useAppDispatch();
   const history = useHistory();
+  const { state } = useLocation<CommunityDashboardRouteState>();
+  const isFromConnectProfile = state?.isFromConnectProfile;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const profilePhoto = communityProfile?.communityUser?.profilePhoto;
@@ -28,6 +42,7 @@ export const CommunityDashboard = () => {
   const profileCoachId = communityProfile?.coachUserId;
   const tenant = useTenant();
   const coach = useSelector(coachSelectors?.getCoach);
+  const [openECDHeroes, setOpenECDHeroes] = useState(false);
 
   useEffect(() => {
     if (practitioner) {
@@ -42,6 +57,12 @@ export const CommunityDashboard = () => {
       })
     ).unwrap();
   }, []);
+
+  useLayoutEffect(() => {
+    if (isFromConnectProfile) {
+      setOpenECDHeroes(true);
+    }
+  }, [isFromConnectProfile]);
 
   const coachItem: UserAlertListDataItem = {
     title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
@@ -58,81 +79,26 @@ export const CommunityDashboard = () => {
     onActionClick: () => {},
   };
 
-  const communityConnections: UserAlertListDataItem[] = [
-    {
-      title: `${'Hope Mokoena'}`,
-      titleStyle: 'text-textDark',
-      profileDataUrl: '',
-      profileText:
-        (coach?.user?.firstName?.charAt(0) || '') +
-        (coach?.user?.surname?.charAt(0) || ''),
-      avatarColor: getAvatarColor(),
-      alertSeverity: 'none',
-      hideAlertSeverity: true,
-      menuIconClassName: 'bg-secondaryAccent2',
-      backgroundColor: 'adminBackground',
-      onActionClick: () => {},
-    },
-    {
-      title: `${'Hope Mokoena'}`,
-      titleStyle: 'text-textDark',
-      profileDataUrl: '',
-      profileText:
-        (coach?.user?.firstName?.charAt(0) || '') +
-        (coach?.user?.surname?.charAt(0) || ''),
-      avatarColor: getAvatarColor(),
-      alertSeverity: 'none',
-      hideAlertSeverity: true,
-      menuIconClassName: 'bg-secondaryAccent2',
-      backgroundColor: 'adminBackground',
-      onActionClick: () => {},
-    },
-
-    {
-      title: `${'Hope Mokoena'}`,
-      titleStyle: 'text-textDark',
-      profileDataUrl: '',
-      profileText:
-        (coach?.user?.firstName?.charAt(0) || '') +
-        (coach?.user?.surname?.charAt(0) || ''),
-      avatarColor: getAvatarColor(),
-      alertSeverity: 'none',
-      hideAlertSeverity: true,
-      menuIconClassName: 'bg-secondaryAccent2',
-      backgroundColor: 'adminBackground',
-      onActionClick: () => {},
-    },
-
-    {
-      title: `${'Hope Mokoena'}`,
-      titleStyle: 'text-textDark',
-      profileDataUrl: '',
-      profileText:
-        (coach?.user?.firstName?.charAt(0) || '') +
-        (coach?.user?.surname?.charAt(0) || ''),
-      avatarColor: getAvatarColor(),
-      alertSeverity: 'none',
-      hideAlertSeverity: true,
-      menuIconClassName: 'bg-secondaryAccent2',
-      backgroundColor: 'adminBackground',
-      onActionClick: () => {},
-    },
-
-    {
-      title: `${'Hope Mokoena'}`,
-      titleStyle: 'text-textDark',
-      profileDataUrl: '',
-      profileText:
-        (coach?.user?.firstName?.charAt(0) || '') +
-        (coach?.user?.surname?.charAt(0) || ''),
-      avatarColor: getAvatarColor(),
-      alertSeverity: 'none',
-      hideAlertSeverity: true,
-      menuIconClassName: 'bg-secondaryAccent2',
-      backgroundColor: 'adminBackground',
-      onActionClick: () => {},
-    },
-  ];
+  const communityAcceptedConnections: UserAlertListDataItem[] = useMemo(() => {
+    return (
+      communityProfile?.acceptedConnections?.map((item) => {
+        return {
+          title: item?.fullName,
+          titleStyle: 'text-textDark',
+          profileDataUrl: '',
+          profileText:
+            (item?.fullName?.user?.firstName?.charAt(0) || '') +
+            (item?.fullName?.user?.surname?.charAt(0) || ''),
+          avatarColor: getAvatarColor(),
+          alertSeverity: 'none',
+          hideAlertSeverity: true,
+          menuIconClassName: 'bg-secondaryAccent2',
+          backgroundColor: 'adminBackground',
+          onActionClick: () => {},
+        };
+      }) || []
+    );
+  }, [communityProfile]);
 
   useEffect(() => {
     if (profileCoachId) {
@@ -144,6 +110,26 @@ export const CommunityDashboard = () => {
         ).unwrap())();
     }
   }, [profileCoachId]);
+
+  const renderYourCommunityList = useMemo(() => {
+    if (communityAcceptedConnections?.length > 0) {
+      return (
+        <StackedList
+          isFullHeight={false}
+          type={'UserAlertList' as StackedListType}
+          listItems={communityAcceptedConnections}
+        />
+      );
+    } else {
+      return (
+        <EmptyPage
+          title={`Hi ${communityProfile?.communityUser?.fullName}, you don’t have any connections yet!`}
+          subTitle="Tap “See ECD Heroes” to get started!"
+          image={AlienImage}
+        />
+      );
+    }
+  }, [communityAcceptedConnections]);
 
   return (
     <div className="p-4">
@@ -177,13 +163,7 @@ export const CommunityDashboard = () => {
       )}
       <div>
         <Typography type={'h2'} text={'Your community'} color={'textDark'} />
-        <div>
-          <StackedList
-            isFullHeight={false}
-            type={'UserAlertList' as StackedListType}
-            listItems={communityConnections}
-          />
-        </div>
+        <div>{renderYourCommunityList}</div>
       </div>
       <div className="mb-16 mt-4 flex w-full flex-col justify-center gap-3">
         <Button
@@ -194,7 +174,7 @@ export const CommunityDashboard = () => {
           text="See ECD Heroes"
           icon="UserGroupIcon"
           iconPosition="start"
-          onClick={() => {}}
+          onClick={() => setOpenECDHeroes(true)}
         />
         <Button
           className="w-full rounded-2xl px-2"
@@ -207,6 +187,9 @@ export const CommunityDashboard = () => {
           onClick={() => history.push(ROUTES.COMMUNITY.PROFILE)}
         />
       </div>
+      <Dialog fullScreen visible={openECDHeroes} position={DialogPosition.Full}>
+        <ECDHeroes onClose={setOpenECDHeroes} />
+      </Dialog>
     </div>
   );
 };

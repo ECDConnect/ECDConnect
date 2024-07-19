@@ -10,6 +10,7 @@ interface DetailsCardProps {
   isFilled?: boolean;
   isAbout?: boolean;
   action?: (item: boolean) => void;
+  connectionProfile?: boolean;
 }
 
 export const DetailsCard: React.FC<DetailsCardProps> = ({
@@ -21,6 +22,7 @@ export const DetailsCard: React.FC<DetailsCardProps> = ({
   isFilled,
   isAbout,
   action,
+  connectionProfile,
 }) => {
   return (
     <div className="mb-2">
@@ -28,17 +30,19 @@ export const DetailsCard: React.FC<DetailsCardProps> = ({
         <div>
           <div className="flex items-center justify-between">
             <Typography type={'h4'} text={title} color={'textDark'} />
-            <Button
-              className={'mt-3 rounded-xl'}
-              type="filled"
-              color={isFilled ? 'secondaryAccent2' : 'quatenary'}
-              icon={isFilled ? 'PencilIcon' : 'PlusIcon'}
-              textColor={isFilled ? 'secondary' : 'white'}
-              text={isFilled ? 'Edit' : 'Add'}
-              size="small"
-              iconPosition={isFilled ? 'end' : 'start'}
-              onClick={() => action && action(true)}
-            />
+            {!connectionProfile && (
+              <Button
+                className={'mt-3 rounded-xl'}
+                type="filled"
+                color={isFilled ? 'secondaryAccent2' : 'quatenary'}
+                icon={isFilled ? 'PencilIcon' : 'PlusIcon'}
+                textColor={isFilled ? 'secondary' : 'white'}
+                text={isFilled ? 'Edit' : 'Add'}
+                size="small"
+                iconPosition={isFilled ? 'end' : 'start'}
+                onClick={() => action && action(true)}
+              />
+            )}
           </div>
           <Divider dividerType="dashed" className="my-2" />
           <div className="flex flex-col gap-2">

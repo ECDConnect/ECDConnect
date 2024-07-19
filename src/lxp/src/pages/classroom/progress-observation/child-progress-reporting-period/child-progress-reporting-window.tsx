@@ -1,25 +1,61 @@
-import { BannerWrapper, Button } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  Button,
+  Dialog,
+  DialogPosition,
+  Typography,
+} from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ChildProgressReportingPeriodsNumber } from './child-progress-reporting-window-number';
 import { ChildProgressReportingPeriodsTimings } from './child-progress-reporting-window-timings';
 import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import { useSelector } from 'react-redux';
+import { useDialog, useSnackbar } from '@ecdlink/core';
+import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import { format } from 'date-fns';
+import { ChildProgressReportPeriod } from '@/models/classroom/classroom.dto';
 
 export const ChildProgressReportingPeriods: React.FC = () => {
   const { isOnline } = useOnlineStatus();
+  const { showMessage } = useSnackbar();
   const appDispatch = useAppDispatch();
+  const dialog = useDialog();
   const history = useHistory();
+
+  const lastYearsReportingPeriods = useSelector(
+    classroomsSelectors.getPreviousYearsReportingPeriods()
+  );
 
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [numberOfReportingPeriods, setNumberOfReportingPeriods] = useState<
     number | undefined
-  >();
+  >(
+    !!lastYearsReportingPeriods.length
+      ? lastYearsReportingPeriods.length
+      : undefined
+  );
+
+  // If we have dates from last year, map them and just update the year
   const [reportingPeriods, setReportingPeriods] = useState<
-    { startDate: string; endDate: string }[]
-  >([]);
+    ChildProgressReportPeriod[]
+  >(
+    lastYearsReportingPeriods.map((p) => {
+      const startDate = new Date(p.startDate);
+      const endDate = new Date(p.endDate);
+
+      startDate.setFullYear(new Date().getFullYear());
+      endDate.setFullYear(new Date().getFullYear());
+
+      return {
+        startDate: startDate.toString(),
+        endDate: endDate.toString(),
+      };
+    })
+  );
 
   useEffect(() => {
     if (!numberOfReportingPeriods) {
@@ -46,24 +82,89 @@ export const ChildProgressReportingPeriods: React.FC = () => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const onSubmit = () => {
-    appDispatch(
-      classroomsThunkActions.addChildProgressReportPeriods({
-        classroomId: classroom!.id,
-        childProgressReportPeriods: reportingPeriods.map((x) => ({
-          startDate: new Date(x.startDate),
-          endDate: new Date(x.endDate),
-        })),
-      })
-    );
+    const save = async () =>
+      appDispatch(
+        await classroomsThunkActions.addChildProgressReportPeriods({
+          classroomId: classroom!.id,
+          childProgressReportPeriods: reportingPeriods.map((x) => ({
+            startDate: new Date(x.startDate),
+            endDate: new Date(x.endDate),
+          })),
+        })
+      );
+    save();
+    showMessage({
+      message: 'Reporting dates added!',
+    });
     history.goBack();
   };
+
+  const confirmDialog = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          customIcon={<RobotIcon />}
+          importantText={'Confirm the dates below:'}
+          customDetailText={
+            <div className="mb-4">
+              {reportingPeriods.map((p, i) => (
+                <div key={`report-${i}`} className="flex flex-row items-start">
+                  <Typography
+                    type="body"
+                    weight="bold"
+                    color="primary"
+                    text={`Report ${i + 1}: `}
+                    className="mr-2"
+                  />
+                  <Typography
+                    type="body"
+                    color="textMid"
+                    text={`${format(
+                      new Date(p.startDate),
+                      'd MMM'
+                    )} and ${format(new Date(p.endDate), 'd MMM yyyy')}`}
+                  />
+                </div>
+              ))}
+            </div>
+          }
+          detailText={`You will not be able to change the dates for ${new Date().getFullYear()} once confirmed.`}
+          actionButtons={[
+            {
+              text: 'Confirm',
+              textColour: 'white',
+              colour: 'quatenary',
+              type: 'filled',
+              onClick: () => {
+                onSubmit();
+                submit();
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'Change dates',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                cancel();
+              },
+              leadingIcon: 'PencilIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog, reportingPeriods]);
 
   return (
     <BannerWrapper
       title={'Child progress reporting periods'}
       color={'primary'}
       size="small"
-      onBack={() => history.goBack()}
+      onBack={() => (currentStep === 1 ? history.goBack() : setCurrentStep(1))}
       displayOffline={!isOnline}
     >
       <div className="flex h-full w-full flex-col overflow-y-auto p-4">
@@ -81,7 +182,9 @@ export const ChildProgressReportingPeriods: React.FC = () => {
         )}
         <Button
           onClick={() => {
-            currentStep === 2 ? onSubmit() : setCurrentStep(currentStep + 1);
+            currentStep === 2
+              ? confirmDialog()
+              : setCurrentStep(currentStep + 1);
           }}
           disabled={
             currentStep === 2

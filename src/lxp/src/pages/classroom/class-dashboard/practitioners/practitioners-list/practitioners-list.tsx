@@ -172,7 +172,7 @@ export const PractitionersList: React.FC = () => {
     return (
       <div className="pt-50 flex w-full flex-col items-center justify-center gap-4 p-12">
         <RoundIcon
-          backgroundColor="errorMain"
+          backgroundColor="alertMain"
           icon="PresentationChartBarIcon"
           size={{ h: '12', w: '12' }}
         />
