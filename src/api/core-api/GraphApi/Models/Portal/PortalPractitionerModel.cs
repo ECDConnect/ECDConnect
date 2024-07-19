@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             IdNumber = user.IdNumber;
             InsertedDate = user.InsertedDate.Value.Date;
             LastSeen = user.LastSeen;
-            FirstName = user.FirstName;
+            FirstName = string.IsNullOrEmpty(user.FirstName) ? "" : user.FirstName;
             Surname = string.IsNullOrEmpty(user.Surname) ? "" : user.Surname;
             FullName = user.FullName;
             UserName = user.UserName;
