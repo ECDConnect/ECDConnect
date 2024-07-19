@@ -222,6 +222,7 @@ export const MonthlyAttendanceReport = () => {
                         children?.find(
                           (child) => child.user?.id === report?.childUserId
                         )?.id ?? '',
+                      selectedMonth,
                     } as ChildAttendanceReportState);
                   }}
                 >
