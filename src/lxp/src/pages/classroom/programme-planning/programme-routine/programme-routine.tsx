@@ -371,9 +371,7 @@ export const ProgrammeRoutine: React.FC = () => {
             preSelectedStoryId={day?.storyBookId}
             preSelectedActivityId={day?.storyActivityId}
             programmeId={programme?.id}
-            submitButtonText={isLast ? 'Save' : 'Save & continue'}
             routineItem={routineItem}
-            title={`Story & activity`}
             subtitle={new Date(day?.dayDate || new Date()).toLocaleString(
               'en-ZA',
               DateFormats.dayWithLongMonthName
