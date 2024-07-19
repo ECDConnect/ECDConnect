@@ -15,11 +15,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public string CompletenessPercImage { get; set; }
         public List<CommunityConnectionModel> AcceptedConnections { get; set; }
         public List<CommunityConnectionModel> PendingConnections { get; set; }
+        public List<CommunityConnectionModel> ReceivedConnections { get; set; }
         
-
         public CommunityProfileModel(CommunityProfile profile, 
                                      List<CommunityConnectionModel> acceptedConnections, 
                                      List<CommunityConnectionModel> pendingConnections, 
+                                     List<CommunityConnectionModel> receivedConnections, 
                                      List<string> userRoles,
                                      decimal completenessPerc,
                                      string completenessPercColor,
@@ -29,6 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             ClickedECDHeros = profile.ClickedECDHeros;
             AcceptedConnections = acceptedConnections;
             PendingConnections = pendingConnections;
+            ReceivedConnections = receivedConnections;
             CoachUserId = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.Id : null;
             CoachName = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.FullName : "";
             CoachPhoneNumber = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.PhoneNumber : "";
