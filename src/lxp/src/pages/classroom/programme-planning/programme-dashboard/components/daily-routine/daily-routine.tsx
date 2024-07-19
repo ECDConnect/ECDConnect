@@ -523,7 +523,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             preSelectedActivityId={currentDailyProgramme?.storyActivityId}
             programmeId={programme?.id}
             routineItem={routineItem}
-            title={`Story & activity`}
             subtitle={new Date(
               currentDailyProgramme?.dayDate || new Date()
             ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}

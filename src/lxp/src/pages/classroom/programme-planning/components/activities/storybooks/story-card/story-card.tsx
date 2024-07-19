@@ -31,86 +31,59 @@ const StoryCard: React.FC<StoryCardProps> = ({
   };
   const languageList = languages?.map((x) => x.description)?.join(', ');
 
-  const isRadioEnabled = () => {
-    if (radioEnabled === false) return false;
-    return true;
-  };
-
   return (
     <>
       <Card
-        className={classNames(
-          className,
-          `relative mt-4 flex flex-col ${
-            selected && isRadioEnabled() ? 'border-secondary border-2' : ''
-          }`
-        )}
-        shadowSize={!isRadioEnabled() ? 'none' : 'lg'}
+        className={classNames(className, `bg-uiBg relative mt-1 flex flex-col`)}
         borderRaduis="lg"
       >
-        <div
-          className={
-            selected && isRadioEnabled()
-              ? 'bg-secondaryAccent2 rounded-lg p-4'
-              : 'bg-uiBg rounded-lg p-4'
-          }
-        >
-          <div className="flex flex-row items-center justify-between">
-            <Typography
-              type="body"
-              text={title}
-              color={'textDark'}
-              className={'semibold'}
-            />
-          </div>
-          <div>
-            {languages && languages.length > 0 && (
-              <>
-                <div
-                  className={
-                    selected && isRadioEnabled()
-                      ? 'bg-secondaryAccent2'
-                      : 'bg-uiBg'
-                  }
-                >
-                  <div className="flex max-h-20 items-center justify-between gap-2">
-                    {radioEnabled || radioEnabled !== false ? (
-                      <Radio
-                        isActivity={true}
-                        description={languageList}
-                        checked={selected}
-                        onChange={() => onSelected()}
-                        className={'max-h-20 truncate'}
-                      />
-                    ) : (
-                      <Typography
-                        type={'help'}
-                        color="textMid"
-                        text={languageList}
-                      />
-                    )}
-                    <div onClick={handleDetailsClick} className={'mb-2'}>
-                      {renderIcon(
-                        'InformationCircleIcon',
-                        'h-6 w-6 text-infoMain'
-                      )}
-                    </div>
-                  </div>
+        {languages && languages.length > 0 && (
+          <>
+            {radioEnabled || radioEnabled !== false ? (
+              <Radio
+                variant="slim"
+                description={title}
+                hint={languageList}
+                checked={selected}
+                onChange={() => onSelected()}
+                extraButtonIcon={renderIcon(
+                  'InformationCircleIcon',
+                  'h-6 w-6 text-infoMain'
+                )}
+                extraButtonOnClick={handleDetailsClick}
+                statusChip={{
+                  backgroundColour: 'quatenary',
+                  borderColour: 'quatenary',
+                  textColour: selected ? 'white' : 'primary',
+                  text: type,
+                  className: 'w-max mt-2',
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-between gap-2 p-4">
+                <div>
+                  <Typography type={'body'} color="textDark" text={title} />
+                  <Typography
+                    type={'help'}
+                    color="textMid"
+                    text={languageList}
+                  />
+                  <StatusChip
+                    backgroundColour={'quatenary'}
+                    borderColour={'quatenary'}
+                    textColour={'primary'}
+                    textType={'help'}
+                    text={type}
+                    className="mt-1 w-max"
+                  />
                 </div>
-              </>
+                <button onClick={handleDetailsClick} className={'mb-2'}>
+                  {renderIcon('InformationCircleIcon', 'h-6 w-6 text-infoMain')}
+                </button>
+              </div>
             )}
-          </div>
-          <StatusChip
-            backgroundColour={
-              selected && isRadioEnabled() ? 'infoBb' : 'quatenary'
-            }
-            borderColour={selected && isRadioEnabled() ? 'infoBb' : 'quatenary'}
-            textColour={selected && isRadioEnabled() ? 'white' : 'primary'}
-            textType={'help'}
-            text={type}
-            className={'flex w-1/3 justify-center'}
-          />
-        </div>
+          </>
+        )}
       </Card>
       <Dialog
         visible={displayDetails}
