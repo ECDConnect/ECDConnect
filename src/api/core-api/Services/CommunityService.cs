@@ -17,8 +17,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ECDLink.Core.SystemSettings.SettingGroups.CallBacks;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -251,24 +249,35 @@ namespace EcdLink.Api.CoreApi.Services
             if (userCommunityProfile != null )
             {
                 DateTime? lastViewed = DateTime.Now.AddDays(-60);
-                var allConnections = _communityProfileConnectionRepo.GetAll()
-                                        .Where(x => x.IsActive && x.FromCommunityProfileId == userCommunityProfile.Id && x.ToCommunityProfileId != userCommunityProfile.Id)
-                                        .ToList();
+
+                var allConnections = _communityProfileConnectionRepo
+                                    .GetAll()
+                                    .Where(x => x.IsActive && x.FromCommunityProfileId == userCommunityProfile.Id || x.ToCommunityProfileId == userCommunityProfile.Id)
+                                    .ToList();
+
+                var fromConnections = allConnections.Where(x => x.FromProfile.UserId == userId).ToList();
+                var toConnections = allConnections.Where(x => x.ToProfile.UserId == userId).ToList();
 
                 if (userCommunityProfile?.User?.practitionerObjectData?.CommunitySectionViewDate != null)
                 {
                     lastViewed = userCommunityProfile?.User?.practitionerObjectData?.CommunitySectionViewDate;
                 }
 
-                var acceptedConnections = allConnections
-                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
+                var acceptedConnections = fromConnections
+                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true && x.FromCommunityProfileId == userCommunityProfile.Id)
                     .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), null))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();
 
-                var pendingConnections = allConnections
-                    .Where(x => !x.InviteAccepted.HasValue && x.InsertedDate.Date >= lastViewed.Value.Date)
+                var pendingConnections = fromConnections
+                    .Where(x => !x.InviteAccepted.HasValue && x.InsertedDate.Date >= lastViewed.Value.Date && x.FromCommunityProfileId == userCommunityProfile.Id)
                     .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), null))
+                    .OrderByDescending(x => x.InsertedDate)
+                    .ToList();
+
+                var receivedConnections = toConnections
+                    .Where(x => x.ToCommunityProfileId == userCommunityProfile.Id)
+                    .Select(x => new CommunityConnectionModel(x.FromProfile, _userManager.GetRolesAsync(x.FromProfile.User).Result.ToList(), null))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();
 
@@ -315,7 +324,8 @@ namespace EcdLink.Api.CoreApi.Services
                 }
                 return new CommunityProfileModel(userCommunityProfile, 
                                                  acceptedConnections,
-                                                 pendingConnections, 
+                                                 pendingConnections,
+                                                 receivedConnections,
                                                  _userManager.GetRolesAsync(userCommunityProfile.User).Result.ToList(),
                                                  completenessPerc,
                                                  completenessPercColor,
