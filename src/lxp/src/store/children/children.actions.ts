@@ -74,6 +74,51 @@ export const getChildren = createAsyncThunk<
   }
 );
 
+export const getChildrenForCoach = createAsyncThunk<
+  { children: ChildDto[] } & RetrieveFromCache,
+  {} & OverrideCache,
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.GET_CHILDREN,
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      children: { childData: childDataCache },
+    } = getState();
+
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    if (
+      !!overrideCache ||
+      !childDataCache.dateRefreshed ||
+      new Date(childDataCache.dateRefreshed) < oneDayAgo
+    ) {
+      try {
+        let children: ChildDto[];
+
+        if (userAuth?.auth_token) {
+          children = await new ChildService(
+            userAuth?.auth_token
+          ).getChildrenForCoach(userAuth?.id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!children) {
+          return rejectWithValue('Error getting Children');
+        }
+
+        return { children, retrievedFromCache: false };
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return { children: childDataCache.children, retrievedFromCache: true };
+    }
+  }
+);
+
 export const findCreatedChild = createAsyncThunk<
   ChildCreatedByDetail,
   { practitionerId: string; firstName: string; surname: string },

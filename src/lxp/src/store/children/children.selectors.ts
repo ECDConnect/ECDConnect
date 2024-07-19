@@ -51,3 +51,13 @@ export const findCaregiverContactHistoryLog = (
       return contactHistoryLog;
     }
   );
+
+export const getChildrenByStatus = (workflowStatusId?: string) =>
+  createSelector(
+    (state: RootState) => state.children.childData.children,
+    (children: ChildDto[] | undefined) => {
+      return (children || []).filter(
+        (child) => child.workflowStatusId === workflowStatusId
+      );
+    }
+  );
