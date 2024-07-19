@@ -566,6 +566,7 @@ export default function Coaches() {
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
         <div className="rounded-xl bg-white p-12">
           <Table
+            watchMode={true}
             ref={tableRef}
             rows={rows}
             columns={columns}
