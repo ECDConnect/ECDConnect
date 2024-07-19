@@ -37,7 +37,7 @@ namespace EcdLink.Api.CoreApi.Tenancy.Api
             }
 
             // Add tenant role name for coach if module for coach is enabled
-            if (tenant.Modules.CoachRoleEnabled)
+            if (tenant.Modules != null && tenant.Modules.CoachRoleEnabled)
             {
                 var coachRole = _roleManager.Roles.Where(x => x.SystemName == "Coach").FirstOrDefault();
                 tenant.Modules.CoachRoleName = coachRole.TenantName;
