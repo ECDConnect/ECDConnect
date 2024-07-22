@@ -58,6 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = principalUser.UserId;
+                        practitioner.CoachHierarchy = principalUser.CoachHierarchy;    
                         practitioner.IsFundaAppAdmin = false;
                         practitioner.IsPrincipal = false;
                         practitionerRepo.Update(practitioner);
@@ -237,6 +238,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     foreach (var practi in allPrincipalPractitioners)
                     {
                         practi.PrincipalHierarchy = newPrincipal.UserId;
+                        practi.CoachHierarchy = newPrincipal.CoachHierarchy;
                         practi.ShareInfo = true;
                         practitionerRepo.Update(practi);
                     }
@@ -362,6 +364,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             else
             {
                 practitioner.PrincipalHierarchy = principal.UserId;
+                practitioner.CoachHierarchy = principal.CoachHierarchy;
                 practitioner.DateToBeRemoved = null;
                 practitioner.DateAccepted = DateTime.Now;
                 practitioner.IsLeaving = false;
