@@ -102,7 +102,7 @@ export const AboutDescription: React.FC<AboutDescriptionProps> = ({
           label={`Write a short description about yourself so that others can get to know you`}
           value={aboutLong}
           onChange={(e) => setAboutLong(e?.target?.value)}
-          placeholder={'e.g. 4'}
+          placeholder={'Add a short description....'}
           className="mt-6"
           maxCharacters={250}
           maxLength={250}

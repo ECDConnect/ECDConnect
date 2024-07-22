@@ -102,7 +102,7 @@ export const NewCommunityWelcome = ({
 
     setIsLoading(false);
 
-    if (!user?.profileImageUrl) {
+    if (!user?.profileImageUrl && shareProfilePhoto) {
       return dialog({
         position: DialogPosition.Middle,
         color: 'bg-white',
