@@ -361,11 +361,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var programmeRepo = repoFactory.CreateGenericRepository<Programme>();
             var dailyProgrammeRepo = repoFactory.CreateGenericRepository<DailyProgramme>();
             var missingRegisterDayCount = await GetMissingAttendanceReportsAsync(
-                classProgrammeRepo,
-                attendanceRepo,
                 holidayService,
                 attendanceService,
-                classroomGroupRepo,
                 previousMonthStart,
                 previousMonthEnd,
                 practitioner);
@@ -556,11 +553,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var programmeRepo = repoFactory.CreateGenericRepository<Programme>();
             var dailyProgrammeRepo = repoFactory.CreateGenericRepository<DailyProgramme>();
             missingRegisterDayCount = await GetMissingAttendanceReportsAsync(
-                classProgrammeRepo,
-                attendanceRepo,
                 holidayService,
                 attendanceService,
-                classroomGroupRepo,
                 previousMonthStart,
                 previousMonthEnd,
                 practitioner);
@@ -857,11 +851,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         private async Task<int> GetMissingAttendanceReportsAsync(
-            IGenericRepository<ClassProgramme, Guid> classProgrammeRepo,
-            AttendanceTrackingRepository attendanceRepo,
             IHolidayService<Holiday> holidayService,
             [Service] AttendanceService attendanceService,
-            IGenericRepository<ClassroomGroup, Guid> classroomGroupRepo,
             DateTime reportingPeriodStart,
             DateTime reportingPeriodEnd,
             Practitioner practitioner)
@@ -870,55 +861,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var daysForPeriod = reportingPeriodStart.DaysBetween(reportingPeriodEnd);
 
             var attendanceForClassAllPracPrin = new List<Attendance>();
-            var classroomGroupIds = new List<Guid>();
-
-            // Get attendance reports submitted for period
-            if (practitioner?.IsPrincipal == true)
-            {
-                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId).Select(cg => cg.Id).ToListAsync();
-
-            }
-            else
-            {
-                classroomGroupIds = await classroomGroupRepo.GetAll()
-                    .Where(cg => cg.UserId == practitioner.UserId)
-                    .Select(cg => cg.Id)
-                    .ToListAsync();
-            }
 
             int missingRegisterDayCount = 0;
 
-            foreach (var classroomGroupId in classroomGroupIds)
+            var classroomGroups = attendanceService.GetUserClassroomGroups(practitioner.UserId.ToString());
+
+
+            foreach (var classroomGroup in classroomGroups.Where(x => classroomGroups.Select(y => y.UserId).Contains(x.UserId)))
             {
-                var learners = attendanceService.GetAllLearnerGroupInstances(classroomGroupId);
-                foreach (var learner in learners)
+                List<Guid> classProgrammeIds = new List<Guid>();
+                classProgrammeIds.AddRange(classroomGroup.ClassProgrammes.Select(x => x.Id).ToList());
+
+                for (DateTime dt = reportingPeriodStart; dt <= reportingPeriodEnd; dt = dt.AddMonths(1))
                 {
-                    var attendanceForPeriod = attendanceService.GetAttendanceRecordsForPeriod(learner, practitioner.UserId.ToString(), reportingPeriodStart, reportingPeriodEnd);
-
-                    var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
-
-                    // Do monthly Tracking here
-                    for (DateTime dt = reportingPeriodStart; dt <= reportingPeriodEnd; dt = dt.AddMonths(1))
+                    var attendanceForPeriod = attendanceService.GetAttendanceRecordsForPeriodByProgramme((IEnumerable<Guid>)classProgrammeIds, practitioner.UserId.ToString(), reportingPeriodStart, reportingPeriodEnd);
+                    
+                    foreach (var programme in classroomGroup.ClassProgrammes)
                     {
-                        foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
+                        var validClassDays = attendanceService.GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
+                        var learners = attendanceService.GetLearnersActiveDuringTimePeriod(classroomGroup.Id, programme.ProgrammeStartDate.Date, reportingPeriodEnd.Date);
+
+                        if (learners.Count() > 0)
                         {
-                            var validClassDays = attendanceService.GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
-                            var daysOfClass = attendanceService.CalculateDaysOfClassForMonth(dt, programme.MeetingDay, validClassDays, learner.StartedAttendance, learner.StoppedAttendance);
+                            var firstLearnerStart = learners.Select(x => x.StartedAttendance).FirstOrDefault();
+                            var daysOfClass = attendanceService.CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, firstLearnerStart.Date, reportingPeriodEnd.Date);
 
                             var attendedClasses = attendanceForPeriod
-                                                  .Where(x => x.UserId == Guid.Parse(practitioner.UserId.ToString())
-                                                  && x.ClassroomProgrammeId == programme.Id
+                                                  .Where(x => x.ClassroomProgrammeId == programme.Id
                                                   && x.MonthOfYear == dt.Month
-                                                  && x.Year == dt.Year
-                                                  && x.Attended == true);
+                                                  && x.Year == dt.Year);
 
                             if (daysOfClass.Count() > 0 && daysOfClass.Count() > attendedClasses.Count())
                             {
-                                missingRegisterDayCount += (daysOfClass.Count() - attendedClasses.Count());
+                                missingRegisterDayCount += daysOfClass.Count() - attendedClasses.Count();
                             }
                         }
                     }
-
                 }
             }
 
@@ -1209,11 +1187,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 #region MISSING ATTENDANCE REGISTERS
                 var missingRegisterDayCount = GetMissingAttendanceReportsAsync(
-                classProgrammeRepo,
-                attendanceRepo,
                 holidayService,
                 attendanceService,
-                classroomGroupRepo,
                 previousMonthStart,
                 previousMonthEnd,
                 practitioner).Result;
