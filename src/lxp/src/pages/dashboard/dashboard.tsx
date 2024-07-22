@@ -359,8 +359,8 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (practitioner?.startDate) {
       const diffDays = differenceInDays(
-        new Date(practitioner?.startDate),
-        new Date()
+        new Date(),
+        new Date(practitioner?.startDate)
       );
 
       if (diffDays > 30 && !classroom?.preschoolCode && isOpenAccess) {
