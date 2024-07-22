@@ -20,8 +20,9 @@ export interface CommunityProfileDto {
   insertedDate?: string;
   profileSkills?: ProfileSkillsDto[];
   communityUser?: CommunityUserDto;
-  acceptedConnections?: any[];
-  pendingConnections?: any[];
+  acceptedConnections?: CommunityProfileDto[];
+  pendingConnections?: CommunityProfileDto[];
+  receivedConnections?: CommunityProfileDto[];
   connectionAccepted?: boolean | null;
 }
 

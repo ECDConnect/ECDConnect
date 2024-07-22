@@ -140,6 +140,8 @@ import { ChildProgressReportingPeriods } from '@/pages/classroom/progress-observ
 import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
 import { ConnectionProfile } from '@/pages/community/connection-profile/connection-profile';
 import MonthlyAttendanceReport from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report';
+import { ECDHeroes } from '@/pages/community/community-tabs/components/community-dashboard/components/ecd-heroes/ecd-heroes';
+import { CommunityConnections } from '@/pages/community/community-tabs/components/community-dashboard/components/received-requests/community-connections';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -278,6 +280,16 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.COMMUNITY.CONNECTION_PROFILE}
         component={ConnectionProfile}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.ECD_HEROES_LIST}
+        component={ECDHeroes}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
+        component={CommunityConnections}
         exact
       />
       <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />

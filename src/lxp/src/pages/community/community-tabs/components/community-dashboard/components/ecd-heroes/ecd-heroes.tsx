@@ -2,7 +2,6 @@ import SearchHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '@/components/search-header/search-header';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
 import { ConnectionsTypes } from '@/pages/community/community.types';
 import { useAppDispatch } from '@/store';
 import {
@@ -36,7 +35,7 @@ import { useSelector } from 'react-redux';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
 import { CommunityConnectInputModelInput } from '@ecdlink/graphql';
 import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerThunkActions } from '@/store/practitioner';
 
@@ -44,9 +43,15 @@ interface ECDHeroesProps {
   onClose?: (item: boolean) => void;
 }
 
+export interface ECDHeroesRouteState {
+  isFromConnectionProfile?: boolean;
+}
+
 export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
   const { isOnline } = useOnlineStatus();
   const { showMessage } = useSnackbar();
+  const { state } = useLocation<ECDHeroesRouteState>();
+  const isFromConnectionProfile = state?.isFromConnectionProfile;
   const dispatch = useAppDispatch();
   const history = useHistory();
   const dialog = useDialog();
@@ -497,6 +502,14 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
       },
     };
 
+  const handleGoBack = () => {
+    if (isFromConnectionProfile) {
+      history?.push(ROUTES.COMMUNITY.WELCOME);
+    } else {
+      history?.goBack();
+    }
+  };
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -504,17 +517,9 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
       renderBorder={true}
       title={`ECD Heroes`}
       color={'primary'}
-      onBack={
-        isConnectActive
-          ? () => setIsConnectActive(false)
-          : () => onClose && onClose(false)
-      }
+      onBack={isConnectActive ? () => setIsConnectActive(false) : handleGoBack}
       displayOffline={!isOnline}
-      onClose={
-        isConnectActive
-          ? () => setIsConnectActive(false)
-          : () => onClose && onClose(false)
-      }
+      onClose={isConnectActive ? () => setIsConnectActive(false) : handleGoBack}
     >
       {isConnectActive && (
         <div className="p-4">

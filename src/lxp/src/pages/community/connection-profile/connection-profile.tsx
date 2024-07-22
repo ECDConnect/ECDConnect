@@ -1,13 +1,12 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { userSelectors } from '@/store/user';
 import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
   BannerWrapper,
   Button,
-  Dialog,
   DialogPosition,
+  LoadingSpinner,
   ProfileAvatar,
   StatusChip,
   Typography,
@@ -15,14 +14,15 @@ import {
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { DetailsCard } from '../community-profile/components/details-card';
-import { ProfileSkills } from '../community-profile/components/profile-skills';
+import { DetailsCard } from '../community-profile/components/details-card/details-card';
+import { ProfileSkills } from '../community-profile/components/profile-skills/profile-skills';
 import { ConnectionProfileRouteState } from './connection-profile.types';
-import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import { ExclamationCircleIcon, HandIcon } from '@heroicons/react/solid';
 import { useAppDispatch } from '@/store';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useState } from 'react';
 import { ConnectionContactDetails } from './connection-contact-details/connection-contact-details';
+import { AcceptRejectCommunityRequestsInputModelInput } from '@ecdlink/graphql';
 
 export const ConnectionProfile = () => {
   const { isOnline } = useOnlineStatus();
@@ -33,16 +33,24 @@ export const ConnectionProfile = () => {
   );
   const { state } = useLocation<ConnectionProfileRouteState>();
   const communityProfile = state?.connectionProfile;
+
   const { theme } = useTheme();
   const history = useHistory();
   const { showMessage } = useSnackbar();
   const [connectionAccepted, setConnectionAccepted] = useState<
     boolean | null | undefined
   >(communityProfile?.connectionAccepted);
+  const hasSentConnectionRequest =
+    loggedUserCommunityProfile?.receivedConnections?.find(
+      (item) => item?.id === communityProfile?.id
+    );
 
   const handleGoBack = () => {
-    history?.push(ROUTES.COMMUNITY.WELCOME, { isFromConnectProfile: true });
+    history?.push(ROUTES.COMMUNITY.ECD_HEROES_LIST, {
+      isFromConnectionProfile: true,
+    });
   };
+  const [acceptOrRejectIsLoading, setAcceptOrRejectIsLoading] = useState(false);
 
   const handleCancelConnectionRequest = (isRemoval: boolean) => {
     const cancelledConnection = {
@@ -81,6 +89,58 @@ export const ConnectionProfile = () => {
         duration: 3000,
       });
     });
+  };
+
+  const handleAcceptOrRejectConnectionRequest = async (accept: boolean) => {
+    setAcceptOrRejectIsLoading(true);
+    if (accept) {
+      const acceptedInput: AcceptRejectCommunityRequestsInputModelInput = {
+        userId: loggedUserCommunityProfile?.userId,
+        userIdsToAccept: [communityProfile?.userId],
+      };
+
+      await dispatch(
+        communityThunkActions.acceptOrRejectCommunityRequests({
+          input: acceptedInput,
+        })
+      );
+      await dispatch(
+        communityThunkActions.getCommunityProfile({
+          userId: loggedUserCommunityProfile?.userId!,
+        })
+      ).then(() => {
+        setAcceptOrRejectIsLoading(false);
+        showMessage({
+          message: 'Connection accepted',
+          type: 'success',
+          duration: 3000,
+        });
+      });
+    } else {
+      const rejectedInput: AcceptRejectCommunityRequestsInputModelInput = {
+        userId: loggedUserCommunityProfile?.userId,
+        userIdsToReject: [communityProfile?.userId],
+      };
+
+      await dispatch(
+        communityThunkActions.acceptOrRejectCommunityRequests({
+          input: rejectedInput,
+        })
+      );
+
+      await dispatch(
+        communityThunkActions.getCommunityProfile({
+          userId: loggedUserCommunityProfile?.userId!,
+        })
+      ).then(() => {
+        setAcceptOrRejectIsLoading(false);
+        showMessage({
+          message: 'Connection ignored!',
+          type: 'success',
+          duration: 3000,
+        });
+      });
+    }
   };
 
   const handleOpenCancelRequestModal = () => {
@@ -170,6 +230,7 @@ export const ConnectionProfile = () => {
           <Alert
             className="mb-4 mt-2 rounded-2xl"
             title={`Request sent! Waiting for ${communityProfile?.communityUser?.fullName} to accept.`}
+            titleType="h4"
             type="info"
             button={
               <Button
@@ -191,6 +252,7 @@ export const ConnectionProfile = () => {
           <Alert
             className="mb-4 mt-2 rounded-2xl"
             title={`Connect with ${communityProfile?.communityUser?.fullName}`}
+            titleType="h4"
             type="success"
             button={
               <Button
@@ -293,7 +355,70 @@ export const ConnectionProfile = () => {
             align="center"
             className="my-2"
           />
-          <div>{renderConnectionCard(connectionAccepted)}</div>
+          <div>
+            {!hasSentConnectionRequest &&
+              renderConnectionCard(connectionAccepted)}
+            {hasSentConnectionRequest &&
+              (acceptOrRejectIsLoading ? (
+                <div className="my-4">
+                  <LoadingSpinner
+                    size="small"
+                    spinnerColor="quatenary"
+                    backgroundColor="uiLight"
+                    className="my-4"
+                  />
+                </div>
+              ) : (
+                <Alert
+                  className="my-4"
+                  type={'info'}
+                  title={`${hasSentConnectionRequest?.communityUser?.fullName?.replace(
+                    / .*/,
+                    ''
+                  )} wants to connect`}
+                  message="Want to connect?"
+                  messageColor="textMid"
+                  titleType="h4"
+                  titleColor="textDark"
+                  customIcon={
+                    <div
+                      className={`bg-infoMain flex h-12 w-14 items-center justify-center rounded-full`}
+                    >
+                      <HandIcon className="h-8 w-8 text-white" />
+                    </div>
+                  }
+                  button={
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button
+                        text={`Connect`}
+                        type={'filled'}
+                        color={'quatenary'}
+                        textColor={'white'}
+                        onClick={() =>
+                          handleAcceptOrRejectConnectionRequest(true)
+                        }
+                        size="small"
+                        icon="PlusIcon"
+                        className="rounded-xl"
+                      />
+                      <Button
+                        text={`Ignore`}
+                        type={'outlined'}
+                        color={'secondary'}
+                        textColor={'secondary'}
+                        onClick={() =>
+                          handleAcceptOrRejectConnectionRequest(false)
+                        }
+                        size="small"
+                        icon="XIcon"
+                        className="rounded-xl"
+                        background="transparent"
+                      />
+                    </div>
+                  }
+                />
+              ))}
+          </div>
           {connectionAccepted && (
             <div className="mb-4">
               <ConnectionContactDetails

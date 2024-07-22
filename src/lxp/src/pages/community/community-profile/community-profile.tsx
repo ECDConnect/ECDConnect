@@ -1,6 +1,6 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { userSelectors } from '@/store/user';
-import { CommunityProfileDto, useTheme } from '@ecdlink/core';
+import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -10,23 +10,28 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
-import { CompleteProfilePerc } from './components/complete-profile-perc';
-import { ConnectionsCard } from './components/connections-card';
-import { DetailsCard } from './components/details-card';
+import { useHistory, useLocation } from 'react-router';
+import { CompleteProfilePerc } from './components/complete-procile-perc/complete-profile-perc';
+import { ConnectionsCard } from './components/connections-card/connections-card';
+import { DetailsCard } from './components/details-card/details-card';
 import { communitySelectors } from '@/store/community';
-import { ProfileSkills } from './components/profile-skills';
+import { ProfileSkills } from './components/profile-skills/profile-skills';
 import { useTenant } from '@/hooks/useTenant';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ContactDetails } from './components/contact-details/contact-details';
 import { AboutDescription } from './components/about-description/about-description';
 import { EditCommunitySkills } from './components/edit-community-skills/edit-community-skills';
 import { CommunityBasicInfo } from './components/community-basic-info/community-basic-info';
 import { BasicInfoItems } from '../community.types';
 import ROUTES from '@/routes/routes';
+export interface CommunityProfileRouteState {
+  isFromAddMoreDetails: boolean;
+}
 
 export const CommunityProfile = () => {
   const { isOnline } = useOnlineStatus();
+  const { state } = useLocation<CommunityProfileRouteState>();
+  const isFromAddMoreDetails = state?.isFromAddMoreDetails;
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const user = useSelector(userSelectors.getUser);
@@ -59,6 +64,12 @@ export const CommunityProfile = () => {
       setDetailsShared(sharedBasicInfoItems);
     }
   }, [communityProfile]);
+
+  useEffect(() => {
+    if (isFromAddMoreDetails) {
+      setOpenAboutDescription(true);
+    }
+  }, []);
 
   return (
     <div className="flex h-screen flex-1 flex-col overflow-y-auto bg-white">
@@ -94,14 +105,19 @@ export const CommunityProfile = () => {
           <ConnectionsCard
             title="New requests"
             subtitle="WAITING TO CONNECT WITH:"
-            connectionsNumber={communityProfile?.pendingConnections?.length}
+            connectionsNumber={communityProfile?.receivedConnections?.length}
             icon="HandIcon"
+            route={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
+            usersData={communityProfile?.receivedConnections}
           />
           <ConnectionsCard
             title="Your connections"
             subtitle="CONNECT WITH:"
             connectionsNumber={communityProfile?.acceptedConnections?.length}
             icon="ShareIcon"
+            route={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
+            usersData={communityProfile?.acceptedConnections}
+            isConnectedScreen={true}
           />
           <DetailsCard
             title="Contact details"

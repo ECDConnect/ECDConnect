@@ -113,6 +113,7 @@ export const ConnectionContactDetails: React.FC<
             type={'info'}
             className="items-left justify-left mt-4 flex"
             title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
+            titleType="h4"
           />
         </div>
       )}

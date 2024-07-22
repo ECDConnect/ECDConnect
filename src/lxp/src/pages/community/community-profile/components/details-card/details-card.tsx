@@ -60,7 +60,7 @@ export const DetailsCard: React.FC<DetailsCardProps> = ({
                 text={
                   textOne
                     ? textOne
-                    : isAbout
+                    : isAbout && !connectionProfile
                     ? "None - please add. Here's some space to tell others a little more about yourself."
                     : 'None'
                 }

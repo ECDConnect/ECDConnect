@@ -6,6 +6,7 @@ import { communitySelectors, communityThunkActions } from '@/store/community';
 import { practitionerSelectors } from '@/store/practitioner';
 import { getAvatarColor } from '@ecdlink/core';
 import {
+  Alert,
   Button,
   Dialog,
   DialogPosition,
@@ -16,34 +17,33 @@ import {
   Typography,
   UserAlertListDataItem,
 } from '@ecdlink/ui';
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router';
-import { ECDHeroes } from './components/ecd-heroes/ecd-heroes';
+import { useHistory } from 'react-router';
 import AlienImage from '@/assets/ECD_Connect_alien2.svg';
-import { CommunityDashboardRouteState } from './community-dashboard.types';
 import { CommunityCoachProfile } from './components/community-coach-profile/community-coach-profile';
+import { BellIcon } from '@heroicons/react/solid';
 
 export const CommunityDashboard = () => {
   const dispatch = useAppDispatch();
   const history = useHistory();
-  const { state } = useLocation<CommunityDashboardRouteState>();
-  const isFromConnectProfile = state?.isFromConnectProfile;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const profilePhoto = communityProfile?.communityUser?.profilePhoto;
   const profileName = communityProfile?.communityUser?.fullName;
   const communityAboutShort = communityProfile?.aboutShort;
+  const communityAboutLong = communityProfile?.aboutLong;
+  const receivedConnections = communityProfile?.receivedConnections;
   const profileCoachId = communityProfile?.coachUserId;
+  const renderConnectionsRequestsString = useMemo(
+    () =>
+      receivedConnections && receivedConnections?.length > 1
+        ? 'requests'
+        : 'request',
+    [receivedConnections]
+  );
   const tenant = useTenant();
   const coach = useSelector(coachSelectors?.getCoach);
-  const [openECDHeroes, setOpenECDHeroes] = useState(false);
   const [openCoachProfile, setOpenCoachProfile] = useState(false);
 
   useEffect(() => {
@@ -59,12 +59,6 @@ export const CommunityDashboard = () => {
       })
     ).unwrap();
   }, []);
-
-  useLayoutEffect(() => {
-    if (isFromConnectProfile) {
-      setOpenECDHeroes(true);
-    }
-  }, [isFromConnectProfile]);
 
   const coachItem: UserAlertListDataItem = {
     title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
@@ -85,7 +79,7 @@ export const CommunityDashboard = () => {
     return (
       communityProfile?.acceptedConnections?.map((item) => {
         return {
-          title: item?.communityUser?.fullName,
+          title: item?.communityUser?.fullName!,
           titleStyle: 'text-textDark',
           profileDataUrl: item?.communityUser?.profilePhoto || '',
           profileText: item?.communityUser?.fullName
@@ -156,9 +150,68 @@ export const CommunityDashboard = () => {
           />
         </div>
       </div>
-      {true && (
-        <div className="py-8">
-          <Typography className="my-2" type="h3" text="Coach" />
+      {!communityAboutLong && (
+        <Alert
+          type="success"
+          className="mt-4"
+          title={`You've created your profile! Share more information with your fellow educators.`}
+          button={
+            <Button
+              text={`Add more details`}
+              type={'filled'}
+              color={'quatenary'}
+              textColor={'white'}
+              onClick={() =>
+                history.push(ROUTES.COMMUNITY.PROFILE, {
+                  isFromAddMoreDetails: true,
+                })
+              }
+              size="small"
+              icon="PencilIcon"
+              className="rounded-xl"
+            />
+          }
+        />
+      )}
+      {receivedConnections && receivedConnections?.length > 0 && (
+        <Alert
+          className="mt-4"
+          type={'info'}
+          title={`You have ${receivedConnections?.length} new connection ${renderConnectionsRequestsString}!`}
+          titleType="h3"
+          titleColor="textDark"
+          customIcon={
+            <div
+              className={`bg-infoMain flex h-12 w-14 items-center justify-center rounded-full`}
+            >
+              <BellIcon className="h-8 w-8 text-white" />
+            </div>
+          }
+          button={
+            <Button
+              text={`See requests`}
+              type={'filled'}
+              color={'quatenary'}
+              textColor={'white'}
+              onClick={() =>
+                history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
+                  usersData: receivedConnections,
+                })
+              }
+              size="small"
+              icon="EyeIcon"
+              className="rounded-xl"
+            />
+          }
+        />
+      )}
+      {coach?.user?.id && (
+        <div className="py-4">
+          <Typography
+            className="my-2"
+            type="h3"
+            text={tenant?.tenant?.modules?.coachRoleName}
+          />
           <div>
             <StackedList
               isFullHeight={false}
@@ -172,7 +225,7 @@ export const CommunityDashboard = () => {
         <Typography type={'h2'} text={'Your community'} color={'textDark'} />
         <div>{renderYourCommunityList}</div>
       </div>
-      <div className="mb-16 mt-4 flex w-full flex-col justify-center gap-3">
+      <div className="mb-16 mt-6 flex w-full flex-col justify-center gap-3">
         <Button
           className="w-full rounded-2xl px-2"
           type="filled"
@@ -181,7 +234,7 @@ export const CommunityDashboard = () => {
           text="See ECD Heroes"
           icon="UserGroupIcon"
           iconPosition="start"
-          onClick={() => setOpenECDHeroes(true)}
+          onClick={() => history.push(ROUTES.COMMUNITY.ECD_HEROES_LIST)}
         />
         <Button
           className="w-full rounded-2xl px-2"
@@ -194,9 +247,6 @@ export const CommunityDashboard = () => {
           onClick={() => history.push(ROUTES.COMMUNITY.PROFILE)}
         />
       </div>
-      <Dialog fullScreen visible={openECDHeroes} position={DialogPosition.Full}>
-        <ECDHeroes onClose={setOpenECDHeroes} />
-      </Dialog>
       <Dialog
         fullScreen
         visible={openCoachProfile}
