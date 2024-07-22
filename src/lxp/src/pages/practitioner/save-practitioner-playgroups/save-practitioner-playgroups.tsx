@@ -1,5 +1,4 @@
 import { useDialog } from '@ecdlink/core';
-import { ClassProgrammeDto } from '@ecdlink/core';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
@@ -66,10 +65,18 @@ export const EditPlaygroups: React.FC = () => {
       );
 
       _filteredClassroomGroups.forEach((groupedItem) => {
+        const isEveryDayClass =
+          groupedItem?.classProgrammes?.length === 5
+            ? true
+            : groupedItem?.id
+            ? false
+            : undefined;
+
         groupedItems.push({
           groupName: groupedItem.name,
           id: groupedItem.id,
           classroomId: groupedItem.classroomId,
+          meetEveryday: isEveryDayClass,
           name: groupedItem.name,
           classroomGroupId: groupedItem.id,
           userId: groupedItem.userId,
