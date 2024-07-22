@@ -143,7 +143,7 @@ export const ContactDetails: React.FC<ContactDetailsProps> = ({ onClose }) => {
         </>
       );
     }
-  }, []);
+  }, [shareEmail, sharePhoneNumber]);
 
   return (
     <BannerWrapper

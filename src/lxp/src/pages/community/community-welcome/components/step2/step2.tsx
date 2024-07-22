@@ -31,7 +31,7 @@ interface Step1Props {
   setValue: UseFormSetValue<any>;
   shareContactInfo: boolean | undefined;
   step: number;
-  onAllStepsComplete: () => void;
+  onAllStepsComplete: (item: boolean) => void;
   shareProvince: boolean | undefined;
   shareProfilePhoto?: boolean | undefined;
   provinceId: string | undefined;
@@ -94,16 +94,6 @@ export const Step2: React.FC<Step1Props> = ({
       );
     }
   }, [provincesData]);
-
-  const handleDoThisLater = async () => {
-    await dispatch(
-      practitionerThunkActions.updatePractitionerCommunityTabStatus({
-        practitionerUserId: practitioner?.userId!,
-      })
-    );
-
-    setJoinCommunity && setJoinCommunity(false);
-  };
 
   return (
     <div className={'h-screen overflow-auto px-4'}>
@@ -179,14 +169,15 @@ export const Step2: React.FC<Step1Props> = ({
           {shareProvince && (
             <Dropdown
               placeholder={'Tap to choose province'}
-              className={'justify-between px-2'}
+              className={'justify-between'}
               label={'Which province are you in?'}
               selectedValue={provinceId}
               list={provinces}
               onChange={(item) => setValue('provinceId', item)}
               fullWidth
               labelColor="textMid"
-              fillColor="adminPortalBg"
+              fillColor="adminBackground"
+              fillType="filled"
             />
           )}
         </div>
@@ -201,7 +192,7 @@ export const Step2: React.FC<Step1Props> = ({
             icon="SaveIcon"
             isLoading={isLoading}
             disabled={disableButton || isLoading}
-            onClick={onAllStepsComplete}
+            onClick={() => onAllStepsComplete(false)}
           />
           <Button
             size="normal"
@@ -211,7 +202,7 @@ export const Step2: React.FC<Step1Props> = ({
             text="Do this later"
             textColor="quatenary"
             icon="ClockIcon"
-            onClick={handleDoThisLater}
+            onClick={() => onAllStepsComplete(true)}
           />
         </div>
       </div>

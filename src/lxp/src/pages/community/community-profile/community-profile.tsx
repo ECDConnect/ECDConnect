@@ -122,8 +122,10 @@ export const CommunityProfile = () => {
           <DetailsCard
             title="Contact details"
             detailOne="CONTACT INFO"
-            textOne={`Phone number: ${communityProfile?.communityUser?.phoneNumber}
-            Email: ${communityProfile?.communityUser?.email}`}
+            textOne={`Phone number: ${
+              communityProfile?.communityUser?.phoneNumber
+            }
+            Email: ${communityProfile?.communityUser?.email || 'None'}`}
             isFilled={
               !!communityProfile?.communityUser?.phoneNumber ||
               !!communityProfile?.communityUser?.email

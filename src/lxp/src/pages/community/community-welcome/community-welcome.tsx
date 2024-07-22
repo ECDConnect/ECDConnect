@@ -29,6 +29,7 @@ import { communitySelectors, communityThunkActions } from '@/store/community';
 import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import { AddPhotoDialog } from './components/add-photo-dialog';
+import { userSelectors } from '@/store/user';
 
 export const NewCommunityWelcome = ({
   setJoinCommunity,
@@ -42,6 +43,7 @@ export const NewCommunityWelcome = ({
   const dialog = useDialog();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const user = useSelector(userSelectors.getUser);
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const profilePhoto = communityProfile?.communityUser?.profilePhoto;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -64,7 +66,7 @@ export const NewCommunityWelcome = ({
     provinceId,
   } = watch();
 
-  const onAllStepsComplete = async () => {
+  const onAllStepsComplete = async (doThisLater: boolean) => {
     setIsLoading(true);
     const saveCommunityProfileInput: CommunityProfileInputModelInput = {
       userId: practitioner?.userId!,
@@ -76,9 +78,19 @@ export const NewCommunityWelcome = ({
       communitySkillIds: [],
     };
 
+    const doThisLaterInput: CommunityProfileInputModelInput = {
+      userId: practitioner?.userId!,
+      aboutShort: '',
+      shareContactInfo: false,
+      shareProfilePhoto: false,
+      shareProvince: false,
+      provinceId: '58f42ddf-38d5-4008-a007-af7cb220206c',
+      communitySkillIds: [],
+    };
+
     await dispatch(
       communityThunkActions.saveCommunityProfile({
-        input: saveCommunityProfileInput,
+        input: doThisLater ? doThisLaterInput : saveCommunityProfileInput,
       })
     );
 
@@ -90,7 +102,7 @@ export const NewCommunityWelcome = ({
 
     setIsLoading(false);
 
-    if (!profilePhoto) {
+    if (!user?.profileImageUrl && shareProfilePhoto) {
       return dialog({
         position: DialogPosition.Middle,
         color: 'bg-white',
@@ -99,6 +111,7 @@ export const NewCommunityWelcome = ({
             onClose={() => {
               history.push(ROUTES.COMMUNITY.ROOT);
               onClose();
+              setJoinCommunity(false);
             }}
             onSubmit={() => {
               history.push(ROUTES.PRACTITIONER.ABOUT.ROOT, {
