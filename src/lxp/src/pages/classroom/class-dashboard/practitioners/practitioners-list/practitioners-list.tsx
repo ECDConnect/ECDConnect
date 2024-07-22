@@ -113,7 +113,12 @@ export const PractitionersList: React.FC = () => {
       blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+        return (
+          <JoinOrAddPreschoolModal
+            onSubmit={onSubmit}
+            isTrialPeriod={!!isTrialPeriod}
+          />
+        );
       },
     });
   };
@@ -132,7 +137,9 @@ export const PractitionersList: React.FC = () => {
     return {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl!,
-      title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
+      title: `${practitioner?.user?.firstName}${
+        !!practitioner?.user?.surname ? ` ${practitioner.user.surname}` : ''
+      }`,
       ...(isOnline && !!currentPractitionerMessage?.subject
         ? { subTitle: `${currentPractitionerMessage?.subject}` }
         : {}),
@@ -170,7 +177,7 @@ export const PractitionersList: React.FC = () => {
     return (
       <div className="pt-50 flex w-full flex-col items-center justify-center gap-4 p-12">
         <RoundIcon
-          backgroundColor="errorMain"
+          backgroundColor="alertMain"
           icon="PresentationChartBarIcon"
           size={{ h: '12', w: '12' }}
         />

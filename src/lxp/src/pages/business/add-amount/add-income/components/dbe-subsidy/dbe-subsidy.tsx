@@ -21,6 +21,7 @@ import {
 } from '@/schemas/income-statements/dbe-subsidy';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
+import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const DbeSubsidy: React.FC<AddIncomeProps> = ({
   onBack,
@@ -28,6 +29,7 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
   incomeItem,
 }) => {
   const {
+    trigger,
     control,
     setValue: setPreschoolFeesValue,
     register,
@@ -89,8 +91,13 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
     !!statement?.downloaded ||
     (!!incomeItem && isBefore(new Date(incomeItem.dateReceived), sixtyDaysAgo));
 
+  const month = !!dateReceived
+    ? getMonthName(new Date(dateReceived).getMonth())
+    : '';
+
   return (
     <BannerWrapper
+      showBackground={false}
       title={`Add a new income type`}
       color={'primary'}
       size="medium"
@@ -100,7 +107,7 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
     >
       <div className="mb-3 w-full justify-center">
         <Typography type="h2" color="primary" text={'DBE Subsidy'} />
-        {disabled && (
+        {disabled && !!incomeItem && (
           <Alert
             type={'warning'}
             title={
@@ -130,12 +137,20 @@ export const DbeSubsidy: React.FC<AddIncomeProps> = ({
               'dateReceived',
               date ? date.toISOString() : ''
             );
+            trigger();
           }}
           dateFormat="EEE, dd MMM yyyy"
           minDate={minEditDate}
           maxDate={maxEditDate}
-          disabled={disabled}
+          disabled={disabled && !!incomeItem}
         />
+        {disabled && !incomeItem && (
+          <Alert
+            type={'warning'}
+            title={`You cannot add an item in ${month} because you have already downloaded the ${month} statement.`}
+            className="mt-6"
+          />
+        )}
         <FormInput<DbeSubsidyModel>
           label={'How many children do you receive this amount for?'}
           visible={true}

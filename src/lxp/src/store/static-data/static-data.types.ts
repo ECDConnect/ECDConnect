@@ -16,6 +16,8 @@ import {
   NoteTypeDto,
   ReasonForPractitionerLeavingProgrammeDto,
   PermissionDto,
+  RoleDto,
+  ProfileSkillsDto,
 } from '@ecdlink/core';
 
 export type StaticDataState = {
@@ -38,4 +40,6 @@ export type StaticDataState = {
   WorkflowStatuses: WorkflowStatusDto[] | undefined;
   noteTypes: NoteTypeDto[] | undefined;
   permissions: PermissionDto[] | undefined;
+  roles: RoleDto[] | undefined;
+  communitySkills: ProfileSkillsDto[] | undefined;
 };

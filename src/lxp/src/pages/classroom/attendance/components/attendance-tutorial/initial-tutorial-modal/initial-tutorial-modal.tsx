@@ -25,15 +25,15 @@ export const InitialAttendanceTutorialModal = ({
         {
           text: 'Yes, help me!',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'quatenary',
           type: 'filled',
           onClick: onStart,
-          leadingIcon: 'ChevronRightIcon',
+          leadingIcon: 'CheckCircleIcon',
         },
         {
           text: 'No, skip',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'quatenary',
           type: 'filled',
           onClick: onClose,
           leadingIcon: 'ClockIcon',

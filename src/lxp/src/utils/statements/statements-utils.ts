@@ -5,7 +5,7 @@ import {
 } from '@/../../../packages/core/lib';
 
 export const moneyInputFormat = (val: string) => {
-  const formattedValue = val.replace(/[^0-9.,]/g, '');
+  const formattedValue = val.replace(/[^0-9.]/g, '');
   return formattedValue;
 };
 

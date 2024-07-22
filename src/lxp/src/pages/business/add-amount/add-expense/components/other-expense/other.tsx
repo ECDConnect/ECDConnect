@@ -26,6 +26,7 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { ExpenseTypeIds } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
+import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const OtherExpense: React.FC<AddExpenseState> = ({
   onBack,
@@ -108,18 +109,21 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
     !!statement?.downloaded ||
     (!!expenseItem && isBefore(new Date(expenseItem.datePaid), sixtyDaysAgo));
 
+  const month = !!datePaid ? getMonthName(new Date(datePaid).getMonth()) : '';
+
   return (
     <BannerWrapper
       title={`Add another expense`}
       color={'primary'}
       size="medium"
       renderBorder={true}
+      showBackground={false}
       onBack={onBack}
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
         <Typography type="h2" color="primary" text={'Other expense'} />
-        {disabled && (
+        {disabled && !!expenseItem && (
           <Alert
             type={'warning'}
             title={
@@ -139,11 +143,12 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
             setFormValue('datePaid', date ? date.toISOString() : '');
+            trigger();
           }}
           dateFormat="EEE, dd MMM yyyy"
           minDate={minEditDate}
           maxDate={maxEditDate}
-          disabled={disabled}
+          disabled={disabled && !!expenseItem}
         />
         <FormInput<ExpensesModel>
           label={'How much did you pay?'}
@@ -159,6 +164,13 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
           disabled={disabled}
           value={!!amount ? moneyInputFormat(amount) : undefined}
         />
+        {disabled && !expenseItem && (
+          <Alert
+            type={'warning'}
+            title={`You cannot add an item in ${month} because you have already downloaded the ${month} statement.`}
+            className="mt-6"
+          />
+        )}
         <FormInput<ExpensesModel>
           label={'Add a description or note'}
           subLabel={'Optional'}

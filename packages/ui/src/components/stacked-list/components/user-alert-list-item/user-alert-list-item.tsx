@@ -66,8 +66,10 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
   return (
     <div
       className={
-        item?.successColor
-          ? styles.menuItemIconContainerCoachCirclesNoAction
+        item?.successColor || item?.backgroundColor
+          ? styles.menuItemIconContainerCoachCirclesNoAction(
+              item?.backgroundColor || 'successMain'
+            )
           : hasClickHandler
           ? styles.menulistItemContainer
           : styles.menuItemIconContainerNoAction
@@ -91,39 +93,41 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
                 color="textMid"
                 text={item.title}
               ></Typography>
-              <div className={styles.menuSubTitle}>
-                {!item.hideAlertSeverity ? (
-                  item.alertSeverityNoneIcon &&
-                  item.alertSeverity === 'none' ? (
-                    renderIcon(
-                      item.alertSeverityNoneIcon,
-                      classNames(
-                        'w-4 h-4',
-                        item.alertSeverityNoneColor &&
-                          `text-${item.alertSeverityNoneColor}`
+              {!!item.subTitle && (
+                <div className={styles.menuSubTitle}>
+                  {!item.hideAlertSeverity ? (
+                    item.alertSeverityNoneIcon &&
+                    item.alertSeverity === 'none' ? (
+                      renderIcon(
+                        item.alertSeverityNoneIcon,
+                        classNames(
+                          'w-4 h-4',
+                          item.alertSeverityNoneColor &&
+                            `text-${item.alertSeverityNoneColor}`
+                        )
                       )
+                    ) : (
+                      <div
+                        className={styles.getShapeClassByAlertSeverity(
+                          item.alertSeverity
+                        )}
+                      ></div>
                     )
-                  ) : (
-                    <div
-                      className={styles.getShapeClassByAlertSeverity(
-                        item.alertSeverity
-                      )}
-                    ></div>
-                  )
-                ) : null}
-                <Typography
-                  className={classNames(
-                    item.subTitleStyle,
-                    item?.breaksSubtitleLine
-                      ? 'w-11/12 break-words pl-1'
-                      : 'truncate pl-1'
-                  )}
-                  type="help"
-                  weight="skinny"
-                  color={styles.getColourByAlertSeverity(item.alertSeverity)}
-                  text={item.subTitle ?? ''}
-                ></Typography>
-              </div>
+                  ) : null}
+                  <Typography
+                    className={classNames(
+                      item.subTitleStyle,
+                      item?.breaksSubtitleLine
+                        ? 'w-11/12 break-words pl-1'
+                        : 'truncate pl-1'
+                    )}
+                    type="help"
+                    weight="skinny"
+                    color={styles.getColourByAlertSeverity(item.alertSeverity)}
+                    text={item.subTitle ?? ''}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

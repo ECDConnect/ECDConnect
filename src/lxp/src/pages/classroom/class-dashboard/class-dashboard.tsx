@@ -45,6 +45,9 @@ import { InitialAttendanceTutorialModal } from '../attendance/components/attenda
 import { ActivitiesTab } from '../activities/activities';
 import { useTenant } from '@/hooks/useTenant';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { ChildProgressLanding } from '../progress-observation/child-progress-landing/child-progress-landing';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useAppContext } from '@/walkthrougContext';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -77,6 +80,8 @@ export const ClassDashboard: React.FC = () => {
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
 
+  const { setState } = useAppContext();
+
   const isToShowAttendanceTutorial = useMemo(
     () =>
       selectedTabIndex === TabsItems.ATTENDANCE &&
@@ -91,6 +96,11 @@ export const ClassDashboard: React.FC = () => {
   );
 
   const { practitionerIsOnLeave } = usePractitionerAbsentees(practitioner!);
+
+  const { hasPermissionToTakeAttendance } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
   const hasCreatedReportForCurrentPeriod = useSelector(
     contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
@@ -157,11 +167,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: NavigationNames.Classroom.Progress,
       initActive: false,
-      child: (
-        <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
-        </div>
-      ),
+      child: <ChildProgressLanding />,
     },
     {
       title: NavigationNames.Classroom.Activities,
@@ -194,7 +200,7 @@ export const ClassDashboard: React.FC = () => {
   const displayTutorial = (type?: string) => {
     switch (type) {
       case NavigationNames.Classroom.Attendance:
-        setAttendanceTutorialActive(true);
+        setAttendanceTutorialActive(!!hasPermissionToEdit);
         break;
       default:
         break;
@@ -202,8 +208,9 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const displayHelp =
-    currentTab?.title === NavigationNames.Classroom.Attendance ||
-    currentTab?.title === NavigationNames.Classroom.Programme;
+    hasPermissionToEdit &&
+    (currentTab?.title === NavigationNames.Classroom.Attendance ||
+      currentTab?.title === NavigationNames.Classroom.Programme);
 
   const closeAttendanceTutorial = useCallback(() => {
     if (!attendanceTutorialComplete && previousTabIndex) {
@@ -212,14 +219,14 @@ export const ClassDashboard: React.FC = () => {
     setAttendanceTutorialActive(false);
   }, [attendanceTutorialComplete, previousTabIndex]);
 
-  const updatePractitionerProgress = async () => {
+  const updatePractitionerProgress = useCallback(async () => {
     await appDispatch(
       practitionerThunkActions.updatePractitionerProgress({
         practitionerId: practitioner?.userId,
         progress: 3.0,
       })
     );
-  };
+  }, [appDispatch, practitioner?.userId]);
 
   const completeTutorial = () => {
     setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
@@ -270,6 +277,12 @@ export const ClassDashboard: React.FC = () => {
     });
   }, [dialog]);
 
+  const handleWalkthroughStart = useCallback(() => {
+    setState({ run: true, tourActive: true, stepIndex: 0 });
+    updatePractitionerProgress();
+    history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
+  }, [history, setState, updatePractitionerProgress]);
+
   const handleAttendanceWalkthroughLanguage = useCallback(() => {
     setShowAttendanceWalkthrough(false);
 
@@ -280,16 +293,17 @@ export const ClassDashboard: React.FC = () => {
       render: (onClose) => (
         <WalkthroughModal
           onStart={() => {
-            setAttendanceTutorialActive(true);
+            handleWalkthroughStart();
             onClose();
           }}
         />
       ),
     });
-  }, [dialog]);
+  }, [dialog, handleWalkthroughStart]);
 
   useEffect(() => {
     if (
+      hasPermissionToEdit &&
       isToShowAttendanceTutorial &&
       !attendanceTutorialComplete &&
       !practitionerIsOnLeave
@@ -297,6 +311,7 @@ export const ClassDashboard: React.FC = () => {
       setShowAttendanceWalkthrough(true);
     }
   }, [
+    hasPermissionToEdit,
     attendanceTutorialComplete,
     practitionerIsOnLeave,
     isToShowAttendanceTutorial,

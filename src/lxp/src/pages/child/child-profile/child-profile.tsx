@@ -29,7 +29,6 @@ import { getWeek, startOfISOWeekYear } from 'date-fns';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remove-child-prompt';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
@@ -81,6 +80,12 @@ import {
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ChildAttendanceReportState } from '../child-attendance-report/child-attendance-report.types';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ChildrenActions } from '@/store/children/children.actions';
+import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -133,6 +138,13 @@ export const ChildProfile: React.FC = () => {
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
 
+  const isTrialPeriod = useIsTrialPeriod();
+
+  const { hasPermissionToManageChildren } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
+
   const classProgrammes = classroomGroup?.classProgrammes?.filter(
     (x) => x?.isActive
   );
@@ -143,12 +155,15 @@ export const ChildProfile: React.FC = () => {
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const authUser = useSelector(authSelectors.getAuthUser);
 
-  // TODO: this selector isn't working (show photo of child & allow user to add photo of child IF caregiver has consented)
   const childPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(
       child?.userId,
       ContentConsentTypeEnum.PhotoPermissions
     )
+  );
+
+  const isReportWindowSet = useSelector(
+    classroomsSelectors.getIsReportingPeriodsSet()
   );
 
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
@@ -171,8 +186,6 @@ export const ChildProfile: React.FC = () => {
     useState(false);
 
   const [childAge, setChildAge] = useState<Age>();
-  const [removeChildConfirmationVisible, setRemoveChildConfirmationVisible] =
-    useState<boolean>(false);
   const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
   );
@@ -182,6 +195,13 @@ export const ChildProfile: React.FC = () => {
   const [notifications, setNotifications] = useState<ListItemProps[]>([]);
   const [attendanceReport, setAttendanceReport] =
     useState<ChildAttendanceReportModel>();
+
+  const { isLoading } = useThunkFetchCall(
+    'children',
+    ChildrenActions.UPDATE_CHILD
+  );
+
+  const avatar = profilePicture?.file || child?.user?.profileImageUrl || '';
 
   useEffect(() => {
     if (!isOnline) {
@@ -364,6 +384,7 @@ export const ChildProfile: React.FC = () => {
         buttonText: 'Add',
         buttonTextColor: 'secondary',
         buttonColor: 'secondaryAccent2',
+        withBorderRadius: false,
         onButtonClick: () => setCreateChildNoteVisible(true),
       };
     } else {
@@ -379,6 +400,7 @@ export const ChildProfile: React.FC = () => {
         showDivider: true,
         dividerType: 'dashed',
         withPaddingY: true,
+        withBorderRadius: false,
         onButtonClick: () => history.push(ROUTES.CHILD_NOTES, { childId }),
       };
     }
@@ -446,36 +468,52 @@ export const ChildProfile: React.FC = () => {
   };
 
   const deleteProfileImage = async () => {
-    if (!profilePicture) return;
+    const updatedChild = {
+      ...child,
+      user: { ...child?.user, profileImageUrl: '' },
+    };
 
-    appDispatch(documentActions.deleteDocument(profilePicture));
+    appDispatch(childrenActions.updateChild(updatedChild));
+    await appDispatch(
+      childrenThunkActions.updateChild({
+        id: updatedChild.id as string,
+        child: updatedChild,
+      })
+    );
+
+    if (profilePicture) {
+      appDispatch(documentActions.deleteDocument(profilePicture));
+    }
+
     setEditProfilePictureVisible(false);
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    const copy = Object.assign({}, child);
-    if (copy) {
-      copy.user!.profileImageUrl = imageBaseString;
-      appDispatch(childrenActions.updateChild(copy));
-      await appDispatch(
-        childrenThunkActions.updateChild({
-          id: copy.id as string,
-          child: copy,
-        })
-      );
-    }
+    const updatedChild = {
+      ...child,
+      user: { ...child?.user, profileImageUrl: imageBaseString },
+    };
+
+    appDispatch(childrenActions.updateChild(updatedChild));
+    await appDispatch(
+      childrenThunkActions.updateChild({
+        id: updatedChild.id as string,
+        child: updatedChild,
+      })
+    );
 
     if (profilePicture) {
       appDispatch(
         documentActions.updateDocument({
           ...profilePicture,
           file: imageBaseString,
+          fileType: FileTypeEnum.ProfileImage,
         })
       );
     } else {
       const fileName = `ProfilePicture_${child?.user?.id}.png`;
 
-      const statusId = await getWorkflowStatusIdByEnum(
+      const statusId = getWorkflowStatusIdByEnum(
         WorkflowStatusEnum.DocumentVerified
       );
 
@@ -498,6 +536,64 @@ export const ChildProfile: React.FC = () => {
 
   const contactCaregivers = () => {
     history.push(ROUTES.CHILD_CAREGIVERS, { childId: child?.id });
+  };
+
+  const showNoReportingPeriodsDialog = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          customIcon={<RobotIcon />}
+          importantText={
+            !!isPrincipal
+              ? 'Choose child progress reporting periods'
+              : `Your principal has not chosen reporting periods for ${new Date().getFullYear()} yet.`
+          }
+          detailText={
+            !!isPrincipal
+              ? 'To start creating child progress reports, choose the start and end dates for each reporting period.'
+              : `To start creating child progress, ask your principal to choose reporting dates on ${tenant.tenant?.applicationName}. `
+          }
+          actionButtons={
+            !!isPrincipal
+              ? [
+                  {
+                    colour: 'quatenary',
+                    text: 'Choose reporting dates',
+                    onClick: () => {
+                      history.push(ROUTES.CHILD_PROGRESS_REPORTING_PERIODS);
+                    },
+                    textColour: 'white',
+                    type: 'filled',
+                    leadingIcon: 'PresentationChartBarIcon',
+                  },
+                  {
+                    colour: 'quatenary',
+                    text: 'Do this later',
+                    onClick: () => {
+                      onCancel();
+                    },
+                    textColour: 'quatenary',
+                    type: 'outlined',
+                    leadingIcon: 'ClockIcon',
+                  },
+                ]
+              : [
+                  {
+                    colour: 'quatenary',
+                    text: 'Close',
+                    onClick: () => {
+                      onCancel();
+                    },
+                    textColour: 'quatenary',
+                    type: 'outlined',
+                    leadingIcon: 'XIcon',
+                  },
+                ]
+          }
+        />
+      ),
+    });
   };
 
   const options = useMemo((): ListItemProps[] => {
@@ -525,6 +621,7 @@ export const ChildProfile: React.FC = () => {
         showSubTitleShape: true,
         withPaddingY: true,
         showDivider: true,
+        withBorderRadius: false,
         dividerType: 'dashed',
         onButtonClick: () => {
           if (isOnline) {
@@ -550,10 +647,13 @@ export const ChildProfile: React.FC = () => {
         buttonColor: 'secondaryAccent2',
         showButton: true,
         showDivider: true,
+        withBorderRadius: false,
         dividerType: 'dashed',
         withPaddingY: true,
         onButtonClick: () => {
-          if (progressTrainingDone) {
+          if (!isReportWindowSet) {
+            showNoReportingPeriodsDialog();
+          } else if (progressTrainingDone) {
             viewChildProgressObservationReports();
           } else {
             progressTrackerNotAvailablePrompt();
@@ -571,6 +671,7 @@ export const ChildProfile: React.FC = () => {
         buttonColor: 'secondaryAccent2',
         showButton: true,
         showDivider: true,
+        withBorderRadius: false,
         dividerType: 'dashed',
         withPaddingY: true,
         onButtonClick: () => {
@@ -591,6 +692,7 @@ export const ChildProfile: React.FC = () => {
         buttonColor: 'quatenary',
         showButton: !practitionerIsOnLeave && isPrincipal,
         showDivider: true,
+        withBorderRadius: false,
         dividerType: 'dashed',
         withPaddingY: true,
         onButtonClick: () => {
@@ -639,6 +741,11 @@ export const ChildProfile: React.FC = () => {
         renderBorder={true}
         renderOverflow={false}
         onBack={() => {
+          if (location.state?.classroomGroupIdFromRedirect) {
+            return history.push(ROUTES.CLASSROOM.CHILDREN, {
+              classroomGroupId: location.state?.classroomGroupIdFromRedirect,
+            } as ChildListRouteState);
+          }
           if (isPrincipal && practitioners?.length! > 1) {
             history.push(ROUTES.CLASSROOM.ROOT, {
               activeTabIndex: TabsItemForPrincipal.CLASSES,
@@ -661,9 +768,8 @@ export const ChildProfile: React.FC = () => {
           <ProfileAvatar
             hasConsent={!!childPhotoConsent}
             canChangeImage={!!childPhotoConsent}
-            dataUrl={profilePicture?.file || child?.user?.profileImageUrl || ''}
+            dataUrl={avatar}
             size={'header'}
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
             onPressed={() => setEditProfilePictureVisible(true)}
           />
         </div>
@@ -721,7 +827,7 @@ export const ChildProfile: React.FC = () => {
             type="filled"
             onClick={contactCaregivers}
           />
-          {!practitionerIsOnLeave && (
+          {!practitionerIsOnLeave && hasPermissionToEdit && (
             <Button
               id="child_remove"
               icon="TrashIcon"
@@ -729,7 +835,7 @@ export const ChildProfile: React.FC = () => {
               color="quatenary"
               textColor="quatenary"
               type="outlined"
-              onClick={() => setRemoveChildConfirmationVisible(true)}
+              onClick={goToRemoveChild}
               text={`Remove ${child?.user?.firstName}`}
             />
           )}
@@ -751,28 +857,16 @@ export const ChildProfile: React.FC = () => {
         </div>
       </Dialog>
       <Dialog
-        className={'mb-16 px-4'}
-        stretch={true}
-        visible={removeChildConfirmationVisible}
-        position={DialogPosition.Bottom}
-      >
-        <RemoveChildPrompt
-          child={child}
-          childUser={child?.user}
-          onProceed={goToRemoveChild}
-          onClose={() => setRemoveChildConfirmationVisible(false)}
-        />
-      </Dialog>
-      <Dialog
         visible={editProfilePictureVisible}
         position={DialogPosition.Bottom}
       >
         <div className={'p-4'}>
           <PhotoPrompt
+            isLoading={isLoading}
             title="Profile Photo"
             onClose={() => setEditProfilePictureVisible(false)}
             onAction={picturePromptOnAction}
-            onDelete={profilePicture?.file ? deleteProfileImage : undefined}
+            onDelete={avatar ? deleteProfileImage : undefined}
           ></PhotoPrompt>
         </div>
       </Dialog>

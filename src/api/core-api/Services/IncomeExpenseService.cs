@@ -654,6 +654,19 @@ namespace ECDLink.Core.Services
             return tables;
         }
 
+        public StatementsIncomeStatement UpdateUserContactStatusForStatement(Guid statementId)
+        {
+            StatementsIncomeStatement statement = _statementsRepo.GetById(statementId);
+
+            if (statement != null)
+            {
+                statement.ContactedByCoach = true;
+                statement.UpdatedBy = _applicationUserId.ToString();
+                statement.UpdatedDate = DateTime.Now;
+                return _statementsRepo.Update(statement);
+            }
+            return null;
+        }
         private List<IncomeExpensePDFHeaderModel> getExpensePDFHeader()
         {
             List<IncomeExpensePDFHeaderModel> headers = new List<IncomeExpensePDFHeaderModel>();

@@ -52,7 +52,6 @@ import { WeekendDayIndicator } from '../../../programme-routine/components/weeke
 import {
   addWeeks,
   isSameWeek,
-  isThisWeek,
   isWeekend,
   nextMonday,
   parseISO,
@@ -274,7 +273,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
 
     if (!activityId) {
-      onEditActivityItem(routineItem);
+      onEditActivityItem(routineItem, day);
       return;
     }
 
@@ -304,6 +303,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         ) : (
           <StoryActivityDetails
             selected={true}
+            storyBookId={currentDailyProgramme?.storyBookId}
             activityId={activityId}
             disabled={false}
             viewType={'StoryActivity'}
@@ -377,7 +377,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       openActivityItem(routineItem, currentDailyProgramme);
       return;
     }
-
     openActivityItem(routineItem);
   };
 
@@ -447,14 +446,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   useEffect(() => {
     // Celebrate message
-    if (
-      plannedWeeksCount > 1 &&
-      weeksStartDates?.some((date) => isThisWeek(date))
-    ) {
+    if (plannedWeeksCount > 1) {
       setCelebrateMessage(
         `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
       );
-    } else if (selectedDate && isThisWeek(selectedDate) && isWholeWeekPlanned) {
+    } else if (selectedDate && isWholeWeekPlanned) {
       setCelebrateMessage(
         `Great job ${userData?.firstName}! Your whole week is planned.`
       );
@@ -530,7 +526,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             preSelectedActivityId={currentDailyProgramme?.storyActivityId}
             programmeId={programme?.id}
             routineItem={routineItem}
-            title={`Story & activity`}
             subtitle={new Date(
               currentDailyProgramme?.dayDate || new Date()
             ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}
@@ -603,7 +598,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 type={'body'}
               />
               <Button
-                color={'primary'}
+                color={'secondary'}
                 type={'outlined'}
                 onClick={() =>
                   setSelectedDate && nextProgrammeDaysWithoutActivity?.length
@@ -617,7 +612,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 className={'w-25 mt-6 mb-4'}
                 icon="ClipboardListIcon"
                 text="Start planning"
-                textColor="primary"
+                textColor="secondary"
               />
             </>
           )}
@@ -669,6 +664,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
                   return (
                     <div
+                      key={routineItem.id}
                       id={
                         index === 2
                           ? state.stepIndex < 5

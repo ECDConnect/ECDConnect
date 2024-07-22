@@ -25,6 +25,10 @@ export interface ResendAuthCodeModel {
   username: string;
 }
 
+export interface VerifyPrincipalInvitationModel {
+  token: string;
+}
+
 export interface CheckUsernamePhoneNumberModel {
   username: string;
   phoneNumber?: string;

@@ -2,33 +2,25 @@ import ROUTES from '@/routes/routes';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import {
-  Button,
   BannerWrapper,
   Dialog,
   DialogPosition,
   LoadingSpinner,
   StackedList,
-  Typography,
 } from '@ecdlink/ui';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { PractitionerBusinessParams } from './coach-practitioner-business.types';
-import { traineeSelectors } from '@/store/trainee';
-import { differenceInMonths, format } from 'date-fns';
-import { IncomeStatementDates } from '@/constants/Dates';
 import { IncomeStatements } from './components/statements/income-statements';
 import {
   practitionerForCoachSelectors,
   practitionerForCoachThunkActions,
 } from '@/store/practitionerForCoach';
 import { useAppDispatch } from '@/store';
-import { WhatsappCall } from './components/contact/whatsapp-call';
-import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { ProfitLossDetails } from './components/statements/profit-loss-details';
 import { StatementNotSubmitted } from './components/statements/not-submitted';
-import { StartupSupportEnding } from './components/support/startup-support-ending';
 import { getStatementBalance } from '@/utils/statements/statements-utils';
 
 export const CoachPractitionerBusiness = () => {
@@ -68,6 +60,9 @@ export const CoachPractitionerBusiness = () => {
 
   const hasProfit =
     lastMonthStatementsBalance > 0 && lastTwoMonthStatementsBalance > 0;
+
+  const hasTwoMonthsLoss =
+    lastMonthStatementsBalance < 0 && lastTwoMonthStatementsBalance < 0;
 
   var lastStatementContactByCoach = useMemo(
     () =>
@@ -175,22 +170,48 @@ export const CoachPractitionerBusiness = () => {
 
     if (statements.length >= 2 && hasProfit) {
       listItems.push({
-        title: hasProfit
-          ? `${practitionerFirstName} made a profit for 2 months in a row!`
-          : `Programme running at a loss`,
+        title: `${practitionerFirstName} made a profit for 2 months in a row!`,
         titleStyle: 'text-textDark font-semibold text-base leading-snug',
         subTitle: lossProfitMonths,
         subTitleStyle:
           'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        menuIcon: hasProfit ? 'SparklesIcon' : 'ExclamationIcon',
+        menuIcon: 'SparklesIcon',
         menuIconClassName: 'text-white',
         showIcon: true,
         onActionClick: () => setShowProfitDialog(true),
-        iconBackgroundColor: hasProfit ? 'successMain' : 'alertMain',
+        iconBackgroundColor: 'successMain',
         chipConfig: {
           colorPalette: {
             backgroundColour: 'white',
-            borderColour: hasProfit ? 'successMain' : 'alertMain',
+            borderColour: 'successMain',
+            textColour: 'white',
+          },
+        },
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
+
+    if (
+      statements.length >= 2 &&
+      hasTwoMonthsLoss &&
+      !lastStatementContactByCoach
+    ) {
+      listItems.push({
+        title: `Programme running at a loss`,
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: lossProfitMonths,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'ExclamationIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () => setShowProfitDialog(true),
+        iconBackgroundColor: 'alertMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'alertMain',
             textColour: 'white',
           },
         },

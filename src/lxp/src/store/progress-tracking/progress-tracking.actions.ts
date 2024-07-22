@@ -1,5 +1,6 @@
 import {
   PractitionerProgressReportSummaryDto,
+  ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
@@ -8,25 +9,92 @@ import {
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ProgressTrackingService } from '@services/ProgressTrackingService';
 import { RootState, ThunkApiType } from '../types';
+import { OverrideCache } from '@/models/sync/override-cache';
+import { isBefore } from 'date-fns';
+
+export const ProgressTrackingActions = {
+  GET_PROGRESS_TRACKING_AGE_GROUPS: 'getProgressTrackingAgeGroup',
+  GET_PROGRESS_TRACKING_CATEGORIES: 'getProgressTrackingCategories',
+  GET_PROGRESS_TRACKING_SUB_CATEGORIES: 'getProgressTrackingSubCategories',
+  GET_PROGRESS_TRACKING_SKILLS: 'getProgressTrackingSkills',
+};
+
+export const getProgressTrackingAgeGroups = createAsyncThunk<
+  ProgressTrackingAgeGroupDto[],
+  { locale: string } & OverrideCache,
+  ThunkApiType<RootState>
+>(
+  ProgressTrackingActions.GET_PROGRESS_TRACKING_AGE_GROUPS,
+  // eslint-disable-next-line no-empty-pattern
+  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      progressTracking: { progressTrackingAgeGroups },
+      user: { userLocalePreference },
+    } = getState();
+
+    let thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    if (
+      !!overrideCache ||
+      !progressTrackingAgeGroups.dateRefreshed ||
+      isBefore(
+        new Date(progressTrackingAgeGroups.dateRefreshed),
+        thirtyDaysAgo
+      ) ||
+      userLocalePreference !== locale
+    ) {
+      try {
+        let categories: ProgressTrackingAgeGroupDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          categories = await new ProgressTrackingService(
+            userAuth?.auth_token
+          ).getProgressTrackingAgeGroups(locale);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!categories) {
+          return rejectWithValue('Error getting progress tracking categories');
+        }
+
+        return categories;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return progressTrackingAgeGroups.data;
+    }
+  }
+);
 
 export const getProgressTrackingCategories = createAsyncThunk<
   ProgressTrackingCategoryDto[],
-  { locale: string; force?: boolean },
+  { locale: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getProgressTrackingCategories',
+  ProgressTrackingActions.GET_PROGRESS_TRACKING_CATEGORIES,
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale, force }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       progressTracking: { progressTrackingCategories },
       user: { userLocalePreference },
     } = getState();
 
+    let thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
     if (
-      !progressTrackingCategories ||
-      userLocalePreference !== locale ||
-      force
+      !!overrideCache ||
+      !progressTrackingCategories.dateRefreshed ||
+      isBefore(
+        new Date(progressTrackingCategories.dateRefreshed),
+        thirtyDaysAgo
+      ) ||
+      userLocalePreference !== locale
     ) {
       try {
         let categories: ProgressTrackingCategoryDto[] | undefined;
@@ -48,7 +116,7 @@ export const getProgressTrackingCategories = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
-      return progressTrackingCategories;
+      return progressTrackingCategories.data;
     }
   }
 );
@@ -56,22 +124,29 @@ export const getProgressTrackingCategories = createAsyncThunk<
 export const getProgressTrackingSubCategories = createAsyncThunk<
   ProgressTrackingSubCategoryDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string; force?: boolean },
+  { locale: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getProgressTrackingSubCategories',
+  ProgressTrackingActions.GET_PROGRESS_TRACKING_SUB_CATEGORIES,
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale, force }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       progressTracking: { progressTrackingSubCategories },
       user: { userLocalePreference },
     } = getState();
 
+    let thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
     if (
-      !progressTrackingSubCategories ||
-      userLocalePreference !== locale ||
-      force
+      !!overrideCache ||
+      !progressTrackingSubCategories.dateRefreshed ||
+      isBefore(
+        new Date(progressTrackingSubCategories.dateRefreshed),
+        thirtyDaysAgo
+      ) ||
+      userLocalePreference !== locale
     ) {
       try {
         let subCategories: ProgressTrackingSubCategoryDto[] | undefined;
@@ -95,7 +170,7 @@ export const getProgressTrackingSubCategories = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
-      return progressTrackingSubCategories;
+      return progressTrackingSubCategories.data;
     }
   }
 );
@@ -103,19 +178,27 @@ export const getProgressTrackingSubCategories = createAsyncThunk<
 export const getProgressTrackingSkills = createAsyncThunk<
   ProgressTrackingSkillDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string; force?: boolean },
+  { locale: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getProgressTrackingSkills',
+  ProgressTrackingActions.GET_PROGRESS_TRACKING_SKILLS,
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale, force }, { getState, rejectWithValue }) => {
+  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       progressTracking: { progressTrackingSkills },
       user: { userLocalePreference },
     } = getState();
 
-    if (!progressTrackingSkills || userLocalePreference !== locale || force) {
+    let thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    if (
+      !!overrideCache ||
+      !progressTrackingSkills.dateRefreshed ||
+      isBefore(new Date(progressTrackingSkills.dateRefreshed), thirtyDaysAgo) ||
+      userLocalePreference !== locale
+    ) {
       try {
         let skills: ProgressTrackingSkillDto[] | undefined;
 
@@ -136,7 +219,7 @@ export const getProgressTrackingSkills = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
-      return progressTrackingSkills;
+      return progressTrackingSkills.data;
     }
   }
 );

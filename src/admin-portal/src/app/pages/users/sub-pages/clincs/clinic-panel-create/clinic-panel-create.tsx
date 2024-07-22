@@ -114,7 +114,6 @@ export default function ClinicPanelCreate(props: UserPanelCreateProps) {
   };
 
   const getIsValid = () => {
-    console.log(clinicFormErrors);
     let isValid = isClinicValid;
     return isValid ? true : false;
   };

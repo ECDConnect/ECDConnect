@@ -433,7 +433,6 @@ export const SubmitIncomeStatements: React.FC = () => {
             </Button>
           </>
         )}
-
         <FADButton
           title={'Add income or expense'}
           icon={'PlusIcon'}
@@ -442,7 +441,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           type={'filled'}
           color={'quatenary'}
           shape={'round'}
-          className={`absolute bottom-4 right-0 z-10 m-3 px-3.5 py-2.5 ${
+          className={`absolute bottom-10 right-0 z-10 m-3 px-3.5 py-2.5 ${
             stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
           }`}
           click={() => {

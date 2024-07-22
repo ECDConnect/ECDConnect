@@ -133,7 +133,7 @@ export const AddIncome: React.FC = () => {
   return (
     <div className={styles.container}>
       {type ? (
-        <div>{incomeType(type)}</div>
+        <>{incomeType(type)}</>
       ) : (
         <BannerWrapper
           showBackground={false}
@@ -141,7 +141,6 @@ export const AddIncome: React.FC = () => {
           color={'primary'}
           size="medium"
           renderBorder={true}
-          renderOverflow={false}
           onBack={() => history.push(ROUTES.BUSINESS_ADD_AMOUNT)}
           displayOffline={!isOnline}
           className="p-4"
@@ -150,13 +149,13 @@ export const AddIncome: React.FC = () => {
           <>
             <div>
               <Typography
-                type="h3"
+                type="h2"
                 color={'textDark'}
                 text={'Add your income'}
               />
               <Typography
-                type="h4"
-                className={'pt-2'}
+                type="h3"
+                className={'mt-6'}
                 color={'textDark'}
                 text={'What type of money came in?'}
               />

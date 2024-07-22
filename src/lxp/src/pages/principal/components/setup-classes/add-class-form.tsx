@@ -26,9 +26,12 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { buttonDays } from './setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { useTenant } from '@/hooks/useTenant';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -87,7 +90,12 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     const _list = practitioners
       ?.filter((item) => item?.userId)
       ?.map((p) => {
-        if ((p.firstName && p.surname) || p?.idNumber) {
+        if (isOpenAccess) {
+          if (p.firstName) {
+            return { label: `${p.firstName}`, value: p.userId };
+          }
+        }
+        if ((p.firstName && p.surname && !isOpenAccess) || p?.idNumber) {
           return {
             label: `${p.firstName || p?.idNumber} ${p.surname}`,
             value: p.userId,
@@ -164,7 +172,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   return (
     <div>
-      <div className=" flex flex-col gap-4 pb-20">
+      <div className=" flex flex-col gap-4 pb-8">
         <Typography
           type={'h1'}
           text={name || `Add class ${classCount}`}
@@ -268,7 +276,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         />
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 max-h-20 bg-white p-4">
+      <div className="max-h-20 w-full bg-white pb-4">
         <Button
           size="normal"
           className="w-full"

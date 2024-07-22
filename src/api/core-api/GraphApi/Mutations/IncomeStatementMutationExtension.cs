@@ -1,8 +1,8 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -63,6 +63,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             //var statement = incomeExpenseService.SubmitMonthlyStatement(input.Month, input.Year, input.UserId, input.IncomeItemIds, input.ExpenseItemIds);
             return new IncomeStatementModel(newStatement);
+        }
+
+        public StatementsIncomeStatement UpdateUserContactStatusForStatement(
+            [Service] IIncomeExpenseService incomeExpenseService,
+            Guid statementId)
+        {
+            return incomeExpenseService.UpdateUserContactStatusForStatement(statementId);
         }
     }
 }

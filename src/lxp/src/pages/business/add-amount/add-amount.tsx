@@ -9,6 +9,8 @@ import ROUTES from '@routes/routes';
 import StatementsWrapper from '../money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import { BusinessTabItems } from '../business.types';
+import moneyInIcon from '@/assets/icon/money-in.svg';
+import moneyOutIcon from '@/assets/icon/money-out.svg';
 
 export const AddAmount: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
@@ -37,7 +39,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
         <div className="mb-3 flex w-full flex-wrap">
           <Typography
             type="h2"
-            color="textMid"
+            color="textDark"
             text={'What would you like to record?'}
             className="mt-4"
           />
@@ -46,84 +48,46 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
           <StackedList
             id="createStatements"
             className="-mt-0.5 flex h-full w-full flex-col gap-1 rounded-2xl"
-            type="TitleList"
+            type="MenuList"
             isFullHeight
             listItems={[
               {
                 id: 'createIncome',
                 title: 'Income (money in)',
-                titleIcon: 'ArrowCircleLeftIcon',
-                description: 'Preschool fees, donations, DBE subsidy & others',
-                titleIconClassName: 'bg-tertiary text-white',
+                menuIconUrl: moneyInIcon,
+                iconBackgroundColor: 'tertiary',
+                iconColor: 'white',
+                showIcon: true,
+                subTitle: 'Preschool fees, donations, DBE subsidy & others',
                 onActionClick: () => {
-                  history.push(ROUTES.BUSINESS_ADD_INCOME);
-                  nextWalkthroughStep();
+                  if (!state.run || state?.stepIndex === 2) {
+                    history.push(ROUTES.BUSINESS_ADD_INCOME);
+                    nextWalkthroughStep();
+                  }
                 },
-                classNames: 'bg-successBg',
+                backgroundColor: 'successBg',
+                titleStyle: 'text-textDark font-bold',
+                subTitleStyle: 'text-textDark',
               },
               {
                 title: 'Expense (money out)',
-                titleIcon: 'ArrowCircleRightIcon',
-                description:
+                menuIconUrl: moneyOutIcon,
+                iconBackgroundColor: 'secondary',
+                iconColor: 'white',
+                showIcon: true,
+                subTitle:
                   'Rent, utilities, food, educational supplies & others',
-                titleIconClassName: 'bg-secondary text-white',
-                onActionClick: () => history.push(ROUTES.BUSINESS_ADD_EXPENSE),
-                classNames: 'bg-secondaryAccent2',
+                onActionClick: () => {
+                  !state.run && history.push(ROUTES.BUSINESS_ADD_EXPENSE);
+                },
+                backgroundColor: 'secondaryAccent2',
+                titleStyle: 'text-textDark font-bold',
+                subTitleStyle: 'text-textDark',
               },
             ]}
           />
         </div>
-        {/* <div className="flex gap-2">
-            <div>
-              <Button
-                type="filled"
-                color="primary"
-                size="small"
-                className={`mx-auto mt-4 w-11/12 rounded-xl  ${
-                  stateStepIndex1 ? 'pointer-events-none' : ''
-                }`}
-                onClick={() => {
-                  history.push(ROUTES.BUSINESS_ADD_INCOME);
-                  nextStep();
-                }}
-                id="createIncome"
-              >
-                {renderIcon('PlusIcon', 'w-8 h-8 text-white mr-1')}
-                <Typography
-                  type="buttonSmall"
-                  color="white"
-                  text={'Income (money in)'}
-                  className={'w-full whitespace-nowrap'}
-                ></Typography>
-              </Button>
-            </div>
-            <Button
-              type="outlined"
-              color="primary"
-              className={`mx-auto mt-4 w-11/12 rounded-xl px-1 ${
-                stateStepIndex1 || stateStepIndex2 ? 'pointer-events-none' : ''
-              } `}
-              onClick={() => history.push(ROUTES.BUSINESS_ADD_EXPENSE)}
-            >
-              {renderIcon('MinusIcon', styles.buttonIconSecondary)}
-              <Typography
-                type="buttonSmall"
-                color="primary"
-                text={'Expenses (money out)'}
-                className={'w-full whitespace-nowrap'}
-              ></Typography>
-            </Button>
-          </div> */}
       </div>
-      {/* <Alert
-        type={'info'}
-        title={'What are income & expenses?'}
-        list={[
-          '<b>Income</b> is the money that comes into your business. In an early learning programme, your income will mostly be caregiver fees, and could also include stipends, Department of Basic Education (DBE) subsidies or donations.',
-          '<b>Expenses</b> are the costs that you pay to run your business. In an early learning programme, this would be food, rent, educational supplies and others. ',
-        ]}
-        className="mt-6"
-      /> */}
     </BannerWrapper>
   );
 };

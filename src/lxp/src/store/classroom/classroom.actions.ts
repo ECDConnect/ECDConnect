@@ -25,6 +25,7 @@ export const ClassroomActions = {
   UPDATE_CLASSROOM_GROUP: 'updateClassroomGroup',
   UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
   GET_CLASSROOM_FOR_TRIAL_PERIOD_USER: 'getClassroomForTrialPeriodUser',
+  ADD_CHILD_PROGRESS_REPORT_PERIODS: 'addChildProgressReportPeriods',
 };
 
 export const getClassroom = createAsyncThunk<
@@ -119,7 +120,6 @@ export const getClassroomGroups = createAsyncThunk<
   }
 );
 
-// TODO - check that this actually saves the address, otherwise we can save it separately
 export const upsertClassroom = createAsyncThunk<
   boolean,
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -150,9 +150,6 @@ export const upsertClassroom = createAsyncThunk<
           SiteAddress: classroom?.siteAddress?.addressLine1
             ? mapSiteAddress(classroom.siteAddress)
             : null,
-          PreschoolFeeAmount: classroom.preschoolFeeAmount || 0,
-          PreschoolFeeAmountLastUpdateDate:
-            classroom.preschoolFeeAmountLastUpdateDate,
           PreschoolCode: classroom?.preschoolCode,
         };
 
@@ -408,22 +405,33 @@ export const createLearner = createAsyncThunk<
   }
 });
 
-export const updatePreschoolFee = createAsyncThunk<
+export const addChildProgressReportPeriods = createAsyncThunk<
   boolean,
-  { classroomId: string; amount: number | undefined },
+  {
+    classroomId: string;
+    childProgressReportPeriods: {
+      startDate: Date;
+      endDate: Date;
+    }[];
+  },
   ThunkApiType<RootState>
 >(
-  'updatePreschoolFee',
-  async ({ classroomId, amount }, { getState, rejectWithValue }) => {
+  ClassroomActions.ADD_CHILD_PROGRESS_REPORT_PERIODS,
+  async (
+    { classroomId, childProgressReportPeriods },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
     } = getState();
 
     try {
       if (userAuth?.auth_token) {
-        await new ClassroomService(userAuth?.auth_token).updatePreschoolFee(
+        await new ClassroomService(
+          userAuth?.auth_token
+        ).addChildProgressReportPeriods(
           classroomId,
-          amount
+          childProgressReportPeriods
         );
 
         return true;

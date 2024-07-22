@@ -86,14 +86,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var userToInvite = await userManager.FindByIdAsync(userId);
                     if (userToInvite == null)
                     {
-                        result.Failed.Add(userId);
+                        result.Failed.Add($"{userId} : user not found for id");
+                        continue;
+                    }
+                    if (userToInvite != null && string.IsNullOrWhiteSpace(userToInvite.PhoneNumber))
+                    {
+                        result.Failed.Add($"{userId} : phone number not found for id");
                         continue;
                     }
 
                     var token = await invitationManager.GenerateTokenAsync(userToInvite);
                     if (string.IsNullOrWhiteSpace(token))
                     {
-                        result.Failed.Add(userToInvite.Id.ToString());
+                        result.Failed.Add($"{userToInvite.Id} : token failure");
                         continue;
                     }
 
@@ -116,12 +121,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         await notificationManager.SendInvitationAsync(userToInvite, token);
                     }
-
+                    await Task.Delay(1000);
                     result.Success.Add(userToInvite.Id.ToString());
                 }
                 catch
                 {
-                    result.Failed.Add(userId);
+                    result.Failed.Add($"{userId} : failure on sending sms");
                 }
             }
 
@@ -156,15 +161,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new ArgumentException("Principal with id not available in application");
             }
 
-            /*var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(practitionerPhoneNumber);
-            var userByPhoneNumber = userManager.Users.FirstOrDefault(user => user.UserName == normalizePhoneNumber
-                                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-
-            if (userByPhoneNumber != null)
-            {
-                throw new ValidationException("User with phone number already exists");
-            }*/
-
             var userId = httpContext.HttpContext.GetUser().Id;
             var tenantId = TenantExecutionContext.Tenant.Id;
             var user = new ApplicationUser
@@ -181,7 +177,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 AddedByUserId = userId,
                 Token = await tokenManager.GenerateTokenAsync(user),
-                AddedToUserId = user.Id
+                AddedToUserId = user.Id,
+                PreSchoolNameCode = preSchoolNameCode,
+                PhoneNumber = user.PhoneNumber
             };
 
             var token = TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
@@ -194,7 +192,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             await Task.Delay(1000);
             user.IsActive = false;
-            user.PhoneNumber = null;
             await userManager.UpdateAsync(user);
 
             return token;
@@ -225,7 +222,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(principalPhoneNumber);
 
-            var userId = httpContext.HttpContext.GetUser().Id;
             var tenantId = TenantExecutionContext.Tenant.Id;
             var user = new ApplicationUser
             {
@@ -239,9 +235,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var tokenWrapper = new PrincipalPractitionerTokenWrapperModel
             {
-                AddedByUserId = userId,
+                AddedByUserId = practitionerUserId,
                 Token = await tokenManager.GenerateTokenAsync(user),
-                AddedToUserId = user.Id
+                PhoneNumber = user.PhoneNumber,
+                IdNumber = practitionerUser.IdNumber,
+                UserName = practitionerUser.UserName
             };
 
             var token = TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
@@ -249,11 +247,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 throw new QueryException("Token generation failed");
             }
-            await notificationManager.SendPrincipalInvitationAsync(user, practitionerUser.FullName, token);
+            var practitionerName = string.IsNullOrEmpty(practitionerUser.FullName) ? practitionerUser.UserName : practitionerUser.FullName;
+            await notificationManager.SendPrincipalInvitationAsync(user, practitionerName, token);
 
             await Task.Delay(1000);
             user.IsActive = false;
-            user.PhoneNumber = null;
             await userManager.UpdateAsync(user);
 
             return token;

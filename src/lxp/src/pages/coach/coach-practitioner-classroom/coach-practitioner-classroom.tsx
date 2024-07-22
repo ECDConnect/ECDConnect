@@ -26,16 +26,26 @@ import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { ContactPractitioner } from './components/contact-practitioner/contact-practitioner';
+import { WorkflowStatusEnum } from '@ecdlink/graphql';
+import { useStaticData } from '@hooks/useStaticData';
 
 export const CoachPractitionerClassroom: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const children = useSelector(childrenSelectors.getChildren);
-  // TODO - this might need updates
-  const childrenForPractitioner = useSelector(childrenSelectors.getChildren);
+
   const location = useLocation<PractitionerProfileRouteState>();
+
+  const { getWorkflowStatusIdByEnum } = useStaticData();
+  const activeStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildActive
+  );
+
+  const children = useSelector(
+    childrenSelectors.getChildrenByStatus(activeStatusId)
+  );
+
   const practitionerUserId = location.state.practitionerId;
   const practitioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(practitionerUserId)
@@ -65,9 +75,15 @@ export const CoachPractitionerClassroom: React.FC = () => {
     )
   );
 
-  const childrenForPractitionerList = children?.filter((item) =>
-    childrenForPractitioner?.find((item2) => item.id === item2.id)
-  );
+  const learnersForPractitioner = isPrincipal
+    ? classroomGroups.flatMap((x) => x.learners)
+    : practitionerClassroomGroups.flatMap((x) => x.learners);
+
+  const childrenForPractitionerList = children?.filter((el) => {
+    return learnersForPractitioner?.some((f) => {
+      return f.childUserId === el.userId;
+    });
+  });
 
   const [practitionerClassroomsData, setPractitionerClassroomsData] =
     useState<ClassroomGroupDto[]>();

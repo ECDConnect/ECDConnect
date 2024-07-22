@@ -226,11 +226,11 @@ export default function ApplicationUsers() {
                 <div
                   key={`role_` + item?.id}
                   className={
-                    `${chipColor(item?.systemName)}` +
+                    `${chipColor(item?.tenantName)}` +
                     ' m-1 rounded-full p-3 py-1 text-xs text-white'
                   }
                 >
-                  {item?.systemName}
+                  {item?.tenantName}
                 </div>
               );
             })}

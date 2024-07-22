@@ -199,7 +199,7 @@ class AttendanceService {
 
     if (response.status !== 200) {
       throw new Error(
-        'Get Monthly Attendance Report failed - Server connection error'
+        'Get Child Attendance Report failed - Server connection error'
       );
     }
 

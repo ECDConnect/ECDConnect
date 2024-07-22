@@ -10,17 +10,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public string FullName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
+        public string WhatsAppNumber { get; set; }
         public string ProfilePhoto { get; set; }
         public string RoleName { get; set; }
+        public string UserName { get; set; }
         
-        public CommunityUserModel(ApplicationUser user, bool? shareEmail, bool? sharePhoneNumber, bool? shareProfilePhoto, bool? shareRole, List<string> userRoles)
+        public CommunityUserModel(ApplicationUser user, List<string> userRoles)
         {
             Id = user.Id;
             FullName = user.FullName;
-            Email = shareEmail.HasValue && shareEmail.Value ? user.Email : "";
-            PhoneNumber = sharePhoneNumber.HasValue && sharePhoneNumber.Value ? user.PhoneNumber : "";
-            ProfilePhoto = shareProfilePhoto.HasValue && shareProfilePhoto.Value ? user.ProfileImageUrl: "";
-            RoleName = shareRole.HasValue && shareRole.Value ? string.Join(", ", userRoles): "";
+            UserName = user.UserName;
+            Email = user.Email;
+            PhoneNumber = user.PhoneNumber;
+            WhatsAppNumber = user.WhatsAppNumber;
+            ProfilePhoto = user.ProfileImageUrl;
+            RoleName = userRoles != null ? string.Join(", ", userRoles) : "";
         }
 
         public CommunityUserModel()

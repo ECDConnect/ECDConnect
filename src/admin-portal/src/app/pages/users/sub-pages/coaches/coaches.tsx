@@ -98,12 +98,15 @@ export default function Coaches() {
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const inactiveUsers = selectedUsers?.filter(
+    (item) => item?.isActive === false
+  );
   const disableInviteBulkAction =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
 
   const userIdsToSendInvitation = selectedUsers
     ?.filter((item) => !item?.isRegistered && item?.user?.phoneNumber)
-    ?.map((item) => item?.id);
+    ?.map((item) => item?.userId);
 
   const [sendInvitations, { loading: invitationsLoading }] = useMutation(
     sentInviteToMultipleUsers,
@@ -326,6 +329,7 @@ export default function Coaches() {
     panel({
       noPadding: true,
       title: '',
+      overlay: true,
       render: (onSubmit: any) => (
         <CoachPanelCreate
           key={`userPanelCreate`}
@@ -489,9 +493,9 @@ export default function Coaches() {
             ` before deactivating them.`
           }
           btnText={['Yes, deactivate ' + coachPluralName, 'No, Cancel']}
-          hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
+          hasAlert={isAllInactive || inactiveUsers?.length > 0}
           alertMessage={
-            `Note: ${registeredOrInactiveUsers?.length} ` +
+            `Note: ${inactiveUsers?.length} ` +
             coachPluralName +
             ` selected have already been deactivated.`
           }
@@ -562,7 +566,7 @@ export default function Coaches() {
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
         <div className="rounded-xl bg-white p-12">
           <Table
-            watchMode
+            watchMode={true}
             ref={tableRef}
             rows={rows}
             columns={columns}
@@ -660,7 +664,7 @@ export default function Coaches() {
         </div>
       </div>
       <Dialog
-        className="absolute left-56 bottom-96 mb-44 w-6/12"
+        className="absolute left-56 bottom-96 w-6/12"
         stretch
         visible={handleAddUser}
         position={DialogPosition.Middle}

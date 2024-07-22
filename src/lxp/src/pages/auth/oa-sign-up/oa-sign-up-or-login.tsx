@@ -1,4 +1,9 @@
-import { useTheme } from '@ecdlink/core';
+import {
+  Config,
+  LocalStorageKeys,
+  VerifyPrincipalInvitationModel,
+  useTheme,
+} from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
@@ -23,6 +28,7 @@ import { OAAgreements } from './components/oa-agreements/oa-agreements';
 import ROUTES from '@/routes/routes';
 import Banner1 from '../../../assets/banner-ss2.svg';
 import Banner3 from '../../../assets/banner2-ss-svg.svg';
+import { AuthService } from '@/services/AuthService';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -79,6 +85,37 @@ export const OASignUpOrLogin: React.FC = () => {
   useEffect(() => {
     if (token) {
       getUserDetailsByToken();
+    }
+  }, []);
+
+  const verifyInvitedPrincipalToken = async () => {
+    const input: VerifyPrincipalInvitationModel = {
+      token: token!,
+    };
+    if (token) {
+      const principalToken = await new AuthService().VerifyPrincipalToken(
+        Config.authApi,
+        input
+      );
+
+      if (principalToken?.data) {
+        localStorage.setItem(
+          LocalStorageKeys.practitionerInvitedPrincipalIdNumber,
+          JSON.stringify(principalToken.data?.idNumber)
+        );
+        localStorage.setItem(
+          LocalStorageKeys.practitionerInvitedPrincipalUserId,
+          JSON.stringify(principalToken.data?.addedByUserId)
+        );
+      }
+    } else {
+      console.log('user not found');
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      verifyInvitedPrincipalToken();
     }
   }, []);
 

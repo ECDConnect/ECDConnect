@@ -22,6 +22,7 @@ import { authSelectors } from '@store/auth';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
+import { useTenant } from '@/hooks/useTenant';
 import {
   RemovePractionerModel,
   removePractionerModelSchema,
@@ -52,6 +53,8 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   const history = useHistory();
   const authUser = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
+  const tenant = useTenant();
+  const orgName = tenant?.tenant?.organisationName;
   const location = useLocation<PractitionerProfileRouteState>();
   const reasonsForLeaving = useSelector(
     staticDataSelectors.getReasonsForPractitionerLeaving
@@ -66,8 +69,15 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   );
   // TODO - this probably needs an upate
   const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.principal.userId === practitionerUserId
+    (item) => item.userId === practitionerUserId
   );
+
+  const classroomGroups =
+    useSelector(
+      classroomsForCoachSelectors.getClassroomGroupsForPractitioner(
+        practitionerUserId
+      )
+    ) || [];
 
   //Get list of practitioners for classroom
   const practitionersForClass = useMemo<
@@ -130,22 +140,13 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   const [removePractionerPromptVisible, setRemovePractionerPromptVisible] =
     useState<boolean>(false);
 
-  const [practitionerClassroomGroups, setPractitionerClassroomGroups] =
-    useState<ClassroomGroupDto[]>();
-
   const classroomsGroupsForPractitioner = async () => {
-    // Needs to be updated
-    const classroomDetails = await new PractitionerService(
-      authUser?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
-    const filteredClasses = classroomDetails.filter((x) => x.name !== 'Unsure');
-    setPractitionerClassroomGroups(filteredClasses);
-    var mappedClasses = filteredClasses.reduce((obj, val) => {
+    var mappedClasses = classroomGroups.reduce((obj, val) => {
       return { ...obj, [val.id!]: undefined };
     }, {});
     setRemovePractionerFormValues('reassignedClassrooms', mappedClasses);
     triggerRemovePractionerForm();
-    return classroomDetails;
+    return classroomGroups;
   };
 
   const removalNotifications = useSelector(
@@ -215,7 +216,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     <>
       <BannerWrapper
         size={'small'}
-        backgroundColour={'uiBg'}
         renderBorder={true}
         title={`Remove ${practitioner?.user?.firstName}`}
         color={'primary'}
@@ -226,7 +226,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
           <Alert
             className="mt-10 w-11/12 rounded-xl"
             type={'error'}
-            title={`${practitioner?.user?.firstName} will be removed from the programme immediately.`}
+            title={`${practitioner?.user?.firstName} will be removed from ${orgName} immediately.`}
             list={[
               `If you remove ${practitioner?.user?.firstName} now, they will no longer be able to see child information or perform any actions in the classroom section.`,
             ]}
@@ -235,7 +235,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
         <div className="py-4' px-4">
           <Typography
             type={'h1'}
-            text={`Why is ${practitioner?.user?.firstName} leaving SmartStart?`}
+            text={`Why is ${practitioner?.user?.firstName} leaving ${orgName}?`}
             color={'primary'}
             className={'pt-1'}
           />
@@ -265,14 +265,12 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
           />
           {reasonDetailsVisible && (
             <FormInput<RemovePractionerModel>
-              label={'Please add details'}
+              label={'Explain reason for leaving'}
               className={'mt-3'}
-              textInputType="textarea"
+              textInputType="input"
               register={removePractionerFormRegister}
               nameProp={'reasonDetail'}
-              hint={'Optional'}
-              placeholder={'E.g. Found the daily routine too difficult'}
-              onChange={() => triggerRemovePractionerForm()}
+              placeholder={'E.g. Wants to pursue a different opportunity'}
               error={errors.reasonDetail}
             />
           )}
@@ -288,25 +286,24 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                     practitioner?.isFundaAppAdmin ? 'FAA' : 'principal'
                   } at ${practitionerClassroom.name}`}
                   fullWidth
-                  className={'mt-3 w-11/12'}
                   onChange={(item: any) => {
                     setRemovePractionerFormValues('newPrincipalId', item);
                   }}
                 />
                 <div className="flex w-full justify-center">
                   <Alert
-                    className="mt-10 w-11/12 rounded-xl"
+                    className="mt-10 rounded-xl"
                     type={'info'}
                     title={
-                      'If the programme is closing down, please remove all other SmartStarters before removing the principal.'
+                      'If the programme is closing down, please remove all other practitioners before removing the principal.'
                     }
                   />
                 </div>
               </div>
             )}
-          {practitionerClassroomGroups &&
+          {classroomGroups &&
             !!practitionersForClass.length &&
-            !!practitionerClassroomGroups.length && (
+            !!classroomGroups.length && (
               <div>
                 <Divider dividerType="dashed" className="my-4" />
                 <Typography
@@ -317,43 +314,39 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                 />
                 <label className={classNames(styles.label, 'mt-4')}>
                   {`${practitioner?.user?.firstName} is still assigned to ${
-                    practitionerClassroomGroups.length
-                  } ${
-                    practitionerClassroomGroups.length > 1 ? 'classes' : 'class'
-                  }`}
+                    classroomGroups.length
+                  } ${classroomGroups.length > 1 ? 'classes' : 'class'}`}
                 </label>
                 <ul>
-                  {practitionerClassroomGroups.map(
-                    (classroomGroup: ClassroomGroupDto) => {
-                      return (
-                        <li key={classroomGroup.id}>
-                          <Dropdown
-                            placeholder={'Select practitioner'}
-                            list={practitionersForClass || []}
-                            fillType="clear"
-                            label={`Which practitioner will teach ${classroomGroup.name}?`}
-                            fullWidth
-                            className={'mt-3 w-11/12'}
-                            onChange={(item: string) => {
-                              setRemovePractionerFormValues(
-                                'reassignedClassrooms',
-                                {
-                                  ...reassignedClassrooms,
-                                  [classroomGroup.id as string]: item,
-                                }
-                              );
-                              triggerRemovePractionerForm();
-                            }}
-                          />
-                        </li>
-                      );
-                    }
-                  )}
+                  {classroomGroups.map((classroomGroup: ClassroomGroupDto) => {
+                    return (
+                      <li key={classroomGroup.id}>
+                        <Dropdown
+                          placeholder={'Select practitioner'}
+                          list={practitionersForClass || []}
+                          fillType="clear"
+                          label={`Which practitioner will teach ${classroomGroup.name}?`}
+                          fullWidth
+                          className={'mt-3'}
+                          onChange={(item: string) => {
+                            setRemovePractionerFormValues(
+                              'reassignedClassrooms',
+                              {
+                                ...reassignedClassrooms,
+                                [classroomGroup.id as string]: item,
+                              }
+                            );
+                            triggerRemovePractionerForm();
+                          }}
+                        />
+                      </li>
+                    );
+                  })}
                 </ul>
                 {!!errors.reassignedClassrooms && (
                   <div className="flex w-full justify-center">
                     <Alert
-                      className="mt-10 w-11/12 rounded-xl"
+                      className="mt-10 rounded-xl"
                       type={'error'}
                       title={'You must reassign all classes'}
                     />
@@ -368,7 +361,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             onClick={() => setRemovePractionerPromptVisible(true)}
             className="w-full"
             size="small"
-            color="errorMain"
+            color="quatenary"
             type="filled"
             disabled={!isValid}
           >
@@ -376,7 +369,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             <Typography
               type="h6"
               className="ml-2"
-              text={'Remove SmartStarter'}
+              text={'Remove practitioner'}
               color="white"
             />
           </Button>
@@ -384,15 +377,15 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             onClick={() => history.goBack()}
             className="mt-4 w-full"
             size="small"
-            color="primary"
+            color="quatenary"
             type="outlined"
           >
-            {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+            {renderIcon('XIcon', classNames('h-5 w-5 text-quatenary'))}
             <Typography
               type="h6"
               className="ml-2"
               text="Cancel"
-              color="primary"
+              color="quatenary"
             />
           </Button>
         </div>

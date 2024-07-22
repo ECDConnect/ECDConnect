@@ -2,31 +2,62 @@ import { useQuery } from '@apollo/client';
 import { UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
-import { GetAllCoach, GetAllPractitioner } from '@ecdlink/graphql';
+import {
+  GetAllCoach,
+  GetAllHealthCareWorker,
+  GetAllPortalCoaches,
+  GetAllPractitioner,
+} from '@ecdlink/graphql';
 import { CoachDto, PractitionerDto } from '@ecdlink/core';
+import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
+import { useMemo } from 'react';
+import { useTenant } from '../../../../hooks/useTenant';
 
 export interface PractitionerFormProps {
   formKey: string;
   errors: any;
   register: UseFormRegister<any>;
+  coachQueryVariables?: any;
+  practitionerGetValues?: any;
+  practitionerSetValue?: any;
 }
 
 const PractitionerForm: React.FC<PractitionerFormProps> = ({
   formKey,
   errors,
   register,
+  coachQueryVariables,
+  practitionerGetValues,
+  practitionerSetValue,
 }) => {
-  const { data: coachData } = useQuery(GetAllCoach, {
-    fetchPolicy: 'cache-and-network',
+  const {
+    data: coachData,
+    refetch,
+    loading,
+  } = useQuery(GetAllPortalCoaches, {
+    variables: coachQueryVariables,
+    fetchPolicy: 'network-only',
   });
-  const { data: principalData } = useQuery(GetAllPractitioner, {
-    fetchPolicy: 'cache-and-network',
-  });
+
+  const tenant = useTenant();
+  const coachRoleName = tenant?.modules?.coachRoleName;
+
+  const coachesDropdownArray: SearchDropDownOption<string>[] =
+    coachData?.allPortalCoaches?.map((item) => ({
+      id: item?.userId,
+      label: item?.user?.fullName || item?.user?.firstName,
+      value: item?.userId,
+    }));
+
+  // const { data: principalData } = useQuery(GetAllPractitioner, {
+  //   fetchPolicy: 'cache-and-network',
+  // });
+
   return (
-    <form key={formKey} className="space-y-8 divide-y divide-gray-200">
-      <div className="space-y-8 divide-y divide-gray-200">
-        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-          <div className="sm:col-span-3">
+    <form key={formKey} className="w-full space-y-4">
+      <div className="space-y-4">
+        <div className="w-full">
+          {/* <div className="sm:col-span-3">
             <FormField
               label={'Attendance Register Link'}
               nameProp={'attendanceRegisterLink'}
@@ -113,27 +144,43 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               register={register}
               error={errors.isFundaAppAdmin?.message}
             />
-          </div>
-          <div className="sm:col-span-3">
-            <FormSelectorField
-              label="Coach *"
+          </div> */}
+          <div className="w-full">
+            {/* <FormSelectorField
+              label="Practitioner’s coach"
+              subLabel="Optional. You will need to add the coach to the admin portal before you can connect them to a practitioner."
               nameProp={'coachHierarchy'}
               register={register}
               options={
                 coachData &&
-                coachData.GetAllCoach &&
-                coachData.GetAllCoach.filter((v) => v.user !== null).map(
-                  (x: CoachDto) => {
+                coachData.allPortalCoaches &&
+                coachData.allPortalCoaches
+                  .filter((v) => v.user !== null)
+                  .map((x: CoachDto) => {
                     return {
                       key: x.userId,
                       value: x.user.firstName + ' ' + x.user.surname,
                     };
-                  }
-                )
+                  })
               }
+            /> */}
+            <Dropdown<string>
+              label={`Practitioner's ${coachRoleName?.toLowerCase()}`}
+              subLabel={`Optional. You will need to add the ${coachRoleName?.toLowerCase()} to the admin portal before you can connect them to a practitioner.`}
+              fillType="filled"
+              textColor="textLight"
+              fillColor="adminPortalBg"
+              placeholder={'Type to search...'}
+              labelColor="textMid"
+              list={coachesDropdownArray || []}
+              selectedValue={practitionerGetValues()?.coachHierarchy || ''}
+              onChange={(item) => practitionerSetValue('coachHierarchy', item)}
+              showSearch
+              isAdminPortalInput={true}
+              className="my-2"
             />
           </div>
-          <div className="sm:col-span-3">
+          {/* <div className="sm:col-span-3">
             <FormSelectorField
               label="Principal"
               nameProp={'principalHierarchy'}
@@ -162,7 +209,7 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               register={register}
               error={errors.sendInvite?.message}
             />
-          </div>
+          </div> */}
         </div>
       </div>
     </form>

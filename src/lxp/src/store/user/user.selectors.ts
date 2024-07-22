@@ -11,11 +11,18 @@ export const getUserConsentByType = (
   consentType?: ContentConsentTypeEnum
 ) =>
   createSelector(
-    (state: RootState) => state.user.userConsent,
-    (userConsent: UserConsentDto[] | undefined) => {
-      if (!userConsent || !userId || !consentType) return;
+    (state: RootState) => ({
+      userConsent: state.user.userConsent,
+      consentList: state.contentConsentData.consent,
+    }),
+    ({ userConsent, consentList }) => {
+      if (!userConsent || !userId || !consentType || !consentList?.length)
+        return;
+
+      const consentData = consentList.find((cc) => cc.name === consentType);
+
       return userConsent.find(
-        (uc) => uc.userId === userId && uc.consentType === consentType
+        (uc) => uc.userId === userId && uc.consentId === consentData?.id
       );
     }
   );

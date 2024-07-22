@@ -32,7 +32,6 @@ import { StorySelectView } from './components/story-select-view/story-select-vie
 import { StoryActivitySearchProps } from './story-activity-search.types';
 
 export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
-  title,
   subtitle,
   routineItem,
   preSelectedStoryId,
@@ -40,7 +39,6 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
   preSelectedActivityId,
   onClose,
   onSave,
-  submitButtonText = 'Save & next',
 }) => {
   const { isOnline } = useOnlineStatus();
   const allStories = useSelector(storyBookSelectors.getStoryBooks);
@@ -67,8 +65,9 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     useState<SearchDropDownOption<StoryBookTypes>[]>();
 
   const [displayHelp, setDisplayHelp] = useState(false);
-  const [showNextButton, setShowNextButton] = useState(false);
   const [bookedStory, setBookedStory] = useState<StoryBookDto>();
+
+  const showNextButton = selectedStory ? !!selectedActivity : !!bookedStory;
   const languages = useSelector(staticDataSelectors.getLanguages);
   const allThemes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const StoryTypeOptions = [
@@ -114,10 +113,6 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     filterName: 'Theme',
     filterHint: 'You can select a theme to filter by',
   };
-
-  useEffect(() => {
-    selectedActivity ? setShowNextButton(true) : setShowNextButton(false);
-  }, [selectedActivity]);
 
   useEffect(() => {
     const theme = allThemes?.find((x) => x.name === programme?.name);
@@ -262,14 +257,12 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
   const setSelectedStoryHandler = useCallback(
     (story: StoryBookDto | undefined) => {
       if (story) {
-        setShowNextButton(true);
         setBookedStory(story);
       } else {
-        setShowNextButton(false);
         setBookedStory(undefined);
       }
     },
-    [setShowNextButton, setBookedStory]
+    [setBookedStory]
   );
 
   const onButtonClick = useCallback(() => {
@@ -311,13 +304,23 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       },
     };
 
+  useEffect(() => {
+    const element = document.getElementById('story-content');
+
+    element?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+      inline: 'nearest',
+    });
+  }, [selectedStory]);
+
   return (
     <>
       <BannerWrapper
         showBackground={false}
         size="medium"
         renderBorder={true}
-        title={title}
+        title="Story & activity"
         subTitle={subtitle}
         color={'primary'}
         backgroundColour="uiBg"
@@ -326,80 +329,82 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
         onBack={onClose}
         displayOffline={!isOnline}
       >
-        <SearchHeader<any>
-          searchItems={filteredStories}
-          onSearchChange={onSearchChange}
-          isTextSearchActive={searchTextActive}
-          heading={'Story books'}
-          onBack={() => {
-            setSearchTextActive(false);
-            applyFilters(allStories, allActivities);
-          }}
-          onSearchButtonClick={() => setSearchTextActive(true)}
-          alternativeSearchItemRender={alternativeSearchHeaderItems}
-        >
-          <SearchDropDown<number>
-            displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4'}
-            overlayTopOffset={'120'}
-            className={'mr-1'}
-            options={categoriesDropDownOptions}
-            selectedOptions={selectedThemeFilterOptions}
-            onChange={onThemeFilterChange}
-            placeholder={'Theme'}
-            color={'uiMidDark'}
-            info={{
-              name: `Filter by:${filterInfo?.filterName}`,
-              hint: filterInfo?.filterHint || '',
+        {!selectedStory && (
+          <SearchHeader<any>
+            searchItems={filteredStories}
+            onSearchChange={onSearchChange}
+            isTextSearchActive={searchTextActive}
+            heading={'Story books'}
+            onBack={() => {
+              setSearchTextActive(false);
+              applyFilters(allStories, allActivities);
             }}
-          />
-
-          <SearchDropDown<string>
-            className={'mr-1'}
-            displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4'}
-            overlayTopOffset={'120'}
-            options={languagesDropDownOptions}
-            selectedOptions={selectedLanguageFilterOptions}
-            onChange={onLanguageFilterChange}
-            placeholder={'Language'}
-            multiple={false}
-            color={'uiMidDark'}
-            info={{
-              name: `Langauge:`,
-            }}
-          />
-
-          <SearchDropDown<StoryBookTypes>
-            displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4'}
-            overlayTopOffset={'120'}
-            options={StoryTypeOptions}
-            selectedOptions={selectedTypeFilterOptions}
-            onChange={onTypeFilterChange}
-            placeholder={'Type'}
-            multiple={false}
-            color={'uiMidDark'}
-            info={{
-              name: `Type:`,
-            }}
-          />
-        </SearchHeader>
-        <div className="bg-white px-4 pt-2">
-          {!selectedStory ? (
-            <Typography
-              type="h2"
-              text={`Choose a ${title}`}
-              className={'mt-4'}
+            onSearchButtonClick={() => setSearchTextActive(true)}
+            alternativeSearchItemRender={alternativeSearchHeaderItems}
+          >
+            <SearchDropDown<number>
+              displayMenuOverlay={true}
+              menuItemClassName={'w-11/12 left-4'}
+              overlayTopOffset={'2'}
+              className={'mr-1'}
+              options={categoriesDropDownOptions}
+              selectedOptions={selectedThemeFilterOptions}
+              onChange={onThemeFilterChange}
+              placeholder={'Theme'}
+              color={'uiMidDark'}
+              info={{
+                name: `Filter by:${filterInfo?.filterName}`,
+                hint: filterInfo?.filterHint || '',
+              }}
             />
-          ) : (
-            ''
-          )}
-          {!selectedStory && (
-            <Typography type="body" text="Step 1 of 2" className={'mt-4'} />
-          )}
+
+            <SearchDropDown<string>
+              className={'mr-1'}
+              displayMenuOverlay={true}
+              menuItemClassName={'w-11/12 left-4'}
+              overlayTopOffset={'2'}
+              options={languagesDropDownOptions}
+              selectedOptions={selectedLanguageFilterOptions}
+              onChange={onLanguageFilterChange}
+              placeholder={'Language'}
+              multiple={false}
+              color={'uiMidDark'}
+              info={{
+                name: `Language:`,
+              }}
+            />
+
+            <SearchDropDown<StoryBookTypes>
+              displayMenuOverlay={true}
+              menuItemClassName={'w-11/12 left-4'}
+              overlayTopOffset={'2'}
+              options={StoryTypeOptions}
+              selectedOptions={selectedTypeFilterOptions}
+              onChange={onTypeFilterChange}
+              placeholder={'Type'}
+              multiple={false}
+              color={'uiMidDark'}
+              info={{
+                name: `Type:`,
+              }}
+            />
+          </SearchHeader>
+        )}
+        <div className="bg-white px-4 pt-2" id="story-content">
           {!selectedStory && (
             <>
+              <Typography
+                type="h2"
+                text={`Choose a story`}
+                color="textDark"
+                className={'mt-4'}
+              />
+              <Typography
+                type="h4"
+                color="textMid"
+                text="Step 1 of 2"
+                className="mb-4"
+              />
               {hasActiveFilters && filteredStories.length === 0 && (
                 <EmptyActivities
                   className="mt-20"
@@ -432,23 +437,24 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             />
           )}
           {(!hasActiveFilters || filteredStories.length !== 0) && (
-            <>
-              <Divider className="my-2" />
+            <div className="mt-auto w-full">
+              {!selectedStory && (
+                <Divider className="mt-8" dividerType="dashed" />
+              )}
               <Button
                 type="filled"
-                className="mb-32 w-full"
-                color="primary"
+                className="mb-4 mt-8 w-full"
+                color="quatenary"
                 icon="SaveIcon"
-                text={!selectedActivity ? submitButtonText : 'Save'}
+                text="Save"
                 textColor="white"
                 iconPosition="start"
                 onClick={() => {
                   onButtonClick();
-                  setShowNextButton(false);
                 }}
                 disabled={!showNextButton}
               />
-            </>
+            </div>
           )}
         </div>
       </BannerWrapper>

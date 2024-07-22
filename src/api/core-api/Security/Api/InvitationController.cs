@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -15,12 +16,10 @@ using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
-using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -408,15 +407,21 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> UpdateUsernamePassword([FromBody] UpdateUserNameModel input)
         {
+            if (string.IsNullOrEmpty(input.UserId.ToString())) {
+                return BadRequest(new FailedVerificationModel
+                {
+                    ErrorCode = 1,
+                    Error = "Missing userId"
+                });
+            }
 
-            // Validate to see if user exists
             var user = _userManager.FindByIdAsync(input.UserId).Result;
             if (user == null)
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 1,
-                    Error = "No user with for userId"
+                    ErrorCode = 2,
+                    Error = "Invalid userId"
                 });
             }
 
@@ -428,7 +433,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 2,
+                    ErrorCode = 3,
                     Error = "Invalid token"
                 });
             }
@@ -443,7 +448,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 3,
+                    ErrorCode = 4,
                     Error = "Update of username failure"
                 });
             }
@@ -454,7 +459,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(new FailedVerificationModel
                 {
-                    ErrorCode = 4,
+                    ErrorCode = 5,
                     Error = "Update of ShareInfo failure"
                 });
             }
@@ -468,7 +473,7 @@ namespace ECDLink.Security.Api
                 {
                     return BadRequest(new FailedVerificationModel
                     {
-                        ErrorCode = 5,
+                        ErrorCode = 6,
                         Error = "Validate password failure"
                     });
                 }
@@ -480,7 +485,7 @@ namespace ECDLink.Security.Api
                     {
                         return BadRequest(new FailedVerificationModel
                         {
-                            ErrorCode = 6,
+                            ErrorCode = 7,
                             Error = "Add password failure"
                         });
                     }
@@ -492,7 +497,7 @@ namespace ECDLink.Security.Api
                     {
                         return BadRequest(new FailedVerificationModel
                         {
-                            ErrorCode = 7,
+                            ErrorCode = 8,
                             Error = "Change password failure"
                         });
                     }
@@ -500,6 +505,16 @@ namespace ECDLink.Security.Api
             }
 
             return Ok();
+        }
+
+        [Route("verify-principal-token")]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult VerifyPrincipalToken([FromBody] VerifyInvitationModel verifyModel)
+        {
+            var tokenModel = JsonConvert.DeserializeObject<PrincipalPractitionerTokenWrapperModel>(TokenHelper.DecodeToken(verifyModel.Token));
+
+            return Ok(tokenModel);
         }
 
     }

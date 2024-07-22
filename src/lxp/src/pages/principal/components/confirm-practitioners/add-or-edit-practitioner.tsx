@@ -97,12 +97,15 @@ export const AddOrEditPractitioner = ({
   const [error, setError] = useState('');
   const [openHelp, setOpenHelp] = useState(false);
   const [isOwnUserId, setisOwnUserId] = useState(false);
-
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
 
   const { preferId, idNumber, passport } = useWatch({
     control,
   });
+  const editUserIndex = listItems?.findIndex(
+    (item) => item?.idNumber === idNumber
+  );
+
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -419,7 +422,11 @@ export const AddOrEditPractitioner = ({
         <div>
           <Typography
             type={'h2'}
-            text={`Practitioner ${listItems && listItems?.length + 1}`}
+            text={
+              isEdit
+                ? `Practitioner ${editUserIndex! + 1}`
+                : `Practitioner ${listItems && listItems?.length + 1}`
+            }
             color={'textDark'}
           />
         </div>

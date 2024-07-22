@@ -79,7 +79,6 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
   }, [totalDiffDays, balance, appDispatch, lastStatement, userId]);
 
   const onDismiss = useCallback(() => {
-    // Dismiss the alert when the user taps "I have contacted ....."
     if (balance < 0 && !lastStatement.contactedByCoach) {
       appDispatch(
         practitionerForCoachThunkActions.updateUserContactStatusForStatement({
@@ -97,7 +96,7 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
         );
     }
     onBack();
-  }, [appDispatch, balance, lastStatement, onBack, userId]);
+  }, []);
 
   return (
     <>
@@ -110,26 +109,28 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
         className="p-4"
       >
         <div className="mt-1 flex justify-center">
-          <div className="w-11/12">
-            <div className="flex items-center gap-2">
+          <div className="w-full">
+            <div className="flex justify-center gap-2">
               {balance > 0 ? (
                 <>
                   <span
-                    className={`text-l bg-successMain rounded-full p-2 font-semibold text-white`}
+                    className={`text-l bg-successMain rounded-full font-semibold text-white`}
                   >
                     &nbsp;2&nbsp;
                   </span>
                   <Typography type="h3" text={` Months of making a profit`} />
                 </>
-              ) : (
+              ) : !lastStatement.contactedByCoach ? (
                 <>
                   <span
-                    className={`text-l bg-alertMain rounded-full p-2 font-semibold text-white`}
+                    className={`text-l bg-alertMain rounded-full font-semibold text-white`}
                   >
                     &nbsp;2&nbsp;
                   </span>
                   <Typography type="h3" text={` Months running at a loss`} />
                 </>
+              ) : (
+                <div />
               )}
             </div>
             <div>

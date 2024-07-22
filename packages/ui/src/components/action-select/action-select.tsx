@@ -4,10 +4,12 @@ import { XIcon } from '@heroicons/react/solid';
 import Typography from '../typography/typography';
 import { ComponentBaseProps } from '../../models';
 import { classNames } from '../../utils/style-class.utils';
+import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 export interface ActionSelectProps<T> extends ComponentBaseProps {
   title: string;
   actions: ActionSelectItem<T>[];
+  isLoading?: boolean;
   onActionSelected: (value: T) => void;
   onClose: () => void;
 }
@@ -15,6 +17,7 @@ export interface ActionSelectProps<T> extends ComponentBaseProps {
 export const ActionSelect = <T,>({
   title,
   actions,
+  isLoading,
   onActionSelected,
   onClose,
 }: ActionSelectProps<T>) => {
@@ -25,7 +28,7 @@ export const ActionSelect = <T,>({
         <XIcon
           data-testid={'action-select-close-icon'}
           style={{ height: '24px', width: '24px' }}
-          onClick={onClose}
+          onClick={() => !isLoading && onClose()}
           color={'grey'}
         />
       </div>
@@ -35,16 +38,25 @@ export const ActionSelect = <T,>({
             <div
               data-testid={`action-select-action-${index}`}
               className={styles.actionWrapper}
-              onClick={() => onActionSelected(action.value)}
+              onClick={() => !isLoading && onActionSelected(action.value)}
               key={`action-select-action-${index}`}
             >
               <div
                 className={classNames(
                   styles.actionCircle,
-                  `bg-${action.actionColour}` ?? 'bg-primary'
+                  `bg-${action.actionColour}` ?? 'bg-primary',
+                  isLoading ? 'cursor-not-allowed opacity-70' : ''
                 )}
               >
-                {action.icon}
+                {isLoading ? (
+                  <LoadingSpinner
+                    size="small"
+                    backgroundColor="white"
+                    spinnerColor="textMid"
+                  />
+                ) : (
+                  action.icon
+                )}
               </div>
               <Typography
                 type={'help'}

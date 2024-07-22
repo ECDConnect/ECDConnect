@@ -24,6 +24,7 @@ export interface DropdownProps<T> extends ComponentBaseProps {
   inputRef?: any;
   showSearch?: boolean;
   labelColor?: Colours;
+  isAdminPortalInput?: boolean;
 }
 
 export function Dropdown<T>({
@@ -42,6 +43,7 @@ export function Dropdown<T>({
   inputRef,
   showSearch,
   labelColor,
+  isAdminPortalInput,
 }: DropdownProps<T>) {
   const [selectedItem, setSelectedItem] = useState<DropDownOption<T>>();
   const [touched, setTouched] = useState(false);
@@ -158,7 +160,15 @@ export function Dropdown<T>({
 
   return (
     <div className={className}>
-      {label && <label className={styles.label}>{label}</label>}
+      {label && (
+        <label
+          className={
+            isAdminPortalInput ? styles.adminPortalLabel : styles.label
+          }
+        >
+          {label}
+        </label>
+      )}
       {subLabel && <label className={styles.subLabel}>{subLabel}</label>}
       <Menu
         as="div"

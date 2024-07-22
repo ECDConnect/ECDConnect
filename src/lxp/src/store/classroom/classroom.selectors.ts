@@ -1,7 +1,11 @@
 import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
-import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import {
+  ChildProgressReportPeriod,
+  ClassroomDto,
+  ClassroomDto as SimpleClassroomDto,
+} from '@/models/classroom/classroom.dto';
 import {
   ClassroomGroupDto,
   LearnerDto,
@@ -12,6 +16,36 @@ import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
 export const getClassroom = (
   state: RootState
 ): SimpleClassroomDto | undefined => state.classroomData.classroom;
+
+export const getIsReportingPeriodsSet = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined): boolean => {
+      const currentYear = new Date().getFullYear();
+      return (
+        !!classroom?.childProgressReportPeriods &&
+        !!classroom?.childProgressReportPeriods.some(
+          (x) => new Date(x.startDate).getFullYear() === currentYear
+        )
+      );
+    }
+  );
+
+export const getPreviousYearsReportingPeriods = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined): ChildProgressReportPeriod[] => {
+      const lastYear = new Date().getFullYear() - 1;
+      return (
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === lastYear)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          ) || []
+      );
+    }
+  );
 
 export const getClassroomGroups = (
   state: RootState

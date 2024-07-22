@@ -678,7 +678,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                   className="border-uiLight text-textMid mx-auto w-full rounded-md"
                   selected={endDate ? new Date(endDate) : undefined}
                   onChange={(date: Date) => {
-                    setEndDate(date);
+                    setEndDate(
+                      new Date(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate(),
+                        12
+                      )
+                    );
                   }}
                   dateFormat="EEE, dd MMM yyyy"
                   minDate={addDays(new Date(selectedDate as string), 1)}

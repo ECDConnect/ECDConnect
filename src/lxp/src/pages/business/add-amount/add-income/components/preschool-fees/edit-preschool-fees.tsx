@@ -56,11 +56,12 @@ export const EditPreschoolFees: React.FC<EditPreschoolFeeProps> = ({
       color={'primary'}
       size="medium"
       renderBorder={true}
+      showBackground={false}
       onBack={onBack}
       className="p-4"
     >
       <div className="flex flex-col justify-center p-4">
-        <Typography type="h2" color="primary" text={'Preschool fees'} />
+        <Typography type="h2" color="textDark" text={'Preschool fees'} />
         {!!statement?.downloaded && (
           <Alert
             type={'warning'}

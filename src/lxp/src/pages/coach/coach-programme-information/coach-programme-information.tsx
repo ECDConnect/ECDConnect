@@ -12,7 +12,6 @@ import {
   DialogPosition,
 } from '@ecdlink/ui';
 import { PractitionerColleagues } from '@ecdlink/graphql';
-import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './coach-programme-information.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-programme-information.styles';
@@ -200,6 +199,7 @@ export const CoachProgrammeInformation: React.FC = () => {
             size={'header'}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onPressed={() => {}}
+            isPreschoolImage={true}
           />
         </div>
 
@@ -257,9 +257,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                   type="filled"
                   onClick={() => {
                     navigator?.clipboard?.writeText &&
-                      navigator?.clipboard?.writeText(
-                        practitioner?.user?.phoneNumber!
-                      );
+                      navigator?.clipboard?.writeText(siteAddress);
                   }}
                 >
                   <Typography

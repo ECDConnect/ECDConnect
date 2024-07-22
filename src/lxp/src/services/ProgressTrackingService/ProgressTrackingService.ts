@@ -1,5 +1,9 @@
 import { api } from '../axios.helper';
-import { Config, PractitionerProgressReportSummaryDto } from '@ecdlink/core';
+import {
+  Config,
+  PractitionerProgressReportSummaryDto,
+  ProgressTrackingAgeGroupDto,
+} from '@ecdlink/core';
 import {
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
@@ -79,6 +83,33 @@ class ProgressTrackingService {
     return response.data.data.GetAllProgressTrackingSubCategory;
   }
 
+  async getProgressTrackingAgeGroups(
+    locale: string
+  ): Promise<ProgressTrackingAgeGroupDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `query GetAllProgressTrackingAgeGroup($locale: String) {
+          GetAllProgressTrackingAgeGroup(locale: $locale) {
+            id
+            name            
+            startAgeInMonths
+            endAgeInMonths     
+          }
+        }`,
+      variables: {
+        locale: locale,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Progress Tracking Age Groups - Server connection error'
+      );
+    }
+
+    return response.data.data.GetAllProgressTrackingAgeGroup;
+  }
+
   async getProgressTrackingSkills(
     locale: string
   ): Promise<ProgressTrackingSkillDto[]> {
@@ -90,6 +121,9 @@ class ProgressTrackingService {
           id                
           name
           level {
+            id
+          }
+          ageGroups {
             id
           }
           value

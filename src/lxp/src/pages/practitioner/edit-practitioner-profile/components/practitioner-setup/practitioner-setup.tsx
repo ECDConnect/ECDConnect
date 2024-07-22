@@ -73,9 +73,15 @@ export const PractitionerSetup = ({
         practitionerId: userId,
         progress: 2.0,
       })
-    );
+    ).unwrap();
     await appDispatch(
       updatePrincipalInvitation({ userId, principalHierarchy, accepted })
+    );
+
+    await appDispatch(
+      practitionerThunkActions.getPractitionerByUserId({
+        userId: user?.id!,
+      })
     );
     await appDispatch(
       classroomsThunkActions.getClassroom({ overrideCache: true })
@@ -178,13 +184,13 @@ export const PractitionerSetup = ({
                 title={
                   practitionerToProgramme
                     ? 'You need to accept the agreement below to continue'
-                    : `${classroom?.principal.firstName} will be notified and you will be removed from ${classroom?.name}.`
+                    : `${principalClassroom?.principal.firstName} will be notified and you will be removed from ${principalClassroom?.name}.`
                 }
                 className="my-4"
               />
             )}
 
-            {practitionerToProgramme && (
+            {practitionerToProgramme && practitioner?.shareInfo !== true && (
               <>
                 <Typography
                   type="h4"
@@ -230,7 +236,9 @@ export const PractitionerSetup = ({
             textColor="white"
             icon="ArrowCircleRightIcon"
             disabled={
-              (practitionerToProgramme === true && !allowPermissions) ||
+              (practitionerToProgramme === true &&
+                !allowPermissions &&
+                practitioner?.shareInfo !== true) ||
               practitionerToProgramme === null ||
               practitionerToProgramme === undefined
             }

@@ -58,12 +58,17 @@ export const InvitePrincipal: React.FC<{
     } else {
       setError('');
     }
-    const principalInvite = await new PractitionerService(userAuth?.auth_token!)
+
+    await new PractitionerService(userAuth?.auth_token!)
       .practitionerInvitePrincipal(principalPhoneNumber, user?.id!)
       .catch((error) => {
         setIsLoading(false);
         return;
       });
+
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerShareInfo(user?.id!);
 
     await appDispatch(
       practitionerThunkActions.updatePractitionerProgress({
@@ -183,11 +188,11 @@ export const InvitePrincipal: React.FC<{
                 />
               </div>
             )}
-            <div className="absolute bottom-4 w-full">
+            <div className="mt-4 flex w-full flex-col justify-center">
               <Button
                 type="filled"
                 color="quatenary"
-                className={'bottom-12 mt-1 mb-2 w-11/12'}
+                className={'mt-1 mb-2 w-full'}
                 disabled={!principalPhoneNumber || !allowPermissions}
                 isLoading={isLoading}
                 onClick={handleInvitePrincipal}
@@ -202,9 +207,7 @@ export const InvitePrincipal: React.FC<{
               <Button
                 type="outlined"
                 color="quatenary"
-                className={
-                  'border-quatenary bottom-12 mt-1 mb-2 w-11/12 border'
-                }
+                className={'border-quatenary bottom-12 mt-1 mb-2 w-full border'}
                 onClick={handleSkipAddPractitionerToPrincipal} // Navigate to a different page if it is principle
               >
                 {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}

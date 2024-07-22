@@ -4,12 +4,12 @@ import localForage from 'localforage';
 import {
   getClassroomGroups,
   getClassroom,
-  updatePreschoolFee,
   upsertClassroom,
   upsertClassroomGroups,
   updateClassroomGroup,
   upsertClassroomGroupLearners,
   upsertClassroomGroupProgrammes,
+  addChildProgressReportPeriods,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
@@ -116,8 +116,10 @@ const classroomsSlice = createSlice({
                   childUserId: action.payload.childUserId,
                   startedAttendance: formatISO(new Date()),
                   isActive: true,
-                  stoppedAttendance: undefined,
+                  stoppedAttendance: null,
                   synced: false,
+                  classroomGroupId: classroomGroup.id,
+                  userId: action.payload.childUserId,
                 }),
               }
             : classroomGroup
@@ -173,15 +175,6 @@ const classroomsSlice = createSlice({
             })),
           })),
           dateRefreshed: new Date().toDateString(),
-        };
-      }
-    });
-    builder.addCase(updatePreschoolFee.fulfilled, (state, action) => {
-      if (action.payload && !!state.classroom) {
-        state.classroom = {
-          ...state.classroom,
-          preschoolFeeAmount: action.meta.arg.amount,
-          preschoolFeeAmountLastUpdateDate: new Date() as unknown as string,
         };
       }
     });
@@ -248,6 +241,21 @@ const classroomsSlice = createSlice({
 
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(
+      addChildProgressReportPeriods.fulfilled,
+      (state, action) => {
+        if (!!state.classroom) {
+          state.classroom = {
+            ...state.classroom,
+            childProgressReportPeriods:
+              action.meta.arg.childProgressReportPeriods.map((x) => ({
+                startDate: x.startDate.toString(),
+                endDate: x.endDate.toString(),
+              })),
+          };
+        }
+      }
+    );
   },
 });
 

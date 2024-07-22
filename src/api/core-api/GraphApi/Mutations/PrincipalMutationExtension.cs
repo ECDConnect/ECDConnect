@@ -54,10 +54,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (practitionerUser != null)
                 {
                     Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
-                    if (practitioner != null && practitioner.CoachHierarchy == principalUser.CoachHierarchy && principalUser.UserId != practitioner.UserId) //only allow the same coach line sto be added to each other,a nd the user ids are different
+                    if (practitioner != null && principalUser.UserId != practitioner.UserId) 
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = principalUser.UserId;
+                        practitioner.CoachHierarchy = principalUser.CoachHierarchy;    
                         practitioner.IsFundaAppAdmin = false;
                         practitioner.IsPrincipal = false;
                         practitionerRepo.Update(practitioner);
@@ -114,8 +115,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
                             }
                         };
-                        //send message of invitation
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                        // send message of invitation only if principal is adding the practitioner to the programme
+                        // not sending message when the practitioner has joined the preschool on their own
+                        if (uId != practitionerUser.Id)
+                        {
+                            if (practitioner.Progress >= 0 && practitioner.Progress < 2)
+                            {
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                            } else
+                            {
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                            }
+                        }
 
                         return practitioner;
                     }
@@ -227,6 +238,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     foreach (var practi in allPrincipalPractitioners)
                     {
                         practi.PrincipalHierarchy = newPrincipal.UserId;
+                        practi.CoachHierarchy = newPrincipal.CoachHierarchy;
                         practi.ShareInfo = true;
                         practitionerRepo.Update(practi);
                     }
@@ -329,6 +341,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
                     practitioner.DateAccepted = null;
                     practitioner.IsLeaving = true;
+                    practitioner.PrincipalHierarchy = null;
+                    practitioner.ShareInfo = false;
 
                     status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                     status.Leaving = true;
@@ -350,6 +364,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             else
             {
                 practitioner.PrincipalHierarchy = principal.UserId;
+                practitioner.CoachHierarchy = principal.CoachHierarchy;
                 practitioner.DateToBeRemoved = null;
                 practitioner.DateAccepted = DateTime.Now;
                 practitioner.IsLeaving = false;
@@ -362,12 +377,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
 
             // expire the invite after accept or reject
-            notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation, null, null, practitioner.UserId);
+            notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation);
 
             //update practitioner with column changes
             practitionerRepo.Update(practitioner);
             return status;
         }
-
     }
 }

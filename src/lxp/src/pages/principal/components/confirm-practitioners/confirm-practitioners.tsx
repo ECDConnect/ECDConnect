@@ -1,4 +1,11 @@
-import { SetStateAction, useCallback, useEffect, useState } from 'react';
+import {
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   Typography,
   Divider,
@@ -7,6 +14,7 @@ import {
   ActionListDataItem,
   Alert,
   Card,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
@@ -25,6 +33,10 @@ import {
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { classroomsSelectors } from '@/store/classroom';
 import { useTenant } from '@/hooks/useTenant';
+import { LocalStorageKeys } from '@ecdlink/core';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
+import { AddNewPractitionerModel } from '../add-practitioner/add-practitioner.types';
 
 export interface StackListItems extends ActionListDataItem {
   idNumber: string;
@@ -46,6 +58,7 @@ export default function ConfirmPractitioners({
 }) {
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const practitionersForPrincipal = useSelector(
@@ -62,10 +75,61 @@ export default function ConfirmPractitioners({
   const clasroom = useSelector(classroomsSelectors.getClassroom);
   const [listItems, setListItems] = useState<StackListItems[]>([]);
   const isSmartLinkImported = user?.isImported;
+  const [invitingPractitioner, setInvitingPractitioner] =
+    useState<AddNewPractitionerModel>();
+  const inviTePractitionerIdNumber = localStorage
+    .getItem(LocalStorageKeys.practitionerInvitedPrincipalIdNumber)
+    ?.replace(/['"]+/g, '');
+  const hasInvitingPractitioner = useMemo(
+    () =>
+      listItems?.find((item) => item?.idNumber === inviTePractitionerIdNumber),
+    [listItems, inviTePractitionerIdNumber]
+  );
+  const [isLoadingInvitingPractitioner, setIsLoadingInvitingPractitioner] =
+    useState(false);
 
-  const callForHelp = () => {
-    window.open('tel:+27800014817');
-  };
+  useLayoutEffect(() => {
+    if (inviTePractitionerIdNumber) {
+      if (inviTePractitionerIdNumber && !hasInvitingPractitioner) {
+        handleInvitingPractitioner();
+      }
+    }
+  }, [inviTePractitionerIdNumber, hasInvitingPractitioner]);
+
+  const handleInvitingPractitioner = useCallback(async () => {
+    setIsLoadingInvitingPractitioner(true);
+    const _practitioner: any = await new PractitionerService(
+      userAuth?.auth_token!
+    ).getPractitionerByIdNumber(inviTePractitionerIdNumber!);
+
+    setInvitingPractitioner({
+      userId: _practitioner?.appUser?.id,
+      idNumber: _practitioner?.appUser?.idNumber,
+      firstName: _practitioner?.appUser?.firstName,
+    });
+
+    setIsLoadingInvitingPractitioner(false);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (invitingPractitioner) {
+      listItems.push(createStackItem(invitingPractitioner as any));
+
+      const hasPractitioner = principalPractitioners?.find(
+        (prac) => prac?.idNumber === invitingPractitioner?.idNumber
+      );
+
+      if (!hasPractitioner) {
+        principalPractitioners.push(invitingPractitioner as any);
+        setPrincipalPractitioners(principalPractitioners);
+      }
+    }
+  }, [invitingPractitioner]);
+
+  useEffect(() => {
+    if (listItems) {
+    }
+  });
 
   useEffect(() => {
     if (isSmartLinkImported) {
@@ -181,9 +245,7 @@ export default function ConfirmPractitioners({
   const createStackItem = useCallback(
     (data: RegisterPractitioner): StackListItems => {
       return {
-        title: data.firstName
-          ? `${data.firstName} ${data.surname}`
-          : data?.phoneNumber || '',
+        title: data.firstName ? `${data.firstName}` : data?.phoneNumber || '',
         idNumber: data.idNumber ?? data.passport,
         subTitle: 'Practitioner',
         titleStyle:
@@ -295,10 +357,21 @@ export default function ConfirmPractitioners({
                 }
                 color={'textDark'}
               />
-              <StackedList<ActionListDataItem>
-                listItems={listItems}
-                type={'ActionList'}
-              />
+
+              {isLoadingInvitingPractitioner ? (
+                <div className="mt-16">
+                  <LoadingSpinner
+                    size="medium"
+                    backgroundColor="uiBg"
+                    spinnerColor="quatenary"
+                  />
+                </div>
+              ) : (
+                <StackedList<ActionListDataItem>
+                  listItems={listItems}
+                  type={'ActionList'}
+                />
+              )}
               <div>
                 <Button
                   size="small"
@@ -312,6 +385,7 @@ export default function ConfirmPractitioners({
                       ConfirmPractitionersSteps.ADD_PRACTITIONER
                     )
                   }
+                  disabled={isLoadingInvitingPractitioner}
                 />
               </div>
             </div>

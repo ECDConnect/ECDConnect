@@ -8,12 +8,15 @@ export type ClassroomGroupDto = {
   userId: string; // This would be the practitioner running the classroom group
   learners: LearnerDto[];
   classProgrammes: (ClassProgrammeDto & OfflineUpdate)[];
+  meetEveryday?: boolean | undefined;
 };
 
 export type LearnerDto = OfflineUpdate & {
   learnerId: string;
   childUserId: string;
-  startedAttendance: string;
+  startedAttendance: Date | string;
   isActive: boolean;
-  stoppedAttendance: string | undefined;
+  stoppedAttendance: Date | string | null;
+  userId: string;
+  classroomGroupId: string;
 };

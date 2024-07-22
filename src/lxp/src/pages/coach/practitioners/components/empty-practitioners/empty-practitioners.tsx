@@ -1,5 +1,5 @@
 import { Typography } from '@ecdlink/ui';
-import AlienImage from '../../../../../assets/ECD_Connect_alien.svg';
+import AlienImage from '@/assets/ECD_Connect_alien2.svg';
 import { useTenant } from '@/hooks/useTenant';
 
 export const EmptyPractitioners = () => {

@@ -32,11 +32,7 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 
-import {
-  practitionerActions,
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { staticDataThunkActions } from '@store/static-data';
@@ -57,11 +53,10 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { CommunityRouteState } from '../community/community.types';
+import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
-import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../community-old/clubs-tab/club/individual-club-view';
 import { notificationTagConfig } from '@/constants/notifications';
 import { childrenThunkActions } from '@/store/children';
 import {
@@ -99,7 +94,6 @@ export const Dashboard: React.FC = () => {
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const coach = useSelector(coachSelectors.getCoach);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -334,6 +328,7 @@ export const Dashboard: React.FC = () => {
   const handle30DaysExpired = () => {
     dialog({
       position: DialogPosition.Middle,
+      blocking: true,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
@@ -365,8 +360,8 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (practitioner?.startDate) {
       const diffDays = differenceInDays(
-        new Date(practitioner?.startDate),
-        new Date()
+        new Date(),
+        new Date(practitioner?.startDate)
       );
 
       if (diffDays > 30 && !classroom?.preschoolCode && isOpenAccess) {
@@ -444,54 +439,60 @@ export const Dashboard: React.FC = () => {
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
-    await appDispatch(settingThunkActions.getSettings({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
-    await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();
-    await appDispatch(
-      programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
-    ).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getProgrammeAttendanceReasons({})
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getGenders({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRaces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
-    await appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getHolidays({ year: today.getFullYear() })
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getReasonsForPractitionerLeaving({})
-    ).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
-    await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getPermissions({})).unwrap();
-    await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
-    await appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap();
-    await appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap();
-    await appDispatch(statementsThunkActions.getAllPayType({})).unwrap();
 
-    await appDispatch(
-      activityThunkActions.getActivities({ locale: 'en-za' })
-    ).unwrap();
+    const promises = [
+      appDispatch(settingThunkActions.getSettings({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRelations({})).unwrap(),
+      appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
+      appDispatch(
+        programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
+      ).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getProgrammeAttendanceReasons({})
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
+      appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getHolidays({ year: today.getFullYear() })
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getReasonsForPractitionerLeaving({})
+      ).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getGrants({})).unwrap(),
+      appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+      appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
+      appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
 
-    await appDispatch(
-      storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
-    ).unwrap();
+      appDispatch(
+        activityThunkActions.getActivities({ locale: 'en-za' })
+      ).unwrap(),
 
-    await appDispatch(
-      programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-    ).unwrap();
+      appDispatch(
+        storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
+      ).unwrap(),
 
-    await appDispatch(
-      calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
-    ).unwrap();
+      appDispatch(
+        programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+      ).unwrap(),
+
+      appDispatch(
+        calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
+      ).unwrap(),
+    ];
+
+    Promise.allSettled(promises);
   };
 
   useEffect(() => {
@@ -564,7 +565,12 @@ export const Dashboard: React.FC = () => {
       blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+        return (
+          <JoinOrAddPreschoolModal
+            onSubmit={onSubmit}
+            isTrialPeriod={!!isTrialPeriod}
+          />
+        );
       },
     });
   };
@@ -953,12 +959,7 @@ export const Dashboard: React.FC = () => {
         !missingProgramme) ||
       isTrialPeriod
     ) {
-      history.push(
-        isFirstTimeCommunitySection
-          ? ROUTES.COMMUNITY.WELCOME
-          : ROUTES.COMMUNITY.ROOT,
-        { isFromDashboard: true } as CommunityRouteState
-      );
+      history?.push(ROUTES.COMMUNITY.WELCOME);
     } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     }
@@ -1004,8 +1005,10 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (((classroom && !!classroom.id) ||
-        (classroomGroups && classroomGroups.length > 0)) &&
+      (classroom && !!classroom.id) ||
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
+        !!classroom?.id &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&

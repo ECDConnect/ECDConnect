@@ -39,6 +39,7 @@ namespace ECDLink.DataAccessLayer.Context
     public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>
     {
         public DbSet<TenantEntity> Tenants { get; set; }
+        public DbSet<TenantSetupInfo> TenantSetupInfo { get; set; }
         public DbSet<Module> Modules { get; set; }
         public DbSet<TenantHasModule> TenantHasModules { get; set; } 
         public DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
@@ -216,7 +217,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<CommunitySkill> CommunitySkills { get; set; }
         public DbSet<CommunityProfile> CommunityProfile { get; set; }
         public DbSet<CommunityProfileSkill> CommunityProfileSkill { get; set; }
-
+        public DbSet<CommunityProfileConnection> CommunityProfileConnections { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

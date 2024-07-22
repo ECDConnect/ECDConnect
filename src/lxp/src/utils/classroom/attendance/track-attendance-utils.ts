@@ -162,8 +162,7 @@ export const getMissedClassAttendance = (
 
     return programStartDateDay === dateDay
       ? (x.meetingDay || -1) === currentDayFilter
-      : (x.meetingDay || -1) <= currentDayFilter &&
-          programStartDate.getTime() < date.getTime();
+      : programStartDate.getTime() < date.getTime();
   });
 
   const last30BusinessDays = getLast30BusinessDays(date);
@@ -394,8 +393,7 @@ export const getMissedAttendanceSummaryGroups = (
 
     return programStartDate.getUTCDate() === currentDate.getUTCDate()
       ? (x.meetingDay || -1) === currentDayFilter
-      : (x.meetingDay || -1) <= currentDayFilter &&
-          programStartDate.getTime() < currentDate.getTime();
+      : programStartDate.getTime() < currentDate.getTime();
   });
 
   const meetingDays = getClassroomGroupSchoolDays(

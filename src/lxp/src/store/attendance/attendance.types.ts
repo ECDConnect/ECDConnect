@@ -1,4 +1,5 @@
 import { OfflineCache } from '@/models/sync/offline-cache';
+import { OfflineUpdate } from '@/models/sync/offline-update';
 import {
   AttendanceDto,
   ClassRoomChildAttendanceMonthlyReportModel,
@@ -7,7 +8,9 @@ import {
 
 export type AttendanceState = {
   attendance: AttendanceDto[] | undefined;
-  attendanceTracked: TrackAttendanceModelInput[] | undefined;
+  attendanceTracked:
+    | (TrackAttendanceModelInput & Partial<OfflineUpdate>)[]
+    | undefined;
 
   monthlyAttendanceRecordsByUser: {
     [userId: string]: { data: MonthlyAttendanceRecord[] } & OfflineCache;

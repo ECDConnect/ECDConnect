@@ -1,3 +1,4 @@
+import Loader from '@/components/loader/loader';
 import { TenantService } from '@/services/TenantService';
 import { useAppDispatch } from '@/store';
 import { tenantActions, tenantSelectors } from '@/store/tenant';
@@ -66,6 +67,14 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
       setTenant(newTenantContext);
     }
   }, []);
+
+  if (!tenant.tenant) {
+    return (
+      <TenantContext.Provider value={tenant}>
+        <Loader />
+      </TenantContext.Provider>
+    );
+  }
 
   return (
     <TenantContext.Provider value={tenant}>{children}</TenantContext.Provider>

@@ -37,7 +37,7 @@ import {
   progressTrackingThunkActions,
 } from './store/progress-tracking';
 import { settingActions } from './store/settings';
-import { staticDataActions } from './store/static-data';
+import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
 import {
@@ -52,7 +52,10 @@ import {
 import { analyticsActions } from './store/analytics';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
-import { classroomsForCoachThunkActions } from './store/classroomForCoach';
+import {
+  classroomsForCoachThunkActions,
+  classroomsForCoachActions,
+} from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
@@ -61,6 +64,7 @@ import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
 import { RoleSystemNameEnum } from '@ecdlink/core';
+import { communityThunkActions } from './store/community';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -141,6 +145,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     appDispatch(notesActions.resetNotesState());
     appDispatch(classroomsActions.resetClassroomState());
+    appDispatch(classroomsForCoachActions.resetClassroomState());
     appDispatch(coachActions.resetCoachState());
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
@@ -178,6 +183,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
       appDispatch(contentReportThunkActions.getDetailedProgressReports(50)),
       appDispatch(
         contentReportThunkActions.getChildProgressReportSummary(50)
@@ -197,6 +203,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     if (!isCoach) {
       promises.push(
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          communityThunkActions.getCommunityProfile({ userId: userData?.id! })
+        ).unwrap()
       );
       promises.push(
         appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
@@ -222,6 +233,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
 
     // PROGRESS TRACKING
+    await appDispatch(
+      progressTrackingThunkActions.getProgressTrackingAgeGroups({
+        locale: 'en-za',
+      })
+    ).unwrap();
     await appDispatch(
       progressTrackingThunkActions.getProgressTrackingCategories({
         locale: 'en-za',
@@ -271,6 +287,18 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(classroomsActions.resetClassroomState());
     await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
+
+    if (isCoach) {
+      appDispatch(classroomsForCoachActions.resetClassroomState());
+      await appDispatch(
+        classroomsForCoachThunkActions.getClassroomForCoach({
+          id: userData?.id!,
+        })
+      ).unwrap();
+      await appDispatch(
+        classroomsForCoachThunkActions.getClassroomGroupsForCoach({})
+      ).unwrap();
+    }
   };
 
   const getLoadingMessage = () => {

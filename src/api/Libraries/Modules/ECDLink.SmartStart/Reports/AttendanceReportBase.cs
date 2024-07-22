@@ -41,7 +41,7 @@ namespace ECDLink.SmartStart.Reports
             return days.Except(holidayDates);
         }
 
-        public virtual List<Attendance> GetAttendanceRecordsForPeriod(IEnumerable<Guid> ClassroomProgrammeIds, string userId, DateTime startMonth, DateTime endMonth)
+        public virtual List<Attendance> GetAttendanceRecordsForPeriodByProgramme(IEnumerable<Guid> ClassroomProgrammeIds, string userId, DateTime startMonth, DateTime endMonth)
         {
             return _dbContext.Attendances
               .Include(i => i.ClassroomProgramme)
@@ -63,7 +63,7 @@ namespace ECDLink.SmartStart.Reports
             return activeClasses;
         }
 
-        protected virtual IEnumerable<DateTime> CalculateDaysOfClassForMonth(DateTime month, int day, IEnumerable<DateTime> validClassdays, DateTime? startBound, DateTime? endBound)
+        public virtual IEnumerable<DateTime> CalculateDaysOfClassForMonth(DateTime month, int day, IEnumerable<DateTime> validClassdays, DateTime? startBound, DateTime? endBound)
         {
             var actualStart = month;
 
