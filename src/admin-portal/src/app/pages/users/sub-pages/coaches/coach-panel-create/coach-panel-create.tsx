@@ -29,9 +29,6 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import CoachForm from '../../../components/coach-form/coach-form';
-import SiteAddressForm from '../../../components/site-address-form/site-address-form';
-import PasswordForm from '../../../components/password-form/password-form';
 import UserDetailsForm from '../../../components/user-details-form/user-details-form';
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../components/users';
@@ -44,9 +41,11 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { idTypeEnum } from '../../../../view-user/view-user.types';
+import { useTenant } from '../../../../../hooks/useTenant';
 
 export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
+  const tenant = useTenant();
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
   };
@@ -341,7 +340,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
         <div className="rounded-lg border-b border-gray-200 bg-white px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Coach details
+              {tenant.modules.coachRoleName} details
             </h3>
             <Typography color={'textMid'} type="help" text={'Step 1 of 1'} />
             <Divider dividerType="dashed" className="py-6" />
@@ -358,7 +357,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             clearErrors={clearErrors}
             setUserAlreadyExits={setUserAlreadyExits}
             practitioners={coachData?.allPortalCoaches}
-            typeofUser="coach"
+            typeofUser={tenant.modules.coachRoleName}
           />
         </div>
 
