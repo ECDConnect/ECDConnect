@@ -201,24 +201,26 @@ export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
             <fieldset className="my-4 flex flex-col gap-2">
               <Typography
                 type="h4"
-                text={'What type of feedback would you like to share?'}
+                text={`How do you feel about ${coach?.user?.firstName} support?`}
               />
               {supportRatings &&
                 supportRatings?.map((item) => (
-                  <CheckboxGroup
-                    key={item?.id}
-                    title=""
-                    description={item?.name!}
-                    value={item?.id!}
-                    checked={item?.id === supportRatingId}
-                    onChange={(e) => setSupportRatingId(String(e.value))}
-                    icon={
-                      <div className="ml-4 mr-2">
-                        {handleSupportRatingsImage(item?.name!)}
-                      </div>
-                    }
-                    isIconFullWidth={true}
-                  />
+                  <>
+                    <Radio
+                      key={item?.id}
+                      description={item?.name!}
+                      value={item?.id!}
+                      checked={item?.id === supportRatingId}
+                      onChange={() => setSupportRatingId(String(item?.id))}
+                      className="mb-4"
+                      variant="slim"
+                      customIcon={
+                        <div className="mx-4">
+                          {handleSupportRatingsImage(item?.name!)}
+                        </div>
+                      }
+                    />
+                  </>
                 ))}
             </fieldset>
             <div className={'w-full py-4'}>
