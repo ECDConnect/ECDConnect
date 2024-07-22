@@ -1,5 +1,6 @@
 import { ReactElement } from 'react';
 import { classNames } from '../../../utils';
+import StatusChip, { StatusChipProps } from '../../status-chip/status-chip';
 
 export interface RadioProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,6 +11,7 @@ export interface RadioProps
   isActivity?: boolean;
   extraButtonIcon?: ReactElement;
   variant?: 'default' | 'slim';
+  statusChip?: StatusChipProps;
   extraButtonOnClick?: () => void;
 }
 
@@ -25,6 +27,7 @@ export const Radio = ({
   extraButtonIcon,
   disabled,
   extraButtonOnClick,
+  statusChip,
   ...rest
 }: RadioProps) => {
   const getContainerStyle = () => {
@@ -36,7 +39,7 @@ export const Radio = ({
 
     if (variant === 'slim') {
       return `text-textDark flex rounded-lg p-4 ${
-        checked ? 'bg-secondaryAccent2 border-secondary border-2' : 'bg-uiBg'
+        checked ? 'bg-quatenaryBg border-quatenary border-2' : 'bg-uiBg'
       }`;
     }
 
@@ -49,7 +52,7 @@ export const Radio = ({
     if (variant === 'slim') {
       return `mr-2 mt-1 h-4 w-4 ${
         checked
-          ? 'text-secondary border-secondary'
+          ? 'text-quatenary border-quatenary'
           : 'text-tertiary border-primaryAccent2'
       } focus:outline-none ring-transparent`;
     }
@@ -69,7 +72,7 @@ export const Radio = ({
     }
 
     if (variant === 'slim') {
-      return `${base} text-sm`;
+      return `${base} text-base`;
     }
 
     return `${base} font-bold`;
@@ -106,6 +109,7 @@ export const Radio = ({
           {hint && (
             <p className="text-textMid mt-1 text-sm font-normal">{hint}</p>
           )}
+          {statusChip && <StatusChip {...statusChip} />}
         </div>
         {extraButtonIcon && (
           <button className="ml-auto" onClick={extraButtonOnClick}>

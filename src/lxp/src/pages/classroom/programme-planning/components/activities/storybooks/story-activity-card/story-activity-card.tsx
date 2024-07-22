@@ -34,64 +34,45 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
       <Card
         className={classNames(
           className,
-          `relative mt-4 flex w-full flex-col ${
-            selected ? 'border-secondary border-2' : ''
-          }`
+          `bg-uiBg relative mt-1 flex w-full flex-col`
         )}
-        shadowSize={'lg'}
         borderRaduis="lg"
       >
-        <div
-          className={
-            selected
-              ? 'bg-secondaryAccent2 rounded-lg p-4'
-              : 'bg-uiBg rounded-lg p-4'
-          }
-        >
-          <div className="flex flex-row items-center justify-between">
-            <Typography
-              type="body"
-              text={title}
-              color={'textDark'}
-              className={'semibold'}
-            />
+        {hideRadio ? (
+          <div className="flex items-center justify-between p-4">
+            <div>
+              <Typography type={'body'} color="textDark" text={title} />
+              <Typography
+                type="help"
+                color="textMid"
+                text={limitStringLength(
+                  material.charAt(0).toUpperCase() + material.slice(1),
+                  50
+                )}
+              />
+            </div>
+            <button onClick={handleDetailsClick}>
+              {renderIcon('InformationCircleIcon', 'h-6 w-6 text-infoMain')}
+            </button>
           </div>
-          <div>
-            <>
-              <div className={selected ? 'bg-secondaryAccent2' : 'bg-uiBg'}>
-                <div className="flex max-h-20 items-center justify-between gap-2">
-                  {hideRadio ? (
-                    <Typography
-                      type="help"
-                      color="textMid"
-                      text={limitStringLength(
-                        material.charAt(0).toUpperCase() + material.slice(1),
-                        50
-                      )}
-                    />
-                  ) : (
-                    <Radio
-                      isActivity={true}
-                      description={limitStringLength(
-                        material.charAt(0).toUpperCase() + material.slice(1),
-                        50
-                      )}
-                      checked={selected}
-                      onChange={() => onSelected()}
-                      className={'truncate border-0'}
-                    />
-                  )}
-                  <div onClick={handleDetailsClick} className={'mb-2'}>
-                    {renderIcon(
-                      'InformationCircleIcon',
-                      'h-6 w-6 text-infoMain'
-                    )}
-                  </div>
-                </div>
-              </div>
-            </>
-          </div>
-        </div>
+        ) : (
+          <Radio
+            variant="slim"
+            description={title}
+            hint={limitStringLength(
+              material.charAt(0).toUpperCase() + material.slice(1),
+              50
+            )}
+            checked={selected}
+            onChange={() => onSelected()}
+            className={'truncate border-0'}
+            extraButtonIcon={renderIcon(
+              'InformationCircleIcon',
+              'h-6 w-6 text-infoMain'
+            )}
+            extraButtonOnClick={handleDetailsClick}
+          />
+        )}
       </Card>
       <Dialog
         visible={displayDetails}

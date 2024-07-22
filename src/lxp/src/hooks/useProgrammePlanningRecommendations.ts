@@ -246,9 +246,10 @@ export const useProgrammePlanningRecommendations = () => {
     if (type !== 'Story time') {
       const frequency = countSubCategoryFrequency(programme, activities);
 
+      // Prioritize activities with least frequent subcategories
       topActivities = activities
         ?.filter((a) => a.type === type)
-        .sort((a, b) => {
+        ?.sort((a, b) => {
           const aMinFrequency = Math.min(
             ...a.subCategories.map((sc) => frequency.get(sc.id) || Infinity)
           );
@@ -256,8 +257,9 @@ export const useProgrammePlanningRecommendations = () => {
             ...b.subCategories.map((sc) => frequency.get(sc.id) || Infinity)
           );
 
-          return aMinFrequency - bMinFrequency; // Prioritize activities with least frequent subcategories
-        });
+          return aMinFrequency - bMinFrequency;
+        })
+        ?.reverse();
     }
 
     const endIds = programme?.dailyProgrammes?.map((day) => {
