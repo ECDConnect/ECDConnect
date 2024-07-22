@@ -15,8 +15,12 @@ export const COMMUNITY_TABS = {
 
 export const CommunityTabs = ({
   setJoinCommunity,
+  seNotJoining,
+  notJoining,
 }: {
   setJoinCommunity: (item: boolean) => void;
+  seNotJoining: (item: boolean) => void;
+  notJoining: boolean;
 }) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -28,7 +32,12 @@ export const CommunityTabs = ({
     {
       title: 'Community',
       initActive: true,
-      child: <CommunityItem setJoinCommunity={setJoinCommunity} />,
+      child: (
+        <CommunityItem
+          setJoinCommunity={setJoinCommunity}
+          notJoining={notJoining}
+        />
+      ),
     },
     {
       title: 'Resources',

@@ -13,6 +13,13 @@ import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { yesOrNoOptions } from '../../community-welcome.types';
 import { Control, FieldValues, UseFormSetValue } from 'react-hook-form';
+import { useAppDispatch } from '@/store';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
 
 interface Step1Props {
   setStep: (item: number) => void;
@@ -20,6 +27,7 @@ interface Step1Props {
   shareContactInfo: boolean | undefined;
   step: number;
   setJoinCommunity: (item: boolean) => void;
+  seNotJoining: (item: boolean) => void;
 }
 
 export const Step1: React.FC<Step1Props> = ({
@@ -28,15 +36,27 @@ export const Step1: React.FC<Step1Props> = ({
   shareContactInfo,
   step,
   setJoinCommunity,
+  seNotJoining,
 }) => {
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const dispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleNextAction = () => {
+  const handleNextAction = async () => {
     if (shareContactInfo === true) {
       setStep(step + 1);
     } else {
+      setIsLoading(true);
+      await dispatch(
+        practitionerThunkActions.updatePractitionerCommunityTabStatus({
+          practitionerUserId: practitioner?.userId!,
+        })
+      );
       setJoinCommunity(false);
+      seNotJoining(true);
+      setIsLoading(false);
     }
   };
   return (
@@ -95,7 +115,8 @@ export const Step1: React.FC<Step1Props> = ({
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"
-            disabled={shareContactInfo === undefined}
+            isLoading={isLoading}
+            disabled={shareContactInfo === undefined || isLoading}
             onClick={handleNextAction}
           />
         </div>

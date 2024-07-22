@@ -33,8 +33,10 @@ import { userSelectors } from '@/store/user';
 
 export const NewCommunityWelcome = ({
   setJoinCommunity,
+  seNotJoining,
 }: {
   setJoinCommunity: (item: boolean) => void;
+  seNotJoining: (item: boolean) => void;
 }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
@@ -138,6 +140,7 @@ export const NewCommunityWelcome = ({
             setValue={setValue}
             step={step}
             setJoinCommunity={setJoinCommunity}
+            seNotJoining={seNotJoining}
           />
         );
       default:

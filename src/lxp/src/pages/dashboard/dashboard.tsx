@@ -950,8 +950,9 @@ export const Dashboard: React.FC = () => {
 
   const goToCommunity = () => {
     if (
-      (((classroom && classroom.id) ||
-        (classroomGroups && classroomGroups.length > 0)) &&
+      (classroom && classroom.id) ||
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
