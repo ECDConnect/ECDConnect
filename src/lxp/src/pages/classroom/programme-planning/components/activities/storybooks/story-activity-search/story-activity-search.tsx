@@ -304,6 +304,16 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       },
     };
 
+  useEffect(() => {
+    const element = document.getElementById('story-content');
+
+    element?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+      inline: 'nearest',
+    });
+  }, [selectedStory]);
+
   return (
     <>
       <BannerWrapper
@@ -380,7 +390,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             />
           </SearchHeader>
         )}
-        <div className="bg-white px-4 pt-2">
+        <div className="bg-white px-4 pt-2" id="story-content">
           {!selectedStory && (
             <>
               <Typography
