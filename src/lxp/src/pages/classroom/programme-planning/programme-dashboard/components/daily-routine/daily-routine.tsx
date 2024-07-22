@@ -462,18 +462,18 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       setSkillMixMessage('');
       setImproveProgrammeMessage('');
 
-      // Mix skill message
-      if (plannedActivities.length >= 10) {
-        setSkillMixMessage(
-          'Good job, your programme has a good mix of skills!'
-        );
-      }
       // Improve programme
       if (
         plannedActivities.length <= 10 &&
         recommendedActivities.length !== 0
       ) {
         setImproveProgrammeMessage('Want to improve your programme?');
+      } else {
+        if (plannedActivities.length >= 10) {
+          setSkillMixMessage(
+            'Good job, your programme has a good mix of skills!'
+          );
+        }
       }
     }
   }, [
