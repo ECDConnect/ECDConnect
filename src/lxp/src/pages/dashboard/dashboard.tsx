@@ -328,6 +328,7 @@ export const Dashboard: React.FC = () => {
   const handle30DaysExpired = () => {
     dialog({
       position: DialogPosition.Middle,
+      blocking: true,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
