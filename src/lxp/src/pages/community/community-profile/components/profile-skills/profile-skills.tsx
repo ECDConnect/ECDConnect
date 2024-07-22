@@ -17,10 +17,9 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
 }) => {
   const renderProfileSkills = useMemo(() => {
     if (skills?.length > 0) {
-      return skills?.map((item) => {
+      return skills?.map((item, index) => {
         return (
           <div>
-            <Divider className="my-2" dividerType="dashed" />
             <div className="flex items-center gap-2">
               <div className="bg-secondary flex h-8 w-8 items-center justify-center rounded-full p-2">
                 {renderIcon(`${item?.imageName}`, 'h-6 w-6 text-white')}
@@ -37,6 +36,9 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
               color={'textMid'}
               className="mt-2"
             />
+            {skills?.length > 0 && index !== skills?.length - 1 && (
+              <Divider className="text=primary my-2" dividerType="dashed" />
+            )}
           </div>
         );
       });
@@ -61,6 +63,7 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
               type={'h4'}
               text={`${userName}'s skills`}
               color={'textDark'}
+              className="w-full"
             />
             {skills?.length === 0 && !connectionProfile && (
               <div className="flex w-full justify-end">
@@ -78,6 +81,7 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
               </div>
             )}
           </div>
+          <Divider className="my-3" dividerType="dashed" />
           {renderProfileSkills}
           {skills?.length > 0 && !connectionProfile && (
             <div className="flex w-full justify-end">

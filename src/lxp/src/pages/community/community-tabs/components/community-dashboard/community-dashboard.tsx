@@ -248,9 +248,9 @@ export const CommunityDashboard = () => {
         />
       </div>
       <Dialog
-        fullScreen
         visible={openCoachProfile}
         position={DialogPosition.Full}
+        stretch={true}
       >
         <CommunityCoachProfile onClose={setOpenCoachProfile} />
       </Dialog>
