@@ -82,7 +82,9 @@ export const MonthStatements: React.FC = () => {
     pageTitle: `Income Statement`,
     subtitle: '',
     //column2 with 3 rows of text
-    text_column_two_row_one: `Name: ${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
+    text_column_two_row_one: `Name: ${practitioner?.user?.firstName} ${
+      practitioner?.user?.surname ?? ''
+    }`,
     text_column_two_row_two: `ID: ${practitioner?.user?.idNumber}`,
     text_column_two_row_three: `Phone: ${practitioner?.user?.phoneNumber}`,
   };
@@ -106,6 +108,7 @@ export const MonthStatements: React.FC = () => {
     lineColor: 0x000000,
   };
 
+  console.log({ pdfReportData });
   const generatePdf = () => {
     generateReport(
       pdfReportData ?? [],

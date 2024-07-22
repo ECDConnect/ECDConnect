@@ -211,6 +211,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const reasonPayload = reason === 'Other' ? otherReason : reason;
 
   const onBack = () => {
+    if (routeState?.principalPractitioner) {
+      return history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+    }
+
     if (routeState?.isFromEditPractitionersPage) {
       return history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
     }
