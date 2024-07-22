@@ -52,11 +52,6 @@ namespace EcdLink.Api.CoreApi.Services
                     practitioner.UpdatedDate = DateTime.Now;
                     _practitionerRepo.Update(practitioner);
 
-                    user.IsActive = false;
-                    user.LockoutEnabled = true;
-                    user.LockoutEnd = DateTime.MaxValue;
-                    var userResult = _userManager.UpdateAsync(user).Result;
-
                     removal.IsActive = false;
                     removal.UpdatedBy = _adminUserId;
                     _removalRepo.Update(removal);
