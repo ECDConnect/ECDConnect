@@ -120,11 +120,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const hasAbsenteeClasses =
     allAbsenteeClasses && allAbsenteeClasses?.length > 0;
 
+  const isLoggedInUser = practitionerUser?.userId === practitionerId;
+
   const formattedDate = reportingDate
     ? format(reportingDate, 'EEEE, d LLLL')
     : '';
   const [isOneDayLeave, setIsOneDayLeave] = useState<boolean | boolean[]>();
-  const [principalOrFundaAppAdmin, setPrincipalOrFundaAppAdmin] = useState();
+  const [principalOrFundaAppAdmin, setPrincipalOrFundaAppAdmin] =
+    useState<string>();
   const [otherReason, setOtherReason] = useState('');
 
   const {
@@ -191,6 +194,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   } = useWatch({
     control: control,
   });
+
   const practitionerClassroomGroups = useMemo(
     () =>
       classroomGroups?.filter(
@@ -256,6 +260,15 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       setEndDate(new Date(allAbsenteeClasses?.[0]?.absentDateEnd as string));
 
       setReassignClassValue('reason', allAbsenteeClasses?.[0]?.reason);
+
+      if (
+        principalPractitioner &&
+        allAbsenteeClasses?.[0]?.reassignedToUserId
+      ) {
+        setPrincipalOrFundaAppAdmin(
+          allAbsenteeClasses?.[0]?.reassignedToUserId!
+        );
+      }
     }
   }, []);
 
@@ -357,12 +370,21 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 item?.practitioner,
                 reasonPayload,
                 new Date(selectedDate),
-                endDate || new Date(selectedDate),
+                isOneDayLeave
+                  ? new Date(selectedDate)
+                  : endDate || new Date(selectedDate),
                 true,
                 principalOrFundaAppAdmin
               );
 
               await refreshClassroom();
+              if (isLoggedInUser) {
+                await appDispatch(
+                  practitionerThunkActions.getPractitionerByUserId({
+                    userId: practitionerId!,
+                  })
+                ).unwrap();
+              }
               await appDispatch(
                 practitionerThunkActions.getAllPractitioners({})
               ).unwrap();
@@ -392,7 +414,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               item?.practitioner,
               reasonPayload,
               new Date(selectedDate),
-              endDate || new Date(selectedDate)
+              isOneDayLeave
+                ? new Date(selectedDate)
+                : endDate || new Date(selectedDate)
             );
 
             await refreshClassroom();
@@ -419,6 +443,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           }
 
           setIsLoading(true);
+
           await new ClassroomGroupService(
             userAuth.auth_token
           ).updateReassignClassroomGroup(
@@ -428,7 +453,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             new Date(selectedDate),
             userData?.id!,
             item?.classroomId,
-            endDate || new Date(selectedDate),
+            isOneDayLeave
+              ? new Date(selectedDate)
+              : endDate || new Date(selectedDate),
             '',
             '',
             principalOrFundaAppAdmin
@@ -439,6 +466,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
       ).unwrap();
+      if (isLoggedInUser) {
+        await appDispatch(
+          practitionerThunkActions.getPractitionerByUserId({
+            userId: practitionerId!,
+          })
+        ).unwrap();
+      }
     } else {
       if (userAuth?.auth_token && selectedDate && userData?.id) {
         const absenteeId = allAbsenteeClasses?.[0].absenteeId;
@@ -448,10 +482,12 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
               absenteeId,
               false,
-              practitioner2,
+              practitioner2 || principalOrFundaAppAdmin,
               reasonPayload,
               new Date(selectedDate),
-              endDate || new Date(selectedDate),
+              isOneDayLeave
+                ? new Date(selectedDate)
+                : endDate || new Date(selectedDate),
               true,
               principalOrFundaAppAdmin
             );
@@ -460,6 +496,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             await appDispatch(
               practitionerThunkActions.getAllPractitioners({})
             ).unwrap();
+            if (isLoggedInUser) {
+              await appDispatch(
+                practitionerThunkActions.getPractitionerByUserId({
+                  userId: practitionerId!,
+                })
+              ).unwrap();
+            }
             setIsLoading(false);
 
             if (principalPractitioner) {
@@ -482,16 +525,25 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
             absenteeId,
             false,
-            practitioner2,
+            practitioner2 || practitioner,
             reasonPayload,
             new Date(selectedDate),
-            endDate || new Date(selectedDate)
+            isOneDayLeave
+              ? new Date(selectedDate)
+              : endDate || new Date(selectedDate)
           );
 
           await refreshClassroom();
           await appDispatch(
             practitionerThunkActions.getAllPractitioners({})
           ).unwrap();
+          if (isLoggedInUser) {
+            await appDispatch(
+              practitionerThunkActions.getPractitionerByUserId({
+                userId: practitionerId!,
+              })
+            ).unwrap();
+          }
           setIsLoading(false);
 
           if (principalPractitioner) {
@@ -513,6 +565,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         }
         if (principalPractitioner) {
           setIsLoading(true);
+
           await new ClassroomGroupService(
             userAuth.auth_token
           ).updateReassignClassroomGroup(
@@ -522,7 +575,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             new Date(selectedDate),
             userData?.id!,
             '',
-            endDate || new Date(selectedDate),
+            isOneDayLeave
+              ? new Date(selectedDate)
+              : endDate || new Date(selectedDate),
             '',
             '',
             principalOrFundaAppAdmin
@@ -532,6 +587,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           await appDispatch(
             practitionerThunkActions.getAllPractitioners({})
           ).unwrap();
+          if (isLoggedInUser) {
+            await appDispatch(
+              practitionerThunkActions.getPractitionerByUserId({
+                userId: practitionerId!,
+              })
+            ).unwrap();
+          }
 
           setIsLoading(false);
 
@@ -554,6 +616,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         }
 
         setIsLoading(true);
+
         await new ClassroomGroupService(
           userAuth.auth_token
         ).updateReassignClassroomGroup(
@@ -563,7 +626,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           new Date(selectedDate),
           userData?.id!,
           '',
-          endDate || new Date(selectedDate),
+          isOneDayLeave
+            ? new Date(selectedDate)
+            : endDate || new Date(selectedDate),
           '',
           '',
           principalOrFundaAppAdmin
@@ -573,6 +638,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         await appDispatch(
           practitionerThunkActions.getAllPractitioners({})
         ).unwrap();
+        if (isLoggedInUser) {
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: practitionerId!,
+            })
+          ).unwrap();
+        }
       }
     }
     setIsLoading(false);
@@ -699,6 +771,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               label={'Reason for absence'}
               fullWidth
               className={'mt-3 w-full'}
+              selectedValue={reason}
               onChange={(item: any) => {
                 setReassignClassValue('reason', item);
               }}
@@ -727,7 +800,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 subLabel={`Every programme must have one practitioner responsible for submitting income statements and managing the programme.`}
                 fullWidth
                 className={'mt-3 w-full'}
-                selectedValue={practitioner}
+                selectedValue={principalOrFundaAppAdmin}
                 onChange={(item: any) => {
                   setPrincipalOrFundaAppAdmin(item);
                 }}
@@ -735,11 +808,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             )}
             {allAbsenteeClasses && allAbsenteeClasses?.length > 0
               ? allAbsenteeClasses?.map((item, index) => {
+                  if (!item?.className) return null;
+
                   const classroomId =
                     practitionerClassroomGroups?.find(
                       (group) => group?.name === item?.className
                     )?.classroomId || '';
                   const absenteeId = item?.absenteeId;
+
                   return (
                     <>
                       <Dropdown

@@ -64,11 +64,10 @@ export const PractitionerProfile: React.FC = () => {
 
   const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
 
-  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
+  const { practitionerIsOnLeave, isScheduledLeave } = usePractitionerAbsentees(
     practitioner!
   );
 
-  console.log({ practitionerIsOnLeave, currentAbsentee });
   const selectedTab =
     wasJourneyFormOpen && !isJourneyFormOpen
       ? 1
@@ -302,27 +301,32 @@ export const PractitionerProfile: React.FC = () => {
           type={'error'}
         />
       )}
-      {practitioner?.isPrincipal && <LeaveCard practitioner={practitioner} />}
-      {practitioner?.isPrincipal && (
-        <Card className={'bg-uiBg mx-4 mt-4 rounded-xl p-4'}>
-          <Typography type={'h1'} color="textDark" text={`Log my time off`} />
-          <Typography
-            type={'body'}
-            color="textMid"
-            text={`Need time off? Record your leave here.`}
-            className={'mt-4'}
-          />
-          <Button
-            type="filled"
-            color="quatenary"
-            className={'mt-6 w-full rounded-2xl'}
-            icon="PencilAltIcon"
-            text="Take time off"
-            textColor="white"
-            onClick={() => handleReassignClass(practitioner?.userId!)}
-          />
-        </Card>
-      )}
+      {practitioner?.isPrincipal &&
+        (practitionerIsOnLeave || isScheduledLeave) && (
+          <LeaveCard practitioner={practitioner} />
+        )}
+      {practitioner?.isPrincipal &&
+        !practitionerIsOnLeave &&
+        !isScheduledLeave && (
+          <Card className={'bg-uiBg mx-4 mt-4 rounded-xl p-4'}>
+            <Typography type={'h1'} color="textDark" text={`Log my time off`} />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`Need time off? Record your leave here.`}
+              className={'mt-4'}
+            />
+            <Button
+              type="filled"
+              color="quatenary"
+              className={'mt-6 w-full rounded-2xl'}
+              icon="PencilAltIcon"
+              text="Take time off"
+              textColor="white"
+              onClick={() => handleReassignClass(practitioner?.userId!)}
+            />
+          </Card>
+        )}
     </BannerWrapper>
   );
 };
