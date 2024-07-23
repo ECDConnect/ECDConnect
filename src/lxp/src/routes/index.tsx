@@ -140,6 +140,9 @@ import { ChildProgressReportingPeriods } from '@/pages/classroom/progress-observ
 import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
 import { ConnectionProfile } from '@/pages/community/connection-profile/connection-profile';
 import MonthlyAttendanceReport from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report';
+import { ChildProgressSkillTracking } from '@/pages/classroom/progress/child-progress-skill-tracking';
+import { ChildProgressReportsList } from '@/pages/classroom/progress/child-progress-reports-list';
+import { ProgressObservations } from '@/pages/classroom/progress/child-progress-observations';
 import { ECDHeroes } from '@/pages/community/community-tabs/components/community-dashboard/components/ecd-heroes/ecd-heroes';
 import { CommunityConnections } from '@/pages/community/community-tabs/components/community-dashboard/components/received-requests/community-connections';
 
@@ -618,6 +621,18 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.CHILD_PROGRESS_OBSERVATION}
         component={ChildProgressObservationPage}
+      />
+      <Route
+        path={ROUTES.PROGRESS_SKILL_TRACKING}
+        component={ChildProgressSkillTracking}
+      />
+      <Route
+        path={ROUTES.PROGRESS_REPORT_LIST}
+        component={ChildProgressReportsList}
+      />
+      <Route
+        path={ROUTES.PROGRESS_OBSERVATIONS}
+        component={ProgressObservations}
       />
       <Route
         path={ROUTES.CHILD_PROGRESS_OBSERVATION_NOTE}

@@ -49,10 +49,10 @@ export const DetailsCard: React.FC<DetailsCardProps> = ({
             <div>
               {detailOne && (
                 <Typography
-                  type={'body'}
+                  type={'h4'}
                   text={detailOne}
-                  weight="bold"
                   color={'textDark'}
+                  className="mt-1"
                 />
               )}
               <Typography
@@ -64,26 +64,26 @@ export const DetailsCard: React.FC<DetailsCardProps> = ({
                     ? "None - please add. Here's some space to tell others a little more about yourself."
                     : 'None'
                 }
-                weight="bold"
                 color={'textMid'}
+                className="mt-1"
               />
             </div>
             <div>
               {detailTwo && (
-                <Typography
-                  type={'h4'}
-                  text={detailTwo}
-                  weight="bold"
-                  color={'textDark'}
-                />
-              )}
-              {detailTwo && textTwo && (
-                <Typography
-                  type={'body'}
-                  text={textTwo || 'None'}
-                  weight="bold"
-                  color={'textMid'}
-                />
+                <>
+                  <Typography
+                    type={'h4'}
+                    text={detailTwo}
+                    color={'textDark'}
+                    className="mt-1"
+                  />
+                  <Typography
+                    type={'body'}
+                    text={textTwo || 'None'}
+                    color={'textMid'}
+                    className="mt-1"
+                  />
+                </>
               )}
             </div>
           </div>

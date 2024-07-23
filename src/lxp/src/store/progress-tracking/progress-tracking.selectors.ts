@@ -212,3 +212,40 @@ export const getPractitionerProgressReportSummary = (
   state: RootState
 ): PractitionerProgressReportSummaryDto | undefined =>
   state.progressTracking.practitionerProgressReportSummary || undefined;
+
+export const getProgressReportForAgeGroup = (ageGroupId: number) =>
+  createSelector(
+    (state: RootState) =>
+      state.progressTracking.progressTrackingCategories.data,
+    (state: RootState) =>
+      state.progressTracking.progressTrackingSubCategories.data,
+    (state: RootState) => state.progressTracking.progressTrackingSkills.data,
+    (
+      categories: ProgressTrackingCategoryDto[],
+      subCategories: ProgressTrackingSubCategoryDto[],
+      skills: ProgressTrackingSkillDto[]
+    ) => {
+      // Get all skills for age group
+      const ageSkills = skills.filter((x) =>
+        x.ageGroups?.some((x) => x.id === ageGroupId)
+      );
+
+      // Add categories and skills
+      return ageSkills.map((skill) => {
+        const subCategory = subCategories.find((x) =>
+          x.skills.some((x) => x.id === skill.id)
+        );
+        const category = categories.find((x) =>
+          x.subCategories.some((x) => x.id === subCategory?.id)
+        );
+
+        return {
+          ...skill,
+          subCategory: {
+            ...subCategory,
+            category: category,
+          },
+        };
+      });
+    }
+  );

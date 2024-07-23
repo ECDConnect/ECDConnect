@@ -12,6 +12,7 @@ import {
   ClassroomGroupDto as SimpleClassroomGroupDto,
 } from '@/models/classroom/classroom-group.dto';
 import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
+import { isBefore } from 'date-fns';
 
 export const getClassroom = (
   state: RootState
@@ -143,5 +144,31 @@ export const getLearnersForClassroomGroups = (
               ),
             })),
         }));
+    }
+  );
+
+export const getCurrentProgressReportWindow = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined) => {
+      const currentYear = new Date().getFullYear();
+
+      const currentYearsReportingPeriods =
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === currentYear)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          ) || [];
+
+      // Get first in order where end date is after the current date
+      const index = currentYearsReportingPeriods.findIndex((x) =>
+        isBefore(new Date(), new Date(x.endDate))
+      );
+
+      return {
+        reportNumber: index + 1,
+        reportingPeriod: currentYearsReportingPeriods[index],
+      };
     }
   );

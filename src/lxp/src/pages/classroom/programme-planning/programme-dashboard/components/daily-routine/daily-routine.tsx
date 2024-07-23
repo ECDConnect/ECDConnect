@@ -462,12 +462,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       setSkillMixMessage('');
       setImproveProgrammeMessage('');
 
-      // Mix skill message
-      if (plannedActivities.length >= 10) {
-        setSkillMixMessage(
-          'Good job, your programme has a good mix of skills!'
-        );
-      }
       // Improve programme
       if (
         plannedActivities.length <= 10 &&
@@ -475,8 +469,15 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       ) {
         setImproveProgrammeMessage('Want to improve your programme?');
       }
+
+      if (improveProgrammeMessage === '' && plannedActivities.length >= 10) {
+        setSkillMixMessage(
+          'Good job, your programme has a good mix of skills!'
+        );
+      }
     }
   }, [
+    improveProgrammeMessage,
     isWholeWeekPlanned,
     plannedActivities,
     plannedWeeksCount,
@@ -761,7 +762,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                       <div className="mb-1 flex items-center gap-3">
                         <RoundIcon
                           imageUrl={activityItem?.subCategory.imageUrl}
-                          backgroundColor="tertiary"
+                          backgroundColor="secondary"
                         />
                         <Typography
                           type={'body'}

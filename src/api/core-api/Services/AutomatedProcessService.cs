@@ -1,4 +1,5 @@
-﻿using ECDLink.Core.Services.Interfaces;
+﻿using ECDLink.Core.Extensions;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -33,7 +34,7 @@ namespace EcdLink.Api.CoreApi.Services
         public void ProcessPractitionerRemovals()
         {
             var removals = _removalRepo.GetAll()
-                .Where(x => x.IsActive && x.DateOfRemoval < DateTime.Now)
+                .Where(x => x.IsActive && x.DateOfRemoval < DateTime.Now.GetEndOfDay())
                 .ToList();
 
             foreach (var removal in removals)

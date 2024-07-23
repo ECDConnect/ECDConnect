@@ -59,17 +59,17 @@ create table public."CommunitySkill" (
 );
 
 INSERT INTO "CommunitySkill"("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "Name", "Description", "ImageName", "Ordering") 
-VALUES (uuid_generate_v4(), true, current_date, current_date, '', 'e8f571eb-1972-4e71-a20f-347c65d059bb', 'Training and education', 'I can offer guidance on courses and training opportunities', 'AcademicCapIcon', 1);
+VALUES (uuid_generate_v4(), true, current_date, current_date, '', null, 'Training and education', 'I can offer guidance on courses and training opportunities', 'AcademicCapIcon', 1);
 INSERT INTO "CommunitySkill"("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "Name", "Description", "ImageName", "Ordering") 
-VALUES (uuid_generate_v4(), true, current_date, current_date, '', 'e8f571eb-1972-4e71-a20f-347c65d059bb', 'Classroom activities', 'I have lots of ideas for things to do in the classroom', 'PuzzleIcon', 2);
+VALUES (uuid_generate_v4(), true, current_date, current_date, '', null, 'Classroom activities', 'I have lots of ideas for things to do in the classroom', 'PuzzleIcon', 2);
 INSERT INTO "CommunitySkill"("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "Name", "Description", "ImageName", "Ordering") 
-VALUES (uuid_generate_v4(), true, current_date, current_date, '', 'e8f571eb-1972-4e71-a20f-347c65d059bb', 'Child assessment', 'I can help with assessing child progress & sharing ideas with caregivers', 'PresentationChartBarIcon', 3);
+VALUES (uuid_generate_v4(), true, current_date, current_date, '', null, 'Child assessment', 'I can help with assessing child progress & sharing ideas with caregivers', 'PresentationChartBarIcon', 3);
 INSERT INTO "CommunitySkill"("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "Name", "Description", "ImageName", "Ordering") 
-VALUES (uuid_generate_v4(), true, current_date, current_date, '', 'e8f571eb-1972-4e71-a20f-347c65d059bb', 'Business development', 'I can give advice on growing your preschool', 'ChartBarIcon', 4);
+VALUES (uuid_generate_v4(), true, current_date, current_date, '', null, 'Business development', 'I can give advice on growing your preschool', 'ChartBarIcon', 4);
 INSERT INTO "CommunitySkill"("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "Name", "Description", "ImageName", "Ordering") 
-VALUES (uuid_generate_v4(), true, current_date, current_date, '', 'e8f571eb-1972-4e71-a20f-347c65d059bb', 'Business record-keeping', 'I can give advice on records and policies every preschool needs', 'DocumentDuplicateIcon', 5);
+VALUES (uuid_generate_v4(), true, current_date, current_date, '', null, 'Business record-keeping', 'I can give advice on records and policies every preschool needs', 'DocumentDuplicateIcon', 5);
 INSERT INTO "CommunitySkill"("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "Name", "Description", "ImageName", "Ordering") 
-VALUES (uuid_generate_v4(), true, current_date, current_date, '', 'e8f571eb-1972-4e71-a20f-347c65d059bb', 'General', 'I have other, general ECD knowledge to share', 'LightBulbIcon', 6);
+VALUES (uuid_generate_v4(), true, current_date, current_date, '', null, 'General', 'I have other, general ECD knowledge to share', 'LightBulbIcon', 6);
 
 create table public."CoachFeedback" (
 	"Id" uuid NOT NULL,

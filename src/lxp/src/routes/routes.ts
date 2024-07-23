@@ -164,6 +164,9 @@ const ROUTES = {
   PROGRESS_TRACKING_CATEGORY: '/progress-tracking-category',
   CHILD_PROGRESS_REPORTING_PERIODS: '/child-progress-reporting-period',
   CHILD_PROGRESS_OBSERVATION: '/child-progress-observation',
+  PROGRESS_SKILL_TRACKING: '/progress-skill-tracking',
+  PROGRESS_OBSERVATIONS: '/progress-observations',
+  PROGRESS_REPORT_LIST: '/child-progress-skill-tracking',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
   CHILD_PROGRESS_OBSERVATION_REPORT: '/child-progress-observation-report',
   COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS:

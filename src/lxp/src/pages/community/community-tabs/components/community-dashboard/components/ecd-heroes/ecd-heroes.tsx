@@ -227,12 +227,14 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
         return communityUsersList.push({
           id: item.id,
           title: item?.communityUser?.fullName!,
+          titleStyle: 'text-textDark',
           profileText: item?.communityUser?.fullName
             ?.match(/^(\w)\w*\s+(\w{1,2})/)
             ?.slice(1)
             .join('')
             ?.toLocaleUpperCase(),
           subTitle: item?.aboutShort,
+          subTitleStyle: 'text-infoDark',
           alertSeverity: 'none',
           avatarColor: getAvatarColor() || '',
           onActionClick: () =>
@@ -260,6 +262,12 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
   const handleClickedFirstTimeECDHeroes = async () => {
     await dispatch(
       practitionerThunkActions.updateClickedECDHeros({
+        userId: communityProfile?.userId!,
+      })
+    );
+
+    await dispatch(
+      communityThunkActions.getCommunityProfile({
         userId: communityProfile?.userId!,
       })
     );
@@ -558,13 +566,14 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
           menuItemClassName={
             'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
           }
-          overlayTopOffset={'120'}
+          overlayTopOffset={'3'}
           options={provinces}
           selectedOptions={provincesFiltered}
           onChange={setProvincesFiltered}
           placeholder={'Province'}
           multiple={true}
           color={'quatenary'}
+          preventCloseOnClick={true}
         />
         <SearchDropDown<string>
           displayMenuOverlay={true}
@@ -572,13 +581,14 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
           menuItemClassName={
             'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
           }
-          overlayTopOffset={'120'}
+          overlayTopOffset={'3'}
           options={profileSkills}
           selectedOptions={profileSkillsFiltered}
           onChange={setProfileSkillsFiltered}
           placeholder={'Skills'}
           multiple={true}
           color={'quatenary'}
+          preventCloseOnClick={true}
         />
         <SearchDropDown<string>
           displayMenuOverlay={true}
@@ -586,13 +596,14 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
           menuItemClassName={
             'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
           }
-          overlayTopOffset={'120'}
+          overlayTopOffset={'3'}
           options={SortByConnectionTypes}
           selectedOptions={connectionTypesFilter}
           onChange={setConnectionTypesFilter}
           placeholder={'Connection'}
           multiple={true}
           color={'quatenary'}
+          preventCloseOnClick={true}
         />
       </SearchHeader>
       <div className="p-4">

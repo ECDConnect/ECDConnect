@@ -138,7 +138,7 @@ namespace EcdLink.Api.CoreApi.Services
                 communityProfile.ShareProfilePhoto = input.ShareProfilePhoto;
                 communityProfile.ShareProvince = input.ShareProvince;
                 communityProfile.ShareRole = input.ShareRole;
-                communityProfile.ProvinceId = input.ProvinceId;
+                communityProfile.ProvinceId = string.IsNullOrWhiteSpace(input.ProvinceId.ToString()) ? null : input.ProvinceId;
 
                 _communityProfileRepo.Update(communityProfile);
             } 
@@ -160,7 +160,7 @@ namespace EcdLink.Api.CoreApi.Services
                     ShareProfilePhoto = input.ShareProfilePhoto,
                     ShareProvince = input.ShareProvince,
                     ShareRole = input.ShareRole,
-                    ProvinceId = input.ProvinceId,
+                    ProvinceId = string.IsNullOrWhiteSpace(input.ProvinceId.ToString()) ? null : input.ProvinceId
                 });
                
             }
@@ -312,11 +312,9 @@ namespace EcdLink.Api.CoreApi.Services
                 var completenessAvg = (decimal)totalPoints / 100 * 100;
                 var completenessPerc = Math.Round(completenessAvg);
                 var completenessPercColor = Constants.CSSColorClasses.Orange;
-                var completenessPercImage = "need image names from FE";
                 if (completenessPerc >= 61)
                 {
                     completenessPercColor = Constants.CSSColorClasses.Green;
-                    completenessPercImage = "ECD_Connect_emoji1.svg";
                 } 
                 else if (completenessPerc >= 11)
                 {
@@ -328,8 +326,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                  receivedConnections,
                                                  _userManager.GetRolesAsync(userCommunityProfile.User).Result.ToList(),
                                                  completenessPerc,
-                                                 completenessPercColor,
-                                                 completenessPercImage);
+                                                 completenessPercColor);
             } 
             else
             {

@@ -23,8 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
                                      List<CommunityConnectionModel> receivedConnections, 
                                      List<string> userRoles,
                                      decimal completenessPerc,
-                                     string completenessPercColor,
-                                     string completenessPercImage)
+                                     string completenessPercColor)
             : base(profile, userRoles)
         {
             ClickedECDHeros = profile.ClickedECDHeros;
@@ -36,7 +35,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             CoachPhoneNumber = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.PhoneNumber : "";
             CompletenessPerc = completenessPerc;
             CompletenessPercColor = completenessPercColor;
-            CompletenessPercImage = completenessPercImage;
         }
 
         public CommunityProfileModel()

@@ -647,6 +647,30 @@ class CommunityService {
 
     return response.data.data.acceptCommunityRequests;
   }
+
+  async deleteCommunityProfile(communityProfileId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation DeleteCommunityProfile($communityProfileId: UUID!) {
+    deleteCommunityProfile(communityProfileId: $communityProfileId) {
+     
+    }
+}
+      `,
+      variables: {
+        communityProfileId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Deleting practitioner community profile failed - Server connection error'
+      );
+    }
+
+    return response.data.data.deleteCommunityProfile;
+  }
 }
 
 export default CommunityService;

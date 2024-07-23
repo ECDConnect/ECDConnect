@@ -175,6 +175,7 @@ export const CommunityCoachProfile: React.FC<CommunityCoachProfileProps> = ({
         visible={openCoachFeedback}
         position={DialogPosition.Full}
         className="w-full"
+        stretch
       >
         <CoachFeedback closeAction={setOpenCoachFeedback} />
       </Dialog>

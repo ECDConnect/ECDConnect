@@ -33,8 +33,10 @@ import { userSelectors } from '@/store/user';
 
 export const NewCommunityWelcome = ({
   setJoinCommunity,
+  seNotJoining,
 }: {
   setJoinCommunity: (item: boolean) => void;
+  seNotJoining: (item: boolean) => void;
 }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
@@ -74,7 +76,7 @@ export const NewCommunityWelcome = ({
       shareContactInfo: shareContactInfo,
       shareProfilePhoto: shareProfilePhoto,
       shareProvince: shareProvince,
-      provinceId: provinceId || '',
+      provinceId: provinceId || null,
       communitySkillIds: [],
     };
 
@@ -84,7 +86,7 @@ export const NewCommunityWelcome = ({
       shareContactInfo: false,
       shareProfilePhoto: false,
       shareProvince: false,
-      provinceId: '58f42ddf-38d5-4008-a007-af7cb220206c',
+      provinceId: null,
       communitySkillIds: [],
     };
 
@@ -138,6 +140,7 @@ export const NewCommunityWelcome = ({
             setValue={setValue}
             step={step}
             setJoinCommunity={setJoinCommunity}
+            seNotJoining={seNotJoining}
           />
         );
       default:

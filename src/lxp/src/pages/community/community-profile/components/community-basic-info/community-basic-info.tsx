@@ -1,7 +1,11 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
 import ROUTES from '@/routes/routes';
-import { communitySelectors, communityThunkActions } from '@/store/community';
+import {
+  communityActions,
+  communitySelectors,
+  communityThunkActions,
+} from '@/store/community';
 import { cloneDeep } from 'lodash';
 import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
 import AlienImage from '@/assets/ECD_Connect_alien2.svg';
@@ -27,6 +31,7 @@ import { ProvinceDto, useDialog, useSnackbar } from '@ecdlink/core';
 import { staticDataSelectors } from '@/store/static-data';
 import { BasicInfoItems } from '../../../community.types';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import { deleteCommunityProfile } from '@/store/community/community.actions';
 
 interface ContactDetailsProps {
   onClose?: (item: boolean) => void;
@@ -174,6 +179,16 @@ export const CommunityBasicInfo: React.FC<ContactDetailsProps> = ({
     }
   };
 
+  const handleDeleProfile = async () => {
+    await dispatch(
+      communityThunkActions.deleteCommunityProfile({
+        communityProfileId: communityProfile?.id!,
+      })
+    );
+
+    history.push(ROUTES.COMMUNITY.ROOT);
+  };
+
   const handleDeleteProfileModal = () => {
     dialog({
       position: DialogPosition.Middle,
@@ -192,9 +207,10 @@ export const CommunityBasicInfo: React.FC<ContactDetailsProps> = ({
                 text: 'Yes, delete my profile',
                 textColour: 'white',
                 onClick: () => {
+                  handleDeleProfile();
                   onClose();
                 },
-                leadingIcon: 'ArrowLeftIcon',
+                leadingIcon: 'TrashIcon',
               },
               {
                 colour: 'quatenary',
