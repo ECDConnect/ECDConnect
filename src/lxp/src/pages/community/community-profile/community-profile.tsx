@@ -105,7 +105,9 @@ export const CommunityProfile = () => {
           <ConnectionsCard
             title="New requests"
             subtitle="WAITING TO CONNECT WITH:"
-            connectionsNumber={communityProfile?.receivedConnections?.length}
+            connectionsNumber={
+              communityProfile?.receivedConnections?.length || 0
+            }
             icon="HandIcon"
             route={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
             usersData={communityProfile?.receivedConnections}
@@ -113,7 +115,9 @@ export const CommunityProfile = () => {
           <ConnectionsCard
             title="Your connections"
             subtitle="CONNECT WITH:"
-            connectionsNumber={communityProfile?.acceptedConnections?.length}
+            connectionsNumber={
+              communityProfile?.acceptedConnections?.length || 0
+            }
             icon="ShareIcon"
             route={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
             usersData={communityProfile?.acceptedConnections}

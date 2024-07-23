@@ -92,6 +92,8 @@ export const CommunityDashboard = () => {
           hideAlertSeverity: true,
           menuIconClassName: 'bg-secondaryAccent2',
           backgroundColor: 'adminBackground',
+          subTitle: item?.aboutShort,
+          subTitleStyle: 'text-infoDark',
           onActionClick: () =>
             history.push(ROUTES.COMMUNITY.CONNECTION_PROFILE, {
               connectionProfile: item,

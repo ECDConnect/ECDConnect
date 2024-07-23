@@ -66,6 +66,8 @@ export const Step2: React.FC<Step1Props> = ({
     []
   );
 
+  const mandatoryProvince = shareProvince && !provinceId ? true : false;
+
   const disableButton =
     shareProvince === undefined || shareProfilePhoto === undefined;
 
@@ -162,6 +164,7 @@ export const Step2: React.FC<Step1Props> = ({
             options={yesOrNoOptions}
             onOptionSelected={(option: boolean | boolean[]) => {
               setValue('shareProvince', option);
+              setValue('provinceId', '');
             }}
             notSelectedColor="secondaryAccent2"
             textColor="secondary"
@@ -191,7 +194,7 @@ export const Step2: React.FC<Step1Props> = ({
             textColor="white"
             icon="SaveIcon"
             isLoading={isLoading}
-            disabled={disableButton || isLoading}
+            disabled={disableButton || isLoading || mandatoryProvince}
             onClick={() => onAllStepsComplete(false)}
           />
           <Button
