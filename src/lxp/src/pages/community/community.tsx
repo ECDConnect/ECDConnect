@@ -13,7 +13,6 @@ export const Community: React.FC = () => {
   const [notJoining, seNotJoining] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isFirstTimeInCommunity = practitioner?.clickedCommunityTab;
-  const user = useSelector(userSelectors.getUser);
 
   const renderCommunityScreen = useMemo(() => {
     if (!isFirstTimeInCommunity || joinCommunity) {

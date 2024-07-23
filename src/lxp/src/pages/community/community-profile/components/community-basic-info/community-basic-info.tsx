@@ -210,7 +210,7 @@ export const CommunityBasicInfo: React.FC<ContactDetailsProps> = ({
                   handleDeleProfile();
                   onClose();
                 },
-                leadingIcon: 'ArrowLeftIcon',
+                leadingIcon: 'TrashIcon',
               },
               {
                 colour: 'quatenary',

@@ -25,7 +25,7 @@ export const CompleteProfilePerc = () => {
       if (completenessPerc < 11) {
         return 'alertMain';
       } else if (completenessPerc < 61) {
-        return 'infoMain';
+        return 'quatenary';
       } else return 'successMain';
     }
     return 'successBg';
