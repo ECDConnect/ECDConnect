@@ -179,7 +179,7 @@ export const VisitList: React.FC = () => {
           type="outlined"
           color="primary"
           textColor="primary"
-          className="mt-3 h-8 w-2/4 rounded-lg"
+          className="mt-3 h-8 w-56 rounded-lg"
           iconPosition="start"
           onClick={navigate(ROUTES.CLIENTS.VISIT_TAB.CHILD_VISITS)}
         />

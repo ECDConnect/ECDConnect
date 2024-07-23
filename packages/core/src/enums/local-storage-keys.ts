@@ -8,6 +8,7 @@ export enum LocalStorageKeys {
   hasViewedDecProgressReport = 'HasViewedDecProgressReport',
   attendanceTutorialComplete = 'AttendanceTutorialComplete',
   programmeWalkthroughComplete = 'programmeWalkthroughComplete',
+  incomeStatementsWalkthroughComplete = 'incomeStatementsWalkthroughComplete',
   hasClosedAttendanceSmartStartPointsMessage = 'HasClosedAttendanceSmartStartPointsMessage',
   HasTrackedChildProgressBefore = 'HasTrackedChildProgressBefore',
   isSmartStartUser = 'IsSmartStartUser',
@@ -15,8 +16,9 @@ export enum LocalStorageKeys {
   hasClosedSuccessAttendanceSubmitted = 'hasClosedSuccessAttendanceSubmitted',
   offlineStatments = 'offlineStatments',
   childProfileTutorialComplete = 'childProfileTutorialComplete',
-  incomeStatementTutorialComplete = 'IncomeStatementTutorialComplete',
   pointsSubmitStatementsMessageDismissed = 'PointsSubmitStatementsMessageDismissed',
   askToJoinClubViewed = 'AskToJoinClubViewed',
   hasVisitedProgrammeDashboard = 'HasVisitedProgrammeDashboard',
+  practitionerInvitedPrincipalIdNumber = 'practitionerInvitedPrincipal',
+  practitionerInvitedPrincipalUserId = 'practitionerInvitedPrincipalUserId',
 }

@@ -4,6 +4,7 @@ import { RecommendedActivity } from '@hooks/useProgrammePlanningRecommendations'
 export type ActivitySearchProps = {
   title: string;
   subtitle: string;
+  date: Date;
   programmeId?: string;
   routineItem: ProgrammeRoutineItemDto;
   recommendedActivity?: RecommendedActivity;

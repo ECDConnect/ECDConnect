@@ -1,5 +1,5 @@
 import { getAvatarColor } from '@ecdlink/core';
-import { UserAvatar } from '@ecdlink/ui';
+import { Button, UserAvatar } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { UserPanelSaveProps } from '../users';
 
@@ -9,6 +9,7 @@ export default function UserPanelSave(props: UserPanelSaveProps) {
   };
 
   const [userAvatar, setUserAvatar] = useState<string>();
+  // const disablebutton = props?.disabled?.
 
   useEffect(() => {
     if (props.user) {
@@ -22,11 +23,11 @@ export default function UserPanelSave(props: UserPanelSaveProps) {
     <article>
       {/* Profile header */}
       <div>
-        <div className="h-28 w-full object-cover bg-uiBg rounded-lg"></div>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="-mt-12 sm:-mt-16 sm:flex sm:items-end sm:space-x-5">
-            <div className="flex">
-              {props.user ? (
+        <div className="h-12 w-full rounded-lg bg-white object-cover"></div>
+        <div className="w-full">
+          <div className="-mt-12 w-full">
+            <div className="flex w-full">
+              {/* {props.user ? (
                 <UserAvatar
                   className="ring-4 ring-white"
                   size={'header'}
@@ -35,7 +36,7 @@ export default function UserPanelSave(props: UserPanelSaveProps) {
                   displayBorder
                 />
               ) : (
-                <span className="ring-4 ring-white inline-block h-120 w-120 rounded-full overflow-hidden bg-gray-100">
+                <span className="h-120 w-120 inline-block overflow-hidden rounded-full bg-gray-100 ring-4 ring-white">
                   <svg
                     className="h-full w-full text-gray-300"
                     fill="currentColor"
@@ -44,23 +45,26 @@ export default function UserPanelSave(props: UserPanelSaveProps) {
                     <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 </span>
-              )}
+              )} */}
             </div>
-            <div className="mt-6 sm:flex-1 sm:min-w-0 sm:flex sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
-              <div className="sm:hidden 2xl:block mt-6 min-w-0 flex-1">
-                <h1 className="text-2xl font-bold text-gray-900 truncate">
+            <div className="W-full mt-6">
+              <div className="mt-6 min-w-0 flex-1 sm:hidden 2xl:block">
+                <h1 className="truncate text-2xl font-bold text-gray-900">
                   {props.user?.firstName} {props.user?.surname}
                 </h1>
               </div>
-              <div className="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
-                <button
-                  disabled={props.disabled}
+              <div className="justify-stretch bg-quatenary mt-6 flex w-full flex-col">
+                <Button
+                  color="quatenary"
                   onClick={() => emitSave()}
-                  type="submit"
-                  className="disabled:opacity-50 ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+                  type="filled"
+                  buttonType="submit"
+                  className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-primary-dark inline-flex justify-center rounded-xl border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
+                  disabled={props?.disabled || props?.isLoading}
+                  isLoading={props?.isLoading}
                 >
                   Save
-                </button>
+                </Button>
 
                 {/* <Menu as="div" className="relative inline-block text-left">
                   {({ open }) => (
@@ -117,8 +121,8 @@ export default function UserPanelSave(props: UserPanelSaveProps) {
               </div>
             </div>
           </div>
-          <div className="hidden sm:block 2xl:hidden mt-6 min-w-0 flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 truncate">
+          <div className="mt-6 hidden min-w-0 flex-1 sm:block 2xl:hidden">
+            <h1 className="truncate text-2xl font-bold text-gray-900">
               {props.user?.firstName} {props.user?.surname}
             </h1>
           </div>

@@ -1,107 +1,30 @@
-import ROUTES from '@/routes/routes';
-import { numberWithSpaces } from '@/utils/statements/statements-utils';
-import { Typography, Button, Card } from '@ecdlink/ui';
+import {
+  formatCurrentValue,
+  getStatementExpenseTotal,
+  getStatementIncomeTotal,
+} from '@/utils/statements/statements-utils';
+import { Typography, Card } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import React, { useEffect, useMemo } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import { useAppContext } from '@/walkthrougContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-  LocalStorageKeys,
-  getNextMonth,
-  getPreviousMonth,
-} from '@ecdlink/core';
-import { IncomeStatementDates } from '@/constants/Dates';
-import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
+import { IncomeStatementDto, LocalStorageKeys } from '@ecdlink/core';
 
 interface IncomeStatementProps {
   statements: IncomeStatementDto[];
-  unsubmittedIncome: IncomeItemDto[];
-  unsubmittedExpenses: ExpenseItemDto[];
-  isSubmitWindowOpen: boolean;
   isThisMonthSubmitted: boolean;
   isLastMonthSubmitted: boolean;
 }
 
 export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   statements,
-  unsubmittedIncome,
-  unsubmittedExpenses,
-  isSubmitWindowOpen,
-  isThisMonthSubmitted,
-  isLastMonthSubmitted,
 }) => {
-  const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const offlineImg = window.localStorage.getItem(
     LocalStorageKeys.offlineStatments
   );
-  const { userId } = useParams<PractitionerBusinessParams>();
-
-  const lastMonthStatement = statements[statements.length - 1];
-
-  const previousMonthRecord = !!lastMonthStatement
-    ? `${getMonthName(lastMonthStatement.month! - 1).substring(0, 3)} ${
-        lastMonthStatement.year
-      }`
-    : `-`;
-
-  const previousMonthTotalIncome = !!lastMonthStatement
-    ? lastMonthStatement.incomeTotal
-    : 0;
-
-  const previousMonthTotalExpenses = !!lastMonthStatement
-    ? lastMonthStatement.expenseTotal
-    : 0;
-
-  const previousMonthTotalBalance = !!lastMonthStatement
-    ? lastMonthStatement.balance
-    : 0;
-
-  const currentMonthRecord = useMemo(() => {
-    var date = new Date();
-    if (isThisMonthSubmitted) {
-      return format(getNextMonth(date), 'MMM yyyy');
-    }
-    if (
-      !isLastMonthSubmitted &&
-      date.getDate() <= IncomeStatementDates.SubmitEndDay
-    ) {
-      return format(getPreviousMonth(date), 'MMM yyyy');
-    }
-
-    return format(date, 'MMM yyyy');
-  }, [isThisMonthSubmitted, isLastMonthSubmitted]);
-
-  const currentMonthTotalIncome = unsubmittedIncome.reduce((total, item) => {
-    return total + item.amount;
-  }, 0);
-
-  const currentMonthTotalExpenses = unsubmittedExpenses.reduce(
-    (total, item) => {
-      return total + item.amount;
-    },
-    0
-  );
-
-  const currentMonthTotalBalance =
-    currentMonthTotalIncome - currentMonthTotalExpenses;
-
-  const formatCurrentValue = (value: number) => {
-    if (value === 0) return `R ${numberWithSpaces(String(value.toFixed(2)))}`;
-
-    if (value > 0) return `+ R ${numberWithSpaces(String(value.toFixed(2)))}`;
-
-    if (value < 0)
-      return `- R ${numberWithSpaces(String(Math.abs(value).toFixed(2)))}`;
-  };
-
   const {
-    setState,
     state: { stepIndex },
   } = useAppContext();
 
@@ -112,16 +35,39 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
       el?.scrollIntoView();
       return;
     }
-
-    if (stepIndex === 8) {
-      const el = document.getElementById('howMayDaysToSubmit');
-
-      el?.scrollIntoView();
-      return;
-    }
   }, [stepIndex]);
 
+  const currentMonthStatement = statements[statements.length - 1];
+  const lastMonthStatement = statements[statements.length - 2];
+
+  const lastMonthIncomeTotal = useMemo(
+    () => getStatementIncomeTotal(lastMonthStatement),
+    [lastMonthStatement]
+  );
+
+  const currentMonthIncomeTotal = useMemo(
+    () => getStatementIncomeTotal(currentMonthStatement),
+    [currentMonthStatement]
+  );
+
+  const lastMonthExpenseTotal = useMemo(
+    () => getStatementExpenseTotal(lastMonthStatement),
+    [lastMonthStatement]
+  );
+
+  const currentMonthExpenseTotal = useMemo(
+    () => getStatementExpenseTotal(currentMonthStatement),
+    [currentMonthStatement]
+  );
+
   const renderData = useMemo(() => {
+    const getStatementTitle = (statement: IncomeStatementDto | undefined) =>
+      !!statement
+        ? `${getMonthName(statement.month! - 1).substring(0, 3)} ${
+            statement.year
+          }`
+        : `-`;
+
     return (
       <>
         {isOnline && (
@@ -132,13 +78,17 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
               shadowSize={'md'}
             >
               <Typography
-                text={`${format(new Date(), 'LLLL')} balance`}
+                text={`${getMonthName(
+                  currentMonthStatement?.month! - 1
+                )} balance`}
                 type="h4"
                 color={'white'}
                 className="w-6/12"
               />
               <Typography
-                text={`${formatCurrentValue(Number(currentMonthTotalBalance))}`}
+                text={`${formatCurrentValue(
+                  currentMonthIncomeTotal - currentMonthExpenseTotal
+                )}`}
                 color={'white'}
                 type="h1"
                 className="w-8/12 text-right"
@@ -146,18 +96,18 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
             </Card>
             <table className="mt-4">
               <tbody>
-                <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
+                <tr className="bg-uiBg text-textDark font-body border-quatenary h-12 w-1/3 border-b px-6 py-3">
                   <th className="w-1/3"></th>
                   <th className="text-textDark font-body">
                     <Typography
-                      text={previousMonthRecord}
+                      text={getStatementTitle(lastMonthStatement)}
                       type="body"
                       color={'textDark'}
                     />
                   </th>
                   <th className="w-1/3">
                     <Typography
-                      text={currentMonthRecord}
+                      text={getStatementTitle(currentMonthStatement)}
                       type="body"
                       color={'textDark'}
                     />
@@ -174,7 +124,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(previousMonthTotalIncome)}
+                      text={formatCurrentValue(lastMonthIncomeTotal)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -182,7 +132,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(currentMonthTotalIncome)}
+                      text={formatCurrentValue(currentMonthIncomeTotal)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -200,7 +150,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(previousMonthTotalExpenses)}
+                      text={formatCurrentValue(lastMonthExpenseTotal)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -208,7 +158,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(currentMonthTotalExpenses)}
+                      text={formatCurrentValue(currentMonthExpenseTotal)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -229,11 +179,11 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   <td className="w-1/3">
                     <Typography
                       text={formatCurrentValue(
-                        Number(previousMonthTotalBalance)
+                        lastMonthIncomeTotal - lastMonthExpenseTotal
                       )}
                       type="body"
                       color={
-                        Number(previousMonthTotalBalance!) >= 0
+                        lastMonthIncomeTotal - lastMonthExpenseTotal >= 0
                           ? 'successMain'
                           : 'errorMain'
                       }
@@ -243,11 +193,11 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   <td className="w-1/3">
                     <Typography
                       text={formatCurrentValue(
-                        Number(currentMonthTotalBalance)
+                        currentMonthIncomeTotal - currentMonthExpenseTotal
                       )}
                       type="body"
                       color={
-                        Number(currentMonthTotalBalance!) >= 0
+                        currentMonthIncomeTotal - currentMonthExpenseTotal >= 0
                           ? 'successMain'
                           : 'errorMain'
                       }
@@ -261,44 +211,13 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
         )}
       </>
     );
-  }, [
-    currentMonthRecord,
-    currentMonthTotalBalance,
-    currentMonthTotalExpenses,
-    currentMonthTotalIncome,
-    isOnline,
-    previousMonthRecord,
-    previousMonthTotalBalance,
-    previousMonthTotalExpenses,
-    previousMonthTotalIncome,
-  ]);
+  }, [isOnline]);
 
   return (
     <>
       <div className="pb-180 flex flex-col justify-center p-4">
         {!isOnline && <img src={offlineImg!} alt="offline img" />}
         {renderData}
-
-        <Button
-          shape="normal"
-          color="primary"
-          type="filled"
-          icon="DocumentSearchIcon"
-          onClick={() =>
-            history.push(
-              ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS.replace(
-                ':userId',
-                userId
-              )
-            )
-          }
-          className={`mt-6 mb-8 rounded-2xl ${
-            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-          }`}
-          id="seeAllStatements"
-        >
-          <Typography type="help" color="white" text="See all statements" />
-        </Button>
       </div>
     </>
   );

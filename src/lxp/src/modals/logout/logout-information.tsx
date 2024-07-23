@@ -1,5 +1,6 @@
 import { ActionModal } from '@ecdlink/ui';
 import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 
 export type LogoutInformationProps = {
   onSubmit: () => void;
@@ -15,7 +16,7 @@ export const LogoutInformation: React.FC<LogoutInformationProps> = ({
   const actionButtons: ActionModalButton[] = [
     {
       text: 'Yes, log out',
-      colour: 'primary',
+      colour: 'quatenary',
       onClick: () => onSubmit && onSubmit(),
       type: 'filled',
       textColour: 'white',
@@ -26,8 +27,8 @@ export const LogoutInformation: React.FC<LogoutInformationProps> = ({
   if (onCancel) {
     actionButtons.push({
       text: 'Cancel',
-      textColour: 'primary',
-      colour: 'primary',
+      textColour: 'quatenary',
+      colour: 'quatenary',
       type: 'outlined',
       onClick: () => onCancel(),
       leadingIcon: 'XIcon',
@@ -36,9 +37,11 @@ export const LogoutInformation: React.FC<LogoutInformationProps> = ({
 
   return (
     <ActionModal
-      icon={'SwitchVerticalIcon'}
-      iconColor="primary"
-      iconBorderColor="errorBg"
+      customIcon={
+        <ExclamationCircleIcon className="text-alertMain h-12 w-12" />
+      }
+      iconColor="white"
+      iconBorderColor="alertMain"
       title={'Are you sure you want to log out?'}
       actionButtons={actionButtons}
     />

@@ -128,11 +128,10 @@ namespace ECDLink.UrlShortner.Managers
 
         public void RemoveShortUrl(Guid userId, string messageType)
         {
-            var messages = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType));
+            var messages = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) & x.IsActive);
 
             if (messages.Any())
             {
-                //_entities.RemoveRange(messages);
                 foreach (var message in messages)
                 {
                     message.Clicked++;
@@ -164,6 +163,16 @@ namespace ECDLink.UrlShortner.Managers
                 .OrderBy(x => x.InsertedDate)
                 .Select(x => x.InsertedDate)
                 .ToList();
+        }
+
+        public void UpdateMessageNotificationResult(Guid userId, string messageType, int notificationResult)
+        {
+            var message = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) & x.IsActive).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            if (message != null)
+            {
+                message.NotificationResult = notificationResult;
+                _dbContext.SaveChanges();
+            }
         }
     }
 }

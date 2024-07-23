@@ -2,8 +2,8 @@ import { ContentTypeEnum, LanguageDto, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
+  Button,
   DialogPosition,
-  Divider,
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
@@ -98,14 +98,15 @@ export const ProgrammePlanningDevelopingChildren = () => {
       color={'primary'}
       title={'Developing children holistically'}
       className={styles.bannerContentWrapper}
-      backgroundColour={'uiBg'}
+      backgroundColour={'white'}
       displayOffline={!isOnline}
     >
       <LanguageSelector
+        className="bg-uiBg"
+        labelClassName="text-textDark pr-2"
         currentLocale={'en-za'}
         selectLanguage={getDataByLanguage}
       />
-      <Divider />
       <div className={'px-4'}>
         <Typography
           className="mt-4"
@@ -135,6 +136,15 @@ export const ProgrammePlanningDevelopingChildren = () => {
           </div>
         ))}
       </div>
+      <Button
+        className="mx-4 mt-auto mb-4"
+        type="filled"
+        color="quatenary"
+        text="Close"
+        icon="XIcon"
+        textColor="white"
+        onClick={() => history.goBack()}
+      />
     </BannerWrapper>
   );
 };

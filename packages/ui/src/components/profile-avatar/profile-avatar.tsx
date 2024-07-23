@@ -13,6 +13,7 @@ export interface ProfileAvatarProps extends ComponentBaseProps {
   hasConsent: boolean;
   canChangeImage?: boolean;
   onPressed?: () => void;
+  isPreschoolImage?: boolean;
 }
 
 export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
@@ -23,6 +24,7 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   hasConsent = false,
   canChangeImage = true,
   onPressed,
+  isPreschoolImage,
 }) => {
   const displayAvatar: boolean = hasConsent && !!dataUrl;
   const displayUserAvatar: boolean = !hasConsent || (hasConsent && !dataUrl);
@@ -34,10 +36,11 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
       {displayUserAvatar && (
         <UserAvatar
           size={size}
-          color={'secondary'}
+          color={'quatenary'}
           text={userAvatarText}
           displayBorder={true}
           borderColour={'white'}
+          isPreschoolImage={isPreschoolImage}
         />
       )}
       {canChangeImage && (

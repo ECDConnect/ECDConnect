@@ -3,11 +3,12 @@ import React from 'react';
 
 export enum PractitionerSetupSteps {
   WELCOME = 0,
-  SETUP_PROGRAMME = 1,
-  CONFIRM_PRACTITIONERS = 2,
-  CONFIRM_CLASSES = 3,
-  ADD_SIGNATURE = 4,
-  ADD_PHOTO = 5,
+  SELECT_PRACTITIONER_ROLE = 1,
+  SETUP_PROGRAMME = 2,
+  CONFIRM_PRACTITIONERS = 3,
+  CONFIRM_CLASSES = 4,
+  ADD_SIGNATURE = 5,
+  ADD_PHOTO = 6,
 }
 
 export enum ConfirmPractitionersSteps {

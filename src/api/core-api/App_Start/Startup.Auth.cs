@@ -1,8 +1,8 @@
-using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Stores;
 using ECDLink.Security.Managers;
 using ECDLink.Security.Providers;
 using ECDLink.Security.Providers.Tokens;
@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -37,6 +36,9 @@ namespace EcdLink.Api.CoreApi
 
         private void SetIdentityUser(IServiceCollection services)
         {
+            services.AddTransient<IRoleStore<ApplicationIdentityRole>, ApplicationRoleStore>();
+            services.AddTransient<IUserRoleStore<ApplicationUser>, ApplicationUserRoleStore>();
+
             services.AddIdentity<ApplicationUser, ApplicationIdentityRole>(config =>
             {
                 config.Tokens.ProviderMap.Add(
@@ -53,11 +55,12 @@ namespace EcdLink.Api.CoreApi
             }).AddEntityFrameworkStores<AuthenticationDbContext>()
               .AddUserManager<ApplicationUserManager>()
               .AddRoleManager<ApplicationRoleManager>()
+              .AddUserStore<ApplicationUserRoleStore>()
+              .AddRoleStore<ApplicationRoleStore>()
               .AddDefaultTokenProviders();
 
             services.AddTransient<CustomEmailConfirmationTokenProvider<ApplicationUser>>();
             services.AddTransient<CustomOpenAccessTokenProvider<ApplicationUser>>();
-            services.AddTransient<IAdminUserService, TenantAdminManager>();
         }
     }
 }

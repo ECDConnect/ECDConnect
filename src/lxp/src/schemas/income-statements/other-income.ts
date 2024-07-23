@@ -1,15 +1,13 @@
 import * as Yup from 'yup';
 
 export interface OtherIncomeModel {
-  date: string;
-  incomeAmount: string;
-  description: string;
-  note?: string;
+  dateReceived: string;
+  amount: string;
+  notes?: string;
 }
 
 export const otherIncomeSchema = Yup.object().shape({
-  date: Yup.string().required(),
-  description: Yup.string().required(),
-  incomeAmount: Yup.number().required(),
-  note: Yup.string(),
+  dateReceived: Yup.string().required(),
+  amount: Yup.string().required(),
+  notes: Yup.string(),
 });

@@ -177,14 +177,21 @@ export const GetClinicPointsData = gql`
       totalHCWs
       leagueRanking
       pointsTotal
+      maxPointsTotal
       momsTargetPerc
       momsTargetPercColor
-      momsTopLeagueTeamPerc
-      momsRankingPerc
+      momsClinicHigherThan50Perc
+      momsTeamsBottomPerc
+      momsTeamsTopPerc
+      momsClinicLowerThan50Perc
+      momsTopTeamPerc
       childrenTargetPerc
       childrenTargetPercColor
-      childrenTopLeagueTeamPerc
-      childrenRankingPerc
+      childrenClinicHigherThan50Perc
+      childrenTeamsBottomPerc
+      childrenTeamsTopPerc
+      childrenClinicLowerThan50Perc
+      childrenTopTeamPerc
     }
   }
 `;
@@ -220,6 +227,64 @@ export const GetClinicVisitReportData = gql`
       breastFeedingClub {
         totalClubsHeld
         totalCaregiversAttended
+      }
+    }
+  }
+`;
+
+export const GetClinicById = gql`
+  query GetClinicById($id: UUID!) {
+    GetClinicById(id: $id) {
+      id
+      name
+      phoneNumber
+      insertedDate
+      siteAddress {
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        province {
+          description
+        }
+      }
+      siteAddressId
+      teamLeads {
+        teamLead {
+          id
+          user {
+            firstName
+            surname
+          }
+        }
+      }
+      subDistrict {
+        id
+        name
+        district {
+          id
+          name
+          province {
+            id
+            description
+          }
+        }
+      }
+      leagues {
+        league {
+          id
+          startDate
+          endDate
+          leagueType {
+            id
+            name
+          }
+        }
+      }
+      isActive
+      healthCareWorkers {
+        id
       }
     }
   }

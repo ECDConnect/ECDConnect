@@ -1,20 +1,14 @@
 import { useQuery } from '@apollo/client';
-import {
-  getAvatarColor,
-  NavigationDto,
-  usePanel,
-  useTheme,
-} from '@ecdlink/core';
-import { GetAllNavigation, GetTenantContext } from '@ecdlink/graphql';
-import { Avatar, Button, Typography, UserAvatar } from '@ecdlink/ui';
+import { getAvatarColor, usePanel, useTheme } from '@ecdlink/core';
+import { GetAllNavigation, GetAllNotifications } from '@ecdlink/graphql';
+import { Avatar, Button, IconBadge, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
-  ArrowLeftIcon,
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
 } from '@heroicons/react/outline';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { AuthRoutes } from '../../routes/app.routes';
 import Icon from '../../components/icon';
@@ -23,15 +17,24 @@ import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
-import { TenantContext } from '../../utils/constants';
+import {
+  INavigation,
+  NavbarTypes,
+  NotificationNavigationModel,
+} from './shell.types';
+import { useUserRole } from '../../hooks/useUserRole';
+import ROUTES from '../../routes/app.routes-constants';
+import { navigationFromFrontend } from './shell.constants';
+import { useTenant } from '../../hooks/useTenant';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
 
 type menuItemProps = {
-  item: NavigationDto;
+  item: INavigation;
 };
+
 const MenuItem: React.FC<menuItemProps> = ({ item }) => {
   const routeMatch = useRouteMatch(item.route);
 
@@ -51,7 +54,7 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
           routeMatch ? 'text-white' : 'text-white group-hover:text-gray-500',
           'mr-3 h-6 w-6 flex-shrink-0'
         )}
-        color="transparent"
+        color="white"
       />
       {item.name}
     </Link>
@@ -63,16 +66,31 @@ export default function Shell() {
   const panel = usePanel();
   const { logout } = useAuth();
   const { user } = useUser();
+  const { isAdministrator, isSuperAdmin } = useUserRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const history = useHistory();
   const location = useLocation();
   const [avatarColor, setAvatarColor] = useState<string>();
-  const [navigation, setNavigation] = useState<NavigationDto[]>();
-  const [activeNavigation, setActiveNavigation] = useState<NavigationDto>();
+  const [navigation, setNavigation] = useState<INavigation[]>();
+  const [activeNavigation, setActiveNavigation] = useState<INavigation>();
+  const tenant = useTenant();
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
   });
+
+  const { data: notificationsData } = useQuery(GetAllNotifications, {
+    variables: {
+      userId: user?.id,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const notifications = notificationsData?.allNotifications;
+  const notReadNotifications = useMemo(
+    () => notifications?.filter((item) => !item?.readDate),
+    [notifications]
+  );
 
   useEffect(() => {
     if (navigation && location && location.pathname) {
@@ -89,17 +107,43 @@ export default function Shell() {
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
-      const navigationList: NavigationDto[] = navigationData.GetAllNavigation;
-      const userRolePermissions = user.roles.map((x) => x.permissions).flat();
-      const userPermissionIds = userRolePermissions.map((x) => x.id);
-      if (
-        user?.roles?.some((x) => x.name === 'Administrator') ||
-        user?.roles?.some((x) => x.name === 'Super Admin')
-      ) {
-        const sorted = navigationList
-          .slice()
-          .sort((a, b) => a.sequence - b.sequence);
-        setNavigation(sorted);
+      const adminNavigationItems = [
+        NavbarTypes.Dashboard,
+        NavbarTypes.Users,
+        NavbarTypes.Clinics,
+        NavbarTypes.RolesPermissions,
+        NavbarTypes.Referrals,
+        NavbarTypes.TLMeetings,
+        NavbarTypes.Documents,
+        NavbarTypes.CMS,
+        [NavbarTypes.Reporting],
+        NavbarTypes.Messaging,
+        NavbarTypes.SiteData,
+        [NavbarTypes.Settings],
+        NavbarTypes.Notifications,
+        NavbarTypes.CHWsOptedOut,
+      ];
+
+      const navigationList = [
+        ...navigationData?.GetAllNavigation,
+        ...navigationFromFrontend,
+      ];
+
+      const adminNavigationList: INavigation[] = navigationList?.filter(
+        (item) =>
+          adminNavigationItems?.some((adminItem) =>
+            item?.name?.includes(adminItem)
+          )
+      );
+
+      const userRolePermissions = user?.roles
+        ?.map((x) => x?.permissions)
+        .flat();
+      const userPermissionIds = userRolePermissions?.map((x) => x.id);
+      if (isAdministrator || isSuperAdmin) {
+        setNavigation(
+          adminNavigationList.slice().sort((a, b) => a.sequence - b.sequence)
+        );
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))
@@ -107,31 +151,24 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [user, navigationData]);
-
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+  }, [user, navigationData, isAdministrator, isSuperAdmin]);
 
   const getLogoUrl = () => {
-    if (
-      theme &&
-      theme.images &&
-      data?.tenantContext.applicationName !== TenantContext.GrowGreat
-    ) {
+    if (theme && theme.images) {
       return theme.images.logoUrl;
     } else {
       return ggLogo;
     }
   };
 
-  const signOutClick = () => {
+  const signOutClick = useCallback(() => {
     logout();
+
     history.push('/');
-  };
+  }, [logout, history]);
 
   const gotToProfile = () => {
-    history.push('/profile');
+    history.push(ROUTES.PROFILE);
   };
 
   const displayInformationPanel = () => {
@@ -143,6 +180,42 @@ export default function Shell() {
       ),
     });
   };
+
+  const renderFooter = useMemo(() => {
+    return (
+      <div className="mb-2 flex flex-col px-4 md:py-4">
+        <Button
+          className={
+            'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
+          }
+          type="filled"
+          color="uiMid"
+          icon="InformationCircleIcon"
+          textColor="white"
+          text="Help"
+          // TODO: Implement help
+          onClick={() => {}}
+        />
+        <Button
+          className={
+            'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
+          }
+          type="filled"
+          color="uiMid"
+          onClick={signOutClick}
+          icon="ArrowLeftIcon"
+          textColor="white"
+          text="Logout"
+        />
+      </div>
+    );
+  }, [signOutClick]);
+
+  const renderBadgeValue = useMemo(() => {
+    return !!notReadNotifications?.length
+      ? `${notReadNotifications?.length}`
+      : '';
+  }, [notReadNotifications?.length]);
 
   return (
     <div className="flex h-full overflow-hidden bg-gray-100">
@@ -204,7 +277,7 @@ export default function Shell() {
                   alt="Workflow"
                 />
               </div>
-              <div className="mt-5 h-0 flex-1 overflow-y-auto">
+              <div className="mt-5 flex-1 flex-grow overflow-y-auto">
                 <nav className="space-y-1 px-2">
                   {navigation?.map((item) => (
                     <MenuItem
@@ -214,6 +287,7 @@ export default function Shell() {
                   ))}
                 </nav>
               </div>
+              {renderFooter}
             </div>
           </Transition.Child>
           <div className="w-14 flex-shrink-0" aria-hidden="true"></div>
@@ -231,53 +305,20 @@ export default function Shell() {
             </div>
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
-                {navigation?.map((item) => (
-                  <div key={`${item} + ${Math.random()}`}>
-                    <MenuItem
-                      key={`${item.name}-${new Date().getTime()}`}
-                      item={item}
-                    ></MenuItem>
+                {navigation
+                  ?.filter((item) => !item.hide)
+                  ?.map((item) => (
+                    <div key={`${item} + ${Math.random()}`}>
+                      <MenuItem
+                        key={`${item.name}-${new Date().getTime()}`}
+                        item={item}
+                      ></MenuItem>
 
-                    <hr className=" border-b-uiLight mx-2 border-dashed" />
-                  </div>
-                ))}
+                      <hr className=" border-b-uiLight mx-2 border-dashed" />
+                    </div>
+                  ))}
               </nav>
-              <div className="mb-2 flex flex-col px-4 md:py-4">
-                <Button
-                  className={
-                    'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
-                  }
-                  type="filled"
-                  // isLoading={isLoading}
-                  color="uiMid"
-                  // disabled={!isValid}
-                  // onClick={signIn}
-                  icon="InformationCircleIcon"
-                >
-                  <Typography
-                    type="body"
-                    color="white"
-                    text={'Help'}
-                    fontSize={'24'}
-                  ></Typography>
-                </Button>
-                <Button
-                  className={
-                    'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
-                  }
-                  type="filled"
-                  color="uiMid"
-                  onClick={signOutClick}
-                  icon="ArrowLeftIcon"
-                >
-                  <Typography
-                    type="body"
-                    color="white"
-                    text={'Logout'}
-                    fontSize={'24'}
-                  ></Typography>
-                </Button>
-              </div>
+              {renderFooter}
             </div>
           </div>
         </div>
@@ -302,12 +343,27 @@ export default function Shell() {
                   width="25"
                 />
               )}
-
               <span className="pl-2 font-semibold text-black">
                 {activeNavigation?.name}
               </span>
             </div>
-            <div className="ml-4 flex items-center md:ml-6">
+            <div className="ml-4 flex items-center gap-2 md:ml-6">
+              <div className="cursor-pointer">
+                <IconBadge
+                  onClick={() => {
+                    history.push(ROUTES.NOTIFICATIONS_VIEW);
+                    setActiveNavigation(
+                      NotificationNavigationModel?.name as any
+                    );
+                  }}
+                  badgeColor={'errorMain'}
+                  badgeTextColor={'white'}
+                  icon={'BellIcon'}
+                  iconColor={'darkBackground'}
+                  badgeText={renderBadgeValue}
+                  className="mt-4"
+                />
+              </div>
               <Menu as="div" className="relative ml-3">
                 {({ open }) => (
                   <>
@@ -342,11 +398,9 @@ export default function Shell() {
           </div>
         </div>
 
-        <main className="focus:outline-none relative flex-1 overflow-y-auto bg-white">
-          <div className="h-full py-6">
-            <div className="mx-auto h-full bg-white px-4 sm:px-6 md:px-8">
-              <AuthRoutes />
-            </div>
+        <main className="focus:outline-none bg-adminPortalBg relative flex-1 overflow-y-auto">
+          <div className="bg-adminPortalBg h-full">
+            <AuthRoutes />
           </div>
         </main>
       </div>

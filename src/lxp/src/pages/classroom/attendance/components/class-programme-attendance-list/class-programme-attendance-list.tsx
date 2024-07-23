@@ -1,15 +1,16 @@
-import { getAvatarColor, LearnerDto } from '@ecdlink/core';
+import { getAvatarColor } from '@ecdlink/core';
 import {
   AttendanceListDataItem,
   AttendanceStackedList,
+  AttendanceStatus,
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { childrenSelectors } from '@store/children';
-import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
+import { LearnerDto } from '@/models/classroom/classroom-group.dto';
 
 export const ClassProgrammeAttendanceList: React.FC<
   ClassProgrammeAttendanceListProps
@@ -19,49 +20,57 @@ export const ClassProgrammeAttendanceList: React.FC<
   onAttendanceUpdated,
   attendanceDate,
   isMultipleClasses,
+  initialAttendanceList,
 }) => {
   const [attendanceList, setAttendanceList] = useState<
     AttendanceListDataItem[]
   >([]);
 
   const children = useSelector(childrenSelectors.getChildren);
-  const childUsers = useSelector(childrenSelectors.getChildUsers);
-  const allLearners = useSelector(
-    classroomsSelectors.getClassroomGroupLearners
-  );
 
   const todayDate = new Date();
   todayDate.setHours(0, 0, 0, 0);
 
   useEffect(() => {
     if (!classroomGroup) return;
+
     const filteredLearners = [];
-    const _allLearners = allLearners.filter((x) => {
+    const classroomGroupLearners = classroomGroup.learners.filter((x) => {
       const startedAttendance = new Date(x.startedAttendance);
       startedAttendance.setHours(0, 0, 0, 0);
 
       return (
-        !Boolean(x.stoppedAttendance) &&
+        x.isActive &&
+        !x.stoppedAttendance &&
         attendanceDate.getTime() >= new Date(startedAttendance).getTime()
       );
     });
 
-    const uniqueLearners = _allLearners.filter((object, index, array) => {
-      return (
-        index ===
-        array.findIndex((newObject) => newObject.userId === object.userId)
-      );
-    });
+    // Probably not required
+    const uniqueLearners = classroomGroupLearners.filter(
+      (object, index, array) => {
+        return (
+          index ===
+          array.findIndex(
+            (newObject) => newObject.childUserId === object.childUserId
+          )
+        );
+      }
+    );
+
     for (const learner of uniqueLearners) {
-      if (learner.classroomGroupId !== classroomGroup.id) continue;
-
       const child = children?.find(
-        (child) => child.userId === learner.userId && child.isActive
+        (child) =>
+          (child.userId === learner.childUserId || child?.user?.id) &&
+          child.isActive
       );
 
-      const childUser = childUsers?.find((y) => y.id === learner.userId);
-
-      if (child && childUser?.firstName && childUser?.surname) {
+      if (
+        child &&
+        !!child.user &&
+        !!child.user.firstName &&
+        !!child.user.surname
+      ) {
         filteredLearners.push(learner);
       }
     }
@@ -75,16 +84,29 @@ export const ClassProgrammeAttendanceList: React.FC<
 
     const attendanceStackList: AttendanceListDataItem[] = learners.map(
       (learner, index) => {
-        const childUser = childUsers?.find((x) => x.id === learner.userId);
+        const child = children?.find(
+          (x) =>
+            x.userId === learner.childUserId ||
+            x?.user?.id === learner.childUserId
+        );
+        const initialStatus = initialAttendanceList?.find(
+          (x) => x.childUserId === learner.childUserId
+        )?.status;
+
         const profileTextString =
-          childUser?.firstName![0] ?? '' + childUser?.surname![0] ?? '';
+          child?.user?.firstName![0] ?? '' + child?.user?.surname![0] ?? '';
 
         return {
-          title: `${childUser?.firstName} ${childUser?.surname}`,
+          title: `${child?.user?.firstName} ${child?.user?.surname}`,
           profileText: profileTextString.toLocaleUpperCase(),
-          attenendeeId: childUser?.id || index.toString(),
+          attenendeeId: child?.user?.id || index.toString(),
           avatarColor: getAvatarColor(),
-          status: 1,
+          status: initialStatus
+            ? initialStatus
+            : isPrimaryClass
+            ? AttendanceStatus.Present
+            : AttendanceStatus.None,
+          disabledAbsentStatus: !isPrimaryClass,
         };
       }
     );
@@ -103,29 +125,25 @@ export const ClassProgrammeAttendanceList: React.FC<
   return (
     <div className={styles.wrapper}>
       {isMultipleClasses && (
-        <div className={'bg-uiBg mt-2 flex w-full flex-col items-start border'}>
+        <div className={'mt-2 mb-2 flex w-full flex-col '}>
           <Typography
             type={'body'}
             weight={'bold'}
             text={classroomGroup?.name}
             color={'black'}
-            className={'mr-1 ml-4'}
           />
           <Typography
-            type={'help'}
+            type={'h4'}
             text={
               isPrimaryClass || attendanceDate.getTime() !== todayDate.getTime()
                 ? 'Mark attendance for all children'
                 : 'Only mark attendance for children who are here today'
             }
-            color={'textLight'}
-            className={'mr-1 ml-4'}
+            color={'textMid'}
           />
         </div>
       )}
-
       <AttendanceStackedList
-        className={'ml-4 w-11/12'}
         scroll={false}
         listItems={attendanceList || []}
         onChange={(updateList: AttendanceListDataItem[]) => {

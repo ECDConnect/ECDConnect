@@ -1,9 +1,10 @@
 ﻿using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
@@ -59,7 +60,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<License, Guid> _licenseRepo;
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
-        private IGenericRepository<Coach, Guid> _coachRepo;
+        private IGenericRepository<Coach, Guid> _coachGenericRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
         private IGenericRepository<TeamLead, Guid> _teamLeadRepo;
         private AuthenticationDbContext _dbContext;
@@ -76,6 +77,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private ILogger<UserMutationExtension> _logger;
         private IReassignmentService __reassignmentService;
         private IServiceProvider _services;
+        private IClassroomService _classroomService;
+        private IAbsenteeService _absenteeService;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -86,15 +89,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             UserLicenseManager userLicenseManager,
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
+            [Service] IClassroomService classroomService,
             ApplicationUserManager userManager,
             [Service] HierarchyEngine hierarchyEngine,
             [Service] ILogger<UserMutationExtension> logger,
-            IServiceProvider services
-            )
+            IServiceProvider services,
+            [Service] IAbsenteeService absenteeService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
+            _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
@@ -108,7 +112,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
-            _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
+            _coachGenericRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
             _calendarEventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>(userContext: _applicationUserId);
             _statementStartupSupportRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
@@ -124,6 +128,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _clubService = clubService;
             _logger = logger;
             _services = services;
+            _classroomService = classroomService;
+            _absenteeService = absenteeService;
         }
 
         private IReassignmentService _reassignmentService
@@ -165,45 +171,59 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
         {
-            PractitionerModel practitionerRecord = new PractitionerModel();
+            var practitionerRecord = new PractitionerModel
+            {
+                Id = practitioner.Id,
+                UserId = practitioner.UserId.Value,
+                IsPrincipal = practitioner.IsPrincipal,
+                IsRegistered = practitioner.IsRegistered,
+                PrincipalHierarchy = practitioner.PrincipalHierarchy,
+                AttendanceRegisterLink = practitioner.AttendanceRegisterLink,
+                MaxChildren = practitioner.MaxChildren,
+                ConsentForPhoto = practitioner.ConsentForPhoto,
+                ParentFees = practitioner.ParentFees,
+                LanguageUsedInGroups = practitioner.LanguageUsedInGroups,
+                SigningSignature = practitioner.SigningSignature,
+                StartDate = practitioner.StartDate,
+                MonthSinceFranchisee = practitioner.MonthSinceFranchisee,
+                ShareInfo = practitioner.ShareInfo,
+                DateLinked = practitioner.DateLinked,
+                DateAccepted = practitioner.DateAccepted,
+                DateToBeRemoved = practitioner.DateToBeRemoved,
+                IsLeaving = practitioner.IsLeaving,
+                Progress = practitioner.Progress,
+                IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough,
+                ProgrammeType = practitioner.ProgrammeType,
+                IsTrainee = practitioner.IsTrainee,
+                CoachHierarchy = practitioner.CoachHierarchy,
+                AttendedChildProgress = practitioner.AttendedChildProgress,
+                UsePhotoInReport = practitioner.UsePhotoInReport,
+                SetupTraineeInitiated = practitioner.SetupTraineeInitiated,
+                IsOnStipend = practitioner.IsOnStipend,
+                StipendType = practitioner.StipendType,
+                Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList(),
+                ClickedCommunityTab = practitioner.ClickedCommunityTab,
+                CommunitySectionViewDate = practitioner.CommunitySectionViewDate
+            };
 
-            practitionerRecord.Id = practitioner.Id;
-            practitionerRecord.UserId = practitioner.UserId.Value;
-            practitionerRecord.User = practitioner.User;
-            practitionerRecord.SiteAddress = practitioner.SiteAddress;
-            practitionerRecord.IsPrincipal = practitioner.IsPrincipal;
-            practitionerRecord.IsRegistered = practitioner.IsRegistered;
-            practitionerRecord.PrincipalHierarchy = practitioner.PrincipalHierarchy;
-            practitionerRecord.AttendanceRegisterLink = practitioner.AttendanceRegisterLink;
-            practitionerRecord.MaxChildren = practitioner.MaxChildren;
-            practitionerRecord.ConsentForPhoto = practitioner.ConsentForPhoto;
-            practitionerRecord.ParentFees = practitioner.ParentFees;
-            practitionerRecord.LanguageUsedInGroups = practitioner.LanguageUsedInGroups;
-            practitionerRecord.SigningSignature = practitioner.SigningSignature;
-            practitionerRecord.StartDate = practitioner.StartDate;
-            practitionerRecord.MonthSinceFranchisee = practitioner.MonthSinceFranchisee;
-            practitionerRecord.ShareInfo = practitioner.ShareInfo;
-            practitionerRecord.DateLinked = practitioner.DateLinked;
-            practitionerRecord.DateAccepted = practitioner.DateAccepted;
-            practitionerRecord.DateToBeRemoved = practitioner.DateToBeRemoved;
-            practitionerRecord.IsLeaving = practitioner.IsLeaving;
-            practitionerRecord.Progress = practitioner.Progress;
-            practitionerRecord.IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough;
-            practitionerRecord.ProgrammeType = practitioner.ProgrammeType;
-            practitionerRecord.IsTrainee = practitioner.IsTrainee;
-            practitionerRecord.CoachHierarchy = practitioner.CoachHierarchy;
-            practitionerRecord.AttendedChildProgress = practitioner.AttendedChildProgress;
-            practitionerRecord.UsePhotoInReport = practitioner.UsePhotoInReport;
-            practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
-            practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
-            practitionerRecord.StipendType = practitioner.StipendType;
+            practitionerRecord.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
 
+            ApplicationUser practitionerUser = _userManager.FindByIdAsync(practitioner.UserId).Result;
+            if (practitionerUser != null) {
+                 practitionerRecord.User = practitionerUser;
+            }
             ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
             if (practitionerRecord != null)
             {
                 practitionerRecord.ClubId = clubMember?.Club?.Id;
                 practitionerRecord.ClubName = clubMember?.Club?.Name;
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
+            }
+            if (practitioner.SiteAddressId != null) {
+                SiteAddress address = _addressRepo.GetById((Guid)practitioner.SiteAddressId);
+                if (address != null) {
+                    practitionerRecord.SiteAddress = address;
+                }
             }
             return practitionerRecord;
         }
@@ -268,17 +288,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return peers;
         }
 
-        public List<Child> GetAllChildrenForPractitioner(string practitionerId)
-        {
-            Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId);
-            if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
-            {
-                var children = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
-                return children;
-            }
-            else return new List<Child>();
-        }
-
         public Practitioner GetPractitionerForChild(string childUserId)
         {
             if (childUserId != null)
@@ -287,66 +296,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 return _practiGenericRepo.GetByUserId(parentUserId.Value);          
             }
             else return null;
-        }
-
-        public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner(string practitionerId)
-        {            
-            return _classGroupRepo.GetListByUserId(practitionerId.ToString());
-        }
-
-        public List<Classroom> GetAllClassroomsForPractitioner(string userIdOfPractitioner)
-        {
-            return _classRepo.GetListByUserId(userIdOfPractitioner);
-        }
-
-        public PrincipalClassroom GetClassroomDetailsForPractitioner(string userId)
-        {                       
-            PrincipalClassroom principalClassroom = new PrincipalClassroom();
-            var practitioner = _practiGenericRepo.GetByUserId(userId);
-            if (practitioner != null)
-            {
-                var principal = ((bool)practitioner.IsPrincipal || (bool)practitioner.IsFundaAppAdmin || practitioner.PrincipalHierarchy == null
-                    ? practitioner 
-                    : _practiGenericRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString()));
-
-                if (principal != null)
-                {
-                    principalClassroom.PrincipalName = string.IsNullOrWhiteSpace(principal.User.FullName) ? principal.User.FullName : principal.User.FullName;
-                    ClassroomGroup classroomGroup = _classGroupRepo.GetByUserId(userId);
-                    Classroom classroom = null;
-
-                    if (classroomGroup != null)
-                    {
-                        classroom = _classRepo.GetById(classroomGroup.ClassroomId);
-                        principalClassroom.ClassroomGroupName = classroomGroup.Name;
-                        principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
-                        ProgrammeType ptype = _programmeRepo.GetAll().Where(p => p.Id == classroomGroup.ProgrammeTypeId).FirstOrDefault();
-                        principalClassroom.ProgrammeTypeName = ptype!=null ? ptype.Description : "";
-                        principalClassroom.ProgrammeTypeId = classroomGroup.ProgrammeTypeId.ToString();
-                    }
-                    else
-                    {
-                        //if no classroomgroup is available to look at, use the classroom for principal
-                        classroom = _classRepo.GetByUserId(principal.UserId.ToString());
-                    }
-                    if (classroom != null)
-                    {
-                        principalClassroom.Name = classroom.Name;
-                        principalClassroom.Id = classroom.Id.ToString();
-                        principalClassroom.InsertedDate = classroom.InsertedDate;
-                        principalClassroom.PreschoolFeeAmount = classroom.PreschoolFeeAmount;
-                        principalClassroom.PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate;
-
-                        if (classroom.SiteAddressId != null)
-                        {
-                            SiteAddress classAddress = _addressRepo.GetById((Guid)classroom.SiteAddressId);
-                            principalClassroom.ClassSiteAddress = classAddress.Name + " " + classAddress.AddressLine1 + " " + classAddress.AddressLine2 + " " + classAddress.AddressLine3 + " " + (classAddress.Province != null ? classAddress.Province.Description : string.Empty) + " " + classAddress.PostalCode;
-                            principalClassroom.ClassSiteAddressId = classAddress.Id.ToString();
-                        }
-                    }
-                }
-            }
-            return principalClassroom;
         }
 
         public List<Practitioner> GetAllPractitionersForPrincipal(string userId)
@@ -493,7 +442,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 practitionerToPromote.IsPrincipal = true;
                 practitionerToPromote.ShareInfo = true;
-                _practiRepo.Update(practitionerToPromote);
+                _practiGenericRepo.Update(practitionerToPromote);
 
                 //now add user to principal
                 var user = _userManager.FindByIdAsync(userId).Result;
@@ -559,7 +508,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     ReplacementValue = "Principal"
                 });
 
-                var classroom = GetClassroomDetailsForPractitioner(practitionerToDemote.UserId.ToString());
+                var classroom = _classroomService.GetClassroomForUser(practitionerToDemote.UserId.Value);
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",
@@ -633,7 +582,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             Trainee trainee = _traineeRepo.GetByUserId(userId);
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
-            Coach coach = _coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
+            Coach coach = _coachGenericRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
             PractitionerTimeline timeline = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
@@ -925,7 +874,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             _traineeRepo.Update(trainee);
             //remove communitysupport notification
-            _notificationService.ExpireNotificationsTypesForUser(userId, TemplateTypeConstants.GainCommunitySupport, null, null, userId);
+            _notificationService.ExpireNotificationsTypesForUser(userId, TemplateTypeConstants.GainCommunitySupport, null, null, Guid.Parse(userId));
             return trainee;
         }
 
@@ -1055,7 +1004,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 trainee.Practitioner = _practiRepo.GetByUserId(userId);
                 // ThreeChildrenRegistered
                 if (trainee.Practitioner != null) { 
-                    var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
+                    var allChildren = _childRepo.GetAll().ToList();
                     if (allChildren.Count >= 3)
                     {
                         timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
@@ -1110,7 +1059,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     latestDate = latestDate.AddDays(7);
                     if (trainee != null)
                     {
-                        Coach coach = _coachRepo.GetByUserId(trainee.Practitioner.CoachHierarchy.ToString());
+                        Coach coach = _coachGenericRepo.GetByUserId(trainee.Practitioner.CoachHierarchy.ToString());
 
                         VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
 
@@ -1238,6 +1187,91 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             teamLead.UpdatedDate = DateTime.Now;
             teamLead.UpdatedBy = _applicationUserId.ToString();
             return _teamLeadRepo.Update(teamLead);
+        }
+
+        public Practitioner AddOAPractitioner(Guid userId, string userName)
+        {
+            var practitioner = _practiRepo.Insert(
+                new Practitioner
+                {
+                    Id = userId,
+                    UserId = userId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = _applicationUserId.ToString(),
+                });
+
+            // also create a dummy pre-school (classroom) for practitioner to test with
+            _classRepo.Insert(new Classroom
+            {
+                Id = Guid.NewGuid(),
+                Name = userName + "'s testing pre-school",
+                UserId = userId,
+                NumberPractitioners = 0,
+                NumberOfAssistants = 0,
+                NumberOfOtherAssistants = 0,
+                IsDummySchool = true,
+                Hierarchy = practitioner.Hierarchy
+            });
+
+            return practitioner;
+        }
+
+        public bool RegisterWLUser(Guid userId)
+        {
+            // This WL user can be a practitioner or coach
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
+            if (practitioner != null)
+            {
+                practitioner.IsRegistered = true;
+                practitioner.StartDate = DateTime.Now;
+                practitioner.UpdatedDate = DateTime.Now;
+                practitioner.UpdatedBy = _applicationUserId.ToString();
+                _practiGenericRepo.Update(practitioner);
+                return true;
+            } 
+            else
+            {
+                var coach = _coachGenericRepo.GetByUserId(userId);
+                if (coach != null)
+                {
+                    coach.IsRegistered = true;
+                    coach.StartDate = DateTime.Now;
+                    coach.UpdatedDate = DateTime.Now;
+                    coach.UpdatedBy = _applicationUserId.ToString();
+                    _coachGenericRepo.Update(coach);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        
+        public bool UpdateWLUserShareInfo(Guid userId, bool shareInfo)
+        {
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
+            if (practitioner != null)
+            {
+                practitioner.ShareInfo = shareInfo;
+                practitioner.UpdatedDate = DateTime.Now;
+                practitioner.UpdatedBy = _applicationUserId.ToString();
+                _practiGenericRepo.Update(practitioner);
+                return true;
+            } 
+            else
+            {
+                var coach = _coachGenericRepo.GetByUserId(userId);
+                if (coach != null)
+                {
+                    coach.ShareInfo = shareInfo;
+                    coach.UpdatedDate = DateTime.Now;
+                    coach.UpdatedBy = _applicationUserId.ToString();
+                    _coachGenericRepo.Update(coach);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

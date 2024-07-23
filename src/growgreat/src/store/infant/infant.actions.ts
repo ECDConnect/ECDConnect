@@ -7,6 +7,7 @@ import {
 } from '@/../../../packages/core/lib';
 import {
   CaregiverModelInput,
+  EventRecord,
   EventRecordType,
   InfantModelInput,
   SiteAddressInput,
@@ -34,6 +35,8 @@ export const InfantActions = {
   GET_COMPLETED_REFERRALS_FOR_INFANT: 'getCompletedReferralsForInfant',
   UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
   ADD_ADDITIONAL_VISIT_FOR_INFANT: 'addAdditionalVisitForInfant',
+  RESTART_VISIT_FOR_INFANT: 'restartVisitForInfant',
+  GET_EVENT_RECORD_BY_ID: 'getEventRecordById',
 };
 
 export interface UpdateInfantCaregiver {
@@ -431,6 +434,60 @@ export const updateVisitDataStatus = createAsyncThunk<
     try {
       if (userAuth?.auth_token) {
         new Referral(userAuth?.auth_token ?? '').updateVisitDataStatus(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const restartVisitForInfant = createAsyncThunk<
+  VisitDto,
+  { existingVisitId: string },
+  ThunkApiType<RootState>
+>(
+  InfantActions.RESTART_VISIT_FOR_INFANT,
+  async ({ existingVisitId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let visit: VisitDto;
+
+      if (userAuth?.auth_token) {
+        visit = await new InfantService(
+          userAuth?.auth_token
+        ).restartVisitForInfant(existingVisitId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return visit;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getEventRecordByClientId = createAsyncThunk<
+  EventRecord,
+  { clientId: string },
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_EVENT_RECORD_BY_ID,
+  async ({ clientId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new EventRecordService(
+          userAuth?.auth_token
+        ).getEventRecordByClientId(clientId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getWeek, getYear } from 'date-fns';
+import { getWeek, getYear, isSameDay, parseISO } from 'date-fns';
 import localForage from 'localforage';
 import {
   getAttendance,
+  getClassroomAttendanceReport,
   getMonthlyAttendanceReport,
   getPreviousWeekAttendance,
+  trackAttendanceSync,
 } from './attendance.actions';
 import { AttendanceState, TrackAttendanceModelInput } from './attendance.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
@@ -13,6 +15,7 @@ const initialState: AttendanceState = {
   attendance: undefined,
   attendanceTracked: undefined,
   monthlyAttendanceRecordsByUser: {},
+  classroomAttendanceOverviewReport: [],
 };
 
 const attendanceSlice = createSlice({
@@ -66,6 +69,66 @@ const attendanceSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getMonthlyAttendanceReport);
+    setThunkActionStatus(builder, getClassroomAttendanceReport);
+    builder.addCase(getClassroomAttendanceReport.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      const startDate = action.meta.arg.startDate;
+      const endDate = action.meta.arg.endDate;
+
+      const index = state.classroomAttendanceOverviewReport.findIndex(
+        (item) =>
+          isSameDay(parseISO(item.startDate), startDate) &&
+          isSameDay(parseISO(item.endDate), endDate)
+      );
+
+      if (index === -1) {
+        state.classroomAttendanceOverviewReport.push({
+          startDate,
+          endDate,
+          data: action.payload.data,
+          dateRefreshed: new Date().toDateString(),
+        });
+      } else {
+        state.classroomAttendanceOverviewReport[index].data =
+          action.payload.data;
+
+        if (!action.payload.retrievedFromCache) {
+          state.classroomAttendanceOverviewReport[index].dateRefreshed =
+            new Date().toDateString();
+        }
+      }
+    });
+    setThunkActionStatus(builder, trackAttendanceSync);
+    builder.addCase(trackAttendanceSync.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      for (const register of action?.payload ?? []) {
+        const programmeOwnerId = register.programmeOwnerId;
+        const date = register.attendanceDate.split('T')[0];
+
+        // reset the dateRefreshed for the monthly attendance report
+        if (
+          programmeOwnerId &&
+          state.monthlyAttendanceRecordsByUser &&
+          state.monthlyAttendanceRecordsByUser[programmeOwnerId]
+        ) {
+          state.monthlyAttendanceRecordsByUser[programmeOwnerId].dateRefreshed =
+            undefined;
+        }
+        state.classroomAttendanceOverviewReport = [];
+        state.attendanceTracked = state.attendanceTracked?.map((x) => {
+          const currentDate = (x.attendanceDate as string).split('T')[0];
+          if (currentDate === date) {
+            return {
+              ...x,
+              synced: true,
+            };
+          }
+          return x;
+        });
+      }
+    });
     builder.addCase(getAttendance.fulfilled, (state, action) => {
       state.attendance = action.payload;
     });
@@ -90,8 +153,10 @@ const attendanceSlice = createSlice({
     });
     builder.addCase(getMonthlyAttendanceReport.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
-      state.monthlyAttendanceRecordsByUser[action.meta.arg.userId] =
-        action.payload;
+      state.monthlyAttendanceRecordsByUser[action.meta.arg.userId] = {
+        data: action.payload,
+        dateRefreshed: new Date().toDateString(),
+      };
     });
   },
 });

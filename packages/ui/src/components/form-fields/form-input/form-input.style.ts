@@ -3,16 +3,24 @@ export const errorStyle =
   'block w-full py-3 pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 export const defaultInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 placeholder-textLight font-h1';
+export const readonlyInputStyle =
+  'text-textDark font-semibold border-none bg-transparent p-0 text-16';
 export const portalDdefaultInputStyle =
+  'font-h1 bg-adminPortalBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 placeholder-textLight font-h1';
+export const adminPortalInputStyle =
   'font-h1 bg-adminPortalBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 placeholder-textLight font-h1';
 export const disabledInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textLight py-3 placeholder-textLight font-h1';
 export const portalDisabledInputStyle =
-  'font-h1 bg-adminPortalBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textLight py-3 placeholder-textLight font-h1';
+  'bg-adminPortalBg focus:outline-none sm:text-md block w-full rounded-lg py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white';
 export const defaultMoneyInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark items-center py-3 pl-5 placeholder-textLight font-h1';
+export const disabledMoneyInputStyle =
+  'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textLight items-center py-3 pl-5 placeholder-textLight font-h1';
 export const label =
   'block text-base leading-snug font-body font-semibold text-textDark';
+export const adminPortalLabel =
+  'block text-base leading-snug font-medium text-gray-800';
 export const disabledLabel =
   'block text-base leading-snug font-body font-semibold text-textLight';
 export const subLabel =
@@ -44,6 +52,6 @@ export function getBorderClass(
   if (value && value.toString().length > maxCharacters) {
     return 'border-errorMain';
   } else {
-    return 'border-secondary';
+    return '';
   }
 }

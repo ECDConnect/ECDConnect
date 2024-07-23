@@ -48,6 +48,8 @@ import {
 import { CoachAboutRouteState } from './coach-about.types';
 import { usePrevious } from 'react-use';
 import { BackToCommunityDialog } from './components/back-to-community-dialog/indext';
+import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
+import { AuthService } from '@/services/AuthService';
 
 export const CoachAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
@@ -55,6 +57,7 @@ export const CoachAbout: React.FC = () => {
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
+  const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -73,6 +76,14 @@ export const CoachAbout: React.FC = () => {
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
 
   const pictureStorageKey = LocalStorageKeys.coachProfilePicture;
+
+  const [oldUserNumber, setOldUserNumber] = useState('');
+
+  useEffect(() => {
+    if (user?.phoneNumber) {
+      setOldUserNumber(user?.phoneNumber);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -135,31 +146,7 @@ export const CoachAbout: React.FC = () => {
     coachAboutFormWatch();
   }, [coachAboutFormWatch]);
 
-  const formatSiteAddressAsText = (user: CoachDto): string => {
-    if (!user || !coach?.siteAddress) return 'Add a work address';
-
-    const address = user?.siteAddress?.ward?.length
-      ? `${user.siteAddress.ward}<br/>`
-      : '';
-
-    if (
-      coach?.siteAddress?.provinceId === undefined ||
-      coach?.siteAddress?.addressLine1 === ''
-    ) {
-      return 'Franchisor Site Address Not Set';
-    } else {
-      return address.concat(`
-        ${coach?.siteAddress?.addressLine1}<br/>
-        ${coach?.siteAddress?.addressLine2}, ${
-        coach?.siteAddress?.addressLine3
-      } ${coach?.siteAddress?.postalCode}
-        <br/>${
-          coach?.siteAddress?.province?.description
-            ? coach?.siteAddress?.province?.description
-            : ''
-        }`);
-    }
-  };
+  const { cellphone } = coachAboutFormWatch();
 
   const setNewStackListItems = (currentUser: CoachDto) => {
     const list: ActionListDataItem[] = [
@@ -202,7 +189,7 @@ export const CoachAbout: React.FC = () => {
           editField({
             label: 'Cellphone Number',
             formFieldName: 'cellphone',
-            value: coachAboutFormGetValues().cellphone,
+            value: cellphone,
           });
         },
       },
@@ -221,33 +208,18 @@ export const CoachAbout: React.FC = () => {
           });
         },
       },
-      {
-        title: 'Work address',
-        subTitle: formatSiteAddressAsText(currentUser),
-        switchTextStyles: true,
-        hasMarkup: true,
-        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
-        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
-        onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT.ADDRESS);
-        },
-      },
-      {
-        title: 'Signature',
-        subTitle: currentUser?.signingSignature
-          ? 'Replace your signature'
-          : 'Add your signature',
-        switchTextStyles: true,
-        actionName: currentUser?.signingSignature ? 'Edit' : 'Add',
-        actionIcon: currentUser?.signingSignature ? 'PencilIcon' : 'PlusIcon',
-        buttonType: 'filled',
-        onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT.SIGNATURE);
-        },
-      },
     ];
     setListItems(list);
+  };
+
+  const handleSaveNewPhone = async () => {
+    // await saveCoachUserData();
+    const resendAuthCode = await new AuthService().SendOAAuthCode(
+      user?.userName!,
+      coachAboutFormGetValues()?.cellphone
+    );
+
+    setOpenVerifyPhoneNumber(true);
   };
 
   const editField = (formInputToLoad: DialogFormInput<CoachAboutModel>) => {
@@ -259,8 +231,12 @@ export const CoachAbout: React.FC = () => {
     if (coachAboutFormState.errors[dialogFormInput.formFieldName]) {
       setDisplayError(true);
     } else {
+      if (dialogFormInput.formFieldName === 'cellphone') {
+        handleSaveNewPhone();
+        return;
+      }
       setEditFieldVisible(false);
-      saveCoachUserData();
+      await saveCoachUserData();
     }
   };
 
@@ -350,21 +326,10 @@ export const CoachAbout: React.FC = () => {
       appDispatch(userActions.updateUser(copy));
     }
 
-    if (!userProfilePicture) {
-      await createNewDocument({
-        data: imageBaseString,
-        userId: user?.id || '',
-        fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${user?.id}.png`,
-      });
-    } else {
-      updateDocument(userProfilePicture, imageBaseString);
-    }
-
     saveCoachUserData(imageBaseString);
   };
 
-  const saveCoachUserData = (imageBaseString: string = '') => {
+  const saveCoachUserData = async (imageBaseString: string = '') => {
     const coachForm = coachAboutFormGetValues();
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
@@ -381,11 +346,38 @@ export const CoachAbout: React.FC = () => {
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
-      appDispatch(userActions.updateUser(userCopy));
-      appDispatch(userThunkActions.updateUser(userCopy));
+      await appDispatch(userActions.updateUser(userCopy));
+      await appDispatch(userThunkActions.updateUser(userCopy));
 
-      appDispatch(coachActions.updateCoach(coachCopy));
-      appDispatch(coachThunkActions.updateCoach(coachCopy));
+      await appDispatch(coachActions.updateCoach(coachCopy));
+      await appDispatch(coachThunkActions.updateCoach(coachCopy));
+
+      setNewStackListItems(coachCopy);
+    }
+  };
+
+  const saveNewPractitionerUserData = async (imageBaseString: string = '') => {
+    const coachForm = coachAboutFormGetValues();
+    const coachCopy = cloneDeep(coach);
+    const userCopy = cloneDeep(user);
+
+    if (coachCopy && userCopy) {
+      userCopy.firstName = coachForm.name;
+      userCopy.surname = coachForm.surname;
+      userCopy.phoneNumber = coachForm?.cellphone;
+      userCopy.email = coachForm.email;
+      userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
+
+      Object.assign(coachCopy.user as UserDto, userCopy);
+
+      await appDispatch(userActions.updateUser(userCopy));
+      await appDispatch(userThunkActions.updateUser(userCopy));
+
+      await appDispatch(coachActions.updateCoach(coachCopy));
+      await appDispatch(coachThunkActions.updateCoach(coachCopy));
 
       setNewStackListItems(coachCopy);
     }
@@ -456,17 +448,6 @@ export const CoachAbout: React.FC = () => {
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
-          {coach?.signingSignature && (
-            <>
-              <img
-                alt="signature"
-                src={coach.signingSignature}
-                style={{ margin: '20px 0 ' }}
-                width="60"
-              />
-              <br />
-            </>
-          )}
         </div>
       </BannerWrapper>
 
@@ -511,7 +492,7 @@ export const CoachAbout: React.FC = () => {
           )}
           <Button
             type="filled"
-            color="primary"
+            color="quatenary"
             className={'w-full'}
             onClick={saveEdit}
           >
@@ -536,7 +517,24 @@ export const CoachAbout: React.FC = () => {
           onDelete={
             userProfilePicture || avatar ? deleteProfilePicture : undefined
           }
+          showEmojiOption={true}
+          isProfileEmojis={true}
         ></PhotoPrompt>
+      </Dialog>
+      <Dialog
+        visible={openVerifyPhoneNumber}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <VerifyPhoneNumberAuthCode
+          closeAction={setOpenVerifyPhoneNumber}
+          username={user?.userName!}
+          handleChangePhoneNumber={saveCoachUserData}
+          isFromEditCellPhone={true}
+          saveNewPractitionerUserData={saveCoachUserData}
+          setEditiCellPhoneNumber={setEditFieldVisible}
+        />
       </Dialog>
     </div>
   );

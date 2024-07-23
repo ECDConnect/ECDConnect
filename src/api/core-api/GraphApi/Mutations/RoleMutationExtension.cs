@@ -28,7 +28,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 Name = name,
                 NormalizedName = normalizedName,
-                TenantId = tenantId
+                TenantId = tenantId,
+                SystemName = normalizedName
             };
 
             var isSuccessful = roleManager.CreateAsync(newRole).Result;
@@ -57,6 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             roleToUpdate.Name = name;
             roleToUpdate.NormalizedName = normalizedName;
+            // roleToUpdate.SystemName = normalizedName;  Not updating - should always stay as the original system defined name.
 
             var isRoleUpdated = roleManager.UpdateAsync(roleToUpdate).Result;
 

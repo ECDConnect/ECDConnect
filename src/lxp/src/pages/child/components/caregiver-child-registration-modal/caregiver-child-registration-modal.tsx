@@ -23,14 +23,15 @@ export const CaregiverChildRegistrationModal: React.FC<
       icon={couldCopyToClipboard ? 'CheckCircleIcon' : 'InformationCircleIcon'}
       iconBorderColor={couldCopyToClipboard ? 'successBg' : 'alertBg'}
       iconColor={couldCopyToClipboard ? 'successMain' : 'infoMain'}
-      title={couldCopyToClipboard ? 'Link Copied' : 'Please Copy Link'}
-      paragraphs={[
-        `You can send this link to ${childDetails.firstName}'s caregiver by pasting it in WhatsApp or in an SMS.`,
-        `You can also access this link on ${childDetails.firstName}'s profile.`,
-      ]}
+      title={couldCopyToClipboard ? 'Link Copied!' : 'Please Copy Link'}
+      detailText={`
+        Go to WhatsApp and send the link to ${childDetails.firstName}’s caregiver, or paste and send it in an SMS.
+
+You can also access this link on ${childDetails.firstName}'s profile.
+        `}
       actionButtons={[
         {
-          colour: 'primary',
+          colour: 'quatenary',
           text: 'Go to WhatsApp',
           textColour: 'white',
           type: 'filled',
@@ -40,9 +41,9 @@ export const CaregiverChildRegistrationModal: React.FC<
           },
         },
         {
-          colour: 'primary',
+          colour: 'quatenary',
           text: 'Close',
-          textColour: 'primary',
+          textColour: 'quatenary',
           type: 'outlined',
           leadingIcon: 'XIcon',
           onClick: () => {
@@ -51,7 +52,7 @@ export const CaregiverChildRegistrationModal: React.FC<
         },
       ]}
     >
-      <Typography
+      {/* <Typography
         className="mb-2"
         onClick={async () => {
           window.prompt('Copy value from input', caregiverUrl);
@@ -60,7 +61,7 @@ export const CaregiverChildRegistrationModal: React.FC<
         color="primary"
         type="unspecified"
         hasMarkup
-      />
+      /> */}
     </ActionModal>
   );
 };

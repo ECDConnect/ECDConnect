@@ -6,6 +6,7 @@ export interface RadioProps
   icon?: ReactElement;
   customIcon?: ReactElement;
   description: string;
+  hint?: string;
   isActivity?: boolean;
   extraButtonIcon?: ReactElement;
   variant?: 'default' | 'slim';
@@ -18,6 +19,7 @@ export const Radio = ({
   icon,
   customIcon,
   description,
+  hint,
   isActivity,
   variant,
   extraButtonIcon,
@@ -28,7 +30,7 @@ export const Radio = ({
   const getContainerStyle = () => {
     if (isActivity) {
       return `text-textMid flex items-center rounded-lg p-4 ${
-        checked ? 'bg-secondaryAccent2' : 'bg-uiBg'
+        checked ? 'bg-quatenaryBg' : 'bg-uiBg'
       }`;
     }
 
@@ -39,7 +41,7 @@ export const Radio = ({
     }
 
     return `text-textDark flex items-center rounded-lg p-4 ${
-      checked ? 'bg-secondaryAccent2 border-secondary border-2' : 'bg-uiBg'
+      checked ? 'bg-quatenaryBg border-quatenary border-2' : 'bg-uiBg'
     }`;
   };
 
@@ -54,8 +56,8 @@ export const Radio = ({
 
     return `mr-2 h-5 w-5 ${
       checked
-        ? 'text-secondary border-secondary'
-        : 'text-tertiary border-tertiary'
+        ? 'text-quatenary border-quatenary'
+        : 'text-tertiary border-primaryAccent2'
     } focus:outline-none ring-transparent`;
   };
 
@@ -87,17 +89,24 @@ export const Radio = ({
         className={getInputStyle()}
       />
       <div className={getLabelStyle()}>
-        {customIcon}
-        {icon && !customIcon && (
-          <span
-            className={`flex h-9 w-9 items-center justify-center rounded-full ${
-              checked ? 'bg-secondary' : 'bg-tertiary'
-            }`}
-          >
-            {icon}
-          </span>
-        )}
-        {description}
+        <div className="flex w-full flex-col">
+          <div className="flex w-full items-center">
+            {customIcon}
+            {icon && !customIcon && (
+              <span
+                className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                  checked ? 'bg-secondary' : 'bg-tertiary'
+                }`}
+              >
+                {icon}
+              </span>
+            )}
+            {description}
+          </div>
+          {hint && (
+            <p className="text-textMid mt-1 text-sm font-normal">{hint}</p>
+          )}
+        </div>
         {extraButtonIcon && (
           <button className="ml-auto" onClick={extraButtonOnClick}>
             {extraButtonIcon}

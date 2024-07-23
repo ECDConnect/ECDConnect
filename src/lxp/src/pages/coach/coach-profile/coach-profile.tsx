@@ -22,6 +22,7 @@ import {
 } from '@ecdlink/ui';
 import { syncThunkActions } from '@/store/sync';
 import { settingActions } from '@/store/settings';
+import { NavigationNames } from '@/pages/navigation';
 
 export const CoachProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
@@ -77,7 +78,7 @@ export const CoachProfile: React.FC = () => {
         subTitleStyle,
         menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         iconColor: 'white',
 
         showIcon: profilePc === undefined,
@@ -92,8 +93,7 @@ export const CoachProfile: React.FC = () => {
         subTitle: 'Password',
         subTitleStyle,
         menuIcon: 'ShieldCheckIcon',
-        menuIconClassName: 'text-white bg-primary',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         showIcon: true,
         iconColor: 'white',
         onActionClick: () => {
@@ -101,13 +101,13 @@ export const CoachProfile: React.FC = () => {
         },
       },
       {
-        title: 'Logout',
+        title: NavigationNames.Logout,
         titleStyle,
-        subTitle: 'Logout',
+        subTitle: 'Sign out of the app',
         subTitleStyle,
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
-        iconBackgroundColor: 'tertiary',
+        iconBackgroundColor: 'quatenary',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -124,7 +124,7 @@ export const CoachProfile: React.FC = () => {
                   actionButtons={[
                     {
                       text: 'Yes, log out',
-                      colour: 'primary',
+                      colour: 'quatenary',
                       onClick: async () => {
                         await handleSync();
                         onSubmit();
@@ -135,9 +135,9 @@ export const CoachProfile: React.FC = () => {
                     },
                     {
                       text: 'No, cancel',
-                      textColour: 'white',
-                      colour: 'primary',
-                      type: 'filled',
+                      textColour: 'quatenary',
+                      colour: 'quatenary',
+                      type: 'outlined',
                       onClick: () => onClose && onClose(),
                       leadingIcon: 'XCircleIcon',
                     },
@@ -165,7 +165,6 @@ export const CoachProfile: React.FC = () => {
       initActive: true,
       child: (
         <div>
-          {isProfileComplete ? null : <CompleteProfile />}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}

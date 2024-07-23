@@ -9,6 +9,7 @@ import {
 
 import jwt_decode from 'jwt-decode';
 import {
+  AuthCodeModel,
   AuthUser,
   Config,
   LocalStorageKeys,
@@ -16,6 +17,7 @@ import {
   PasswordResetModel,
   RegisterRequestModel,
   SimpleUserModel,
+  VerifyInvitationModel,
 } from '@ecdlink/core';
 import {
   AuthenticateUser,
@@ -23,6 +25,9 @@ import {
   UserForgotPassword,
   ResetPasswordConfirmation,
   RegisterNewUser,
+  RegisterNewTeamLead,
+  VerifyInvitationRequest,
+  VerifyCellPhoneNumber,
 } from '../services/auth.service';
 
 export interface AuthContextType {
@@ -33,6 +38,21 @@ export interface AuthContextType {
     baseEndPoint: string
   ) => Promise<boolean>;
   login: (body: LoginRequestModel, baseEndPoint: string) => Promise<boolean>;
+
+  registerTeamLeadUser: (
+    body: RegisterRequestModel,
+    baseEndPoint: string
+  ) => Promise<boolean | any>;
+
+  verifyPhoneNumber: (
+    baseEndPoint: string,
+    body: VerifyInvitationModel
+  ) => Promise<boolean | any>;
+
+  verifyCellphoneNumber: (
+    body: AuthCodeModel,
+    baseEndPoint: string
+  ) => Promise<boolean | any>;
 
   forgotPassword: (
     body: SimpleUserModel,
@@ -100,6 +120,44 @@ export function AuthProvider({
         );
         setAuthenticatedUser(response.data);
         return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  const registerTeamLeadUser = async (
+    body: RegisterRequestModel,
+    baseEndPoint: string
+  ): Promise<boolean> => {
+    try {
+      const response = await RegisterNewTeamLead(baseEndPoint, body);
+
+      if (response.data) {
+        localStorage.setItem(
+          LocalStorageKeys.user,
+          JSON.stringify(response.data)
+        );
+        setAuthenticatedUser(response.data);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  const verifyPhoneNumber = async (
+    baseEndPoint: string,
+    body: VerifyInvitationModel
+  ): Promise<boolean | any> => {
+    try {
+      const response = await VerifyInvitationRequest(baseEndPoint, body);
+
+      if (response) {
+        localStorage.setItem(LocalStorageKeys.user, JSON.stringify(response));
+        return response;
       }
       return false;
     } catch (err) {
@@ -192,6 +250,23 @@ export function AuthProvider({
     }
   };
 
+  const verifyCellphoneNumber = async (
+    body: AuthCodeModel,
+    baseEndPoint: string
+  ): Promise<boolean> => {
+    try {
+      const response = await VerifyCellPhoneNumber(baseEndPoint, body);
+
+      if (response) {
+        localStorage.setItem(LocalStorageKeys.user, JSON.stringify(response));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
   const logout = () => {
     setAuthenticatedUser(undefined);
     localStorage.removeItem(LocalStorageKeys.user);
@@ -207,6 +282,9 @@ export function AuthProvider({
       registerUser,
       logout,
       getAccessTokenPromise,
+      registerTeamLeadUser,
+      verifyPhoneNumber,
+      verifyCellphoneNumber,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [authenticatedUser]

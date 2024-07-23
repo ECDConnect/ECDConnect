@@ -23,7 +23,7 @@ namespace ECDLink.Core.Services.Interfaces
         bool CalculateChildrenRegistrationAdd(string userId);
         bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
         bool CalculateAttendanceSubmitted(string userId, DateTime today);
-        bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);
+        //bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);
        
 
         // SS TODO: Pre-school fees on profile - development pending
@@ -54,8 +54,9 @@ namespace ECDLink.Core.Services.Interfaces
 
         ClinicPointsModel GetPointsDetailsForClinic(Guid clinicId);
         LeagueClinicsModel GetLeagueWithClinicRankings(Guid leagueId, DateTime? quarterStart = null, DateTime? quarterEnd = null);
-        LeagueClinicsModel GetClinicRankingsForOpeningFolders(Guid leagueId, Guid pointsActivityId, Guid categoryId);
+        List<ClinicRankingTargetModel> GetClinicRankingsForActivity(Guid pointsActivityId, DateTime startDate, DateTime endDate);
 
         List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(Guid healthCareWorkerId);
+        List<ClinicWithPointsModel> GetLeagueRankings(Guid leagueId, DateTime startDate, DateTime endDate);
     }
 }

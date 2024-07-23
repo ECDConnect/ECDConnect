@@ -10,6 +10,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { OfflineCard } from '@/components/offline-card/offline-card';
+import { LanguageCode } from '@/i18n/types';
 
 interface VideoProps {
   section: string;
@@ -17,6 +18,11 @@ interface VideoProps {
 
 export const Video = ({ section }: VideoProps) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [videoItem, setVideoItem] = useState(
+    useSelector((state: RootState) =>
+      getVisitVideoBySectionAndLocale(state, section, language.locale)
+    )
+  );
 
   const { isOnline } = useOnlineStatus();
 
@@ -27,20 +33,30 @@ export const Video = ({ section }: VideoProps) => {
     VisitActions.GET_VISIT_VIDEOS
   );
 
-  const video = useSelector((state: RootState) =>
-    getVisitVideoBySectionAndLocale(state, section, language.locale)
-  )?.video;
+  const video = videoItem?.video;
+
+  const availableLanguages: LanguageCode[] = videoItem?.availableLanguages
+    ? videoItem.availableLanguages?.map((item) => {
+        return item?.locale as LanguageCode;
+      })
+    : [language.locale as LanguageCode];
 
   const getVideo = useCallback(async () => {
-    if (video) return;
-
-    appDispatch(
+    const visitVideos = await appDispatch(
       visitThunkActions.getVisitVideos({
         section,
         locale: language.locale,
       })
+    ).unwrap();
+
+    const newVideoItem = visitVideos?.find(
+      (item) => item.section === section && item.locale === language.locale
     );
-  }, [appDispatch, language, section, video]);
+
+    if (newVideoItem) {
+      setVideoItem(newVideoItem);
+    }
+  }, [appDispatch, language.locale, section]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
@@ -70,7 +86,11 @@ export const Video = ({ section }: VideoProps) => {
 
   return (
     <>
-      <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
+      <LanguageSelector
+        showOfflineAlert
+        selectLanguage={setLanguage}
+        availableLanguages={availableLanguages}
+      />
       {renderContent}
     </>
   );

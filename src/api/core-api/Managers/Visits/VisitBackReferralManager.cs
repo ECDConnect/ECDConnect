@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
@@ -54,6 +54,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitDataStatusRepo.Update(entityToUpdate);
 
             return _visitBackReferralRepo.Insert(referral);
+        }
+
+        public void AddVisitBackReferralAdminComment(Guid visiDataStatusId, string comment)
+        {
+            var referral = _visitDataStatusRepo.GetById(visiDataStatusId);
+
+            referral.BackReferralAdminComment = comment;
+
+            _visitDataStatusRepo.Update(referral);
         }
 
         private VisitBackReferral GetVisitBackReferralFromInputModel(VisitBackReferralModel input, string applicationUserId)

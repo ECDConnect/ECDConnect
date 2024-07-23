@@ -28,7 +28,6 @@ export const Dialog: React.FC<DialogProps> = ({
   className = '',
   zIndex,
 }) => {
-  if (visible) console.log(`zIndex: ${zIndex}`);
   return (
     <>
       {visible && (

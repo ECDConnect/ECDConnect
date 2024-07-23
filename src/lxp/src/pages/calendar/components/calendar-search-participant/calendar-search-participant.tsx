@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { practitionerSelectors } from '@/store/practitioner';
-import { UserDto } from '@ecdlink/core';
+import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import * as styles from './calendar-search-participant.styles';
 import { ListDataItem } from '../calendar.types';
 import {
@@ -43,8 +43,9 @@ export const CalendarSearchParticipant: React.FC<
   const { height } = useWindowSize();
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  const isCoach = currentUser?.roles?.some((role) => role.name === 'Coach');
-  // const currentUserIsPrincipal = currentUser?.roles?.some((role) => role.name === 'Principal');
+  const isCoach = currentUser?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const clubs = useSelector(coachSelectors.getCoachClubs);
 

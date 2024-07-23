@@ -13,7 +13,7 @@ export const MaternalDistressStep = ({
   setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
-  const sectionName = 'Maternal distress';
+  const sectionName = 'Maternal distress 1';
 
   useEffect(() => {
     setEnableButton?.(true);

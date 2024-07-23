@@ -27,6 +27,7 @@ import * as styles from '@/components/photo-prompt/photo-prompt.styles';
 import { PhotoPromptActionType } from '@/components/photo-prompt/photo-prompt.types';
 
 export interface PhotoPromptProps extends ComponentBaseProps {
+  acceptedMimeFormats: string[];
   title: string;
   hideEmojiOption?: boolean;
   onClose?: () => void;
@@ -39,6 +40,7 @@ export interface PhotoPromptProps extends ComponentBaseProps {
  **/
 
 export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
+  acceptedMimeFormats,
   title,
   hideEmojiOption,
   onClose,
@@ -99,14 +101,14 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   };
 
   const openCamera = async () => {
-    const imageBaseString = await getImageSourceFromCamera();
+    const imageBaseString = await getImageSourceFromCamera(acceptedMimeFormats);
     if (imageBaseString && onAction) {
       onAction(imageBaseString);
     }
   };
 
   const openGallery = () => {
-    getImageSourceFromFileSystem()
+    getImageSourceFromFileSystem(acceptedMimeFormats)
       .then((dataUrl) => {
         if (dataUrl && onAction) {
           onAction(dataUrl);

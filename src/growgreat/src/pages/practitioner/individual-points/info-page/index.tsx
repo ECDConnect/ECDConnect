@@ -8,7 +8,7 @@ import {
 } from '@/store/healthCareWorker/healthCareWorker.actions';
 import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformationPage } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { IndividualPointsInfoPageRouteState } from './types';
@@ -34,6 +34,17 @@ export const IndividualPointsInfoPage = () => {
 
   const section = 'Community - CHW - Points';
 
+  const infoLanguageOptions = useMemo(
+    () =>
+      info &&
+      info.availableLanguages &&
+      info.availableLanguages.map((language) => ({
+        value: language?.locale || selectedLanguage,
+        label: language?.description || selectedLanguage,
+      })),
+    [info, selectedLanguage]
+  );
+
   const languagesOptions = useMemo(
     () =>
       languages.map((language) => ({
@@ -56,18 +67,21 @@ export const IndividualPointsInfoPage = () => {
     );
   };
 
-  useEffect(() => {
-    appDispatch(getMoreInformation({ locale: 'en-za', section }));
+  const getContent = useCallback(async () => {
+    await appDispatch(
+      getMoreInformation({ locale: 'en-za', section })
+    ).unwrap();
+  }, [appDispatch]);
 
-    // trigger on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => {
+    getContent();
+  }, [getContent]);
 
   return (
     <MoreInformationPage
       title="Points"
       isLoading={isLoading}
-      languages={languagesOptions}
+      languages={infoLanguageOptions || languagesOptions}
       moreInformation={info}
       onClose={onClose}
       selectedLanguage={selectedLanguage}

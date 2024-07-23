@@ -28,6 +28,28 @@ class LanguageService {
     }
     return response.data.data.GetAllLanguage;
   }
+
+  async getOpenLanguages(): Promise<LanguageDto[]> {
+    const apiInstance = api(Config.graphQlApi);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query openLanguage(){
+        openLanguage(){
+            id
+            description
+            locale
+            isActive
+        }
+      }
+      `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Open Languages Failed - Server connection error');
+    }
+
+    return response.data.data.openLanguage;
+  }
 }
 
 export default LanguageService;

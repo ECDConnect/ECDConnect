@@ -1,4 +1,4 @@
-import { PractitionerDto } from '@ecdlink/core';
+import { PractitionerDto, UserPermissionDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -13,6 +13,8 @@ import {
   updatePractitionerShareInfo,
   updatePrincipalInvitation,
   getPractitionerDisplayMetrics,
+  updatePractitionerPermissions,
+  updatePractitionerCommunityTabStatus,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -75,6 +77,7 @@ const practitionerSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, deActivatePractitioner);
     setThunkActionStatus(builder, getPractitionerDisplayMetrics);
+    setThunkActionStatus(builder, getAllPractitioners);
     builder.addCase(
       getPractitionerDisplayMetrics.fulfilled,
       (state, action) => {
@@ -91,6 +94,7 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
       state.practitioners = action.payload;
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(updatePractitionerRegistered.fulfilled, (state) => {
       state.practitioner = { ...state.practitioner, isRegistered: true };
@@ -101,6 +105,15 @@ const practitionerSlice = createSlice({
     builder.addCase(updatePractitionerProgress.fulfilled, (state, action) => {
       state.practitioner = { ...state.practitioner, progress: action.payload };
     });
+    builder.addCase(
+      updatePractitionerCommunityTabStatus.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          clickedCommunityTab: action.payload?.clickedCommunityTab,
+        };
+      }
+    );
     builder.addCase(updatePrincipalInvitation.fulfilled, (state, action) => {
       state.practitioner = {
         ...state.practitioner,
@@ -129,6 +142,34 @@ const practitionerSlice = createSlice({
           ...state.practitioner,
           usePhotoInReport: action.payload,
         };
+      }
+    );
+    builder.addCase(
+      updatePractitionerPermissions.fulfilled,
+      (state, action) => {
+        if (!state.practitioners) {
+          return;
+        }
+
+        const practitioner = state.practitioners.find(
+          (practitioner) => practitioner.userId === action.meta.arg.userId
+        );
+        const newPermissions = action.payload.map(
+          (userPermission) => userPermission as UserPermissionDto
+        );
+        console.log('newPermissions', newPermissions);
+
+        if (!!practitioner) {
+          state.practitioners = [
+            ...state.practitioners?.filter(
+              (practitioner) => practitioner.userId !== action.meta.arg.userId
+            ),
+            {
+              ...practitioner,
+              permissions: newPermissions,
+            },
+          ];
+        }
       }
     );
   },

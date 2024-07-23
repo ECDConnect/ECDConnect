@@ -1,4 +1,11 @@
-import { SetStateAction, useCallback, useEffect, useState } from 'react';
+import {
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   Typography,
   Divider,
@@ -6,6 +13,8 @@ import {
   Button,
   ActionListDataItem,
   Alert,
+  Card,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
@@ -21,9 +30,17 @@ import {
   PractitionerSetupSteps,
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { classroomsSelectors } from '@/store/classroom';
+import { useTenant } from '@/hooks/useTenant';
+import { LocalStorageKeys } from '@ecdlink/core';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
+import { AddNewPractitionerModel } from '../add-practitioner/add-practitioner.types';
 
-interface StackListItems extends ActionListDataItem {
+export interface StackListItems extends ActionListDataItem {
   idNumber: string;
+  phoneNumber?: string;
 }
 
 export default function ConfirmPractitioners({
@@ -41,6 +58,9 @@ export default function ConfirmPractitioners({
 }) {
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
   const practitionersForPrincipal = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -52,21 +72,64 @@ export default function ConfirmPractitioners({
   const [hasTrainees, setHasTrainees] = useState<boolean>();
   const [editPractitioner, setEditPractitioner] =
     useState<RegisterPractitioner>();
-  const [listItems, setListItems] = useState<StackListItems[]>([
-    {
-      title: user?.fullName ?? '',
-      idNumber: user?.idNumber ?? '',
-      subTitle: isFundaAppAdmin ? 'Funda App Administrator' : 'Principal/owner',
-      titleStyle:
-        'text-textDark font-body text-base font-semibold leading-snug ',
-      subTitleStyle: 'text-textMid font-body text-sm leading-5 ',
-    },
-  ]);
+  const clasroom = useSelector(classroomsSelectors.getClassroom);
+  const [listItems, setListItems] = useState<StackListItems[]>([]);
   const isSmartLinkImported = user?.isImported;
+  const [invitingPractitioner, setInvitingPractitioner] =
+    useState<AddNewPractitionerModel>();
+  const inviTePractitionerIdNumber = localStorage
+    .getItem(LocalStorageKeys.practitionerInvitedPrincipalIdNumber)
+    ?.replace(/['"]+/g, '');
+  const hasInvitingPractitioner = useMemo(
+    () =>
+      listItems?.find((item) => item?.idNumber === inviTePractitionerIdNumber),
+    [listItems, inviTePractitionerIdNumber]
+  );
+  const [isLoadingInvitingPractitioner, setIsLoadingInvitingPractitioner] =
+    useState(false);
 
-  const callForHelp = () => {
-    window.open('tel:+27800014817');
-  };
+  useLayoutEffect(() => {
+    if (inviTePractitionerIdNumber) {
+      if (inviTePractitionerIdNumber && !hasInvitingPractitioner) {
+        handleInvitingPractitioner();
+      }
+    }
+  }, [inviTePractitionerIdNumber, hasInvitingPractitioner]);
+
+  const handleInvitingPractitioner = useCallback(async () => {
+    setIsLoadingInvitingPractitioner(true);
+    const _practitioner: any = await new PractitionerService(
+      userAuth?.auth_token!
+    ).getPractitionerByIdNumber(inviTePractitionerIdNumber!);
+
+    setInvitingPractitioner({
+      userId: _practitioner?.appUser?.id,
+      idNumber: _practitioner?.appUser?.idNumber,
+      firstName: _practitioner?.appUser?.firstName,
+    });
+
+    setIsLoadingInvitingPractitioner(false);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (invitingPractitioner) {
+      listItems.push(createStackItem(invitingPractitioner as any));
+
+      const hasPractitioner = principalPractitioners?.find(
+        (prac) => prac?.idNumber === invitingPractitioner?.idNumber
+      );
+
+      if (!hasPractitioner) {
+        principalPractitioners.push(invitingPractitioner as any);
+        setPrincipalPractitioners(principalPractitioners);
+      }
+    }
+  }, [invitingPractitioner]);
+
+  useEffect(() => {
+    if (listItems) {
+    }
+  });
 
   useEffect(() => {
     if (isSmartLinkImported) {
@@ -75,7 +138,7 @@ export default function ConfirmPractitioners({
         if (item?.userId !== user?.id)
           listItems.push(
             createStackItem({
-              firstName: item?.user?.firstName ?? '',
+              firstName: item?.user?.firstName || item?.user?.userName || '',
               surname: item?.user?.surname ?? '',
               idNumber: item?.user?.idNumber ?? '',
               userId: item?.user?.id ?? '',
@@ -83,6 +146,7 @@ export default function ConfirmPractitioners({
               preferId: !!item?.user?.idNumber,
               isRegistered: Boolean(item?.isRegistered),
               isTrainee: Boolean(item?.isTrainee),
+              phoneNumber: item?.user?.phoneNumber || '',
             })
           );
 
@@ -103,6 +167,7 @@ export default function ConfirmPractitioners({
           preferId: !!item?.user?.idNumber,
           isRegistered: Boolean(item?.isRegistered),
           isTrainee: Boolean(item?.isTrainee),
+          phoneNumber: item?.user?.phoneNumber || '',
         });
       });
 
@@ -113,7 +178,14 @@ export default function ConfirmPractitioners({
       setPrincipalPractitioners(principalFilteredList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFundaAppAdmin, isSmartLinkImported, practitioners, user?.idNumber]);
+  }, [
+    isFundaAppAdmin,
+    isSmartLinkImported,
+    listItems,
+    practitioners,
+    user?.id,
+    user?.idNumber,
+  ]);
 
   useEffect(() => {
     if (practitionersForPrincipal?.length) {
@@ -173,14 +245,12 @@ export default function ConfirmPractitioners({
   const createStackItem = useCallback(
     (data: RegisterPractitioner): StackListItems => {
       return {
-        title: `${data.firstName} ${data.surname}`,
+        title: data.firstName ? `${data.firstName}` : data?.phoneNumber || '',
         idNumber: data.idNumber ?? data.passport,
-        subTitle: data.isRegistered ? 'Practitioner' : 'Not on Funda App',
+        subTitle: 'Practitioner',
         titleStyle:
           'text-textDark font-body text-base font-semibold leading-snug ',
-        subTitleStyle: `${
-          data.isRegistered ? 'text-textMid' : 'text-alertDark'
-        } font-body text-sm leading-5 `,
+        subTitleStyle: 'text-textMid',
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         buttonType: 'filled',
@@ -215,12 +285,32 @@ export default function ConfirmPractitioners({
       (l) => l.isRegistered === true
     );
     setAllInFundaApp(allInFunda);
-    const hasTrainees = principalPractitioners.every(
-      (l) => l.isTrainee === true
-    );
-    setHasTrainees(hasTrainees);
-
     setConfirmPractitionerPage(ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS);
+  };
+
+  const handleAddOrEditAnotherPractitionerSubmit = (
+    data: RegisterPractitioner
+  ) => {
+    const indexToEdit = listItems.findIndex(
+      (d) =>
+        d.idNumber === editPractitioner?.idNumber ||
+        d?.phoneNumber === editPractitioner?.phoneNumber
+    );
+
+    if (indexToEdit > -1) {
+      principalPractitioners.splice(indexToEdit, 1);
+      listItems.splice(indexToEdit, 1);
+    }
+
+    listItems.push(createStackItem(data));
+    principalPractitioners.push(data);
+    setPrincipalPractitioners(principalPractitioners);
+    setListItems(listItems);
+
+    const allInFunda = principalPractitioners.every(
+      (l) => l.isRegistered === true
+    );
+    setAllInFundaApp(allInFunda);
   };
 
   const handleConfirmPractitionerSubmit = () => {
@@ -237,75 +327,56 @@ export default function ConfirmPractitioners({
         return (
           <div className="wrapper-with-sticky-button">
             <div className="flex flex-col gap-4 pt-4">
-              <div>
-                <Typography
-                  type={'h2'}
-                  text={'Confirm practitioners'}
-                  color={'textDark'}
-                />
-                <Typography
-                  type={'h4'}
-                  text={
-                    'You can only add SmartStart practitioners to Funda App.'
-                  }
-                  color={'textMid'}
-                />
+              <div className="flex flex-col gap-11">
+                <div className="flex flex-col gap-11">
+                  <div>
+                    <Card
+                      className="bg-uiBg mb-6 flex flex-col items-center gap-3 p-6"
+                      borderRaduis="xl"
+                      shadowSize="lg"
+                    >
+                      <div className="">
+                        <Cebisa />
+                      </div>
+                      <Typography
+                        color="textDark"
+                        text={`If there are other practitioners at ${clasroom?.name}, you can invite them to ${appName}.`}
+                        type={'h3'}
+                        align="center"
+                      />
+                    </Card>
+                  </div>
+                </div>
               </div>
-              {!!hasTrainees && (
-                <div>
-                  <Alert
-                    type={'info'}
-                    title={'One or more of your practitioners is a trainee.'}
-                    list={[
-                      'You will not be able to view their profile or add them to a class until they complete trainee onboarding.',
-                    ]}
+              <Typography
+                type={'h2'}
+                text={
+                  listItems?.length > 0
+                    ? 'Confirm practitioners'
+                    : 'Invite practitioners'
+                }
+                color={'textDark'}
+              />
+
+              {isLoadingInvitingPractitioner ? (
+                <div className="mt-16">
+                  <LoadingSpinner
+                    size="medium"
+                    backgroundColor="uiBg"
+                    spinnerColor="quatenary"
                   />
                 </div>
-              )}
-              {allInFundaApp !== undefined && (
-                <div>
-                  <Alert
-                    type={allInFundaApp ? 'success' : 'warning'}
-                    title={
-                      allInFundaApp
-                        ? 'All practitioners at your programme are registered on Funda app.'
-                        : 'One or more of your practitioners are not registered on Funda App. Ask all of your SmartStart practitioners to register.'
-                    }
-                    list={[
-                      allInFundaApp
-                        ? 'Practitioners have been notified.'
-                        : 'If your practitioners need help, please contact the SmartStart call centre.',
-                    ]}
-                    button={
-                      !allInFundaApp ? (
-                        <Button
-                          text="Contact call centre"
-                          icon="PhoneIcon"
-                          type={'filled'}
-                          color={'primary'}
-                          textColor={'white'}
-                          onClick={callForHelp}
-                        />
-                      ) : (
-                        <></>
-                      )
-                    }
-                  />
-                </div>
-              )}
-              <div>
-                <Divider className="-my-1" dividerType="dashed" />
+              ) : (
                 <StackedList<ActionListDataItem>
                   listItems={listItems}
                   type={'ActionList'}
                 />
-              </div>
-
+              )}
               <div>
                 <Button
                   size="small"
                   type="filled"
-                  color="primary"
+                  color="quatenary"
                   text="Add practitioner"
                   textColor="white"
                   icon="PlusIcon"
@@ -314,6 +385,7 @@ export default function ConfirmPractitioners({
                       ConfirmPractitionersSteps.ADD_PRACTITIONER
                     )
                   }
+                  disabled={isLoadingInvitingPractitioner}
                 />
               </div>
             </div>
@@ -323,10 +395,12 @@ export default function ConfirmPractitioners({
                 size="normal"
                 className="mb-4 w-full"
                 type="filled"
-                color="primary"
-                text="Confirm"
+                color="quatenary"
+                text={
+                  listItems?.length === 0 ? 'Skip' : 'Save & send invitations'
+                }
                 textColor="white"
-                icon="CheckCircleIcon"
+                icon={listItems?.length === 0 ? 'ClockIcon' : 'UploadIcon'}
                 onClick={handleConfirmPractitionerSubmit}
               />
             </div>
@@ -337,11 +411,23 @@ export default function ConfirmPractitioners({
           <AddOrEditPractitioner
             onSubmit={handleAddOrEditPractitionerSubmit}
             formData={editPractitioner}
+            listItems={listItems}
+            setListItems={setListItems}
+            setConfirmPractitionerPage={setConfirmPractitionerPage}
+            handleAddOrEditAnotherPractitionerSubmit={
+              handleAddOrEditAnotherPractitionerSubmit
+            }
           />
         );
       case ConfirmPractitionersSteps.ADD_PRACTITIONER:
         return (
-          <AddOrEditPractitioner onSubmit={handleAddOrEditPractitionerSubmit} />
+          <AddOrEditPractitioner
+            onSubmit={handleAddOrEditPractitionerSubmit}
+            listItems={listItems}
+            handleAddOrEditAnotherPractitionerSubmit={
+              handleAddOrEditAnotherPractitionerSubmit
+            }
+          />
         );
     }
   };

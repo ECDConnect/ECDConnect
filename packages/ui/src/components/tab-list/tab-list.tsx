@@ -1,6 +1,6 @@
 import { TabItem } from './models/TabItem';
 import { useEffect, useState } from 'react';
-import { Tab } from './components/tab/tab';
+import { Tab, TabProps } from './components/tab/tab';
 import * as styles from './tab-list.styles';
 import { ComponentBaseProps } from '../../models/ComponentBaseProps';
 import { classNames } from '../../utils';
@@ -9,6 +9,8 @@ export interface TabListProps extends ComponentBaseProps {
   tabItems: TabItem[];
   setSelectedIndex?: number;
   tabClassName?: string;
+  activeTabClassName?: TabProps['activeTabClassName'];
+  activeTabColour?: TabProps['activeTabColour'];
   tabSelected?: (item: TabItem, tabIndex: number) => void;
 }
 
@@ -19,6 +21,8 @@ export const TabList: React.FC<TabListProps> = ({
   setSelectedIndex,
   className,
   tabClassName,
+  activeTabClassName,
+  activeTabColour,
 }) => {
   const [activeTabIndex, setActiveIndexTab] = useState(0);
   const [activeTabItem, setActiveTabItem] = useState<TabItem>();
@@ -66,6 +70,8 @@ export const TabList: React.FC<TabListProps> = ({
                   tabIndex={0}
                   activeIndex={0}
                   isOnlyTab={true}
+                  activeTabClassName={activeTabClassName}
+                  activeTabColour={activeTabColour}
                 />
               ) : (
                 tabItems.map((item, index) => {
@@ -81,6 +87,8 @@ export const TabList: React.FC<TabListProps> = ({
                       tabIndex={index}
                       activeIndex={activeTabIndex}
                       tabSelected={(idx) => setSelectedTab(item, idx)}
+                      activeTabClassName={activeTabClassName}
+                      activeTabColour={activeTabColour}
                     />
                   );
                 })

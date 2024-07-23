@@ -21,18 +21,12 @@ import {
   deleteMultipleUsers,
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
-import {
-  CheckCircleIcon,
-  ClockIcon,
-  PaperAirplaneIcon,
-  TrashIcon,
-  XCircleIcon,
-} from '@heroicons/react/solid';
+import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { UiTableProps } from './type';
 import { ContentTypes } from '../../../../../../constants/content-management';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import { ConnectUsage } from '../../health-care-worker.types';
+import { columnColor } from '../../../../../../utils/app-usage/app-usage-utils';
 
 export default function UiTable({
   columns = [],
@@ -69,6 +63,10 @@ export default function UiTable({
   const registeredOrInactiveUsers = selectedUsers?.filter(
     (item) => item?.isRegistered === true || item?.isActive === false
   );
+  const registeredUsers = selectedUsers?.filter(
+    (item) => item?.isRegistered === true
+  );
+  const registeredusersIds = registeredUsers?.map((item) => item?.userId);
   const usersWithoutPhoneNumber = selectedUsers?.filter(
     (item) => !item?.user?.phoneNumber
   );
@@ -76,7 +74,9 @@ export default function UiTable({
     (item) => item?.userId
   );
   const filteredRowsByPhoneNumber = selectedRows.filter(
-    (item) => !usersWithoutPhoneNumberIds.includes(item)
+    (item) =>
+      !usersWithoutPhoneNumberIds?.includes(item) &&
+      !registeredusersIds?.includes(item)
   );
   const disableBulkButtons =
     selectedUsers?.length <= registeredOrInactiveUsers?.length;
@@ -160,7 +160,6 @@ export default function UiTable({
       },
     })
       .then((res) => {
-        console.log({ res });
         if (res.data?.bulkDeleteUser?.success.length > 0) {
           setNotification({
             title: ` Successfully Deactivated ${res.data?.bulkDeleteUser?.success.length} Users!`,
@@ -192,7 +191,9 @@ export default function UiTable({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title={`Deactivate $selectedRows?.length - registeredOrInactiveUsers?.length} CHWs?`}
+          title={`Deactivate ${
+            selectedRows?.length - registeredOrInactiveUsers?.length
+          } CHWs?`}
           message={`Are you sure you want to deactivate these CHWs? CHWs will lose their access to CHW Connect immediately. Make sure you have communicated this to CHWs before deactivating them.`}
           btnText={['Yes, deactivate CHWs', 'No, Cancel']}
           hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
@@ -215,6 +216,7 @@ export default function UiTable({
     dialog,
     isAllInactive,
     registeredOrInactiveUsers?.length,
+    selectedRows?.length,
   ]);
 
   const handleBulkInvitation = useCallback(() => {
@@ -225,7 +227,9 @@ export default function UiTable({
           title={`Resend invitation to ${
             selectedRows?.length - registeredOrInactiveUsers?.length
           } CHWs?`}
-          message={`Are you sure you want to send the invitation to the 4 CHWs selected?`}
+          message={`Are you sure you want to send the invitation to the ${
+            selectedRows?.length - registeredOrInactiveUsers?.length
+          } CHWs selected?`}
           btnText={['Yes, resend', 'No, Cancel']}
           hasAlert={isAllInactive || registeredOrInactiveUsers?.length > 0}
           alertMessage={`Note: ${registeredOrInactiveUsers?.length} selected CHWs are already registered or have been deactivated so you cannot resend these invitations.`}
@@ -443,41 +447,6 @@ export default function UiTable({
         </div>
       );
     } else if (column.field === 'connectUsage') {
-      const columnColor = (value?: string) => {
-        const firstWord = value?.split(' ')[0];
-        const isRemoved = firstWord === 'Removed:';
-
-        switch (value) {
-          case ConnectUsage?.InvitationActive:
-            return (
-              <div className="flex items-center gap-0.5">
-                <ClockIcon className="text-infoMain h-5 w-5" />
-                <span className="text-infoMain">{display_value}</span>
-              </div>
-            );
-          // case firstWord
-          case ConnectUsage?.InvitationExpired:
-            return (
-              <div className="flex items-center gap-0.5">
-                <XCircleIcon className="text-alertMain h-5 w-5" />
-                <span className="text-alertMain">{display_value}</span>
-              </div>
-            );
-          default:
-            return isRemoved ? (
-              <div className="flex items-center gap-0.5">
-                <XCircleIcon className="text-alertMain h-5 w-5" />
-                <span className="text-alertMain">{display_value}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-0.5">
-                <CheckCircleIcon className="text-successMain h-5 w-5" />
-                <span className="text-successMain">{display_value}</span>
-              </div>
-            );
-        }
-      };
-
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           <span>{columnColor(display_value)}</span>
@@ -624,14 +593,18 @@ export default function UiTable({
           className="rounded-xl px-6 py-0"
           type="outlined"
           isLoading={deactivating}
-          disabled={deactivating || disableBulkButtons || isAllInactive}
+          disabled={deactivating || isAllInactive}
           color="tertiary"
           onClick={handleBulkDelete}
         >
           <TrashIcon color="tertiary" className="mr-2 h-4 w-4" />
           <Typography
             type="help"
-            color="tertiary"
+            color={
+              deactivating || disableBulkButtons || isAllInactive
+                ? 'textMid'
+                : 'tertiary'
+            }
             text={'Deactivate User'}
           ></Typography>
         </Button>

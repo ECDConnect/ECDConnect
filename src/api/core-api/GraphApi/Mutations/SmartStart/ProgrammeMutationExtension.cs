@@ -87,21 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             };
 
                             dbRepoDaily.Insert(dailyProgramme);
-                        }
-                        
-                    }
-                    foreach (var currentDailyProgrammeElement in currentDailyProgrammes)
-                    {
-                        bool containsItem = dailyProgramesChanged.Any(item => item == currentDailyProgrammeElement.Id);
-                        if (containsItem == false)
-                        {
-                            DailyProgramme dailyProgramme = dbRepoDaily.GetById(currentDailyProgrammeElement.Id);
-                            if (dailyProgramme != null)
-                            {
-                                dailyProgramme.IsActive = false;
-                                dbRepoDaily.Update(dailyProgramme);
-                            }
-                        }
+                        }                        
                     }
                 }
                 else

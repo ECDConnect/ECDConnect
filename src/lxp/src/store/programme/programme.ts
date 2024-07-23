@@ -45,7 +45,10 @@ const programmeSlice = createSlice({
       if (state.programmes) {
         for (let i = 0; i < state.programmes.length; i++) {
           if (state.programmes[i].id === action.payload.programme.id)
-            state.programmes[i] = action.payload.programme;
+            state.programmes[i] = {
+              ...action.payload.programme,
+              synced: false,
+            };
         }
       } else {
         state.programmes = [];
@@ -67,6 +70,10 @@ const programmeSlice = createSlice({
       );
 
       if (indexOfDay < 0) return;
+      state.programmes[indexOfProgramme] = {
+        ...state.programmes[indexOfProgramme],
+        synced: false,
+      };
 
       state.programmes[indexOfProgramme].dailyProgrammes[indexOfDay] =
         action.payload.programmeDay;
@@ -78,17 +85,35 @@ const programmeSlice = createSlice({
     setThunkActionStatus(builder, upsertProgrammes);
     setThunkActionStatus(builder, updateProgrammes);
     builder.addCase(getProgrammes.fulfilled, (state, action) => {
-      state.programmes = action.payload;
+      const localProgrammes =
+        state.programmes?.filter((programme) => !programme?.synced) ?? [];
+      const syncedProgrammes = action.payload?.map((programme) => ({
+        ...programme,
+        synced: true,
+      }));
+
+      state.programmes = [...localProgrammes, ...syncedProgrammes];
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getUserProgrammes.fulfilled, (state, action) => {
-      state.programmes = action.payload;
+      state.programmes = action.payload?.map((programme) => ({
+        ...programme,
+        synced: true,
+      }));
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(upsertProgrammes.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(updateProgrammes.fulfilled, (state, action) => {
+      if (state.programmes && action.payload?.length) {
+        state.programmes = state.programmes.map((programme) => ({
+          ...programme,
+          synced: action.payload?.some(
+            (updatedProgramme) => updatedProgramme.id === programme.id
+          ),
+        }));
+      }
       setFulfilledThunkActionStatus(state, action);
     });
   },

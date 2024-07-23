@@ -1,4 +1,3 @@
-import { ClassroomGroupDto } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { classroomsSelectors } from '@/store/classroom';
@@ -6,6 +5,7 @@ import { AddClassForm } from './add-class-form';
 import { ConfirmClasses } from './confirm-classes';
 import { EditClass } from './edit-class';
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 interface SetupClassesProps {
   title?: string;
@@ -26,9 +26,6 @@ export const SetupClasses = ({
   const classroomGroupsFromStore = useSelector(
     classroomsSelectors.getClassroomGroups
   );
-  const classroomGroupProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammes
-  );
 
   const [currentTitle, setCurrentTitle] = useState(title);
   const [editClassroom, setEditClassroom] = useState<EditClassModel>(
@@ -45,19 +42,15 @@ export const SetupClasses = ({
       const _classroomGroups: ClassroomGroupDto[] = [];
 
       for (const classroomGroup of classroomGroupsFromStore) {
-        const _hold = {
+        _classroomGroups.push({
           ...classroomGroup,
-        };
-        _hold.classProgrammes = classroomGroupProgrammes.filter(
-          (a) => a.classroomGroupId === classroomGroup.id
-        );
-        _classroomGroups.push(_hold);
+        });
       }
 
       setClassroomGroups(_classroomGroups);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroupProgrammes, classroomGroupsFromStore.length]);
+  }, [classroomGroupsFromStore.length]);
 
   const onEditClass = (classroom: EditClassModel) => {
     setEditClassroom(classroom);

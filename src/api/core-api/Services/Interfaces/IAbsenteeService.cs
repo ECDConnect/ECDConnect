@@ -33,6 +33,6 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             bool isRoleAssign = false,
             string roleAssignedToUser = null);
 
-        public int GetAbsenteeCountByUser(string userId);
+        public int GetAbsentDayCountForUser(Guid userId, DateTime startDate, DateTime endDate);
     }
 }

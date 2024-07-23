@@ -12,5 +12,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ContactNumber { get; set; }
         public string ClassroomNames { get; set; }
         public string Title { get; set; }
+
+        public string UserId { get; set; }
     }
 }

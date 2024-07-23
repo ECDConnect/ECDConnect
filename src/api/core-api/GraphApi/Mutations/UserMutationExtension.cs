@@ -7,6 +7,7 @@ using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -49,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input?.IsAdmin ?? false)
             {
-                currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+                currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
                 if (!currentUserIsAdmin)
                 {
@@ -184,23 +185,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input.ResetData is not null) {
                 user.ResetData = input.ResetData;
-            }    
+            }
 
+            // Phone Number
             if (input.PhoneNumber is not null 
                 && input.PhoneNumber != user.PhoneNumber)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
                 user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
-                user.PendingPhoneNumber = null;
             }
 
-            if (input.WhatsAppNumber is not null
+            if (input.WhatsAppNumber != null
                 && input.WhatsAppNumber != user.WhatsAppNumber)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
                 var normalizedWhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
                 user.WhatsAppNumber = UserHelper.NormalizePhoneNumber(normalizedWhatsAppNumber);
-                user.PendingPhoneNumber = null;
             }
 
             if (input.IdNumber is not null 
@@ -208,6 +208,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 auditFields.Add(new AuditChanges() { FieldName = "IdNumber", ValueBefore = user.IdNumber, ValueAfter = input.IdNumber });
                 user.IdNumber = input.IdNumber;
+            }
+
+            if (!string.IsNullOrWhiteSpace(input.UserName))
+            {
                 auditFields.Add(new AuditChanges() { FieldName = "Username", ValueBefore = user.UserName, ValueAfter = input.UserName });
                 user.UserName = input.UserName;
             }
@@ -243,23 +247,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (input?.RaceId is not null 
                 && input.RaceId != user.RaceId)
             {
-                
-                    auditFields.Add(new AuditChanges() { FieldName = "RaceId", ValueBefore = (user.RaceId != null ? user.RaceId.ToString() : null), ValueAfter = (input.RaceId != null ? input.RaceId.ToString() : null) });
+                auditFields.Add(new AuditChanges() { FieldName = "RaceId", ValueBefore = (user.RaceId != null ? user.RaceId.ToString() : null), ValueAfter = (input.RaceId != null ? input.RaceId.ToString() : null) });
                 user.RaceId = input.RaceId;
             }
 
-            if (input.LanguageId is not null)
+            if (input.LanguageId is not null 
+                && input.LanguageId != user.LanguageId)
             {
-                if (input.LanguageId != user.LanguageId)
-                    auditFields.Add(new AuditChanges() { FieldName = "LanguageId", ValueBefore = (user.LanguageId != null ? user.LanguageId.ToString() : null), ValueAfter = (input.LanguageId != null ? input.LanguageId.ToString() : null) });
+                auditFields.Add(new AuditChanges() { FieldName = "LanguageId", ValueBefore = (user.LanguageId != null ? user.LanguageId.ToString() : null), ValueAfter = (input.LanguageId != null ? input.LanguageId.ToString() : null) });
                 user.LanguageId = input.LanguageId;
             }
 
             if (input.FirstName is not null
                 && input.FirstName != user.FirstName)
             {
-                if (input.FirstName != user.FirstName)
-                    auditFields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName, ValueAfter = input.FirstName });
+                auditFields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName, ValueAfter = input.FirstName });
                 user.FirstName = input.FirstName;
                 user.FullName = $"{input.FirstName} {user.Surname}"; //use existing surname incase surname unchanged
             }
@@ -314,18 +316,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.NextOfKinSurname = input.NextOfKinSurname;
             }
 
-            if (input.NextOfKinContactNumber != null)
+            if (input.NextOfKinContactNumber != null
+                && input.NextOfKinContactNumber != user.NextOfKinContactNumber)
             {
-                if (input.NextOfKinContactNumber != user.NextOfKinContactNumber)
-                    auditFields.Add(new AuditChanges() { FieldName = "NextOfKinContactNumber", ValueBefore = user.NextOfKinContactNumber, ValueAfter = input.NextOfKinContactNumber });
+                auditFields.Add(new AuditChanges() { FieldName = "NextOfKinContactNumber", ValueBefore = user.NextOfKinContactNumber, ValueAfter = input.NextOfKinContactNumber });
                 user.NextOfKinContactNumber = input.NextOfKinContactNumber;
-            }
-
-            if (input.WhatsAppNumber != null
-                && input.WhatsAppNumber != user.WhatsAppNumber)
-            {
-                auditFields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
-                user.WhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
             }
 
             // If userId is null, you're prob. an admin, admins are allowed to log into any tenant. Management.
@@ -374,13 +369,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 auditFields.Add(new AuditChanges() { FieldName = "ProfileImageUrl", ValueBefore = user.ProfileImageUrl, ValueAfter = input.ProfileImageUrl });
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
-          
+
             user.UpdatedDate = DateTime.UtcNow;
             var updateResult = await userManager.UpdateAsync(user);
 
             if (auditFields.Count > 0)
             {
-
                 DoAudit(currentUserId.Value, repoFactory, auditFields, Guid.Parse(id));
 
                 if (!updateResult.Succeeded)
@@ -433,26 +427,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);
-            DoAudit(currentUserId, repoFactory, null, Guid.Parse(id));
-
-            // Manage points for user
-            pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId.ToString(), DateTime.UtcNow);
 
             return updateResult.Succeeded;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public async Task<BulkDeactivateResult> BulkDeleteUser(
-          [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] ILogger<UserMutationExtension> _logger,
-          IGenericRepositoryFactory repoFactory,
-          [Service] IPointsEngineService pointsEngineService,
-          ApplicationUserManager userManager,
-          List<string> ids)
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] ILogger<UserMutationExtension> _logger,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IPointsEngineService pointsEngineService,
+            ApplicationUserManager userManager,
+            List<string> ids)
         {
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
-            var executorIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            bool executorIsSuperAdmin = await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
             if (ids is null || ids.Count == 0)
             {
@@ -476,7 +466,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
                 if (isAdmin)
                 {
-                    if (!executorIsAdmin)
+                    if (!executorIsSuperAdmin)
                     {
                         failed.Add(user.Id.ToString());
                         continue;
@@ -486,17 +476,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.LockoutEnabled = true;
                 user.LockoutEnd = DateTime.MaxValue;
                 user.IsActive = false;
-                user.UpdatedDate = DateTime.UtcNow;
 
                 var updateResult = await userManager.UpdateAsync(user);
                 
                 if (updateResult.Succeeded)
                 {
-                    // Manage points for user
-                    var isPractitioner = await userManager.IsInRoleAsync(user, Roles.PRACTITIONER);
-                    if (isPractitioner)
-                        pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId.ToString(), DateTime.UtcNow);
-
                     // Remove any roles
                     var roles = userManager.GetRolesAsync(user).Result;
                     foreach (var role in roles)
@@ -506,14 +490,68 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
 
                     success.Add(user.Id.ToString());
-                    DoAudit(currentUserId, repoFactory, null, user.Id, "Delete"); 
-                } else
+                } 
+                else
                 {
                     failed.Add(user.Id.ToString());
                 }
             }
 
             return new BulkDeactivateResult() { Failed = failed, Success = success };
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public bool BulkReactivateUsers(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] ILogger<UserMutationExtension> _logger,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IPointsEngineService pointsEngineService,
+            ApplicationUserManager userManager,
+            List<Guid> userIds)
+        {
+            if (userIds == null)
+            {
+                throw new ArgumentNullException(nameof(userIds));
+            }
+
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: currentUserId);
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: currentUserId);
+
+            var users = userManager.Users.Where(u => userIds.Contains(u.Id)).ToList();
+
+            foreach (var user in users)
+            {
+                // Reactivate user record
+                user.LockoutEnabled = false;
+                user.LockoutEnd = DateTime.UtcNow;
+                user.IsActive = true;
+
+                // Reset Roles
+                var practitioner = practitionerRepo.GetByUserId(user.Id);
+
+                if (practitioner != null)
+                {
+                    // If principal add to the principal role
+                    if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value)
+                    {
+                        userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+                    }
+                    else
+                    {
+                        userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
+                    }
+                }
+
+                var coach = coachRepo.GetByUserId(user.Id);
+
+                if (coach != null)
+                {
+                    userManager.AddToRoleAsync(user, Roles.COACH);
+                }
+            }
+
+            return true;
         }
 
         // TODO: Shouldn't we check Hierarchy here?

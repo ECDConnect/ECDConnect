@@ -18,6 +18,7 @@ import {
   getReferralsForInfant,
   getCompletedReferralsForInfant,
   updateVisitDataStatus,
+  restartVisitForInfant,
 } from './infant.actions';
 import { InfantState } from './infant.types';
 
@@ -41,6 +42,16 @@ const infantSlice = createSlice({
         for (let i = 0; i < state.infants.length; i++) {
           if (state.infants[i].id === action.payload.id)
             state.infants[i] = action.payload;
+        }
+      }
+    },
+    updateInfantRTHDetails: (state, action: PayloadAction<InfantDto>) => {
+      if (state.infants) {
+        for (let i = 0; i < state.infants.length; i++) {
+          if (state.infants[i].id === action.payload.id) {
+            state.infants[i].weightAtBirth = action.payload.weightAtBirth;
+            state.infants[i].lengthAtBirth = action.payload.lengthAtBirth;
+          }
         }
       }
     },
@@ -115,6 +126,15 @@ const infantSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addAdditionalVisitForInfant.fulfilled, (state, action) => {
+      if (state.visits) {
+        state.visits = [...state.visits, action.payload];
+      } else {
+        state.visits = [action.payload];
+      }
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(restartVisitForInfant.fulfilled, (state, action) => {
       if (state.visits) {
         state.visits = [...state.visits, action.payload];
       } else {

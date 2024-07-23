@@ -3,10 +3,8 @@ import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult'
 
 export interface EditAttendanceRegisterProps extends ComponentBaseProps {
   attendanceDate: Date;
-  submitText?: string;
-  onComplete: (attendanceSuccessList: AttendanceResult) => void;
   onBack: () => void;
   editAttendanceRegisterVisible?: boolean;
   classroomName: string;
-  classroomgroupId: string;
+  classroomGroupId: string;
 }

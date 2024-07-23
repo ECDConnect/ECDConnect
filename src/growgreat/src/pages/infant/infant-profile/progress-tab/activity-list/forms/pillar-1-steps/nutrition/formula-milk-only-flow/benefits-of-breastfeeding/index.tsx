@@ -31,8 +31,8 @@ export const BenefitsOfBreastfeedingStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
-  const sectionName = 'Formula milk only 2';
-  const videoSection = 'Benefits of Breastfeeding';
+  const sectionName = 'Formula milk only';
+  const videoSection = 'Benefits of breastfeeding';
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
 
@@ -114,8 +114,10 @@ export const BenefitsOfBreastfeedingStep = ({
         <HealthPromotion
           title={`Discuss with ${caregiverName}`}
           subTitle="Formula milk only"
+          sectionTitle="Pillar 1: Nutrition (every visit)"
           section={sectionName}
           onClose={() => setIsTip && setIsTip(false)}
+          client={caregiverName}
         />
       </Dialog>
     );

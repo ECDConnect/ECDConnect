@@ -33,12 +33,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return clubService.GetLeagueForUser(userId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-
-        public LeagueClinicsModel GetLeagueById([Service] IPointsEngineService pointsService, Guid leagueId)
-        {
-            var league = pointsService.GetLeagueWithClinicRankings(leagueId);
-            return league;
-        }
     }
 }

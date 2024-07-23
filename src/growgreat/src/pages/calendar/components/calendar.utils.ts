@@ -174,7 +174,6 @@ export const mapTeamLeadToListDataItem = (
       type: 'teamLead',
     },
     rightIcon: '',
-    noClick: true,
   };
 };
 
@@ -192,7 +191,7 @@ export const mapClinicMemberToListDataItemList = (
     icon: TypeInfo['healthCareWorker']?.icon,
     profileDataUrl: member.profileImageUrl,
     title: `${member.firstName} ${member.surname}`,
-    subTitle: 'HCW',
+    subTitle: 'CHW',
     profileText: `${member.firstName && member.firstName[0]}${
       member.surname && member.surname[0]
     }`,
@@ -205,27 +204,8 @@ export const mapClinicMemberToListDataItemList = (
       type: 'healthCareWorker',
     },
     rightIcon: '',
-    noClick: true,
   };
 };
-
-// export const mapClubToListDataItem = (club: ClubDto): ListDataItem => {
-//   return {
-//     id: club.id,
-//     title: club.name,
-//     subTitle: 'Club',
-//     profileText: club.name,
-//     hideAlertSeverity: true,
-//     alertSeverity: 'none',
-//     avatarColor: getAvatarColor() || '',
-//     extraData: {
-//       firstName: club.name,
-//       surname: '',
-//       isClub: true,
-//     },
-//     rightIcon: '',
-//   };
-// };
 
 const getTypeOrder = (type?: ParticipantType): number => {
   if (type === 'mother') return 1;
@@ -244,32 +224,6 @@ export const sortListDataItems = (items: ListDataItem[]) => {
     return 1;
   });
 };
-
-/*
-export const getEventAction = (
-  event: CalendarEventModel
-): CalendarEventActionModel | null => {
-  if (!!event.action) return event.action;
-
-  if (
-    !!event.eventType &&
-    event.eventType.toLowerCase() === 'coaching circle'
-  ) {
-    return {
-      buttonName: `Start ${event.eventType.toLowerCase()}`,
-      url: '/community',
-      state: {
-        activeTabIndex: 2,
-        isFromDashboard: false,
-        addCoachCircle: true,
-        eventDate: event.start,
-      },
-    } as CalendarEventActionModel;
-  }
-
-  return null;
-};
-*/
 
 export const mapIdsToCalendarEventParticipants = (
   participantUserIds: string[],

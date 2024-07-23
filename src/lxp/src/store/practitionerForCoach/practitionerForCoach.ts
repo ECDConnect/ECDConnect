@@ -5,8 +5,6 @@ import {
   getChildProgressReportsStatusForUser,
   getPractitionerById,
   getPractitionersForCoach,
-  getUserExpensesForCoach,
-  getUserIncomeForCoach,
   getUserStatementsForCoach,
   updateUserContactStatusForStatement,
 } from './practitionerForCoach.actions';
@@ -75,7 +73,7 @@ const practitionerForCoachSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getChildProgressReportsStatusForUser);
-
+    setThunkActionStatus(builder, getPractitionersForCoach);
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitionerForCoach = action.payload;
     });
@@ -89,6 +87,7 @@ const practitionerForCoachSlice = createSlice({
 
         state.practitionersForCoach = practitionersForCoach;
       }
+      setFulfilledThunkActionStatus(state, action);
     });
 
     builder.addCase(getUserPointsSummaryForCoach.fulfilled, (state, action) => {
@@ -118,28 +117,6 @@ const practitionerForCoachSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
-
-    builder.addCase(getUserIncomeForCoach.fulfilled, (state, action) => {
-      state.statementsForPractitionerUser = {
-        ...state.statementsForPractitionerUser,
-        [action.meta.arg.userId]: {
-          ...state.statementsForPractitionerUser[action.meta.arg.userId],
-          incomeDateLoaded: new Date().toISOString(),
-          unsubmittedIncomeItems: action.payload,
-        },
-      };
-    });
-
-    builder.addCase(getUserExpensesForCoach.fulfilled, (state, action) => {
-      state.statementsForPractitionerUser = {
-        ...state.statementsForPractitionerUser,
-        [action.meta.arg.userId]: {
-          ...state.statementsForPractitionerUser[action.meta.arg.userId],
-          expensesDateLoaded: new Date().toISOString(),
-          unsubmittedExpenseItems: action.payload,
-        },
-      };
-    });
 
     builder.addCase(
       getChildProgressReportsStatusForUser.fulfilled,

@@ -4,8 +4,6 @@ using HotChocolate;
 using System;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Abstractrions.Constants;
-using Microsoft.AspNetCore.Identity;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using System.Collections.Generic;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -16,6 +14,8 @@ using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Models;
 
 namespace ECDLink.Api.CoreApi.Services
 {
@@ -28,6 +28,7 @@ namespace ECDLink.Api.CoreApi.Services
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly Guid _applicationUserId;
         private IGenericRepository<Absentees, Guid> _absenteeRepo;
+        private readonly IHolidayService<Holiday> _holidayService;
 
         public AbsenteeService(
             IHttpContextAccessor contextAccessor,
@@ -35,6 +36,7 @@ namespace ECDLink.Api.CoreApi.Services
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager,
+            IHolidayService<Holiday> holidayService,
             HierarchyEngine hierarchyEngine)
         {
             _repositoryFactory = repositoryFactory;
@@ -44,6 +46,7 @@ namespace ECDLink.Api.CoreApi.Services
             _hierarchyEngine = hierarchyEngine;
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _absenteeRepo = repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
+            _holidayService = holidayService;
         }
 
         public Absentees AddAbsenteeForPractitioner(
@@ -287,17 +290,38 @@ namespace ECDLink.Api.CoreApi.Services
 
         }
 
-        public int GetAbsenteeCountByUser(string userId)
+        public int GetAbsentDayCountForUser(Guid userId, DateTime startDate, DateTime endDate)
         {
-            var startCount = DateTime.Now.GetStartOfPreviousMonth();
-            var endCount = DateTime.Now.GetStartOfMonth();
             var absentees = _absenteeRepo.GetAll()
-                .Where(a => a.UserId == Guid.Parse(userId))
-                .Where(a => a.AbsentDate < endCount && a.AbsentDate >= startCount)
-                .Where(a => a.AbsentDateEnd.HasValue == false || (a.AbsentDateEnd.HasValue && (a.AbsentDate.Date == a.AbsentDateEnd.Value.Date)))
+                .Where(a => 
+                    a.UserId == userId
+                    && a.AbsentDate < endDate
+                    && (!a.AbsentDateEnd.HasValue || (a.AbsentDateEnd >= startDate)))
                 .ToList();
 
-            return absentees.Count;
+            var daysAbsent = new List<DateTime>();
+
+            foreach (var absense in absentees)
+            {
+                var leaveStart = absense.AbsentDate < startDate ? startDate : absense.AbsentDate; // Ignore absense days before our start
+                var leaveEnd = !absense.AbsentDateEnd.HasValue 
+                    ? absense.AbsentDate // Only one days leave
+                    : absense.AbsentDateEnd.Value > endDate 
+                        ? endDate : absense.AbsentDateEnd.Value; // Ignore leave days after our end date
+
+                daysAbsent.AddRange(leaveStart.DaysBetween(leaveEnd));
+            }
+
+            // Remove holidays
+            var holidays = _holidayService.GetHolidays(startDate, endDate, "en-za").Select(x => x.Day).ToList();
+            daysAbsent.Except(holidays);
+                        
+            var count = daysAbsent
+                .Where(x => x.DayOfWeek != DayOfWeek.Saturday && x.DayOfWeek != DayOfWeek.Sunday) // Remove weekends
+                .Distinct() // Ensure unique days (could be overlapping leave logged)
+                .Count();
+
+            return count;
         }
     }
 }

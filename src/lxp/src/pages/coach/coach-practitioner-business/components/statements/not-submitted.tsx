@@ -1,11 +1,13 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
-import { useHistory, useLocation, useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import { traineeSelectors } from '@/store/trainee';
 import { WhatsappCall } from '../contact/whatsapp-call';
+import ROUTES from '@routes/routes';
+import { format } from 'date-fns';
 
 export type StatementNotSubmittedProps = {
   month: string;
@@ -13,7 +15,6 @@ export type StatementNotSubmittedProps = {
 };
 
 export const StatementNotSubmitted: React.FC<StatementNotSubmittedProps> = ({
-  month,
   onBack,
 }) => {
   const { isOnline } = useOnlineStatus();
@@ -21,12 +22,6 @@ export const StatementNotSubmitted: React.FC<StatementNotSubmittedProps> = ({
   const { userId } = useParams<PractitionerBusinessParams>();
   const practitioner = useSelector(getPractitionerByUserId(userId));
   const practitionerFirstName = practitioner?.user?.firstName;
-  const timeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
-  const hasStartUpSupport =
-    timeline?.startUpSupportStartDate !== null &&
-    timeline?.startUpSupportEndDate !== null;
 
   return (
     <>
@@ -34,7 +29,7 @@ export const StatementNotSubmitted: React.FC<StatementNotSubmittedProps> = ({
         size="small"
         renderOverflow
         displayOffline={!isOnline}
-        title="Not submitted"
+        title="No income/expenses"
         onBack={onBack}
         className="p-4"
       >
@@ -42,63 +37,38 @@ export const StatementNotSubmitted: React.FC<StatementNotSubmittedProps> = ({
           <div className="w-11/12">
             <div>
               <Typography
-                className="mt-4 text-left"
+                className="mt-4"
                 color="textDark"
-                text={`${practitionerFirstName} has not submitted their ${month} income statement yet.`}
+                text={`No income or expenses added`}
+                type={'h2'}
+              />
+              <Typography
+                className="mt-4"
+                color="textMid"
+                text={format(new Date(), 'dd MMM yyyy')}
+                type={'body'}
+              />
+            </div>
+            <div>
+              <Typography
+                className="mt-4"
+                color="textDark"
+                text={`Remind ${practitionerFirstName} to complete income statements every month.`}
                 type={'h3'}
               />
             </div>
-
-            <div>
-              <Typography
-                className="mt-2 text-left"
-                color="textMid"
-                text={`Remind ${practitionerFirstName} to submit income statements by the 7th of every month.`}
-                type={'body'}
-              />
-            </div>
-
-            {hasStartUpSupport && (
-              <>
-                <div>
-                  <Typography
-                    className="mt-2 text-left"
-                    color="textMid"
-                    text={`To receive monthly start-up support, ${practitionerFirstName} needs to submit statements on a monthly basis.`}
-                    type={'body'}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    className="mt-2 text-left"
-                    color="textMid"
-                    text={`By submitting statements on time, ${practitionerFirstName} will earn 25 points!`}
-                    type={'body'}
-                  />
-                </div>
-              </>
-            )}
-
-            <div>
-              <Typography
-                className="mt-2 text-left"
-                color="textMid"
-                text={
-                  'Income statements are also valuable for reporting purposes.'
-                }
-                type={'body'}
-              />
-            </div>
-
             <WhatsappCall />
-
             <div className="flex flex-col justify-center">
               <Button
                 shape="normal"
-                color="primary"
+                color="quatenary"
                 type="filled"
                 icon="CheckCircleIcon"
-                onClick={onBack}
+                onClick={() =>
+                  history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+                    practitionerId: userId,
+                  })
+                }
                 className="mt-6 rounded-2xl"
               >
                 <Typography

@@ -3,16 +3,13 @@ import {
   Button,
   BannerWrapper,
   Typography,
-  ButtonGroup,
-  ButtonGroupTypes,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  EditCellPhoneNUmberProps,
-  yesNoOptions,
-} from './edit-cellphone-number.types';
+import { EditCellPhoneNUmberProps } from './edit-cellphone-number.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   EditCellphoneModel,
@@ -22,6 +19,8 @@ import {
 import { useAppDispatch } from '@store';
 import { userActions, userThunkActions } from '@store/user';
 import { cloneDeep } from 'lodash';
+import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
+import { AuthService } from '@/services/AuthService';
 
 export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   setEditiCellPhoneNumber,
@@ -30,6 +29,8 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const [isWhatsappNumber, setIsWhatsappNumber] = useState(true);
+  const [openVerifyPhoneNumber, setOpenVerifyPhoneNumber] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -50,6 +51,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     getValues: getPractitionerInfoFormValues,
     register: practitionerInfoFormRegister,
     control: practitionerInfoFormControl,
+    setValue: setPractitionerInfoFormValues,
     watch,
     clearErrors,
   } = useForm<EditCellphoneModel>({
@@ -61,8 +63,16 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 
   const { errors } = useFormState({ control: practitionerInfoFormControl });
   const { whatsapp, cellphone } = watch();
+  const [oldUserNumber, setOldUserNumber] = useState('');
 
-  const savePractitionerUserData = () => {
+  useEffect(() => {
+    if (user?.phoneNumber) {
+      setOldUserNumber(user?.phoneNumber);
+    }
+  }, []);
+
+  const handleChangePhoneNumber = async () => {
+    setIsLoading(true);
     const practitionerForm = getPractitionerInfoFormValues();
     const copy = cloneDeep(user);
     if (copy) {
@@ -76,17 +86,51 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
 
-      appDispatch(userActions.updateUser(copy));
-      appDispatch(userThunkActions.updateUser(copy));
+      // await appDispatch(userActions.updateUser(copy));
+      // const updatedUser = await appDispatch(userThunkActions.updateUser(copy));
+      // setIsLoading(false);
+
+      const resendAuthCode = await new AuthService().SendOAAuthCode(
+        user?.userName!,
+        practitionerForm.cellphone!
+      );
+
+      if (resendAuthCode) {
+        setOpenVerifyPhoneNumber(true);
+      }
+    }
+  };
+
+  const saveNewPractitionerUserData = async () => {
+    setIsLoading(true);
+    const practitionerForm = getPractitionerInfoFormValues();
+    const copy = cloneDeep(user);
+    if (copy) {
+      copy.firstName = practitionerForm.name;
+      copy.surname = practitionerForm.surname;
+      copy.phoneNumber = cellphone;
+      copy.email = practitionerForm.email!;
+      if (isWhatsappNumber) {
+        copy.whatsappNumber = undefined;
+      } else {
+        copy.whatsappNumber = practitionerForm?.whatsapp;
+      }
+
+      await appDispatch(userActions.updateUser(copy));
+      await appDispatch(userThunkActions.updateUser(copy));
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user?.whatsappNumber) {
-      setIsWhatsappNumber(false);
+    if (user?.phoneNumber) {
+      setPractitionerInfoFormValues('cellphone', user?.phoneNumber);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setPractitionerInfoFormValues, user?.phoneNumber]);
+
+  const handleCloseEditCellphoneNumber = async () => {
+    setEditiCellPhoneNumber(false);
+  };
 
   return (
     <div>
@@ -98,7 +142,8 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         title={'Edit Cellphone Number'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
-        onBack={() => setEditiCellPhoneNumber(false)}
+        onBack={handleCloseEditCellphoneNumber}
+        onClose={handleCloseEditCellphoneNumber}
       ></BannerWrapper>
       <div className="w-12/12 wrapper-with-sticky-button px-4">
         <div className="flex w-full justify-center">
@@ -118,65 +163,50 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 placeholder="+27735279059"
                 className="w-full"
                 register={practitionerInfoFormRegister}
+                value={cellphone}
                 type={'number'}
                 error={!!errors.cellphone ? errors.cellphone : undefined}
               />
-              <div className="mt-4 w-11/12">
-                <Typography
-                  type="h4"
-                  color={'textMid'}
-                  text={'Do you use this cellphone number for WhatsApp?'}
-                  className="z-50 w-11/12 pt-2"
-                />
-              </div>
-              <div>
-                <ButtonGroup<boolean>
-                  options={yesNoOptions}
-                  onOptionSelected={(value: boolean | boolean[]) => {
-                    clearErrors();
-                    setIsWhatsappNumber(value as boolean);
-                  }}
-                  color="secondary"
-                  type={ButtonGroupTypes.Button}
-                  className={'w-full'}
-                  selectedOptions={isWhatsappNumber}
-                />
-              </div>
-              {!isWhatsappNumber && (
-                <FormInput<EditCellphoneModel>
-                  label={'What phone number do you use for WhatsApp?'}
-                  hint={'Optional. Leave blank if you do not use WhatsApp.'}
-                  placeholder="073 527 9059"
-                  type={'number'}
-                  nameProp={'whatsapp'}
-                  className="w-full"
-                  register={practitionerInfoFormRegister}
-                  error={!!errors.whatsapp ? errors.whatsapp : undefined}
-                />
-              )}
             </div>
             <div className="mt-4 -mb-4 h-full w-full self-end">
               <Button
                 size="normal"
                 className="mb-4 w-full"
                 type="filled"
-                color="primary"
+                color="quatenary"
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"
+                isLoading={isLoading}
                 disabled={
                   !!Object.keys(errors).length ||
-                  (!!isWhatsappNumber ? !cellphone : !whatsapp || !cellphone)
+                  !cellphone ||
+                  cellphone === user?.phoneNumber
                 }
                 onClick={() => {
-                  savePractitionerUserData();
-                  setEditiCellPhoneNumber(false);
+                  handleChangePhoneNumber();
                 }}
               />
             </div>
           </div>
         </div>
       </div>
+      <Dialog
+        visible={openVerifyPhoneNumber}
+        position={DialogPosition.Full}
+        className="w-full"
+        stretch
+      >
+        <VerifyPhoneNumberAuthCode
+          closeAction={setOpenVerifyPhoneNumber}
+          username={user?.userName!}
+          handleChangePhoneNumber={handleChangePhoneNumber}
+          isFromEditCellPhone={true}
+          saveNewPractitionerUserData={saveNewPractitionerUserData}
+          setEditiCellPhoneNumber={setEditiCellPhoneNumber}
+          phoneNumber={cellphone}
+        />
+      </Dialog>
     </div>
   );
 };

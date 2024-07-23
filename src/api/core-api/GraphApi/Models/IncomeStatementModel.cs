@@ -10,21 +10,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public Guid Id { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
-        public double IncomeTotal { get; set; }
-        public double ExpenseTotal { get; set;}
-        public double Balance { get; set;}
         public List<IncomeItemModel> IncomeItems { get; set; }
         public List<ExpenseItemModel> ExpenseItems { get; set; }
         public bool ContactedByCoach { get; set; }
+        public bool Downloaded { get; set; }
+
+        public IncomeStatementModel() { }
 
         public IncomeStatementModel(StatementsIncomeStatement statement)
         {
             Id = statement.Id;
             Month = statement.Month;
             Year = statement.Year;
-            ExpenseTotal = statement.ExpenseTotal;
-            IncomeTotal = statement.IncomeTotal;
-            Balance = statement.Balance;
+            Downloaded = statement.Downloaded;
             IncomeItems = statement.IncomeItems.Select(x => new IncomeItemModel(x)).ToList();
             ExpenseItems = statement.ExpenseItems.Select(x => new ExpenseItemModel(x)).ToList();
             ContactedByCoach = statement.ContactedByCoach;

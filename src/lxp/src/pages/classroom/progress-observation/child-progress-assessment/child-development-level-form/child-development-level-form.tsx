@@ -29,9 +29,6 @@ export const ChildDevelopmentLevelForm: React.FC<
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const [developmentLevelsDisplayActive, setDevelopmentLevelsDisplayActive] =
     useState(false);
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
   const { getLevelSummaryText } = useChildProgressObservation(childId);
 
   const levels = useSelector(
@@ -63,7 +60,7 @@ export const ChildDevelopmentLevelForm: React.FC<
       <div className={'bg-white px-4 pt-2'}>
         <Typography
           type={'h1'}
-          text={`${currentChildUser?.firstName}’s developmental stage:`}
+          text={`${currentChild?.user?.firstName}’s developmental stage:`}
           color={'textDark'}
         />
         <div className={'flex flex-row items-center'}>
@@ -82,7 +79,7 @@ export const ChildDevelopmentLevelForm: React.FC<
             type="info"
             title={getLevelSummaryText(
               childAchievedLevelId,
-              currentChildUser?.firstName || ''
+              currentChild?.user?.firstName || ''
             )}
             className={'mt-4'}
             button={

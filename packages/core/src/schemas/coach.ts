@@ -4,7 +4,7 @@ import { CoachDto } from '../models/dto/Users/coach.dto';
 export const initialCoachValues: CoachDto = {
   areaOfOperation: '',
   secondaryAreaOfOperation: '',
-  startDate: undefined,
+  startDate: new Date() || undefined,
   signingSignature: undefined,
   franchisorId: '',
 };

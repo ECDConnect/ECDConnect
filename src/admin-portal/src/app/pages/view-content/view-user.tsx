@@ -35,6 +35,7 @@ import {
   NOTIFICATION,
   passwordSchema,
   PermissionEnum,
+  RoleSystemNameEnum,
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
@@ -43,16 +44,12 @@ import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
   GetHealthCareWorkerByUserId,
-  GetHealthCareWorkerHighlights,
-  GetTenantContext,
   GetUserById,
   ResetUserPassword,
   UpdateUser,
   UserModelInput,
-  healthCareWorkerVisitStatus,
   SendInviteToApplication,
   GetHealthCareWorkerSummaryForPeriod,
-  GetAllTeamLead,
   GetTeamLead,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -61,7 +58,8 @@ import * as yup from 'yup';
 
 import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../components/password-input/password-input';
-import { startOfMonth, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
+import { useTenant } from '../../hooks/useTenant';
 
 const chwSchema = yup.object().shape({
   idNumber: yup
@@ -120,12 +118,10 @@ export function ViewUser(props: any) {
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser, { loading }] = useMutation(UpdateUser);
+  const tenant = useTenant();
 
   let userId = localStorage.getItem('selectedUser');
   const [resetUserPassword] = useMutation(ResetUserPassword);
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
 
   const [getChwById, { data: chwData, refetch: refetchCHW }] = useLazyQuery(
     GetHealthCareWorkerByUserId,
@@ -206,7 +202,7 @@ export function ViewUser(props: any) {
             chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
           } will lose their access to ${
-            data?.tenantContext.applicationName
+            tenant.tenant?.applicationName
           } App immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
@@ -238,7 +234,9 @@ export function ViewUser(props: any) {
   };
 
   let isAdminUser = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Administrator' || role.name === 'Super Admin'
+    (role: any) =>
+      role.systemName === RoleSystemNameEnum.Administrator ||
+      role.systemName === RoleSystemNameEnum.SuperAdmin
   );
 
   const sendInvite = async () => {
@@ -285,7 +283,7 @@ export function ViewUser(props: any) {
   const [editActive, setEditActive] = useState<boolean>(false);
 
   let isCHW = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Community Health Worker'
+    (role: any) => role.systemName === RoleSystemNameEnum.CHW
   );
 
   const {
@@ -531,7 +529,7 @@ export function ViewUser(props: any) {
             !chwData?.GetHealthCareWorkerById?.user?.isActive && (
               <Alert
                 className="mt-5 mb-3"
-                message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
+                message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
                 type="error"
                 // customIcon={<SaveIcon></SaveIcon>}
               />
@@ -539,7 +537,7 @@ export function ViewUser(props: any) {
           {!chwData && userData && !userData?.userById?.isActive && (
             <Alert
               className="mt-5 mb-3"
-              message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
+              message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
               type="error"
               // customIcon={<SaveIcon></SaveIcon>}
             />
@@ -690,9 +688,7 @@ export function ViewUser(props: any) {
         </div>
 
         {(isCHW || props.location.state?.component === 'chw') &&
-          data &&
-          data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat' && (
+          tenant.isCHWConnect && (
             <div className=" flex justify-end">
               <div>
                 <CustomDateRangePicker
@@ -938,7 +934,7 @@ export function ViewUser(props: any) {
 
           <div className="w-2/12">
             <p className="mt-3 w-full text-sm text-gray-600">
-              User added to {data?.tenantContext.applicationName} App :{' '}
+              User added to {tenant.tenant?.applicationName} App :{' '}
               {formatDate(
                 chwData?.GetHealthCareWorkerById?.insertedDate ||
                   userData?.userById?.insertedDate

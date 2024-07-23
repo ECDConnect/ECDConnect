@@ -23,6 +23,7 @@ import { RootState } from '@/store/types';
 import { getInfantById } from '@/store/infant/infant.selectors';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { LanguageCode } from '@/i18n/types';
 
 export const ActivityInfoPage = ({
   section,
@@ -36,6 +37,9 @@ export const ActivityInfoPage = ({
 }) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
   const [isDisplayWalkthrough, setIsDisplayWalkthrough] = useState(false);
+  const [moreInformationList, setMoreInformationList] = useState(
+    useSelector(getMoreInformationSelector)
+  );
 
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -45,7 +49,14 @@ export const ActivityInfoPage = ({
     VisitActions.GET_MORE_INFORMATION
   );
 
-  const moreInformationList = useSelector(getMoreInformationSelector);
+  const moreInformation = moreInformationList?.find(
+    (item) => item.section === section
+  );
+  const availableLanguages: LanguageCode[] = moreInformation?.availableLanguages
+    ? moreInformation.availableLanguages?.map((item) => {
+        return item?.locale as LanguageCode;
+      })
+    : [language.locale as LanguageCode];
 
   const location = useLocation();
   const [, , , infantId] = location.pathname.split('/');
@@ -58,10 +69,6 @@ export const ActivityInfoPage = ({
   };
 
   const renderContent = useMemo(() => {
-    const moreInformation = moreInformationList?.find(
-      (item) => item.section === section
-    );
-
     if (isLoading) {
       return (
         <LoadingSpinner
@@ -221,17 +228,19 @@ export const ActivityInfoPage = ({
     }
 
     return 'Unavailable translation';
-  }, [client, isLoading, moreInformationList, section]);
+  }, [client, isLoading, moreInformation]);
 
   const getContent = useCallback(async () => {
     if (!isOnline) return;
-
-    appDispatch(
+    const newMoreInformation = await appDispatch(
       visitThunkActions.getMoreInformation({
         section,
         locale: language.locale,
       })
-    );
+    ).unwrap();
+    if (newMoreInformation) {
+      setMoreInformationList([newMoreInformation]);
+    }
   }, [appDispatch, isOnline, language.locale, section]);
 
   useEffect(() => {
@@ -255,7 +264,12 @@ export const ActivityInfoPage = ({
       renderOverflow
     >
       <div className="bg-uiBg border-primary border-t px-4">
-        <LanguageSelector showOfflineAlert selectLanguage={setLanguage} />
+        <LanguageSelector
+          showOfflineAlert
+          currentLocale={'en-za'}
+          availableLanguages={availableLanguages}
+          selectLanguage={setLanguage}
+        />
       </div>
       <div className="p-4">
         <Card className="bg-uiBg my-4 flex flex-col justify-center rounded-2xl p-4">

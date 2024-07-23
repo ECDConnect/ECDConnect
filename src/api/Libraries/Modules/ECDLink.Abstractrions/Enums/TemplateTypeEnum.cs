@@ -19,5 +19,10 @@ namespace ECDLink.Abstractrions.Enums
         StatementReminder = 14,
         ProgrammeInvitation = 15,
         TeamLeadInvitation = 16,
+        VerifyCellphoneNumber = 17,
+        AdminUserHelpForm = 18,
+        OAWLAuthCode = 19,
+        PrincipalInvitation = 20,
+        PreSchoolInvitation = 21
     }
 }

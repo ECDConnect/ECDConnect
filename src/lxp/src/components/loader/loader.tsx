@@ -20,7 +20,7 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
 
   return (
     <div
-      style={{ backgroundColor: '#583f99' }}
+      style={{ backgroundColor: '#27385A' }}
       className="top-0 bottom-0 left-0 right-0 z-50 flex h-full w-full flex-col items-center justify-between overflow-hidden"
     >
       <div className="flex flex-col items-center justify-center"></div>

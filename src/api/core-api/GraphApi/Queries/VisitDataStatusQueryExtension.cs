@@ -1,12 +1,21 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -20,5 +29,70 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return visitDataStatusManager.GetReferralDataForVisitId(visitId);
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
+        [UseSorting]
+        public List<PortalReferralsSummaryModel> GetReferralsSummary(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IReferralService referralService,
+            DateTime startDate,
+            DateTime endDate,
+            PagedQueryInput pagingInput = null,
+            List<Guid> clinicIds = null)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            // Need to get list of relevant CHWs, for clinics or for the team leads clinics if none are provided
+            var referrals = referralService.GetReferralsSummary(uId, clinicIds, startDate, endDate);
+
+            if (pagingInput == null)
+            {
+                return referrals;
+            }
+
+            var queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, referrals.AsQueryable());
+
+            if (pagingInput.PageSize is not null)
+                queryable = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, queryable);
+            
+
+            return queryable.ToList();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
+        [UseSorting]
+        public List<PortalReferralModel> GetReferrals(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IReferralService referralService,
+            DateTime startDate,
+            DateTime endDate,
+            Guid? typeId,
+            PagedQueryInput pagingInput = null,
+            List<Guid> clinicIds = null)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            // Need to get list of relevant CHWs, for clinics or for the team leads clinics if none are provided
+            var referrals = referralService.GetReferrals(uId, clinicIds, startDate, endDate).ToList();
+
+            if (typeId.HasValue) 
+            {
+                referrals = referrals.Where(x => x.TypeId == typeId).ToList();
+            }
+
+            if (pagingInput == null)
+            {
+                return referrals;
+            }
+
+            var queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, referrals.AsQueryable());
+
+            if (pagingInput.PageSize is not null)
+                queryable = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, queryable);
+
+
+            return queryable.ToList();
+        }
     }
 }

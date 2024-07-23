@@ -49,6 +49,8 @@ import {
 } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationTagConfig } from '@/constants/notifications';
+import { isVisitInProgress } from '@/helpers/visit-helpers';
+import { Notification } from '@/store/notifications/notifications.types';
 
 const HEADER_HEIGHT = 64;
 
@@ -113,6 +115,15 @@ export const ReferralsTab: React.FC = () => {
       ) && item?.message?.action?.includes(motherId)
   );
 
+  const maternalDistressNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.MaternalDistressReferral.cta ?? ''
+      ) && item?.message?.action?.includes(motherId)
+  );
+
   const dangerSignsNotifications = useSelector(
     notificationsSelectors.getAllNotifications
   ).filter(
@@ -131,9 +142,7 @@ export const ReferralsTab: React.FC = () => {
   );
 
   const isToGetPreviousVisitStatusData =
-    !currentVisit?.attended &&
-    !currentVisit?.visitInProgress &&
-    previousVisit?.id;
+    (!currentVisit || !isVisitInProgress(currentVisit)) && !!previousVisit?.id;
 
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
@@ -278,6 +287,20 @@ export const ReferralsTab: React.FC = () => {
     }
   }, [groupedData]);
 
+  const removeNotifications = useCallback(
+    (notifications: Notification[]) => {
+      notifications.forEach((x) => {
+        appDispatch(notificationActions.removeNotification(x!));
+        appDispatch(
+          disableBackendNotification({
+            notificationId: x?.message?.reference ?? '',
+          })
+        );
+      });
+    },
+    [appDispatch]
+  );
+
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
       setReferralsInput((prevState) => {
@@ -314,20 +337,31 @@ export const ReferralsTab: React.FC = () => {
           const removeRedAlertNotification = newState.find(
             (item) =>
               item.isCompleted &&
-              String(item.comment).includes(
+              (String(item.comment).includes(
                 'was experiencing maternal distress'
-              )
+              ) ||
+                String(item.comment).includes(
+                  'was experiencing the following:'
+                ))
           );
 
           if (redAlertNotifications && removeRedAlertNotification) {
-            redAlertNotifications.forEach((x) => {
-              appDispatch(notificationActions.removeNotification(x!));
-              appDispatch(
-                disableBackendNotification({
-                  notificationId: x?.message?.reference ?? '',
-                })
-              );
-            });
+            removeNotifications(redAlertNotifications);
+          }
+
+          const removeMaternalDistressNotification = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes(
+                'You are struggling and need some support'
+              )
+          );
+
+          if (
+            maternalDistressNotifications &&
+            removeMaternalDistressNotification
+          ) {
+            removeNotifications(maternalDistressNotifications);
           }
 
           const removeDangerSignNotification = newState.find(
@@ -337,14 +371,7 @@ export const ReferralsTab: React.FC = () => {
           );
 
           if (dangerSignsNotifications && removeDangerSignNotification) {
-            dangerSignsNotifications.forEach((x) => {
-              appDispatch(notificationActions.removeNotification(x!));
-              appDispatch(
-                disableBackendNotification({
-                  notificationId: x?.message?.reference ?? '',
-                })
-              );
-            });
+            removeNotifications(dangerSignsNotifications);
           }
         }
         return newState;
@@ -353,8 +380,10 @@ export const ReferralsTab: React.FC = () => {
     [
       appDispatch,
       dangerSignsNotifications,
+      maternalDistressNotifications,
       redAlertNotifications,
       referralsForMother?.length,
+      removeNotifications,
     ]
   );
 
@@ -639,7 +668,10 @@ export const ReferralsTab: React.FC = () => {
 
       {((!isReferralsView &&
         completedreferralsForMother &&
-        completedreferralsForMother?.length > 0) ||
+        completedreferralsForMother?.length > 0 &&
+        !completedreferralsForMother.every(
+          (referral) => referral.backReferralCompleted
+        )) ||
         (Number(walkthroughState?.stepIndex) >= 1 &&
           Number(walkthroughState?.stepIndex) < 3)) && (
         <div className="px-4 pb-4 pt-7">
@@ -830,45 +862,51 @@ export const ReferralsTab: React.FC = () => {
         )}
 
       {/* EMPTY BODY: BACK-REFERRALS -----------------------------------------*/}
-      {!isReferralsView && completedreferralsForMother?.length === 0 && (
-        <div className="px-4 pb-4 pt-7">
-          <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
-            <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
-              <img src={thumbsUpImage} alt="momImage" className="h-26 w-29" />
-            </div>
-            <div className="flex w-full justify-center">
+      {!isReferralsView &&
+        (completedreferralsForMother?.length === 0 ||
+          (completedreferralsForMother &&
+            completedreferralsForMother?.length > 0 &&
+            completedreferralsForMother.every(
+              (referral) => referral.backReferralCompleted
+            ))) && (
+          <div className="px-4 pb-4 pt-7">
+            <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
+              <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
+                <img src={thumbsUpImage} alt="momImage" className="h-26 w-29" />
+              </div>
+              <div className="flex w-full justify-center">
+                <Typography
+                  type="h3"
+                  color={'textDark'}
+                  text={`All back-referrals are completed for ${
+                    mother?.user?.firstName || ''
+                  }! `}
+                  className="pt-2"
+                  align="center"
+                />
+              </div>
               <Typography
-                type="h3"
-                color={'textDark'}
-                text={`All back-referrals are completed for ${
-                  mother?.user?.firstName || ''
-                }! `}
-                className="pt-2"
+                type="body"
                 align="center"
+                weight="skinny"
+                text="You can see your completed back-referrals here."
+                color="textMid"
               />
             </div>
-            <Typography
-              type="body"
-              align="center"
-              weight="skinny"
-              text="You can see your completed back-referrals here."
-              color="textMid"
+
+            {/* Show referral button here when there are no back-referral   */}
+            <Button
+              text="Manage referrals"
+              icon="ClipboardCheckIcon"
+              type="outlined"
+              color="primary"
+              textColor="primary"
+              className="mt-4 w-full"
+              iconPosition="start"
+              onClick={onShowReferrals}
             />
           </div>
-
-          {/* Show referral button here when there are no back-referral   */}
-          <Button
-            text="Manage referrals"
-            icon="ClipboardCheckIcon"
-            type="outlined"
-            color="primary"
-            textColor="primary"
-            className="mt-4 w-full"
-            iconPosition="start"
-            onClick={onShowReferrals}
-          />
-        </div>
-      )}
+        )}
     </div>
   );
 };

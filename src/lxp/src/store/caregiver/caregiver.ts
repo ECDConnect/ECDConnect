@@ -1,12 +1,9 @@
 import { CaregiverDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import {
-  createCaregiver,
-  getCaregivers,
-  updateCaregiver,
-} from './caregiver.actions';
-import { CaregiverContactHistory, CaregiverState } from './caregiver.types';
+import { createCaregiver, updateCaregiver } from './caregiver.actions';
+import { CaregiverState } from './caregiver.types';
+import { setFulfilledThunkActionStatus } from '../utils';
 
 const initialState: CaregiverState = {};
 
@@ -34,33 +31,8 @@ const caregiverSlice = createSlice({
         }
       }
     },
-    updateCaregiverContactHistory: (
-      state,
-      action: PayloadAction<CaregiverContactHistory[]>
-    ) => {
-      state.contactHistory = action.payload;
-    },
-    addContactHistory: (
-      state,
-      action: PayloadAction<CaregiverContactHistory>
-    ) => {
-      if (!state.contactHistory) state.contactHistory = [];
-
-      state.contactHistory.push(action.payload);
-    },
   },
   extraReducers: (builder) => {
-    builder.addCase(getCaregivers.fulfilled, (state, action) => {
-      if (!state.caregivers) {
-        const caregivers = Object.assign([], action.payload) as CaregiverDto[];
-
-        for (let i = 0; i < caregivers.length; i++) {
-          caregivers[i].isActive = true;
-        }
-
-        state.caregivers = caregivers;
-      }
-    });
     builder.addCase(
       updateCaregiver.fulfilled,
       (state, action: PayloadAction<CaregiverDto>) => {
@@ -73,8 +45,11 @@ const caregiverSlice = createSlice({
 
           state.caregivers[caregiverIndex] = action.payload;
         }
+
+        setFulfilledThunkActionStatus(state, action);
       }
     );
+    // TODO: move to children state
     builder.addCase(
       createCaregiver.fulfilled,
       (state, action: PayloadAction<CaregiverDto>) => {

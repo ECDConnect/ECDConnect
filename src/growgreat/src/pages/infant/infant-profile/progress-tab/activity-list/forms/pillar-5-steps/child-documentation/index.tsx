@@ -274,11 +274,7 @@ export const ChildDocumentationStep = ({
   const handleEnableButton = useCallback(() => {
     let isCompleted = false;
 
-    const isBaseQuestionsCompleted = questions.every((item, index) => {
-      if (index > 2) return true;
-
-      return item.answer !== undefined && item.answer !== '';
-    });
+    const isBaseQuestionCompleted = questionOne.answer !== undefined;
 
     if (!!questionThree.answer) {
       if (questionThree.answer === true && isChildBefore1Year)
@@ -301,11 +297,13 @@ export const ChildDocumentationStep = ({
 
     const isAllCompleted =
       questionOne.answer === false ||
-      (isCompleted && isBaseQuestionsCompleted && !errors.idNumber);
+      (isCompleted &&
+        isBaseQuestionCompleted &&
+        (!questionTwo.answer || (!!questionTwo.answer && !errors.idNumber)));
 
     setEnableButton?.(isAllCompleted);
   }, [
-    questions,
+    questionTwo.answer,
     questionThree.answer,
     questionFour.answer,
     questionOne.answer,
@@ -373,7 +371,7 @@ export const ChildDocumentationStep = ({
         {!!questionOne.answer && !hasBirthCertificate && (
           <FormInput
             label={replaceBraces(questionTwo.question, name)}
-            subLabel="The ID number is needed to complete the profile."
+            subLabel="Optional"
             placeholder="e.g 851201123456"
             nameProp={'idNumber'}
             type="number"
@@ -383,7 +381,11 @@ export const ChildDocumentationStep = ({
             onChange={(event) => {
               onOptionSelected(event.target.value, Question.two);
             }}
-            error={!!errors.idNumber ? errors.idNumber : undefined}
+            error={
+              !!questionTwo?.answer && !!errors.idNumber
+                ? errors.idNumber
+                : undefined
+            }
           ></FormInput>
         )}
         {!!questionOne.answer && (

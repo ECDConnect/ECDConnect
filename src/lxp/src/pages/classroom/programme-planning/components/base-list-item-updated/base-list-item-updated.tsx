@@ -24,6 +24,7 @@ interface BaseListItemPropsUpdated extends ComponentBaseProps {
   actionIconColor?: Colours;
   borderRadius?: string;
   routineItem?: ProgrammeRoutineItemDto;
+  disabled?: boolean;
   onClick?: () => void;
   overwritePreSlotRender?: () => JSX.Element;
   overwriteTextSlotRender?: () => JSX.Element;
@@ -44,6 +45,7 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
   iconColor = 'white',
   borderRadius = '',
   routineItem,
+  disabled,
   onClick,
   overwritePreSlotRender,
   overwriteTextSlotRender,
@@ -61,7 +63,8 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
     routineItem?.name === DailyRoutineItemType.freePlay;
 
   return (
-    <div
+    <button
+      disabled={disabled}
       onClick={onClick}
       className={classNames(
         className,
@@ -85,7 +88,7 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
                   routineItem?.name !== DailyRoutineItemType.freePlay && (
                     <Typography
                       {...titleTypography}
-                      className={'text-textLight w-full'}
+                      className={'text-textMid w-full'}
                     />
                   )}
               </>
@@ -94,13 +97,15 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
         </div>
       )}
       <div
-        className={`flex ${isMessageRoutineItem} flex-row items-center justify-end`}
+        className={`flex ${isMessageRoutineItem} flex-row items-center justify-end ${
+          !showTitle && `border-primaryAccent2 ml-1 border-l p-3 pr-0 `
+        }`}
       >
         {overwritePostSlotRender !== undefined && overwritePostSlotRender()}
         {overwritePostSlotRender === undefined &&
           renderIcon(actionIconName, styles.icon(actionIconColor))}
       </div>
-    </div>
+    </button>
   );
 };
 

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useDialog, useTheme } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
   Avatar,
@@ -12,12 +12,11 @@ import {
   Typography,
   UserAvatar,
   ScoreCard,
-  TitleListItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
@@ -33,11 +32,7 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 
-import {
-  practitionerActions,
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { staticDataThunkActions } from '@store/static-data';
@@ -54,56 +49,60 @@ import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
-import { PractitionerInput } from '@ecdlink/graphql';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { CommunityRouteState } from '../community/community.types';
+import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
-import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../community-old/clubs-tab/club/individual-club-view';
 import { notificationTagConfig } from '@/constants/notifications';
-import { UserTypeEnum } from '@/models/auth/user/UserContext';
-const { version } = require('../../../package.json');
+import { childrenThunkActions } from '@/store/children';
+import {
+  TabsItemForPrincipal,
+  TabsItems,
+} from '../classroom/class-dashboard/class-dashboard.types';
+import { NavigationNames } from '../navigation';
+import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
+import { BusinessTabItems } from '../business/business.types';
+import { useTenant } from '@/hooks/useTenant';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { differenceInDays } from 'date-fns';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
-export enum NavigationTypes {
-  Home = 'Home',
-  ClientFolders = 'Classroom',
-  Attendance = 'Attendance',
-  Practitioner = 'Practitioner',
-  Children = 'Children',
-  Programme = 'Programme',
-  Profile = 'Profile',
-  Messages = 'Messages',
-  Training = 'Training',
-  Community = 'Community',
-  Logout = 'Logout',
-  Practitioners = 'Practitioners',
-  Business = 'Business',
-  SmartStarters = 'SmartStarters',
-}
+const { version } = require('../../../package.json');
 
 export interface DashboardRouteState {
   isFromTraineeFlow?: boolean;
+  isFromLogin?: boolean;
+  isFromCompleteProfile?: boolean;
 }
 
 export const Dashboard: React.FC = () => {
+  const location = useLocation<DashboardRouteState>();
+  const isFromLogin = location?.state?.isFromLogin;
+  const isFromCompleteProfile = location?.state?.isFromCompleteProfile;
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
+  const isWhiteLabel = tenant?.isWhiteLabel;
   const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const coach = useSelector(coachSelectors.getCoach);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const { theme } = useTheme();
   const dialog = useDialog();
-  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
@@ -114,7 +113,6 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
@@ -124,6 +122,7 @@ export const Dashboard: React.FC = () => {
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
     !isPrincipal;
+  const isTrialPeriod = useIsTrialPeriod();
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -149,6 +148,26 @@ export const Dashboard: React.FC = () => {
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
+
+  useEffect(() => {
+    if (
+      isFromLogin &&
+      practitioner?.progress === 0 &&
+      !isOpenAccess &&
+      !practitioner?.principalHierarchy
+    ) {
+      history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+    }
+
+    if (
+      isFromLogin &&
+      practitioner?.progress === 0 &&
+      !isOpenAccess &&
+      practitioner?.principalHierarchy
+    ) {
+      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+    }
+  }, []);
 
   // Sync the coach data -> TODO make a better sync method
   useEffect(() => {
@@ -230,34 +249,143 @@ export const Dashboard: React.FC = () => {
     }
   }, [pointsSummaryData]);
 
+  const handleDialog = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+            textAlignment="right"
+            customDetailText={
+              <Typography
+                type="h4"
+                className="mb-7 mt-4"
+                text={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+                color="black"
+                align="center"
+              />
+            }
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => onSubmit(),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+            customIcon={
+              <div className="mb-2 flex w-full justify-center">
+                <Cebisa />
+              </div>
+            }
+          />
+        );
+      },
+    });
+  };
+
+  const handlePrincipalCompleteProfileDialog = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+            textAlignment="right"
+            customDetailText={
+              <Typography
+                type="h4"
+                className="mb-7 mt-4"
+                text={`If you want to change these details later, tap your profile and go to “Preschool”.`}
+                color="black"
+                align="center"
+              />
+            }
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => onSubmit(),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+            customIcon={
+              <div className="mb-2 flex w-full justify-center">
+                <Cebisa />
+              </div>
+            }
+          />
+        );
+      },
+    });
+  };
+
+  const handle30DaysExpired = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            title={`Share more information to keep using ${appName}`}
+            detailText={`Don't worry, ${tenant.tenant?.applicationName} will continue to be completely free. We manage your information responsibly.`}
+            actionButtons={[
+              {
+                text: 'Join or set up a preschool',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
+                },
+                leadingIcon: 'ArrowCircleRightIcon',
+              },
+            ]}
+            icon={'QuestionMarkCircleIcon'}
+            iconClassName="w-96 h-96"
+            className="bg-white"
+            iconColor="infoMain"
+          />
+        );
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (practitioner?.startDate) {
+      const diffDays = differenceInDays(
+        new Date(practitioner?.startDate),
+        new Date()
+      );
+
+      if (diffDays > 30 && !classroom?.preschoolCode && isOpenAccess) {
+        handle30DaysExpired();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFromCompleteProfile && !practitioner?.isPrincipal) {
+      handleDialog();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFromCompleteProfile && practitioner?.isPrincipal) {
+      handlePrincipalCompleteProfileDialog();
+    }
+  }, []);
+
   const { userProfilePicture } = useDocuments();
 
   useEffect(() => {
     convertImageToBase64(offlineStatments, setStorageItem);
   }, []);
-
-  useEffect(() => {
-    if (
-      (practitioner?.isTrainee &&
-        practitioner?.isOnStipend &&
-        completedSteps?.length === 8) ||
-      (practitioner?.isTrainee &&
-        practitioner?.isOnStipend !== true &&
-        completedSteps?.length === 7)
-    ) {
-      const copy = Object.assign({}, practitioner);
-
-      const input: PractitionerInput = {
-        Id: copy.id,
-        IsActive: true,
-        Progress: copy.progress,
-        IsTrainee: false,
-      };
-
-      appDispatch(practitionerActions.updatePractitioner(copy));
-      appDispatch(practitionerThunkActions.updatePractitioner(input));
-    }
-  }, [completedSteps?.length]);
 
   const clubCard = useMemo((): ScoreCardProps => {
     const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
@@ -310,69 +438,66 @@ export const Dashboard: React.FC = () => {
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
-    await appDispatch(settingThunkActions.getSettings({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
-    await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();
-    await appDispatch(
-      programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
-    ).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getProgrammeAttendanceReasons({})
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getGenders({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRaces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
-    await appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getHolidays({ year: today.getFullYear() })
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getReasonsForPractitionerLeaving({})
-    ).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
-    await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
-    await appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap();
-    await appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap();
-    await appDispatch(
-      statementsThunkActions.getAllStatementsFeeType({})
-    ).unwrap();
-    await appDispatch(
-      statementsThunkActions.getAllStatementsContributionType({})
-    ).unwrap();
-    await appDispatch(statementsThunkActions.getAllPayType({})).unwrap();
 
-    await appDispatch(
-      activityThunkActions.getActivities({ locale: 'en-za' })
-    ).unwrap();
+    const promises = [
+      appDispatch(settingThunkActions.getSettings({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRelations({})).unwrap(),
+      appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
+      appDispatch(
+        programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
+      ).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getProgrammeAttendanceReasons({})
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
+      appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getHolidays({ year: today.getFullYear() })
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getReasonsForPractitionerLeaving({})
+      ).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getGrants({})).unwrap(),
+      appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+      appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
+      appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
 
-    await appDispatch(
-      storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
-    ).unwrap();
+      appDispatch(
+        activityThunkActions.getActivities({ locale: 'en-za' })
+      ).unwrap(),
 
-    await appDispatch(
-      programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-    ).unwrap();
+      appDispatch(
+        storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
+      ).unwrap(),
 
-    await appDispatch(
-      calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
-    ).unwrap();
+      appDispatch(
+        programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+      ).unwrap(),
+
+      appDispatch(
+        calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
+      ).unwrap(),
+    ];
+
+    Promise.allSettled(promises);
   };
 
   useEffect(() => {
     if (isOnline) {
       initStaticStoreSetup();
-      if (
-        dashboardNotification?.isNew &&
-        practitioner?.progress! >= 2 &&
-        !practitioner?.isTrainee
-      ) {
+      if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
         appDispatch(notificationActions.resetFrontendNotificationState());
       }
     }
@@ -407,8 +532,8 @@ export const Dashboard: React.FC = () => {
       if (
         userData.roles?.some(
           (role) =>
-            role.name === UserTypeEnum.Practitioner ||
-            role.name === UserTypeEnum.Principal
+            role.systemName === RoleSystemNameEnum.Practitioner ||
+            role.systemName === RoleSystemNameEnum.Principal
         )
       ) {
         const currentDate = new Date();
@@ -437,69 +562,32 @@ export const Dashboard: React.FC = () => {
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
-      position: DialogPosition.Top,
+      position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            className="z-50"
-            icon="XCircleIcon"
-            iconBorderColor="errorBg"
-            iconColor="errorMain"
-            title="Missing programme information"
-            paragraphs={[
-              `Ask the principal of the programme to add you to the programme on Funda App. If you are the principal or if your principal is not a SmartStarter, please update your profile.`,
-            ]}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Add programme details',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'PlusIcon',
-                onClick: isTrainee
-                  ? async () => {
-                      onSubmit();
-                      handleOnlineCallback(() =>
-                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
-                      );
-                    }
-                  : async () => {
-                      onSubmit();
-                      handleOnlineCallback(() =>
-                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-                      );
-                    },
-              },
-              {
-                colour: 'primary',
-                text: 'Close',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'XIcon',
-                onClick: () => {
-                  onSubmit();
-                },
-              },
-            ]}
-          />
-        );
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
       },
     });
   };
 
   const onNavigation = (navItem: any) => {
     if (
-      (((classroom && classroom.id) ||
-        (classroomGroup && classroomGroup.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent &&
-        !missingProgramme) ||
-      isTrainee
+      ((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !missingProgramme
     ) {
       history.push(navItem.href, navItem.params);
-    } else if (navItem.href.includes('classroom')) {
+    } else if (
+      (navItem.href.includes('classroom') &&
+        isWhiteLabel &&
+        missingProgramme) ||
+      (navItem.href.includes('calendar') && isWhiteLabel && missingProgramme) ||
+      (navItem.href.includes('training') && isWhiteLabel && missingProgramme) ||
+      (navItem.href.includes('community') && isWhiteLabel && missingProgramme)
+    ) {
       showCompleteProfileBlockingDialog();
     } else {
       history.push(navItem.href, navItem.params);
@@ -508,197 +596,260 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (isOnline) {
-      if (practitioner?.userId && !classroom) {
+      if (!!practitioner?.userId && !classroom) {
         (async () =>
           await appDispatch(
-            classroomsThunkActions.getClassroomDetailsForPractitioner({
-              id: practitioner?.userId!,
-            })
+            classroomsThunkActions.getClassroom({})
+          ).unwrap())();
+      }
+      if (
+        !!practitioner?.userId &&
+        (!classroomGroups || !classroomGroups.length)
+      ) {
+        (async () =>
+          await appDispatch(
+            classroomsThunkActions.getClassroomGroups({})
           ).unwrap())();
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }
+      (async () =>
+        await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
     }
   }, [practitioner?.userId]);
 
-  const traineeNavigation = [
-    {
-      name: NavigationTypes.Children,
-      href: ROUTES.CLASSROOM.ROOT,
-      params: { activeTabIndex: 1 },
-      current: false,
-    },
-    {
-      name: NavigationTypes.Programme,
-      href: ROUTES.CLASSROOM.ROOT,
-      params: { activeTabIndex: 2 },
-      current: false,
-    },
-  ];
-
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
-      name: NavigationTypes.Home,
-      href: ROUTES.ROOT,
-      icon: 'HomeIcon',
-      current: true,
-    },
-    {
-      name: NavigationTypes.ClientFolders,
-      icon: 'UsersIcon',
-      current: false,
-      nestedChildren:
-        practitioners && isPrincipal && practitioners?.length > 0
-          ? [
-              {
-                name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: 0 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Practitioners,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: 1 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Children,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: 2 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Programme,
-                href: ROUTES.CLASSROOM.ROOT,
-                onNavigation: onNavigation,
-                params: { activeTabIndex: 3 },
-                current: false,
-              },
-            ]
-          : isTrainee
-          ? traineeNavigation
-          : [
-              {
-                name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: 0 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Children,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: 1 },
-                current: false,
-              },
-              {
-                name: NavigationTypes.Programme,
-                href: ROUTES.CLASSROOM.ROOT,
-                params: { activeTabIndex: 2 },
-                current: false,
-              },
-            ],
-    },
-    {
-      name: NavigationTypes.Profile,
-      href: isCoach
-        ? ROUTES.COACH.PROFILE.ROOT
-        : ROUTES.PRACTITIONER.PROFILE.ROOT,
-      icon: 'UserIcon',
-      current: false,
-      showDivider: true,
-    },
-    {
-      name: NavigationTypes.Logout,
-      href: ROUTES.LOGOUT,
-      icon: 'ExternalLinkIcon',
-      current: false,
-      showDivider: true,
-    },
-  ];
-
-  if (!isTrainee) {
-    navigation.splice(3, 0, {
-      name: NavigationTypes.Community,
-      href: isFirstTimeCommunitySection
-        ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
-        : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
-      params: { isFromDashboard: true } as CommunityRouteState,
-      icon: 'BookOpenIcon',
-      current: false,
-      showDivider: true,
-    });
-
-    navigation.splice(3, 0, {
-      name: NavigationTypes.Messages,
+      name: NavigationNames.Messages,
       href: ROUTES.MESSAGES,
-      icon: 'BellIcon',
+      icon: styles.messagesIconName,
       current: false,
       showDivider: true,
       getNotificationCount: () => {
         return newNotificationCount;
       },
-    });
-
-    navigation?.splice(3, 0, {
-      name: NavigationTypes.Training,
+    },
+    {
+      name: NavigationNames.Profile.Profile,
+      href: isCoach
+        ? ROUTES.COACH.PROFILE.ROOT
+        : ROUTES.PRACTITIONER.PROFILE.ROOT,
+      icon: styles.profileIconName,
+      current: false,
+      showDivider: true,
+      nestedChildren: [
+        {
+          name: NavigationNames.Profile.Account,
+          href: ROUTES.PRACTITIONER.ABOUT.ROOT,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Profile.Preschool,
+          href: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Profile.Journey,
+          href: ROUTES.PRACTITIONER.PROFILE.ROOT,
+          onNavigation: onNavigation,
+          params: { tabIndex: 1 },
+          current: false,
+        },
+      ],
+    },
+    {
+      name: NavigationNames.Classroom.Classroom,
+      icon: styles.classroomIconName,
+      current: false,
+      showDivider: true,
+      nestedChildren: isPrincipal // && !!practitioners?.length
+        ? [
+            {
+              name: NavigationNames.Classroom.Classes,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.CLASSES },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Attendance,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.ATTENDANCE },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Progress,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.PROGRESS },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Activities,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.ACTIVITES },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Resources,
+              href: ROUTES.CLASSROOM.ROOT,
+              onNavigation: onNavigation,
+              params: { activeTabIndex: TabsItemForPrincipal.RESOURCES },
+              current: false,
+            },
+          ]
+        : [
+            {
+              name: NavigationNames.Classroom.Classes,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.CLASSES },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Attendance,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.ATTENDANCE },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Progress,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.PROGRESS },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Activities,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.ACTIVITES },
+              current: false,
+            },
+            {
+              name: NavigationNames.Classroom.Resources,
+              href: ROUTES.CLASSROOM.ROOT,
+              params: { activeTabIndex: TabsItems.RESOURCES },
+              current: false,
+            },
+          ],
+    },
+    ...(isPrincipal || isFundaAppAdmin || isTrialPeriod
+      ? [
+          {
+            name: NavigationNames.Business.Business,
+            href: ROUTES.BUSINESS,
+            icon: styles.businessIconName,
+            current: false,
+            showDivider: true,
+            nestedChildren: [
+              {
+                name: NavigationNames.Business.Staff,
+                href: ROUTES.BUSINESS,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: BusinessTabItems.STAFF },
+                current: false,
+              },
+              {
+                name: NavigationNames.Business.Money,
+                href: ROUTES.BUSINESS,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: BusinessTabItems.MONEY },
+                current: false,
+              },
+              {
+                name: NavigationNames.Business.Resources,
+                href: ROUTES.BUSINESS,
+                onNavigation: onNavigation,
+                params: { activeTabIndex: BusinessTabItems.RESOURCES },
+                current: false,
+              },
+            ],
+          },
+        ]
+      : []),
+    {
+      name: NavigationNames.Community.Community,
+      icon: styles.communityIconName,
+      current: false,
+      showDivider: true,
+      nestedChildren: [
+        {
+          name: NavigationNames.Community.Community,
+          href: isFirstTimeCommunitySection
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT,
+          params: { isFromDashboard: true } as CommunityRouteState,
+          onNavigation: onNavigation,
+          current: false,
+        },
+        {
+          name: NavigationNames.Community.Resources,
+          href: isFirstTimeCommunitySection
+            ? ROUTES.COMMUNITY.WELCOME
+            : ROUTES.COMMUNITY.ROOT,
+          params: { isFromDashboard: true } as CommunityRouteState,
+          onNavigation: onNavigation,
+          current: false,
+        },
+      ],
+    },
+    {
+      name: NavigationNames.Training,
       href: ROUTES.TRAINING,
-      icon: 'PresentationChartBarIcon',
+      icon: styles.trainingIconName,
       current: false,
       showDivider: true,
-    });
-  }
-
-  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
-    navigation?.splice(3, 0, {
-      name: NavigationTypes.Business,
-      href: ROUTES.BUSINESS,
-      icon: 'BriefcaseIcon',
+    },
+    {
+      name: NavigationNames.Points,
+      href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
+      icon: styles.pointsIconName,
       current: false,
       showDivider: true,
-    });
-  }
-
-  if (isTrainee) {
-    navigation?.splice(3, 0, {
-      name: NavigationTypes.Business,
-      href: practitioner?.setupTraineeInitiated
-        ? ROUTES.TRAINEE.TRAINEE_ONBOARDING
-        : ROUTES.TRAINEE.SETUP_TRAINEE,
-      icon: 'BriefcaseIcon',
+    },
+    {
+      name: NavigationNames.Calendar,
+      href: ROUTES.CALENDAR,
+      icon: styles.calendarIconName,
       current: false,
       showDivider: true,
-    });
-  }
+    },
+    {
+      name: NavigationNames.Logout,
+      href: ROUTES.LOGOUT,
+      icon: styles.logoutIconName,
+      current: false,
+      showDivider: true,
+    },
+  ];
 
   const navigationForCoach: (NavigationRouteItem | NavigationDropdown)[] = [
     {
-      name: NavigationTypes.Home,
+      name: NavigationNames.Home,
       href: ROUTES.ROOT,
       icon: 'HomeIcon',
       current: true,
     },
     {
-      name: NavigationTypes.SmartStarters,
-      icon: 'AcademicCapIcon',
+      name: NavigationNames.Practitioners,
+      icon: styles.classroomIconName,
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
     },
     {
-      name: NavigationTypes.Profile,
+      name: NavigationNames.Profile.Profile,
       href: isCoach
         ? ROUTES.COACH.PROFILE.ROOT
         : ROUTES.PRACTITIONER.PROFILE.ROOT,
-      icon: 'UserIcon',
+      icon: styles.profileIconName,
       current: false,
       showDivider: true,
     },
     {
-      name: NavigationTypes.Messages,
+      name: NavigationNames.Messages,
       href: ROUTES.MESSAGES,
-      icon: 'BellIcon',
+      icon: styles.messagesIconName,
       current: false,
       showDivider: true,
       getNotificationCount: () => {
@@ -706,19 +857,19 @@ export const Dashboard: React.FC = () => {
       },
     },
     {
-      name: NavigationTypes.Community,
+      name: NavigationNames.Community.Community,
       href: isFirstTimeCommunitySection
         ? ROUTES.COMMUNITY.WELCOME
         : ROUTES.COMMUNITY.ROOT,
       params: { isFromDashboard: true } as CommunityRouteState,
-      icon: 'BookOpenIcon',
+      icon: styles.communityIconName,
       current: false,
       showDivider: true,
     },
     {
-      name: NavigationTypes.Logout,
+      name: NavigationNames.Logout,
       href: ROUTES.LOGOUT,
-      icon: 'ExternalLinkIcon',
+      icon: styles.logoutIconName,
       current: false,
       showDivider: true,
     },
@@ -727,97 +878,86 @@ export const Dashboard: React.FC = () => {
   const dashboardItems: StackedListItemType[] = [];
 
   if (isCoach) {
-    dashboardItems.push(
-      {
-        title: 'SmartStarters',
-        titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.icon,
-        onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: 'Community',
-        titleIcon: 'UserGroupIcon',
-        titleIconClassName: styles.icon,
-        onActionClick: () => {
-          history.push(
-            isFirstTimeCommunitySection
-              ? ROUTES.COMMUNITY.WELCOME
-              : ROUTES.COMMUNITY.ROOT,
-            { isFromDashboard: true } as CommunityRouteState
-          );
-        },
-        classNames: 'bg-uiBg',
-      }
-    );
     dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.icon,
+      title: NavigationNames.Practitioners,
+      titleIcon: styles.classroomIconName,
+      titleIconClassName: styles.practitionerIcon,
+      onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
       classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
     });
   }
 
   if (!isCoach) {
     dashboardItems.push({
-      title: 'Classroom',
-      titleIcon: 'AcademicCapIcon',
+      title: NavigationNames.Classroom.Classroom,
+      titleIcon: styles.classroomIconName,
       titleIconClassName: styles.classRoomIcon,
-      classNames: 'bg-uiBg',
+      classNames: 'bg-secondaryAccent2',
       onActionClick: () => {
         goToClassroom();
       },
     });
+  }
 
-    dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.calendarIcon,
-      classNames: 'bg-uiBg',
+  if (!isCoach && !isPrincipal && isPractitioner && !isTrialPeriod) {
+    dashboardItems.splice(1, 0, {
+      title: NavigationNames.Community.Community,
+      titleIcon: styles.communityIconName,
+      titleIconClassName: styles.communityIcon,
       onActionClick: () => {
-        goToCalendar();
+        goToCommunity();
       },
+      classNames: 'bg-quatenaryBg',
     });
   }
 
-  if (!isTrainee) {
+  if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
-      title: NavigationTypes.Training,
-      titleIcon: 'PresentationChartBarIcon',
-      titleIconClassName: styles.trainingIcon,
-      onActionClick: () => {
-        goToTraining();
-      },
-      classNames: 'bg-uiBg',
-    });
-  }
-
-  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
-    dashboardItems.splice(1, 0, {
-      title: 'Business',
-      titleIcon: 'BriefcaseIcon',
+      title: NavigationNames.Business.Business,
+      titleIcon: styles.businessIconName,
       titleIconClassName: styles.businessIcon,
       onActionClick: () => {
         goToBusiness();
       },
-      classNames: 'bg-uiBg',
+      classNames: 'bg-warningBg',
+    });
+    dashboardItems.splice(2, 0, {
+      title: NavigationNames.Community.Community,
+      titleIcon: styles.communityIconName,
+      titleIconClassName: styles.communityIcon,
+      onActionClick: () => {
+        goToCommunity();
+      },
+      classNames: 'bg-quatenaryBg',
     });
   }
 
-  if (isTrainee) {
-    dashboardItems.splice(1, 0, {
-      title: 'Business',
-      titleIcon: 'BriefcaseIcon',
-      titleIconClassName: styles.businessIcon,
-      onActionClick: () => {
-        goToBusiness();
-      },
-      classNames: 'bg-uiBg',
-    });
-  }
+  dashboardItems.splice(4, 0, {
+    title: NavigationNames.Training,
+    titleIcon: 'PresentationChartBarIcon',
+    titleIconClassName: styles.trainingIcon,
+    onActionClick: () => {
+      goToTraining();
+    },
+    classNames: 'bg-successBg',
+  });
+
+  const goToCommunity = () => {
+    if (
+      (((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent &&
+        !missingProgramme) ||
+      isTrialPeriod
+    ) {
+      history?.push(ROUTES.COMMUNITY.WELCOME);
+    } else if (missingProgramme && isWhiteLabel) {
+      showCompleteProfileBlockingDialog();
+    }
+  };
 
   useEffect(() => {
     if (shouldUserSync) {
@@ -848,7 +988,9 @@ export const Dashboard: React.FC = () => {
   }, [shouldUserSync]);
 
   const goToProfile = () => {
-    const profileRoute = userData?.roles?.some((role) => role.name === 'Coach')
+    const profileRoute = userData?.roles?.some(
+      (role) => role.systemName === RoleSystemNameEnum.Coach
+    )
       ? ROUTES.COACH.PROFILE.ROOT
       : ROUTES.PRACTITIONER.PROFILE.ROOT;
 
@@ -857,59 +999,63 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (((classroom && classroom.id) ||
-        (classroomGroup && classroomGroup.length > 0)) &&
+      (classroom && !!classroom.id) ||
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
+        !!classroom?.id &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
         hasConsent &&
         !missingProgramme) ||
-      isTrainee
+      isTrialPeriod
     ) {
-      history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
-    } else {
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.CLASSES,
+      });
+    } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     }
   };
 
   const goToCalendar = () => {
-    history.push(ROUTES.CALENDAR);
+    if (
+      (((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent &&
+        !missingProgramme) ||
+      isTrialPeriod
+    ) {
+      history.push(ROUTES.CALENDAR);
+    } else if (missingProgramme && isWhiteLabel) {
+      showCompleteProfileBlockingDialog();
+    }
   };
 
   const goToBusiness = () => {
-    if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+    if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
       history.push(ROUTES.BUSINESS);
-      return;
-    }
-    if (isTrainee) {
-      if (practitioner?.setupTraineeInitiated) {
-        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
-        return;
-      }
-      history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       return;
     }
   };
 
   const goToTraining = () => {
-    history.push(ROUTES.TRAINING);
-  };
-
-  const showOnlineOnly = () => {
-    dialog({
-      color: 'bg-white',
-      position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-      },
-    });
-  };
-
-  const handleOnlineCallback = (callback: () => void) => {
-    if (isOnline) {
-      callback();
-    } else {
-      showOnlineOnly();
+    if (
+      (((classroom && classroom.id) ||
+        (classroomGroups && classroomGroups.length > 0)) &&
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent &&
+        !missingProgramme) ||
+      isTrialPeriod
+    ) {
+      history.push(ROUTES.TRAINING);
+    } else if (missingProgramme && isWhiteLabel) {
+      showCompleteProfileBlockingDialog();
     }
   };
 
@@ -936,14 +1082,26 @@ export const Dashboard: React.FC = () => {
       }
       menuItems={isCoach ? navigationForCoach : navigation}
       onNavigation={onNavigation}
-      menuLogoUrl={theme?.images.logoUrl}
+      menuLogoUrl={hamburgerLogo}
+      calendarRender={() => {
+        return (
+          <IconBadge
+            onClick={() => goToCalendar()}
+            badgeColor={'errorMain'}
+            badgeTextColor={'white'}
+            icon={styles.calendarIconName}
+            iconColor={'white'}
+            badgeText={''}
+          />
+        );
+      }}
       notificationRender={() => {
         return (
           <IconBadge
             onClick={() => history.push(ROUTES.MESSAGES)}
             badgeColor={'errorMain'}
             badgeTextColor={'white'}
-            icon={'BellIcon'}
+            icon={styles.messagesIconName}
             iconColor={'white'}
             badgeText={newNotificationCount ? `${newNotificationCount}` : ''}
           />
@@ -961,16 +1119,15 @@ export const Dashboard: React.FC = () => {
       <Typography
         type={'h1'}
         color="white"
-        text={`Welcome ${userData && userData?.firstName}`}
+        text={`Hi ${(userData && userData?.firstName) || userData?.userName}!`}
         className={styles.welcomeText}
       />
-
       <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
         <DashboardItems
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {!!pointsScoreProps && !isCoach && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
@@ -987,7 +1144,7 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && !!club && !!club?.league?.id && isOnline && (
+        {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
             mainText={clubCard.mainText}
@@ -1003,8 +1160,8 @@ export const Dashboard: React.FC = () => {
             image={clubCard.image}
             textColour={clubCard.textColour}
           />
-        )}
-        {isPractitioner &&
+        )} */}
+        {/* {isPractitioner &&
           (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
             <div className="mt-1">
               <TitleListItem
@@ -1024,7 +1181,7 @@ export const Dashboard: React.FC = () => {
                 }}
               />
             </div>
-          )}
+          )} */}
       </div>
     </BannerWrapper>
   );

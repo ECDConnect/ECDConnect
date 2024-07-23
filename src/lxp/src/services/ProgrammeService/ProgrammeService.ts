@@ -20,6 +20,7 @@ class ProgrammeService {
       query GetAllProgramme($classroomId: UUID) {
         GetAllProgramme(where: { and: [{ classroomId: { eq: $classroomId } }] }) {
           id
+          insertedDate
           classroomId
           startDate
           endDate
@@ -130,12 +131,16 @@ class ProgrammeService {
       query GetUserProgrammes {
         userProgrammes {
           id
+          insertedDate
           classroomId
+          classroomGroupId
           startDate
           endDate
           name
           preferredLanguage
           dailyProgrammes {
+            insertedDate
+            isActive
             id
             day
             dayDate

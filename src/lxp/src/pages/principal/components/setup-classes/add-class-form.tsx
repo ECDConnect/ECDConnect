@@ -2,8 +2,6 @@ import {
   EditClassModel,
   editClassroomSchema,
 } from '@/schemas/practitioner/edit-class';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
-import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import {
@@ -17,16 +15,23 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@store/classroom';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { buttonDays, isFullDayOptions } from './setup-classes.types';
+import { buttonDays } from './setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { useTenant } from '@/hooks/useTenant';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const programmeType = useSelector(classroomsSelectors.getProgrammeType());
+  const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -43,7 +48,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const {
     setValue: setClassFormValue,
     getValues: getClassFormValues,
-    formState: classFormState,
     register: classFormRegister,
     reset: resetClassForm,
     control: classFormControl,
@@ -55,16 +59,12 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       classroomId: '',
       name: '',
       practitionerId: '',
-      isFullDay:
-        programmeType?.enumId === ProgrammeTypeEnum.Playgroup
-          ? undefined
-          : true,
+      isFullDay: true,
     },
     reValidateMode: 'onBlur',
   });
 
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
-  const { isValid } = classFormState;
 
   const { name, meetEveryday } = useWatch({
     control: classFormControl,
@@ -88,16 +88,28 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   useEffect(() => {
     const _list = practitioners
+      ?.filter((item) => item?.userId)
       ?.map((p) => {
-        if (p.firstName && p.surname) {
-          return { label: `${p.firstName} ${p.surname}`, value: p.userId };
+        if (isOpenAccess) {
+          if (p.firstName) {
+            return { label: `${p.firstName}`, value: p.userId };
+          }
+        }
+        if ((p.firstName && p.surname && !isOpenAccess) || p?.idNumber) {
+          return {
+            label: `${p.firstName || p?.idNumber} ${p.surname}`,
+            value: p.userId,
+          };
         }
         return undefined;
       })
       .filter(Boolean) as { label: string; value: any }[];
 
     _list.push({
-      label: currentPractitioner?.user?.fullName || '',
+      label:
+        currentPractitioner?.user?.fullName ||
+        currentPractitioner?.user?.userName ||
+        '',
       value: currentPractitioner?.userId,
     });
 
@@ -112,10 +124,10 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   const isFormValid = () => {
     const meetingDays = getClassFormValues().meetingDays;
-    return isValid && meetingDays && meetingDays?.length > 1;
+    return meetingDays && meetingDays?.length > 1;
   };
 
-  const saveClassData = () => {
+  const saveClassData = async () => {
     const data = getClassFormValues();
     const today = new Date().toISOString();
     if (data) {
@@ -123,31 +135,29 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       const classroomGroupModel: ClassroomGroupDto = {
         id: classroomGroupId,
         classroomId: classroom?.id ?? '',
-        name: data?.name ?? '',
-        programmeTypeId:
-          programmeType?.id ?? classroomGroup?.[0]?.programmeType?.id,
-        isActive: true,
-        userId: data?.practitionerId,
+        name: data?.name || `Class ${classCount}`,
+        userId: data?.practitionerId!,
+        learners: [],
+        classProgrammes: data.meetingDays.map((x) => {
+          return {
+            id: newGuid(),
+            classroomGroupId: classroomGroupId,
+            meetingDay: x,
+            isActive: true,
+            programmeStartDate: today,
+            isFullDay: data?.isFullDay || false,
+            synced: false,
+          };
+        }),
       };
 
-      appDispatch(classroomsActions.createClassroomGroup(classroomGroupModel));
-
-      for (const meetingDay of data.meetingDays) {
-        const classProgrammeId = newGuid();
-
-        const classProgrammeInputModel: ClassProgrammeDto = {
-          id: classProgrammeId,
-          classroomGroupId: classroomGroupId,
-          meetingDay: meetingDay,
-          isFullDay: data?.isFullDay || false,
-          programmeStartDate: today,
-          isActive: true,
-        };
-
-        appDispatch(
-          classroomsActions.createClassroomProgramme(classProgrammeInputModel)
-        );
-      }
+      await appDispatch(
+        classroomsActions.createClassroomGroup(classroomGroupModel)
+      );
+      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroupProgrammes({})
+      );
     }
   };
 
@@ -156,16 +166,13 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     resetClassForm({
       name: '',
       practitionerId: '',
-      isFullDay:
-        programmeType?.enumId === ProgrammeTypeEnum.Playgroup
-          ? undefined
-          : true,
+      isFullDay: true,
     });
   };
 
   return (
     <div>
-      <div className=" flex flex-col gap-4 pb-20">
+      <div className=" flex flex-col gap-4 pb-8">
         <Typography
           type={'h1'}
           text={name || `Add class ${classCount}`}
@@ -202,30 +209,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
             )}
           />
         </div>
-        {programmeType?.enumId === ProgrammeTypeEnum.Playgroup && (
-          <div>
-            <span>
-              Do children attend this class for half the day or the full day?
-            </span>
-            <div className="mt-2">
-              <Controller
-                name={'isFullDay'}
-                control={classFormControl}
-                render={({ field: { onChange, value, ref } }) => (
-                  <ButtonGroup<boolean>
-                    inputRef={ref}
-                    options={isFullDayOptions}
-                    onOptionSelected={onChange}
-                    selectedOptions={value}
-                    color="secondary"
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full'}
-                  />
-                )}
-              />
-            </div>
-          </div>
-        )}
 
         <div>
           <span>{`Does ${
@@ -284,20 +267,21 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         <Button
           icon="ViewGridAddIcon"
           type={'outlined'}
-          color={'primary'}
+          color={'quatenary'}
           text="Add another class"
           className="w-full"
           disabled={!isFormValid()}
           onClick={addAnotherClass}
+          textColor="quatenary"
         />
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 max-h-20 bg-white p-4">
+      <div className="max-h-20 w-full bg-white pb-4">
         <Button
           size="normal"
           className="w-full"
           type="filled"
-          color="primary"
+          color="quatenary"
           text="Save"
           textColor="white"
           icon="SaveIcon"

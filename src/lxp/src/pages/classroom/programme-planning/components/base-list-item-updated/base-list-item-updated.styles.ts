@@ -9,4 +9,4 @@ export const container = (
   dividerType: DividerType,
   dividerColor: Colours
 ) =>
-  `w-full flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer py-3 px-4 border-t border-${dividerColor} border-${dividerType} `;
+  `w-full flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer border-t border-${dividerColor} border-${dividerType} `;

@@ -24,7 +24,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public int? ContentValueId { get; set; } // this link to the Coaching Circle Topic in CMS
         public Guid? MeetingTypeId { get; set; }
         public virtual MeetingType MeetingType { get; set; }
-        public string? MeetingNotes { get; set; }
+        public string MeetingNotes { get; set; }
         // Coaching circle meeting fields - end
         public virtual ICollection<ClubMeetingRegister> ClubMeetingRegister { get; set; }
 
@@ -32,7 +32,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         [ForeignKey(nameof(ClubId))]
         public virtual Club Club { get; set; }
         public bool CoachAttended { get; set; }
-        public string? OtherDescription { get; set; }
+        public string OtherDescription { get; set; }
         public int TotalCaregiversAttended { get; set; }
         public Guid? EventId { get; set; }
         public bool ClubLeaderContacted { get; set; }

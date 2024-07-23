@@ -1,9 +1,11 @@
 import {
   AttendanceDto,
   ChildAttendanceReportModel,
+  ClassRoomChildAttendanceMonthlyReportModel,
   MonthlyAttendanceRecord,
 } from '@ecdlink/core';
 import {
+  QueryClassroomAttendanceOverviewReportArgs,
   TrackAttendanceAttendeeModelInput,
   TrackAttendanceModelInput,
 } from '@ecdlink/graphql';
@@ -11,22 +13,27 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { AttendanceService } from '@services/AttendanceService';
 import { RootState, ThunkApiType } from '../types';
 import {
-  AttendanceQueryParams,
   ChildAttendanceReportQueryParams,
   MonthlyAttendanceReportQueryParams,
 } from './attendance.types';
+import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
+import { isSameDay, parseISO } from 'date-fns';
+import { OverrideCache } from '@/models/sync/override-cache';
 
 export const AttendanceActions = {
+  GET_ATTENDANCE: 'getAttendance',
   GET_MONTHLY_ATTENDANCE_REPORT: 'getMonthlyAttendanceReport',
+  TRACK_ATTENDANCE_SYNC: 'trackAttendanceSync',
+  GET_CLASSROOM_ATTENDANCE_REPORT: 'getClassroomAttendanceReport',
 };
 
 export const getAttendance = createAsyncThunk<
   AttendanceDto[],
-  AttendanceQueryParams,
+  { startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
-  'getAttendance',
-  async ({ year, monthOfYear, weekOfYear }, { getState, rejectWithValue }) => {
+  AttendanceActions.GET_ATTENDANCE,
+  async ({ startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       attendanceData: { attendance: attendanceCache },
@@ -39,7 +46,7 @@ export const getAttendance = createAsyncThunk<
         if (userAuth?.auth_token) {
           attendance = await new AttendanceService(
             userAuth?.auth_token
-          ).getAttendance(year, monthOfYear, weekOfYear);
+          ).getAttendance(startDate, endDate);
         }
 
         if (!attendance) {
@@ -56,13 +63,14 @@ export const getAttendance = createAsyncThunk<
   }
 );
 
+// This should probably be removed and the above used to get all relevant attendance data
 export const getPreviousWeekAttendance = createAsyncThunk<
   AttendanceDto[],
-  AttendanceQueryParams,
+  { startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
   'getPreviousWeekAttendance',
-  async ({ year, monthOfYear, weekOfYear }, { getState, rejectWithValue }) => {
+  async ({ startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -73,7 +81,7 @@ export const getPreviousWeekAttendance = createAsyncThunk<
       if (userAuth?.auth_token) {
         attendance = await new AttendanceService(
           userAuth?.auth_token
-        ).getAttendance(year, monthOfYear, weekOfYear);
+        ).getAttendance(startDate, endDate);
       }
 
       if (!attendance) {
@@ -88,17 +96,31 @@ export const getPreviousWeekAttendance = createAsyncThunk<
 );
 export const getMonthlyAttendanceReport = createAsyncThunk<
   MonthlyAttendanceRecord[],
-  MonthlyAttendanceReportQueryParams,
+  MonthlyAttendanceReportQueryParams & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getMonthlyAttendanceReport',
+  AttendanceActions.GET_MONTHLY_ATTENDANCE_REPORT,
   async (
-    { userId, classroomId, startDate, endDate },
+    { userId, startDate, endDate, overrideCache },
     { getState, rejectWithValue }
   ) => {
     const {
       auth: { userAuth },
+      attendanceData: { monthlyAttendanceRecordsByUser },
     } = getState();
+
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    const dateRefreshed = monthlyAttendanceRecordsByUser[userId]?.dateRefreshed;
+
+    if (
+      !overrideCache &&
+      dateRefreshed &&
+      new Date(dateRefreshed) > oneDayAgo
+    ) {
+      return monthlyAttendanceRecordsByUser[userId].data;
+    }
 
     try {
       let reportData: MonthlyAttendanceRecord[] | undefined;
@@ -106,7 +128,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
       if (userAuth?.auth_token) {
         reportData = await new AttendanceService(
           userAuth?.auth_token
-        ).getMonthlyAttendanceReport(userId, classroomId, startDate, endDate);
+        ).getMonthlyAttendanceReport(userId, startDate, endDate);
       }
 
       if (!reportData) {
@@ -160,47 +182,97 @@ export const getChildAttendanceRecords = createAsyncThunk<
 );
 
 export const trackAttendanceSync = createAsyncThunk<
-  boolean[],
+  TrackAttendanceModelInput[] | undefined,
   any,
   ThunkApiType<RootState>
->('trackAttendanceSync', async (any, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-    attendanceData: { attendanceTracked },
-  } = getState();
+>(
+  AttendanceActions.TRACK_ATTENDANCE_SYNC,
+  async (any, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      attendanceData: { attendanceTracked },
+    } = getState();
+    try {
+      let promises: Promise<TrackAttendanceModelInput>[] = [];
 
-  try {
-    let promises: Promise<boolean>[] = [];
+      if (userAuth && attendanceTracked) {
+        promises = attendanceTracked.map(async (x) => {
+          if (x?.synced) return Promise.resolve(x);
 
-    if (userAuth && attendanceTracked) {
-      promises = attendanceTracked.map(async (x) => {
-        const trackAttendanceModelInput: TrackAttendanceModelInput = {
-          classroomProgrammeId: x.classroomProgrammeId,
-          programmeOwnerId: x.programmeOwnerId,
-          attendees: [],
-          attendanceDate: x.attendanceDate,
-        };
+          const trackAttendanceModelInput: TrackAttendanceModelInput = {
+            classroomProgrammeId: x.classroomProgrammeId,
+            programmeOwnerId: x.programmeOwnerId,
+            attendees: [],
+            attendanceDate: x.attendanceDate,
+          };
 
-        trackAttendanceModelInput.attendees = [];
+          trackAttendanceModelInput.attendees = [];
 
-        x.attendees?.forEach((z) => {
-          const trackAttendanceAttendeeModelInput: TrackAttendanceAttendeeModelInput =
-            {
-              userId: z.userId,
-              attended: z.attended,
-            };
-          trackAttendanceModelInput.attendees?.push(
-            trackAttendanceAttendeeModelInput
-          );
+          x.attendees?.forEach((z) => {
+            const trackAttendanceAttendeeModelInput: TrackAttendanceAttendeeModelInput =
+              {
+                userId: z.userId,
+                attended: z.attended,
+              };
+            trackAttendanceModelInput.attendees?.push(
+              trackAttendanceAttendeeModelInput
+            );
+          });
+
+          await new AttendanceService(userAuth?.auth_token).trackAttendance([
+            trackAttendanceModelInput,
+          ]);
+
+          return trackAttendanceModelInput;
         });
-
-        return await new AttendanceService(
-          userAuth?.auth_token
-        ).trackAttendance([trackAttendanceModelInput]);
-      });
+      }
+      return Promise.all(promises);
+    } catch (err) {
+      return rejectWithValue(err);
     }
-    return Promise.all(promises);
-  } catch (err) {
-    return rejectWithValue(err);
   }
-});
+);
+
+export const getClassroomAttendanceReport = createAsyncThunk<
+  { data: ClassRoomChildAttendanceMonthlyReportModel } & RetrieveFromCache,
+  QueryClassroomAttendanceOverviewReportArgs,
+  ThunkApiType<RootState>
+>(
+  AttendanceActions.GET_CLASSROOM_ATTENDANCE_REPORT,
+  async ({ startDate, endDate, userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      attendanceData: { classroomAttendanceOverviewReport },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        let oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+        const cachedData = classroomAttendanceOverviewReport?.find(
+          (report) =>
+            isSameDay(parseISO(report.startDate), startDate) &&
+            isSameDay(parseISO(report.endDate), endDate)
+        );
+
+        if (
+          cachedData?.dateRefreshed &&
+          new Date(cachedData.dateRefreshed) > oneDayAgo
+        ) {
+          return { data: cachedData.data, retrievedFromCache: true };
+        }
+
+        const result = await new AttendanceService(
+          userAuth?.auth_token ?? ''
+        ).getClassroomAttendanceReport(userId ?? '', startDate, endDate);
+
+        return { data: result, retrievedFromCache: false };
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);

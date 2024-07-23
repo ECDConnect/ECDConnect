@@ -65,6 +65,13 @@ export const PractitionerAbout: React.FC = () => {
     updateDocument,
   } = useDocuments();
 
+  const acceptedMimeFormats = [
+    'image/jpeg',
+    'image/png',
+    'image/heic',
+    'image/heif',
+  ];
+
   const [editFieldVisible, setEditFieldVisible] = useState(false);
   const [editLanguageFieldVisible, setEditLanguageFieldVisible] =
     useState(false);
@@ -550,6 +557,7 @@ export const PractitionerAbout: React.FC = () => {
       >
         <div className={'p-4'}>
           <PhotoPrompt
+            acceptedMimeFormats={acceptedMimeFormats}
             title="Profile Photo"
             onClose={handlePicturePromptOnClose}
             onAction={picturePromtOnAction}

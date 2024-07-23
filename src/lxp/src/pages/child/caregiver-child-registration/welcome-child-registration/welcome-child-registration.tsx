@@ -3,12 +3,13 @@ import {
   BannerWrapper,
   Button,
   ComponentBaseProps,
-  Divider,
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { SuccessCard } from '../../../../components/success-card/success-card';
 import { ChildRegistrationDetails } from '../caregiver-child-registration.types';
+import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
+import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import { ReactComponent as Balloons } from '@/assets/balloons_bg_blue.svg';
 
 interface WelcomeChildRegistrationProps extends ComponentBaseProps {
   childDetails: ChildRegistrationDetails;
@@ -26,98 +27,77 @@ export const WelcomeChildRegistration: React.FC<
 
   return (
     <BannerWrapper
-      size="normal"
+      size="large"
+      title={`${childDetails.child.firstname}'s registration`}
       showBackground={true}
       backgroundUrl={theme.theme?.images.graphicOverlayUrl}
-      className="p-4"
+      className="flex h-full flex-col p-4"
       renderOverflow
       titleOverrideRender={() => (
-        <div className="-ml-6">
-          <Typography
-            type="h1"
-            text={`${childDetails.child.firstname}'s`}
-            color="white"
-            align="left"
-            lineHeight="snug"
-          />
-          <Typography
-            type="h1"
-            text={`registration`}
-            color="white"
-            align="left"
-            lineHeight="snug"
-          />
-        </div>
+        <Typography
+          className="-ml-20"
+          type="h1"
+          text={`${childDetails.child.firstname}'s registration`}
+          color="white"
+          align="left"
+          lineHeight="snug"
+        />
       )}
     >
-      <Typography
-        hasMarkup
-        type="unspecified"
-        color="textMid"
-        text={`<b>${childDetails.practitoner.firstname} ${childDetails.practitoner.surname}</b> from SmartStart added your child <b>${childDetails.child.firstname} ${childDetails.child.surname}</b> to their early learning programme, <b>${childDetails.child.groupName}</b>.`}
-      />
-
-      <SuccessCard
-        className="my-4"
+      <div className="bg-uiBg relative z-50 mb-8 flex flex-col items-center gap-4 rounded-2xl p-6 shadow-md">
+        <Balloons className="h-24 w-24" />
+        <Typography type="h3" text="Congratulations!" color="textDark" />
+        <Typography
+          type="markdown"
+          color="textMid"
+          text={`<b>${childDetails?.practitoner?.firstname}</b> added your child <b>${childDetails?.child?.firstname} ${childDetails?.child?.surname}</b> to their early learning programme, <b>${childDetails?.child?.groupName}</b>.`}
+        />
+      </div>
+      <CustomSuccessCard
         text={`You are taking a first step to giving ${childDetails.child.firstname} the best start in life!`}
-        icon={'SparklesIcon'}
+        textColour="white"
+        color="tertiary"
+        customIcon={<EmojiYellowSmile className="h-14 w-14" />}
       />
-
       <Typography
+        className="mt-4"
         type="unspecified"
         color="textMid"
         text="Children who receive quality early education tend to be more successful later in life and have higher earnings."
       />
 
-      <div className="flex flex-col my-4 items-start">
+      <div className="my-4 flex flex-col items-start">
         <Typography
-          type="unspecified"
+          type="h4"
           text="Please have your personal information ready:"
+          color="textDark"
         />
         <StatusChip
           className="my-2"
-          backgroundColour="infoDark"
-          textColour={'white'}
-          borderColour="infoDark"
+          backgroundColour="infoBb"
+          textColour={'infoDark'}
+          borderColour="infoBb"
           text="ID number"
           icon="IdentificationIcon"
           iconPosition="start"
         />
         <StatusChip
-          backgroundColour="infoDark"
-          textColour={'white'}
-          borderColour="infoDark"
+          backgroundColour="infoBb"
+          textColour={'infoDark'}
+          borderColour="infoBb"
           text="Contact details"
           icon="PhoneIcon"
           iconPosition="start"
         />
       </div>
-
-      <div className="flex flex-col my-4 items-start">
-        <Typography
-          className="mb-2"
-          type="unspecified"
-          text={`Please also have ${childDetails.child.firstname}’s (if available):`}
-        />
-        <StatusChip
-          backgroundColour="infoDark"
-          textColour={'white'}
-          borderColour="infoDark"
-          text="Birth certificate or clinic card"
-          icon={'IdentificationIcon'}
-          iconPosition="start"
-        />
-      </div>
-
-      <Divider dividerType="solid" className="my-4" />
       <Button
         icon="ArrowCircleRightIcon"
-        text="Next"
+        text="Start"
         type="filled"
-        color="primary"
+        color="quatenary"
         textColor="white"
         onClick={handleNextClick}
-        className="w-full mb-4"
+        className="mb-4 mt-auto w-full"
       />
     </BannerWrapper>
   );

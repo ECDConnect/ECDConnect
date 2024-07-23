@@ -7,12 +7,17 @@ import LanguageSelector, {
 import { useWindowSize } from '@reach/window-size';
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import {
+  CommunityActions,
+  getMoreInformation,
+} from '@/store/community/community.actions';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { visitThunkActions } from '@/store/visit';
 import { useSelector } from 'react-redux';
 import { getMoreInformationSelector } from '@/store/visit/visit.selectors';
 import { replaceBraces } from '@ecdlink/core';
+import { LanguageCode } from '@/i18n/types';
 
 const HEADER_HEIGHT = 120;
 
@@ -35,6 +40,10 @@ export const WalkthroughInfoPage = ({
 }: WalkthroughInfoPageProps) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
 
+  const moreInformation = useSelector(getMoreInformationSelector);
+  const [moreInformationList, setMoreInformationList] =
+    useState(moreInformation);
+
   const { isOnline } = useOnlineStatus();
 
   const { height } = useWindowSize();
@@ -46,14 +55,28 @@ export const WalkthroughInfoPage = ({
     VisitActions.GET_MORE_INFORMATION
   );
 
-  const moreInformationList = useSelector(getMoreInformationSelector);
+  const { isLoading: isLoadingCommunity } = useThunkFetchCall(
+    'visits',
+    CommunityActions.GET_MORE_INFORMATION
+  );
+
+  const moreInformationItem = moreInformationList?.find(
+    (item) => item?.section === sectionName
+  );
+
+  const moreInformationLanguages: LanguageCode[] =
+    moreInformationItem?.availableLanguages
+      ? moreInformationItem.availableLanguages?.map((item) => {
+          return item?.locale as LanguageCode;
+        })
+      : [language.locale as LanguageCode];
 
   const renderContent = useMemo(() => {
     const moreInformation = moreInformationList?.find(
       (item) => item?.section === sectionName
     );
 
-    if (isLoading) {
+    if (isLoading || isLoadingCommunity) {
       return (
         <LoadingSpinner
           size="medium"
@@ -133,6 +156,7 @@ export const WalkthroughInfoPage = ({
   }, [
     extraElement,
     isLoading,
+    isLoadingCommunity,
     moreInformationList,
     onClose,
     onHelp,
@@ -142,18 +166,33 @@ export const WalkthroughInfoPage = ({
   const getContent = useCallback(async () => {
     if (!isOnline || disableContentFromPortal) return;
 
-    appDispatch(
-      visitThunkActions.getMoreInformation({
-        section: sectionName,
-        locale: language.locale,
-      })
-    );
+    if (sectionName.includes('Community')) {
+      setMoreInformationList(
+        await appDispatch(
+          getMoreInformation({
+            locale: language.locale,
+            section: sectionName,
+            tab: 'team',
+          })
+        ).unwrap()
+      );
+    } else {
+      const newMoreInformation = await appDispatch(
+        visitThunkActions.getMoreInformation({
+          section: sectionName,
+          locale: language.locale,
+        })
+      ).unwrap();
+      if (newMoreInformation) {
+        setMoreInformationList([newMoreInformation]);
+      }
+    }
   }, [
-    appDispatch,
     isOnline,
-    language.locale,
-    sectionName,
     disableContentFromPortal,
+    sectionName,
+    appDispatch,
+    language.locale,
   ]);
 
   useEffect(() => {
@@ -175,7 +214,7 @@ export const WalkthroughInfoPage = ({
     <>
       <div className="bg-uiBg px-4 pb-2 pt-1">
         <LanguageSelector
-          availableLanguages={availableLanguages}
+          availableLanguages={moreInformationLanguages || availableLanguages}
           showOfflineAlert={!disableContentFromPortal}
           selectLanguage={setLanguage}
         />

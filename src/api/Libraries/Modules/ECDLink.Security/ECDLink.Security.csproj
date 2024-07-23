@@ -21,4 +21,8 @@
     <ProjectReference Include="..\..\..\ECDLink.PostgresTenancy\ECDLink.PostgresTenancy.csproj" />
     <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Filters\" />
+  </ItemGroup>
 </Project>

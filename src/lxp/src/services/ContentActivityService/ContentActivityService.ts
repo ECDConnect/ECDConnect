@@ -24,6 +24,7 @@ class ContentActivityService {
             availableLanguages {
               id
               description
+              locale
             }
             image
             subCategories {

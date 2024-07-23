@@ -9,6 +9,7 @@ import { LeagueType } from '@/constants/club';
 import { getChildProgressReportsStatusForUser } from '../practitionerForCoach/practitionerForCoach.selectors';
 import { ActionItem } from '@/models/club/actionItem';
 import { Contribution } from '@/models/club/contribution';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 
 // Practitioner
 export const getClubForPractitionerSelector = (state: RootState) =>
@@ -43,7 +44,7 @@ export const getClubMeetingsWithMissingRegistersSelector = (clubId: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.name.includes(UserTypeEnum.Coach)
+        role.systemName.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach) {
@@ -63,7 +64,7 @@ export const getClubByIdSelector = (clubId: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.name.includes(UserTypeEnum.Coach)
+        role.systemName.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach && (!clubId || clubId === '')) {
@@ -107,7 +108,7 @@ export const getActivityMeetRegularDetailsSelector = (clubId: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.name.includes(UserTypeEnum.Coach)
+        role.systemName.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach) {
@@ -125,7 +126,7 @@ export const getActivityBeCreativeDetailsSelector = (clubId: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.name.includes(UserTypeEnum.Coach)
+        role.systemName.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach) {
@@ -143,7 +144,7 @@ export const getActivityHostFamilyDetailsSelector = (clubId: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.name.includes(UserTypeEnum.Coach)
+        role.systemName.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach) {
@@ -161,7 +162,7 @@ export const getActivityChildProgressReportsSelector = (clubId: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.name.includes(UserTypeEnum.Coach)
+        role.systemName.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach) {
@@ -179,7 +180,7 @@ export const getActivityLeaveNoOneBehindDetailsSelector = (clubId: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.name.includes(UserTypeEnum.Coach)
+        role.systemName.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach) {
@@ -197,7 +198,7 @@ export const getActivityChildAttendanceDetailsSelector = (clubId: string) =>
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>
-        role.name.includes(UserTypeEnum.Coach)
+        role.systemName.includes(RoleSystemNameEnum.Coach)
       );
 
       if (isCoach) {

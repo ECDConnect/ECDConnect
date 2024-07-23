@@ -27,6 +27,7 @@ export const DangerSignsStep = ({
   setIsTip,
 }: DynamicFormProps) => {
   const [currentOption, setCurrentOption] = useState<string>();
+  const [currentId, setCurrentId] = useState<string>();
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
@@ -40,14 +41,14 @@ export const DangerSignsStep = ({
   const noneOption = 'None of the above';
 
   const options = [
-    { name: 'Blue skin colour' },
-    { name: 'Baby is not alert' },
-    { name: 'Fast breathing or difficulty breathing' },
-    { name: 'Poor feeding or repeated vomiting' },
-    { name: 'Low (below 35 degrees C) or high temperature' },
-    { name: 'Yellow skin or eyes' },
-    { name: 'Severe eye infection' },
-    { name: 'Severe cord infection' },
+    { name: 'Blue skin colour', id: 'dangerSignA' },
+    { name: 'Baby is not alert', id: 'dangerSignB' },
+    { name: 'Fast breathing or difficulty breathing', id: 'dangerSignC' },
+    { name: 'Poor feeding or repeated vomiting', id: 'dangerSignD' },
+    { name: 'Low (below 35 degrees C) or high temperature', id: 'dangerSignE' },
+    { name: 'Yellow skin or eyes', id: 'dangerSignF' },
+    { name: 'Severe eye infection', id: 'dangerSignG' },
+    { name: 'Severe cord infection', id: 'dangerSignH' },
     { name: noneOption },
   ];
 
@@ -177,7 +178,8 @@ export const DangerSignsStep = ({
         <Translations
           toTranslate={currentOption}
           onClose={() => setIsTip && setIsTip(false)}
-          section={dangerSignsVisitSectionForBaby}
+          section={'Care for baby - postnatal'}
+          id={currentId || ''}
         />
       </Dialog>
     );
@@ -214,6 +216,7 @@ export const DangerSignsStep = ({
                   className="ml-auto"
                   onClick={() => {
                     setCurrentOption(item.name);
+                    setCurrentId(item.id);
                     setIsTip?.(true);
                   }}
                 >

@@ -8,6 +8,7 @@ export interface PregnantMaternalCaseRecordProps
   weightAtBirth?: number;
   lengthAtBirth?: number;
   roadToHealthBook?: string;
+  isFromClientProfile?: boolean;
 }
 
 export const yesNoOptions = [

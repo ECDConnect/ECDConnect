@@ -1,35 +1,74 @@
 import {
   ProgrammeThemeDto as ProgrammeThemeModel,
+  getAvatarColor,
   useDialog,
 } from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
-  IconImageListItem,
   Typography,
   DialogPosition,
+  StackedList,
+  UserAlertListDataItem,
 } from '@ecdlink/ui';
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { programmeThemeSelectors } from '@store/content/programme-theme';
 import ROUTES from '@routes/routes';
 import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
+import { ProgrammeThemeRouteState } from './programme-theme.types';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '../../class-dashboard/class-dashboard.types';
+import { classroomsSelectors } from '@/store/classroom';
+import { ProgrammeTimingRouteState } from '../programme-timing/programme-timing.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ProgrammeThemeActions } from '@/store/content/programme-theme/programme-theme.actions';
 import { useAppContext } from '@/walkthrougContext';
+import { dummyThemes } from '../programme-dashboard/walkthrough/dummy-content';
 
 const ProgrammeTheme: React.FC = () => {
   const dialog = useDialog();
+
+  const location = useLocation<ProgrammeThemeRouteState>();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
-  const handleBack = () => {
-    history.replace('/classroom', { activeTabIndex: 3 });
-  };
 
   const { setState, state } = useAppContext();
-  const nextStep = () => {
-    setState({ stepIndex: 2 });
+
+  const isWalkthrough = state?.run;
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(location.state.classroomGroupId)
+  );
+  const programmeThemes = useSelector(
+    programmeThemeSelectors.getProgrammeThemes
+  );
+
+  const themes = isWalkthrough ? dummyThemes : programmeThemes;
+
+  const { isLoading } = useThunkFetchCall(
+    'programmeThemeData',
+    ProgrammeThemeActions.GET_PROGRAMME_THEMES
+  );
+
+  useEffect(() => {
+    if (!location.state?.classroomGroupId) {
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.ACTIVITES,
+      } as ClassDashboardRouteState);
+    }
+  }, [history, location.state?.classroomGroupId]);
+
+  const handleBack = () => {
+    history.push(
+      ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
+        ':classroomGroupId',
+        location.state.classroomGroupId
+      )
+    );
   };
 
   const handleDialog = () => {
@@ -60,53 +99,56 @@ const ProgrammeTheme: React.FC = () => {
   };
 
   const handelThemeSelected = (theme: ProgrammeThemeModel) => {
-    nextStep();
-    history.push(ROUTES.PROGRAMMES.TIMING, { theme });
+    setState({ stepIndex: 2 });
+    history.push(ROUTES.PROGRAMMES.TIMING, {
+      ...location.state,
+      theme,
+      classroomGroupId: classroomGroup?.id,
+    } as ProgrammeTimingRouteState);
   };
+
+  const themeList: UserAlertListDataItem[] = themes?.map((theme) => ({
+    title: theme.name,
+    profileText: theme.name.slice(0, 2).toUpperCase(),
+    alertSeverity: 'none',
+    avatarColor: !!theme.color
+      ? theme.color
+      : !!theme.imageUrl
+      ? 'transparent'
+      : getAvatarColor(),
+    profileDataUrl: theme.imageUrl,
+    hideAlertSeverity: true,
+    onActionClick: () => handelThemeSelected(theme),
+  }));
 
   return (
     <BannerWrapper
+      isLoading={!isWalkthrough && isLoading}
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Programme themes'}
+      title="Choose a theme"
       color={'primary'}
       onBack={handleBack}
       displayHelp={true}
       onHelp={handleDialog}
       displayOffline={!isOnline}
+      className="p-4 pt-6"
     >
       <ProgrammeWrapper />
-      <>
-        <Typography
-          className={'mx-4 my-2'}
-          type="h1"
-          text="Choose a theme"
-          color={'primary'}
+      <Typography
+        type="h1"
+        text={`Choose a theme for ${classroomGroup?.name}`}
+        color={'primary'}
+        className="mb-4"
+      />
+      <div id="walkthrough-nature-theme">
+        <StackedList
+          className="flex flex-col gap-1"
+          type="UserAlertList"
+          listItems={themeList}
         />
-        <div className="px-2">
-          {themes?.map((theme, idx) => (
-            <div
-              className="mb-1 rounded-3xl"
-              key={idx}
-              id={
-                theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : ''
-              }
-            >
-              <IconImageListItem
-                key={`theme-item-${theme.id}`}
-                color={theme.color}
-                title={theme.name}
-                icon={theme.imageUrl}
-                showDivider={idx > 0}
-                onClick={() => handelThemeSelected(theme)}
-                backgroundColor={'uiBg'}
-                borderRadius={'xl'}
-              />
-            </div>
-          ))}
-        </div>
-      </>
+      </div>
     </BannerWrapper>
   );
 };

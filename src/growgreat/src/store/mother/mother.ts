@@ -18,6 +18,7 @@ import {
   getCompletedReferralsForMother,
   updateMother,
   updateMotherDeliveryDate,
+  restartVisitForMother,
 } from './mother.actions';
 import { MotherState, UpdateMotherDeliveryDateProps } from './mother.types';
 
@@ -155,6 +156,15 @@ const motherSlice = createSlice({
         }
         return item;
       });
+    });
+    builder.addCase(restartVisitForMother.fulfilled, (state, action) => {
+      if (state.visits) {
+        state.visits = [...state.visits, action.payload];
+      } else {
+        state.visits = [action.payload];
+      }
+
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

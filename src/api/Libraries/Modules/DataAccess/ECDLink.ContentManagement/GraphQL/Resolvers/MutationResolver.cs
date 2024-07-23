@@ -10,7 +10,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 {
     public class MutationResolver : ResolverBase, IDynamicMutationResolver
     {
-        public ValueTask<object?> CreateMutationResolver(IResolverContext context)
+        public ValueTask<object> CreateMutationResolver(IResolverContext context)
         {
             var contentTypeId = base.GetContentIdentifier(context);
             var localeId = base.GetLanguageArgument(context);
@@ -21,10 +21,10 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 
             var newId = repository.Create(contentTypeId, localeId, values);
 
-            return new ValueTask<object?>(newId);
+            return new ValueTask<object>(newId);
         }
 
-        public ValueTask<object?> UpdateMutationResolver(IResolverContext context)
+        public ValueTask<object> UpdateMutationResolver(IResolverContext context)
         {
             var service = context.Services.GetService<ContentManagementRepository>();
 
@@ -34,10 +34,10 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 
             var dynamicObject = service.Update(contentId, locale, values);
 
-            return new ValueTask<object?>(dynamicObject);
+            return new ValueTask<object>(dynamicObject);
         }
 
-        public ValueTask<object?> DeleteMutationResolver(IResolverContext context)
+        public ValueTask<object> DeleteMutationResolver(IResolverContext context)
         {
             var contentId = context.ArgumentValue<int>(ArgumentConstants.Id);
 
@@ -45,7 +45,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 
             var isDeleted = service.Delete(contentId);
 
-            return new ValueTask<object?>(isDeleted);
+            return new ValueTask<object>(isDeleted);
         }
     }
 }

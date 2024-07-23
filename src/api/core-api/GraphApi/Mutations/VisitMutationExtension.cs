@@ -1,7 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
-using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -19,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
@@ -80,6 +78,43 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return visitManager.AddAdditionalVisit(input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public BasicVisitModel RestartVisit(
+            [Service] VisitManager visitManager,
+            Guid existingVisitId)
+        {           
+            var visit = visitManager.RestartVisit(existingVisitId);
+
+            var visitModel = new BasicVisitModel
+            {
+                Id = visit.Id,
+                Attended = visit.Attended,
+                IsCancelled = visit.IsCancelled,
+                ActualVisitDate = visit.ActualVisitDate,
+                PlannedVisitDate = visit.PlannedVisitDate,
+                Comment = visit.Comment,
+                DueDate = visit.DueDate,
+                EventId = visit.EventId,
+                OrderDate = visit.DueDate.HasValue 
+                    ? visit.DueDate.Value
+                    : visit.PlannedVisitDate,
+                Risk = visit.Risk,
+                StartedDate = visit.VisitData == null || !visit.VisitData.Any()
+                   ? null
+                   : visit.VisitData.OrderBy(x => x.InsertedDate).First().InsertedDate,
+                VisitType = new BasicVisitTypeModel
+                {
+                    Id = visit.VisitType.Id,
+                    Description = visit.VisitType.Description,
+                    Name = visit.VisitType.Name,
+                    NormalizedName = visit.VisitType.NormalizedName,
+                    Order = visit.VisitType.Order,
+                }
+            };
+
+            return visitModel;
         }
 
         #region Practitioners
@@ -365,7 +400,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             });
 
             var userToSend = userManager.FindByIdAsync(trainee.UserId).Result;
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), false,true,null, trainee.UserId.ToString());
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), false,true,null,
+                relatedEntities: new List<RelatedEntity> { new RelatedEntity(trainee.UserId.Value, "ApplicationUser") });
 
 
             return visit;

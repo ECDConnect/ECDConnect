@@ -1,4 +1,6 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
@@ -62,15 +64,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
 
             // Get ids and tokens
-            List<Guid> userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
-            List<ShortenUrlEntity> invitations = shortenUrlRepo
-                    .GetAll().Where(x => userIds.Contains((Guid)x.UserId) && x.MessageType == TemplateTypeConstants.TeamLeadInvitation && x.IsActive && x.Clicked == 0)
-                    .ToList();
+            var userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
+            var invitations = shortenUrlRepo.GetAll()
+                .Where(x =>
+                    userIds.Contains(x.UserId.Value)
+                    && x.MessageType == TemplateTypeConstants.TeamLeadInvitation
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .Select(x => new { x.UserId, x.InsertedDate })
+                .OrderByDescending(x => x.InsertedDate)
+                .GroupBy(x => x.UserId)
+                .ToDictionary(x => x.Key, x => x.First().InsertedDate);
 
             List<PortalUsersTLModel> records = teamLeads.Select(item => new PortalUsersTLModel
             {
                 Id = item.Id,
-                User = new PortalUserModel(item.User, invitations, item.IsRegistered),
+                User = new PortalUserModel(item.User, item.IsRegistered, invitations.ContainsKey(item.UserId) ? invitations[item.UserId] : null),
                 ClinicIds = item.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList(),
                 ClinicNames = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.Name).ToList(),
                 InsertedDate = item.InsertedDate,
@@ -402,6 +411,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
                 var clinicNameList = new List<string>();
                 var clinicIds = new List<Guid>();
+                var clinics = new List<BaseClinicModel>();
+                var totalClinicMeetings = 0;
+                var totalVisitsCompleted = 0;
                 foreach (var item in clinicTeamLeadRecords)
                 {
                     var league = item.Clinic.Leagues.Where(x => x.IsActive).FirstOrDefault();
@@ -413,6 +425,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                         clinicNameList.Add(item.Clinic.Name);
                     }
                     clinicIds.Add(item.ClinicId);
+                    clinics.Add(new BaseClinicModel
+                    {
+                        Id = item.Clinic.Id,
+                        Name = item.Clinic.Name,
+                    });
+                    totalClinicMeetings += item.Clinic.ClinicMeetings.Where(x => x.IsActive && x.MeetingDate.Year == DateTime.Now.Year).Count();
+                    totalVisitsCompleted += item.Clinic.ClinicMeetings.Where(x => x.IsActive && x.MeetingDate.Year == DateTime.Now.Year).Select(x => x.TotalSupportVisits).Sum();
                 }
                 var healthCareWorkers = hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId != null && clinicIds.Contains((Guid)x.ClinicId))
                     .Include(x => x.Mothers)
@@ -424,14 +443,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var totalHealthCareWorkers = healthCareWorkers.Count();
                 var totalPregnantMoms = healthCareWorkers.SelectMany(x => x.Mothers.Where(x => x.IsActive)).Distinct().Count();
                 var totalChildren = infantRepo.GetAll().Where(x => x.IsActive && caregiverIds.Contains((Guid)x.CaregiverId)).Distinct().Count();
-                // TODO: get these totals when app dev is done
-                var totalMeetingReportsSubmitted = 0;
-                var totalInFieldVisitsCompleted = 0;
+                var totalMeetingReportsSubmitted = totalClinicMeetings;
+                var totalInFieldVisitsCompleted = totalVisitsCompleted;
                 return new PortalTeamLeadModel(teamLead.User, clinicNames, siteAddress, clinicNameList.Count, totalHealthCareWorkers,
-                                          totalPregnantMoms, totalChildren, totalMeetingReportsSubmitted, totalInFieldVisitsCompleted);
+                                          totalPregnantMoms, totalChildren, totalMeetingReportsSubmitted, totalInFieldVisitsCompleted, clinics);
             }
             return null;
         }
 
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PortalUsersTLModel GetTeamLeadById(
+            [Service] ITeamLeadService teamLeadService,
+            Guid teamLeadId)
+        {
+            var teamLead = teamLeadService.GetTeamLeadById(teamLeadId);
+
+            return teamLead;
+        }
     }
 }

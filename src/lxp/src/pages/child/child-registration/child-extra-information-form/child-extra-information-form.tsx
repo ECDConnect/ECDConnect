@@ -3,30 +3,23 @@ import {
   ButtonGroup,
   ButtonGroupOption,
   ButtonGroupTypes,
-  classNames,
-  Divider,
-  Dropdown,
-  DropDownOption,
   FormInput,
-  renderIcon,
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm, useFormState } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import {
   ChildExtraInformationFormModel,
   childExtraInformationFormSchema,
 } from '@schemas/child/child-registration/child-extra-information-form';
 import { staticDataSelectors } from '@store/static-data';
-import * as styles from './child-extra-information-form.styles';
 import { ChildExtraInformationFormProps } from './child-extra-information-form.types';
 
 export const ChildExtraInformationForm: React.FC<
   ChildExtraInformationFormProps
 > = ({ childExtraInformation, childName, onSubmit }) => {
-  const [racesList, setRacesList] = useState<DropDownOption<string>[]>([]);
   const [languagesList, setLanguagesList] = useState<
     ButtonGroupOption<string>[]
   >([]);
@@ -35,7 +28,6 @@ export const ChildExtraInformationForm: React.FC<
   const [otherLanguageSelected, setOtherLanguageSelected] = useState<boolean>();
   const gender = useSelector(staticDataSelectors.getGenders);
   const languages = useSelector(staticDataSelectors.getLanguages);
-  const races = useSelector(staticDataSelectors.getRaces);
 
   useEffect(() => {
     if (languages) {
@@ -55,21 +47,6 @@ export const ChildExtraInformationForm: React.FC<
   }, [languages]);
 
   useEffect(() => {
-    if (races) {
-      const racesListToAdd: DropDownOption<string>[] = [];
-
-      races.forEach((race) => {
-        racesListToAdd.push({
-          label: race.description ?? '',
-          value: race.id ?? '',
-        });
-      });
-      setRacesList(racesListToAdd);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [races]);
-
-  useEffect(() => {
     if (childExtraInformation) {
       setChildGender(childExtraInformation.genderId);
       setSelectedLanguages(childExtraInformation.homeLanguages || []);
@@ -81,7 +58,6 @@ export const ChildExtraInformationForm: React.FC<
     getValues: getChildExtraInformationFormValues,
     setValue: setChildExtraInformationFormValue,
     register: childExtraInformationFormRegister,
-    control: childExtraInformationFormControl,
     trigger: triggerChildExtraInformationForm,
   } = useForm<ChildExtraInformationFormModel>({
     resolver: yupResolver(childExtraInformationFormSchema),
@@ -89,12 +65,8 @@ export const ChildExtraInformationForm: React.FC<
     defaultValues: childExtraInformation,
   });
 
-  const { isValid } = useFormState({
-    control: childExtraInformationFormControl,
-  });
-
   const handleFormSubmit = () => {
-    if (isValid && onSubmit) {
+    if (onSubmit) {
       onSubmit(getChildExtraInformationFormValues());
     }
   };
@@ -114,90 +86,87 @@ export const ChildExtraInformationForm: React.FC<
   };
 
   return (
-    <div className={'h-full bg-white px-4 pt-2 pb-4'}>
-      <Typography type={'h1'} text={childName} color={'primary'} />
-      <Typography type={'h2'} text={'Extra Information'} color={'textMid'} />
-      <div>
-        <Dropdown
-          placeholder={'Select race'}
-          list={racesList}
-          fillType="clear"
-          label={'Race'}
-          fullWidth
-          className={'mt-3 w-full'}
-          selectedValue={getChildExtraInformationFormValues().race}
-          onChange={(item: string) => {
-            setChildExtraInformationFormValue('race', item);
+    <div className={'flex h-full flex-col bg-white px-4 pt-2 pb-4'}>
+      <Typography type={'h2'} text={childName} color={'primary'} />
+      <Typography type={'h4'} text={'Extra Information'} color={'textMid'} />
+      <Typography
+        type="h4"
+        text="Gender"
+        color="textDark"
+        className="mt-4 mb-2"
+      />
+      <Typography type="help" text="Optional" color="textMid" />
+      <div className={'mt-2'}>
+        <ButtonGroup<string>
+          options={
+            (
+              gender &&
+              gender
+                ?.filter((item) => item?.isActive === true)
+                ?.map((x) => {
+                  let text = x.description;
+
+                  if (x.description === 'Female') {
+                    text = 'Girl';
+                  }
+
+                  if (x.description === 'Male') {
+                    text = 'Boy';
+                  }
+                  return { text, value: x.id ?? '' };
+                })
+            )?.reverse() || []
+          }
+          onOptionSelected={(value: string | string[]) => {
+            setChildExtraInformationFormValue('genderId', value as string);
+            setChildGender(value as string);
             triggerChildExtraInformationForm();
           }}
+          selectedOptions={childGender}
+          color="secondary"
+          type={ButtonGroupTypes.Button}
+          className={'w-full'}
+          multiple={false}
         />
-
-        <label className={classNames(styles.label, 'mt-4')}>{'Sex'}</label>
-        <div className={'mt-2'}>
-          <ButtonGroup<string>
-            options={
-              (gender &&
-                gender
-                  ?.filter((item) => item?.isActive === true)
-                  ?.map((x) => {
-                    return { text: x.description, value: x.id ?? '' };
-                  })) ||
-              []
-            }
-            onOptionSelected={(value: string | string[]) => {
-              setChildExtraInformationFormValue('genderId', value as string);
-              setChildGender(value as string);
-              triggerChildExtraInformationForm();
-            }}
-            selectedOptions={childGender}
-            color="secondary"
-            type={ButtonGroupTypes.Button}
-            className={'w-full'}
-            multiple={false}
-          />
-        </div>
-        <label className={classNames(styles.label, 'mt-4')}>
-          {`${childName}’s home language(s)?`}
-        </label>
-        <label className="text-textLight mt-2 text-sm">
-          You can choose more than one
-        </label>
-        <div className={'mt-2'}>
-          <ButtonGroup<string>
-            type={ButtonGroupTypes.Chip}
-            options={languagesList}
-            onOptionSelected={(value: string | string[]) =>
-              handleLanguageSelection(value as string[])
-            }
-            multiple
-            selectedOptions={selectedLanguages}
-            color="secondary"
-          />
-        </div>
-        {otherLanguageSelected && (
-          <FormInput<ChildExtraInformationFormModel>
-            label={'Please type in other language(s)'}
-            className={'mt-3'}
-            register={childExtraInformationFormRegister}
-            nameProp={'otherLanguages'}
-            placeholder={'E.g. Portuguese'}
-          />
-        )}
-        <div className={'py-4'}>
-          <Divider></Divider>
-        </div>
-        <Button
-          onClick={handleFormSubmit}
-          className="w-full"
-          size="small"
-          color="primary"
-          type="filled"
-          disabled={!isValid}
-        >
-          {renderIcon('ArrowCircleRightIcon', 'h-5 w-5 text-white')}
-          <Typography type="h6" className="ml-2" text="Next" color="white" />
-        </Button>
       </div>
+      <Typography
+        type="h4"
+        text={`${childName}’s home language(s)?`}
+        color="textDark"
+        className="mt-8 mb-2"
+      />
+      <Typography type="help" text="Optional" color="textMid" />
+      <div className={'mt-2'}>
+        <ButtonGroup<string>
+          type={ButtonGroupTypes.Chip}
+          options={languagesList}
+          onOptionSelected={(value: string | string[]) =>
+            handleLanguageSelection(value as string[])
+          }
+          multiple
+          selectedOptions={selectedLanguages}
+          color="secondary"
+        />
+      </div>
+      {otherLanguageSelected && (
+        <FormInput<ChildExtraInformationFormModel>
+          label={'Please type in other language(s)'}
+          className={'mt-3'}
+          register={childExtraInformationFormRegister}
+          nameProp={'otherLanguages'}
+          placeholder={'E.g. Portuguese'}
+        />
+      )}
+      <Button
+        onClick={handleFormSubmit}
+        className="mt-auto w-full"
+        size="small"
+        color="quatenary"
+        type="filled"
+        icon="ArrowCircleRightIcon"
+        text="Next"
+        textColor="white"
+      />
     </div>
   );
 };

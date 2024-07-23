@@ -1,161 +1,113 @@
-import {
-  ChildDto,
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-  LearnerDto,
-  PrincipalDto,
-  ProgrammeTypeDto,
-} from '@ecdlink/core';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
+import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
+import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import {
+  ClassroomGroupDto,
+  LearnerDto,
+  ClassroomGroupDto as SimpleClassroomGroupDto,
+} from '@/models/classroom/classroom-group.dto';
+import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
 
-export const getClassroom = (state: RootState): ClassroomDto | undefined =>
-  state.classroomData.classroom;
+export const getClassroom = (
+  state: RootState
+): SimpleClassroomDto | undefined => state.classroomData.classroom;
 
-export const getProgrammeType = () =>
-  createSelector(
-    (state: RootState) => state,
-    (rootState: RootState): ProgrammeTypeDto | undefined => {
-      if (!!rootState.classroomData.programmeType) {
-        return rootState.staticData.programmeTypes?.find(
-          (x) => x.id === rootState.classroomData.programmeType
-        );
-      } else {
-        const groups =
-          rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
-          [];
-
-        if (groups?.length > 0) {
-          return groups[0].programmeType;
-        }
-
-        return;
-      }
-    }
-  );
-
-export const getAllClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
-  state.classroomData.classroomGroups || [];
-
-export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
-  state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
+export const getClassroomGroups = (
+  state: RootState
+): SimpleClassroomGroupDto[] =>
+  state.classroomData.classroomGroupData.classroomGroups;
 
 export const getClassroomGroupsForUser = (userId: string) =>
   createSelector(
-    (state: RootState) => state.classroomData?.classroomGroups,
+    (state: RootState) =>
+      state.classroomData.classroomGroupData.classroomGroups,
     (classroomGroups) => {
       return (
         classroomGroups?.filter(
-          (classroomGroup) =>
-            classroomGroup.isActive && classroomGroup.userId === userId
+          (classroomGroup) => classroomGroup.userId === userId
         ) || []
       );
     }
   );
 
-export const getPrincipal = (state: RootState): PrincipalDto =>
-  state.classroomData.principal || ({} as PrincipalDto);
-
-export const getClassroomGroupById = (id?: string) =>
+export const getClassroomGroupByChildUserId = (childUserId: string) =>
   createSelector(
-    (state: RootState) => state.classroomData.classroomGroups,
-    (classroomGroups: ClassroomGroupDto[] | undefined) => {
-      if (!classroomGroups || !id) return;
+    (state: RootState) =>
+      state.classroomData.classroomGroupData.classroomGroups,
+    (classroomGroups: SimpleClassroomGroupDto[] | undefined) => {
+      if (!classroomGroups || !childUserId) return;
+
+      return classroomGroups.find((group) =>
+        group.learners?.some(
+          (learner) => learner.childUserId === childUserId && learner.isActive
+        )
+      );
+    }
+  );
+
+export const getPrincipal = (state: RootState): BasePractitionerDto =>
+  state.classroomData.classroom?.principal || ({} as BasePractitionerDto);
+
+export const getClassroomGroupById = (id: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.classroomData.classroomGroupData.classroomGroups,
+    (classroomGroups: SimpleClassroomGroupDto[] | undefined) => {
+      if (!classroomGroups) return;
 
       return classroomGroups.find((group) => group.id === id);
     }
   );
 
+// Outdated, this should not be used anymore
 export const getClassroomGroupLearners = (state: RootState): LearnerDto[] =>
-  state.classroomData.classroomGroupLearners?.filter((x) => x.isActive) || [];
+  state.classroomData.classroomGroupData.classroomGroups
+    .flatMap((x) => x.learners)
+    ?.filter((x) => x.isActive);
 
-export const getChildLearner = (child?: ChildDto) =>
-  createSelector(
-    (state: RootState) => state.classroomData.classroomGroupLearners || [],
-    (learners: LearnerDto[]) =>
-      learners.find((learner) => learner.userId === child?.userId)
-  );
-
-export const getChildLearnerByClassroom = (
+export const getChildLearnerByClassroomGroup = (
   classroomGroupId: string,
   childUserId?: string
 ) =>
   createSelector(
-    (state: RootState) => state.classroomData.classroomGroupLearners || [],
-    (learners: LearnerDto[]) =>
-      learners.find(
-        (learner) =>
-          learner.userId === childUserId &&
-          learner.classroomGroupId === classroomGroupId
+    getClassroomGroupById(classroomGroupId),
+    (classroomGroup: ClassroomGroupDto | undefined) =>
+      classroomGroup?.learners.find(
+        (learner) => learner.childUserId === childUserId
       )
   );
 
-export const getClassProgrammes = (state: RootState): ClassProgrammeDto[] =>
-  state.classroomData.classroomProgrammes?.filter((x) => x.isActive) || [];
-
-export const getClassProgrammesByClassGroupId = (classGroupId?: string) =>
+export const getLearnersForClassroomGroups = (
+  classroomGroupIds: string[],
+  startDate: Date,
+  endDate: Date
+) =>
   createSelector(
-    (state: RootState) => state.classroomData.classroomProgrammes,
-    (classroomProgrammes: ClassProgrammeDto[] | undefined) => {
-      return (
-        classroomProgrammes?.filter(
-          (x) => x.isActive && x.classroomGroupId === classGroupId
-        ) || []
-      );
-    }
-  );
-
-export const getLearnerClassGroupId = (userId?: string) =>
-  createSelector(
-    (state: RootState) => state.classroomData.classroomGroupLearners,
-    (classroomGroupLearners: LearnerDto[] | undefined) => {
-      if (!classroomGroupLearners || !userId) return;
-      // TODO: this method filters out learners using stoppedAttendance date.
-      const currentLearner = classroomGroupLearners.find(
-        (learner) =>
-          learner.userId === userId && learner.stoppedAttendance == null
-      );
-      return currentLearner?.classroomGroupId;
-    }
-  );
-
-export const getClassroomProgrammeType = () =>
-  createSelector(
-    (state: RootState) => state,
-    (rootState: RootState) => {
-      if (!rootState) return;
-      const groups =
-        rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
-        [];
-
-      if (groups?.length > 0) {
-        return groups[0].programmeType;
-      }
-
-      return;
-    }
-  );
-
-export const isPlaygroup = () =>
-  createSelector(
-    (state: RootState) => state,
-    (rootState: RootState) => {
-      if (!rootState) return;
-      const groups =
-        rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
-        [];
-
-      if (groups.length > 0) {
-        const programmeType = rootState.staticData.programmeTypes?.find(
-          (x) => x.id === groups[0].programmeTypeId
-        );
-        return (
-          programmeType && programmeType.enumId === ProgrammeTypeEnum.Playgroup
-        );
-      }
-
-      return;
+    (state: RootState) =>
+      state.classroomData.classroomGroupData.classroomGroups,
+    (state: RootState) => state.children.childData.children,
+    (classroomGroups: ClassroomGroupDto[], children: ChildDto[]) => {
+      return classroomGroups
+        .filter((classroomGroup) =>
+          classroomGroupIds.includes(classroomGroup.id)
+        )
+        .map((classroomGroup) => ({
+          classroomGroupId: classroomGroup.id,
+          classroomGroupName: classroomGroup.name,
+          learners: classroomGroup.learners
+            .filter(
+              (learner) =>
+                new Date(learner.startedAttendance) <= endDate &&
+                (!learner.stoppedAttendance ||
+                  new Date(learner.stoppedAttendance) >= startDate)
+            )
+            .map((learner) => ({
+              ...learner,
+              child: children.find(
+                (child) => child.userId === learner.childUserId
+              ),
+            })),
+        }));
     }
   );

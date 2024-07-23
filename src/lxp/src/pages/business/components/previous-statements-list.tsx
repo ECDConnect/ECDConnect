@@ -5,86 +5,41 @@ import {
   StackedList,
   BannerWrapper,
 } from '@ecdlink/ui';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   formatCurrency,
-  sumIncomeOrExpenseItems,
+  getStatementsBalance,
 } from '@/utils/statements/statements-utils';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-  getNextMonth,
-  getPreviousMonth,
-} from '@ecdlink/core';
-import { IncomeStatementDates } from '@/constants/Dates';
+import { IncomeStatementDto } from '@ecdlink/core';
 
 export type PreviousStatementsListProps = {
   statements: IncomeStatementDto[];
-  unsubmittedIncome: IncomeItemDto[];
-  unsubmittedExpenses: ExpenseItemDto[];
   onBack: () => void;
-  onActionClick: (statementId: string | undefined) => void;
+  onActionClick: (statementId: string) => void;
+  fetchStatementsForYear: (year: number) => void;
 };
 
 export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
   statements,
-  unsubmittedIncome,
-  unsubmittedExpenses,
   onBack,
   onActionClick,
+  fetchStatementsForYear,
 }) => {
   const { isOnline } = useOnlineStatus();
 
-  const submittedBalance = statements.reduce(function (total: number, current) {
-    return total + current.balance;
-  }, 0);
+  const [years, setYears] = useState<number[]>([new Date().getFullYear()]);
 
-  const yearBalance =
-    submittedBalance +
-    sumIncomeOrExpenseItems(unsubmittedIncome) -
-    sumIncomeOrExpenseItems(unsubmittedExpenses);
+  const groupedStatements = useMemo(() => {
+    return years.map((year) => {
+      const statementsForYear = statements.filter((s) => s.year === year);
+      const balanceForYear = getStatementsBalance(statementsForYear);
 
-  const isThisMonthSubmitted = useMemo(
-    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
-    [statements]
-  );
-  const isPreviousMonthSubmitted = useMemo(() => {
-    var currentMonth = new Date().getMonth();
-
-    if (currentMonth === 0) {
-      return !!statements?.find(
-        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
-      );
-    }
-
-    return !!statements?.find((x) => x.month === currentMonth);
-  }, [statements]);
-
-  // submit window open And last statement not submitted -> previous month
-  // submitted this month -> next month
-  // otherwise current month
-  const summaryDate = useMemo(() => {
-    var date = new Date();
-    if (isThisMonthSubmitted) {
-      return getNextMonth(date);
-    }
-    if (
-      !isPreviousMonthSubmitted &&
-      date.getDate() <= IncomeStatementDates.SubmitEndDay
-    ) {
-      return getPreviousMonth(date);
-    }
-
-    return date;
-  }, [isThisMonthSubmitted, isPreviousMonthSubmitted]);
-
-  const prevStatementsItems = useMemo(() => {
-    return [
-      ...statements.map((item) => {
-        return {
+      return {
+        year: year,
+        balance: balanceForYear,
+        statements: statementsForYear.map((item) => ({
           title: `${getMonthName(item.month - 1)} ${item.year}`,
           titleStyle: 'text-textDark font-semibold text-base leading-snug',
           subTitleStyle:
@@ -93,22 +48,10 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
           onActionClick: () => onActionClick(item.id),
           classNames: 'bg-uiBg',
           notRounded: true,
-        };
-      }),
-      {
-        title: `${getMonthName(
-          summaryDate.getMonth()
-        )} ${summaryDate.getFullYear()}`,
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        text: '1',
-        onActionClick: () => onActionClick(undefined),
-        classNames: 'bg-uiBg',
-        notRounded: true,
-      },
-    ];
-  }, [statements, onActionClick, unsubmittedIncome, unsubmittedExpenses]);
+        })),
+      };
+    });
+  }, [years, statements, onActionClick]);
 
   return (
     <BannerWrapper
@@ -127,38 +70,53 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
           color="textDark"
           text={'Choose a statement to view and download'}
         />
-        {prevStatementsItems && (
-          <StackedList
-            className="mt-4 flex w-full flex-col gap-1"
-            type="MenuList"
-            listItems={prevStatementsItems}
-          />
-        )}
-        <Card
-          className={`bg-${
-            yearBalance > 0 ? 'successMain' : 'tertiary'
-          } mt-2 flex items-center justify-between p-4`}
-          shadowSize={'md'}
-        >
-          <Typography
-            text={yearBalance > 0 ? 'Profit' : 'Loss'}
-            type="body"
-            color={'white'}
-            className="w-9/12"
-          />
-          <Typography
-            text={`R ${formatCurrency(yearBalance)}`}
-            color={'white'}
-            type="h4"
-            className="mr-4 w-5/12 text-right"
-          />
-        </Card>
+        {groupedStatements.map((yearSummary) => {
+          return (
+            <div className="mt-5">
+              <Typography
+                type="h2"
+                weight="bold"
+                color="textDark"
+                text={`${yearSummary.year}`}
+              />
+              <StackedList
+                className="mt-4 flex w-full flex-col gap-1"
+                type="MenuList"
+                listItems={yearSummary.statements}
+              />
+              <Card
+                className={`bg-${
+                  yearSummary.balance > 0 ? 'successMain' : 'secondary'
+                } mt-2 flex items-center justify-between p-4`}
+                shadowSize={'md'}
+              >
+                <Typography
+                  text={yearSummary.balance > 0 ? 'Profit' : 'Loss'}
+                  type="body"
+                  color={'white'}
+                  className="w-9/12"
+                />
+                <Typography
+                  text={`R ${formatCurrency(yearSummary.balance)}`}
+                  color={'white'}
+                  type="h4"
+                  className="mr-4 w-5/12 text-right"
+                />
+              </Card>
+            </div>
+          );
+        })}
+        {/* TODO - hide button if lowest year does not have all 12 statements (They probably wouldn't have data from before then anyway?) */}
         <Button
           shape="normal"
-          color="primary"
+          color="quatenary"
           type="filled"
           icon="DocumentSearchIcon"
-          onClick={() => {}}
+          onClick={() => {
+            const newYear = years[years.length - 1] - 1;
+            setYears([...years, newYear]);
+            fetchStatementsForYear(newYear);
+          }}
           className="mt-6 rounded-2xl"
         >
           <Typography type="help" color="white" text="See more statements" />

@@ -15,6 +15,7 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using EcdLink.Api.CoreApi.Services.PointsEngine;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
@@ -29,7 +30,6 @@ using ECDLink.EGraphQL.Interceptors;
 using ECDLink.Moodle;
 using ECDLink.Notifications;
 using ECDLink.PDFGenerator;
-using ECDLink.PostgresTenancy;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
@@ -159,7 +159,7 @@ namespace EcdLink.Api.CoreApi
 
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
-            PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
+            //PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
 
             AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
 
@@ -187,6 +187,7 @@ namespace EcdLink.Api.CoreApi
             }
 
             services.AddTransient<IOpenAccessValidator<ChildOpenAccessValidator>, ChildOpenAccessValidator>();
+            services.AddTransient<IOpenAccessValidator<PrincipalOpenAccessValidator>, PrincipalOpenAccessValidator>();
 
             services.AddTransient<ITokenManager<ApplicationUser, InvitationTokenManager>, InvitationTokenManager>();
             services.AddTransient<ITokenManager<ApplicationUser, OpenAccessTokenManager>, OpenAccessTokenManager>();
@@ -233,6 +234,13 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
             services.AddTransient<IClinicService, ClinicService>();
+            services.AddTransient<IReferralService, ReferralService>();
+            services.AddTransient<ILeagueService, LeagueService>();
+            services.AddTransient<ITeamLeadService, TeamLeadService>();
+            services.AddTransient<IClassroomService, ClassroomService>();
+            services.AddTransient<ICommunityService, CommunityService>();
+            services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
+            services.AddTransient<IAbsenteeService, AbsenteeService>();
 
             // Notification tasks (All will be run daily)
             foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()
@@ -246,7 +254,6 @@ namespace EcdLink.Api.CoreApi
                 return new SynchronizedConverter(new PdfTools());
             });
 
-            services.AddTransient<IAttendancePdfService, AttendancePdfService>();
             services.AddControllers();
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);

@@ -1,0 +1,144 @@
+import {
+  ClassRoomChildAttendanceMonthlyReportModel,
+  MonthlyAttendanceRecord,
+  PractitionerDto,
+} from '@ecdlink/core';
+import { PractitionerReportDetails } from '@ecdlink/graphql';
+import { UserOptions } from 'jspdf-autotable';
+
+interface TableDataProps {
+  monthlyReport?: ClassRoomChildAttendanceMonthlyReportModel;
+  selectedMonth: MonthlyAttendanceRecord;
+  practitioner?: PractitionerDto;
+  reportDetails?: PractitionerReportDetails;
+}
+
+export const getTableData = ({
+  monthlyReport,
+  reportDetails,
+  selectedMonth,
+  practitioner,
+}: TableDataProps) => {
+  const reportData = monthlyReport?.classroomAttendanceReport ?? [];
+  const totalAttendance =
+    monthlyReport?.totalAttendance.filter(
+      (attendance) => attendance.value !== null
+    ) ?? [];
+  const totalAttendanceStatsReport = monthlyReport?.totalAttendanceStatsReport;
+
+  const numDays = totalAttendance.length;
+
+  const tableBody = reportData.map(
+    (item: {
+      attendance?: any;
+      childFullName?: any;
+      childIdNumber?: string;
+    }) => {
+      const { childFullName, childIdNumber } = item;
+      const attendance = item.attendance.reduce(
+        (obj: { [x: string]: any }, { key, value }: any, i: number) => {
+          obj[`day${key}`] = value !== null ? value : '*';
+          return obj;
+        },
+        {}
+      );
+      return { child: childFullName, id: childIdNumber, ...attendance };
+    }
+  );
+
+  const tableHeaders = [
+    { header: 'Child', dataKey: 'child' },
+    { header: 'ID/Passport', dataKey: 'id' },
+    ...totalAttendance.slice(0, numDays).map(({ key }) => ({
+      header: `${key}`,
+      dataKey: `day${key}`, // using key value as dataKey
+    })),
+  ];
+
+  const finalTableData = [
+    {
+      tableName: '',
+      type: '',
+      total: '',
+      headers: tableHeaders,
+      data: tableBody,
+    },
+  ];
+
+  const footer = [
+    'Child Attendance per Day',
+    '', // Placeholder for ID/Passport column
+  ];
+
+  totalAttendance.forEach((obj) => {
+    footer.push(obj.value.toString());
+  });
+
+  let attendanceSum = 0;
+
+  for (let i = 0; i < totalAttendance.length; i++) {
+    attendanceSum += totalAttendance[i].value;
+  }
+
+  const tableTopContent = {
+    pageTitle: `${selectedMonth.month} Attendance Report`,
+    subtitle: '',
+    text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
+    text_coulumn_one_row_two: `ID: ${
+      reportDetails?.idNumber === null ? '' : reportDetails?.idNumber
+    }`,
+    text_coulumn_one_row_three: `Phone: ${
+      reportDetails?.phone === null ? '' : reportDetails?.phone
+    }`,
+    text_column_two_row_two: `Class days: ${
+      reportDetails?.programmeDays === null ? '' : reportDetails?.programmeDays
+    } `,
+    text_column_two_row_three: `Site: ${
+      reportDetails?.classSiteAddress === null
+        ? ''
+        : reportDetails?.classSiteAddress
+    }`,
+  };
+
+  const tableBottomContent = [
+    `Total monthly attendance: ${attendanceSum}`,
+    `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
+    `Number of children who attended all sessions: ${
+      attendanceSum === 0
+        ? '0'
+        : totalAttendanceStatsReport?.totalChildrenAttendedAllSessions
+    }`,
+    '* = child was not registered yet OR practitioner did not take attendance',
+  ];
+
+  const tableHeadStyles: UserOptions['headStyles'] = {
+    fillColor: [211, 211, 211], // Light grey
+    textColor: [0, 0, 0],
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableStyles: UserOptions['styles'] = {
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+    fontSize: 8,
+  };
+  const tableFootStyles: UserOptions['footStyles'] = {
+    textColor: [0, 0, 0],
+    fillColor: [211, 211, 211], // Light grey
+    fontSize: 8,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+
+  return {
+    attendanceSum,
+    tableTopContent,
+    tableBottomContent,
+    finalTableData,
+    tableHeadStyles,
+    tableStyles,
+    tableFootStyles,
+    footer,
+  };
+};

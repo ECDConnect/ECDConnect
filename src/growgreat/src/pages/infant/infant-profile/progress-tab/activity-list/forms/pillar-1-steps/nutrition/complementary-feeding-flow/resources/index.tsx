@@ -234,7 +234,7 @@ export const ResourcesStep = ({
             iconPosition="end"
             className="h-8"
             onClick={() => {
-              setResource(imgDietaryDiversity);
+              setResource('Food groups');
               setIsTip && setIsTip(true);
             }}
           />
@@ -260,7 +260,7 @@ export const ResourcesStep = ({
             iconPosition="end"
             className="h-8"
             onClick={() => {
-              setResource(eggInfographic);
+              setResource('Egg');
               setIsTip && setIsTip(true);
             }}
           />

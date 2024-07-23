@@ -16,7 +16,7 @@ import {
 } from '@/store/mother/mother.selectors';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
-import { VisitDto } from '@ecdlink/core';
+import { VisitDto, getDateWithoutTimeZone } from '@ecdlink/core';
 
 export const PastVisits: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -29,6 +29,7 @@ export const PastVisits: React.FC = () => {
 
   const currentDate = new Date();
   currentDate?.setHours(0, 0, 0, 0);
+  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
 
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
@@ -62,7 +63,24 @@ export const PastVisits: React.FC = () => {
   }, []);
 
   const visitSteps = useMemo(() => {
-    const filteredVisits = visits.filter((item) => item?.attended);
+    const filteredVisits = visits.filter((item) => {
+      const dueDate = getDateWithoutTimeZone(item.dueDate);
+      const plannedDate = getDateWithoutTimeZone(item.plannedVisitDate);
+
+      if (item.isCancelled || item.attended) {
+        return true;
+      }
+
+      if (dueDate && dueDate < todayDate!) {
+        return true;
+      }
+
+      if (!dueDate && !!plannedDate && plannedDate < todayDate!) {
+        return true;
+      }
+
+      return false;
+    });
 
     const sortedVisits = getSortedVisits(filteredVisits);
 

@@ -1,19 +1,13 @@
-import {
-  LanguageDto,
-  getWeekDate,
-  useDialog,
-  getFirstFriday,
-} from '@ecdlink/core';
+import { LanguageDto, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
   AlertProps,
   BannerWrapper,
+  Button,
+  DatePicker,
   DialogPosition,
-  Divider,
   Dropdown,
-  FADButton,
-  StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -30,44 +24,70 @@ import {
 import { staticDataSelectors } from '@store/static-data';
 import { getDateRangeText } from '@utils/classroom/programme-planning/programmes.utils';
 import { ProgrammeTimingRouteState } from './programme-timing.types';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ROUTES from '@routes/routes';
 import { useAppDispatch } from '@/store';
 import { programmeThunkActions } from '@/store/programme';
-import { addDays, format } from 'date-fns';
-import { practitionerSelectors } from '@/store/practitioner';
-import walktroughImage from '../../../../assets/walktroughImage.png';
 import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
+import { classroomsSelectors } from '@/store/classroom';
+import {
+  ClassDashboardRouteState,
+  TabsItems,
+} from '../../class-dashboard/class-dashboard.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ProgrammeActions } from '@/store/programme/programme.actions';
+import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
+import { useAppContext } from '@/walkthrougContext';
+import { ProgrammeDashboardRouteState } from '../programme-dashboard/programme-dashboard.types';
 
 const ProgrammeTiming: React.FC = () => {
-  const history = useHistory();
-  const { isOnline } = useOnlineStatus();
   const {
-    createProgramme,
+    state: { run: isWalkthrough },
+  } = useAppContext();
+  const history = useHistory();
+  const { state } = useLocation<ProgrammeTimingRouteState>();
+
+  const programmeToEdit = state?.programmeToEdit;
+
+  useEffect(() => {
+    if (!state?.classroomGroupId) {
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.ACTIVITES,
+      } as ClassDashboardRouteState);
+    }
+  }, [history, state?.classroomGroupId, state?.theme]);
+
+  const { isOnline } = useOnlineStatus();
+
+  const {
+    createOrEditProgramme,
     getConflictingProgramme,
     validateStartDate,
     getThemedProgrammeEndDate,
     getNoThemedProgrammeEndDate,
   } = useProgrammePlanning();
+
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(state.classroomGroupId)
+  );
   const languages = useSelector(staticDataSelectors.getLanguages);
-  const { state } = useLocation<ProgrammeTimingRouteState>();
   const [alertState, setAlertState] = useState<AlertProps>();
   const selectedTheme = state?.theme;
   const [isFormValid, setIsFormValid] = useState(false);
+
+  const { isLoading } = useThunkFetchCall(
+    'programmeData',
+    ProgrammeActions.UPDATE_PROGRAMMES
+  );
+
+  const dialog = useDialog();
+
   const { getValues, setValue, control } = useForm<ProgrammeTimingModel>({
     resolver: yupResolver(programmeTimingSchema),
     mode: 'onChange',
   });
-  const dialog = useDialog();
+
   const appDispatch = useAppDispatch();
-  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
-  const isPrincipal = practitioner?.isPrincipal;
-  const practitioners = useSelector(
-    practitionerSelectors.getPractitioners
-  )?.filter((x) => {
-    return x.user?.id !== practitioner?.user?.id;
-  });
 
   const {
     date: selectedDate,
@@ -85,92 +105,76 @@ const ProgrammeTiming: React.FC = () => {
     history.goBack();
   };
 
+  const onSuccess = useCallback(() => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => (
+        <ActionModal
+          customIcon={<Robot className="mb-3 h-24 w-24" />}
+          title={`Great, I have set up your ${selectedTheme.name} programme!`}
+          detailText={`All your activities have been planned for ${getDateRangeText(
+            selectedDate?.toString(),
+            endDate?.toString()
+          )}!`}
+          actionButtons={[
+            {
+              colour: 'quatenary',
+              textColour: 'white',
+              onClick: () => {
+                onClose();
+                history.push(
+                  ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
+                    ':classroomGroupId',
+                    state.classroomGroupId
+                  ),
+                  {
+                    selectedDate: new Date(selectedDate!),
+                  } as ProgrammeDashboardRouteState
+                );
+              },
+              leadingIcon: 'ClipboardListIcon',
+              type: 'filled',
+              text: 'See programme',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [
+    dialog,
+    endDate,
+    history,
+    selectedDate,
+    selectedTheme.name,
+    state.classroomGroupId,
+  ]);
+
   const handleSave = async () => {
     const formValue = getValues();
     const validatedDate = validateStartDate(new Date(formValue.date));
-    const newProgramme = await createProgramme(
+
+    await createOrEditProgramme(
+      state.classroomGroupId,
       validatedDate,
       formValue.language,
       selectedTheme,
-      new Date(endDate!)
+      new Date(endDate!),
+      programmeToEdit
     );
 
     if (isOnline) {
-      try {
-        appDispatch(programmeThunkActions.updateProgrammes({}));
-      } catch (err) {
-        console.log(err);
-      }
+      appDispatch(programmeThunkActions.updateProgrammes({}));
     }
 
-    handleDialog();
-  };
-
-  const handleDialogClick = useCallback(() => {
-    var friday = getFirstFriday(new Date());
-
-    if (isPrincipal && practitioners?.length! >= 1) {
-      history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: 3,
-        programmeStartDate: friday,
-      });
-    } else {
-      history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: 2,
-        programmeStartDate: friday,
-      });
-    }
-  }, [isPrincipal, practitioners, history]);
-
-  const handleDialog = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            customIcon={
-              <div className="flex">
-                <img src={walktroughImage} alt="profile" className="mb-2" />
-              </div>
-            }
-            importantText={
-              `Great, I have set up your ` +
-              selectedTheme?.name +
-              ` programme! Start planning your Mahala Fridays`
-            }
-            detailText={`Activities for Monday to Thursday are planned! Choose your own activities for Fridays.`}
-            textAlignment="center"
-            actionButtons={[
-              {
-                text: 'Plan Fridays',
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: () => {
-                  handleDialogClick();
-                  onCancel();
-                },
-                leadingIcon: 'ClipboardListIcon',
-              },
-              {
-                text: 'Close',
-                textColour: 'primary',
-                colour: 'primary',
-                type: 'outlined',
-                onClick: () => {
-                  onCancel();
-                },
-                leadingIcon: 'XIcon',
-              },
-            ]}
-          />
-        );
-      },
-    });
+    onSuccess();
   };
 
   useEffect(() => {
-    setIsFormValid(programmeTimingSchema.isValidSync(getValues()));
+    setIsFormValid(
+      !!programmeToEdit || programmeTimingSchema.isValidSync(getValues())
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, selectedLanguage]);
 
@@ -185,7 +189,12 @@ const ProgrammeTiming: React.FC = () => {
       const endOfWeekDay = getNoThemedProgrammeEndDate(validatedDate);
       internalEndDate = endOfWeekDay.endDate;
     } else {
-      setValue('endDate', getThemedProgrammeEndDate(validatedDate).toString());
+      if (!programmeToEdit) {
+        setValue(
+          'endDate',
+          getThemedProgrammeEndDate(validatedDate).toString()
+        );
+      }
       internalEndDate = getThemedProgrammeEndDate(validatedDate);
     }
 
@@ -198,23 +207,18 @@ const ProgrammeTiming: React.FC = () => {
     (date) => {
       const overlappingProgramme = getConflictingProgramme(
         new Date(selectedDate!),
-        new Date(date)
+        new Date(date),
+        classroomGroup?.id!
       );
 
       if (overlappingProgramme) {
         setAlertState({
-          title: 'This start date causes conflicts',
+          title: `You already have activities planned for the ${classroomGroup?.name} class on these dates`,
           list: [
-            `This programme (${
-              selectedTheme?.name || 'No theme'
-            }) will run from <b>${getDateRangeText(
-              new Date(selectedDate!).toString(),
-              new Date(date).toString()
-            )}</b>`,
-            `If you continue with this start date you will lose your plans for <b>${getDateRangeText(
+            `If you continue with these dates, you will lose your plans for ${getDateRangeText(
               overlappingProgramme.startDate,
               overlappingProgramme.endDate
-            )}</b> (${overlappingProgramme.name})`,
+            )} (${overlappingProgramme.name}).`,
           ],
           type: 'warning',
         });
@@ -222,24 +226,7 @@ const ProgrammeTiming: React.FC = () => {
       }
 
       setAlertState({
-        title: 'No conflicts for these dates',
-        message: selectedTheme
-          ? `Your ${selectedTheme.name} programme will start on <b>${
-              selectedDate
-                ? format(new Date(selectedDate!), 'EEEE, d LLLL')
-                : ''
-            }</b> and end on <b>${
-              date ? format(new Date(date!), 'EEEE, d LLLL') : ''
-            }.</>`
-          : `Your programme will be <b>${
-              selectedTheme ? 20 : 20
-            } day(s)</b> long, starting on <b>${
-              selectedDate
-                ? format(new Date(selectedDate!), 'EEEE, d LLLL')
-                : ''
-            }</b> and ending on <b>${
-              date ? format(new Date(date!), 'EEEE, d LLLL') : ''
-            }</b>.`,
+        title: 'These dates are available',
         type: 'success',
       });
     },
@@ -247,72 +234,94 @@ const ProgrammeTiming: React.FC = () => {
     [selectedDate, selectedTheme]
   );
 
+  useEffect(() => {
+    if (programmeToEdit) {
+      setValue('date', programmeToEdit.startDate);
+      setValue('endDate', programmeToEdit.endDate);
+      setValue('language', programmeToEdit.preferredLanguage);
+    }
+  }, [programmeToEdit, setValue]);
+
+  useEffect(() => {
+    if (state.initialDate) {
+      setValue('date', state.initialDate.toString().replace('Z', ''));
+    }
+  }, [setValue, state.initialDate]);
+
   return (
     <BannerWrapper
       showBackground={false}
       size="medium"
       renderBorder={true}
       title={'Choose dates and language'}
+      subTitle={`Theme: ${selectedTheme.name}`}
       color={'primary'}
       onBack={handleBack}
       displayOffline={!isOnline}
+      className="flex flex-col p-4 pt-6"
     >
       <ProgrammeWrapper />
-      <div className="px-4 py-2">
-        <div className="mt-3 flex">
-          <StatusChip
-            backgroundColour="infoDark"
-            borderColour="transparent"
-            textColour="white"
+      <Typography
+        type="h1"
+        text={
+          !!programmeToEdit
+            ? 'Edit programme'
+            : `Set up your theme for ${classroomGroup?.name}`
+        }
+        color="textDark"
+      />
+      <>
+        <div className="mt-3 flex items-center gap-2">
+          <img
+            src={selectedTheme.imageUrl}
+            alt="Theme icon"
+            className="w-9 rounded-full"
+          />
+          <Typography
+            type="h4"
             text={selectedTheme?.name || 'No theme'}
+            color="textDark"
           />
         </div>
-        <Typography type="h1" text="Set up your programme" color={'primary'} />
-        {!selectedTheme ? (
+        {!selectedTheme && (
           <Alert
             className="mt-4"
             title={'Programmes without a theme run until the end of the week.'}
             message="Choose your start date, you will have to select activities for each day until the end of the week."
             type={'info'}
           />
-        ) : (
-          <Alert
-            className="mt-4"
-            title="Themed programmes run for 20 days."
-            message="Activities for Monday to Thursday are planned. Fridays are mahala days, so get creative and choose your own activities!"
-            type={'info'}
-          />
         )}
-
         <div id="walkthrough-theme-timing">
           <Typography
             className="mt-4"
-            type="body"
+            type="h4"
             text="When would you like to start this programme?"
           />
 
           <DatePicker
+            disabledKeyboardNavigation
             placeholderText={`Please select a date`}
             className="border-uiLight text-textMid w-full rounded-md"
             selected={selectedDate ? new Date(selectedDate) : undefined}
-            onChange={(date: Date) => {
+            onChange={(date) => {
               setValue('date', date ? date.toString() : '');
             }}
             dateFormat="EEE, dd MMM yyyy"
             minDate={new Date()}
+            disabled={isWalkthrough}
           />
-
           <Typography
             className="mt-4"
-            type="body"
+            type="h4"
             text="When would you like to end this programme?"
           />
           <DatePicker
-            disabled={selectedDate == null}
+            disabledKeyboardNavigation
+            disabled={selectedDate == null || isWalkthrough}
             placeholderText={`Please select a date`}
             className="border-uiLight text-textMid w-full rounded-md"
             selected={endDate ? new Date(endDate) : undefined}
-            onChange={(date: Date) => {
+            onChange={(date) => {
               setValue('endDate', date ? date.toString() : '');
               setAlert(date);
             }}
@@ -323,22 +332,23 @@ const ProgrammeTiming: React.FC = () => {
         </div>
 
         {alertState && <Alert className="mt-4" {...alertState} />}
-        <div id="walkthrough-classroom-language">
+        <div id="walkthrough-classroom-language" className="mb-4">
           <Typography
             className="mt-4"
-            type="body"
+            type="h4"
             text="What is your preferred classroom language?"
           />
           <Typography
-            type="body"
+            type="help"
             text="You can change languages while you plan. When your chosen language isn’t available, activities or stories will be shown in English."
-            color={'textLight'}
+            color={'textMid'}
           />
           <Dropdown
             fullWidth
             fillType="clear"
             placeholder="Tap to choose language"
             selectedValue={selectedLanguage}
+            disabled={!!programmeToEdit || isWalkthrough}
             list={
               (languages &&
                 languages
@@ -356,21 +366,18 @@ const ProgrammeTiming: React.FC = () => {
             }}
           />
         </div>
-        <Divider className="mt-4" />
-        <FADButton
-          title={'Save'}
-          icon={'SaveIcon'}
-          iconDirection={'left'}
-          textToggle={true}
-          type={'filled'}
-          color={'primary'}
-          shape={'normal'}
-          className="my-4 w-full"
-          size="small"
-          click={handleSave}
-          disabled={!isFormValid}
+        <Button
+          type="filled"
+          color="quatenary"
+          disabled={!isFormValid || isLoading}
+          isLoading={isLoading}
+          onClick={handleSave}
+          icon="SaveIcon"
+          text={!!programmeToEdit ? 'Update' : 'Save'}
+          textColor="white"
+          className="mt-auto w-full"
         />
-      </div>
+      </>
     </BannerWrapper>
   );
 };

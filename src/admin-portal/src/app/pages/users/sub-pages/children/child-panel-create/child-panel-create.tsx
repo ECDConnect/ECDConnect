@@ -20,6 +20,7 @@ import {
   initialUserDetailsValues,
   passwordSchema,
   userSchema,
+  RoleSystemNameEnum,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -64,6 +65,7 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
+    watch,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
@@ -188,7 +190,9 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
   };
 
   const addUserRole = () => {
-    const role = roleData.roles.find((role: RoleDto) => role.name === 'Child');
+    const role = roleData.roles.find(
+      (role: RoleDto) => role.systemName === RoleSystemNameEnum.Child
+    );
 
     const copy = [...selectedUserRoles];
     if (!copy.some((x) => x.id === role.id)) {

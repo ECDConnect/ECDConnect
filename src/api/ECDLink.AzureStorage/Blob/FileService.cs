@@ -79,7 +79,7 @@ namespace ECDLink.AzureStorage.Blob
                     Reference = fileReference
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
                 throw;
@@ -125,7 +125,7 @@ namespace ECDLink.AzureStorage.Blob
                     Reference = fileReference
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
                 throw;
@@ -155,7 +155,7 @@ namespace ECDLink.AzureStorage.Blob
 
                 return ConvertToDisplay(fileUrl);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
@@ -183,7 +183,7 @@ namespace ECDLink.AzureStorage.Blob
 
                 return memoryStream.ToArray();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 memoryStream.Dispose();
                 memoryStream.Close();
@@ -210,7 +210,7 @@ namespace ECDLink.AzureStorage.Blob
 
                 return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // log(e)
                 return false;

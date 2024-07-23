@@ -4,7 +4,6 @@ import {
   BannerWrapper,
   Button,
   DialogPosition,
-  Divider,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
@@ -20,6 +19,7 @@ import {
 import LanguageSelector from '../language-selector/language-selector';
 import * as styles from './article.styles';
 import { ArticleProps } from './article.types';
+import { LanguageCode } from '@/i18n/types';
 
 export const Article = ({
   visible = true,
@@ -28,11 +28,15 @@ export const Article = ({
   onClose,
   showClose = true,
   isOpen = false,
+  isFromRegistration,
 }: ArticleProps) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [articleText, setArticleText] = useState<string>('');
-
+  const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [availableLanguages, setAvailableLanguages] = useState([
+    language.locale as LanguageCode,
+  ]);
   const consent = useSelector(contentConsentSelectors.getConsent);
   const dialog = useDialog();
 
@@ -61,8 +65,17 @@ export const Article = ({
     ).unwrap();
 
     if (!!content && content.length > 0) {
-      const consentFilter = content.find((x) => x.name === consentEnumType);
+      const consentFilter = isFromRegistration
+        ? content?.[0]
+        : content.find((x) => x.name === consentEnumType);
       setArticleText(consentFilter?.description ?? '');
+      setAvailableLanguages(
+        consentFilter?.availableLanguages
+          ? consentFilter.availableLanguages?.map((item) => {
+              return item?.locale as LanguageCode;
+            })
+          : [language.locale as LanguageCode]
+      );
     } else {
       setArticleText('');
       presentUnavailableAlert();
@@ -75,6 +88,14 @@ export const Article = ({
     if (!consentFilter || consentFilter.description?.length === 0) {
       presentUnavailableAlert();
     }
+
+    setAvailableLanguages(
+      consentFilter?.availableLanguages
+        ? consentFilter.availableLanguages?.map((item) => {
+            return item?.locale as LanguageCode;
+          })
+        : [language.locale as LanguageCode]
+    );
 
     setArticleText(consentFilter?.description ?? '');
   };
@@ -123,32 +144,33 @@ export const Article = ({
               onBack={onClose}
               title={title}
               className={styles.bannerContentWrapper}
-              backgroundColour={'uiBg'}
+              backgroundColour={'white'}
               displayOffline={!isOnline}
             >
               <div className={styles.localeDropDownWrapper}>
                 <LanguageSelector
+                  labelClassName="text-textDark mr-2"
                   currentLocale="en-za"
                   selectLanguage={(data) => changeLanugage(data)}
+                  availableLanguages={availableLanguages}
+                  notLogged={true}
                 />
               </div>
-              <Divider />
               <div className={styles.articleTextWrapper}>
                 <Typography type={'markdown'} text={articleText} />
               </div>
 
               {showClose && (
                 <div className={styles.bottom}>
-                  <Divider />
                   <Button
-                    color={'primary'}
-                    type={'outlined'}
+                    color={'quatenary'}
+                    type={'filled'}
                     onClick={onClose}
                     className={styles.closeButton}
                   >
                     {renderIcon('XIcon', 'h-4 w-4 mr-2')}
                     <Typography
-                      color={'primary'}
+                      color={'white'}
                       type={'body'}
                       weight={'bold'}
                       text={'Close'}

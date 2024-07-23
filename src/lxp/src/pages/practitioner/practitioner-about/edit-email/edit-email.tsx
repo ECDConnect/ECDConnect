@@ -84,6 +84,7 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
         onBack={() => setEditEmail(false)}
+        onClose={() => setEditEmail(false)}
       ></BannerWrapper>
       <div className="w-12/12 wrapper-with-sticky-button px-4">
         <div className="flex w-full justify-center">
@@ -111,7 +112,7 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
                 size="normal"
                 className="mb-4 w-full"
                 type="filled"
-                color="primary"
+                color="quatenary"
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"

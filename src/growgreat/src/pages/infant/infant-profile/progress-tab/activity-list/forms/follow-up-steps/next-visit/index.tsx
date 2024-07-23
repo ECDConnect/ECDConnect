@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo } from 'react';
-import { Alert } from '@ecdlink/ui';
+import { Alert, Button } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 
@@ -13,10 +13,15 @@ import {
 import { useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import { CalendarAddEventOptions } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
 
 export const NextVisitStep = ({
   infant,
+  onSubmit,
   setEnableButton,
+  setButtonProperties,
+  setExtraButtons,
 }: DynamicFormProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const caregiverName = useMemo(
@@ -29,6 +34,7 @@ export const NextVisitStep = ({
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, visitId)
   );
+  const calendarAddEvent = useCalendarAddEvent();
 
   const todayEndOfTheDay = new Date();
   todayEndOfTheDay.setHours(23, 59, 59, 999);
@@ -48,9 +54,41 @@ export const NextVisitStep = ({
       })
     : '';
 
+  const onBookVisit = () => {
+    const options: CalendarAddEventOptions = {
+      event: {
+        participantUserIds: [infant?.id!],
+        eventType: 'Home visit',
+      },
+      onUpdated: (isNew, event) => {
+        onSubmit?.();
+      },
+    };
+    calendarAddEvent(options);
+  };
+
   useLayoutEffect(() => {
     setEnableButton?.(true);
-  }, [setEnableButton]);
+    setButtonProperties?.({
+      type: 'outlined',
+      color: 'primary',
+      text: 'Save & Exit',
+      textColor: 'primary',
+    });
+    setExtraButtons?.([
+      <Button
+        type="filled"
+        color="primary"
+        textColor="white"
+        icon={'CalendarIcon'}
+        className="mb-4 w-full"
+        text={'Save & book your next visit'}
+        onClick={() => onBookVisit()}
+        // disabled={!isEnableButton || isLoading || isLoadingCreateDocument}
+        // isLoading={isLoading || isLoadingCreateDocument}
+      />,
+    ]);
+  }, [onBookVisit, setEnableButton, setButtonProperties, setExtraButtons]);
 
   return (
     <>

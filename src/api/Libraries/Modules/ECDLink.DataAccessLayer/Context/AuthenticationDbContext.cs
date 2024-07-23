@@ -4,7 +4,9 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Clubs;
+using ECDLink.DataAccessLayer.Entities.Community;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
@@ -19,6 +21,7 @@ using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.PQA;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
+using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -33,8 +36,12 @@ using System;
 
 namespace ECDLink.DataAccessLayer.Context
 {
-    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>  //IdentityDbContext<ApplicationUser>
+    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>
     {
+        public DbSet<TenantEntity> Tenants { get; set; }
+        public DbSet<Module> Modules { get; set; }
+        public DbSet<TenantHasModule> TenantHasModules { get; set; } 
+        public DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
         public DbSet<UserGrant> UserGrants { get; set; }
@@ -80,6 +87,7 @@ namespace ECDLink.DataAccessLayer.Context
         // Security
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<UserHierarchyEntity> UserHierarchy { get; set; }
         public DbSet<HierarchyEntity> Hierarchy { get; set; }
         public DbSet<AspNetJWTSession> AspNetJWTSession { get; set; }
@@ -139,6 +147,8 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<VisitGrowthDataDay> VisitGrowthDataDay { get; set; }
         public DbSet<VisitGrowthDataHeight> VisitGrowthDataHeight { get; set; }
         public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
+        public DbSet<ReferralType> ReferralTypes { get; set; }
+        public DbSet<VisitDataStatusReferralType> VisitDataStatusReferralTypes { get; set; }        
 
         // Licenses
         public DbSet<LicenseType> LicenseType { get; set; }
@@ -163,11 +173,15 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ClubActivityUploadType> ClubActivityUploadType { get; set; }
 
         // Clinics, Districts, SubDistricts
-        public DbSet<District> District { get; set; }
-        public DbSet<SubDistrict> SubDistrict { get; set; }
-        public DbSet<ClinicLeague> ClinicLeague { get; set; }
-        public DbSet<ClinicTeamLead> ClinicTeamLead { get; set; }
+        public DbSet<Clinic> Clinics { get; set; }
+        public DbSet<District> Districts { get; set; }
+        public DbSet<SubDistrict> SubDistricts { get; set; }
+        public DbSet<ClinicLeague> ClinicLeagues { get; set; }
+        public DbSet<ClinicTeamLead> ClinicTeamLeads { get; set; }
         public DbSet<BreastFeedingClub> BreastFeedingClubs { get; set; }
+        public DbSet<ClinicMeeting> ClinicMeetings { get; set; }
+        public DbSet<ClinicMeetingParticipantInField> ClinicMeetingParticipantInField { get; set; }
+        public DbSet<ClinicMeetingParticipantOptedOut> ClinicMeetingParticipantOptedOut { get; set; }
 
         // Leagues
         public DbSet<LeagueType> LeagueType { get; set; }
@@ -189,6 +203,21 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<PointsUserSummary> PointsUserSummary { get; set; }
         public DbSet<PointsClinicSummary> PointsClinicSummary { get; set; }
 
+        // User Help
+        public DbSet<UserHelp> UserHelp { get; set; }
+
+        // Training
+        public DbSet<UserTrainingCourse> UserTrainingCourses {  get; set; }
+
+        // Community
+        public DbSet<SupportRating> SupportRatings { get; set; }
+        public DbSet<FeedbackType> FeedbackTypes { get; set; }
+        public DbSet<CoachFeedback> CoachFeedback { get; set; }
+        public DbSet<CommunitySkill> CommunitySkills { get; set; }
+        public DbSet<CommunityProfile> CommunityProfile { get; set; }
+        public DbSet<CommunityProfileSkill> CommunityProfileSkill { get; set; }
+        public DbSet<CommunityProfileConnection> CommunityProfileConnections { get; set; }
+
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
         {
@@ -203,7 +232,18 @@ namespace ECDLink.DataAccessLayer.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
+            builder.Entity<TenantEntity>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.ApplicationName, e.SiteAddress });
+            });
+            builder.Entity<TenantHasModule>(x =>
+            {
+                x.HasKey(e => new { e.ModuleId, e.TenantId });
+            });
+            builder.Entity<Module>(x =>
+            {
+                x.HasKey(e => new { e.Id });
+            });
             builder.Entity<ApplicationUser>(x =>
             {
                 x.Property(p => p.PhoneNumber).HasConversion(
@@ -257,6 +297,15 @@ namespace ECDLink.DataAccessLayer.Context
             builder.Entity<UserGrant>(x =>
             {
                 x.HasKey(e => new { e.GrantId, e.UserId });
+            });
+            builder.Entity<VisitDataStatus>()
+                .HasOne(e => e.VisitBackReferral)
+                .WithOne(e => e.VisitDataStatus)
+                .HasForeignKey<VisitBackReferral>(e => e.VisitDataStatusId)
+                .IsRequired();
+            builder.Entity<MessageLogRelatedTo>(x =>
+            {
+                x.HasKey(e => new { e.MessageLogId, e.RelatedEntityId });
             });
         }
     }

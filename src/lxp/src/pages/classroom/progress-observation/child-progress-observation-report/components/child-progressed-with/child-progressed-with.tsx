@@ -24,9 +24,6 @@ export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
   const { currentReport } = useChildProgressObservation(childId);
 
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
 
   const {
     getValues: getFormValue,
@@ -69,7 +66,7 @@ export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
         textInputType={'textarea'}
         register={formRegister}
         nameProp={'childProgressedWith'}
-        label={`${childUser?.firstName} has made good progress with:`}
+        label={`${child?.user?.firstName} has made good progress with:`}
         placeholder={`E.g. Sharing his emotions. He can talk about how he is feeling.`}
       />
       {currentReport && currentReport.observationNote && (

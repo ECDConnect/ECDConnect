@@ -5,10 +5,8 @@ import {
   Divider,
   FormInput,
   Typography,
-  classNames,
   ButtonGroupOption,
   ButtonGroupTypes,
-  renderIcon,
 } from '@ecdlink/ui';
 import { useFormState, useForm } from 'react-hook-form';
 import {
@@ -16,21 +14,36 @@ import {
   childEmergencyContactFormSchema,
 } from '@schemas/child/child-registration/child-emergency-contact-form';
 import * as styles from './child-emergency-contact-form.styles';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChildEmergencyContactFormProps } from './child-emergency-contact-form.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ChildrenActions } from '@/store/children/children.actions';
 
 export const ChildEmergencyContactForm: React.FC<
   ChildEmergencyContactFormProps
 > = ({
+  enableReadOnlyMode,
   childEmergencyContactForm,
   childName,
-  submitButtonText = 'Next',
-  submitButtonIcon = 'ArrowCircleRightIcon',
   onSubmit,
   variation = 'practitioner',
   canEdit = false,
 }) => {
-  const [contactAllowedCustody, setContactAllowedCustody] = useState<boolean>();
+  const [readonly, setReadonly] = useState(enableReadOnlyMode);
+  const [contactAllowedCustody, setContactAllowedCustody] = useState<
+    boolean | undefined
+  >(childEmergencyContactForm?.isAllowedCustody ?? undefined);
+
+  const { isLoading: updatingChild } = useThunkFetchCall(
+    'children',
+    ChildrenActions.UPDATE_CHILD
+  );
+  const { isLoading: isLoadingOpenAccess } = useThunkFetchCall(
+    'children',
+    ChildrenActions.OPEN_ACCESS_ADD_CHILD
+  );
+
+  const isLoading = updatingChild || isLoadingOpenAccess;
 
   const {
     getValues: getChildEmergencyContactFormValues,
@@ -54,72 +67,109 @@ export const ChildEmergencyContactForm: React.FC<
   ];
 
   const handleFormSubmit = () => {
+    if (readonly) {
+      setReadonly(false);
+      return;
+    }
+
     if (isValid && onSubmit) {
       onSubmit(getChildEmergencyContactFormValues());
     }
   };
 
+  const submitButtonProps = useMemo(() => {
+    if (readonly) {
+      return { text: 'Edit', icon: 'PencilIcon' };
+    }
+
+    return { text: 'Save', icon: 'SaveIcon' };
+  }, [readonly]);
+
   return (
-    <div className={'bg-white px-4 pt-2 pb-4'}>
+    <div className="mb-4 flex h-full flex-col bg-white px-4 pt-2 pb-4">
       <Typography
-        type={'h1'}
-        text={'Person to contact in an emergency'}
+        type={'h2'}
+        text={'Additional person to contact in an emergency'}
         color={'primary'}
       />
+      {!readonly && (
+        <Typography
+          type={'h4'}
+          text={
+            'Provide contact details of someone who can be contacted if the caregiver is not available.'
+          }
+          color={'textMid'}
+          className="mb-5"
+        />
+      )}
       <FormInput<ChildEmergencyContactFormModel>
+        readonly={readonly}
         label={'First name'}
         className={styles.spacer}
         register={childEmergencyContactFormRegister}
         error={errors['firstname']}
         nameProp={'firstname'}
-        placeholder={'First name'}
-        disabled={canEdit}
+        placeholder={readonly ? 'None' : 'First name'}
       />
+      {readonly && <Divider dividerType="dashed" className={styles.spacer} />}
       <FormInput<ChildEmergencyContactFormModel>
-        label={'Surname'}
         className={styles.spacer}
+        readonly={readonly}
+        label={'Surname'}
         register={childEmergencyContactFormRegister}
         nameProp={'surname'}
         error={errors['surname']}
-        placeholder={'Surname/family name'}
-        disabled={canEdit}
+        placeholder={readonly ? 'None' : 'Surname/family name'}
       />
+      {readonly && <Divider dividerType="dashed" className={styles.spacer} />}
       <FormInput<ChildEmergencyContactFormModel>
-        label={'Cellphone number'}
         className={styles.spacer}
+        readonly={readonly}
+        label={'Cellphone number'}
         register={childEmergencyContactFormRegister}
         nameProp={'phoneNumber'}
         error={errors['phoneNumber']}
-        placeholder={'E.g. 012 345 6789'}
-        disabled={canEdit}
+        placeholder={readonly ? 'None' : 'E.g. 012 345 6789'}
       />
-      <label className={classNames(styles.label, styles.spacer)}>
-        {`Is the emergency contact allowed to pick ${
+      {readonly && <Divider dividerType="dashed" className={styles.spacer} />}
+      <Typography
+        type="h4"
+        color="textDark"
+        text={`Is the emergency contact allowed to pick ${
           childName ?? 'Child'
         } up in ${
           variation === 'caregiver' ? 'your' : 'the caregiver’s'
         } place?`}
-      </label>
-      <div className={`mt-2 ${canEdit ? 'pointer-events-none' : ''}`}>
-        <ButtonGroup
-          options={custodyAllowedOptions}
-          onOptionSelected={(value: boolean | boolean[]) => {
-            setChildEmergencyContactFormValue(
-              'isAllowedCustody',
-              value as boolean
-            );
-            setContactAllowedCustody(value as boolean);
-            triggerChildEmergencyContactForm();
-          }}
-          selectedOptions={contactAllowedCustody}
-          color="secondary"
-          type={ButtonGroupTypes.Button}
-          className={'w-full'}
-          multiple={false}
-        />
+      />
+      <div className="mt-2 mb-4">
+        {readonly ? (
+          <Typography
+            type={'body'}
+            text={contactAllowedCustody ? 'Yes' : 'No'}
+            color={'textDark'}
+          />
+        ) : (
+          <ButtonGroup
+            options={custodyAllowedOptions}
+            onOptionSelected={(value: boolean | boolean[]) => {
+              setChildEmergencyContactFormValue(
+                'isAllowedCustody',
+                value as boolean
+              );
+              setContactAllowedCustody(value as boolean);
+              triggerChildEmergencyContactForm();
+            }}
+            selectedOptions={contactAllowedCustody}
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            className={'w-full'}
+            multiple={false}
+          />
+        )}
       </div>
-      {!contactAllowedCustody && (
-        <div className={'mt-4'}>
+      {readonly && <Divider dividerType="dashed" className={styles.spacer} />}
+      {contactAllowedCustody === false && (
+        <>
           <Typography
             type={'h1'}
             text={`Who can pick ${childName} up if ${
@@ -128,55 +178,60 @@ export const ChildEmergencyContactForm: React.FC<
                 : 'the caregiver cannot'
             }?`}
             color={'primary'}
+            className={styles.spacer}
           />
           <FormInput<ChildEmergencyContactFormModel>
+            readonly={readonly}
             label={'First name'}
-            className={styles.spacer}
             register={childEmergencyContactFormRegister}
             nameProp={'custodianFirstname'}
             error={errors['custodianFirstname']}
-            placeholder={'First name'}
-            disabled={canEdit}
-          />
-          <FormInput<ChildEmergencyContactFormModel>
-            label={'Surname'}
+            placeholder={readonly ? 'None' : 'First name'}
             className={styles.spacer}
+          />
+          {readonly && (
+            <Divider dividerType="dashed" className={styles.spacer} />
+          )}
+          <FormInput<ChildEmergencyContactFormModel>
+            className={styles.spacer}
+            readonly={readonly}
+            label={'Surname'}
             register={childEmergencyContactFormRegister}
             nameProp={'custodianSurname'}
             error={errors['custodianSurname']}
-            placeholder={'Surname/family name'}
-            disabled={canEdit}
+            placeholder={readonly ? 'None' : 'Surname/family name'}
           />
+          {readonly && (
+            <Divider dividerType="dashed" className={styles.spacer} />
+          )}
           <FormInput<ChildEmergencyContactFormModel>
+            readonly={readonly}
             label={'Cellphone number'}
-            className={styles.spacer}
             register={childEmergencyContactFormRegister}
             nameProp={'custodianPhoneNumber'}
             error={errors['custodianPhoneNumber']}
-            placeholder={'012 345 6789'}
-            disabled={canEdit}
+            placeholder={readonly ? 'None' : '012 345 6789'}
+            className={styles.spacer}
           />
-        </div>
+          {readonly && (
+            <Divider dividerType="dashed" className={styles.spacer} />
+          )}
+        </>
       )}
-      <div className={'py-4'}>
-        <Divider></Divider>
-      </div>
-      <Button
-        onClick={handleFormSubmit}
-        className="w-full"
-        size="small"
-        color="primary"
-        type="filled"
-        disabled={!isValid}
-      >
-        {renderIcon(submitButtonIcon, classNames('h-5 w-5 text-white'))}
-        <Typography
-          type="h6"
-          className="ml-2"
-          text={submitButtonText}
-          color="white"
+      {(canEdit || !enableReadOnlyMode) && (
+        <Button
+          isLoading={isLoading}
+          onClick={handleFormSubmit}
+          className="mt-auto w-full"
+          size="small"
+          color="quatenary"
+          type="filled"
+          disabled={(!readonly && !isValid) || isLoading}
+          icon={submitButtonProps.icon}
+          text={submitButtonProps.text}
+          textColor="white"
         />
-      </Button>
+      )}
     </div>
   );
 };

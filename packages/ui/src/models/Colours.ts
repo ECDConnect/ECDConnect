@@ -9,6 +9,7 @@ export type Colours =
   | 'tertiary'
   | 'tertiaryAccent1'
   | 'tertiaryAccent2'
+  | 'tertiaryAccent3'
   | 'textDark'
   | 'textLight'
   | 'uiMidDark'
@@ -37,4 +38,6 @@ export type Colours =
   | 'adminPortalBg'
   | 'darkBlue'
   | 'pointsCardBg'
-  | 'pointsCardBarBg';
+  | 'pointsCardBarBg'
+  | 'quatenaryBg'
+  | 'adminBackground';

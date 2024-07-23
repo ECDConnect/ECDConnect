@@ -1,26 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { StaticDataRoutes } from '../../routes/app.routes';
-import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 import UiTable from '../../components/ui-table';
-import AttendingReasonPanel from './sub-pages/attending-reasons/components/attending-reason-panel/attending-reason-panel';
-import { DialogPosition } from '@ecdlink/ui';
-import { useDialog, usePanel } from '@ecdlink/core';
-import AttendingReasonsView from './sub-pages/attending-reasons/attending-reasons';
-import GenderView from './sub-pages/gender/gender';
-import RaceView from './sub-pages/race/race';
-import LanguageView from './sub-pages/language/language';
-import ProvinceView from './sub-pages/provinces/provinces';
-import GrantView from './sub-pages/grants/grants';
-import EducationLevelView from './sub-pages/education-levels/education-levels';
-import RelationsView from './sub-pages/relations/relations';
-import ReasonForLeavingView from './sub-pages/reason-for-leaving/reason-for-leaving';
+import { usePanel } from '@ecdlink/core';
 import { EditStaticData } from './sub-pages/edit-static-data/edit-static-data';
 import { SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
-import { useQuery } from '@apollo/client';
-import { GetTenantContext } from '@ecdlink/graphql';
-import { TenantContext } from '../../utils/constants';
+import { useTenant } from '../../hooks/useTenant';
 
 export declare enum SiteDataSections {
   Sex = 'Sex',
@@ -107,6 +92,7 @@ const growgreatNavigation = [
 
 export function StaticData() {
   const history = useHistory();
+  const tenant = useTenant();
   const panel = usePanel();
   const [sectionName, setSectionName] = useState('');
   useEffect(() => {
@@ -118,10 +104,6 @@ export function StaticData() {
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
 
   const renderSection = (section: any, onCancel: () => void) => {
     switch (section?.name) {
@@ -172,13 +154,7 @@ export function StaticData() {
                 { field: 'name', use: 'Field' },
                 { field: 'section', use: 'App section' },
               ]}
-              rows={
-                data &&
-                data.tenantContext &&
-                data.tenantContext.applicationName === TenantContext.GrowGreat
-                  ? growgreatNavigation
-                  : navigation
-              }
+              rows={tenant.isCHWConnect ? growgreatNavigation : navigation}
               component={'cms'}
               viewRow={openEditDialog}
               searchInput={searchValue}

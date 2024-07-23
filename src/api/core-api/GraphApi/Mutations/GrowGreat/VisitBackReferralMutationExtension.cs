@@ -7,15 +7,27 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat 
+{
     [ExtendObjectType(OperationTypeNames.Mutation)]
-    public class VisitBackReferralExtension {
-        
+    public class VisitBackReferralExtension 
+    {        
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public VisitBackReferral AddVisitBackReferral([Service] VisitBackReferralManager visitBackReferralManager, VisitBackReferralModel input)
         {
             return visitBackReferralManager.AddVisitBackReferral(input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public bool AddVisitBackReferralAdminComment(
+            [Service] VisitBackReferralManager visitBackReferralManager, 
+            Guid visitDataStatusId,
+            string comment)
+        {
+            visitBackReferralManager.AddVisitBackReferralAdminComment(visitDataStatusId, comment);
+            return true;
         }
     }
 }

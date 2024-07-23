@@ -1,7 +1,11 @@
-import { PrincipalDto } from './../../../../../packages/core/src/models/dto/Users/principal.dto';
-import { ClassroomDto, Config, ClassroomGroupDto } from '@ecdlink/core';
-import { ClassroomInput } from '@ecdlink/graphql';
+import { Config } from '@ecdlink/core';
+import {
+  ChildProgressReportPeriodModelInput,
+  ClassroomInput,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+
 class ClassroomService {
   _accessToken: string;
 
@@ -9,30 +13,23 @@ class ClassroomService {
     this._accessToken = accessToken;
   }
 
-  async getClassrooms(): Promise<ClassroomDto[]> {
+  async getClassroomForUser(userId: string): Promise<ClassroomDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query {
-          GetAllClassroom {
+    const response = await apiInstance.post<{
+      data: { classroomForUser: ClassroomDto };
+      errors?: {};
+    }>(``, {
+      query: `query GetClassroomForUser($userId: UUID!) {
+          classroomForUser(userId: $userId) {            
             id
             name
             classroomImageUrl
-            isActive
-            userId
-            isPrinciple
             numberPractitioners
+            numberOfAssistants
             numberOfOtherAssistants
-            insertedDate
-            preschoolFeeAmount
-            preschoolFeeAmountLastUpdateDate
-            siteAddressId
+            preschoolCode
             siteAddress {
               id
-              province {
-                id
-                description
-              }
               name
               addressLine1
               addressLine2
@@ -40,16 +37,31 @@ class ClassroomService {
               postalCode
               ward
             }
+            principal {
+              userId
+              firstName
+              surname
+              phoneNumber
+              email
+              profileImageUrl
+            }
+            childProgressReportPeriods {
+              startDate
+              endDate
+            }
           }
         }
-          `,
+      `,
+      variables: {
+        userId,
+      },
     });
 
-    if (response.status !== 200) {
-      throw new Error('Get Classrooms Failed - Server connection error');
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('GetClassroomForUser Failed - Server connection error');
     }
 
-    return response.data.data.GetAllClassroom;
+    return response.data.data.classroomForUser;
   }
 
   async updateClassroom(id: string, input: ClassroomInput): Promise<boolean> {
@@ -102,6 +114,7 @@ class ClassroomService {
 
     return response.data.data.updateClassroomSiteAddress;
   }
+
   async getAllClassroomForCoach(userId: string): Promise<ClassroomDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
@@ -113,7 +126,17 @@ class ClassroomService {
           userId
           name
           classroomImageUrl
+          numberPractitioners
           isPrinciple
+          siteAddress {
+            id
+            name
+            addressLine1
+            addressLine2
+            addressLine3
+            postalCode
+            ward
+          }
         }
       }
       `,
@@ -131,145 +154,80 @@ class ClassroomService {
     return response.data.data.allClassroomsForCoach;
   }
 
-  async getClassroomGroupClassroomsForPractitioner(
-    userId: string
-  ): Promise<ClassroomDto[]> {
+  async getClassroomForPreschoolCode(
+    preSchoolCode: string
+  ): Promise<ClassroomDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      query classroomGroupClassroomsForPractitioner($userId: String) 
-      {
-                classroomGroupClassroomsForPractitioner(userId: $userId) 
-                {          
-                  userId
-                  id
-                  name
-                  classroom 
-                  { 
-                    id
-                    name
-                    userId
-                   } 
-                   programmeType
-                    { 
-                      id
-                     } 
-                    }   
-                     }
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error('Get Classroom Failed - Server connection error');
-    }
-
-    return response.data.data.classroomGroupClassroomsForPractitioner;
-  }
-
-  async getClassroomsForPractitioner(
-    practitionerId: string,
-    principalId: string
-  ): Promise<{
-    classroom: ClassroomDto;
-    principal: PrincipalDto;
-    classroomGroups: ClassroomGroupDto[];
-  }> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetClassroomForPractitioner(
-          $practitionerId: String
-          $principalId: String
-        ) {
-          classroom: allClassroomsForPractitioner(
-            practitionerId: $practitionerId
-            principalId: $principalId
-          ) {
-            id
+    const response = await apiInstance.post<{
+      data: { validatePreSchoolCode: ClassroomDto };
+      errors?: {};
+    }>(``, {
+      query: `query ValidatePreSchoolCode($preSchoolCode: String!) {
+                validatePreSchoolCode(preSchoolCode: $preSchoolCode) {
+                              id
             name
-            classroomImageUrl
-            isActive
             userId
-            isPrinciple
-            numberPractitioners
+            numberOfAssistants
             numberOfOtherAssistants
-            preschoolFeeAmount
-            preschoolFeeAmountLastUpdateDate
-            insertedDate
-          }
-          principal: allClassroomsForPractitioner(
-            practitionerId: $practitionerId
-            principalId: $principalId
-          ) {
-            user {
-              firstName
-              surname
-              fullName
-            }
-          }
-          classroomGroups: allClassroomsForPractitioner(
-            practitionerId: $practitionerId
-            principalId: $principalId
-          ) {
-            classroomGroups {
+            siteAddress {
               id
-              classroomId
               name
-              programmeTypeId
-              programmeType {
-                id
-                description
-              }
-              isActive
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
             }
-          }
-        }
+            user {
+  principalObjectData {
+     principalHierarchy
+}
+}
+                }
+              }
       `,
       variables: {
-        practitionerId,
-        principalId,
+        preSchoolCode,
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error(
-        'Get Practitioners For Coach Failed - Server connection error'
+        'Validate preschool code Failed - Server connection error'
       );
     }
 
-    return response.data.data.allClassroomsForPractitioner;
+    return response.data.data.validatePreSchoolCode;
   }
 
-  async updatePreschoolFee(
+  async addChildProgressReportPeriods(
     classroomId: string,
-    amount: number | undefined
+    childProgressReportPeriods: {
+      startDate: Date;
+      endDate: Date;
+    }[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updatePreschoolFeeForClassroom($classroomId: UUID!, $amount: Float) {
-          updatePreschoolFeeForClassroom(classroomId: $classroomId, amount: $amount) {
-          }
-        }
-      `,
+    const response = await apiInstance.post<{
+      data: { addChildPregressReportPeriods: boolean };
+      errors?: {};
+    }>(``, {
+      query: `mutation AddChildProgressReportPeriods($classroomId: UUID!, $childProgressReportPeriods: [ChildProgressReportPeriodModelInput]) {
+          addChildProgressReportPeriods(classroomId: $classroomId, childProgressReportPeriods: $childProgressReportPeriods) {
+        }}`,
       variables: {
-        classroomId: classroomId,
-        amount: amount,
+        classroomId,
+        childProgressReportPeriods,
       },
     });
 
-    if (response.status !== 200 || !!response.data.error) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error(
-        'Updating preschool fee failed - Server connection error'
+        'addChildProgressReportPeriods Failed - Server connection error'
       );
     }
 
-    return response.data.data.updatePreschoolFeeForClassroom;
+    return response.data.data.addChildPregressReportPeriods;
   }
 }
 

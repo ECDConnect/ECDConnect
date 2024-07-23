@@ -8,6 +8,10 @@ export const initialRegisterValues: RegisterRequestModel = {
   password: '',
   token: '',
   acceptedTerms: false,
+  preferId: undefined,
+  passportField: undefined,
+  phoneNumber: undefined,
+  idField: undefined,
 };
 export const initialLoginValues: LoginRequestModel = {
   email: '',
@@ -16,6 +20,8 @@ export const initialLoginValues: LoginRequestModel = {
 
 export const initialForgotPasswordValues: SimpleUserModel = {
   email: '',
+  idField: '',
+  passportField: '',
 };
 
 export const initialResetPasswordValues: PasswordResetModel = {
@@ -33,6 +39,8 @@ export const registerSchema = Yup.object().shape({
     )
     .required('Password is required'),
   acceptedTerms: Yup.bool().required(),
+  passportField: Yup.string(),
+  preferId: Yup?.boolean(),
 });
 
 export const loginSchema = Yup.object().shape({

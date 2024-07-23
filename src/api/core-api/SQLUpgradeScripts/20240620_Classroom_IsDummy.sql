@@ -1,0 +1,1 @@
+ALTER TABLE public."Classroom" ADD "IsDummySchool" bool default false;

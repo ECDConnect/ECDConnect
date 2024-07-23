@@ -44,19 +44,58 @@ import TermsPage from '../pages/terms/terms';
 import Messaging from '../pages/messaging/messaging';
 import MessagePanel from '../pages/messaging/components/message-panel';
 import MessageList from '../pages/messaging/components/messaging-list';
-import ClinicsMainPage from '../pages/clinics/clinics';
+import { ClinicsMainPage } from '../pages/clinics/clinics';
 import ClinicsSubPage from '../pages/clinics/sub-pages/clinics-sub-page/clinics-sub-page';
 import DistrictsSubPage from '../pages/clinics/sub-pages/districts-sub-page/districts-sub-page';
 import SubDistrictsSubPage from '../pages/clinics/sub-pages/sub-districts-sub-page/sub-districts-sub-page';
 import { ViewClinicReport } from '../pages/clinics/components/view-clinic-report/view-clinic-report';
+import RegisterTeamLead from '../components/auth/register-team-lead/register-team-lead';
+import ROUTES from './app.routes-constants';
+import { Referrals } from '../pages/referrals/referrals';
+import { ViewReferralDetail } from '../pages/referrals/view-referral-detail/view-referral-detail';
+import { EditBackReferral } from '../pages/referrals/edit-back-referral/edit-back-referral';
+import LoginTeamLead from '../components/auth/login-team-lead/login-team-lead';
+import TeamLeadForgotPassword from '../components/auth/team-lead-forgot-password/team-lead-forgot-password';
+import { Leagues } from '../pages/clinics/leagues/leagues';
+import { LeagueDetails } from '../pages/clinics/leagues/view-league-season/league-performance/league-details/league-details';
+import { AddLeagues } from '../pages/clinics/leagues/view-league-season/league-management/add-leagues';
+import VerifyPhoneNumber from '../components/auth/verify-phone-number/verify-phone-number';
+import TLMeetings from '../pages/tl-meetings/tl-meetings';
+import { SeeReports } from '../pages/tl-meetings/components/see-reports';
+import { NotificationsView } from '../notifications/notificationsView';
+import { LeaguePerformance } from '../pages/clinics/leagues/view-league-season/league-performance/league-performance';
+import { LeagueManagement } from '../pages/clinics/leagues/view-league-season/league-management/league-management';
+import { TeamMeetingsRoot } from '../pages/team-meetings/team-meetings-root';
+import { EditTopics } from '../pages/tl-meetings/components/edit-topics/edit-topics';
+import { ViewReport } from '../pages/tl-meetings/components/view-report/view-report';
+import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-care-worker-opted-out';
+import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
+import { useApolloClient } from '@apollo/client';
+import { useTenant } from '../hooks/useTenant';
 
 const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
+      <Route exact path={ROUTES.ROOT_TEAM_LEAD} component={LoginTeamLead} />
       <Route exact path="/register/:resetToken" component={Register} />
-      <Route exact path="/forgot-password" component={ForgotPassword} />
-      <Route exact path="/reset/:resetToken" component={ResetPassword} />
+      <Route
+        exact
+        path={ROUTES.TEAM_LEAD_REGISTER}
+        component={RegisterTeamLead}
+      />
+      <Route exact path={ROUTES.FORGOT_PASSWORD} component={ForgotPassword} />
+      <Route
+        exact
+        path={ROUTES.VERIFY_PHONE_NUMBER}
+        component={VerifyPhoneNumber}
+      />
+      <Route
+        exact
+        path={ROUTES.TEAM_LEAD_RESET_PASSWORD}
+        component={TeamLeadForgotPassword}
+      />
+      <Route exact path={ROUTES.RESET} component={ResetPassword} />
       <Route path={`/ecd-terms`} component={TermsPage}></Route>
     </Switch>
   );
@@ -70,21 +109,80 @@ const MainRoutes: React.FC = () => {
   );
 };
 
+const ReferralRoutes: React.FC = () => {
+  return (
+    <Switch>
+      <Route exact path={ROUTES.REFERRALS.ROOT} component={Referrals}></Route>
+      <Route
+        exact
+        path={ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.ROOT}
+        component={ViewReferralDetail}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.REFERRALS.VIEW_REFERRAL_DETAIL.EDIT_BACK_REFERRAL}
+        component={EditBackReferral}
+      ></Route>
+    </Switch>
+  );
+};
+
+const TlMeetingsRoutes: React.FC = () => {
+  return (
+    <Switch>
+      <Route path={ROUTES.TL_MEETINGS.MEETINGS} component={TLMeetings}></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.REPORTS.SEE_REPORTS}
+        component={SeeReports}
+      ></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.REPORTS.VIEW_REPORT}
+        component={ViewReport}
+      ></Route>
+      <Route
+        path={ROUTES.TL_MEETINGS.EDIT_TOPICS}
+        component={EditTopics}
+      ></Route>
+    </Switch>
+  );
+};
+
 const AuthRoutes: React.FC = () => {
+  const apolloClient = useApolloClient();
+  const tenant = useTenant();
+
+  const isGrowGreatTenant = tenant.isCHWConnect;
+
   return (
     <Switch>
       <Route path={`/dashboard`} component={Dashboard}></Route>
-      <Route path={`/settings`} component={Settings}></Route>
+      {!isGrowGreatTenant && (
+        <Route path={`/settings`} component={Settings}></Route>
+      )}
       <Route path={`/data`} component={StaticData}></Route>
-      <Route path={`/profile`} component={Profile}></Route>
+      <Route path={ROUTES.PROFILE} component={Profile}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
-      <Route path={`/clinics`} component={ClinicsMainPage}></Route>
+      <Route path={ROUTES.CLINICS.ROOT} component={ClinicsMainPage}></Route>
+      <Route path={ROUTES.TL_MEETINGS.ROOT} component={TLMeetings}></Route>
+      <Route path={ROUTES.TEAM_MEETINGS} component={TeamMeetingsRoot}></Route>
+      <Route path={ROUTES.REFERRALS.ROOT} component={ReferralRoutes}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
-      <Route path={`/Reports`} component={Reports}></Route>
+      {!isGrowGreatTenant && (
+        <Route path={`/Reports`} component={Reports}></Route>
+      )}
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/messaging`} component={Messaging}></Route>
+      <Route path={ROUTES.TEAM_LEAD_LEAGUES} component={TLLeagues}></Route>
+      <Route
+        path={ROUTES.NOTIFICATIONS_VIEW}
+        component={NotificationsView}
+      ></Route>
+      <Route
+        path={ROUTES.HEALTH_CARE_WORKER.OPTED_OUT}
+        component={HealthCareWorkerOptedOut}
+      ></Route>
     </Switch>
   );
 };
@@ -112,15 +210,43 @@ const SettingsRoutes: React.FC = () => {
 const ClinicsRoutes: React.FC = () => {
   return (
     <Switch>
-      <Route path={`/clinics/clinics`} component={ClinicsSubPage}></Route>
       <Route
-        path={`/clinics/view-clinics`}
+        path={ROUTES.CLINICS.ALL_CLINICS}
+        component={ClinicsSubPage}
+      ></Route>
+      <Route
+        path={ROUTES.CLINICS.VIEW_CLINICS}
         component={ViewClinicReport}
       ></Route>
       <Route path={`/clinics/districts`} component={DistrictsSubPage}></Route>
       <Route
         path={`/clinics/sub-districts`}
         component={SubDistrictsSubPage}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.ROOT}
+        component={Leagues}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ROOT}
+        component={LeaguePerformance}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.LEAGUE_MANAGEMENT.ROOT}
+        component={LeagueManagement}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.LEAGUE_DETAILS}
+        component={LeagueDetails}
+      ></Route>
+      <Route
+        exact
+        path={ROUTES.CLINICS.LEAGUES.VIEW_LEAGUE_SEASON.ADD_LEAGUES}
+        component={AddLeagues}
       ></Route>
     </Switch>
   );
@@ -130,17 +256,17 @@ const UserRoutes: React.FC = () => {
   return (
     <Switch>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={`/users/all-roles`} component={ApplicationUsers}></Route>
+      <Route path={ROUTES.USERS.ALL_ROLES} component={ApplicationUsers}></Route>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={`/users/view-user`} component={ViewUser}></Route>
-      <Route path={`/users/admins`} component={ApplicationAdmins}></Route>
+      <Route path={ROUTES.USERS.VIEW_USER} component={ViewUser}></Route>
+      <Route path={ROUTES.USERS.ADMINS} component={ApplicationAdmins}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>
       <Route path={`/users/clinics`} component={Clinics}></Route>
-      <Route path={`/users/team-leads`} component={TeamLeads}></Route>
+      <Route path={ROUTES.USERS.TEAM_LEADS} component={TeamLeads}></Route>
       <Route
-        path={`/users/health-care-worker`}
+        path={ROUTES.USERS.HEALTH_CARE_WORKERS}
         component={HealthCareWorkers}
       ></Route>
       <Route path={`/users/mother`} component={Mothers}></Route>
@@ -184,4 +310,5 @@ export {
   UserRoutes,
   MessageRoutes,
   ClinicsRoutes,
+  TlMeetingsRoutes,
 };

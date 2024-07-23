@@ -26,6 +26,7 @@ export const UserList = gql`
       roles {
         id
         name
+        systemName
         __typename
       }
       __typename
@@ -50,6 +51,7 @@ export const GetUserById = gql`
       contactPreference
       genderId
       phoneNumber
+      pendingPhoneNumber
       whatsAppNumber
       profileImageUrl
       isImported
@@ -65,6 +67,7 @@ export const GetUserById = gql`
           id
           name
         }
+        systemName
       }
     }
   }

@@ -17,4 +17,5 @@ export interface ProgrammePlanningHeaderProps extends ComponentBaseProps {
   setSelectedDate?: any;
   selectedDate?: Date;
   isWeekendDay?: boolean;
+  dateToJump?: Date;
 }

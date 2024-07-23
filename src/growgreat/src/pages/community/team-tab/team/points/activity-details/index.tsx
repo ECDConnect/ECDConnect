@@ -12,7 +12,7 @@ import {
   formatStringWithFirstLetterCapitalized,
   getCommunityQuarterDescription,
 } from '@ecdlink/core';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@/store/static-data';
 import { useAppDispatch } from '@/store';
@@ -73,6 +73,17 @@ export const TeamPointsActivityDetails = () => {
 
   const { quarterDescription } = getCommunityQuarterDescription(today);
 
+  const infoLanguageOptions = useMemo(
+    () =>
+      info &&
+      info.availableLanguages &&
+      info.availableLanguages.map((language) => ({
+        value: language?.locale || selectedLanguage,
+        label: language?.description || selectedLanguage,
+      })),
+    [info, selectedLanguage]
+  );
+
   const languagesOptions = useMemo(
     () =>
       languages.map((language) => ({
@@ -113,27 +124,31 @@ export const TeamPointsActivityDetails = () => {
     isPregnantMomFoldersOpened,
   ]);
 
-  const handleLanguageChange = (language: string) => {
-    appDispatch(
-      getPointsActivityInfo({ locale: language, section, activitySlug })
-    );
-    setSelectedLanguage(language);
-  };
+  const handleLanguageChange = useCallback(
+    async (language: string) => {
+      await appDispatch(
+        getPointsActivityInfo({ locale: language, section, activitySlug })
+      ).unwrap();
+      setSelectedLanguage(language);
+    },
+    [activitySlug, appDispatch, section]
+  );
+
+  const getContent = useCallback(async () => {
+    await appDispatch(
+      getPointsActivityInfo({ locale: 'en-za', section, activitySlug })
+    ).unwrap();
+  }, [activitySlug, appDispatch, section]);
 
   useEffect(() => {
-    appDispatch(
-      getPointsActivityInfo({ locale: 'en-za', section, activitySlug })
-    );
-
-    // trigger on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    getContent();
+  }, [getContent]);
 
   return (
     <MoreInformationPage
       title={formatStringWithFirstLetterCapitalized(activitySlug)}
       isLoading={isLoading}
-      languages={languagesOptions}
+      languages={infoLanguageOptions || languagesOptions}
       moreInformation={info}
       onClose={() => history.push(ROUTES.COMMUNITY.TEAM.POINTS.ROOT)}
       selectedLanguage={selectedLanguage}

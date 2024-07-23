@@ -21,12 +21,14 @@ import {
 import ROUTES from '@routes/routes';
 import { useEffect } from 'react';
 import { PractitionerInput } from '@ecdlink/graphql';
+import { useTenant } from '@/hooks/useTenant';
 
 export const PractitionerSignature: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
-
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   let signature = {} as SignatureCanvas | null;
@@ -96,7 +98,7 @@ export const PractitionerSignature: React.FC = () => {
         </div>
         <IconTitleDescriptionTile
           title="You can use this signature to sign forms on the app."
-          subTitle="You can access and change your signature through your Funda App profile in future."
+          subTitle={`You can access and change your signature through your ${appName} profile in future.`}
           icon="InformationCircleIcon"
           iconColour={'infoDark'}
           iconBorderColour={'uiBg'}

@@ -30,6 +30,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   weightAtBirth,
   lengthAtBirth,
   roadToHealthBook,
+  isFromClientProfile,
 }) => {
   const {
     watch,
@@ -52,7 +53,14 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   });
 
   const [hasMaternalCaseRecord, setHasMaternalCaseRecord] = useState<any>(null);
-  const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
+  const acceptedFormats = ['jpg', 'pdf', 'jpeg', 'png', 'heic', 'heif'];
+  const acceptedMimeFormats = [
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/heic',
+    'image/heif',
+  ];
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
   const [photoActionBarVisible, setPhotoActionBarVisible] =
@@ -72,6 +80,12 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   const handleConsentAccept = () => {
     setRoadToHealthFormValue('notRoadToHealthBook', !confirmHasNoRecord);
   };
+
+  useEffect(() => {
+    if (isFromClientProfile) {
+      setHasMaternalCaseRecord(true);
+    }
+  }, [isFromClientProfile]);
 
   useEffect(() => {
     if (roadToHealthBook) {
@@ -103,24 +117,28 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         />
       </div>
       <div>
-        <Typography
-          type="h4"
-          color={'textMid'}
-          text={`Does the caregiver have ${infantDetails?.firstName}'s Road to Health Book?`}
-          className="mt-8 w-9/12"
-        />
-        <div className="mt-4">
-          <ButtonGroup<boolean>
-            options={yesNoOptions}
-            onOptionSelected={(value: boolean | boolean[]) =>
-              setHasMaternalCaseRecord(value as boolean)
-            }
-            color="secondary"
-            type={ButtonGroupTypes.Button}
-            className={'mt-2 w-full'}
-            selectedOptions={roadToHealthBook ? true : undefined}
-          />
-        </div>
+        {!isFromClientProfile && (
+          <>
+            <Typography
+              type="h4"
+              color={'textMid'}
+              text={`Does the caregiver have ${infantDetails?.firstName}'s Road to Health Book?`}
+              className="mt-8 w-9/12"
+            />
+            <div className="mt-4">
+              <ButtonGroup<boolean>
+                options={yesNoOptions}
+                onOptionSelected={(value: boolean | boolean[]) =>
+                  setHasMaternalCaseRecord(value as boolean)
+                }
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                className={'mt-2 w-full'}
+                selectedOptions={roadToHealthBook ? true : undefined}
+              />
+            </div>
+          </>
+        )}
         {hasMaternalCaseRecord === false && (
           <div>
             <div>
@@ -245,7 +263,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
           color={'primary'}
           className="mt-6 w-full"
           textColor={'white'}
-          text={`Next`}
+          text={isFromClientProfile ? `Save` : `Next`}
           icon={'ArrowCircleRightIcon'}
           iconPosition={'start'}
           onClick={() => {
@@ -265,6 +283,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         stretch
       >
         <PhotoPrompt
+          acceptedMimeFormats={acceptedMimeFormats}
           title="Road to Health Book, page ii"
           hideEmojiOption
           onClose={() => setPhotoActionBarVisible(false)}

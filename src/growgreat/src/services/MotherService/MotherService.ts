@@ -282,27 +282,23 @@ class MotherService {
       query: `
         query GetMotherVisits($userId: String) {
           motherVisits(id: $userId) {
-              insertedDate
               actualVisitDate
               plannedVisitDate
               orderDate
               dueDate
               attended
-              visitInProgress
+              isCancelled
+              startedDate
               id
               risk
               comment
+              eventId
               visitType{
                 id
                 order
                 normalizedName
                 description
-                insertedDate
-                isActive
                 name
-                type
-                updatedBy
-                updatedDate
               }        
           }
         }
@@ -430,6 +426,50 @@ class MotherService {
     }
 
     return response.data.data.updateMotherContactDetails;
+  }
+
+  async restartVisitForMother(existingVisitId: string): Promise<VisitDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { restartVisit: VisitDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation RestartVisit($existingVisitId: UUID!) {
+          restartVisit(existingVisitId: $existingVisitId) {
+            id
+            actualVisitDate
+            plannedVisitDate
+            orderDate
+            dueDate
+            attended
+            isCancelled
+            startedDate
+            risk
+            comment
+            eventId
+            visitType{
+              id
+              normalizedName
+              description
+              name
+              order
+            }        
+          }
+        }
+        `,
+      variables: {
+        existingVisitId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Restart Visit For mother failed - Server connection error'
+      );
+    }
+
+    return response.data.data.restartVisit;
   }
 }
 
