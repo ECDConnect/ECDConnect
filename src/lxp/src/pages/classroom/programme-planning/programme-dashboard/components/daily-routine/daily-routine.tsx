@@ -762,7 +762,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                       <div className="mb-1 flex items-center gap-3">
                         <RoundIcon
                           imageUrl={activityItem?.subCategory.imageUrl}
-                          backgroundColor="tertiary"
+                          backgroundColor="secondary"
                         />
                         <Typography
                           type={'body'}
