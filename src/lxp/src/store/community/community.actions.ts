@@ -28,6 +28,7 @@ export const CommunityActions = {
   GET_FEEDBACK_TYPES: 'getFeedbackTypes',
   GET_SUPPORT_RATINGS: 'getSupportRatings',
   ACCEPT_COMMUNITY_REQUESTS: 'acceptCommunityRequests',
+  DELETE_COMMUNITY_PROFILE: 'deleteCommunityProfile',
 };
 
 export const getAllConnect = createAsyncThunk<
@@ -348,7 +349,7 @@ export const deleteCommunityProfile = createAsyncThunk<
   { communityProfileId: string },
   ThunkApiType<RootState>
 >(
-  CommunityActions.SAVE_COMMUNITY_PROFILE_CONNECTIONS,
+  CommunityActions.DELETE_COMMUNITY_PROFILE,
   async ({ communityProfileId }, { getState, rejectWithValue }) => {
     try {
       const {
