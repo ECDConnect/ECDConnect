@@ -1,19 +1,74 @@
-import { Button, EmptyPage } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Button,
+  DialogPosition,
+  EmptyPage,
+  Typography,
+} from '@ecdlink/ui';
 import AlienImage from '@/assets/ECD_Connect_alien2.svg';
 import { useTenant } from '@/hooks/useTenant';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { communitySelectors } from '@/store/community';
 import { CommunityDashboard } from '../community-dashboard/community-dashboard';
+import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
+import { useDialog } from '@ecdlink/core';
 
 export const CommunityItem = ({
   setJoinCommunity,
+  notJoining,
 }: {
   setJoinCommunity: (item: boolean) => void;
+  notJoining?: boolean;
 }) => {
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const dialog = useDialog();
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
+
+  const handleDialog = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
+            textAlignment="center"
+            customDetailText={
+              <Typography
+                type="h4"
+                className="mb-7 mt-4"
+                text={`Ok, you can tap this button when you are ready to join!`}
+                color="black"
+                align="center"
+              />
+            }
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => onSubmit(),
+                leadingIcon: 'XIcon',
+              },
+            ]}
+            customIcon={
+              <div className="mb-2 flex w-full justify-center">
+                <Cebisa />
+              </div>
+            }
+          />
+        );
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (notJoining) {
+      handleDialog();
+    }
+  }, []);
 
   const renderCommunityItemScreen = useMemo(() => {
     if (!communityProfile) {

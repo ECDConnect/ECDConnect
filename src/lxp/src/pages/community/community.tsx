@@ -10,15 +10,27 @@ import { communitySelectors } from '@/store/community';
 
 export const Community: React.FC = () => {
   const [joinCommunity, setJoinCommunity] = useState(false);
+  const [notJoining, seNotJoining] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isFirstTimeInCommunity = practitioner?.clickedCommunityTab;
   const user = useSelector(userSelectors.getUser);
 
   const renderCommunityScreen = useMemo(() => {
     if (!isFirstTimeInCommunity || joinCommunity) {
-      return <NewCommunityWelcome setJoinCommunity={setJoinCommunity} />;
+      return (
+        <NewCommunityWelcome
+          setJoinCommunity={setJoinCommunity}
+          seNotJoining={seNotJoining}
+        />
+      );
     } else {
-      return <CommunityTabs setJoinCommunity={setJoinCommunity} />;
+      return (
+        <CommunityTabs
+          setJoinCommunity={setJoinCommunity}
+          notJoining={notJoining}
+          seNotJoining={seNotJoining}
+        />
+      );
     }
   }, [joinCommunity, isFirstTimeInCommunity]);
 

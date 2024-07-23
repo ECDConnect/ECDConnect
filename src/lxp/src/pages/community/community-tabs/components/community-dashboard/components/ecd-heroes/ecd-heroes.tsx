@@ -263,6 +263,12 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
         userId: communityProfile?.userId!,
       })
     );
+
+    await dispatch(
+      communityThunkActions.getCommunityProfile({
+        userId: communityProfile?.userId!,
+      })
+    );
   };
 
   const handleFirstTimeOnECDHeroes = useCallback(() => {

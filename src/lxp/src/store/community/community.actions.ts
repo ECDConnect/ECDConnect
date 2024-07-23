@@ -342,3 +342,26 @@ export const acceptOrRejectCommunityRequests = createAsyncThunk<
     }
   }
 );
+
+export const deleteCommunityProfile = createAsyncThunk<
+  any,
+  { communityProfileId: string },
+  ThunkApiType<RootState>
+>(
+  CommunityActions.SAVE_COMMUNITY_PROFILE_CONNECTIONS,
+  async ({ communityProfileId }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const response = await new CommunityService(
+          userAuth?.auth_token
+        ).deleteCommunityProfile(communityProfileId);
+        return response;
+      } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);

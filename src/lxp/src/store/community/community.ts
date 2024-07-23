@@ -5,6 +5,7 @@ import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 import { CommunityState } from './community.types';
 import {
+  deleteCommunityProfile,
   getAllConnect,
   getAllConnectItem,
   getCommunityProfile,
@@ -44,6 +45,10 @@ const communitySlice = createSlice({
     });
     builder.addCase(saveCommunityProfile.fulfilled, (state, action) => {
       state.communityProfile = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(deleteCommunityProfile.fulfilled, (state, action) => {
+      state.communityProfile = undefined;
       setFulfilledThunkActionStatus(state, action);
     });
   },
