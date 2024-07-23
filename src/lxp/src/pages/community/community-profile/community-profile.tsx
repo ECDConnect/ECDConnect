@@ -142,7 +142,7 @@ export const CommunityProfile = () => {
             action={setOpenEditBasicInfo}
           />
           <DetailsCard
-            title={`About ${user?.fullName}`}
+            title={`About ${user?.fullName || ''}`}
             textOne={communityProfile?.aboutLong}
             isFilled={!!communityProfile?.aboutLong}
             isAbout={true}
