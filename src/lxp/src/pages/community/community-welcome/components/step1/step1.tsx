@@ -54,11 +54,17 @@ export const Step1: React.FC<Step1Props> = ({
           practitionerUserId: practitioner?.userId!,
         })
       );
-      setJoinCommunity(false);
+
       seNotJoining(true);
       setIsLoading(false);
+      handleSetJoinCommunity();
     }
   };
+
+  const handleSetJoinCommunity = () => {
+    setJoinCommunity(false);
+  };
+
   return (
     <div className={'h-screen overflow-auto px-4'}>
       <div className="h-screen overflow-auto pt-2">
