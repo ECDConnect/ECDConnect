@@ -468,15 +468,16 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         recommendedActivities.length !== 0
       ) {
         setImproveProgrammeMessage('Want to improve your programme?');
-      } else {
-        if (plannedActivities.length >= 10) {
-          setSkillMixMessage(
-            'Good job, your programme has a good mix of skills!'
-          );
-        }
+      }
+
+      if (improveProgrammeMessage === '' && plannedActivities.length >= 10) {
+        setSkillMixMessage(
+          'Good job, your programme has a good mix of skills!'
+        );
       }
     }
   }, [
+    improveProgrammeMessage,
     isWholeWeekPlanned,
     plannedActivities,
     plannedWeeksCount,
