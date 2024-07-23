@@ -98,7 +98,7 @@ namespace ECDLink.SmartStart.Services
             var learners = _dbContext.Learners
                 .Include(x => x.User)
                 .Where(x => x.ClassroomGroupId == classgroupId)
-                .Where(x => x.StartedAttendance < endTime && (!x.StoppedAttendance.HasValue || x.StoppedAttendance.Value > startDate))
+                .Where(x => x.StartedAttendance < endTime.Date.GetEndOfDay() && (!x.StoppedAttendance.HasValue || x.StoppedAttendance.Value > startDate))
                 .OrderBy(x => x.StartedAttendance)
                 .ToList();
             return learners;
