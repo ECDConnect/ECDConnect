@@ -322,21 +322,25 @@ export const ConnectionProfile = () => {
               'mt-2.5 flex w-full flex-row items-center justify-center'
             }
           >
-            <StatusChip
-              backgroundColour={
-                communityProfile?.communityUser?.roleName === 'Principal'
-                  ? 'infoDark'
-                  : 'quatenary'
-              }
-              borderColour={
-                communityProfile?.communityUser?.roleName === 'Principal'
-                  ? 'infoDark'
-                  : 'quatenary'
-              }
-              text={communityProfile?.communityUser?.roleName || 'Practitioner'}
-              textColour={'white'}
-              className={'mr-2'}
-            />
+            {communityProfile?.shareRole && (
+              <StatusChip
+                backgroundColour={
+                  communityProfile?.communityUser?.roleName === 'Principal'
+                    ? 'infoDark'
+                    : 'quatenary'
+                }
+                borderColour={
+                  communityProfile?.communityUser?.roleName === 'Principal'
+                    ? 'infoDark'
+                    : 'quatenary'
+                }
+                text={
+                  communityProfile?.communityUser?.roleName || 'Practitioner'
+                }
+                textColour={'white'}
+                className={'mr-2'}
+              />
+            )}
             {communityProfile?.shareProvince &&
               communityProfile?.provinceName && (
                 <StatusChip

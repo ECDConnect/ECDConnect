@@ -127,12 +127,14 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
         return communityUsersList.push({
           id: item.id,
           title: item?.communityUser?.fullName!,
+          titleStyle: 'text-textDark',
           profileText: item?.communityUser?.fullName
             ?.match(/^(\w)\w*\s+(\w{1,2})/)
             ?.slice(1)
             .join('')
             ?.toLocaleUpperCase(),
           subTitle: item?.aboutShort,
+          subTitleStyle: 'text-infoDark',
           alertSeverity: 'none',
           avatarColor: getAvatarColor() || '',
           onActionClick: () =>
