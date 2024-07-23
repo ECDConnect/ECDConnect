@@ -212,7 +212,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           <IconInformationIndicator
             title={
               hasPermissionToEdit
-                ? "You don't have saved any attendance registers yet!"
+                ? 'You don’t have any attendance registers yet!'
                 : 'No registers to view yet!'
             }
             subTitle={
