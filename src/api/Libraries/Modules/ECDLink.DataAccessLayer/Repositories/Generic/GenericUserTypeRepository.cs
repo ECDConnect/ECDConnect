@@ -104,7 +104,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     return null;
                 }
@@ -217,7 +217,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                             }
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         return null;
                     }
@@ -264,7 +264,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                             }
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         return null;
                     }

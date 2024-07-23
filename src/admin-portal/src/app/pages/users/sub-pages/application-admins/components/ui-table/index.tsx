@@ -152,7 +152,7 @@ export default function UiTable({
       })
       .catch((err) => {
         setNotification({
-          title: 'Failed to send invitations',
+          title: 'Failed to deactivate',
           variant: NOTIFICATION.ERROR,
         });
       });
@@ -164,7 +164,7 @@ export default function UiTable({
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title={`Deactivate ${selectedRows?.length} Administrators?`}
-          message={`Are you sure you want to deactivate these Administrators? Administrators will lose their access to CHW Connect immediately. Make sure you have communicated this to Administrators before deactivating them.`}
+          message={`Are you sure you want to deactivate these Administrators? Administrators will lose their access immediately. Make sure you have communicated this to Administrators before deactivating them.`}
           btnText={['Yes, deactivate Administrators', 'No, Cancel']}
           onCancel={() => {
             onCancel();
@@ -185,7 +185,7 @@ export default function UiTable({
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title={`Resend invitation to ${selectedRows?.length} Administrators?`}
-          message={`Are you sure you want to send the invitation to the 4 Administrators selected?`}
+          message={`Are you sure you want to send the invitation to the Administrators selected?`}
           btnText={['Yes, resend', 'No, Cancel']}
           onCancel={() => {
             onCancel();

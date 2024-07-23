@@ -4,7 +4,6 @@ import debounce from 'lodash.debounce';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
-  GetTenantContext,
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
@@ -25,7 +24,7 @@ import {
 } from '../../constants/content-management';
 import { LinksShared } from './components/links-shared/links-shared';
 import ProgressToolsContentList from './sub-pages/content-list/components/progress-tools-content-list/progress-tools-content-list';
-import { TenantContext } from '../../utils/constants';
+import { useTenant } from '../../hooks/useTenant';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -39,11 +38,7 @@ export function ContentManagement() {
   const previousTab = usePrevious(selectedTab);
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
-  const [natalType, setNatalType] = useState(0);
-
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+  const tenant = useTenant();
 
   const { data: languages } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
@@ -85,81 +80,33 @@ export function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
-  const postNatalType = useMemo(
-    () => dataTypes?.contentTypes?.find((x) => x.id === natalType),
-    [dataTypes?.contentTypes, natalType]
-  );
-
   const getNavigationItems = () => {
-    if (
-      data &&
-      data.tenantContext &&
-      data.tenantContext.applicationName === TenantContext.GrowGreat
-    ) {
-      return [
-        {
-          name: 'Consent',
-          // href: '/',
-          id: 0,
-        },
-        {
-          name: 'Info  pages',
-          href: 'MoreInformation',
-          id: 1,
-        },
-        {
-          name: 'Postnatal',
-          href: 'NatalInfo',
-          id: 2,
-        },
-        {
-          name: 'Antenatal',
-          href: 'NatalInfo',
-          id: 3,
-        },
-        {
-          name: 'Danger signs',
-          href: ContentTypes.DANGERSIGN,
-          id: 4,
-        },
-        // {
-        //   name: 'Natal',
-        //   href: 'Natal',
-        //   id: 5,
-        // },
-        {
-          name: ContentManagementTabs.GGCOMMUNITY.name,
-          id: ContentManagementTabs.GGCOMMUNITY.id,
-        },
-      ];
-    } else {
-      return [
-        {
-          name: 'Consent',
-          // href: '/content-management',
-          id: 0,
-        },
-        {
-          name: 'Info pages',
-          href: 'MoreInformation',
-          id: 1,
-        },
-        {
-          name: ContentManagementTabs.PROCESS.name,
-          // href: '/',
-          id: ContentManagementTabs.PROCESS.id,
-        },
-        {
-          name: ContentManagementTabs.PROGRAMMES.name,
-          // href: '/',
-          id: ContentManagementTabs.PROGRAMMES.id,
-        },
-        {
-          name: ContentManagementTabs.COMMUNITY.name,
-          id: ContentManagementTabs.COMMUNITY.id,
-        },
-      ];
-    }
+    return [
+      {
+        name: 'Consent',
+        // href: '/content-management',
+        id: 0,
+      },
+      {
+        name: 'Info pages',
+        href: 'MoreInformation',
+        id: 1,
+      },
+      {
+        name: ContentManagementTabs.PROCESS.name,
+        // href: '/',
+        id: ContentManagementTabs.PROCESS.id,
+      },
+      {
+        name: ContentManagementTabs.PROGRAMMES.name,
+        // href: '/',
+        id: ContentManagementTabs.PROGRAMMES.id,
+      },
+      {
+        name: ContentManagementTabs.COMMUNITY.name,
+        id: ContentManagementTabs.COMMUNITY.id,
+      },
+    ];
   };
 
   const navigation = getNavigationItems();
@@ -287,11 +234,7 @@ export function ContentManagement() {
     }
 
     if (specialType === ContentManagementTabs.COMMUNITY.name) {
-      if (
-        data &&
-        data.tenantContext &&
-        data.tenantContext.applicationName !== TenantContext.GrowGreat
-      ) {
+      if (!tenant.isCHWConnect) {
         return setSubTabs([
           {
             title: 'Coaching circle topics',
@@ -368,6 +311,7 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'Theme'
             );
+            setChoosedSectionTitleSectionTitle('');
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -453,6 +397,11 @@ export function ContentManagement() {
     }
   }, [handleSubTabs, previousTab, selectedTab]);
 
+  const goBackToList = () => {
+    setSelectedContent(undefined);
+    setSearchValue('');
+  };
+
   return (
     <div className="">
       {dataTypes && !isLoadingSelectedRow ? (
@@ -467,18 +416,12 @@ export function ContentManagement() {
                       (type: ContentTypeDto) =>
                         type.name === item.name || type.name === item.href
                     );
+
                     if (selectedTypeObject) {
                       setSelectedTab(item.id);
                       setSpecialType('');
                       showGroupContentTypes(selectedTypeObject);
                     } else {
-                      if (natalType) {
-                        const postNatalType = dataTypes?.contentTypes?.find(
-                          (x) => x.id === natalType
-                        );
-
-                        setSelectedType(postNatalType);
-                      }
                       setSelectedTab(item.id);
                       setSpecialType(item.name);
                     }
@@ -488,8 +431,7 @@ export function ContentManagement() {
                       ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2'
                       : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                     'consent-tabs text-md flex h-14 items-center justify-center font-medium',
-                    data?.tenantContext.applicationName ===
-                      TenantContext.GrowGreat
+                    tenant.isCHWConnect
                       ? 'w-3/12'
                       : 'flex w-5/12 justify-center'
                   )}
@@ -505,12 +447,10 @@ export function ContentManagement() {
               contentView={selectedContent}
               contentType={selectedType}
               languages={languages.GetAllLanguage}
-              goBack={() => setSelectedContent(undefined)}
+              goBack={() => goBackToList()}
               savedContent={() => refreshParent()}
               choosedSectionTitle={choosedSectionTitle}
               setSearchValue={setSearchValue}
-              natalType={natalType}
-              postNatalType={postNatalType}
               selectedTab={selectedTab}
             />
           ) : (
@@ -561,7 +501,6 @@ export function ContentManagement() {
                         onSearch={search}
                         searchValue={searchValue}
                         choosedSectionTitle={choosedSectionTitle}
-                        setNatalType={setNatalType}
                         setSelectedType={setSelectedType}
                         dataTypes={dataTypes}
                       ></ContentList>

@@ -16,18 +16,19 @@ class AttendanceService {
   }
 
   async getAttendance(
-    year: number,
-    monthOfYear: number,
-    weekOfYear: number
+    startDate: Date,
+    endDate: Date
   ): Promise<AttendanceDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { attendance: AttendanceDto[] };
+      errors?: {};
+    }>(``, {
       query: `
-      query attendance($year: Int!, $monthOfYear: Int, $weekOfYear: Int) {
+      query attendance($startDate: DateTime!, $endDate: DateTime!) {
         attendance(
-          year: $year
-          monthOfYear: $monthOfYear
-          weekOfYear: $weekOfYear
+          startDate: $startDate
+          endDate: $endDate
         ) {
           classroomProgrammeId
           userId
@@ -40,13 +41,12 @@ class AttendanceService {
       }
       `,
       variables: {
-        year: year,
-        monthOfYear: monthOfYear,
-        weekOfYear: weekOfYear,
+        startDate: startDate,
+        endDate: endDate,
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Get Attendance failed - Server connection error');
     }
 
@@ -55,7 +55,6 @@ class AttendanceService {
 
   async getClassroomAttendanceReport(
     userId: string,
-    classgroupId: string,
     startDate: Date,
     endDate: Date
   ): Promise<ClassRoomChildAttendanceMonthlyReportModel> {
@@ -64,12 +63,10 @@ class AttendanceService {
       query: `
       query classroomAttendanceOverviewReport(
         $userId: String
-        $classgroupId: UUID!
         $startDate: DateTime!
         $endDate: DateTime!) {
         classroomAttendanceOverviewReport(
             userId: $userId
-            classgroupId: $classgroupId
             startDate: $startDate
             endDate: $endDate) {
         classroomAttendanceReport{
@@ -95,7 +92,6 @@ class AttendanceService {
       `,
       variables: {
         userId: userId,
-        classgroupId: classgroupId,
         startDate: startDate,
         endDate: endDate,
       },
@@ -111,7 +107,6 @@ class AttendanceService {
 
   async getMonthlyAttendanceReport(
     userId: string,
-    classroomId: string,
     startDate: Date,
     endDate: Date
   ): Promise<MonthlyAttendanceRecord[]> {
@@ -120,12 +115,10 @@ class AttendanceService {
       query: `
       query monthlyAttendanceReport(
         $userId: String
-        $classroomId: UUID!
         $startMonth: DateTime!
         $endMonth: DateTime!) {
         monthlyAttendanceReport(
           userId: $userId
-          classroomId: $classroomId
           startMonth: $startMonth
           endMonth: $endMonth          
         ) {
@@ -140,7 +133,6 @@ class AttendanceService {
       `,
       variables: {
         userId: userId,
-        classroomId: classroomId,
         startMonth: startDate,
         endMonth: endDate,
       },
@@ -207,7 +199,7 @@ class AttendanceService {
 
     if (response.status !== 200) {
       throw new Error(
-        'Get Monthly Attendance Report failed - Server connection error'
+        'Get Child Attendance Report failed - Server connection error'
       );
     }
 

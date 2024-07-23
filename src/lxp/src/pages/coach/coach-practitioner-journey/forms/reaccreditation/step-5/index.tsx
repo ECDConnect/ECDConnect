@@ -40,6 +40,7 @@ export const Step5ReAccreditation = ({
 
   const { isOnline } = useOnlineStatus();
 
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
@@ -114,10 +115,7 @@ export const Step5ReAccreditation = ({
         />
         <Typography
           type="h4"
-          text={
-            currentClassroomGroups?.[0]?.programmeType?.description ??
-            'Not provided'
-          }
+          text={classroom?.name ?? 'Not provided'}
           color={isOnline ? 'textDark' : 'errorMain'}
           className="my-4 ml-1 font-bold"
         />

@@ -1,4 +1,4 @@
-import { LocalStorageKeys, useDialog } from '@ecdlink/core';
+import { LocalStorageKeys, RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
@@ -21,17 +21,14 @@ import {
 } from '@utils/common/local-storage.utils';
 import { AttendanceComponent } from '../attendance/attendance';
 import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
-import ChildList from '../child-list/child-list';
-import ProgrammeDashboard from '../programme-planning/programme-dashboard/programme-dashboard';
 import * as styles from './class-dashboard.styles';
-import { ClassDashboardRouteState } from './class-dashboard.types';
+import { ClassDashboardRouteState, TabsItems } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
 import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import PractitionersList from './practitioners/practitioners-list/practitioners-list';
-import walktroughImage from '../../../assets/walktroughImage.png';
+import walkthroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
 import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
 import { userSelectors } from '@/store/user';
@@ -40,12 +37,19 @@ import {
   programmeThemeSelectors,
   programmeThemeThunkActions,
 } from '@/store/content/programme-theme';
-import { isPast, isToday } from 'date-fns';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
+import { Classes } from '../classes/classes';
+import { NavigationNames } from '@/pages/navigation';
+import { WalkthroughModal } from '@/components/walkthrough/modal';
+import { InitialAttendanceTutorialModal } from '../attendance/components/attendance-tutorial/initial-tutorial-modal/initial-tutorial-modal';
+import { ActivitiesTab } from '../activities/activities';
+import { useTenant } from '@/hooks/useTenant';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
   const history = useHistory();
+  const isTrialPeriod = useIsTrialPeriod();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
   const [attendanceTutorialActive, setAttendanceTutorialActive] =
@@ -55,30 +59,30 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
-  const [programmeStartDate, setProgrammeStartDate] = useState(
-    state?.programmeStartDate
-  );
   const [promptPhotoReportPermission, setPromptPhotoReportPermission] =
     useState<boolean>(false);
-  const [showAttendance, setShowAttendance] = useState(true);
+  const [showAttendanceWalkthrough, setShowAttendanceWalkthrough] =
+    useState(false);
   const appDispatch = useAppDispatch();
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const isTrainee = practitioner?.isTrainee;
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
-  const showAttendanceTutorial = useMemo(
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+
+  const isToShowAttendanceTutorial = useMemo(
     () =>
-      selectedTabIndex === 0 &&
+      selectedTabIndex === TabsItems.ATTENDANCE &&
       (practitioner?.progress! < 3 || practitioner?.progress === undefined) &&
-      children?.length! > 0 &&
-      showAttendance,
-    [children?.length, practitioner?.progress, selectedTabIndex, showAttendance]
+      children?.length! > 0,
+    [children?.length, practitioner?.progress, selectedTabIndex]
   );
 
   const reportingPeriod = useMemo(
@@ -97,8 +101,6 @@ export const ClassDashboard: React.FC = () => {
   const backToDashboard = () => {
     history.push('/');
   };
-
-  const isPrincipal = practitioner?.isPrincipal === true;
 
   useEffect(() => {
     const isTutorialComplete = getStorageItem<boolean>(
@@ -136,28 +138,24 @@ export const ClassDashboard: React.FC = () => {
 
   useEffect(() => {
     if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
-      if (isPrincipal && practitioners?.length! > 0) {
-        setCurrentTab(tabItemsForPrincipal[selectedTabIndex]);
-      } else {
-        setCurrentTab(tabItems[selectedTabIndex]);
-      }
+      setCurrentTab(tabItems[selectedTabIndex]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);
 
   const tabItems: TabItem[] = [
     {
-      title: 'Children',
-      initActive: false,
-      child: <ChildList />,
+      title: NavigationNames.Classroom.Classes,
+      initActive: true,
+      child: <Classes />,
     },
     {
-      title: 'Programme',
+      title: NavigationNames.Classroom.Attendance,
       initActive: false,
-      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
+      child: <AttendanceComponent />,
     },
     {
-      title: 'Resources',
+      title: NavigationNames.Classroom.Progress,
       initActive: false,
       child: (
         <div className={'p-4'}>
@@ -165,39 +163,13 @@ export const ClassDashboard: React.FC = () => {
         </div>
       ),
     },
-  ];
-
-  if (!isTrainee) {
-    tabItems?.splice(0, 0, {
-      title: 'Attendance',
-      initActive: false,
-      child: <AttendanceComponent />,
-    });
-  }
-
-  const tabItemsForPrincipal: TabItem[] = [
     {
-      title: 'Attendance',
+      title: NavigationNames.Classroom.Activities,
       initActive: false,
-      child: <AttendanceComponent />,
+      child: <ActivitiesTab />,
     },
     {
-      title: 'Practitioners',
-      initActive: false,
-      child: <PractitionersList />,
-    },
-    {
-      title: 'Children',
-      initActive: false,
-      child: <ChildList />,
-    },
-    {
-      title: 'Programme',
-      initActive: false,
-      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
-    },
-    {
-      title: 'Resources',
+      title: NavigationNames.Classroom.Resources,
       initActive: false,
       child: (
         <div className={'p-4'}>
@@ -208,10 +180,9 @@ export const ClassDashboard: React.FC = () => {
   ];
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
-    setProgrammeStartDate(new Date());
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
-    if (tabIndex === 3) {
+    if (tabIndex === TabsItems.ACTIVITES) {
       if (themes.length === 0) {
         appDispatch(
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
@@ -222,11 +193,8 @@ export const ClassDashboard: React.FC = () => {
 
   const displayTutorial = (type?: string) => {
     switch (type) {
-      case 'Attendance':
+      case NavigationNames.Classroom.Attendance:
         setAttendanceTutorialActive(true);
-        break;
-      case 'Programme':
-        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
         break;
       default:
         break;
@@ -234,7 +202,8 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const displayHelp =
-    currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
+    currentTab?.title === NavigationNames.Classroom.Attendance ||
+    currentTab?.title === NavigationNames.Classroom.Programme;
 
   const closeAttendanceTutorial = useCallback(() => {
     if (!attendanceTutorialComplete && previousTabIndex) {
@@ -255,19 +224,20 @@ export const ClassDashboard: React.FC = () => {
   const completeTutorial = () => {
     setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
     setAttendanceTutorialComplete(true);
-    setSelectedTabIndex(0);
     setAttendanceTutorialActive(false);
-    updatePractitionerProgress();
+    if (!isTrialPeriod) {
+      updatePractitionerProgress();
+    }
   };
 
-  const handleDeclineAttendanceTutorial = () => {
+  const handleDeclineAttendanceTutorial = useCallback(() => {
     dialog({
       position: DialogPosition.Bottom,
       render: (submit, cancel) => (
         <ActionModal
           customIcon={
             <div className="flex">
-              <img src={walktroughImage} alt="profile" className="mb-2" />
+              <img src={walkthroughImage} alt="profile" className="mb-2" />
               <Typography
                 text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
                 type={'body'}
@@ -298,69 +268,53 @@ export const ClassDashboard: React.FC = () => {
         />
       ),
     });
-  };
+  }, [dialog]);
 
-  const handleAttendanceTutorial = () => {
-    if (practitionerIsOnLeave) return;
+  const handleAttendanceWalkthroughLanguage = useCallback(() => {
+    setShowAttendanceWalkthrough(false);
 
-    dialog({
+    return dialog({
+      blocking: true,
       position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          customIcon={
-            <img src={walktroughImage} alt="profile" className="mb-2" />
-          }
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Want to learn how to track attendance on Funda App?`}
-          actionButtons={[
-            {
-              text: 'Yes, help me!',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                setAttendanceTutorialActive(true);
-                submit();
-              },
-              leadingIcon: 'ChevronRightIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                setShowAttendance(false);
-                handleDeclineAttendanceTutorial();
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
+      color: 'bg-white',
+      render: (onClose) => (
+        <WalkthroughModal
+          onStart={() => {
+            setAttendanceTutorialActive(true);
+            onClose();
+          }}
         />
       ),
     });
-  };
+  }, [dialog]);
 
   useEffect(() => {
-    if (showAttendanceTutorial && !attendanceTutorialComplete && !isTrainee) {
-      handleAttendanceTutorial();
+    if (
+      isToShowAttendanceTutorial &&
+      !attendanceTutorialComplete &&
+      !practitionerIsOnLeave
+    ) {
+      setShowAttendanceWalkthrough(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendanceTutorialComplete, showAttendanceTutorial]);
+  }, [
+    attendanceTutorialComplete,
+    practitionerIsOnLeave,
+    isToShowAttendanceTutorial,
+  ]);
 
-  const updatePractitionerUsePhotoReportPermission = async (
-    usePhotoInReport: string
-  ) => {
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerUsePhotoInReport({
-        practitionerId: practitioner?.userId,
-        usePhotoInReport: usePhotoInReport,
-      })
-    );
-  };
+  const updatePractitionerUsePhotoReportPermission = useCallback(
+    async (usePhotoInReport: string) => {
+      await appDispatch(
+        practitionerThunkActions.updatePractitionerUsePhotoInReport({
+          practitionerId: practitioner?.userId,
+          usePhotoInReport: usePhotoInReport,
+        })
+      );
+    },
+    [appDispatch, practitioner?.userId]
+  );
 
-  const handlePromptPhotoReportPermission = () => {
+  const handlePromptPhotoReportPermission = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
       render: (submit, cancel) => (
@@ -370,14 +324,14 @@ export const ClassDashboard: React.FC = () => {
             <div className="flex">
               <img
                 src={user?.profileImageUrl}
-                alt="profile image"
+                alt="profile avatar"
                 className="mb-5 h-20 w-20"
               />
             </div>
           }
           iconColor="alertMain"
           iconBorderColor="alertBg"
-          importantText={`Would you like to include your Funda App profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
+          importantText={`Would you like to include your ${appName} profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
           detailText={'You can change this photo in your profile.'}
           actionButtons={[
             {
@@ -410,20 +364,41 @@ export const ClassDashboard: React.FC = () => {
         />
       ),
     });
-  };
+  }, [
+    dialog,
+    reportingPeriod?.monthName,
+    reportingPeriod?.year,
+    updatePractitionerUsePhotoReportPermission,
+    user?.profileImageUrl,
+  ]);
 
   useEffect(() => {
     if (promptPhotoReportPermission) {
       handlePromptPhotoReportPermission();
       setPromptPhotoReportPermission(false);
     }
-  }, [promptPhotoReportPermission]);
+  }, [handlePromptPhotoReportPermission, promptPhotoReportPermission]);
 
   useEffect(() => {
     if (isCoach) {
       history.push(ROUTES.COACH.ROOT);
     }
   }, [history, isCoach]);
+
+  useEffect(() => {
+    if (
+      state?.activeTabIndex !== undefined &&
+      state?.activeTabIndex !== selectedTabIndex
+    ) {
+      setSelectedTabIndex(state?.activeTabIndex || selectedTabIndex);
+      history.replace({
+        state: {
+          ...state,
+          activeTabIndex: undefined,
+        },
+      });
+    }
+  }, [history, selectedTabIndex, state, state?.activeTabIndex]);
 
   return (
     <>
@@ -441,12 +416,9 @@ export const ClassDashboard: React.FC = () => {
         id={'header'}
       >
         <TabList
+          activeTabColour="quatenary"
           className="bg-uiBg"
-          tabItems={
-            isPrincipal && practitioners?.length! > 0
-              ? tabItemsForPrincipal
-              : tabItems
-          }
+          tabItems={tabItems}
           setSelectedIndex={selectedTabIndex}
           tabSelected={(tab: TabItem, tabIndex: number) =>
             setTabSelected(tab, tabIndex)
@@ -460,11 +432,24 @@ export const ClassDashboard: React.FC = () => {
       >
         <div className={styles.dialogContent}>
           <AttendanceTutorial
-            onComplete={completeTutorial}
             onClose={() => closeAttendanceTutorial()}
             updatePractitionerProgress={updatePractitionerProgress}
           />
         </div>
+      </Dialog>
+      <Dialog
+        visible={showAttendanceWalkthrough}
+        position={DialogPosition.Middle}
+        className="px-4"
+      >
+        <InitialAttendanceTutorialModal
+          onStart={handleAttendanceWalkthroughLanguage}
+          onClose={() => {
+            setShowAttendanceWalkthrough(false);
+            handleDeclineAttendanceTutorial();
+            completeTutorial();
+          }}
+        />
       </Dialog>
     </>
   );

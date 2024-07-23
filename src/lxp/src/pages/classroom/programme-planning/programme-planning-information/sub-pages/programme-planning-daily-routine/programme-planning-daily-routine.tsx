@@ -2,8 +2,8 @@ import { ContentTypeEnum, LanguageDto, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
+  Button,
   DialogPosition,
-  Divider,
   Typography,
 } from '@ecdlink/ui';
 import {
@@ -87,14 +87,16 @@ export const ProgrammePlanningDailyRoutine = () => {
       showBackground={false}
       color={'primary'}
       title={'The daily routine'}
-      backgroundColour={'uiBg'}
+      backgroundColour={'white'}
       displayOffline={!isOnline}
+      className="flex h-full flex-col"
     >
       <LanguageSelector
+        className="bg-uiBg"
+        labelClassName="text-textDark mr-2"
         currentLocale={'en-za'}
         selectLanguage={getDataByLanguage}
       />
-      <Divider />
 
       <Typography
         className="mt-2 ml-4"
@@ -149,6 +151,15 @@ export const ProgrammePlanningDailyRoutine = () => {
             />
           ))}
       </div>
+      <Button
+        className="mx-4 mt-auto mb-4"
+        type="filled"
+        color="quatenary"
+        text="Close"
+        icon="XIcon"
+        textColor="white"
+        onClick={history.goBack}
+      />
     </BannerWrapper>
   );
 };

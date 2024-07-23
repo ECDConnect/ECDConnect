@@ -18,7 +18,7 @@ export const BreastfeedingWorksStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
-  const sectionName = 'Formula milk only 3';
+  const sectionName = 'Formula milk only';
   const videoSection = 'How Breastfeeding Works';
 
   useEffect(() => {
@@ -35,6 +35,7 @@ export const BreastfeedingWorksStep = ({
         <HealthPromotion
           title={`Discuss with ${caregiverName}`}
           subTitle="Formula milk only"
+          sectionTitle="Pillar 1: Nutrition (day 7-48)"
           section={sectionName}
           onClose={() => setIsTip?.(false)}
         />

@@ -181,7 +181,7 @@ namespace EcdLink.Api.CoreApi.Managers
                     return _documentRepo.Insert(doc);
                     
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     return null;
                 }

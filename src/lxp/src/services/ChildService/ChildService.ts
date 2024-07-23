@@ -1,15 +1,17 @@
 import { ChildDto, Config } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
-  AddChildLearnerTokenModelInput,
   AddChildRegistrationTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
   AddChildUserConsentTokenModelInput,
+  ChildCreatedByDetail,
   ChildInput,
+  UpdateChildAndCaregiverInput,
 } from '@ecdlink/graphql';
 import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-registration/caregiver-child-registration.types';
 import { api } from '../axios.helper';
+import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 class ChildService {
   _accessToken: string;
 
@@ -19,14 +21,21 @@ class ChildService {
 
   async getChildren(): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query {
-          GetAllChild {
+    const response = await apiInstance.post<{
+      data: { GetAllChild: ChildDto[] };
+      errors?: {};
+    }>(``, {
+      query: `query($isActive: Boolean = true) {
+          GetAllChild(where: { isActive: { eq: $isActive } }) {
             id
-            caregiverId
             workflowStatusId
             insertedDate
+            languageId
+            allergies
+            disabilities
+            otherHealthConditions
+            isActive
+            insertedBy
             userId
             user {
               id
@@ -41,24 +50,60 @@ class ChildService {
               isSouthAfricanCitizen
               verifiedByHomeAffairs
             }
-            languageId
-            allergies
-            disabilities
-            otherHealthConditions
-            isActive
-            insertedBy
+            caregiverId 
+            caregiver {
+              id
+              phoneNumber
+              idNumber
+              firstName
+              surname
+              fullName  
+              siteAddressId          
+              siteAddress {
+                id
+                provinceId
+                province {
+                  id
+                  description
+                }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+                isActive
+              }
+              relationId
+              educationId
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
+              additionalFirstName
+              additionalSurname
+              additionalPhoneNumber
+              joinReferencePanel
+              contribution
+              grants {
+                id
+                description
+              }
+              isActive
+              isAllowedCustody
+            }
           }
         }
       `,
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Get Children Failed - Server connection error');
     }
 
     return response.data.data.GetAllChild;
   }
 
+  // Will this still be needed?
   async getChildrenForCoach(userId: string): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
@@ -85,69 +130,24 @@ class ChildService {
     return response.data.data.allChildrenForCoach;
   }
 
-  async getChildrenForPractitioner(userId: string): Promise<ChildDto[]> {
+  async updateChild(input: UpdateChildAndCaregiverInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { updateChildAndCaregiver: boolean };
+      errors?: {};
+    }>(``, {
       query: `
-        query allChildrenForPractitioner($userId: String) {
-          allChildrenForPractitioner(userId: $userId) {
-            id
-            caregiverId
-            workflowStatusId
-            insertedDate
-            userId
-            user {
-              id
-              firstName
-              surname
-              email
-              genderId
-              dateOfBirth
-              profileImageUrl
-              isActive
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-            }
-            languageId
-            allergies
-            disabilities
-            otherHealthConditions
-            isActive
-          }
-        }    
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Children For Practitioner Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.allChildrenForPractitioner;
-  }
-
-  async updateChild(id: string, input: ChildInput): Promise<boolean> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updateChild($input: ChildInput, $id: UUID) {
-          updateChild(input: $input, id: $id){
-            id
+        mutation UpdateChildAndCaregiver($input: UpdateChildAndCaregiverInput) {
+          updateChildAndCaregiver(input: $input){
           }
         }
       `,
       variables: {
-        id: id,
         input: input,
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Updating child failed - Server connection error');
     }
 
@@ -203,12 +203,18 @@ class ChildService {
     firstname: string,
     surname: string,
     classgroupId: string
-  ): Promise<string> {
+  ): Promise<ChildRegistrationDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation generateCaregiverChildToken($firstname: String, $surname: String, $classgroupId: UUID!) {
-          generateCaregiverChildToken(firstname: $firstname,surname: $surname, classgroupId: $classgroupId)
+          generateCaregiverChildToken(firstname: $firstname,surname: $surname, classgroupId: $classgroupId) {
+            childId
+            childUserId
+            addedByUserId
+            classroomGroupId
+            caregiverRegistrationUrl
+          }
         }
       `,
       variables: {
@@ -230,12 +236,18 @@ class ChildService {
   async refreshCaregiverChildToken(
     childId: string,
     classgroupId: string
-  ): Promise<string> {
+  ): Promise<ChildRegistrationDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation refreshCaregiverChildToken($childId: UUID!,$classgroupId: UUID!) {
-          refreshCaregiverChildToken(childId: $childId, classgroupId: $classgroupId)
+          refreshCaregiverChildToken(childId: $childId, classgroupId: $classgroupId) {
+            childId
+            childUserId
+            addedByUserId
+            classroomGroupId
+            caregiverRegistrationUrl
+          }
         }
       `,
       variables: {
@@ -253,6 +265,7 @@ class ChildService {
     return response.data.data.refreshCaregiverChildToken;
   }
 
+  // How is this used?
   async openAccessAddChildDetail(
     token: string
   ): Promise<ChildRegistrationDetails> {
@@ -266,7 +279,6 @@ class ChildService {
               surname
               groupName
               userId
-              groupFeeAmount
             }
             practitoner {
               firstname
@@ -294,29 +306,31 @@ class ChildService {
   async openAccessAddChild(
     token: string,
     caregiver: AddChildCaregiverTokenModelInput,
-    learner: AddChildLearnerTokenModelInput,
-    siteAddress: AddChildSiteAddressTokenModelInput,
+    siteAddress: Omit<AddChildSiteAddressTokenModelInput, 'provinceId'>,
     child: AddChildTokenModelInput,
     registration?: AddChildRegistrationTokenModelInput,
-    consent?: AddChildUserConsentTokenModelInput
+    consent?: Omit<
+      AddChildUserConsentTokenModelInput,
+      | 'commitmentAgreementAccepted'
+      | 'consentAgreementAccepted'
+      | 'indemnityAgreementAccepted'
+    >
   ): Promise<string> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation openAccessAddChild($token: String, 
           $caregiver: AddChildCaregiverTokenModelInput, 
-          $learner: AddChildLearnerTokenModelInput, 
           $siteAddress: AddChildSiteAddressTokenModelInput, 
           $child: AddChildTokenModelInput,
           $registration: AddChildRegistrationTokenModelInput,
           $consent: AddChildUserConsentTokenModelInput) {
-            openAccessAddChild(token: $token,caregiver: $caregiver, learner: $learner, siteAddress: $siteAddress, child: $child, registration: $registration, consent: $consent)
+            openAccessAddChild(token: $token,caregiver: $caregiver, siteAddress: $siteAddress, child: $child, registration: $registration, consent: $consent)
         }
       `,
       variables: {
         token: token,
         caregiver: caregiver,
-        learner: learner,
         siteAddress: siteAddress,
         child: child,
         registration: registration,
@@ -324,17 +338,20 @@ class ChildService {
       },
     });
 
-    if (response.status !== 200) {
+    if (
+      response.status !== 200 ||
+      response.data?.data?.openAccessAddChild === false
+    ) {
       throw new Error('adding token child failed - Server connection error');
     }
     return response.data.data.openAccessAddChild;
   }
 
-  async childCreatedByDetail(
+  async findCreatedChild(
     practitionerId: string,
     firstName: string,
     surname: string
-  ): Promise<ChildDto[]> {
+  ): Promise<ChildCreatedByDetail> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
@@ -352,7 +369,7 @@ class ChildService {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error(
         'Get Children For Practitioner Failed - Server connection error'
       );

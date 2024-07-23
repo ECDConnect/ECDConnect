@@ -3,13 +3,16 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ContentActivityService } from '@services/ContentActivityService';
 import { RootState, ThunkApiType } from '../../types';
 
+export const ActivitiesActions = {
+  GET_ACTIVITIES: 'getActivities',
+};
+
 export const getActivities = createAsyncThunk<
   ActivityDto[],
   { locale: string },
   ThunkApiType<RootState>
 >(
-  'getActivities',
-  // eslint-disable-next-line no-empty-pattern
+  ActivitiesActions.GET_ACTIVITIES,
   async ({ locale }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },

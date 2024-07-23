@@ -1,9 +1,4 @@
-import {
-  ExpenseItemDto,
-  IncomeItemDto,
-  IncomeStatementDto,
-  PractitionerDto,
-} from '@ecdlink/core';
+import { IncomeStatementDto, PractitionerDto } from '@ecdlink/core';
 import {
   ChildProgressReportsStatus,
   PointsUserSummary,
@@ -24,8 +19,6 @@ export interface PractitionerForCoachState {
       incomeDateLoaded: string;
       expensesDateLoaded: string;
       statements: IncomeStatementDto[];
-      unsubmittedIncomeItems: IncomeItemDto[];
-      unsubmittedExpenseItems: ExpenseItemDto[];
     };
   };
   childProgressReportStatusForPractitionerUser: {

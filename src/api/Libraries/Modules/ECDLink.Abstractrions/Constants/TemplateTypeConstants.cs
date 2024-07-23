@@ -5,6 +5,7 @@ namespace ECDLink.Abstractrions.Constants
         //sms/email
         public const string ForgotPassword = "forgot-password";
         public const string AuthCode = "auth-code";
+        public const string OAWLAuthCode = "oa-wl-auth-code";
         public const string Invitation = "invitation";
         public const string ThreeWeekNotLoggedOn = "three-week-notification";
         public const string FourWeekNotLoggedOn = "four-week-notification";
@@ -17,6 +18,15 @@ namespace ECDLink.Abstractrions.Constants
         public const string AdminPortalInvitation = "admin-portal-invitation";
         public const string TeamLeadInvitation = "team-lead-portal-invitation";
         public const string ForgotPasswordPortal = "forgot-password-portal";
+        public const string VerifyCellphoneNumber = "verify-cellphone-number";
+
+        // help
+        public const string AdminUserHelpForm = "admin-user-help-form";
+
+        // WL / OA
+        public const string PreSchoolInvitation = "pre-school-invitation";
+        public const string PrincipalInvitation = "principal-invitation";
+        public const string MultipleProgrammeInvitation = "multiple-programme-invitation";
 
         //app notifications
         public const string StartTraineeJourney = "start-trainee-journey";
@@ -81,6 +91,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string CoachSelfAssessmentFormReminder = "coach-fillin-self-asessment-form";
 
         //GG notifications
+        public const string GGThreeWeekNotLoggedOn = "gg-three-week-notification";
+        public const string GGFourWeekNotLoggedOn = "gg-four-week-notification";
         public const string GGWalkthroughNotificationInfant = "gg-walkthrough-notification-infant";
         public const string GGWalkthroughNotificationMother = "gg-walkthrough-notification-mother";
         public const string GGUploadRTHNotification = "gg-upload-rth";
@@ -125,6 +137,15 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGPointsTeamPlacementNotTop3 = "gg-points-placement-team-top-25-perc-not-top-three";
         public const string GGPointsTeamPlacementBottom75Perc = "gg-points-placement-team-bottom-75perc";
 
+        // GG portal notifications
+        public const string GGPortalCHWNotCompletedVisitIn2Weeks = "gg-portal-chw-not-completed-visit-in-2-weeks";
+        public const string GGPortalTLMissingMonthlyReport = "gg-portal-tl-missing-monthly-report";
+        public const string GGPortalClinicGoldTierPointsTeam = "gg-portal-clinic-points-gold-tier-team";
+        public const string GGPortalClinicSilverTierPointsTeam = "gg-portal-clinic-points-silver-tier-team";
+        public const string GGPortalClinicBronzeTierPointsTeam = "gg-portal-clinic-points-bronze-tier-team";
+        public const string GGPortalCHWMaternalDistressInfant = "gg-portal-chw-maternal-distress-infant";
+        public const string GGPortalCHWMaternalDistressMother = "gg-portal-chw-maternal-distress-mother";
+        public const string GGPortalCHWMissingMonthlyPoints = "gg-portal-chw-missing-monthly-points";
 
         //Bulk messaging
         public const string GenericMessage = "generic-message";
@@ -132,5 +153,19 @@ namespace ECDLink.Abstractrions.Constants
         //SMS messaging
         public const string Offline30Days = "30days-offline";
         public const string Offline21Days = "21days-offline";
+
+        // GG portal notifications
+        public const string LeagueSetupUnassignedClinics = "league-setup-unassigned-clinics";
+        public const string UnassignedClinics = "unassigned-clinics";
+
+        public const string DuplicateMotherAdded = "duplicate-mother-added";
+        public const string DuplicateChildAdded = "duplicate-child-added";
+        public const string NextMonthMeetingTopicNotAdded = "next-month-meeting-topic-not-added";
+        public const string HealthCareWorkersOptedOut = "health-care-worker-opted-out";
+        public const string ClinicMissingTeamLead = "clinic-missing-team-lead";
+        public const string NoMeetingReportSubmittedForClinic = "no-meeting-report-submitted-for-clinic";
+
+        // Community to portal notification 
+        public const string NotifyAdminOnCoachFeedback = "notify-admin-on-coach-feedback";
     }
 }

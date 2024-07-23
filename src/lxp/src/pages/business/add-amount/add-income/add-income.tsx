@@ -6,70 +6,61 @@ import {
   Typography,
   Alert,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { analyticsActions } from '@store/analytics';
 import * as styles from './add-income.styles';
 import ROUTES from '@routes/routes';
-import PreschoolFees from './components/preschool-fees/preschool-fees';
-import StartupSupport from './components/startup-support/startup-support';
+import AddPreschoolFees from './components/preschool-fees/add-preschool-fees';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
-import DsdSubsidy from './components/dsd-subsidy/dsd-subsidy';
 import OtherIncome from './components/other-income/other-income';
-import StatementsWrapper from '../../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
+import StatementsWrapper from '../../money/submit-income-statements/components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
-
-import { StatementsIncomeInput } from '@ecdlink/graphql';
-import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { statementsThunkActions } from '@/store/statements';
+import { statementsActions } from '@/store/statements';
+import { IncomeItemDto } from '@ecdlink/core';
+import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
+import { BusinessTabItems } from '../../business.types';
 
 export const AddIncome: React.FC = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
 
-  useEffect(() => {
-    if (!isOnline) {
-      appDispatch(
-        analyticsActions.createViewTracking({
-          pageView: window.location.pathname,
-          title: 'Practitioner About',
-        })
-      );
-    }
-  }, [appDispatch, isOnline]);
+  // useEffect(() => {
+  //   if (!isOnline) {
+  //     appDispatch(
+  //       analyticsActions.createViewTracking({
+  //         pageView: window.location.pathname,
+  //         title: 'Practitioner About',
+  //       })
+  //     );
+  //   }
+  // }, [appDispatch, isOnline]);
 
-  // const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [type, setType] = useState('');
 
-  const onSubmit = useCallback(
-    (incomeItem: StatementsIncomeInput) => {
-      appDispatch(
-        statementsThunkActions.addIncomeItem({
-          input: incomeItem,
-          firstAttempt: true,
-        })
-      );
-    },
-    [userAuth]
-  );
+  const onSubmit = useCallback((incomeItem: IncomeItemDto) => {
+    appDispatch(
+      statementsActions.addOrUpdateIncomeItems({ incomeItems: [incomeItem] })
+    );
+    history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
+  }, []);
 
   const incomeType = (type?: string) => {
     switch (type) {
       case 'PreschoolFees':
-        return <PreschoolFees setType={setType} onSubmit={onSubmit} />;
-      case 'StartupSupport':
-        return <StartupSupport setType={setType} onSubmit={onSubmit} />;
-      case 'DonationsOrvouchers':
-        return <DonationsOrVouchers setType={setType} onSubmit={onSubmit} />;
+        return <AddPreschoolFees onBack={() => setType('')} />;
       case 'DsdSubsidy':
-        return <DsdSubsidy setType={setType} onSubmit={onSubmit} />;
+        return <DbeSubsidy onBack={() => setType('')} onSubmit={onSubmit} />;
+      case 'DonationsOrvouchers':
+        return (
+          <DonationsOrVouchers onBack={() => setType('')} onSubmit={onSubmit} />
+        );
       case 'OtherIncome':
-        return <OtherIncome setType={setType} onSubmit={onSubmit} />;
+        return <OtherIncome onBack={() => setType('')} onSubmit={onSubmit} />;
       default:
         break;
     }
@@ -84,21 +75,11 @@ export const AddIncome: React.FC = () => {
       actionName: 'Add',
       actionIcon: 'PlusIcon',
       buttonType: 'filled',
+      buttonColor: 'quatenary',
+      textColor: 'white',
       onActionClick: () => {
-        setType('PreschoolFees');
-        nextStep();
+        return state?.stepIndex === 4 ? null : setType('PreschoolFees');
       },
-    },
-    {
-      title: 'Start-up support',
-      titleStyle: 'text-textDark font-semibold',
-      subTitle: 'Organised by SmartStart',
-      subTitleStyle: 'text-textMid',
-      actionName: 'Add',
-      actionIcon: 'PlusIcon',
-      buttonType: 'filled',
-      onActionClick: () =>
-        state?.stepIndex === 4 ? null : setType('StartupSupport'),
     },
     {
       title: 'Donations or vouchers',
@@ -108,8 +89,12 @@ export const AddIncome: React.FC = () => {
       actionName: 'Add',
       actionIcon: 'PlusIcon',
       buttonType: 'filled',
-      onActionClick: () =>
-        state?.stepIndex === 4 ? null : setType('DonationsOrvouchers'),
+      buttonColor: 'quatenary',
+      textColor: 'white',
+      onActionClick: () => {
+        nextStep();
+        setType('DonationsOrvouchers');
+      },
     },
     {
       title: 'DBE subsidy',
@@ -119,6 +104,8 @@ export const AddIncome: React.FC = () => {
       actionName: 'Add',
       actionIcon: 'PlusIcon',
       buttonType: 'filled',
+      buttonColor: 'quatenary',
+      textColor: 'white',
       onActionClick: () =>
         state?.stepIndex === 4 ? null : setType('DsdSubsidy'),
     },
@@ -130,6 +117,8 @@ export const AddIncome: React.FC = () => {
       actionName: 'Add',
       actionIcon: 'PlusIcon',
       buttonType: 'filled',
+      buttonColor: 'quatenary',
+      textColor: 'white',
       onActionClick: () =>
         state?.stepIndex === 4 ? null : setType('OtherIncome'),
     },
@@ -144,7 +133,7 @@ export const AddIncome: React.FC = () => {
   return (
     <div className={styles.container}>
       {type ? (
-        <div>{incomeType(type)}</div>
+        <>{incomeType(type)}</>
       ) : (
         <BannerWrapper
           showBackground={false}
@@ -152,7 +141,6 @@ export const AddIncome: React.FC = () => {
           color={'primary'}
           size="medium"
           renderBorder={true}
-          renderOverflow={false}
           onBack={() => history.push(ROUTES.BUSINESS_ADD_AMOUNT)}
           displayOffline={!isOnline}
           className="p-4"
@@ -161,14 +149,15 @@ export const AddIncome: React.FC = () => {
           <>
             <div>
               <Typography
-                type="h3"
+                type="h2"
                 color={'textDark'}
                 text={'Add your income'}
               />
               <Typography
-                type="body"
-                color={'textMid'}
-                text={'What type of money came in'}
+                type="h3"
+                className={'mt-6'}
+                color={'textDark'}
+                text={'What type of money came in?'}
               />
             </div>
             <Divider dividerType="dashed" className="mt-4" />

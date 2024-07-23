@@ -6,7 +6,7 @@ import Joyride, {
 import { useHistory } from 'react-router-dom';
 import { useAppContext } from '../../../../../walkthrougContext';
 import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
-import WalktroughImage from '../../../../../assets/walktroughImage.png';
+import robot from '../../../../../assets/iconRobot.svg';
 import ROUTES from '../../../../../routes/routes';
 import { useSelector } from 'react-redux';
 import {
@@ -14,11 +14,16 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { useTranslation } from 'react-i18next';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export default function AttendanceWrapper() {
+  const { t } = useTranslation();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isTrialPeriod = useIsTrialPeriod();
   const {
     setState,
     state: { run, stepIndex, attendanceStatus, enableButton },
@@ -27,14 +32,14 @@ export default function AttendanceWrapper() {
   const steps: StepType[] = [
     {
       target: '#attendance-list',
-      content: 'All children are automatically marked present',
+      content: t('All children are automatically marked present'),
       placement: 'bottom-end',
       offset: 10,
       disableBeacon: true,
     },
     {
       target: '#attendance-list-alone',
-      content: 'Tap anywhere on this block to mark Jane absent today',
+      content: t('Tap anywhere on this block to mark Jane absent today'),
       placement: 'bottom-end',
       offset: 10,
       spotlightClicks: !!attendanceStatus,
@@ -42,14 +47,14 @@ export default function AttendanceWrapper() {
     },
     {
       target: '#attendance-list-alone',
-      content: 'Now tap again to mark Jane present.',
+      content: t('Now tap again to mark Jane present.'),
       placement: 'bottom-end',
       offset: 10,
       spotlightClicks: !!attendanceStatus,
     },
     {
       target: '#attendance-list-alone',
-      content: "Great, you're ready to start!",
+      content: t("Great, you're ready to start!"),
       placement: 'bottom-end',
       offset: 10,
     },
@@ -71,7 +76,11 @@ export default function AttendanceWrapper() {
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <img src={WalktroughImage} alt="walkthrough profile" />
+                <img
+                  src={robot}
+                  className="mr-4 h-20 w-20"
+                  alt="walkthrough profile"
+                />
                 <Typography
                   color={'textDark'}
                   type={'h2'}
@@ -81,29 +90,18 @@ export default function AttendanceWrapper() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center justify-end gap-4">
-            <SliderPagination
-              totalItems={4}
-              activeIndex={index}
-              className={'p-4'}
-            />
+          <div className="mt-4 flex items-center justify-between gap-4 pl-20">
+            <SliderPagination totalItems={4} activeIndex={index} />
             {enableButton && (
-              <div {...primaryProps} className={'w-full'}>
+              <div {...primaryProps} className={'flex w-full justify-end'}>
                 <Button
                   type="filled"
-                  color="primary"
-                  className={'w-6/12'}
-                  // icon={'SaveIcon'}
+                  color="quatenary"
+                  textColor="white"
+                  icon={stepIndex === 3 ? 'XIcon' : 'ArrowCircleRightIcon'}
+                  text={isLastStep ? 'Close' : 'Next'}
                   onClick={() => {}}
-                >
-                  {/* {renderIcon('XIcon', `w-5 h-5 text-white mr-2`)} */}
-                  <Typography
-                    type="help"
-                    className="mr-2"
-                    color="white"
-                    text={isLastStep ? 'Close' : 'Next'}
-                  />
-                </Button>
+                />
               </div>
             )}
           </div>
@@ -142,10 +140,12 @@ export default function AttendanceWrapper() {
       (action === 'reset' || lifecycle === 'complete')
     ) {
       setState({ run: false, stepIndex: 0, tourActive: false });
-      if (practitioner?.progress! < 3) {
+      if (practitioner?.progress! < 3 && !isTrialPeriod) {
         await updatePractitionerProgress();
       }
-      history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 });
+      history.push(ROUTES.CLASSROOM.ROOT, {
+        activeTabIndex: TabsItems.ATTENDANCE,
+      });
     }
   };
 
@@ -162,6 +162,14 @@ export default function AttendanceWrapper() {
         showProgress
         showSkipButton
         disableOverlayClose
+        styles={{
+          spotlight: {
+            borderWidth: 4,
+            borderRadius: 20,
+            borderColor: '#FF2180',
+            borderStyle: 'solid',
+          },
+        }}
       />
     </div>
   );

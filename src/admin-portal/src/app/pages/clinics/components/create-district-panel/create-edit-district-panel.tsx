@@ -15,7 +15,7 @@ import {
   DistrictModel,
   districtInitialValues,
   districtSchema,
-} from '../../clinics.types';
+} from '../../main-view/admin-view/clinics.types';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useState } from 'react';
@@ -65,17 +65,20 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [duplicateNameMessage, setDuplicatedNameMessage] = useState('');
 
+  const duplicatedNameInTheSameProvince = findObjectWithString(
+    districtData?.districtsAndStats,
+    'name',
+    watchFields?.districtName
+  );
+
   const duplicatedName =
-    findObjectWithString(
-      districtData?.districtsAndStats,
-      'name',
-      watchFields?.districtName
-    ) && watchFields?.districtName !== props?.district?.name;
+    duplicatedNameInTheSameProvince &&
+    watchFields?.districtName !== props?.district?.name;
 
   useEffect(() => {
     if (duplicatedName) {
       setDuplicatedNameMessage(
-        `There is a different district the same name. Please choose a different district name.`
+        `There is a different district with this name. Please choose a different district name.`
       );
     }
   }, [duplicatedName]);
@@ -283,7 +286,6 @@ export const CreateEditDistrictPanel = (props: ClinicPanelCreateProps) => {
             nameProp={'districtName'}
             placeholder="District name"
             label="District name *"
-            subLabel="The combination of clinic name & sub-district must be unique."
             type={'text'}
             maxCharacters={50}
             value={watchFields?.districtName}

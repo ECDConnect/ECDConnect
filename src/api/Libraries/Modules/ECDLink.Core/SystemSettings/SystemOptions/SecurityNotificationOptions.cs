@@ -6,11 +6,9 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
     public class SecurityNotificationOptions
     {
         public string ForgotPassword { get; set; }
-
         public string ForgotPasswordPortal { get; set; }
-
         public string VerifyEmailUrl { get; set; }
-
+        public string VerifyCellphoneNumberUrl { get; set; }
         public string Login { get; set; }
     }
 }

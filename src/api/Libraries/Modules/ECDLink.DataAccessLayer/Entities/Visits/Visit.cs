@@ -18,6 +18,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public DateTime PlannedVisitDate { get; set; }
         public DateTime? ActualVisitDate { get; set; }
         public bool Attended { get; set; }
+        public bool IsCancelled { get; set; }
         public TKey VisitTypeId { get; set; }
         [ForeignKey(nameof(VisitTypeId))]
         public virtual VisitType VisitType { get; set; }
@@ -25,7 +26,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public virtual Mother Mother { get; set; }
         public Guid? InfantId { get; set; }
         public virtual Infant Infant { get; set; }
-        public string? Risk { get; set; }
+        public string Risk { get; set; }
         public string Comment { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public Guid? PractitionerId { get; set; }

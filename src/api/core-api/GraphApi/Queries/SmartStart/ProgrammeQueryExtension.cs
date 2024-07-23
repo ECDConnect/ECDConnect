@@ -36,9 +36,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var requestingUser = httpContextAccessor.HttpContext.GetUser().Id;
 
-            //if (string.IsNullOrWhiteSpace(requestingUser?.Id))
-            //    return Enumerable.Empty<Programme>();
-
             var user = await userManager.FindByIdAsync(requestingUser.ToString());
             var roles = await userManager.GetRolesAsync(user);
 
@@ -57,10 +54,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var targetPractitioner = practitionerRepo.GetByUserId(requestingUser);
 
             if (targetPractitioner is null)
-                return programmes;
+            {
+                throw new ArgumentException("Practitioner not found");
+            }
 
             var programmeRepo = repoFactory.CreateGenericRepository<Programme>(userContext: requestingUser);
 
+            // If principal return all programmes for the classroom
+            if (targetPractitioner.IsPrincipal.HasValue && targetPractitioner.IsPrincipal.Value)
+            {
+                return programmeRepo
+                .GetAll()
+                .Where(p => p.IsActive
+                    && p.ClassroomGroupId != null
+                    && p.ClassroomGroup.Classroom.UserId == targetPractitioner.UserId)
+                .Include(c => c.DailyProgrammes)
+                .Include(p => p.ClassroomGroup)
+                .OrderBy(c => c.StartDate)
+                .ToList();
+            }
+
+            // If practitioner just return programmes for their classroomGroups
             return programmeRepo
                 .GetAll()
                 .Where(p => p.IsActive
@@ -71,7 +85,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 .OrderBy(c => c.StartDate)
                 .ToList();
         }
-
-
     }
 }

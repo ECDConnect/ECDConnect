@@ -14,6 +14,8 @@ export interface ButtonGroupProps<T> extends ComponentBaseProps {
   type: ButtonGroupTypes;
   multiple?: boolean;
   color?: Colours;
+  notSelectedColor?: Colours;
+  textColor?: Colours;
   onOptionSelected: (option: T | T[]) => void;
   inputRef?: any;
 }
@@ -28,6 +30,8 @@ export const ButtonGroup = <T,>({
   onOptionSelected,
   inputRef,
   className,
+  notSelectedColor,
+  textColor,
 }: React.PropsWithChildren<ButtonGroupProps<T>>) => {
   const [selectedValues, setSelectedValues] = useState<T | T[] | undefined>(
     selectedOptions
@@ -89,6 +93,8 @@ export const ButtonGroup = <T,>({
               className={`${getOptionStyle(type, option.disabled)} ${
                 isOptionSelected(option)
                   ? styles.selected(color)
+                  : notSelectedColor
+                  ? styles.notSelectedColorStyle(notSelectedColor, textColor)
                   : styles.notSelectedButtonOrChip
               }`}
             >

@@ -1,5 +1,7 @@
+import { OfflineCache } from '@/models/sync/offline-cache';
 import {
   PractitionerProgressReportSummaryDto,
+  ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
@@ -7,9 +9,18 @@ import {
 } from '@ecdlink/core';
 
 export type ProgressTrackingState = {
-  progressTrackingCategories: ProgressTrackingCategoryDto[] | undefined;
-  progressTrackingSubCategories: ProgressTrackingSubCategoryDto[] | undefined;
-  progressTrackingSkills: ProgressTrackingSkillDto[] | undefined;
+  progressTrackingAgeGroups: {
+    data: ProgressTrackingAgeGroupDto[];
+  } & OfflineCache;
+  progressTrackingCategories: {
+    data: ProgressTrackingCategoryDto[];
+  } & OfflineCache;
+  progressTrackingSubCategories: {
+    data: ProgressTrackingSubCategoryDto[];
+  } & OfflineCache;
+  progressTrackingSkills: {
+    data: ProgressTrackingSkillDto[];
+  } & OfflineCache;
   progressTrackingLevels: ProgressTrackingLevelDto[] | undefined;
   practitionerProgressReportSummary?:
     | PractitionerProgressReportSummaryDto

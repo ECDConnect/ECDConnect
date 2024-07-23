@@ -1,17 +1,10 @@
-import {
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-  LearnerDto,
-  SiteAddressDto,
-} from '@ecdlink/core';
+import { ClassroomGroupDto, LearnerDto, SiteAddressDto } from '@ecdlink/core';
 import {
   ClassProgrammeInput,
   ClassroomGroupInput,
   ClassroomInput,
   LearnerInput,
   SiteAddressInput,
-  WorkflowStatusEnum,
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ClassroomGroupLearnerService } from '@services/ClassroomGroupLearnerService';
@@ -19,118 +12,91 @@ import { ClassroomGroupProgrammesService } from '@services/ClassroomGroupProgram
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
-import { PractitionerService } from '@/services/PractitionerService';
+import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { OverrideCache } from '@/models/sync/override-cache';
+import { SiteAddressService } from '@/services/SiteAddressService';
+
+export const ClassroomActions = {
+  GET_CLASSROOM: 'getClassroom',
+  GET_CLASSROOM_GROUPS: 'getClassroomGroups',
+  UPSERT_CLASSROOM_GROUPS: 'upsertClassroomGroups',
+  UPSERT_CLASSROOM_GROUPS_LEARNERS: 'upsertClassroomGroupLearners',
+  UPDATE_CLASSROOM_GROUP: 'updateClassroomGroup',
+  UPSERT_CLASS_PROGRAMMES: 'upsertClassroomGroupProgrammes',
+  GET_CLASSROOM_FOR_TRIAL_PERIOD_USER: 'getClassroomForTrialPeriodUser',
+};
 
 export const getClassroom = createAsyncThunk<
-  ClassroomDto,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  SimpleClassroomDto,
+  {} & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getClassrooms',
+  ClassroomActions.GET_CLASSROOM,
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroom: classroomsCache },
-      user: { user: userCache },
+      classroomData: { classroom: cache },
     } = getState();
 
-    if (!classroomsCache) {
-      try {
-        let classrooms: ClassroomDto[] | undefined;
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
+    if (
+      !!overrideCache ||
+      !cache ||
+      !cache.dateRefreshed ||
+      new Date(cache.dateRefreshed) < oneDayAgo
+    ) {
+      try {
+        let classroom: SimpleClassroomDto | undefined;
         if (userAuth?.auth_token) {
-          classrooms = await new ClassroomService(
+          classroom = await new ClassroomService(
             userAuth?.auth_token
-          ).getClassrooms();
+          ).getClassroomForUser(userAuth?.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
 
-        if (!classrooms) {
-          return rejectWithValue('Error getting Classrooms');
-        }
-
-        if (userCache?.principalObjectData?.isPrincipal) {
-          const classRoom = classrooms?.find((classroom: ClassroomDto) => {
-            return classroom?.userId === userCache?.id;
-          });
-
-          if (classRoom) {
-            return classRoom;
-          }
-        }
-        return classrooms[0];
+        return classroom;
       } catch (err) {
         return rejectWithValue(err);
       }
     } else {
-      return classroomsCache;
-    }
-  }
-);
-
-export const getClassroomDetailsForPractitioner = createAsyncThunk<
-  ClassroomDto,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  { id: string },
-  ThunkApiType<RootState>
->(
-  'getClassroomDetailsForPractitioner',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ id }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroom: classroomsCache },
-    } = getState();
-
-    if (!classroomsCache) {
-      try {
-        let classrooms: any | undefined;
-        if (userAuth?.auth_token) {
-          classrooms = await new PractitionerService(
-            userAuth?.auth_token
-          ).getClassroomDetailsForPractitioner(id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!classrooms) {
-          return rejectWithValue('Error getting Classrooms');
-        }
-        return classrooms;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return classroomsCache;
+      return cache;
     }
   }
 );
 
 export const getClassroomGroups = createAsyncThunk<
-  ClassroomGroupDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  SimpleClassroomGroupDto[],
+  {} & OverrideCache,
   ThunkApiType<RootState>
 >(
-  'getClassroomGroups',
+  ClassroomActions.GET_CLASSROOM_GROUPS,
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroomGroups: cache },
+      classroomData: { classroomGroupData: cache },
     } = getState();
 
-    if (!cache) {
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    if (
+      !!overrideCache ||
+      !cache.dateRefreshed ||
+      new Date(cache.dateRefreshed) < oneDayAgo
+    ) {
       try {
-        let groups: ClassroomGroupDto[] | undefined;
+        let groups: SimpleClassroomGroupDto[] | undefined;
 
         if (userAuth?.auth_token) {
           groups = await new ClassroomGroupService(
             userAuth?.auth_token
-          ).getClassroomGroups();
+          ).getClassroomGroupsForUser(userAuth?.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -148,133 +114,13 @@ export const getClassroomGroups = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
-      return cache;
-    }
-  }
-);
-
-export const getClassroomProgrammes = createAsyncThunk<
-  ClassProgrammeDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'getClassroomProgrammes',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomProgrammes: cache },
-    } = getState();
-
-    if (!cache) {
-      try {
-        let programmes: ClassProgrammeDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          programmes = await new ClassroomGroupProgrammesService(
-            userAuth?.auth_token
-          ).getClassroomProgrammes();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!programmes) {
-          return rejectWithValue('Error getting Classroom Programmes');
-        }
-
-        return programmes;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return cache;
-    }
-  }
-);
-
-export const getClassroomGroupClassroomsForPractitioner = createAsyncThunk<
-  ClassroomDto,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  { userId: string },
-  ThunkApiType<RootState>
->(
-  'getClassroomGroupClassroomsForPractitioner',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ userId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classrooGroupsForPractitioner: classroomsCache },
-    } = getState();
-
-    if (!classroomsCache) {
-      try {
-        let classroomsforPractitioner: any[] | undefined;
-
-        if (userAuth?.auth_token) {
-          classroomsforPractitioner = await new ClassroomService(
-            userAuth?.auth_token
-          ).getClassroomGroupClassroomsForPractitioner(userId);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!classroomsforPractitioner) {
-          return rejectWithValue('Error getting Classrooms');
-        }
-
-        return classroomsforPractitioner[0];
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return classroomsCache;
-    }
-  }
-);
-
-export const getClassroomGroupLearners = createAsyncThunk<
-  LearnerDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'getClassroomGroupLearners',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomGroupLearners: cache },
-    } = getState();
-
-    if (!cache) {
-      try {
-        let learners: LearnerDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          learners = await new ClassroomGroupLearnerService(
-            userAuth?.auth_token
-          ).getClassroomGroupLearners();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!learners) {
-          return rejectWithValue('Error getting Classroom Group learners');
-        }
-
-        return learners;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return cache;
+      return cache.classroomGroups;
     }
   }
 );
 
 export const upsertClassroom = createAsyncThunk<
-  boolean[],
+  boolean,
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
@@ -290,66 +136,40 @@ export const upsertClassroom = createAsyncThunk<
       if (userAuth?.auth_token && classroom) {
         const input: ClassroomInput = {
           Id: classroom.id,
-          UserId: classroom.userId,
-          SiteAddressId: classroom.siteAddressId,
+          UserId: classroom.principal.userId,
+          SiteAddressId: classroom.siteAddress?.id
+            ? classroom.siteAddress?.id
+            : null,
           Name: classroom.name,
           ClassroomImageUrl: classroom.classroomImageUrl,
-          IsPrinciple: classroom.isPrinciple,
           NumberPractitioners: classroom.numberPractitioners,
+          NumberOfAssistants: classroom.numberPractitioners,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
-          IsActive: classroom.isActive === false ? false : true,
-          SiteAddress: classroom?.siteAddress
-            ? mapSiteAddress(classroom?.siteAddress!)
+          IsActive: true, // All classrooms/groups on FE will be active
+          SiteAddress: classroom?.siteAddress?.addressLine1
+            ? mapSiteAddress(classroom.siteAddress)
             : null,
-          PreschoolFeeAmount: classroom?.preschoolFeeAmount || 0,
-          PreschoolFeeAmountLastUpdateDate:
-            classroom?.preschoolFeeAmountLastUpdateDate,
+          PreschoolCode: classroom?.preschoolCode,
         };
+
+        if (classroom?.siteAddress?.id) {
+          const addressInput = mapSiteAddress(classroom.siteAddress);
+
+          await new SiteAddressService(userAuth?.auth_token!).updateSiteAddress(
+            classroom.siteAddress.id ?? '',
+            addressInput
+          );
+
+          input.SiteAddressId = addressInput.Id;
+        }
 
         const result = await new ClassroomService(
           userAuth?.auth_token
         ).updateClassroom(classroom.id ?? '', input);
 
-        return [result];
+        return result;
       }
-      return [false];
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const upsertClassroomSiteAddress = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'upsertClassroomSiteAddress',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroom },
-    } = getState();
-    try {
-      if (userAuth?.auth_token && classroom) {
-        const input: ClassroomInput = {
-          Id: classroom.id,
-          SiteAddressId: classroom.siteAddressId,
-          IsActive: classroom.isActive === false ? false : true,
-          SiteAddress: classroom?.siteAddress
-            ? mapSiteAddress(classroom?.siteAddress!)
-            : null,
-        };
-
-        const result = await new ClassroomService(
-          userAuth?.auth_token
-        ).updateClassroomSiteAddress(classroom.id ?? '', input);
-
-        return [result];
-      }
-      return [false];
+      return false;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -366,7 +186,7 @@ export const updateClassroomGroup = createAsyncThunk<
   UpdateClassroomGroupdRequest,
   ThunkApiType<RootState>
 >(
-  'updateClassroomGroup',
+  ClassroomActions.UPDATE_CLASSROOM_GROUP,
   async ({ classroomGroup }, { getState, rejectWithValue }) => {
     try {
       const {
@@ -374,9 +194,13 @@ export const updateClassroomGroup = createAsyncThunk<
       } = getState();
       if (userAuth?.auth_token) {
         const input = mapClassroomGroupInput(classroomGroup);
+
         await new ClassroomGroupService(
           userAuth?.auth_token
         ).updateClassroomGroup(input.Id || '', input);
+
+        // Sync learners
+
         return classroomGroup;
       } else return rejectWithValue('no access token, profile check required');
     } catch (err) {
@@ -391,31 +215,34 @@ export const upsertClassroomGroups = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'upsertClassroomGroups',
+  ClassroomActions.UPSERT_CLASSROOM_GROUPS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroomGroups },
+      classroomData: { classroomGroupData },
     } = getState();
 
     try {
       let promises: Promise<boolean>[] = [];
-      if (userAuth?.auth_token && classroomGroups) {
-        promises = classroomGroups.map(async (x) => {
-          const input: ClassroomGroupInput = {
-            Id: x.id,
-            ClassroomId: x.classroomId,
-            ProgrammeTypeId: x.programmeTypeId,
-            Name: x.name,
-            IsActive: x.isActive === false ? false : true,
-            UserId: x.userId,
-          };
+      if (userAuth?.auth_token) {
+        promises = classroomGroupData.classroomGroups
+          .filter((group) => !group.synced)
+          .map(async (x) => {
+            const input: ClassroomGroupInput = {
+              Id: x.id,
+              ClassroomId: x.classroomId,
+              Name: x.name,
+              IsActive: true,
+              UserId: x.userId,
+            };
 
-          return await new ClassroomGroupService(
-            userAuth?.auth_token
-          ).updateClassroomGroup(x.id ?? '', input);
-        });
+            return await new ClassroomGroupService(
+              userAuth?.auth_token
+            ).updateClassroomGroup(x.id ?? '', input);
+
+            // Sync learners
+          });
       }
       return Promise.all(promises);
     } catch (err) {
@@ -424,24 +251,26 @@ export const upsertClassroomGroups = createAsyncThunk<
   }
 );
 
-export const updateClassroomGroupProgrammes = createAsyncThunk<
+export const upsertClassroomGroupProgrammes = createAsyncThunk<
   boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'updateClassroomGroupProgrammes',
+  ClassroomActions.UPSERT_CLASS_PROGRAMMES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroomProgrammes },
+      classroomData: { classroomGroupData },
     } = getState();
+
+    const classroomProgrammes = classroomGroupData.classroomGroups
+      .flatMap((x) => x.classProgrammes)
+      .filter((x) => !x.synced);
 
     try {
       let promises: Promise<boolean>[] = [];
-
-      if (userAuth?.auth_token && classroomProgrammes) {
+      if (userAuth?.auth_token && classroomProgrammes.length) {
         promises = classroomProgrammes.map(async (x) => {
           const input: ClassProgrammeInput = {
             Id: x.id,
@@ -464,161 +293,50 @@ export const updateClassroomGroupProgrammes = createAsyncThunk<
   }
 );
 
-export const upsertClassroomGroupProgrammes = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'upsertClassroomGroupProgrammes',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomProgrammes },
-    } = getState();
-
-    try {
-      let promises: Promise<boolean>[] = [];
-      if (classroomProgrammes?.some((item) => item?.isOnline === false)) {
-        if (userAuth?.auth_token && classroomProgrammes) {
-          promises = classroomProgrammes.map(async (x) => {
-            const input: ClassProgrammeInput = {
-              Id: x.id,
-              ClassroomGroupId: x.classroomGroupId,
-              ProgrammeStartDate: x.programmeStartDate ?? new Date(),
-              MeetingDay: x.meetingDay,
-              IsFullDay: x.isFullDay,
-              IsActive: x.isActive === false ? false : true,
-            };
-
-            return await new ClassroomGroupProgrammesService(
-              userAuth?.auth_token
-            ).updateClassProgramme(x.id ?? '', input);
-          });
-        }
-        return Promise.all(promises);
-      }
-      return [true];
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const updateClassroomGroupLearners = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'updateClassroomGroupLearners',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: { classroomGroupLearners },
-      children: { children },
-      staticData: { WorkflowStatuses },
-    } = getState();
-
-    try {
-      let promises: Promise<boolean>[] = [];
-      const workflowStatus = WorkflowStatuses?.find(
-        (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
-      );
-
-      if (userAuth?.auth_token && classroomGroupLearners) {
-        promises = classroomGroupLearners
-          .filter((classroomGroupLearner) => {
-            const child = children?.find(
-              (x) => x.userId === classroomGroupLearner.userId
-            );
-            return child && child.workflowStatusId !== workflowStatus?.id
-              ? true
-              : false;
-          })
-          .map(async (x) => {
-            const input: LearnerInput = {
-              UserId: x.userId,
-              ClassroomGroupId: x.classroomGroupId,
-              ProgrammeAttendanceReasonId: x.attendanceReasonId,
-              OtherAttendanceReason: x.otherAttendanceReason,
-              StartedAttendance: x.startedAttendance,
-              StoppedAttendance: x.stoppedAttendance,
-              IsActive: Boolean(x.isActive),
-            };
-            if (x.id && x.id.length > 0) {
-              return await new ClassroomGroupLearnerService(
-                userAuth?.auth_token
-              ).updateLearner(x.id, input);
-            } else {
-              return !!(await new ClassroomGroupLearnerService(
-                userAuth?.auth_token
-              ).createLearner(input));
-            }
-          });
-      }
-      return Promise.all(promises);
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
+// Syncs all learners on each classroomgroup
 export const upsertClassroomGroupLearners = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'upsertClassroomGroupLearners',
+  ClassroomActions.UPSERT_CLASSROOM_GROUPS_LEARNERS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      classroomData: { classroomGroupLearners },
-      children: { children },
-      staticData: { WorkflowStatuses },
+      classroomData: { classroomGroupData },
     } = getState();
 
     try {
       let promises: Promise<boolean>[] = [];
-      const workflowStatus = WorkflowStatuses?.find(
-        (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
-      );
-      if (classroomGroupLearners?.some((item) => item?.isOnline === false)) {
-        if (userAuth?.auth_token && classroomGroupLearners) {
-          promises = classroomGroupLearners
-            .filter((classroomGroupLearner) => {
-              const child = children?.find(
-                (x) => x.userId === classroomGroupLearner.userId
-              );
-              return child && child.workflowStatusId !== workflowStatus?.id
-                ? true
-                : false;
-            })
+      if (!!userAuth && !!userAuth?.auth_token) {
+        classroomGroupData.classroomGroups.forEach((classroomGroup) => {
+          const newPromises = classroomGroup.learners
+            .filter((l) => !l.synced)
             .map(async (x) => {
               const input: LearnerInput = {
-                UserId: x.userId,
-                ClassroomGroupId: x.classroomGroupId,
-                ProgrammeAttendanceReasonId: x.attendanceReasonId,
-                OtherAttendanceReason: x.otherAttendanceReason,
+                UserId: x.childUserId,
+                ClassroomGroupId: classroomGroup.id,
                 StartedAttendance: x.startedAttendance,
                 StoppedAttendance: x.stoppedAttendance,
-                IsActive: Boolean(x.isActive),
+                IsActive: x.isActive,
               };
-              if (x.id && x.id.length > 0) {
+              if (!!x.learnerId && x.learnerId.length > 0) {
                 return await new ClassroomGroupLearnerService(
                   userAuth?.auth_token
-                ).updateLearner(x.id, input);
+                ).updateLearner(x.learnerId, input);
               } else {
                 return !!(await new ClassroomGroupLearnerService(
                   userAuth?.auth_token
                 ).createLearner(input));
               }
             });
-        }
+
+          promises.concat(newPromises);
+        });
+      } else {
+        return rejectWithValue('No auth');
       }
       return Promise.all(promises);
     } catch (err) {
@@ -685,33 +403,6 @@ export const createLearner = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
-
-export const updatePreschoolFee = createAsyncThunk<
-  boolean,
-  { classroomId: string; amount: number | undefined },
-  ThunkApiType<RootState>
->(
-  'updatePreschoolFee',
-  async ({ classroomId, amount }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        await new ClassroomService(userAuth?.auth_token).updatePreschoolFee(
-          classroomId,
-          amount
-        );
-
-        return true;
-      }
-      return rejectWithValue('no access token, profile check required');
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
 
 const mapClassroomGroupInput = (
   x: Partial<ClassroomGroupDto>

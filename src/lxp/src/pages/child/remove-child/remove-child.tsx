@@ -1,13 +1,15 @@
-import { ReasonForLeavingDto } from '@ecdlink/core';
+import {
+  ReasonForLeavingDto,
+  RoleSystemNameEnum,
+  useSnackbar,
+} from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
   Button,
   classNames,
-  Divider,
   Dropdown,
   FormInput,
-  renderIcon,
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -27,13 +29,18 @@ import {
   childrenSelectors,
   childrenThunkActions,
 } from '@store/children';
-import { classroomsActions } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './remove-child.styles';
 import { RemoveChildRouteState } from './remove-child.types';
 import { userSelectors } from '@store/user';
 import ROUTES from '@routes/routes';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  TabsItemForPrincipal,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { ClassDashboardRouteState } from '@/pages/business/business.types';
 
 export const RemoveChild: React.FC = () => {
   const location = useLocation<RemoveChildRouteState>();
@@ -43,15 +50,24 @@ export const RemoveChild: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const childId = location.state.childId;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
+
+  // TODO: update the reasonsForLeaving
   const reasonsForLeaving = useSelector(
     staticDataSelectors.getReasonsForLeaving
   );
   const history = useHistory();
 
-  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const { showMessage } = useSnackbar();
+
+  const isCoach = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
+  const isPrincipal = userData?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Principal
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -86,52 +102,63 @@ export const RemoveChild: React.FC = () => {
 
     const updatedChild = { ...child };
     updatedChild.isActive = false;
-    appDispatch(childrenActions.deactivateChild(updatedChild));
+    appDispatch(
+      classroomsActions.deactivateLearner({
+        childUserId: child.userId!,
+        classroomGroupId: classroomGroup?.id!,
+      })
+    );
+    appDispatch(childrenActions.updateChild(updatedChild));
     appDispatch(
       childrenThunkActions.updateChild({
         child: updatedChild,
         id: String(updatedChild.id),
       })
     ).then(() =>
+      // TODO: Migrate this action to be fully handled by the backend
       appDispatch(
         childrenThunkActions.calculateChildrenRegistrationRemoval(true)
       )
     );
 
-    appDispatch(
-      classroomsActions.deactivateClassroomGroupLearner(updatedChild)
-    );
+    showMessage({
+      message: `Child removed`,
+      type: 'success',
+    });
 
     if (isCoach) {
       history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId });
       return;
     }
-    history.replace(ROUTES.CLASSROOM.ROOT);
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: isPrincipal
+        ? TabsItemForPrincipal.CLASSES
+        : TabsItems.CLASSES,
+    } as ClassDashboardRouteState);
   };
 
   return (
     <BannerWrapper
       size={'small'}
-      backgroundColour={'uiBg'}
-      className={'overflow-y-auto pb-8'}
+      className={'overflow-y-auto'}
       renderBorder={true}
-      title={`Remove ${childUser?.firstName} from programme`}
+      title={`Remove ${child?.user?.firstName} from programme`}
       color={'primary'}
       onBack={() => history.goBack()}
       displayOffline={!isOnline}
     >
-      <div className={'px-4 py-4'}>
+      <div className={'flex h-full flex-col p-4'}>
         <Alert
           type="error"
-          title={`${childUser?.firstName} will be removed from the programme immediately`}
+          title={`${child?.user?.firstName} will be removed from the preschool immediately`}
           list={[
-            `If you remove ${childUser?.firstName} now, you will no longer be able to edit or view this profile.`,
+            `If you remove ${child?.user?.firstName} now, you will no longer be able to edit or view this profile.`,
           ]}
           className={'mb-4'}
         />
         <Typography
           type={'h1'}
-          text={`Why is ${childUser?.firstName} leaving SmartStart?`}
+          text={`Why is ${child?.user?.firstName} leaving ${classroomGroup?.name}?`}
           color={'primary'}
           className={'pt-1'}
         />
@@ -165,40 +192,29 @@ export const RemoveChild: React.FC = () => {
           hint={'Optional'}
           placeholder={'E.g. Did not like the activities'}
         />
-        <div className={'py-4'}>
-          <Divider></Divider>
-        </div>
-        <Button
-          onClick={() => handleFormSubmit()}
-          className="w-full"
-          size="small"
-          color="errorMain"
-          type="filled"
-          disabled={!isValid}
-        >
-          {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}
-          <Typography
-            type="h6"
-            className="ml-2"
-            text={`Remove ${childUser?.firstName}`}
-            color="white"
+        <div className="mt-auto">
+          <Button
+            onClick={() => handleFormSubmit()}
+            className="w-full"
+            size="small"
+            color="quatenary"
+            textColor="white"
+            type="filled"
+            disabled={!isValid}
+            icon="TrashIcon"
+            text={`Remove ${child?.user?.firstName}`}
           />
-        </Button>
-        <Button
-          onClick={() => history.goBack()}
-          className="mt-4 w-full"
-          size="small"
-          color="primary"
-          type="outlined"
-        >
-          {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
-          <Typography
-            type="h6"
-            className="ml-2"
+          <Button
+            onClick={() => history.goBack()}
+            className="mt-4 w-full"
+            size="small"
+            color="quatenary"
+            textColor="quatenary"
+            type="outlined"
+            icon="XIcon"
             text="Cancel"
-            color="primary"
           />
-        </Button>
+        </div>
       </div>
     </BannerWrapper>
   );

@@ -28,11 +28,11 @@ export const getStyles = ({
     },
     footer: {
       main: `${
-        rows.length < rowsPerPage ? 'hidden' : ''
+        rows?.length < rowsPerPage ? 'hidden' : ''
       } mt-8 mx-5 table-footer`,
       statistics: {
         main: `${
-          rows.length < rowsPerPage ? 'hidden' : ''
+          rows?.length < rowsPerPage ? 'hidden' : ''
         } text-gray-600 table-stats md:w-auto md:flex-row`,
         bold_numbers: `text-gray-900 font-bold`,
       },

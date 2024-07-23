@@ -259,7 +259,7 @@ export const getChildAttendancePercentageAtPlaygroup = (
   // TODO: figure out how the attendance is created
   let attendanceRecords = attendance.filter(
     (x) =>
-      filteredProgrammesIds.includes(x.classroomProgrammeId) &&
+      filteredProgrammesIds.includes(x.classroomProgrammeId!) &&
       x.userId === childUserId &&
       ((userRole === 'coach' && x.monthOfYear === lastMonth) ||
         (userRole === 'practitioner' && x.weekOfYear === lastWeek))

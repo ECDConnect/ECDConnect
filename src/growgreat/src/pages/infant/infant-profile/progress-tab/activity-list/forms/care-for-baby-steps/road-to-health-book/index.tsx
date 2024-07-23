@@ -34,7 +34,14 @@ import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { infantRoadToHealthModelSchema } from './infant-road-to-health';
 import { InfantModelInput } from '@/../../../packages/graphql/lib';
 
-const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
+const acceptedFormats = ['jpg', 'pdf', 'jpeg', 'png', 'heic', 'heif'];
+const acceptedMimeFormats = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/heic',
+  'image/heif',
+];
 
 export const RoadToHeathBookStep = ({
   infant,
@@ -356,6 +363,7 @@ export const RoadToHeathBookStep = ({
         stretch
       >
         <PhotoPrompt
+          acceptedMimeFormats={acceptedMimeFormats}
           title="Road to Health Book, page ii"
           hideEmojiOption
           onClose={() => setPhotoActionBarVisible(false)}

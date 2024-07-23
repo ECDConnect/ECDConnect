@@ -18,7 +18,7 @@ export const DrugOrAlcoholUseStep = ({
 }: DynamicFormProps) => {
   const appDispatch = useAppDispatch();
 
-  const visitSection = 'Drug or alcohol use';
+  const visitSection = 'Substance Abuse';
   const name = mother?.user?.firstName;
 
   const getVideo = useCallback(async () => {

@@ -1,6 +1,6 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -14,15 +14,11 @@ using ECDLink.Core.Extensions;
 using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
 using HotChocolate;
 using EcdLink.Api.CoreApi.Managers;
-using ECDLink.DataAccessLayer.Entities;
-using Microsoft.AspNetCore.Identity;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.DataAccessLayer.Hierarchy;
-using DinkToPdf;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
-using System.Threading.Tasks;
 using ECDLink.DataAccessLayer.Managers;
 using DinkToPdf.Contracts;
 
@@ -65,7 +61,7 @@ namespace ECDLink.Core.Services
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);       
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
@@ -91,78 +87,15 @@ namespace ECDLink.Core.Services
         }
         #endregion
 
-        #region Statement Queries
-
-        public List<StatementsIncomeStatement> GetAllStatementsIncomeStatement(string userId, int year, int month)
+        public StatementsIncomeStatement GetStatement(Guid statementId)
         {
-            var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            var statements = statementRepo.GetAll()
+            var statement = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId == Guid.Parse(userId) && x.Year.Equals(year))
-                .ToList();
+                .Where(x => x.Id == statementId)
+                .FirstOrDefault();
 
-            if (statements.Any())
-            {
-                //check month
-                if (statements.Where(x => x.Month >= month).Count() > 0)
-                    return statements.Where(x => x.Month >= month).ToList();
-                else
-                    return statements;
-            }
-            else return new List<StatementsIncomeStatement>();
-        }
-
-        public List<StatementReport> GetStatementLinesToReport(string userId, int year, int month)
-        {
-            var submittedStatements = GetAllStatementsIncomeStatement(userId, year, month);
-            List<StatementReport> statements = new List<StatementReport>();
-            //get income
-            List<StatementReport> incomes = GetAllStatementIncome(userId, submittedStatements.FirstOrDefault().Id.ToString());
-
-            //get expenses
-            List<StatementReport> expenses = GetAllStatementExpenses(userId, submittedStatements.FirstOrDefault().Id.ToString());
-
-            statements.AddRange(incomes);
-            statements.AddRange(expenses);
-
-            return statements;
-        }
-
-        private List<StatementReport> GetAllStatementExpenses(string userId, string statementId)
-        {
-            List<StatementReport> reportData = new List<StatementReport>();
-            // Only return types linked to expenses for params
-            var report =
-            (
-                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => y.UserId == Guid.Parse(userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
-                join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
-                select new { statementExpenseType.Description, statementsExpenses.Amount }
-            ).ToList();           
-            foreach ( var statement in report )
-            {
-                reportData.Add(new StatementReport() { StatementLine = statement.Description, Value = statement.Amount, StatementType = "Expenses" });
-            }
-
-            return reportData;
-        }
-
-        private List<StatementReport> GetAllStatementIncome(string userId, string statementId)
-        {
-            List<StatementReport> reportData = new List<StatementReport>();
-            // Only return types linked to income for params
-            var report =
-            (
-                from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => y.UserId == Guid.Parse(userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
-                join StatementsIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on StatementsIncome.IncomeTypeId equals StatementsIncomeType.Id.ToString()
-                select new { StatementsIncomeType.Description, StatementsIncome.Amount }
-            ).ToList();
-            foreach (var statement in report)
-            {
-                reportData.Add(new StatementReport() { StatementLine = statement.Description, Value = statement.Amount, StatementType = "Income" });
-            }
-
-            return reportData;
+            return statement;
         }
 
         /// <summary>
@@ -172,12 +105,12 @@ namespace ECDLink.Core.Services
         /// <param name="startDate"></param>
         /// <param name="endDate">End date can be ommitted to get everything from the start date</param>
         /// <returns></returns>
-        public List<StatementsIncomeStatement> GetStatements(string userId, DateTime startDate, DateTime? endDate = null)
+        public List<StatementsIncomeStatement> GetStatements(Guid userId, DateTime startDate, DateTime? endDate = null)
         {
             var statementsQuery = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId == Guid.Parse(userId) && 
+                .Where(x => x.UserId == userId &&
                     (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
 
             if (endDate.HasValue)
@@ -188,297 +121,215 @@ namespace ECDLink.Core.Services
             return statementsQuery.ToList();
         }
 
-        /// <summary>
-        /// Gets all income items not yet linked to a statement
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        public List<StatementsIncome> GetUnsubmittedIncomeItems(string userId)
+        public StatementsIncomeStatement CreateStatement(Guid userId, IncomeStatementModel input)
         {
-            var incomeQuery = _statementsIncomeRepo.GetAll()
-                .Where(x => x.UserId == Guid.Parse(userId) && x.StatementsIncomeStatementId == null);
-
-            return incomeQuery.ToList();
-        }
-
-        /// <summary>
-        /// Gets all expense items not yet linked to a balance sheet
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        public List<StatementsExpenses> GetUnsubmittedExpenseItems(string userId)
-        {
-            var expenseQuery = _statementsExpensesRepo.GetAll()
-                .Where(x => x.UserId == Guid.Parse(userId) && x.StatementsIncomeStatementId == null);
-
-            return expenseQuery.ToList();
-        }
-
-        #endregion
-
-        #region Statement Mutations
-
-        public StatementsIncome UpdateIncome(StatementsIncome model)
-        {
-            var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
-
-            double incomeAmount = Math.Round(model.Amount, 2);
-            model.Amount = incomeAmount;
-
-            var existingIncomeItem = incomeRepo.GetById(model.Id);
-            if (existingIncomeItem == null)
+            var newStatement = new StatementsIncomeStatement
             {
-                //validity duplication check
-                var incomeCheck = incomeRepo.GetAll().Where(x => x.Amount.Equals(model.Amount) && x.DateReceived.Equals(model.DateReceived) && x.IncomeTypeId.Equals(model.IncomeTypeId) && x.PayTypeId.Equals(model.PayTypeId) && x.UserId.Equals(model.UserId) && x.ChildUserId.Equals(model.ChildUserId)).OrderBy(x => x.Id).FirstOrDefault();
-                if (incomeCheck != null)
+                Id = input.Id,
+                UserId = userId,
+                Month = input.Month,
+                Year = input.Year,
+                Downloaded = input.Downloaded,
+                IncomeItems = input.IncomeItems.Select(x => new StatementsIncome
                 {
-                    return incomeCheck;
-                }
+                    Id = x.Id,
+                    Amount = x.Amount,
+                    NumberOfChildrenCovered = x.NumberOfChildrenCovered,
+                    PhotoProof = x.PhotoProof,
+                    ChildUserId = x.ChildUserId,
+                    DateReceived = x.DateReceived,
+                    IncomeTypeId = x.IncomeTypeId,
+                    Notes = x.Notes,
+                    PayTypeId = x.PayTypeId,
+                    Description = x.Description
 
-                model.Submitted = false;
-                model.StatementsIncomeStatementId = null;
-                incomeRepo.Insert(model);
-                return model;
-            }
-            else
-            {
-                if (!existingIncomeItem.Submitted && !existingIncomeItem.StatementsIncomeStatementId.HasValue)//once submitted, no further updates can be made
+                }).ToList(),
+                ExpenseItems = input.ExpenseItems.Select(x => new StatementsExpenses
                 {
-                    existingIncomeItem.Amount = model.Amount;
-                    existingIncomeItem.AmountExpected = model.AmountExpected;
-                    existingIncomeItem.ChildCoverAmount = model.ChildCoverAmount;
-                    existingIncomeItem.PhotoProof = model.PhotoProof;
-                    existingIncomeItem.UpdatedDate = DateTime.Now;
-                    existingIncomeItem.UpdatedBy = _applicationUserId.ToString();
-                    existingIncomeItem.ChildUserId = model.ChildUserId;
-                    existingIncomeItem.ContributionTypeId = model.ContributionTypeId;
-                    existingIncomeItem.Description = model.Description;
-                    existingIncomeItem.DateReceived = model.DateReceived;
-                    existingIncomeItem.FeeTypeId = model.FeeTypeId;
-                    existingIncomeItem.IncomeTypeId = model.IncomeTypeId;
-                    existingIncomeItem.Notes = model.Notes;
-                    existingIncomeItem.PayTypeId = model.PayTypeId;
-
-                    incomeRepo.Update(existingIncomeItem);
-                    return existingIncomeItem;
-                }
-                else
-                {
-                    return existingIncomeItem;
-                }
-            }
-        }
-
-        public StatementsExpenses UpdateExpense(StatementsExpenses model)
-        {
-            var expenseRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
-
-            double expenseAmount = Math.Round(model.Amount, 2);
-            model.Amount = expenseAmount;
-
-            var exisitingExpenseItem = expenseRepo.GetById(model.Id);
-            if (exisitingExpenseItem == null)
-            {
-                //validity duplication check
-                var expenseCheck = expenseRepo.GetAll().Where(x => x.Amount.Equals(model.Amount) && x.DatePaid.Equals(model.DatePaid) && x.ExpenseTypeId.Equals(model.ExpenseTypeId)).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (expenseCheck != null)
-                {
-                    return expenseCheck;
-                }
-
-                model.Submitted = false;
-                model.StatementsIncomeStatementId = null;
-                expenseRepo.Insert(model);
-                return model;
-            }
-            else
-            {
-                if (!exisitingExpenseItem.Submitted && !exisitingExpenseItem.StatementsIncomeStatementId.HasValue)//once submitted, no further updates can be made
-                {
-                    exisitingExpenseItem.Amount = model.Amount;
-                    exisitingExpenseItem.DatePaid = model.DatePaid;
-                    exisitingExpenseItem.PhotoProof = model.PhotoProof;
-                    exisitingExpenseItem.Description = model.Description;
-                    exisitingExpenseItem.ExpenseTypeId = model.ExpenseTypeId;
-                    exisitingExpenseItem.Notes = model.Notes;
-                    exisitingExpenseItem.UpdatedBy = model.UpdatedBy;
-                    exisitingExpenseItem.UpdatedDate = DateTime.Now;
-
-                    expenseRepo.Update(exisitingExpenseItem);
-                    return model;
-                }
-                else
-                {
-                    return exisitingExpenseItem;
-                }
-            }
-        }
-
-        public StatementsStartupSupport UpdateStartupSupport(StatementsStartupSupport model)
-        {
-            var startupRepo = _repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
-            StatementsStartupSupport supportEntry = startupRepo.GetById(model.Id);
-            if (supportEntry != null)
-            {
-                startupRepo.Update(model);
-            }
-            else
-            {
-                startupRepo.Insert(model);
-            }
-            return null;
-
-        }
-
-        public bool AutoSubmitStatement(string userId, int year, int month)
-        {
-            var incomeItems = _statementsIncomeRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
-            var expenseItems = _statementsExpensesRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
-
-            var statement = SubmitMonthlyStatement(month, year, userId, incomeItems, expenseItems, true);
-
-            return statement != null;
-        }
-
-        public StatementsIncomeStatement SubmitMonthlyStatement(int month, int year, string userId, IEnumerable<Guid> incomeItemIds, IEnumerable<Guid> expenseItemIds, bool autoSubmitted = false)
-        {
-            var incomeItems = _statementsIncomeRepo.GetAll().Where(x => incomeItemIds.Contains(x.Id)).ToList();
-            var expenseItems = _statementsExpensesRepo.GetAll().Where(x => expenseItemIds.Contains(x.Id)).ToList();
-
-            return SubmitMonthlyStatement(month, year, userId, incomeItems, expenseItems, autoSubmitted);
-        }
-
-        private StatementsIncomeStatement SubmitMonthlyStatement(int month, int year, string userId, IEnumerable<StatementsIncome> incomeItems, IEnumerable<StatementsExpenses> expenseItems, bool autoSubmitted = false)
-        {
-            // Get income items 
-            var incomeTotal = incomeItems.Sum(x => x.Amount);
-            var expenseTotal = expenseItems.Sum(x => x.Amount);
-
-            // Set submitted fields on income and expenses
-            var newId = Guid.NewGuid();
-            foreach (var income in incomeItems)
-            {
-                income.Submitted = true;
-                income.StatementsIncomeStatementId = newId;
-            }
-
-            foreach (var expense in expenseItems)
-            {
-                expense.Submitted = true;
-                expense.StatementsIncomeStatementId = newId;
-            }
-
-            var submittedStatement = new StatementsIncomeStatement()
-            {
-                Id = newId,
-                IsActive = true,
-                AutoSubmitted = autoSubmitted,
-                Balance = Math.Round(incomeTotal - expenseTotal, 2),
-                ExpenseTotal = expenseTotal,
-                IncomeTotal = incomeTotal,
-                Month = month,
-                Year = year,
-                Notes = $"{(autoSubmitted ? "Auto" : "Manual")} Monthly Statement Submission",
-                Period = "Monthly",
-                Submitted = true,
-                SubmittedDate = DateTime.Now,
-                UserId = Guid.Parse(userId),
-                UpdatedBy = _applicationUserId.ToString(),
-                UpdatedDate = DateTime.Now,
-                InsertedDate = DateTime.Now,
-                IncomeItems = incomeItems.ToList(),
-                ExpenseItems = expenseItems.ToList(),
+                    Id = x.Id,
+                    Amount = x.Amount,
+                    DatePaid = x.DatePaid,
+                    PhotoProof = x.PhotoProof,
+                    ExpenseTypeId = x.ExpenseTypeId,
+                    Notes = x.Notes
+                }).ToList(),
             };
 
-            _statementsRepo.Insert(submittedStatement);
+            return _statementsRepo.Insert(newStatement);
+        }
 
-            if (!autoSubmitted)
+        public StatementsIncomeStatement UpdateStatement(IncomeStatementModel input)
+        {
+            var exisitingStatement = GetStatement(input.Id);
+
+            if (exisitingStatement == null)
             {
-                _pointsEngineService.CalculateIncomeStatements(userId, submittedStatement);
+                throw new ArgumentException("Statement not found");
             }
 
-            // try generating autosubmit doc 
-            // TODO this sometimes fails unpredictably, most likely saving to blob store, investigate
-            try
+            // set downloaded field
+            if (input.Downloaded != exisitingStatement.Downloaded)
             {
-                if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
-                {
-                    var task = Task.Run(() => CreateIncomeStatementPDFDocument(userId, submittedStatement));
+                exisitingStatement.Downloaded = input.Downloaded;
+                _statementsRepo.Update(exisitingStatement);
+            }
 
-                    // Force a timeout on the PDF creation which sometimes gets stuck
-                    if (task.Wait(TimeSpan.FromSeconds(10)))
-                    {
-                        if (task.Result != null)
-                        {
-                            submittedStatement.RelatedDocumentId = task.Result.Id.ToString();
-                            _statementsRepo.Update(submittedStatement);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("PDF creation timed out");
-                    }
+            // If not downloaded, update income/expenses
+
+            #region Update Income Items
+
+            // Deletes
+            var removedItems = exisitingStatement.IncomeItems.Where(x => !input.IncomeItems.Any(y => y.Id == x.Id)).ToList();
+            foreach (var item in removedItems)
+            {
+                _statementsIncomeRepo.Delete(item.Id);
+            }
+
+            // Updates
+            foreach (var item in exisitingStatement.IncomeItems)
+            {
+                var inputItem = input.IncomeItems.FirstOrDefault(x => x.Id == item.Id);
+                if (inputItem == null)
+                {
+                    continue;
+                }
+
+                var updated = false;
+
+                if (item.Amount != inputItem.Amount)
+                {
+                    item.Amount = inputItem.Amount;
+                    updated = true;
+                }
+                if (item.Notes != inputItem.Notes)
+                {
+                    item.Notes = inputItem.Notes;
+                    updated = true;
+                }
+                if (item.NumberOfChildrenCovered != inputItem.NumberOfChildrenCovered)
+                {
+                    item.NumberOfChildrenCovered = inputItem.NumberOfChildrenCovered;
+                    updated = true;
+                }
+                if (item.PhotoProof != inputItem.PhotoProof)
+                {
+                    item.PhotoProof = inputItem.PhotoProof;
+                    updated = true;
+                }
+                if (item.ChildUserId != inputItem.ChildUserId)
+                {
+                    item.ChildUserId = inputItem.ChildUserId;
+                    updated = true;
+                }
+                if (item.DateReceived != inputItem.DateReceived)
+                {
+                    item.DateReceived = inputItem.DateReceived;
+                    updated = true;
+                }
+                if (item.PayTypeId != inputItem.PayTypeId)
+                {
+                    item.PayTypeId = inputItem.PayTypeId;
+                    updated = true;
+                }
+                if (item.Description != inputItem.Description)
+                {
+                    item.Description = inputItem.Description;
+                    updated = true;
+                }
+
+                if (updated)
+                {
+                    _statementsIncomeRepo.Update(item);
                 }
             }
-            catch(Exception ex)
+
+            // Additions
+            var newItems = input.IncomeItems.Where(x => !exisitingStatement.IncomeItems.Any(y => y.Id == x.Id)).ToList();
+            foreach (var newItem in newItems)
             {
-                Console.WriteLine(ex.Message);
-            }
-
-            return submittedStatement;
-        }
-
-        // TODO - investigate what this is doing and if used. It might just update all statements to autosubmitted and otherwise just sets one date on them
-        public void SubmitAnnualStatement(string userId, int year, bool autoSubmitted = false)
-        {
-            //annually needs to look at the entire years statements and sumbit all these for only that year.
-            var annualRows = _statementsRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.AnnualSubmittedDate == null && x.SubmittedDate.Year.Equals(year)).ToList();
-            foreach (var row in annualRows)
-            {
-                //lock all entries
-                row.AnnualSubmittedDate = DateTime.Now;
-                row.AutoSubmitted = autoSubmitted;
-                _statementsRepo.Update(row);
-            }
-        }
-
-        /// <summary>
-        /// TODO - we can update this to take in a year/month and check users have submitted that statement
-        /// We don't really need to return a date (just a userId list) since we are only checking the last period
-        /// </summary>
-        /// <returns>List of users who have not submitted a statement for the last submit window</returns>
-        public Dictionary<string, DateTime> GetUnsubmittedStatements()
-        {
-            var submitPeriod = GetStatementPeriod();
-            var statementMonth = submitPeriod.Start.Month;
-
-            var eligablePractitioners = _practitionerRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).Select(x => x.UserId.ToString()).ToList();
-            var usersWithSubmittedStatement = _statementsRepo.GetAll().Where(x => x.Month == statementMonth).Select(x => x.UserId.ToString()).ToList();
-
-            var allDuePractitioners = new Dictionary<string, DateTime>();
-            foreach (var userId in eligablePractitioners)
-            {
-                if (!usersWithSubmittedStatement.Any(x => x == userId))
+                _statementsIncomeRepo.Insert(new StatementsIncome
                 {
-                    allDuePractitioners.Add(userId, submitPeriod.Start);
+                    Id = newItem.Id,
+                    Amount = newItem.Amount,
+                    NumberOfChildrenCovered = newItem.NumberOfChildrenCovered,
+                    PhotoProof = newItem.PhotoProof,
+                    ChildUserId = newItem.ChildUserId,
+                    DateReceived = newItem.DateReceived,
+                    IncomeTypeId = newItem.IncomeTypeId,
+                    Notes = newItem.Notes,
+                    PayTypeId = newItem.PayTypeId,
+                    StatementsIncomeStatementId = exisitingStatement.Id
+                });
+            }
+
+            #endregion
+
+            #region Update Expense Items
+            // Deletes
+            var removedExpenses = exisitingStatement.ExpenseItems.Where(x => input.ExpenseItems.Any(y => y.Id == x.Id)).ToList();
+            foreach (var item in removedItems)
+            {
+                _statementsExpensesRepo.Delete(item.Id);
+            }
+
+            // Updates
+            foreach (var item in exisitingStatement.ExpenseItems)
+            {
+                var inputItem = input.ExpenseItems.FirstOrDefault(x => x.Id == item.Id);
+                if (inputItem == null)
+                {
+                    continue;
+                }
+
+                var updated = false;
+
+                if (item.Amount != inputItem.Amount)
+                {
+                    item.Amount = inputItem.Amount;
+                    updated = true;
+                }
+                if (item.Notes != inputItem.Notes)
+                {
+                    item.Notes = inputItem.Notes;
+                    updated = true;
+                }
+                if (item.PhotoProof != inputItem.PhotoProof)
+                {
+                    item.PhotoProof = inputItem.PhotoProof;
+                    updated = true;
+                }
+                if (item.DatePaid.Date != inputItem.DatePaid.Date)
+                {
+                    item.DatePaid = inputItem.DatePaid;
+                    updated = true;
+                }
+
+                if (updated)
+                {
+                    _statementsExpensesRepo.Update(item);
                 }
             }
 
-            return allDuePractitioners;
+            // Additions
+            var newExpenses = input.ExpenseItems.Where(x => !exisitingStatement.ExpenseItems.Any(y => y.Id == x.Id)).ToList();
+            foreach (var newItem in newExpenses)
+            {
+                _statementsExpensesRepo.Insert(new StatementsExpenses
+                {
+                    Id = newItem.Id,
+                    Amount = newItem.Amount,
+                    PhotoProof = newItem.PhotoProof,
+                    Notes = newItem.Notes,
+                    ExpenseTypeId = newItem.ExpenseTypeId,
+                    DatePaid = newItem.DatePaid,
+                    StatementsIncomeStatementId = exisitingStatement.Id
+                });
+            }
+            #endregion
+
+
+            return exisitingStatement;
         }
-
-        public StatementsIncomeStatement UpdateUserContactStatusForStatement(Guid statementId)
-        {
-            StatementsIncomeStatement statement = _statementsRepo.GetById(statementId);
-
-            statement.ContactedByCoach = true;
-            statement.UpdatedBy = _applicationUserId.ToString();
-            statement.UpdatedDate = DateTime.Now;
-            return _statementsRepo.Update(statement);
-        }
-
-        #endregion
 
         #region PDF STUFF
 
@@ -762,27 +613,15 @@ namespace ECDLink.Core.Services
 
 
             // Preschool fees: Monetary contributions
-            var monetaryFeeIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == preschoolFeeId && x.ContributionTypeId == moneyId);
-            tables.Add(new IncomeExpensePDFTableModel {
+            var monetaryFeeIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == preschoolFeeId);
+            tables.Add(new IncomeExpensePDFTableModel
+            {
                 TableName = IncomeExpensePDF.MONETARY_CONTRIBUTIONS,
                 Type = IncomeExpensePDF.INCOME,
                 Headers = GetIncomePDFHeader(true, true, false, false, false),
                 Data = MapIncomeToPdfData(monetaryFeeIncome, childNamesById),
                 Total = monetaryFeeIncome.Select(x => x.Amount).Sum(),
             });
-
-            // Preschool fees: Non-monetary contributions
-            var nonMonetaryFeeIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == preschoolFeeId && x.ContributionTypeId != moneyId);
-            if (nonMonetaryFeeIncome.Any())
-            {
-                tables.Add(new IncomeExpensePDFTableModel
-                {
-                    TableName = IncomeExpensePDF.NON_MONETARY_CONTRIBUTIONS,
-                    Type = IncomeExpensePDF.INCOME,
-                    Headers = GetIncomePDFHeader(true, false, false, false, false),
-                    Data = MapIncomeToPdfData(nonMonetaryFeeIncome, childNamesById),
-                });
-            }
 
             // Subsidies, donations, contributions
             var subsidyAndDonationIncome = statement.IncomeItems.Where(x => x.IncomeTypeId != preschoolFeeId && x.IncomeTypeId != otherId);
@@ -815,6 +654,19 @@ namespace ECDLink.Core.Services
             return tables;
         }
 
+        public StatementsIncomeStatement UpdateUserContactStatusForStatement(Guid statementId)
+        {
+            StatementsIncomeStatement statement = _statementsRepo.GetById(statementId);
+
+            if (statement != null)
+            {
+                statement.ContactedByCoach = true;
+                statement.UpdatedBy = _applicationUserId.ToString();
+                statement.UpdatedDate = DateTime.Now;
+                return _statementsRepo.Update(statement);
+            }
+            return null;
+        }
         private List<IncomeExpensePDFHeaderModel> getExpensePDFHeader()
         {
             List<IncomeExpensePDFHeaderModel> headers = new List<IncomeExpensePDFHeaderModel>();
@@ -923,8 +775,8 @@ namespace ECDLink.Core.Services
                 result.Date = income.DateReceived;
                 result.Amount = income.Amount;
                 result.PhotoProof = income.PhotoProof;
-                result.Child = income.ChildUserId.HasValue && childNamesById.ContainsKey(income.ChildUserId.ToString()) 
-                    ? childNamesById[income.ChildUserId.ToString()] 
+                result.Child = income.ChildUserId.HasValue && childNamesById.ContainsKey(income.ChildUserId.ToString())
+                    ? childNamesById[income.ChildUserId.ToString()]
                     : "Unknown";
                 results.Add(result);
             }

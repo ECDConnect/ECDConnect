@@ -99,10 +99,10 @@ export const Step17ReAccreditation = ({
     classroomsSelectors.getClassroomGroupLearners
   );
 
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
-  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const classroomGroups = allClassroomGroups?.filter(
     (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
@@ -117,11 +117,9 @@ export const Step17ReAccreditation = ({
     | ClassroomGroupDto[]
     | undefined;
 
-  const currentClassProgrammes = classProgrammes?.filter((el) => {
-    return currentClassroomGroups?.some((f) => {
-      return f?.id === el?.classroomGroupId;
-    });
-  });
+  const currentClassProgrammes = currentClassroomGroups
+    ?.flatMap((x) => x.classProgrammes)
+    .filter((x) => x.isActive);
 
   const days = currentClassProgrammes?.map((item) => item?.meetingDay).sort();
 
@@ -168,18 +166,13 @@ export const Step17ReAccreditation = ({
       return;
 
     const filteredChildren = [];
-    const _allLearners = allLearners?.filter(
-      (x) => !Boolean(x?.stoppedAttendance)
-    );
 
-    for (const learner of _allLearners) {
-      if (
-        !currentClassroomGroups.some(
-          (item) => item?.id === learner?.classroomGroupId
-        )
-      )
-        continue;
-      const childUser = children?.find((y) => y?.userId === learner?.userId);
+    for (const learner of currentClassroomGroups.flatMap((cg) => cg.learners)) {
+      if (!learner.isActive || learner.stoppedAttendance) continue;
+
+      const childUser = children?.find(
+        (y) => y?.userId === learner?.childUserId
+      );
 
       if (childUser) {
         filteredChildren.push(childUser);
@@ -312,7 +305,7 @@ export const Step17ReAccreditation = ({
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${currentClassroomGroups?.[0]?.programmeType?.description}`
+              ? `classes at ${classroom?.name}`
               : `classes assigned to ${name}`
           }
         />

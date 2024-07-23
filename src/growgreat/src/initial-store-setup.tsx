@@ -206,12 +206,12 @@ function InitialStoreSetup(props: Props) {
 
   async function initAdditionalStoreSetup() {
     const promises = [
-      appDispatch(notesThunkActions.getNotes({})).unwrap(),
       appDispatch(motherThunkActions.getMothers({})),
       appDispatch(infantThunkActions.getInfants({})),
       appDispatch(userThunkActions.getUser({})).unwrap(),
       appDispatch(userThunkActions.getUserConsents({})).unwrap(),
       appDispatch(documentThunkActions.getDocumentsForHCW()).unwrap(),
+      appDispatch(notesThunkActions.getNotes({})).unwrap(),
       appDispatch(
         calendarThunkActions.getCalendarEvents({
           start: subMonths(

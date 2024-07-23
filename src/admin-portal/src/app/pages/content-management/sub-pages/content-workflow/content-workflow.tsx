@@ -28,8 +28,6 @@ export interface ContentWorkflowProps {
   savedContent: () => void;
   choosedSectionTitle?: string;
   setSearchValue?: (item: string) => void;
-  natalType?: number;
-  postNatalType?: ContentTypeDto;
   selectedTab?: number;
 }
 
@@ -42,12 +40,10 @@ export default function ContentWorkflow({
   savedContent,
   choosedSectionTitle,
   setSearchValue,
-  natalType,
-  postNatalType,
   selectedTab,
 }: ContentWorkflowProps) {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string>(
-    contentView.languageId
+    contentView?.languageId
   );
 
   const [viewKey, setViewKey] = useState<number>(Math.random());
@@ -72,37 +68,6 @@ export default function ContentWorkflow({
       contentView &&
       contentView.content
     ) {
-      if (postNatalType) {
-        const c = postNatalType.content.find(
-          (x) =>
-            x.id === contentView.content.id ||
-            Number(x?.id) === Number(contentView.content?.childId)
-        );
-        setCurrentContent(c);
-        setViewKey(Math.random());
-        return;
-      }
-
-      const c = contentType.content.find(
-        (x) =>
-          x.id === contentView.content.id ||
-          Number(x?.id) === Number(contentView.content?.childId)
-      );
-
-      if (c) {
-        setCurrentContent(c);
-        setViewKey(Math.random());
-      }
-    }
-  }, [contentType, contentView, postNatalType]);
-
-  useEffect(() => {
-    if (
-      contentType &&
-      contentType.content &&
-      contentView &&
-      contentView.content
-    ) {
       const c = contentType.content.find(
         (x) =>
           x.id === contentView.content.id ||
@@ -114,17 +79,6 @@ export default function ContentWorkflow({
       }
     }
   }, [contentType, contentView]);
-
-  const checkIfLanguageTranslated = (languageId: string) => {
-    let translated = false;
-    if (currentContent) {
-      translated = currentContent.contentValues.some(
-        (x) => x.localeId === languageId
-      );
-    }
-
-    return translated;
-  };
 
   const getOrderedContentValues = (contentValues: ContentValueDto[]) => {
     const copy: ContentValueDto[] = Object.assign([], contentValues);
@@ -307,9 +261,7 @@ export default function ContentWorkflow({
                             contentValues={getOrderedContentValues(
                               currentContent?.contentValues
                             )}
-                            contentType={
-                              postNatalType ? postNatalType : contentType
-                            }
+                            contentType={contentType}
                             cancelEdit={() => goBack()}
                             savedContent={savedContent}
                             defaultLanguageId={defaultLanguageId}
@@ -317,8 +269,7 @@ export default function ContentWorkflow({
                             choosedSectionTitle={choosedSectionTitle}
                             setSearchValue={setSearchValue}
                             contentView={contentView}
-                            postNatalType={postNatalType}
-                            selectedTab={selectedTab}
+                            languages={languages}
                           />
                         </div>
                       </div>
@@ -335,7 +286,7 @@ export default function ContentWorkflow({
               languages={languages}
               selectedLanguageId={selectedLanguageId}
               defaultLanguageId={defaultLanguageId}
-              contentType={postNatalType ? postNatalType : contentType}
+              contentType={contentType}
               cancelCompare={() => setIsCompareMode(!isCompareMode)}
               savedContent={savedContent}
               choosedSectionTitle={choosedSectionTitle}

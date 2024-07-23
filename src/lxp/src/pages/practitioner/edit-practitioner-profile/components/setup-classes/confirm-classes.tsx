@@ -1,7 +1,8 @@
+import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
 import { practitionerSelectors } from '@/store/practitioner';
 import { getWeekdayValue } from '@/utils/practitioner/playgroups-utils';
-import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
+import { ClassProgrammeDto } from '@ecdlink/core';
 import {
   ActionListDataItem,
   Button,
@@ -34,6 +35,7 @@ export const ConfirmClasses = ({
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
   );
+
   const formatMeetingDays = (programmes?: ClassProgrammeDto[]) => {
     const meetingDays = programmes
       ?.map((programme) => programme.meetingDay)
@@ -60,13 +62,13 @@ export const ConfirmClasses = ({
     const list = [];
     for (const classroomGroup of classroomGroups) {
       const current =
-        currentPractitioner?.userId === classroomGroup.practitionerId
-          ? currentPractitioner?.user?.firstName
+        currentPractitioner?.userId === classroomGroup.userId
+          ? currentPractitioner?.user?.firstName ||
+            currentPractitioner?.user?.userName
           : 'Practitioner';
       const _practitioner =
-        practitioners
-          ?.filter((a) => a.userId === classroomGroup?.practitionerId)
-          .at(0)?.firstName || current;
+        practitioners?.filter((a) => a.userId === classroomGroup?.userId).at(0)
+          ?.firstName || current;
 
       list.push({
         title: classroomGroup.name,
@@ -79,10 +81,10 @@ export const ConfirmClasses = ({
         onActionClick: () => {
           editClass({
             id: classroomGroup?.id || '',
-            classroomId: classroomGroup?.classroom?.id,
+            classroomId: classroomGroup.classroomId,
             name: classroomGroup.name,
             meetEveryday: classroomGroup.classProgrammes?.length === 5,
-            practitionerId: classroomGroup.practitionerId ?? '',
+            practitionerId: classroomGroup.userId ?? '',
             meetingDays:
               classroomGroup.classProgrammes?.map(
                 (a: { meetingDay: any }) => a.meetingDay

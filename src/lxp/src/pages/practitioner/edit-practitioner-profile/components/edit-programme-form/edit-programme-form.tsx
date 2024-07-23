@@ -72,26 +72,6 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
       )}
 
       <div className="space-y-4">
-        <div className={'w-full'}>
-          <label className={styles.label}>
-            Are you the principal/owner of your ECD programme?
-          </label>
-          <div className="mt-1">
-            <ButtonGroup<boolean>
-              options={yesNoOptions}
-              onOptionSelected={(value: boolean | boolean[]) =>
-                setProgrammeFormValue('isPrincipalOrLeader', value as boolean, {
-                  shouldValidate: true,
-                })
-              }
-              selectedOptions={[getProgrammeFormValues().isPrincipalOrLeader]}
-              color="secondary"
-              type={ButtonGroupTypes.Button}
-              className={'w-full'}
-            />
-          </div>
-        </div>
-
         {isPrincipalOrLeader === true && (
           <>
             <FormInput<EditProgrammeModel>

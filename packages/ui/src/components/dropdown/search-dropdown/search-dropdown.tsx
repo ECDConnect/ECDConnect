@@ -27,9 +27,12 @@ export interface SearchDropDownProps<T> extends ComponentBaseProps {
   color?: Colours;
   bgColor?: Colours;
   menuItemClassName?: string;
+  menuItemStyle?: React.CSSProperties;
   displayMenuOverlay?: boolean;
   overlayTopOffset?: string;
+  isFullWidth?: boolean;
   onChange?: (item: SearchDropDownOption<T>[]) => void;
+  preventCloseOnClick?: boolean;
 }
 
 export function SearchDropDown<T>({
@@ -46,12 +49,16 @@ export function SearchDropDown<T>({
   className,
   displayMenuOverlay,
   menuItemClassName,
+  menuItemStyle,
   overlayTopOffset,
   color = 'primary',
   bgColor = 'white',
+  isFullWidth = true,
+  preventCloseOnClick,
 }: SearchDropDownProps<T>) {
   const [selectedLabel, setSelectedLabel] = useState('');
   const [touched, setTouched] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const isOptionSelected = (option: SearchDropDownOption<T>) => {
     const isInSelectedItems = selectedOptions.some((selectedOption) => {
@@ -83,7 +90,11 @@ export function SearchDropDown<T>({
     }
   };
 
-  const optionClicked = (option: SearchDropDownOption<T>) => {
+  const optionClicked = (
+    event: React.MouseEvent,
+    option: SearchDropDownOption<T>
+  ) => {
+    event.stopPropagation();
     if (option.disabled) return;
 
     if (!touched) {
@@ -142,7 +153,7 @@ export function SearchDropDown<T>({
   return (
     <div className={className}>
       {label && <label className={styles.label}>{label}</label>}
-      <Menu as="div" className={styles.menu}>
+      <Menu as="div" className={isFullWidth ? 'w-full' : ''}>
         {({ open }) => (
           <>
             <Menu.Button
@@ -158,6 +169,9 @@ export function SearchDropDown<T>({
                 )
               )}
               disabled={disabled}
+              onClick={() =>
+                isOpen === false ? setIsOpen(true) : setIsOpen(false)
+              }
             >
               <Typography
                 type={'help'}
@@ -175,7 +189,7 @@ export function SearchDropDown<T>({
             </Menu.Button>
 
             <Transition
-              show={open}
+              show={preventCloseOnClick ? isOpen : open}
               as={Fragment}
               enter={styles.enter}
               enterFrom={styles.enterFrom}
@@ -188,6 +202,11 @@ export function SearchDropDown<T>({
                 className={
                   displayMenuOverlay ? styles.overlay(overlayTopOffset) : ''
                 }
+                onClick={
+                  preventCloseOnClick
+                    ? (prevState) => setIsOpen(!prevState)
+                    : undefined
+                }
               >
                 <Menu.Items
                   className={classNames(
@@ -195,6 +214,7 @@ export function SearchDropDown<T>({
                     menuItemClassName,
                     displayMenuOverlay ? 'absolute' : ''
                   )}
+                  style={{ ...menuItemStyle }}
                 >
                   {info && (
                     <div className={styles.infoWrapper}>
@@ -222,7 +242,9 @@ export function SearchDropDown<T>({
                           <Menu.Item
                             key={`drop-down-menu-item-${index}`}
                             as="div"
-                            onClick={() => optionClicked(item)}
+                            onClick={(event: React.MouseEvent) =>
+                              optionClicked(event, item)
+                            }
                           >
                             <div className={styles.menuItem}>
                               {renderIcon(

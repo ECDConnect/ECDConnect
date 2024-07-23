@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Managers;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -37,7 +38,20 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
   [Service] INotificationService notificationService, string userId, string programmeName)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName } });
+            var replacements = new List<TagsReplacements>
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = programmeName
+                },
+                new TagsReplacements()
+                {
+                    FindValue = "ApplicationName",
+                    ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                }
+            };
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements);
         }
         public async Task<bool> SendDemotedAsPrincipalFAAProgrammeNotification(
 [Service] ApplicationUserManager userManager,
@@ -419,12 +433,13 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
                 ReplacementValue = traineeUserId
             });
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true, traineeFirstName, traineeUserId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachTraineeReadySmartspaceCheck, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),false, true, traineeFirstName,
+                new List<RelatedEntity> { new RelatedEntity(Guid.Parse(traineeUserId), "ApplicationUser") });
         }
 
         public async Task<bool> SendCoachVisitRequestedNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string practitionerFirstName)
+            [Service] ApplicationUserManager userManager,
+            [Service] INotificationService notificationService, string userId, string practitionerFirstName)
         {
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()

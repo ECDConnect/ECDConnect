@@ -17,7 +17,12 @@ export const generateEmptyPlaygroups = (
 ): EditPlaygroupModel[] => {
   const playGroups: EditPlaygroupModel[] = [];
   for (let i = 0; i < numberOfPlaygroups; i++) {
-    playGroups.push({ name: '', meetingDays: [], classroomGroupId: newGuid() });
+    playGroups.push({
+      name: '',
+      meetingDays: [],
+      classroomGroupId: newGuid(),
+      meetEveryday: false,
+    });
   }
   return playGroups;
 };
@@ -74,7 +79,8 @@ export const formatMeetingDays = (programmes?: ClassProgrammeDto[]) => {
     str = 'Every Weekday';
   } else {
     for (const meetingDay of meetingDays || []) {
-      const _day = getWeekdayValue(meetingDay).substring(0, 3);
+      const _day = getWeekdayValue(meetingDay)?.substring(0, 3);
+
       if (meetingDay === meetingDays?.at(-1)) {
         str = str.concat(_day);
       } else {

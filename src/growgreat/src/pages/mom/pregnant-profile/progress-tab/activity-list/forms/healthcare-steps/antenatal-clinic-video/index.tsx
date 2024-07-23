@@ -11,7 +11,7 @@ export const AntenatalClinicVideoStep = ({
   setEnableButton,
 }: DynamicFormProps) => {
   const name = mother?.user?.firstName;
-  const videoSection = 'Antenatal clinic video';
+  const videoSection = 'Antenatal Clinic';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -21,7 +21,7 @@ export const AntenatalClinicVideoStep = ({
     <>
       <Header
         customIcon={AntenatalCareSvg}
-        title="Antenatal clinic video"
+        title="Antenatal Clinic"
         backgroundColor="tertiary"
       />
       <div className="flex flex-col gap-4 p-4">

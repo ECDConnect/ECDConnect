@@ -13,7 +13,6 @@ import {
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { authSelectors } from '@/store/auth';
-import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
 import { WelcomePage } from '@/components/welcome-page';
 import { PractitionerService } from '@/services/PractitionerService';
 import {
@@ -24,7 +23,10 @@ import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@store';
 import { notificationActions } from '@/store/notifications';
 import { useNotificationService } from '@/hooks/useNotificationService';
-import { PractitionerSignature } from './components/practitioner-signature/practitioner-signature';
+import { PractitionerShareDetails } from './components/practitioner-share-details/practitioner-share-details';
+import { useTenant } from '@/hooks/useTenant';
+import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
+import { classroomsThunkActions } from '@/store/classroom';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -32,6 +34,10 @@ export const EditPractitionerProfile: React.FC = () => {
   const { theme } = useTheme();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
+
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
@@ -82,7 +88,7 @@ export const EditPractitionerProfile: React.FC = () => {
       setLabel('Welcome');
     } else {
       setLabel(
-        `step ${activeStep} of ${
+        `step ${activeStep - 1} of ${
           Object.values(EditPractitionerSteps).filter(Number).length
         }`
       );
@@ -104,7 +110,10 @@ export const EditPractitionerProfile: React.FC = () => {
           await new PractitionerService(
             userAuth.auth_token
           ).UpdatePractitionerRegistered(user.id, true);
-
+          if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+            history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+            return;
+          }
           await new PractitionerService(
             userAuth.auth_token
           ).UpdatePractitionerProgress(user.id, 2.0);
@@ -114,6 +123,9 @@ export const EditPractitionerProfile: React.FC = () => {
           practitionerThunkActions.getPractitionerByUserId({ userId: user.id })
         );
         appDispatch(practitionerThunkActions.getAllPractitioners({}));
+        appDispatch(
+          classroomsThunkActions.getClassroom({ overrideCache: true })
+        ).unwrap();
         stopService();
         history.push(ROUTES.ROOT);
       }
@@ -124,20 +136,21 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const steps = (step: EditPractitionerSteps) => {
     switch (step) {
+      case EditPractitionerSteps.SET_PRACTITIONER_DETAILS:
+        return (
+          <PractitionerShareDetails
+            onNext={() =>
+              setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER)
+            }
+          />
+        );
       case EditPractitionerSteps.SETUP_PRACTITIONER:
         return (
           <PractitionerSetup
             onSubmit={(form: PractitionerFormData) => {
               setFormData(form);
-              setActiveStep(EditPractitionerSteps.ADD_SIGNATURE);
+              setActiveStep(EditPractitionerSteps.ADD_PHOTO);
             }}
-          />
-        );
-
-      case EditPractitionerSteps.ADD_SIGNATURE:
-        return (
-          <PractitionerSignature
-            onSubmit={(e) => setActiveStep(EditPractitionerSteps.ADD_PHOTO)}
           />
         );
 
@@ -155,7 +168,9 @@ export const EditPractitionerProfile: React.FC = () => {
         return (
           <WelcomePage
             onNext={() =>
-              setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER)
+              isOpenAccess && !user?.firstName
+                ? setActiveStep(EditPractitionerSteps.SET_PRACTITIONER_DETAILS)
+                : setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER)
             }
           />
         );
@@ -175,7 +190,7 @@ export const EditPractitionerProfile: React.FC = () => {
           }
           actionButtons={[
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Exit',
               onClick: () => {
                 onSubmit();
@@ -186,12 +201,12 @@ export const EditPractitionerProfile: React.FC = () => {
               leadingIcon: 'LoginIcon',
             },
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Continue editing',
               onClick: () => {
                 onCancel();
               },
-              textColour: 'primary',
+              textColour: 'quatenary',
               type: 'outlined',
               leadingIcon: 'PencilIcon',
             },
@@ -217,27 +232,19 @@ export const EditPractitionerProfile: React.FC = () => {
     <>
       <IonContent scrollY={true}>
         <BannerWrapper
-          size={
-            activeStep === EditPractitionerSteps.WELCOME ? 'large' : 'medium'
-          }
+          size={'large'}
           renderBorder={true}
-          showBackground={activeStep === EditPractitionerSteps.WELCOME}
+          showBackground={true}
           title={'Edit Profile'}
           subTitle={label}
           onBack={onBack}
           onClose={exitPrompt}
           backgroundColour={'white'}
-          className={
-            activeStep === EditPractitionerSteps.WELCOME ? 'relative' : ''
-          }
-          backgroundUrl={
-            activeStep === EditPractitionerSteps.WELCOME
-              ? theme?.images.graphicOverlayUrl
-              : ''
-          }
+          className={'relative'}
+          backgroundUrl={theme?.images.graphicOverlayUrl}
           displayOffline={!isOnline}
         >
-          <div className={'px-4'}>{steps(activeStep)}</div>
+          <div className={'h-screen px-4'}>{steps(activeStep)}</div>
         </BannerWrapper>
       </IonContent>
     </>

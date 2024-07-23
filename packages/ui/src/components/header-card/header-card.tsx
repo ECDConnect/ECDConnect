@@ -56,15 +56,6 @@ export const HeaderCard: React.FC<HeaderCardProps> = ({ slide, className }) => {
         />
       </div>
       <div className={styles.cardInformation}>
-        {slide.status && (
-          <StatusChip
-            backgroundColour={palette.backgroundColour}
-            textColour={palette.textColour}
-            borderColour={palette.borderColour}
-            text={getChipStatusText(slide.status)}
-            className={styles.statusChip}
-          />
-        )}
         <div className={styles.cardTitle}>{slide.title}</div>
         <div className={styles.cardText}>{slide.text}</div>
       </div>

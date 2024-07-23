@@ -3,10 +3,11 @@ import {
   Button,
   Typography,
   DialogPosition,
-  renderIcon,
   Alert,
   Card,
   RoundIcon,
+  Divider,
+  FADButton,
 } from '@ecdlink/ui';
 import { DateFormats } from '../../../../../../constants/Dates';
 import {
@@ -15,7 +16,7 @@ import {
   getProgrammeWeeks,
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { DailyRoutineProps } from './daily-routine.types';
 import { useSelector } from 'react-redux';
 import { programmeRoutineSelectors } from '@store/content/programme-routine';
@@ -48,33 +49,74 @@ import {
 } from '@/store/content/programme-theme';
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
-import { isSameWeek, isWeekend, nextMonday } from 'date-fns';
+import {
+  addWeeks,
+  isSameWeek,
+  isThisWeek,
+  isWeekend,
+  nextMonday,
+  parseISO,
+} from 'date-fns';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 import { userSelectors } from '@/store/user';
-import format from 'date-fns/format';
 import { ReactComponent as NoProgressEmoticon } from '@/assets/ECD_Connect_emoji4.svg';
+import { ProgrammeThemeRouteState } from '../../../programme-theme/programme-theme.types';
+import { ProgrammeDashboardRouteParams } from '../../programme-dashboard.types';
+import { useAppContext } from '@/walkthrougContext';
+import {
+  dummyDailyProgramme,
+  dummyRoutineItems,
+} from '../../walkthrough/dummy-content';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { ro } from 'date-fns/locale';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
-  currentDailyProgramme,
+  currentDailyProgramme: dailyProgramme,
   setSelectedDate,
   selectedDate,
 }) => {
+  const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
+
+  const { setState, state } = useAppContext();
+  const nextWalkthroughStep = (stepNr: number) => {
+    setState({ stepIndex: stepNr });
+  };
+  const isWalkthrough = state?.run;
+
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const programmeRoutine = useSelector(
+  const programmeRoutineById = useSelector(
     programmeRoutineSelectors.getProgrammeRoutineById(1)
   );
+
+  const programmeRoutine = isWalkthrough
+    ? { routineItems: dummyRoutineItems }
+    : programmeRoutineById;
+
+  const currentDailyProgramme = isWalkthrough
+    ? dummyDailyProgramme
+    : dailyProgramme;
+
   const programmeWeeks = getProgrammeWeeks(programme);
+
   const appDispatch = useAppDispatch();
+
   const dialog = useDialog();
+
   const currentDate = new Date();
+
   const { getCurrentProgrammeRecommendedActivities } =
     useProgrammePlanningRecommendations();
-  const recommendedActivities =
-    getCurrentProgrammeRecommendedActivities(programme);
+  const recommendedActivities = getCurrentProgrammeRecommendedActivities(
+    programme,
+    selectedDate
+  );
+
   // const { getAdditionalRecommendedSubCategories } =
   //   useProgrammePlanningRecommendations();
   // const additionalRecommendedActivities =
@@ -83,21 +125,47 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
     !currentDailyProgramme?.storyActivityId;
+
   const { isHoliday } = useHolidays();
   const [isCurrentDayHoliday, setIsCurrentDayHoliday] = useState(false);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+
   const chosedTheme = themes?.find((item) => item?.name === programme?.name);
-  const { createProgramme } = useProgrammePlanning();
-  const [selectedActitivy, setSelectedActivity] = useState(0);
+
+  const {
+    createOrEditProgramme,
+    checkIfWholeWeekIsPlanned,
+    getPlannedWeeksCount,
+  } = useProgrammePlanning();
+
+  const { isWholeWeekPlanned } = checkIfWholeWeekIsPlanned(
+    selectedDate!,
+    classroomGroupId
+  );
+  const {
+    isWholeWeekPlanned: isWholeNextWeekPlanned,
+    dailyProgrammesByDate: nextWeekDailyProgrammesByDate,
+  } = checkIfWholeWeekIsPlanned(addWeeks(selectedDate!, 1), classroomGroupId);
+  const { plannedWeeksCount, weeksStartDates } = getPlannedWeeksCount(
+    selectedDate!,
+    classroomGroupId
+  );
+
+  const [selectedActivity, setSelectedActivity] = useState(0);
   const [routineItemSet, setRoutineItemSet] =
     useState<ProgrammeRoutineItemDto>();
   const [triggerSaveActivity, setTriggerSaveActivity] = useState(false);
+
   const isWeekendDay = isWeekend(new Date(selectedDate!));
+
   const nextProgrammes = useSelector(
     programmeSelectors.getProgrammesAfterDate(selectedDate!)
   );
   const userData = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
   const [celebrateMessage, setCelebrateMessage] = useState('');
+  const [hideCelebrateMessage, setHideCelebrateMessage] = useState(false);
   const [skillMixMessage, setSkillMixMessage] = useState('');
   const [improveProgrammeMessage, setImproveProgrammeMessage] = useState('');
   const plannedActivities = getAllGroupActivityIds(programme!);
@@ -111,6 +179,14 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         })
       );
     });
+
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+  const isTrialPeriod = useIsTrialPeriod();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
 
   useEffect(() => {
     if (selectedDate) {
@@ -136,7 +212,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
         );
       }
-      history.push(ROUTES.PROGRAMMES.THEME);
+      nextWalkthroughStep(1);
+      history.push(ROUTES.PROGRAMMES.THEME, {
+        classroomGroupId,
+      } as ProgrammeThemeRouteState);
     } else {
       showOnlineOnly();
     }
@@ -196,7 +275,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
 
     if (!activityId) {
-      onEditActivityItem(routineItem);
+      onEditActivityItem(routineItem, day);
       return;
     }
 
@@ -207,8 +286,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           <ActivityDetails
             activityId={activityId}
             isSelected={true}
-            disabled={false}
+            disabled={!hasPermissionToEdit}
             onActivitySelected={() => {
+              nextWalkthroughStep(6);
               onClose();
               // onEditActivityItem(routineItem, day);
             }}
@@ -225,6 +305,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         ) : (
           <StoryActivityDetails
             selected={true}
+            storyBookId={currentDailyProgramme?.storyBookId}
             activityId={activityId}
             disabled={false}
             viewType={'StoryActivity'}
@@ -281,6 +362,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   const onProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
+    nextWalkthroughStep(5);
     if (routineItem.name === DailyRoutineItemType.messageBoard) {
       openMessageBoardItem(routineItem);
       return;
@@ -297,7 +379,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       openActivityItem(routineItem, currentDailyProgramme);
       return;
     }
-
     openActivityItem(routineItem);
   };
 
@@ -307,7 +388,13 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     activityId?: number
   ) => {
     if (!currentDailyProgramme) {
-      await createProgramme(selectedDate!, 'en-za', undefined, selectedDate!);
+      await createOrEditProgramme(
+        classroomGroupId,
+        selectedDate!,
+        'en-za',
+        undefined,
+        selectedDate!
+      );
     }
 
     if (day) {
@@ -331,10 +418,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       if (routineItemSet) {
         switch (routineItemSet.name) {
           case DailyRoutineItemType.largeGroup:
-            currentDayCopy.largeGroupActivityId = selectedActitivy;
+            currentDayCopy.largeGroupActivityId = selectedActivity;
             break;
           case DailyRoutineItemType.smallGroup:
-            currentDayCopy.smallGroupActivityId = selectedActitivy;
+            currentDayCopy.smallGroupActivityId = selectedActivity;
             break;
         }
       }
@@ -361,20 +448,19 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   useEffect(() => {
     // Celebrate message
-    if (programmeWeeks && programmeWeeks.length >= 4 && selectedDate) {
-      var lastWeek = programmeWeeks[programmeWeeks.length - 1];
-      if (
-        format(lastWeek.endDate, 'dd MMM yyyy') ===
-        format(selectedDate, 'dd MMM yyyy')
-      ) {
-        var message =
-          'Wow, great job ' +
-          userData?.firstName +
-          '! You have planned for ' +
-          programmeWeeks.length +
-          ' weeks in a row. Keep it up!';
-        setCelebrateMessage(message);
-      }
+    if (
+      plannedWeeksCount > 1 &&
+      weeksStartDates?.some((date) => isThisWeek(date))
+    ) {
+      setCelebrateMessage(
+        `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
+      );
+    } else if (selectedDate && isThisWeek(selectedDate) && isWholeWeekPlanned) {
+      setCelebrateMessage(
+        `Great job ${userData?.firstName}! Your whole week is planned.`
+      );
+    } else {
+      setCelebrateMessage('');
     }
 
     if (plannedActivities) {
@@ -396,14 +482,13 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       }
     }
   }, [
-    programmeWeeks,
-    setCelebrateMessage,
-    userData,
+    isWholeWeekPlanned,
     plannedActivities,
-    setSkillMixMessage,
-    setImproveProgrammeMessage,
+    plannedWeeksCount,
+    recommendedActivities.length,
     selectedDate,
-    recommendedActivities,
+    userData?.firstName,
+    weeksStartDates,
   ]);
 
   const onEditActivityItem = (
@@ -419,6 +504,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             subtitle={`${new Date(
               currentDailyProgramme?.dayDate || new Date()
             ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}`}
+            date={day?.dayDate ? parseISO(day.dayDate) : new Date()}
             programmeId={programme?.id}
             preSelectedActivityId={
               routineItem.name === DailyRoutineItemType.largeGroup
@@ -479,7 +565,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       !currentDailyProgramme?.storyActivityId)
   ) {
     return (
-      <div className={'mb-20 flex flex-col pt-4'}>
+      <div className={'mb-20 flex flex-col'}>
         <ProgrammePlanningHeaderUpdated
           headerText={`Today's daily Routine`}
           subHeaderText={currentDate}
@@ -502,41 +588,46 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           <Typography
             className="mt-2 text-center"
             color="textMid"
-            text={`You did not plan for this day.`}
+            text={
+              hasPermissionToEdit
+                ? `You did not plan for this day.`
+                : 'No activity planned for this day.'
+            }
             type={'h1'}
           />
-          <Typography
-            className="mt-2 text-center"
-            color="textMid"
-            text={`You can only plan for future days`}
-            type={'body'}
-          />
-          <Button
-            color={'primary'}
-            type={'outlined'}
-            onClick={() =>
-              setSelectedDate && nextProgrammeDaysWithoutActivity?.length
-                ? setSelectedDate(
-                    new Date(nextProgrammeDaysWithoutActivity?.[0]?.dayDate!)
-                  )
-                : setSelectedDate && setSelectedDate(nextMonday(new Date()))
-            }
-            className={'w-25 mt-6 mb-4'}
-          >
-            {renderIcon('ClipboardListIcon', `w-5 h-5 text-primary`)}
-            <Typography
-              color={'primary'}
-              type={'help'}
-              weight={'normal'}
-              text={'Start planning'}
-            />
-          </Button>
+          {hasPermissionToEdit && (
+            <>
+              <Typography
+                className="mt-2 text-center"
+                color="textMid"
+                text={`You can only plan for future days`}
+                type={'body'}
+              />
+              <Button
+                color={'secondaryAccent2'}
+                type={'outlined'}
+                onClick={() =>
+                  setSelectedDate && nextProgrammeDaysWithoutActivity?.length
+                    ? setSelectedDate(
+                        new Date(
+                          nextProgrammeDaysWithoutActivity?.[0]?.dayDate!
+                        )
+                      )
+                    : setSelectedDate && setSelectedDate(nextMonday(new Date()))
+                }
+                className={'w-25 mt-6 mb-4'}
+                icon="ClipboardListIcon"
+                text="Start planning"
+                textColor="secondaryAccent2"
+              />
+            </>
+          )}
         </div>
       </div>
     );
   } else {
     return (
-      <div className={'mb-20 flex flex-col pt-4'}>
+      <div className={'mb-20 flex flex-col'}>
         <ProgrammePlanningHeaderUpdated
           headerText={`Today's daily Routine`}
           subHeaderText={currentDate}
@@ -554,8 +645,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           isWeekendDay={isWeekendDay}
         />
 
-        {(isCurrentDayEmpty || currentDailyProgramme) &&
-          (isCurrentDayHoliday || isWeekendDay ? (
+        {(isCurrentDayEmpty || currentDailyProgramme || isWalkthrough) &&
+          ((isCurrentDayHoliday || isWeekendDay) && !isWalkthrough ? (
             isWeekendDay ? (
               <WeekendDayIndicator
                 date={new Date(selectedDate!)}
@@ -575,31 +666,72 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             )
           ) : (
             <div className="mt-4">
-              {programmeRoutine?.routineItems.map((routineItem) => {
+              {programmeRoutine?.routineItems.map((routineItem, index) => {
                 if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
                   return (
-                    <ProgrammePlanningRoutineListItemUpdated
-                      key={`id_${routineItem.id}`}
-                      routineItem={routineItem}
-                      storyBookId={currentDailyProgramme?.storyBookId}
-                      day={currentDailyProgramme}
-                      selectedDate={selectedDate}
-                      onClick={() => onProgrammeClick(routineItem)}
-                    />
+                    <div
+                      key={routineItem.id}
+                      id={
+                        index === 2
+                          ? state.stepIndex < 5
+                            ? 'walkthrough-plan-activity'
+                            : 'walkthrough-add-activity'
+                          : ''
+                      }
+                    >
+                      <ProgrammePlanningRoutineListItemUpdated
+                        key={`id_${routineItem.id}`}
+                        routineItem={routineItem}
+                        storyBookId={currentDailyProgramme?.storyBookId}
+                        day={
+                          isWalkthrough
+                            ? dummyDailyProgramme
+                            : currentDailyProgramme
+                        }
+                        selectedDate={selectedDate}
+                        disabled={isWalkthrough && state.stepIndex !== 4}
+                        onClick={() => onProgrammeClick(routineItem)}
+                      />
+                      {index === programmeRoutine.routineItems.length - 1 && (
+                        <Divider className="-m-1 mb-4" />
+                      )}
+                    </div>
                   );
                 }
                 return null;
               })}
             </div>
           ))}
-
-        {celebrateMessage && (
+        {celebrateMessage && !hideCelebrateMessage && (
           <CustomSuccessCard
-            className="my-4"
+            className="mb-4"
             customIcon={<CelebrateIcon className="h-14	w-14" />}
             text={celebrateMessage}
-            textColour="successDark"
-            color="successBg"
+            textColour="white"
+            color="successMain"
+            onClose={() => setHideCelebrateMessage(true)}
+            button={
+              !isWholeNextWeekPlanned
+                ? {
+                    color: 'quatenary',
+                    type: 'filled',
+                    text: 'Plan next week',
+                    className: 'mt-2 w-max',
+                    icon: 'ClipboardListIcon',
+                    size: 'small',
+                    textColor: 'white',
+                    onClick: () => {
+                      setSelectedDate?.(
+                        nextWeekDailyProgrammesByDate?.find(
+                          (day) =>
+                            !day.dailyProgramme?.largeGroupActivityId ||
+                            !day.dailyProgramme?.smallGroupActivityId
+                        )?.date
+                      );
+                    },
+                  }
+                : undefined
+            }
           />
         )}
         {skillMixMessage && (
@@ -649,21 +781,25 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             </Card>
           </div>
         )}
-        {!isPastDay() ? (
-          <Button
-            id="gtm-add-programme"
-            className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
-            size="small"
-            type={'filled'}
-            color={'primary'}
-            onClick={handleAddProgramme}
-          >
-            {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-            <Typography type={'small'} color={'white'} text={'Add new theme'} />
-          </Button>
-        ) : (
-          ''
+        {!isPastDay() && hasPermissionToEdit && (
+          <FADButton
+            id="walkthrough-start"
+            click={handleAddProgramme}
+            disabled={isWalkthrough && state.stepIndex !== 0}
+            icon="PlusIcon"
+            iconDirection="left"
+            textToggle
+            title="Add new theme"
+            textColor="white"
+            type="filled"
+            color="quatenary"
+            className="fixed bottom-6 right-0 z-10 m-3 px-3.5 py-2.5"
+          />
         )}
+        <div
+          id="walkthrough-last-step"
+          className="absolute bottom-0 h-0 w-full"
+        />
       </div>
     );
   }

@@ -32,8 +32,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public DateTime? DueDate { get; set; }
         public Guid? VisitTypeId { get; set; }
         public VisitType VisitType { get; set; }
-        public string? Risk { get; set; }  // high or normal
-        public string? Comment { get; set; }
+        public string Risk { get; set; }  // high or normal
+        public string Comment { get; set; }
         public bool? Attended { get; set; }
         public Guid? InfantId { get; set; }
         public Guid? MotherId { get; set; }
@@ -51,8 +51,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public DateTime? ActualVisitDate { get; set; }
         public Guid? VisitTypeId { get; set; }
         public VisitType VisitType { get; set; }
-        public string? Risk { get; set; }  // high or normal
-        public string? Comment { get; set; }
+        public string Risk { get; set; }  // high or normal
+        public string Comment { get; set; }
         public bool? Attended { get; set; }
         public Guid? InfantId { get; set; }
         public Guid? MotherId { get; set; }
@@ -69,8 +69,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public DateTime? ActualVisitDate { get; set; }
         public Guid? VisitTypeId { get; set; }
         public VisitType VisitType { get; set; }
-        public string? Risk { get; set; }  // high or normal
-        public string? Comment { get; set; }
+        public string Risk { get; set; }  // high or normal
+        public string Comment { get; set; }
         public bool? Attended { get; set; }
         public Guid? InfantId { get; set; }
         public Guid? MotherId { get; set; }
@@ -88,8 +88,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public DateTime? ActualVisitDate { get; set; }
         public Guid? VisitTypeId { get; set; }
         public VisitType VisitType { get; set; }
-        public string? Risk { get; set; }  // high or normal
-        public string? Comment { get; set; }
+        public string Risk { get; set; }  // high or normal
+        public string Comment { get; set; }
         public bool? Attended { get; set; }
         public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }

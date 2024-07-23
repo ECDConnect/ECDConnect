@@ -1,45 +1,56 @@
 import {
   ChildDto,
   ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
   LearnerDto,
+  ClassroomGroupDto,
 } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getClassroomForCoach } from './classroomForCoach.actions';
+import {
+  getClassroomForCoach,
+  getClassroomGroupsForCoach,
+} from './classroomForCoach.actions';
 import { ClassroomForCoachState } from './classroomForCoach.types';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 const initialState: ClassroomForCoachState = {
   classroomForCoach: undefined,
-  classroomGroups: undefined,
+  classroomGroupData: {
+    classroomGroups: [],
+    dateRefreshed: undefined,
+  },
   classroomProgrammes: undefined,
   classroomGroupLearners: undefined,
-  programmeType: undefined,
 };
 
 const classroomsSlice = createSlice({
   name: 'classroomsForCoach',
   initialState,
   reducers: {
-    setProgrammeType: (state, action: PayloadAction<string>) => {
-      state.programmeType = action.payload;
-    },
     resetClassroomState: (state) => {
       state.classroomForCoach = initialState.classroomForCoach;
-      state.classroomGroups = initialState.classroomGroups;
+      state.classroomGroupData = initialState.classroomGroupData;
       state.classroomProgrammes = initialState.classroomProgrammes;
       state.classroomGroupLearners = initialState.classroomGroupLearners;
     },
     updateClassroom: (state, action: PayloadAction<ClassroomDto[]>) => {
       state.classroomForCoach = action.payload;
     },
-    updateClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (state.classroomGroups) {
-        for (let i = 0; i < state.classroomGroups.length; i++) {
-          if (state.classroomGroups[i].id === action.payload.id)
-            state.classroomGroups[i] = action.payload;
-        }
+    updateClassroomGroup: (
+      state,
+      action: PayloadAction<SimpleClassroomGroupDto>
+    ) => {
+      const payloadUpdated = { ...action.payload, synced: false };
+      for (
+        let i = 0;
+        i < state.classroomGroupData.classroomGroups.length;
+        i++
+      ) {
+        if (
+          state.classroomGroupData.classroomGroups[i].id === action.payload.id
+        )
+          state.classroomGroupData.classroomGroups[i] = payloadUpdated;
       }
     },
     updateClassroomProgramme: (
@@ -66,18 +77,13 @@ const classroomsSlice = createSlice({
       }
     },
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (action.payload.id) {
-        if (state.classroomGroups) {
-          for (let i = 0; i < state.classroomGroups.length; i++) {
-            if (state.classroomGroups[i].id === action.payload.id)
-              state.classroomGroups[i].isActive = false;
-          }
-        }
-      } else {
-        const index = state.classroomGroups?.findIndex(
+      if (!!action.payload.id) {
+        const index = state.classroomGroupData.classroomGroups.findIndex(
           (c) => c.id === action.payload.id
         );
-        if (index && index > -1) state.classroomGroups?.splice(index, 1);
+        if (index > -1) {
+          state.classroomGroupData.classroomGroups.splice(index, 1);
+        }
       }
     },
     deleteClassroomProgramme: (
@@ -128,6 +134,18 @@ const classroomsSlice = createSlice({
     builder.addCase(getClassroomForCoach.fulfilled, (state, action) => {
       if (action.payload) {
         state.classroomForCoach = action.payload;
+      }
+    });
+    builder.addCase(getClassroomGroupsForCoach.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.classroomGroupData = {
+          classroomGroups: action.payload.map((cg) => ({
+            ...cg,
+            synced: true,
+            learners: cg.learners.map((l) => ({ ...l, synced: true })),
+          })),
+          dateRefreshed: new Date().toDateString(),
+        };
       }
     });
   },

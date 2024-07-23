@@ -80,16 +80,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return personnelManager.GetAllPractitionersForPrincipal(userId);
         }
 
-        public List<Child> GetAllChildrenForPrincipal([Service] PersonnelService personnelManager,
-        string userId)
-        {
-            if (userId != null)
-            {
-                return personnelManager.GetAllChildrenForPractitioner(userId);
-            }
-            else return new List<Child>();
-        }
-
         public Principal MapPractitionerToPrincipal(Practitioner practitioner)
         {
             Principal userToMap = new Principal()

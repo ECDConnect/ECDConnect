@@ -24,15 +24,15 @@ export const RemovePractitionerPrompt: React.FC<
         {
           text: 'Yes, remove',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'quatenary',
           type: 'filled',
           onClick: () => onProceed && onProceed(),
           leadingIcon: 'ArrowCircleRightIcon',
         },
         {
           text: 'Close',
-          textColour: 'primary',
-          colour: 'primary',
+          textColour: 'quatenary',
+          colour: 'quatenary',
           type: 'outlined',
           onClick: () => onClose && onClose(),
           leadingIcon: 'XIcon',

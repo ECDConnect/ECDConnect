@@ -54,3 +54,8 @@ export interface HealthCareWorkerSummaryForPeriodDto extends EntityBase {
   totalVisitsMissed?: number;
   totalVisitsOverdue?: number;
 }
+
+export interface MeetingReportHealthCareWorkerDto {
+  hCWId: string;
+  hCWName: string;
+}

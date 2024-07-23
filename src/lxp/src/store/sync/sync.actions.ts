@@ -31,10 +31,6 @@ export const syncOfflineData = createAsyncThunk<
       title: 'User',
       action: userThunkActions.updateUser,
     },
-    // {
-    //   title: 'Coach',
-    //   action: coachThunkActions.updateCoach,
-    // },
     {
       title: 'Calendar',
       action: calendarThunkActions.upsertCalendarEvents,
@@ -42,10 +38,6 @@ export const syncOfflineData = createAsyncThunk<
     {
       title: 'Care givers',
       action: caregiverThunkActions.upsertCareGivers,
-    },
-    {
-      title: 'Child users',
-      action: childrenThunkActions.upsertChildUsers,
     },
     {
       title: 'Children',
@@ -163,10 +155,6 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         title: 'User',
         action: userThunkActions.updateUser,
       },
-      // {
-      //   title: 'Coach',
-      //   action: coachThunkActions.updateCoach,
-      // },
       {
         title: 'Calendar',
         action: calendarThunkActions.upsertCalendarEvents,
@@ -176,17 +164,9 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         action: caregiverThunkActions.upsertCareGivers,
       },
       {
-        title: 'Child users',
-        action: childrenThunkActions.upsertChildUsers,
-      },
-      {
         title: 'Children',
         action: childrenThunkActions.upsertChildren,
       },
-      // {
-      //   title: 'Classrooms',
-      //   action: classroomsThunkActions.upsertClassroom,
-      // },
       {
         title: 'Classroom groups',
         action: classroomsThunkActions.upsertClassroomGroups,

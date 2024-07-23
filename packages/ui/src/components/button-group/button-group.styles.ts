@@ -20,7 +20,9 @@ export const notSelectedChip =
   'text-secondary cursor-pointer bg-secondaryAccent2';
 export const notSelectedButtonOrChip =
   'text-secondary cursor-pointer bg-secondaryAccent2';
-
+export const notSelectedColorStyle = (colour: Colours, textColor) => {
+  return `text-${textColor} cursor-pointer bg-${colour}`;
+};
 export const selected = (colour: Colours) => {
   return `z-10 outline-none cursor-pointer text-white bg-${colour}`;
 };

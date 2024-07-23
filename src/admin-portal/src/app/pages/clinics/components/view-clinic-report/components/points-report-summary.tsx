@@ -2,14 +2,16 @@ import { StatusChip, Typography, ScoreCard } from '@ecdlink/ui';
 import { PointsReportSummaryDto } from '../view-clinic-report';
 import { calculateTierPercentages, getTierDetails } from './points-utils';
 import { LeagueType } from '../view-clinic-report.types';
-import { getCommunityQuarterDescription } from '@ecdlink/core';
+import { ClinicDto, getCommunityQuarterDescription } from '@ecdlink/core';
 
 interface PointsReportSummaryProps {
   dataFromClinicPointsData: PointsReportSummaryDto;
+  clinic?: ClinicDto;
 }
 
 export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
   dataFromClinicPointsData,
+  clinic,
 }) => {
   const today = new Date();
   const { quarter } = getCommunityQuarterDescription(today);
@@ -28,7 +30,7 @@ export const PointsReportSummary: React.FC<PointsReportSummaryProps> = ({
       <div className="mt-8">
         <Typography
           className="truncate"
-          type="h2"
+          type="h1"
           weight="bold"
           color="textMid"
           text={`Summary`}

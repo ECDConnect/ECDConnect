@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionModal, renderIcon } from '@ecdlink/ui';
+import { ActionModal } from '@ecdlink/ui';
 import { ExclamationIcon } from '@heroicons/react/solid';
 
 export type OnlineOnlyModalProps = {
@@ -27,7 +27,7 @@ export const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({
         {
           text: 'Okay',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'quatenary',
           type: 'filled',
           onClick: () => onSubmit && onSubmit(),
           leadingIcon: 'CheckCircleIcon',

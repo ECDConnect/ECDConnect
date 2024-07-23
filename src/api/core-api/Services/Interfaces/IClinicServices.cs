@@ -1,6 +1,8 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
@@ -25,5 +27,8 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         BreastFeedingClub AddBreastFeedingClub(Guid clinicId, Guid healthCareWorkId, DateTime meetingDate, bool clientsAttendedConfirmed, List<Guid> caregiversAttended);
         List<BreastFeedingClub> GetBreastFeedingClubs(Guid clinicId);
         List<Caregiver> GetAvailableCaregiversForBreastFeedingClub(Guid clinicId);
+        ClinicMeeting AddClinicMeeting(AddClinicMeetingInputModel input);
+        PortalClinicMeetingModel GetClinicMeetingForMonth(Guid clinicId);
+        List<PortalClinicMeetingModel> GetAllClinicMeetings();
     }
 }

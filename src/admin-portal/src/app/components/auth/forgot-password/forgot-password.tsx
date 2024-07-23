@@ -1,9 +1,7 @@
 import {
   Config,
   initialForgotPasswordValues,
-  LocalStorageKeys,
   resetSchema,
-  SimpleUserModel,
   useTheme,
 } from '@ecdlink/core';
 import { Alert, Button, Typography } from '@ecdlink/ui';

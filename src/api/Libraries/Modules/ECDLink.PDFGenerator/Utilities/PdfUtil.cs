@@ -13,57 +13,50 @@ namespace ECDLink.PDFGenerator.Utilities
 
         public static float FitParagraph(List<Chunk> chunks, Rectangle rect, float maxFontSize, int runDirection)
         {
-            try
+            var ct = new ColumnText(null);
+
+            var paragraph = new Paragraph();
+            paragraph.AddAll(chunks);
+
+            ct.SetSimpleColumn(paragraph, rect.Left, rect.Bottom, rect.Right, rect.Top, maxFontSize, Element.ALIGN_LEFT);
+
+            ct.RunDirection = runDirection;
+            var status = ct.Go(true);
+
+            if ((status & ColumnText.NO_MORE_TEXT) != 0)
             {
-                var ct = new ColumnText(null);
+                return maxFontSize;
+            }
 
-                var paragraph = new Paragraph();
-                paragraph.AddAll(chunks);
+            float precision = 0.1f;
+            float min = 0;
+            float max = maxFontSize;
+            float size = maxFontSize;
+            for (int k = 0; k < 50; ++k)
+            { //just in case it doesn't converge
+                size = (min + max) / 2;
+                ct = new ColumnText(null);
 
-                ct.SetSimpleColumn(paragraph, rect.Left, rect.Bottom, rect.Right, rect.Top, maxFontSize, Element.ALIGN_LEFT);
+                resizeChunks(paragraph.Chunks, size);
 
+                ct.SetSimpleColumn(paragraph, rect.Left, rect.Bottom, rect.Right, rect.Top, size, Element.ALIGN_LEFT);
                 ct.RunDirection = runDirection;
-                var status = ct.Go(true);
+                status = ct.Go(true);
 
                 if ((status & ColumnText.NO_MORE_TEXT) != 0)
                 {
-                    return maxFontSize;
-                }
-
-                float precision = 0.1f;
-                float min = 0;
-                float max = maxFontSize;
-                float size = maxFontSize;
-                for (int k = 0; k < 50; ++k)
-                { //just in case it doesn't converge
-                    size = (min + max) / 2;
-                    ct = new ColumnText(null);
-
-                    resizeChunks(paragraph.Chunks, size);
-
-                    ct.SetSimpleColumn(paragraph, rect.Left, rect.Bottom, rect.Right, rect.Top, size, Element.ALIGN_LEFT);
-                    ct.RunDirection = runDirection;
-                    status = ct.Go(true);
-
-                    if ((status & ColumnText.NO_MORE_TEXT) != 0)
+                    if (max - min < size * precision)
                     {
-                        if (max - min < size * precision)
-                        {
-                            return size;
-                        }
-                        min = size;
+                        return size;
                     }
-                    else
-                    {
-                        max = size;
-                    }
+                    min = size;
                 }
-                return size;
+                else
+                {
+                    max = size;
+                }
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            return size;
         }
 
         public static float FitList(List list, Rectangle rect, float maxFontSize, int runDirection)

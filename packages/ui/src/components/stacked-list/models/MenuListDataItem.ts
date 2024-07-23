@@ -2,7 +2,7 @@ import { ReactElement } from 'react';
 import { Colours } from '../../..';
 import { ListItem } from './ListItem';
 
-export interface MenuListDataItem<T = {}> extends ListItem {
+export interface MenuListDataItem<T = {}> extends Omit<ListItem, 'subTitle'> {
   className?: string;
   menuIcon?: string;
   menuIconClassName?: string;
@@ -19,4 +19,5 @@ export interface MenuListDataItem<T = {}> extends ListItem {
   rightIcon?: string;
   rightIconClassName?: string;
   extraData?: T;
+  subTitle?: string | ReactElement;
 }

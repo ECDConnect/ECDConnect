@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import { useHistory, useLocation } from 'react-router';
-
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   BannerWrapper,
@@ -37,17 +36,31 @@ import { visitSteps } from './visits-tab/walkthrough/steps';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
 import {
+  Document,
+  InfantDto,
   getStringFromClassNameOrId,
   replaceBraces,
   useDialog,
   usePrevious,
 } from '@ecdlink/core';
 import { progressSteps } from './progress-tab/walkthrough/steps';
-import { infantThunkActions } from '@/store/infant';
+import { infantActions, infantThunkActions } from '@/store/infant';
 import { useAppDispatch } from '@/store';
 import { referralsSteps } from './referrals-tab/walkthrough/steps';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { InfantModelInput } from '@/../../../packages/graphql/lib';
+import { documentActions, documentThunkActions } from '@/store/document';
+import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { InfantRoadToHealthModel } from '@/schemas/infant/infant-road-to-health';
+import { useStaticData } from '@/hooks/useStaticData';
+import { userSelectors } from '@/store/user';
+import { InfantRoadToHealth } from '../components/infant-road-to-health/infant-road-to-health';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@store/notifications';
+import { notificationTagConfig } from '@/constants/notifications';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -58,6 +71,9 @@ export const INFANT_PROFILE_TABS = {
 
 export const InfantProfile: React.FC = () => {
   const [isInfoPage, setIsInfoPage] = useState(false);
+  const user = useSelector(userSelectors.getUser);
+  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
+    useStaticData();
 
   const {
     handleCallback,
@@ -78,9 +94,7 @@ export const InfantProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const dialog = useDialog();
-
   const history = useHistory();
-
   const location = useLocation();
 
   const [, , , infantId] = location.pathname.split('/');
@@ -88,6 +102,17 @@ export const InfantProfile: React.FC = () => {
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
+
+  const addRoadToHealthNotifications = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.RoadToHealthBook.cta ?? ''
+      ) && item?.message?.routeConfig?.route.includes(infantId)
+  );
+
+  const roadToHealthBook = state?.isRoadToHealthBook;
 
   const infantName = useMemo(() => infant?.user?.firstName || '', [infant]);
   const caregiverName = useMemo(
@@ -308,6 +333,128 @@ export const InfantProfile: React.FC = () => {
     updateClickedTab,
   ]);
 
+  const onSubmit = useCallback(
+    async (data: InfantRoadToHealthModel) => {
+      if (infant?.user?.id) {
+        const fileName = 'roadtohealthbook.png';
+        const workflowStatusId = getWorkflowStatusIdByEnum(
+          WorkflowStatusEnum.DocumentPendingVerification
+        );
+        const documentTypeId = getDocumentTypeIdByEnum(
+          FileTypeEnum.RoadToHealthBook
+        );
+        const documentInputModel: Document = {
+          id: newGuid(),
+          userId: infant?.user.id,
+          createdUserId: user?.id ?? '',
+          workflowStatusId: workflowStatusId ?? '',
+          documentTypeId: documentTypeId ?? '',
+          name: fileName,
+          fileName: fileName,
+          file: data?.roadToHealthBook,
+          fileType: FileTypeEnum.RoadToHealthBook,
+        };
+
+        appDispatch(documentActions.createDocument(documentInputModel));
+        if (isOnline) {
+          await appDispatch(
+            documentThunkActions.createDocument(documentInputModel)
+          ).unwrap();
+        }
+
+        const input: InfantDto = {
+          id: infantId,
+          dateOfBirth: infant?.user?.dateOfBirth,
+          firstName: infant?.firstName,
+          genderId: infant?.genderId,
+          userId: infant?.user.id ?? '',
+          weightAtBirth: Number(data?.weightAtBirth),
+          lengthAtBirth: Number(data?.lengthAtBirth),
+        };
+
+        appDispatch(infantActions.updateInfantRTHDetails(input));
+        if (isOnline) {
+          appDispatch(
+            infantThunkActions.updateInfant({
+              id: infantId,
+              input: {
+                dateOfBirth: infant?.user?.dateOfBirth,
+                weightAtBirth: Number(data?.weightAtBirth),
+                lengthAtBirth: Number(data?.lengthAtBirth),
+              },
+            })
+          );
+        }
+
+        if (addRoadToHealthNotifications) {
+          addRoadToHealthNotifications.forEach((x) => {
+            appDispatch(notificationActions.removeNotification(x!));
+          });
+        }
+
+        goBack();
+      }
+    },
+    [
+      addRoadToHealthNotifications,
+      appDispatch,
+      getDocumentTypeIdByEnum,
+      getWorkflowStatusIdByEnum,
+      goBack,
+      infant?.dateOfBirth,
+      infant?.firstName,
+      infant?.genderId,
+      infantId,
+      user?.id,
+    ]
+  );
+
+  const renderContent = useMemo(() => {
+    if (roadToHealthBook) {
+      return (
+        <div className="mx-4">
+          <InfantRoadToHealth
+            infantDetails={{ firstName: infant?.user?.firstName }}
+            onSubmit={onSubmit}
+            isFromClientProfile={true}
+          />
+        </div>
+      );
+    }
+
+    return isInfoPage ? (
+      <WalkthroughInfoPage
+        sectionName={infoPageSection}
+        onHelp={onHelp}
+        onClose={goBack}
+        extraElement={
+          displayExtraComponent ? (
+            <SuccessCard
+              className="my-4"
+              customIcon={<AwardIcon className="h-14	w-14" />}
+              text={`You can earn points with every visit!`}
+              textColour="successDark"
+              color="successBg"
+            />
+          ) : (
+            <></>
+          )
+        }
+      />
+    ) : (
+      <TabList
+        id={getStringFromClassNameOrId(visitSteps[0].target)}
+        tabClassName="min-w-0 w-24"
+        className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
+        tabItems={tabItems}
+        setSelectedIndex={state?.activeTabIndex ?? 0}
+        tabSelected={(tab) =>
+          history.push(location.pathname, { activeTabIndex: tab.index })
+        }
+      />
+    );
+  }, []);
+
   useLayoutEffect(() => {
     (async () =>
       appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap())();
@@ -357,40 +504,10 @@ export const InfantProfile: React.FC = () => {
         }
         backgroundColour="white"
         displayOffline={!isOnline}
-        displayHelp
+        displayHelp={!isInfoPage && !!roadToHealthBook}
         onHelp={() => setIsInfoPage(true)}
       >
-        {isInfoPage ? (
-          <WalkthroughInfoPage
-            sectionName={infoPageSection}
-            onHelp={onHelp}
-            onClose={goBack}
-            extraElement={
-              displayExtraComponent ? (
-                <SuccessCard
-                  className="my-4"
-                  customIcon={<AwardIcon className="h-14	w-14" />}
-                  text={`You can earn points with every visit!`}
-                  textColour="successDark"
-                  color="successBg"
-                />
-              ) : (
-                <></>
-              )
-            }
-          />
-        ) : (
-          <TabList
-            id={getStringFromClassNameOrId(visitSteps[0].target)}
-            tabClassName="min-w-0 w-24"
-            className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
-            tabItems={tabItems}
-            setSelectedIndex={state?.activeTabIndex ?? 0}
-            tabSelected={(tab) =>
-              history.push(location.pathname, { activeTabIndex: tab.index })
-            }
-          />
-        )}
+        {renderContent}
         <div id="walkthrough-last-step" className="w-full"></div>
       </BannerWrapper>
     </>

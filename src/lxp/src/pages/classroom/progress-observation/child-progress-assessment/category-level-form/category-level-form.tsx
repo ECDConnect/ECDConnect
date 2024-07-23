@@ -36,9 +36,6 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
     ProgressTrackingSkillDto[]
   >(getSelectedSkillIdsForCategoryLevel(levelId) || []);
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
 
   const subCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingSubCategoriesByCategoryId(
@@ -126,7 +123,7 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
         <Typography
           type={'h2'}
           fontSize={'24'}
-          text={`Tell us about ${childUser?.firstName}`}
+          text={`Tell us about ${child?.user?.firstName}`}
           hasMarkup={true}
         />
         {subCategoryAssessments &&

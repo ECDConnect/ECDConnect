@@ -42,12 +42,7 @@ export const PractitionerMonthStatements: React.FC = () => {
         displayOffline={!isOnline}
       >
         {!!statement ? (
-          <MonthStatementsDetails
-            incomeItems={statement.incomeItems}
-            expenseItems={statement.expenseItems}
-            month={statement.month}
-            year={statement.year}
-          />
+          <MonthStatementsDetails statement={statement} />
         ) : (
           <Typography
             type="h1"

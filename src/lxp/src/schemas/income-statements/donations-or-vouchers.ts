@@ -1,15 +1,17 @@
 import * as Yup from 'yup';
 
 export interface DonationsOrVouchersModel {
-  date: string;
-  donations: string[];
-  donationWorth: string;
-  note: string;
+  dateReceived: string;
+  payType: string;
+  description: string;
+  amount: string;
+  notes: string;
 }
 
 export const donationsOrVouchersSchema = Yup.object().shape({
-  date: Yup.string().required(),
-  donations: Yup.string().required(),
-  donationWorth: Yup.number(),
-  note: Yup.string(),
+  dateReceived: Yup.string().required(),
+  payType: Yup.string().required(),
+  description: Yup.string(),
+  amount: Yup.string().required(),
+  notes: Yup.string(),
 });

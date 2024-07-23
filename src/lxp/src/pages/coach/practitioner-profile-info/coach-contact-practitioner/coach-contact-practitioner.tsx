@@ -22,12 +22,16 @@ import { formatPhonenumberInternational } from '@utils/common/contact-details.ut
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractioner } from '../components/remove-practitioner/remove-practitioner';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
+import { useTenant } from '@/hooks/useTenant';
 
 export const CoachContactPractitioner: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
   const { showMessage } = useSnackbar();
   const { isOnline } = useOnlineStatus();
+  const tenant = useTenant();
+  const orgName = tenant?.tenant?.organisationName;
+
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location?.state?.practitionerId;
   const removePractitioner = location?.state?.removePractitioner;
@@ -41,6 +45,7 @@ export const CoachContactPractitioner: React.FC = () => {
   const principal = practitioners?.find(
     (prac) => prac?.userId === practitioner?.principalHierarchy
   );
+  // THIS PROBABLY NEEDS AN UPDATE
   const practitionerClassroom = coachClassrooms?.find(
     (item) => item.userId === principal?.userId
   );
@@ -94,7 +99,7 @@ export const CoachContactPractitioner: React.FC = () => {
               <div>
                 <Typography
                   text={`Removed from ${
-                    practitionerClassroom?.name || `their programme`
+                    practitionerClassroom?.name || `their preschool`
                   }.`}
                   type="h1"
                   color="textDark"
@@ -106,7 +111,7 @@ export const CoachContactPractitioner: React.FC = () => {
                   text={`${
                     principal?.user?.firstName || `The principal`
                   } has removed ${practitioner?.user?.firstName} from ${
-                    practitionerClassroom?.name || `their programme`
+                    practitionerClassroom?.name || `their preschool`
                   }.`}
                   type="h2"
                   color="textDark"
@@ -115,18 +120,7 @@ export const CoachContactPractitioner: React.FC = () => {
               </div>
               <div>
                 <Typography
-                  text={`Contact ${
-                    principal?.user?.firstName || `the principal`
-                  } & ${practitioner?.user?.firstName} to find out more. If ${
-                    practitioner?.user?.firstName
-                  } is leaving SmartStart, please remove them.`}
-                  type="h4"
-                  weight="skinny"
-                  color={'textMid'}
-                  className={'ml-4 mt-2'}
-                />
-                <Typography
-                  text={`If ${practitioner?.user?.firstName} has moved to a different programme, please help them to complete their profile on Funda App and add new programme information.`}
+                  text={`Contact ${practitioner?.user?.firstName} to find out more. If ${practitioner?.user?.firstName} is leaving ${orgName}, please remove them.`}
                   type="h4"
                   weight="skinny"
                   color={'textMid'}
@@ -135,78 +129,61 @@ export const CoachContactPractitioner: React.FC = () => {
               </div>
             </>
           )}
-          <div>
-            <Typography
-              text={`Contact ${practitioner?.user?.firstName}`}
-              type="h3"
-              color="textDark"
-              className={'m-4'}
-            />
-          </div>
-          <div>
-            <Typography
-              text={`${
-                practitioner?.user?.phoneNumber || `Number not available`
-              }`}
-              type="h2"
-              weight="skinny"
-              color="primary"
-              className={'ml-4 mt-2'}
-            />
-          </div>
-        </div>
-        <div>
-          <div className={styles.contactButtons}>
-            <div className="ml-4 grid grid-cols-2 justify-items-center">
+          <div className="flex-column mx-auto mt-2 w-11/12 items-center">
+            <div className="mt-10">
+              <Typography
+                type="h2"
+                weight="bold"
+                lineHeight="snug"
+                text={`Contact ${practitioner?.user?.firstName}`}
+              />
+              <Typography
+                type="h5"
+                weight="bold"
+                lineHeight="snug"
+                color="quatenary"
+                text={`${
+                  practitioner?.user?.phoneNumber == null
+                    ? 'Number not available'
+                    : practitioner?.user?.phoneNumber
+                }`}
+              />
               <Button
-                color={'primary'}
+                color={'secondary'}
                 type={'outlined'}
-                className={'mr-4 rounded-xl'}
-                size={'normal'}
+                className={'mr-4 mt-2'}
+                size={'small'}
                 onClick={whatsapp}
               >
-                <div className="flex items-center justify-center">
-                  <img
-                    src={getLogo(LogoSvgs.whatsapp)}
-                    alt="whatsapp"
-                    className={styles.buttonIconStyle}
-                  />
-                  <Typography
-                    text={`Whatsapp ${practitioner?.user?.firstName}`}
-                    type="button"
-                    weight="skinny"
-                    color="primary"
-                  />
-                </div>
+                <img
+                  src={getLogo(LogoSvgs.whatsapp)}
+                  alt="whatsapp"
+                  className="text-secondary mr-1 h-5 w-5"
+                />
+                <Typography
+                  color={'secondary'}
+                  type={'small'}
+                  weight="bold"
+                  text={`WhatsApp ${practitioner?.user?.firstName}`}
+                />
               </Button>
               <Button
-                color={'primary'}
-                type={'outlined'}
-                className={'mr-4 rounded-xl'}
-                size={'small'}
+                text={`Call ${practitioner?.user?.firstName}`}
+                icon="PhoneIcon"
+                type="outlined"
+                size="small"
+                color="secondary"
+                textColor="secondary"
+                iconPosition="start"
                 onClick={call}
-              >
-                <div className="flex items-center justify-center">
-                  <PhoneIcon
-                    className="text-primary mr-2 h-6 w-5"
-                    aria-hidden="true"
-                  />
-                  <Typography
-                    text={`Call ${practitioner?.user?.firstName}`}
-                    type="button"
-                    weight="skinny"
-                    color="primary"
-                  />
-                </div>
-              </Button>
+                className="mt-2"
+              />
             </div>
-          </div>
-          <div className="flex justify-center">
-            <div className="w-11/12 rounded-2xl">
+            <div>
               <Alert
-                type="info"
-                className="mt-4"
-                message="WhatsApps and phone calls will be charged at your standard carrier rates."
+                type={'info'}
+                className="items-left justify-left mt-4 flex"
+                title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
               />
             </div>
           </div>
@@ -216,7 +193,7 @@ export const CoachContactPractitioner: React.FC = () => {
             <div className="w-11/12">
               <Button
                 className={styles.button.replace('mt-4', 'mt-3')}
-                color={'primary'}
+                color={'quatenary'}
                 type="filled"
                 onClick={() => {
                   if (removePractitioner) {
@@ -235,7 +212,7 @@ export const CoachContactPractitioner: React.FC = () => {
                   : renderIcon('XIcon', styles.buttonIcon)}
                 <Typography
                   type="button"
-                  text={removePractitioner ? 'Remove SmartStarter' : 'Close'}
+                  text={removePractitioner ? 'Remove Practitioner' : 'Close'}
                   color="white"
                   className="w/11-12 ml-2"
                 />

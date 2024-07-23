@@ -11,10 +11,14 @@ import {
   ActionModal,
   Avatar,
   BannerWrapper,
+  Button,
   Dialog,
   DialogPosition,
+  PasswordInput,
   ProfileAvatar,
   StackedList,
+  Typography,
+  renderIcon,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -48,6 +52,16 @@ import { contentReportSelectors } from '@/store/content/report';
 import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
 import { PractitionerAboutRouteState } from './practitioner-about.types';
 import { BackToCommunityDialog } from '@/pages/coach/coach-about/components/back-to-community-dialog/indext';
+import { useTenant } from '@/hooks/useTenant';
+import { Editpassword } from './edit-password/edit-password';
+import { NewPassword } from '@/pages/auth/new-password/new-password';
+import { DialogFormInput } from '@/models/practitioner/DialogFormInput';
+import {
+  PractitionerAccountModel,
+  initialPractitionerAccountValues,
+  practitionerAccountModelSchema,
+} from '@/schemas/practitioner/practitioner-account';
+import { UserResetPasswrodParams } from '@/store/user/user.types';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -66,10 +80,32 @@ export const PractitionerAbout: React.FC = () => {
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
+  const [editPassword, setEditPassword] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
+  const [editFieldVisible, setEditFieldVisible] = useState(false);
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
 
   const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
   const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
+  const [openChangeCommunityPic, setOpenChangeCommunityPic] = useState(false);
+
+  const [dialogFormInput, setDialogFormInput] = useState<
+    DialogFormInput<PractitionerAccountModel>
+  >({ label: '', formFieldName: 'password', value: '' });
+  const {
+    register: practitionerAccountRegister,
+    formState: practitionerAccountFormState,
+    getValues: practitionerAccountFormGetValues,
+    watch,
+  } = useForm({
+    resolver: yupResolver(practitionerAccountModelSchema),
+    defaultValues: initialPractitionerAccountValues,
+    mode: 'onChange',
+  });
+
+  const { isValid } = practitionerAccountFormState;
+  const { password } = watch();
 
   useEffect(() => {
     if (!isOnline) {
@@ -143,8 +179,8 @@ export const PractitionerAbout: React.FC = () => {
           iconBorderColor="infoMain"
           importantText={
             using
-              ? `Your Funda App profile photo will be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
-              : `Your Funda App profile photo will not be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+              ? `Your ${appName} profile photo will be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+              : `Your ${appName} profile photo will not be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
           }
           detailText={
             using
@@ -224,66 +260,66 @@ export const PractitionerAbout: React.FC = () => {
     });
   };
 
-  const getPhotoOnProgressReportItem = (): ActionListDataItem => {
-    var item: ActionListDataItem = {
-      title: `Photo on ${reportingPeriod.monthName} progress report`,
-      subTitle: '',
-      switchTextStyles: true,
-      actionName: '',
-      actionIcon: '',
-      buttonType: 'filled',
-      onActionClick: () => {},
-    };
-    const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
-    const hasAnswered =
-      !!practitioner?.usePhotoInReport &&
-      practitioner?.usePhotoInReport.startsWith(prefix);
-    const answer = hasAnswered
-      ? practitioner?.usePhotoInReport?.endsWith('-yes')
-        ? 'yes'
-        : 'no'
-      : undefined;
-    if (!hasAnswered && !hasCreatedReportForCurrentPeriod) {
-      item = {
-        ...item,
-        subTitle: `Add your photo to ${reportingPeriod.monthName} report`,
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
-        onActionClick: () => {
-          promptPhotoReportPermission();
-        },
-      };
-    }
-    if (hasAnswered && !hasCreatedReportForCurrentPeriod) {
-      item = {
-        ...item,
-        subTitle:
-          answer === 'yes'
-            ? `Photo added to ${reportingPeriod.monthName} report`
-            : `Photo not added to ${reportingPeriod.monthName} report`,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        onActionClick: () => {
-          promptPhotoReportPermission();
-        },
-      };
-    }
-    if (hasAnswered && hasCreatedReportForCurrentPeriod) {
-      item = {
-        ...item,
-        subTitle:
-          answer === 'yes'
-            ? `Photo added to ${reportingPeriod.monthName} report`
-            : `Photo not added to ${reportingPeriod.monthName} report`,
-        actionName: 'View',
-        actionIcon: 'EyeIcon',
-        onActionClick: () => {
-          handleUsingPhotoInReports(answer === 'yes');
-        },
-      };
-    }
-    return item;
-  };
+  // const getPhotoOnProgressReportItem = (): ActionListDataItem => {
+  //   var item: ActionListDataItem = {
+  //     title: `Photo on ${reportingPeriod.monthName} progress report`,
+  //     subTitle: '',
+  //     switchTextStyles: true,
+  //     actionName: '',
+  //     actionIcon: '',
+  //     buttonType: 'filled',
+  //     onActionClick: () => {},
+  //   };
+  //   const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
+  //   const hasAnswered =
+  //     !!practitioner?.usePhotoInReport &&
+  //     practitioner?.usePhotoInReport.startsWith(prefix);
+  //   const answer = hasAnswered
+  //     ? practitioner?.usePhotoInReport?.endsWith('-yes')
+  //       ? 'yes'
+  //       : 'no'
+  //     : undefined;
+  //   if (!hasAnswered && !hasCreatedReportForCurrentPeriod) {
+  //     item = {
+  //       ...item,
+  //       subTitle: `Add your photo to ${reportingPeriod.monthName} report`,
+  //       actionName: 'Add',
+  //       actionIcon: 'PlusIcon',
+  //       onActionClick: () => {
+  //         promptPhotoReportPermission();
+  //       },
+  //     };
+  //   }
+  //   if (hasAnswered && !hasCreatedReportForCurrentPeriod) {
+  //     item = {
+  //       ...item,
+  //       subTitle:
+  //         answer === 'yes'
+  //           ? `Photo added to ${reportingPeriod.monthName} report`
+  //           : `Photo not added to ${reportingPeriod.monthName} report`,
+  //       actionName: 'Edit',
+  //       actionIcon: 'PencilIcon',
+  //       onActionClick: () => {
+  //         promptPhotoReportPermission();
+  //       },
+  //     };
+  //   }
+  //   if (hasAnswered && hasCreatedReportForCurrentPeriod) {
+  //     item = {
+  //       ...item,
+  //       subTitle:
+  //         answer === 'yes'
+  //           ? `Photo added to ${reportingPeriod.monthName} report`
+  //           : `Photo not added to ${reportingPeriod.monthName} report`,
+  //       actionName: 'View',
+  //       actionIcon: 'EyeIcon',
+  //       onActionClick: () => {
+  //         handleUsingPhotoInReports(answer === 'yes');
+  //       },
+  //     };
+  //   }
+  //   return item;
+  // };
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
@@ -293,7 +329,7 @@ export const PractitionerAbout: React.FC = () => {
         switchTextStyles: true,
         actionName: currentUser?.phoneNumber ? 'Edit' : 'Add',
         actionIcon: currentUser?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
+        buttonType: 'filled',
         onActionClick: () => {
           setEditiCellPhoneNumber(true);
         },
@@ -304,50 +340,27 @@ export const PractitionerAbout: React.FC = () => {
         switchTextStyles: true,
         actionName: currentUser?.email ? 'Edit' : 'Add',
         actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        buttonType: 'filled',
         onActionClick: () => {
           setEditEmail(true);
         },
       },
       {
-        title: 'Your SmartStart club',
-        subTitle: 'N/A',
+        title: 'Password',
+        subTitle: 'Edit your password',
         switchTextStyles: true,
-      },
-      {
-        title: 'Your SmartStart coach',
-        subTitle: coach?.user?.fullName || 'N/A',
-        switchTextStyles: true,
-      },
-      {
-        title: 'Next of kin',
-        subTitle: currentUser?.emergencyContactFirstName || 'Add next of kin',
-        switchTextStyles: true,
-        actionName: currentUser?.emergencyContactFirstName ? 'Edit' : 'Add',
-        actionIcon: currentUser?.emergencyContactFirstName
-          ? 'PencilIcon'
-          : 'PlusIcon',
-        buttonType: currentUser?.emergencyContactFirstName
-          ? 'outlined'
-          : 'filled',
-        onActionClick: () => {
-          setAddNextToKin(true);
-        },
-      },
-      {
-        title: 'Signature',
-        subTitle: practitioner?.signingSignature
-          ? 'Replace your signature'
-          : 'Add your signature',
-        switchTextStyles: true,
-        actionName: practitioner?.signingSignature ? 'Edit' : 'Add',
-        actionIcon: practitioner?.signingSignature ? 'PencilIcon' : 'PlusIcon',
+        actionName: 'Edit',
+        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
         buttonType: 'filled',
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ABOUT.SIGNATURE);
+          editField({
+            label: 'Password',
+            formFieldName: 'password',
+            value: practitionerAccountFormGetValues().password,
+          });
         },
       },
-      getPhotoOnProgressReportItem(),
+      // getPhotoOnProgressReportItem(),
     ];
 
     setListItems(list);
@@ -372,7 +385,7 @@ export const PractitionerAbout: React.FC = () => {
                 ) : undefined
               }
               onSubmit={() => {
-                history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT, {
+                history.push(ROUTES.COMMUNITY.ROOT, {
                   isFromCommunityWelcome: false,
                 } as PractitionerAboutRouteState);
                 onClose();
@@ -407,23 +420,22 @@ export const PractitionerAbout: React.FC = () => {
   const picturePromtOnAction = async (imageBaseString: string) => {
     setStorageItem(imageBaseString, pictureStorageKey);
     setEditProfilePictureVisible(!editProfilePictureVisible);
-
     const copy = Object.assign({}, user);
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(userActions.updateUser(copy));
     }
 
-    if (!userProfilePicture) {
-      await createNewDocument({
-        data: imageBaseString,
-        userId: user?.id || '',
-        fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${user?.id}.png`,
-      });
-    } else {
-      updateDocument(userProfilePicture, imageBaseString);
-    }
+    // if (!userProfilePicture) {
+    //   await createNewDocument({
+    //     data: imageBaseString,
+    //     userId: user?.id || '',
+    //     fileType: FileTypeEnum.ProfileImage,
+    //     fileName: `ProfilePicture_${user?.id}.png`,
+    //   });
+    // } else {
+    //   updateDocument(userProfilePicture, imageBaseString);
+    // }
 
     await savePractitionerUserData(imageBaseString);
   };
@@ -444,6 +456,9 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userThunkActions.updateUser(copy));
 
       setNewStackListItems(copy);
+      if (isFromCommunityWelcome) {
+        setOpenChangeCommunityPic(true);
+      }
     }
   };
 
@@ -456,6 +471,36 @@ export const PractitionerAbout: React.FC = () => {
     wasFromCommunityWelcome,
     isFromCommunityWelcome,
   ]);
+
+  const editField = (
+    formInputToLoad: DialogFormInput<PractitionerAccountModel>
+  ) => {
+    setDialogFormInput(formInputToLoad);
+    setEditFieldVisible(true);
+  };
+
+  const saveNewPassword = async () => {
+    if (isValid) {
+      setEditFieldVisible(false);
+      await savePractitionerPasswordUserData();
+    }
+  };
+
+  const savePractitionerPasswordUserData = async () => {
+    if (user) {
+      const practitionerForm = practitionerAccountFormGetValues();
+
+      const resetModel: UserResetPasswrodParams = {
+        newPassword: practitionerForm.password,
+      };
+
+      appDispatch(userThunkActions.resetUserPassword(resetModel));
+    }
+  };
+
+  const closeEditField = () => {
+    setEditFieldVisible(false);
+  };
 
   return (
     <div className={styles.container}>
@@ -506,7 +551,7 @@ export const PractitionerAbout: React.FC = () => {
             />
           </div>
           <StackedList
-            className={'bg-uiBg h-auto'}
+            className={'h-auto bg-white'}
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
@@ -531,8 +576,83 @@ export const PractitionerAbout: React.FC = () => {
             onDelete={
               userProfilePicture || avatar ? deleteProfilePicture : undefined
             }
+            isProfileEmojis={true}
+            showEmojiOption={true}
           ></PhotoPrompt>
         </div>
+      </Dialog>
+      <Dialog
+        borderRadius="normal"
+        stretch={true}
+        visible={editFieldVisible}
+        position={DialogPosition.Bottom}
+      >
+        <div className={'p-4'}>
+          <div className={styles.labelContainer}>
+            <Typography
+              type="body"
+              className=""
+              color="textDark"
+              text={dialogFormInput.label}
+              weight="bold"
+            ></Typography>
+            <div onClick={closeEditField}>
+              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
+            </div>
+          </div>
+          <PasswordInput<PractitionerAccountModel>
+            visible={true}
+            strengthMeterVisible={true}
+            nameProp={dialogFormInput.formFieldName}
+            register={practitionerAccountRegister}
+            disabled={false}
+            className={'mb-6'}
+            value={password}
+          />
+          <Button
+            type="filled"
+            color="quatenary"
+            className={'w-full'}
+            onClick={saveNewPassword}
+          >
+            {renderIcon('SaveIcon', styles.buttonIcon)}
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
+          </Button>
+        </div>
+      </Dialog>
+      <Dialog
+        borderRadius="normal"
+        className="rounded-2xl p-4"
+        visible={openChangeCommunityPic}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          className="text-textDark bg-white p-4"
+          customIcon={
+            <ProfileAvatar size="header" hasConsent={true} dataUrl={avatar} />
+          }
+          icon={'QuestionMarkIcon'}
+          iconColor="white"
+          iconBorderColor="infoMain"
+          title="Looking good"
+          actionButtons={[
+            {
+              text: 'Go back to Community page',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                history?.push(ROUTES.COMMUNITY.ROOT);
+              },
+              leadingIcon: 'ArrowCircleLeftIcon',
+            },
+          ]}
+        />
       </Dialog>
     </div>
   );

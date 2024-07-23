@@ -4,7 +4,11 @@ import {
   ProfileAvatar,
   classNames,
   StatusChip,
-  Dropdown,
+  Breadcrumb,
+  BreadcrumbProps,
+  Typography,
+  DatePicker,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import {
   JSXElementConstructor,
@@ -13,17 +17,15 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { useHistory } from 'react-router-dom';
-import { ArrowLeftIcon, ThumbUpIcon } from '@heroicons/react/solid';
+import { ThumbUpIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import {
   GetHealthCareWorkerByUserId,
-  GetTenantContext,
   GetUserById,
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLeadSummary,
 } from '@ecdlink/graphql';
-import { format, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 import {
   UsersRolesTypeEnum,
   UsersRouteRedirectTypeEnum,
@@ -35,10 +37,14 @@ import { SendInvite } from './components/send-invite/send-invite';
 import { DeactivateUser } from './components/deactivate-user/deactivate-user';
 import { HealthCareWorkerSummary } from './components/health-care-worker-summary/health-care-worker-summary';
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
-import { HalthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
+import { HealthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
-import { GrowGreatRoles, TenantContext } from '../../utils/constants';
-import ReactDatePicker from 'react-datepicker';
+import ROUTES from '../../routes/app.routes-constants';
+import { useUserRole } from '../../hooks/useUserRole';
+import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
+import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
+import { useTenant } from '../../hooks/useTenant';
+import { ResetUserPassword } from './components/reset-password/reset-password';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -78,15 +84,15 @@ export function ViewUser(props: any) {
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
   const isAdministrator =
     props.location.state?.component === UsersRolesTypeEnum?.administrator;
+  const isCHW =
+    props.location.state?.component === UsersRouteRedirectTypeEnum?.chw;
   const clinicIds = props?.location?.state?.clinicIds;
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
-  // const [selectedRange, setSelectedRange] = useState<Date[]>([
-  //   startDate,
-  //   endDate,
-  // ]);
+  const tenant = useTenant();
 
-  const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const { isTeamLead: isTeamLeadRole } = useUserRole();
+
   const [startDate, setStartDate] = useState(startDate1);
   const [endDate, setEndDate] = useState(endDate1);
 
@@ -94,37 +100,47 @@ export function ViewUser(props: any) {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
-    if (start && end) {
-      setFilterDateAdded((prevState) => !prevState);
-    }
   };
 
-  const dateDropdownValue = useMemo(
-    () =>
-      startDate && endDate
-        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
-        : '',
-    [endDate, startDate]
-  );
-
-  const history = useHistory();
-
   let userId = localStorage.getItem('selectedUser');
-  const { data } = useQuery(GetTenantContext, {
+
+  const paths: BreadcrumbProps['paths'] = isTeamLeadRole
+    ? [
+        { name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS },
+        { name: 'View user', url: '' },
+      ]
+    : [
+        { name: 'Users', url: ROUTES.USERS.ALL_ROLES },
+        ...(isAdministrator
+          ? [{ name: 'Administrators', url: ROUTES.USERS.ADMINS }]
+          : []),
+        ...(isTeamLead
+          ? [{ name: 'Team Leads', url: ROUTES.USERS.TEAM_LEADS }]
+          : []),
+        ...(isCHW
+          ? [{ name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS }]
+          : []),
+        ...(!isAdministrator && !isTeamLead && !isCHW
+          ? [{ name: 'All roles', url: ROUTES.USERS.ALL_ROLES }]
+          : []),
+        { name: 'View user', url: '' },
+      ];
+
+  const [
+    getChwById,
+    { data: chwData, refetch: refetchCHW, loading: loadingChw },
+  ] = useLazyQuery(GetHealthCareWorkerByUserId, {
+    variables: {
+      userId: '',
+    },
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getChwById, { data: chwData, refetch: refetchCHW }] = useLazyQuery(
-    GetHealthCareWorkerByUserId,
-    {
-      variables: {
-        userId: '',
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
-
-  const { data: userData, refetch: refetchUserData } = useQuery(GetUserById, {
+  const {
+    data: userData,
+    refetch: refetchUserData,
+    loading: loadingUser,
+  } = useQuery(GetUserById, {
     variables: {
       userId: props.location.state.userId ?? userId,
     },
@@ -141,6 +157,8 @@ export function ViewUser(props: any) {
       },
       fetchPolicy: 'cache-and-network',
     });
+
+  const isLoading = loadingChw || loadingUser;
 
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
@@ -196,8 +214,8 @@ export function ViewUser(props: any) {
     return !user?.lockoutEnd || user?.lockoutEnd < new Date();
   };
 
-  let isCHW = userData?.userById?.roles?.some(
-    (role: any) => role.name === GrowGreatRoles.HealthCareWorker
+  let isCHWRole = userData?.userById?.roles?.some(
+    (role: any) => role.systemName === RoleSystemNameEnum.CHW
   );
 
   const getRoleStatusChip = (status: string) => {
@@ -318,22 +336,19 @@ export function ViewUser(props: any) {
     }
   };
 
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        backgroundColor="secondary"
+        spinnerColor="white"
+      />
+    );
+  }
+
   return (
-    <div className="bg-red flex min-w-0 flex-col xl:flex">
-      <div className="justify-self col-end-3 ">
-        <button
-          onClick={() => history.goBack()}
-          type="button"
-          className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
-        >
-          <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
-          Back
-          <span className="px-1 text-gray-400">
-            {' '}
-            / View {isCHW ? 'CHW' : 'User'}
-          </span>
-        </button>
-      </div>
+    <div className="flex flex-col">
+      <Breadcrumb paths={paths} />
       {successNotification &&
         showNotification(
           'User Added Successfully! ',
@@ -341,205 +356,183 @@ export function ViewUser(props: any) {
           <ThumbUpIcon className="h-10 w-10"></ThumbUpIcon>
         )}
 
-      <div className="m-10 rounded-2xl lg:min-w-0 lg:flex-1">
-        <div className="py-0 px-4 sm:px-6 lg:px-8">
-          {/* Start main area*/}
-
-          <div className="flex">
-            <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
-              <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
-                <ProfileAvatar
-                  canChangeImage={false}
-                  dataUrl={
-                    userData?.userById?.profileImageUrl ||
-                    chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
-                  }
-                  onPressed={() => {}}
-                  hasConsent
-                  size="header"
-                />
-
-                <div className="sm: pt-4 pl-8">
-                  <p className="text-3xl font-normal text-black ">
-                    {userData?.userById?.fullName ??
-                      chwData?.GetHealthCareWorkerById?.user?.fullName}
-                  </p>
-                  <div className="flex flex-row pt-2">
-                    <div className="flex items-center gap-2">
-                      {getRoleStatusChip(props.location.state?.component)}
-                      {(isTeamLead || isCHW) &&
-                        getConnectUsageChip(connectUsage)}
-                    </div>
-                    {chwData &&
-                      chwData?.GetHealthCareWorkerById?.user?.roles?.map(
-                        (i: any, index: number) => {
-                          return (
-                            <div
-                              key={i.id}
-                              className={classNames(
-                                i.name === GrowGreatRoles.HealthCareWorker
-                                  ? 'bg-primary'
-                                  : 'bg-tertiary',
-                                ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
-                              )}
-                            >
-                              <p className="text-16">
-                                {' '}
-                                {i.name === GrowGreatRoles.HealthCareWorker
-                                  ? 'CHW'
-                                  : i.name}
-                              </p>
-                            </div>
-                          );
-                        }
-                      )}
-                  </div>
-                  {/* <p>{userData?.firstName}</p> */}
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* End main area */}
-          {!isNotLockedOut(
-            userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-          ) && (
-            <Alert
-              className="mt-5 mb-3"
-              message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
-              type="error"
-            />
-          )}
-        </div>
-
-        <PersonalInfo
-          userData={userData?.userById}
-          chwData={chwData?.GetHealthCareWorkerById}
-          isRegistered={isRegistered}
-          component={props?.location?.state?.component}
-          isTeamLead={isTeamLead}
-          hcwId={hcwId}
-          clinicId={props?.location?.state?.clinicId}
-          refetchUserData={refetchUserData}
-          refetchCHW={refetchCHW}
-          isNotLockedOut={isNotLockedOut}
-          clinicIds={clinicIds}
-          isAdministrator={isAdministrator}
+      <div className="mt-9 mb-7 flex gap-7">
+        <ProfileAvatar
+          canChangeImage={false}
+          dataUrl={
+            userData?.userById?.profileImageUrl ||
+            chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
+          }
+          onPressed={() => {}}
+          hasConsent
+          size="header"
         />
-
-        {(isCHW ||
-          props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.chw) &&
-          isRegistered &&
-          data &&
-          data.tenantContext &&
-          data.tenantContext.applicationName === TenantContext.GrowGreat && (
-            <div className=" flex justify-end">
-              <div>
-                {!filterDateAdded && (
-                  <div
-                    onClick={() => setFilterDateAdded(!filterDateAdded)}
-                    className="mr-1"
-                  >
-                    <Dropdown
-                      fillType="filled"
-                      textColor={'textLight'}
-                      fillColor={endDate ? 'secondary' : 'white'}
-                      placeholder={dateDropdownValue || 'Date invited'}
-                      labelColor={endDate ? 'white' : 'textLight'}
-                      list={[]}
-                      onChange={(item) => {}}
-                      className="w-full text-sm text-white"
-                    />
-                  </div>
-                )}
-
-                {filterDateAdded && (
-                  <div>
-                    <ReactDatePicker
-                      selected={startDate}
-                      onChange={onChange}
-                      startDate={startDate}
-                      endDate={endDate}
-                      selectsRange={true}
-                      inline
-                      shouldCloseOnSelect={true}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        {(isCHW ||
-          props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.chw) &&
-          isRegistered && (
-            <HealthCareWorkerSummary
-              summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
-            />
-          )}
-        {(isCHW ||
-          props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.chw) &&
-          isRegistered && (
-            <HealthCareWorkerIssues
-              summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
-            />
-          )}
-        {(isCHW ||
-          props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.chw) &&
-          isRegistered && (
-            <HalthCareWorkerHighlights
-              summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
-            />
-          )}
-
-        {(isTeamLead ||
-          props.location.state?.component ===
-            UsersRouteRedirectTypeEnum?.teamLeads) &&
-          isRegistered && (
-            <>
-              <TeamLeadSummary teamLeadReportData={teamLeadReportData} />
-              <TeamLeadMeetingReport teamLeadReportData={teamLeadReportData} />
-            </>
-          )}
-
-        <div className="flex w-full justify-between  pl-4">
-          <div className="flex w-10/12 flex-row  pl-4">
-            {isNotLockedOut(
-              userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-            ) &&
-              !isAdministrator && (
-                <div className="flex w-full items-center gap-2">
-                  {!isRegistered && (
-                    <SendInvite
-                      userData={userData?.userById}
-                      chwData={chwData?.GetHealthCareWorkerById}
-                      refetchUserData={refetchUserData}
-                    />
-                  )}
-                  <DeactivateUser
-                    userData={userData?.userById}
-                    chwData={chwData?.GetHealthCareWorkerById}
-                    refetchUserData={refetchUserData}
-                    isTeamLead={isTeamLead}
-                    teamLeadId={teamLeadId}
-                    hcwId={hcwId}
-                  />
-                </div>
-              )}
-          </div>
-
-          <div className="w-2/12">
-            <p className="mt-3 w-full text-sm text-gray-600">
-              User added to {data?.tenantContext.applicationName} App :{' '}
-              {formatDate(
-                chwData?.GetHealthCareWorkerById?.insertedDate ||
-                  userData?.userById?.insertedDate
-              )}
-            </p>
+        <div className="flex flex-col justify-center gap-4">
+          <Typography
+            type="h1"
+            color="textMid"
+            text={
+              userData?.userById?.fullName ??
+              chwData?.GetHealthCareWorkerById?.user?.fullName
+            }
+          />
+          <div className="flex gap-2">
+            {getRoleStatusChip(props.location.state?.component)}
+            {(isTeamLead || isCHWRole) && getConnectUsageChip(connectUsage)}
           </div>
         </div>
+      </div>
+      {chwData &&
+        chwData?.GetHealthCareWorkerById?.user?.roles?.map(
+          (i: any, index: number) => {
+            return (
+              <div
+                key={i.id}
+                className={classNames(
+                  i.name === RoleSystemNameEnum.CHW
+                    ? 'bg-primary'
+                    : 'bg-tertiary',
+                  ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
+                )}
+              >
+                <p className="text-16">
+                  {' '}
+                  {i.name === RoleSystemNameEnum.CHW ? 'CHW' : i.name}
+                </p>
+              </div>
+            );
+          }
+        )}
+      {!isNotLockedOut(
+        userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
+      ) && (
+        <Alert
+          className="mt-5 mb-3"
+          message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
+          type="error"
+        />
+      )}
+
+      <PersonalInfo
+        userData={userData?.userById}
+        chwData={chwData?.GetHealthCareWorkerById}
+        isRegistered={isRegistered}
+        component={props?.location?.state?.component}
+        isTeamLead={isTeamLead}
+        hcwId={hcwId}
+        clinicId={props?.location?.state?.clinicId}
+        refetchUserData={refetchUserData}
+        refetchCHW={refetchCHW}
+        isNotLockedOut={isNotLockedOut}
+        isAdministrator={isAdministrator}
+        userTypeToEdit={
+          userData?.userById?.roles.length && userData?.userById?.roles[0].name
+        }
+      />
+
+      {(isCHWRole ||
+        props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
+        isRegistered &&
+        tenant.isCHWConnect && (
+          <DatePicker
+            selectsRange
+            selected={startDate}
+            onChange={onChange}
+            startDate={startDate}
+            endDate={endDate}
+            shouldCloseOnSelect
+            colour="secondary"
+            textColour="white"
+            hideCalendarIcon
+            chevronIconColour="white"
+            showChevronIcon
+            isFullWidth={false}
+            className="w-64 self-end rounded-xl"
+            dateFormat={'d MMM yyyy'}
+          />
+        )}
+
+      {(isCHWRole ||
+        props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
+        isRegistered && (
+          <HealthCareWorkerSummary
+            summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+          />
+        )}
+      {(isCHWRole ||
+        props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
+        isRegistered && (
+          <HealthCareWorkerIssues
+            summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+          />
+        )}
+      {(isCHWRole ||
+        props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
+        isRegistered && (
+          <HealthCareWorkerHighlights
+            summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+          />
+        )}
+
+      {(isTeamLead ||
+        props.location.state?.component ===
+          UsersRouteRedirectTypeEnum?.teamLeads) && (
+        <>
+          <TeamLeadClinics clinicIds={clinicIds} />
+        </>
+      )}
+
+      {(isTeamLead ||
+        props.location.state?.component ===
+          UsersRouteRedirectTypeEnum?.teamLeads) &&
+        isRegistered && (
+          <>
+            <TeamLeadSummary
+              teamLeadReportData={teamLeadReportData}
+              clinicIds={clinicIds}
+            />
+            <TeamLeadMeetingReport
+              teamLeadReportData={teamLeadReportData}
+              clinicIds={clinicIds}
+            />
+          </>
+        )}
+
+      <div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
+        {isNotLockedOut(
+          userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
+        ) &&
+          !isTeamLeadRole && (
+            <div className="flex flex-col gap-2 lg:flex-row">
+              {!isRegistered && (
+                <SendInvite
+                  userData={userData?.userById}
+                  chwData={chwData?.GetHealthCareWorkerById}
+                  refetchUserData={refetchUserData}
+                />
+              )}
+              {/* {isRegistered && isAdministrator && (
+                <ResetUserPassword userData={userData?.userById} />
+              )} */}
+              <DeactivateUser
+                userData={userData?.userById}
+                chwData={chwData?.GetHealthCareWorkerById}
+                refetchUserData={refetchUserData}
+                isTeamLead={isTeamLead}
+                isAdministrator={isAdministrator}
+                teamLeadId={teamLeadId}
+                hcwId={hcwId}
+              />
+            </div>
+          )}
+
+        <p className="ml-auto text-sm text-gray-600">
+          User added to {tenant.tenant?.applicationName} App :{' '}
+          {formatDate(
+            chwData?.GetHealthCareWorkerById?.insertedDate ||
+              userData?.userById?.insertedDate
+          )}
+        </p>
       </div>
     </div>
   );

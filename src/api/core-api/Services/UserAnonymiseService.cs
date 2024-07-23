@@ -45,114 +45,111 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
 
-            if (userId != null)
-            {
-                try
-                { 
-                    if (userType == "Trainee")
-                    {
-                        var pracToDelete = _context.Practitioners.Where(p => p.UserId.Equals(userId)).FirstOrDefault();
+            try
+            { 
+                if (userType == "Trainee")
+                {
+                    var pracToDelete = _context.Practitioners.Where(p => p.UserId.Equals(userId)).FirstOrDefault();
                         
-                        var traineeToDelete = _context.Trainees.Where(c => c.UserId.ToString() == userId.ToString())
-                            .Include(c => c.User)
-                            .FirstOrDefault();                        
+                    var traineeToDelete = _context.Trainees.Where(c => c.UserId.ToString() == userId.ToString())
+                        .Include(c => c.User)
+                        .FirstOrDefault();                        
 
-                        if (traineeToDelete != null && traineeToDelete.User != null)
+                    if (traineeToDelete != null && traineeToDelete.User != null)
+                    {
+                        _notificationService.DeleteAllNotificationsForUser(traineeToDelete.UserId.ToString());
+
+                        if (pracToDelete != null)
                         {
-                            _notificationService.DeleteAllNotificationsForUser(traineeToDelete.UserId.ToString());
+                            //remove practitioner
+                            _context.Remove(pracToDelete);
+                        }
+                        var documents = _context.Documents.Where(x => x.UserId == userId).ToList();
+                        if (documents.Any())
+                        {
+                            foreach (var docRow in documents)
+                            { _context.Remove(docRow); }
+                        }
+                        var jobNotification = _context.JobNotifications.Where(x => x.UserId == userId).ToList();
+                        if (jobNotification.Any())
+                        {
+                            foreach (var jobNotificationRow in jobNotification)
+                            { _context.Remove(jobNotificationRow); }
+                        }
+                        //remove classroomgroups and children via classrooms and learners linke dto this user
+                        List<ClassroomGroup> classroomGroups = _context.ClassroomGroupss.Where(x => x.UserId == userId).ToList();
+                        List<Classroom> classrooms = _context.Classrooms.Where(x => x.UserId == userId).ToList();
 
-                            if (pracToDelete != null)
+                        if (classroomGroups.Any())
+                        {
+                            foreach (var group in classroomGroups)
                             {
-                                //remove practitioner
-                                _context.Remove(pracToDelete);
-                            }
-                            var documents = _context.Documents.Where(x => x.UserId == userId).ToList();
-                            if (documents.Any())
-                            {
-                                foreach (var docRow in documents)
-                                { _context.Remove(docRow); }
-                            }
-                            var jobNotification = _context.JobNotifications.Where(x => x.UserId == userId).ToList();
-                            if (jobNotification.Any())
-                            {
-                                foreach (var jobNotificationRow in jobNotification)
-                                { _context.Remove(jobNotificationRow); }
-                            }
-                            //remove classroomgroups and children via classrooms and learners linke dto this user
-                            List<ClassroomGroup> classroomGroups = _context.ClassroomGroupss.Where(x => x.UserId == userId).ToList();
-                            List<Classroom> classrooms = _context.Classrooms.Where(x => x.UserId == userId).ToList();
-
-                            if (classroomGroups.Any())
-                            {
-                                foreach (var group in classroomGroups)
+                                List<Learner> learners = _context.Learners.Where(x => x.ClassroomGroupId.Equals(group.Id)).ToList();
+                                if (learners.Any())
                                 {
-                                    List<Learner> learners = _context.Learners.Where(x => x.ClassroomGroupId.Equals(group.Id)).ToList();
-                                    if (learners.Any())
-                                    {
-                                        foreach (var learner in learners) {
-                                            List<Child> children = _context.Children.Where(x => x.UserId.Equals(learner.UserId)).ToList();
-                                            if (children.Any())
+                                    foreach (var learner in learners) {
+                                        List<Child> children = _context.Children.Where(x => x.UserId.Equals(learner.UserId)).ToList();
+                                        if (children.Any())
+                                        {
+                                            foreach (var child in children)
                                             {
-                                                foreach (var child in children)
-                                                {
-                                                    _context.Remove(child);
-                                                }
+                                                _context.Remove(child);
                                             }
-                                            _context.Remove(learner);
                                         }
+                                        _context.Remove(learner);
                                     }
-                                    _context.Remove(group);
                                 }
+                                _context.Remove(group);
                             }
-                            if (classrooms.Any())
+                        }
+                        if (classrooms.Any())
+                        {
+                            foreach (var classroom in classrooms)
                             {
-                                foreach (var classroom in classrooms)
-                                {
-                                    _context.Remove(classroom);
-                                }
+                                _context.Remove(classroom);
                             }
-                            List<Visit> pracVisits = _context.Visits.Where(x => x.PractitionerId == userId).ToList();
-                            if (pracVisits.Any())
+                        }
+                        List<Visit> pracVisits = _context.Visits.Where(x => x.PractitionerId == userId).ToList();
+                        if (pracVisits.Any())
+                        {
+                            foreach (var visit in pracVisits)
                             {
-                                foreach (var visit in pracVisits)
-                                {
-                                    _context.Remove(visit);
-                                }
+                                _context.Remove(visit);
                             }
-                            List<Visit> traineeVisits = _context.Visits.Where(x => x.TraineeId == userId).ToList();
-                            if (traineeVisits.Any())
+                        }
+                        List<Visit> traineeVisits = _context.Visits.Where(x => x.TraineeId == userId).ToList();
+                        if (traineeVisits.Any())
+                        {
+                            foreach (var visit in traineeVisits)
                             {
-                                foreach (var visit in traineeVisits)
-                                {
-                                    _context.Remove(visit);
-                                }
+                                _context.Remove(visit);
                             }
-                            List<ClubMember> clubsMembers = _context.ClubMember.Where(x => x.PractitionerId == userId).ToList();
-                            if (clubsMembers.Any())
+                        }
+                        List<ClubMember> clubsMembers = _context.ClubMember.Where(x => x.PractitionerId == userId).ToList();
+                        if (clubsMembers.Any())
+                        {
+                            foreach (var clubsMember in clubsMembers)
                             {
-                                foreach (var clubsMember in clubsMembers)
-                                {
-                                    _context.Remove(clubsMember);
-                                }
+                                _context.Remove(clubsMember);
                             }
-                            //remove hierarchy
-                            _hierarchyEngine.DeleteHierarchy(userId);
-                            //remove trainee
-                            _context.Remove(traineeToDelete);
-                            _context.SaveChanges();
-                            //remove user
-                            var result = _userManager.DeleteAsync(traineeToDelete.User).Result;
-                            if (result.Succeeded)
-                            {
-                                _logger.LogInformation("Trainee Removal Succeeded for Type: {0} and UserId {1}", userType, userId);
-                            }
+                        }
+                        //remove hierarchy
+                        _hierarchyEngine.DeleteHierarchy(userId);
+                        //remove trainee
+                        _context.Remove(traineeToDelete);
+                        _context.SaveChanges();
+                        //remove user
+                        var result = _userManager.DeleteAsync(traineeToDelete.User).Result;
+                        if (result.Succeeded)
+                        {
+                            _logger.LogInformation("Trainee Removal Succeeded for Type: {0} and UserId {1}", userType, userId);
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "AnonymiseUser Failed for trainee Id: {0} on {1}", userId, ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AnonymiseUser Failed for trainee Id: {0} on {1}", userId, ex.Message);
             }
         }
 

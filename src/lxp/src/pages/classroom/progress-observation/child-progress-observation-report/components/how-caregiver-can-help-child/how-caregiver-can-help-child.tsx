@@ -23,9 +23,6 @@ export const CaregiverCanHelpChildWith: React.FC<
     progressTrackingSelectors.getProgressTrackingCategories
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
 
   const {
     getValues: getFormValue,
@@ -72,14 +69,14 @@ export const CaregiverCanHelpChildWith: React.FC<
         textInputType={'textarea'}
         register={formRegister}
         nameProp={'howCanCaregiverHelpChild'}
-        label={`How can ${childUser?.firstName}’s caregiver help ${childUser?.firstName} to learn and grow?`}
+        label={`How can ${child?.user?.firstName}’s caregiver help ${child?.user?.firstName} to learn and grow?`}
         placeholder={`E.g. Asking him how he is feeling every morning and asking him to name items in and around the house.`}
       />
 
       <Typography
         type={'h3'}
         color={'textDark'}
-        text={`Your plans for supporting ${childUser?.firstName}`}
+        text={`Your plans for supporting ${child?.user?.firstName}`}
         className={'mt-4'}
       />
 
@@ -104,7 +101,7 @@ export const CaregiverCanHelpChildWith: React.FC<
                 !categoryFromReport?.supportingTask
               }
               categoryColour={cat.color}
-              childName={`${childUser?.firstName}`}
+              childName={`${child?.user?.firstName}`}
               helpingSkillId={categoryFromReport?.supportingTask?.taskId || 0}
               toDoNote={categoryFromReport?.supportingTask?.todoText || ''}
             />

@@ -2,18 +2,15 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
-using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
-using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -39,25 +36,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [UseFiltering]
         [UseSorting]
         public List<PortalUsersHCWModel> GetAllHealthCareWorkers(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
+            [Service] HealthCareWorkerManager healthCareWorkerManager,
             CancellationToken cancellationToken, 
             PagedQueryInput pagingInput = null,
             string search = null,
-            List<string> provinceSearch = null,
+            List<Guid> provinceSearch = null,
             List<string> clinicSearch = null,
-            List<string> subDistrictSearch = null,
+            List<Guid> subDistrictSearch = null,
             List<string> visitSearch = null,
             List<string> connectUsageSearch = null)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput);
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var shortenUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
-            var hasFilters = false;
-
             if (cancellationToken.IsCancellationRequested)
+            {
                 return null;
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -538,6 +528,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var pointsTodoItems = pointsService.GetHealthCareWorkerPointsTodoItems(healthCareWorkerId);
 
             return pointsTodoItems;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<HealthCareWorker> GetHealthCareWorkersForClinicId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid clinicId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
+
+            return healthCareWorkerRepo.GetAll().Where(x => x.IsActive && x.ClinicId == clinicId).ToList();
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
+        [UseSorting]
+        public List<PortalHealthCareWorkerModel> GetHealthCareWorkersOptedOutOfMonthlyMeeting(
+            [Service] HealthCareWorkerManager healthCareWorkerManager,
+            int month,
+            int year)
+        {
+            var healthCareWorkers = healthCareWorkerManager.GetHealthCareWorkersOptedOutOfMonthlyMeetings(month, year);
+
+            return healthCareWorkers;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PortalUsersHCWModel GetPortalHealthCareWorkersById(
+            [Service] HealthCareWorkerManager healthCareWorkerManager,
+            Guid healthCareWorkerId)
+        {
+            var healthCareWorker = healthCareWorkerManager.GetPortalHealthCareWorkerById(healthCareWorkerId);
+
+            return healthCareWorker;
         }
     }
 }

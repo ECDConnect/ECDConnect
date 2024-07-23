@@ -3,6 +3,7 @@ import {
   useDialog,
   ClassroomGroupDto,
   usePrevious,
+  LocalStorageKeys,
 } from '@ecdlink/core';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import {
@@ -10,7 +11,7 @@ import {
   ProgrammeTypeEnum,
 } from '@ecdlink/graphql';
 import { IonContent } from '@ionic/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
@@ -41,6 +42,9 @@ import ROUTES from '@/routes/routes';
 import { useNotificationService } from '@/hooks/useNotificationService';
 import { notificationActions } from '@/store/notifications';
 import { PractitionerSignature } from '../components/practitioner-signature/practitioner-signature';
+import { SelectPractitionerRole } from '../components/select-practitioner-role/select-practitioner-role';
+import { PreschoolCodeCheck } from '../components/preschool-code-check/preschool-code-check';
+import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -51,12 +55,12 @@ export const SetupPrincipal: React.FC = () => {
   const { syncClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
-  const classroom = useSelector(classroomsSelectors.getClassroom);
   const user = useSelector(userSelectors.getUser);
-  const programmeType = useSelector(classroomsSelectors.getProgrammeType());
+  const classroom = useSelector(classroomsSelectors?.getClassroom);
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [isNotPrincipal, setIsNotPrincipal] = useState(false);
   const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
@@ -64,6 +68,9 @@ export const SetupPrincipal: React.FC = () => {
     PractitionerSetupSteps.WELCOME
   );
   const [isLoading, setIsLoading] = useState(false);
+  const inviTePractitionerUserId = localStorage
+    .getItem(LocalStorageKeys.practitionerInvitedPrincipalUserId)
+    ?.replace(/['"]+/g, '');
 
   const [confirmPractitionerPage, setConfirmPractitionerPage] =
     useState<ConfirmPractitionersSteps>(
@@ -74,17 +81,28 @@ export const SetupPrincipal: React.FC = () => {
   );
 
   const previousPage = usePrevious(page);
+  const subTitleRules =
+    confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+    confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER ||
+    page === PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE ||
+    classesPage === ConfirmClassesSteps.ADD_CLASS ||
+    classesPage === ConfirmClassesSteps.EDIT_CLASS;
+
+  const showBgRules =
+    confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER ||
+    (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
+      classesPage === ConfirmClassesSteps.ADD_CLASS) ||
+    (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
+      classesPage === ConfirmClassesSteps.EDIT_CLASS) ||
+    confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER;
 
   const { stopService } = useNotificationService();
 
   useEffect(() => {
     if (previousPage === page) return;
 
-    if (
-      previousPage === PractitionerSetupSteps.SETUP_PROGRAMME &&
-      page === PractitionerSetupSteps.ADD_PHOTO
-    ) {
-      return setLabel('step 2 of 2');
+    if (page === PractitionerSetupSteps.ADD_PHOTO) {
+      return setLabel('step 4 of 4');
     }
 
     if (
@@ -94,19 +112,28 @@ export const SetupPrincipal: React.FC = () => {
       setIsFundaAppAdmin(false);
     }
 
+    if (page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS) {
+      setLabel('Step 2 of 4');
+    }
+
+    if (page === PractitionerSetupSteps.SETUP_PROGRAMME) {
+      setLabel('Step 1 of 4');
+    }
+
     if (page === PractitionerSetupSteps.WELCOME) {
       setLabel('Welcome');
-    } else {
-      setLabel(
-        `step ${page} of ${
-          Object.values(PractitionerSetupSteps).filter(Number).length
-        }`
-      );
     }
-  }, [page, previousPage]);
+
+    if (
+      classesPage === ConfirmClassesSteps.CONFIRM_CLASSES &&
+      page === PractitionerSetupSteps.CONFIRM_CLASSES
+    ) {
+      return setLabel('step 3 of 4');
+    }
+  }, [classesPage, page, previousPage]);
 
   const onAllStepsComplete = async () => {
-    if (isNotPrincipal === true) {
+    if (isNotPrincipal === true && practitioner?.progress !== 1) {
       if (user) {
         await appDispatch(
           practitionerThunkActions.updatePractitionerRegistered({
@@ -131,25 +158,25 @@ export const SetupPrincipal: React.FC = () => {
       (x) => x.enumId === ProgrammeTypeEnum.Playgroup
     );
 
-    if (programmeType?.id === playGroupProgrammeType?.id && classroom?.id) {
-      const unsureClassProgrammeInputModel: ClassroomGroupDto = {
-        id: newGuid(),
-        classroomId: classroom?.id,
-        isActive: true,
-        programmeTypeId: programmeType?.id,
-        name: NoPlaygroupClassroomType.name,
-        userId: user?.id, // Unsure classroom will belong to the principal
-      };
-      appDispatch(
-        classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
-      );
-    }
+    // if (programmeType?.id === playGroupProgrammeType?.id && classroom?.id) {
+    //   const unsureClassProgrammeInputModel: ClassroomGroupDto = {
+    //     id: newGuid(),
+    //     classroomId: classroom?.id,
+    //     isActive: true,
+    //     programmeTypeId: programmeType?.id,
+    //     name: NoPlaygroupClassroomType.name,
+    //     userId: user?.id, // Unsure classroom will belong to the principal
+    //   };
+    //   appDispatch(
+    //     classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
+    //   );
+    // }
 
     // Update classroom number of practitioners
     appDispatch(
-      classroomsActions.updateClassroomNumberPractitioners({
-        numberPractitioners: principalPractitioners?.length ?? 0,
-      })
+      classroomsActions.updateClassroomNumberPractitioners(
+        principalPractitioners?.length ?? 0
+      )
     );
 
     // Update classroom data
@@ -157,13 +184,17 @@ export const SetupPrincipal: React.FC = () => {
 
     // Update the principal data
     if (userAuth?.auth_token && user?.id) {
+      if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+        history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
+        return;
+      }
       await new PractitionerService(
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);
 
       await appDispatch(
-        practitionerThunkActions.updatePractitionerShareInfo({
-          practitionerId: user.id,
+        practitionerThunkActions.getPractitionerByUserId({
+          userId: user?.id || '',
         })
       );
 
@@ -183,29 +214,70 @@ export const SetupPrincipal: React.FC = () => {
     }
 
     appDispatch(notificationActions.resetFrontendNotificationState());
+    appDispatch(notificationActions.resetNotificationState());
 
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
         principalPractitioners.forEach(async (principalPractitioner) => {
-          const input: MutationAddPractitionerToPrincipalArgs = {
-            userId: user?.id,
-            idNumber: principalPractitioner.idNumber,
-            firstName: principalPractitioner.firstName,
-            lastName: principalPractitioner.surname,
-            programmeTypeId: programmeType?.id,
-          };
-          await new PractitionerService(
-            userAuth?.auth_token
-          ).AddPractitionerToPrincipal(input);
+          if (
+            !principalPractitioner?.userId &&
+            principalPractitioner?.phoneNumber &&
+            principalPractitioner?.userId !== inviTePractitionerUserId
+          ) {
+            const principalInvite = await new PractitionerService(
+              userAuth?.auth_token!
+            )
+              .sendPractitionerInviteToPreschool(
+                principalPractitioner?.phoneNumber,
+                classroom?.preschoolCode!,
+                user?.id!
+              )
+              .catch((error) => {
+                console.log(error);
+                return;
+              });
+          } else {
+            const input: MutationAddPractitionerToPrincipalArgs = {
+              userId: user?.id,
+              idNumber: principalPractitioner.idNumber,
+              firstName: principalPractitioner.firstName,
+              lastName: principalPractitioner.surname,
+            };
+            await new PractitionerService(
+              userAuth?.auth_token
+            ).AddPractitionerToPrincipal(input);
+          }
         });
+        if (inviTePractitionerUserId) {
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerProgress({
+              practitionerId: inviTePractitionerUserId,
+              progress: 2.0,
+            })
+          ).unwrap();
+
+          await appDispatch(
+            updatePrincipalInvitation({
+              userId: inviTePractitionerUserId,
+              principalHierarchy: user?.id!,
+              accepted: true,
+            })
+          ).unwrap();
+        }
         await appDispatch(
           practitionerThunkActions.getAllPractitioners({})
         ).unwrap();
       }
     }
+    localStorage.removeItem(
+      LocalStorageKeys.practitionerInvitedPrincipalIdNumber
+    );
+    localStorage.removeItem(
+      LocalStorageKeys.practitionerInvitedPrincipalUserId
+    );
     setIsLoading(false);
     stopService();
-    history.push(ROUTES.ROOT);
+    history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
   };
 
   const exitPrompt = () => {
@@ -221,7 +293,7 @@ export const SetupPrincipal: React.FC = () => {
           }
           actionButtons={[
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Exit',
               onClick: () => {
                 onSubmit();
@@ -232,12 +304,12 @@ export const SetupPrincipal: React.FC = () => {
               leadingIcon: 'LoginIcon',
             },
             {
-              colour: 'primary',
+              colour: 'quatenary',
               text: 'Continue editing',
               onClick: () => {
                 onCancel();
               },
-              textColour: 'primary',
+              textColour: 'quatenary',
               type: 'outlined',
               leadingIcon: 'PencilIcon',
             },
@@ -265,16 +337,30 @@ export const SetupPrincipal: React.FC = () => {
         return (
           <WelcomePage
             onNext={() => {
-              setPage(PractitionerSetupSteps.SETUP_PROGRAMME);
+              setPage(PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE);
             }}
           />
         );
 
+      case PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE:
+        return isNotPrincipal ? (
+          <PreschoolCodeCheck onNext={setPage} />
+        ) : (
+          <SelectPractitionerRole
+            onNext={() => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)}
+            setIsNotPrincipal={setIsNotPrincipal}
+            setPage={setPage}
+          />
+        );
+
       case PractitionerSetupSteps.SETUP_PROGRAMME:
-        return (
+        return isNotPrincipal ? (
+          <PreschoolCodeCheck onNext={setPage} />
+        ) : (
           <AddProgrammeForm
             onNext={setPage}
             setIsNotPrincipal={setIsNotPrincipal}
+            isNotPrincipal={isNotPrincipal}
             isFundaAppAdmin={isFundaAppAdmin}
             setIsFundaAppAdmin={setIsFundaAppAdmin}
             onChangeIsPrincipal={onChangeIsPrincipal}
@@ -317,11 +403,10 @@ export const SetupPrincipal: React.FC = () => {
         return <></>;
     }
   };
-
   const onBack = () => {
     switch (page) {
       case PractitionerSetupSteps.SETUP_PROGRAMME:
-        return setPage(PractitionerSetupSteps.WELCOME);
+        return setPage(PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE);
 
       case PractitionerSetupSteps.CONFIRM_PRACTITIONERS:
         if (
@@ -352,7 +437,13 @@ export const SetupPrincipal: React.FC = () => {
         return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
 
       case PractitionerSetupSteps.ADD_PHOTO:
-        return setPage(PractitionerSetupSteps.ADD_SIGNATURE);
+        if (practitioner?.progress === 1 || isNotPrincipal) {
+          if (practitioner?.progress === 2) {
+            return setPage(PractitionerSetupSteps.SETUP_PROGRAMME);
+          }
+          return setPage(PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE);
+        }
+        return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
 
       case PractitionerSetupSteps.WELCOME:
       default:
@@ -360,39 +451,38 @@ export const SetupPrincipal: React.FC = () => {
     }
   };
 
+  const renderBannerWrapperTitle = useMemo(() => {
+    if (
+      confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+      confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
+    ) {
+      return 'Add Practitioners';
+    }
+
+    if (
+      page === PractitionerSetupSteps.SETUP_PROGRAMME ||
+      page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS ||
+      page === PractitionerSetupSteps.CONFIRM_CLASSES ||
+      page === PractitionerSetupSteps.ADD_PHOTO
+    ) {
+      return 'Preschool information';
+    }
+    return 'Edit profile';
+  }, [confirmPractitionerPage, page]);
+
   return (
     <IonContent scrollY={true}>
       <BannerWrapper
-        size={page === PractitionerSetupSteps.WELCOME ? 'large' : 'medium'}
+        size={'large'}
         renderBorder={true}
-        showBackground={page === PractitionerSetupSteps.WELCOME}
-        title={
-          confirmPractitionerPage ===
-            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
-          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
-            ? 'Add Practitioners'
-            : 'Edit Profile'
-        }
-        subTitle={
-          confirmPractitionerPage ===
-            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
-          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
-            ? ''
-            : label
-        }
-        onBack={
-          !isFundaAppAdmin && isNotPrincipal
-            ? () => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)
-            : onBack
-        }
+        showBackground={showBgRules ? false : true}
+        title={renderBannerWrapperTitle}
+        subTitle={subTitleRules ? '' : label}
+        onBack={onBack}
         onClose={exitPrompt}
         backgroundColour={'white'}
-        className={page === PractitionerSetupSteps.WELCOME ? 'relative' : ''}
-        backgroundUrl={
-          page === PractitionerSetupSteps.WELCOME
-            ? theme?.images.graphicOverlayUrl
-            : ''
-        }
+        className={'relative'}
+        backgroundUrl={theme?.images.graphicOverlayUrl}
         displayOffline={!isOnline}
       >
         <div className={'px-4'}>{renderStep(page)}</div>

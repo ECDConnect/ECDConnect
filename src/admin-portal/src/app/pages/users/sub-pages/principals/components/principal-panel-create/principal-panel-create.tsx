@@ -8,6 +8,7 @@ import {
   passwordSchema,
   practitionerSchema,
   RoleDto,
+  RoleSystemNameEnum,
   siteAddressSchema,
   useNotifications,
   userSchema,
@@ -66,6 +67,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
+    watch,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
@@ -263,7 +265,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
   const addUserRole = () => {
     const role = roleData.roles.find(
-      (role: RoleDto) => role.name === 'Principal'
+      (role: RoleDto) => role.systemName === RoleSystemNameEnum.Principal
     );
 
     const copy = [...selectedUserRoles];
@@ -274,8 +276,6 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   };
 
   const getIsValid = () => {
-    console.log(userDetailFormErrors);
-    console.log(practitionerFormErrors);
     let isValid = isUserDetailValid;
     if (!isPractitionerValid) isValid = false;
     return isValid ? true : false;

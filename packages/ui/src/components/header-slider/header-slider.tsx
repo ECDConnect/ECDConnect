@@ -114,11 +114,7 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
               style={{ width: width - MARGIN }}
             >
               <div className={styles.imageWrapper}>
-                <img
-                  src={slide.image}
-                  style={{ width: '100%' }}
-                  className={styles.cardBanner}
-                />
+                <img src={slide.image} className={styles.cardBanner} />
               </div>
               <div className={styles.cardInformation}>
                 {slide.status && (

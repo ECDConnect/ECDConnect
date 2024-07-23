@@ -7,27 +7,21 @@ import {
   DialogPosition,
   LoadingSpinner,
   StackedList,
-  Typography,
 } from '@ecdlink/ui';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { PractitionerBusinessParams } from './coach-practitioner-business.types';
-import { traineeSelectors } from '@/store/trainee';
-import { differenceInMonths, format } from 'date-fns';
-import { IncomeStatementDates } from '@/constants/Dates';
 import { IncomeStatements } from './components/statements/income-statements';
 import {
   practitionerForCoachSelectors,
   practitionerForCoachThunkActions,
 } from '@/store/practitionerForCoach';
 import { useAppDispatch } from '@/store';
-import { WhatsappCall } from './components/contact/whatsapp-call';
-import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { ProfitLossDetails } from './components/statements/profit-loss-details';
 import { StatementNotSubmitted } from './components/statements/not-submitted';
-import { StartupSupportEnding } from './components/support/startup-support-ending';
+import { getStatementBalance } from '@/utils/statements/statements-utils';
 
 export const CoachPractitionerBusiness = () => {
   const { isOnline } = useOnlineStatus();
@@ -38,42 +32,11 @@ export const CoachPractitionerBusiness = () => {
   const practitioner = useSelector(getPractitionerByUserId(userId));
   const practitionerFirstName = practitioner?.user?.firstName;
   const practitionerFullname = `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`;
-
-  const timeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
   const statements = useSelector(
     practitionerForCoachSelectors.getStatementsForUser(userId)
   );
-  const unsubmittedIncome = useSelector(
-    practitionerForCoachSelectors.getUnsubmittedIncomeForUser(userId)
-  );
-  const unsubmittedExpenses = useSelector(
-    practitionerForCoachSelectors.getUnsubmittedExpensesForUser(userId)
-  );
 
   const currentDate = useMemo(() => new Date(), []);
-
-  const hasStartUpSupport =
-    timeline?.startUpSupportStartDate !== null &&
-    timeline?.startUpSupportEndDate !== null;
-
-  const startUpSupportEndDate = useMemo(
-    () => new Date(timeline?.startUpSupportEndDate),
-    [timeline?.startUpSupportEndDate]
-  );
-
-  const monthDifference = differenceInMonths(
-    currentDate,
-    startUpSupportEndDate
-  );
-
-  const isStartUpSupportEnding =
-    hasStartUpSupport && monthDifference >= -3 && monthDifference <= 0;
-
-  const isSubmitWindowOpen =
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
-    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
@@ -84,15 +47,22 @@ export const CoachPractitionerBusiness = () => {
 
   const [showProfitDialog, setShowProfitDialog] = useState(false);
   const [showNotSubmittedDialog, setShowNotSubmittedDialog] = useState(false);
-  const [showStartupSupportDialog, setShowStartupSupportDialog] =
-    useState(false);
 
-  var lastStatementsBalance = useMemo(
-    () =>
-      statements[statements.length - 1]?.balance +
-      statements[statements.length - 2]?.balance,
+  var lastMonthStatementsBalance = useMemo(
+    () => getStatementBalance(statements[statements.length - 1]),
     [statements]
   );
+
+  var lastTwoMonthStatementsBalance = useMemo(
+    () => getStatementBalance(statements[statements.length - 2]),
+    [statements]
+  );
+
+  const hasProfit =
+    lastMonthStatementsBalance > 0 && lastTwoMonthStatementsBalance > 0;
+
+  const hasTwoMonthsLoss =
+    lastMonthStatementsBalance < 0 && lastTwoMonthStatementsBalance < 0;
 
   var lastStatementContactByCoach = useMemo(
     () =>
@@ -101,110 +71,6 @@ export const CoachPractitionerBusiness = () => {
         : statements[statements.length - 1]?.contactedByCoach,
     [statements]
   );
-
-  const renderData = useMemo(() => {
-    const listItems = [];
-
-    if (isThisMonthSubmitted && isSubmitWindowOpen) {
-      listItems.push({
-        title: 'Income Statement not submitted',
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitle: currentSubmitMonth,
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        menuIcon: 'ExclamationIcon',
-        menuIconClassName: 'text-white',
-        showIcon: true,
-        onActionClick: () => setShowNotSubmittedDialog(true),
-        iconBackgroundColor: 'alertMain',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-        },
-        text: '1',
-        classNames: 'bg-uiBg',
-      });
-    }
-
-    if (isStartUpSupportEnding) {
-      listItems.push({
-        title: 'Start-up support ending soon',
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitle: format(startUpSupportEndDate, 'LLL yyyy'),
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        menuIcon: 'ExclamationIcon',
-        menuIconClassName: 'text-white',
-        showIcon: true,
-        onActionClick: () => setShowStartupSupportDialog(true),
-        iconBackgroundColor: 'alertMain',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-        },
-        text: '1',
-        classNames: 'bg-uiBg',
-      });
-    }
-    if (
-      statements.length >= 2 &&
-      lastStatementsBalance !== 0 &&
-      !lastStatementContactByCoach
-    ) {
-      listItems.push({
-        title:
-          lastStatementsBalance > 0
-            ? `${practitionerFirstName} made a profit for 2 months in a row!`
-            : `Programme running at a loss`,
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitle: lossProfitMonths,
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        menuIcon:
-          lastStatementsBalance > 0 ? 'SparklesIcon' : 'ExclamationIcon',
-        menuIconClassName: 'text-white',
-        showIcon: true,
-        onActionClick: () => setShowProfitDialog(true),
-        iconBackgroundColor:
-          lastStatementsBalance > 0 ? 'successMain' : 'alertMain',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour:
-              lastStatementsBalance > 0 ? 'successMain' : 'alertMain',
-            textColour: 'white',
-          },
-        },
-        text: '1',
-        classNames: 'bg-uiBg',
-      });
-    }
-
-    return (
-      <StackedList
-        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
-        type="MenuList"
-        listItems={listItems}
-      />
-    );
-  }, [
-    currentSubmitMonth,
-    isStartUpSupportEnding,
-    isSubmitWindowOpen,
-    isThisMonthSubmitted,
-    lastStatementContactByCoach,
-    lastStatementsBalance,
-    lossProfitMonths,
-    practitionerFirstName,
-    startUpSupportEndDate,
-    statements.length,
-  ]);
 
   const updateStatements = useCallback(async () => {
     setIsLoading(true);
@@ -217,16 +83,6 @@ export const CoachPractitionerBusiness = () => {
         endDate: undefined,
       })
     );
-    await appDispatch(
-      practitionerForCoachThunkActions.getUserExpensesForCoach({
-        userId: userId,
-      })
-    );
-    await appDispatch(
-      practitionerForCoachThunkActions.getUserIncomeForCoach({
-        userId: userId,
-      })
-    );
     setIsLoading(false);
   }, [setIsLoading, appDispatch, userId]);
 
@@ -236,54 +92,23 @@ export const CoachPractitionerBusiness = () => {
   }, []);
 
   useEffect(() => {
-    if (
-      unsubmittedIncome.length > 0 ||
-      unsubmittedExpenses.length > 0 ||
-      statements.length > 0
-    ) {
+    if (statements.length > 0) {
       setHasIncomeStatements(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statements, unsubmittedIncome, unsubmittedExpenses]);
+  }, [statements]);
 
   useEffect(() => {
-    // Outside submit
-    if (!isSubmitWindowOpen) {
-      setIsThisMonthSubmitted(
-        !!statements?.find((x) => x.month === currentDate.getMonth() + 1)
-      );
-      setCurrentSubmitMonth(
-        `${getMonthName(currentDate.getMonth()).substring(
-          0,
-          3
-        )} ${currentDate.getFullYear()}`
-      );
-    } else {
-      // In window and current month
-      if (currentDate.getDate() >= IncomeStatementDates.SubmitStartDay) {
-        setIsThisMonthSubmitted(
-          !!statements?.find((x) => x.month === currentDate.getMonth() + 1)
-        );
-        setCurrentSubmitMonth(
-          `${getMonthName(currentDate.getMonth()).substring(
-            0,
-            3
-          )} ${currentDate.getFullYear()}`
-        );
-      } else {
-        // In window but next month
-        setIsThisMonthSubmitted(
-          !!statements?.find((x) => x.month === currentDate.getMonth())
-        );
-        setCurrentSubmitMonth(
-          `${getMonthName(currentDate.getMonth() - 1).substring(
-            0,
-            3
-          )} ${currentDate.getFullYear()}`
-        );
-      }
-    }
-  }, [currentDate, isSubmitWindowOpen, statements]);
+    setIsThisMonthSubmitted(
+      !!statements?.find((x) => x.month === currentDate.getMonth() + 1)
+    );
+    setCurrentSubmitMonth(
+      `${getMonthName(currentDate.getMonth()).substring(
+        0,
+        3
+      )} ${currentDate.getFullYear()}`
+    );
+  }, [currentDate, statements]);
 
   useEffect(() => {
     const secondLastStatementMonth = !!statements[statements.length - 2]
@@ -316,20 +141,114 @@ export const CoachPractitionerBusiness = () => {
     return !!statements?.find((x) => x.month === currentMonth);
   }, [statements]);
 
+  const renderData = useMemo(() => {
+    const listItems = [];
+
+    if (!isThisMonthSubmitted) {
+      listItems.push({
+        title: 'No income or expenses added',
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: currentSubmitMonth,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'ExclamationIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () => setShowNotSubmittedDialog(true),
+        iconBackgroundColor: 'alertMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
+        },
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
+
+    if (statements.length >= 2 && hasProfit) {
+      listItems.push({
+        title: `${practitionerFirstName} made a profit for 2 months in a row!`,
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: lossProfitMonths,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'SparklesIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () => setShowProfitDialog(true),
+        iconBackgroundColor: 'successMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'successMain',
+            textColour: 'white',
+          },
+        },
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
+
+    if (
+      statements.length >= 2 &&
+      hasTwoMonthsLoss &&
+      !lastStatementContactByCoach
+    ) {
+      listItems.push({
+        title: `Programme running at a loss`,
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: lossProfitMonths,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'ExclamationIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () => setShowProfitDialog(true),
+        iconBackgroundColor: 'alertMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
+        },
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
+
+    return (
+      <StackedList
+        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+        type="MenuList"
+        listItems={listItems}
+      />
+    );
+  }, [
+    currentSubmitMonth,
+    isThisMonthSubmitted,
+    lastStatementContactByCoach,
+    lossProfitMonths,
+    practitionerFirstName,
+    statements.length,
+  ]);
+
   return (
     <>
       <BannerWrapper
         size="small"
         renderOverflow
         displayOffline={!isOnline}
-        title="SmartStarter business"
+        title="Finances"
         subTitle={`${practitionerFullname}`}
         onBack={() =>
           history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
             practitionerId: userId,
           })
         }
-        className="p-4"
       >
         <div className="mt-4 flex justify-center">
           <div className="w-11/12">{renderData}</div>
@@ -345,37 +264,11 @@ export const CoachPractitionerBusiness = () => {
         ) : hasIncomeStatements ? (
           <IncomeStatements
             statements={statements}
-            unsubmittedIncome={unsubmittedIncome}
-            unsubmittedExpenses={unsubmittedExpenses}
-            isSubmitWindowOpen={isSubmitWindowOpen}
             isThisMonthSubmitted={isThisMonthSubmitted}
             isLastMonthSubmitted={isLastMonthSubmitted}
           />
         ) : (
-          <div className="h-full px-4 py-2 pt-7">
-            <div className="mt-2 flex flex-wrap justify-center p-8">
-              <div className="">
-                <MoneyIcon />
-              </div>
-            </div>
-            <div>
-              <Typography
-                className="mt-4 text-center"
-                color="textDark"
-                text={`${practitionerFirstName} has not added any income or expenses yet!`}
-                type={'h3'}
-              />
-            </div>
-            <div>
-              <Typography
-                className="mt-2 text-center"
-                color="textMid"
-                text={`You can contact ${practitionerFirstName} to see if they need support.`}
-                type={'body'}
-              />
-            </div>
-            <WhatsappCall />
-          </div>
+          <div></div>
         )}
       </BannerWrapper>
       <Dialog
@@ -397,15 +290,6 @@ export const CoachPractitionerBusiness = () => {
         <StatementNotSubmitted
           onBack={() => setShowNotSubmittedDialog(false)}
           month={currentSubmitMonth}
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showStartupSupportDialog}
-        position={DialogPosition.Full}
-      >
-        <StartupSupportEnding
-          onBack={() => setShowStartupSupportDialog(false)}
         />
       </Dialog>
     </>

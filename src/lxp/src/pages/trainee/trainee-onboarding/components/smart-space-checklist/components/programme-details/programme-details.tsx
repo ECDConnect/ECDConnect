@@ -2,7 +2,6 @@ import {
   ContentConsentTypeEnum,
   ProgrammeTypeDto,
   ClassroomDto,
-  SiteAddressDto,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -49,6 +48,7 @@ import {
   classroomsThunkActions,
 } from '@/store/classroom';
 import { cloneDeep } from 'lodash';
+import { SiteAddressDto } from '@/models/classroom/site-address.dto';
 
 export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
   setSectionQuestions,
@@ -226,30 +226,23 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
   };
 
   const changeSmartSpaceCheckAddress = async () => {
-    const classroomCopy = cloneDeep(classroom);
-    if (classroomCopy) {
-      const siteAddressId = classroomCopy.siteAddressId || newGuid();
+    const siteAddressId = classroom?.siteAddress?.id || newGuid();
 
-      const siteAddress: SiteAddressDto = {
-        id: siteAddressId,
-        addressLine1: editedAddress || '',
-      };
-      classroomCopy.siteAddress = siteAddress;
-      classroomCopy.siteAddressId = siteAddressId;
+    const siteAddress: SiteAddressDto = {
+      id: siteAddressId,
+      addressLine1: editedAddress || '',
+      addressLine2: '',
+      addressLine3: '',
+      name: '',
+      postalCode: '',
+      ward: '',
+    };
 
-      if (classroomCopy.siteAddress) {
-        appDispatch(
-          classroomsActions.updateClassroomSiteAddress(
-            classroomCopy as ClassroomDto
-          )
-        );
-        if (isOnline) {
-          await appDispatch(
-            classroomsThunkActions.upsertClassroomSiteAddress({})
-          );
-        }
-      }
-    }
+    // Trainees don't exist anymore
+    // appDispatch(classroomsActions.updateClassroomSiteAddress(siteAddress));
+    // if (isOnline) {
+    //   await appDispatch(classroomsThunkActions.upsertClassroomSiteAddress({}));
+    // }
   };
 
   useEffect(() => {

@@ -23,6 +23,7 @@ import {
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
+import { useTenant } from '@/hooks/useTenant';
 
 interface SignupAddSignatureProps {
   onNext: OnNext;
@@ -35,6 +36,8 @@ export const PractitionerSignature: React.FC<SignupAddSignatureProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
@@ -94,7 +97,7 @@ export const PractitionerSignature: React.FC<SignupAddSignatureProps> = ({
       </div>
       <IconTitleDescriptionTile
         title="You can use this signature to sign forms on the app."
-        subTitle="You can access and change your signature through your Funda App profile in future."
+        subTitle={`You can access and change your signature through your ${appName} profile in future.`}
         icon="InformationCircleIcon"
         iconColour={'infoDark'}
         iconBorderColour={'uiBg'}

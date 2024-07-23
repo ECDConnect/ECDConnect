@@ -7,8 +7,8 @@ import {
   renderIcon,
   Button,
   LoadingSpinner,
+  RoundIcon,
   DialogPosition,
-  ActionModal,
 } from '@ecdlink/ui';
 import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';
@@ -19,15 +19,18 @@ import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { useAppDispatch } from '@store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
+  const isTrialPeriod = useIsTrialPeriod();
   const history = useHistory();
   const dialog = useDialog();
   const { errorDialog } = useRequestResponseDialog();
@@ -39,10 +42,11 @@ export const PractitionersList: React.FC = () => {
     (item) => item.userId !== practitioner?.userId
   );
 
-  const { isRejected: isGetPractitionerRejected } = useThunkFetchCall(
-    'practitioner',
-    'getAllPractitioners'
-  );
+  const { isLoading, isRejected: isGetPractitionerRejected } =
+    useThunkFetchCall(
+      'practitioner',
+      PractitionerActions.GET_ALL_PRACTITIONERS
+    );
 
   useEffect(() => {
     if (isGetPractitionerRejected) {
@@ -53,8 +57,8 @@ export const PractitionersList: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerListData, setPractitionerListData] =
     useState<UserAlertListDataItem[]>();
+
   const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
-  const [loading, setLoading] = useState(false);
 
   const handleClick = (practitionerId: string) => {
     history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
@@ -90,13 +94,11 @@ export const PractitionersList: React.FC = () => {
 
   const classroomsDetailsForPractitioner = async () => {
     if (isOnline) {
-      setLoading(true);
       const practitionersMessageData = await appDispatch(
         practitionerThunkActions.getPractitionerDisplayMetrics({})
       ).unwrap();
 
       setPractitionersMessages(practitionersMessageData);
-      setLoading(false);
       return practitionersMessageData;
     }
   };
@@ -105,6 +107,16 @@ export const PractitionersList: React.FC = () => {
     classroomsDetailsForPractitioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const showTrialPeriodCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+      },
+    });
+  };
 
   const mapUserListDataItem = (
     practitionerRecord: PractitionerDto
@@ -120,7 +132,9 @@ export const PractitionersList: React.FC = () => {
     return {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl!,
-      title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
+      title: `${practitioner?.user?.firstName}${
+        !!practitioner?.user?.surname ? ` ${practitioner.user.surname}` : ''
+      }`,
       ...(isOnline && !!currentPractitionerMessage?.subject
         ? { subTitle: `${currentPractitionerMessage?.subject}` }
         : {}),
@@ -143,126 +157,118 @@ export const PractitionersList: React.FC = () => {
     history.push('principal/practitioner-reassign-class');
   };
 
-  const handleAddPractitionerOrReassignClass = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          importantText={`What would you like to change?`}
-          icon={'QuestionMarkCircleIcon'}
-          iconColor={'infoDark'}
-          iconBorderColor={'infoBb'}
-          iconClassName="h-14 w-14"
-          actionButtons={[
-            {
-              text: 'Add or remove practitioners',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                onSubmit();
-                history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
-                // onClose();
-              },
-              leadingIcon: 'UsersIcon',
-            },
-            {
-              text: 'Change classes or move children',
-              textColour: 'secondary',
-              colour: 'secondary',
-              type: 'outlined',
-              onClick: () => {
-                onCancel();
-                history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
-              },
-              leadingIcon: 'ViewGridAddIcon',
-            },
-          ]}
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        className="mt-6"
+        size={'medium'}
+        spinnerColor={'quatenary'}
+        backgroundColor={'uiBg'}
+      />
+    );
+  }
+
+  if (!practitionersList || !practitionersList.length) {
+    return (
+      <div className="pt-50 flex w-full flex-col items-center justify-center gap-4 p-12">
+        <RoundIcon
+          backgroundColor="errorMain"
+          icon="PresentationChartBarIcon"
+          size={{ h: '12', w: '12' }}
         />
-      ),
-    });
-  };
+        <Typography
+          type="h1"
+          color="textDark"
+          text={"You don't have any staff yet!"}
+          className={'text-center'}
+        />
+        <Button
+          type="filled"
+          color="quatenary"
+          className={'mb-6 w-full'}
+          onClick={
+            isTrialPeriod
+              ? () => showTrialPeriodCompleteProfileBlockingDialog()
+              : () => history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST)
+          }
+        >
+          {renderIcon('PlusCircleIcon', 'w-5 h-5 color-white text-white mr-2')}
+          <Typography
+            type="body"
+            className="mr-4"
+            color="white"
+            text={'Add a practitioner'}
+          />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <>
-      {practitionersList?.length! > 0 || practitionersList !== undefined ? (
-        <div className="flex flex-wrap justify-center">
-          {loading && isOnline ? (
-            <LoadingSpinner
-              className="mt-6"
-              size={'medium'}
-              spinnerColor={'primary'}
-              backgroundColor={'uiLight'}
-            />
-          ) : (
-            <>
-              <div className="w-11/12">
-                <StackedList
-                  className={styles.stackedList}
-                  listItems={practitionerListData ? practitionerListData : []}
-                  type={'UserAlertList'}
-                ></StackedList>
-              </div>
-              <Card className={styles.absentCard}>
-                <div className={styles.absentCardTitle}>
-                  <Typography
-                    type={'h1'}
-                    color="textDark"
-                    text={'Practitioner time off'}
-                    className={styles.absentCardTitle}
-                  />
-                  <Typography
-                    type={'body'}
-                    color="textMid"
-                    text={'Keep track of practitioner absenteeism and leave.'}
-                    className={styles.absentCardSubTitle}
-                  />
-                  <div className="flex justify-center">
-                    <Button
-                      type="filled"
-                      color="primary"
-                      className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                      onClick={handleReassignClass}
-                    >
-                      {renderIcon(
-                        'PencilAltIcon',
-                        'w-5 h-5 color-white text-white mr-1'
-                      )}
-                      <Typography
-                        type="body"
-                        className="mr-4"
-                        color="white"
-                        text={'Record absence/leave'}
-                      ></Typography>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-              <div className="flex w-11/12 justify-center">
-                <Button
-                  type="outlined"
-                  color="primary"
-                  className={'mt-6 mb-6 w-full'}
-                  onClick={handleAddPractitionerOrReassignClass}
-                >
-                  {renderIcon(
-                    'ViewGridAddIcon',
-                    'w-5 h-5 color-primary text-primary mr-2'
-                  )}
-                  <Typography
-                    type="body"
-                    className="mr-4"
-                    color="primary"
-                    text={'Manage classes and practitioners'}
-                  ></Typography>
-                </Button>
-              </div>
-            </>
-          )}
+      <div className="flex flex-wrap justify-center">
+        <div className="w-11/12">
+          <StackedList
+            className={styles.stackedList}
+            listItems={practitionerListData ? practitionerListData : []}
+            type={'UserAlertList'}
+          />
         </div>
-      ) : (
-        <EmptyPractitioners />
-      )}
+        <Card className={styles.absentCard}>
+          <div className={styles.absentCardTitle}>
+            <Typography
+              type={'h1'}
+              color="textDark"
+              text={'Practitioner time off'}
+              className={styles.absentCardTitle}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={'Keep track of practitioner absenteeism and leave.'}
+              className={styles.absentCardSubTitle}
+            />
+            <div className="flex justify-center">
+              <Button
+                type="filled"
+                color="quatenary"
+                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                onClick={handleReassignClass}
+              >
+                {renderIcon(
+                  'PencilAltIcon',
+                  'w-5 h-5 color-white text-white mr-1'
+                )}
+                <Typography
+                  type="body"
+                  className="mr-4"
+                  color="white"
+                  text={'Record absence/leave'}
+                />
+              </Button>
+            </div>
+          </div>
+        </Card>
+        <div className="flex w-11/12 justify-center">
+          <Button
+            type="outlined"
+            color="quatenary"
+            className={'mt-6 mb-6 w-full'}
+            onClick={() => history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST)}
+          >
+            {renderIcon(
+              'UsersIcon',
+              'w-5 h-5 color-quatenary text-quatenary mr-2'
+            )}
+            <Typography
+              type="body"
+              className="mr-4"
+              color="quatenary"
+              text={'Add or remove practitioners'}
+            />
+          </Button>
+        </div>
+      </div>
     </>
   );
 };

@@ -109,6 +109,7 @@ export const Step2ReAccreditation = ({
   );
 
   const classroomsDetailsForPractitioner = useCallback(async () => {
+    // Needs to be updated
     const classroomDetails = (await new PractitionerService(
       userAuth?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(

@@ -1,266 +1,244 @@
-import {
-  ChildDto,
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-  LearnerDto,
-  ProgrammeTypeDto,
-} from '@ecdlink/core';
+import { ClassroomGroupDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
-  getClassroom,
-  getClassroomGroupClassroomsForPractitioner,
-  getClassroomGroupLearners,
   getClassroomGroups,
-  getClassroomProgrammes,
-  getClassroomDetailsForPractitioner,
-  updatePreschoolFee,
-  createLearner,
+  getClassroom,
+  upsertClassroom,
+  upsertClassroomGroups,
+  updateClassroomGroup,
+  upsertClassroomGroupLearners,
+  upsertClassroomGroupProgrammes,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
+import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomGroupDto as SimpleClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { SiteAddressDto } from '@/models/classroom/site-address.dto';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { formatISO } from 'date-fns';
 
 const initialState: ClassroomState = {
   classroom: undefined,
-  classroomGroups: undefined,
-  classroomProgrammes: undefined,
-  classroomGroupLearners: undefined,
-  programmeType: undefined,
-  principal: undefined,
-  classrooGroupsForPractitioner: undefined,
+  classroomGroupData: {
+    classroomGroups: [],
+    dateRefreshed: undefined,
+  },
 };
 
 const classroomsSlice = createSlice({
   name: 'classrooms',
   initialState,
   reducers: {
-    setProgrammeType: (state, action: PayloadAction<ProgrammeTypeDto>) => {
-      state.programmeType = action.payload?.id;
-      if (state.classroomGroups) {
-        for (let i = 0; i < state.classroomGroups.length; i++) {
-          state.classroomGroups[i].programmeTypeId = action.payload?.id;
-          state.classroomGroups[i].programmeType = action.payload;
-        }
-      }
-    },
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
-      state.classroomGroups = initialState.classroomGroups;
-      state.classroomProgrammes = initialState.classroomProgrammes;
-      state.classroomGroupLearners = initialState.classroomGroupLearners;
-      state.principal = initialState.principal;
-      state.classrooGroupsForPractitioner =
-        initialState.classrooGroupsForPractitioner;
+      state.classroomGroupData = initialState.classroomGroupData;
     },
-    updateClassroom: (state, action: PayloadAction<ClassroomDto>) => {
-      state.classroom = action.payload;
+    updateClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
+      state.classroom = {
+        ...action.payload,
+        dateRefreshed: state.classroom?.dateRefreshed,
+        synced: false,
+      };
     },
     updateClassroomSiteAddress: (
       state,
-      action: PayloadAction<ClassroomDto>
+      action: PayloadAction<SiteAddressDto>
     ) => {
-      state.classroom = action.payload;
+      if (!!state.classroom) {
+        state.classroom = {
+          ...state.classroom,
+          siteAddress: action.payload,
+        };
+      }
     },
     updateClassroomNumberPractitioners: (
       state,
-      action: PayloadAction<Pick<ClassroomDto, 'numberPractitioners'>>
+      action: PayloadAction<number>
     ) => {
-      if (state.classroom)
-        state.classroom.numberPractitioners =
-          action.payload.numberPractitioners;
-    },
-    updateClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (state.classroomGroups) {
-        const isOnline = navigator.onLine;
-        const payloadUpdated = { ...action.payload, isOnline };
-        for (let i = 0; i < state.classroomGroups.length; i++) {
-          if (state.classroomGroups[i].id === action.payload.id)
-            state.classroomGroups[i] = payloadUpdated;
-        }
+      if (state.classroom) {
+        state.classroom.numberPractitioners = action.payload;
       }
     },
-    updateClassroomProgramme: (
+    updateClassroomGroup: (
       state,
-      action: PayloadAction<ClassProgrammeDto>
+      action: PayloadAction<SimpleClassroomGroupDto>
     ) => {
-      if (state.classroomProgrammes) {
-        const isOnline = navigator.onLine;
-        const payloadUpdated = { ...action.payload, isOnline };
-        for (let i = 0; i < state.classroomProgrammes.length; i++) {
-          if (state.classroomProgrammes[i].id === action.payload.id)
-            state.classroomProgrammes[i] = payloadUpdated;
-        }
+      const payloadUpdated = { ...action.payload, synced: false };
+      for (
+        let i = 0;
+        i < state.classroomGroupData.classroomGroups.length;
+        i++
+      ) {
+        if (
+          state.classroomGroupData.classroomGroups[i].id === action.payload.id
+        )
+          state.classroomGroupData.classroomGroups[i] = payloadUpdated;
       }
     },
-    updateClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
-      if (state.classroomGroupLearners) {
-        const isOnline = navigator.onLine;
-        const payloadUpdated = { ...action.payload, isOnline };
-        for (let i = 0; i < state.classroomGroupLearners.length; i++) {
-          if (
-            state.classroomGroupLearners[i].userId === action.payload.userId &&
-            state.classroomGroupLearners[i].classroomGroupId ===
-              action.payload.classroomGroupId &&
-            state.classroomGroupLearners[i].id === action.payload.id
-          )
-            state.classroomGroupLearners[i] = payloadUpdated;
-        }
-      }
-    },
-    createClassroom: (state, action: PayloadAction<ClassroomDto>) => {
-      state.classroom = action.payload;
-    },
-    createClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (!state.classroomGroups) state.classroomGroups = [];
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-      state.classroomGroups?.push(payloadUpdated);
-    },
-    createClassroomProgramme: (
+    deactivateLearner: (
       state,
-      action: PayloadAction<ClassProgrammeDto>
+      action: PayloadAction<{ childUserId: string; classroomGroupId: string }>
     ) => {
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-      if (!state.classroomProgrammes) state.classroomProgrammes = [];
-      state.classroomProgrammes?.push(payloadUpdated);
-    },
-    createClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
-      const isOnline = navigator.onLine;
-      const payloadUpdated = { ...action.payload, isOnline };
-      if (!state.classroomGroupLearners) state.classroomGroupLearners = [];
-      state.classroomGroupLearners?.push(payloadUpdated);
-    },
-    removeClassroomGroupOnEdit: (
-      state,
-      action: PayloadAction<Pick<ClassroomGroupDto, 'id'>>
-    ) => {
-      const index = state.classroomGroups?.findIndex(
-        (c) => c.id === action.payload.id
-      );
-      if (index && index > -1) {
-        state.classroomGroups?.splice(index, 1);
-        state.classroomProgrammes = state.classroomProgrammes?.filter(
-          (programme) => programme.classroomGroupId !== action.payload.id
+      state.classroomGroupData.classroomGroups =
+        state.classroomGroupData.classroomGroups.map((classroomGroup) =>
+          classroomGroup.id === action.payload.classroomGroupId
+            ? {
+                ...classroomGroup,
+                learners: classroomGroup.learners.map((learner) =>
+                  learner.childUserId === action.payload.childUserId
+                    ? {
+                        ...learner,
+                        isActive: false,
+                        stoppedAttendance: new Date().toUTCString(),
+                        synced: false,
+                      }
+                    : learner
+                ),
+              }
+            : classroomGroup
         );
-      }
     },
+    createLearner: (
+      state,
+      action: PayloadAction<{
+        childUserId: string;
+        newClassroomGroupId: string;
+      }>
+    ) => {
+      state.classroomGroupData.classroomGroups =
+        state.classroomGroupData.classroomGroups.map((classroomGroup) =>
+          classroomGroup.id === action.payload.newClassroomGroupId
+            ? {
+                ...classroomGroup,
+                learners: classroomGroup.learners.concat({
+                  learnerId: '',
+                  childUserId: action.payload.childUserId,
+                  startedAttendance: formatISO(new Date()),
+                  isActive: true,
+                  stoppedAttendance: null,
+                  synced: false,
+                  classroomGroupId: classroomGroup.id,
+                  userId: action.payload.childUserId,
+                }),
+              }
+            : classroomGroup
+        );
+    },
+    createClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
+      state.classroom = {
+        ...action.payload,
+        dateRefreshed: undefined,
+        synced: false,
+      };
+    },
+    createClassroomGroup: (
+      state,
+      action: PayloadAction<SimpleClassroomGroupDto>
+    ) => {
+      const payloadUpdated = { ...action.payload, synced: false };
+      state.classroomGroupData.classroomGroups.push(payloadUpdated);
+    },
+    // Only used during classroom setup it seems, is this still used? Only state gets updated, no BE sync
+    // Should deactivate instead, so we can sync later
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
-      if (action.payload.id) {
-        if (state.classroomGroups) {
-          for (let i = 0; i < state.classroomGroups.length; i++) {
-            if (state.classroomGroups[i].id === action.payload.id)
-              state.classroomGroups[i].isActive = false;
-          }
-        }
-      } else {
-        const index = state.classroomGroups?.findIndex(
+      if (!!action.payload.id) {
+        const index = state.classroomGroupData.classroomGroups.findIndex(
           (c) => c.id === action.payload.id
         );
-        if (index && index > -1) state.classroomGroups?.splice(index, 1);
-      }
-    },
-    deleteClassroomProgramme: (
-      state,
-      action: PayloadAction<ClassProgrammeDto>
-    ) => {
-      if (action.payload.id) {
-        if (state.classroomProgrammes) {
-          for (let i = 0; i < state.classroomProgrammes.length; i++) {
-            if (state.classroomProgrammes[i].id === action.payload.id)
-              state.classroomProgrammes[i].isActive = false;
-          }
+        if (index > -1) {
+          state.classroomGroupData.classroomGroups.splice(index, 1);
         }
-      } else {
-        const index = state.classroomProgrammes?.findIndex(
-          (c) => c.id === action.payload.id
-        );
-        if (index && index > -1) state.classroomProgrammes?.splice(index, 1);
       }
-    },
-    deleteClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
-      const index = state.classroomGroupLearners?.findIndex(
-        (c) =>
-          c.userId === action.payload.userId &&
-          c.classroomGroupId === action.payload.classroomGroupId
-      );
-      if (index && index > -1) state.classroomGroupLearners?.splice(index, 1);
-    },
-    deactivateClassroomGroupLearner: (
-      state,
-      action: PayloadAction<ChildDto>
-    ) => {
-      if (!state.classroomGroupLearners) return;
-
-      const learnerIndex = state.classroomGroupLearners.findIndex(
-        (learner) =>
-          learner.userId === action.payload.userId &&
-          learner.id === action.payload.id
-      );
-
-      if (learnerIndex < 0) return;
-
-      const newDate = new Date();
-      state.classroomGroupLearners[learnerIndex].stoppedAttendance =
-        newDate.toISOString();
-      state.classroomGroupLearners[learnerIndex].isActive = false;
     },
   },
   extraReducers: (builder) => {
     builder.addCase(getClassroom.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroom = action.payload;
+        state.classroom = {
+          ...action.payload,
+          dateRefreshed: new Date().toDateString(),
+          synced: true,
+        };
       }
     });
     builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
       if (action.payload) {
-        state.classroomGroups = action.payload.filter(
-          (x: ClassroomGroupDto) => {
-            return x.isActive === true;
-          }
-        );
-      }
-    });
-    builder.addCase(getClassroomProgrammes.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.classroomProgrammes = action.payload;
-      }
-    });
-    builder.addCase(getClassroomGroupLearners.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.classroomGroupLearners = action.payload.filter(
-          (x: LearnerDto) => {
-            return x.isActive === true;
-          }
-        );
-      }
-    });
-    builder.addCase(
-      getClassroomGroupClassroomsForPractitioner.fulfilled,
-      (state, action) => {
-        if (action.payload) {
-          state.classroom = action.payload;
-        }
-      }
-    );
-    builder.addCase(
-      getClassroomDetailsForPractitioner.fulfilled,
-      (state, action) => {
-        if (action.payload) {
-          const classroomProgramme = action?.payload;
-          state.classroom = classroomProgramme;
-        }
-      }
-    );
-    builder.addCase(createLearner.fulfilled, (state, action) => {});
-    builder.addCase(updatePreschoolFee.fulfilled, (state, action) => {
-      if (action.payload && !!state.classroom) {
-        state.classroom = {
-          ...state.classroom,
-          preschoolFeeAmount: action.meta.arg.amount,
-          preschoolFeeAmountLastUpdateDate: new Date(),
+        state.classroomGroupData = {
+          classroomGroups: action.payload.map((cg) => ({
+            ...cg,
+            synced: true,
+            learners: cg.learners.map((l) => ({ ...l, synced: true })),
+            classProgrammes: cg.classProgrammes.map((p) => ({
+              ...p,
+              synced: true,
+            })),
+          })),
+          dateRefreshed: new Date().toDateString(),
         };
       }
+    });
+    builder.addCase(upsertClassroom.fulfilled, (state, action) => {
+      if (state.classroom) {
+        state.classroom.synced = true;
+      }
+    });
+    builder.addCase(upsertClassroomGroups.fulfilled, (state, action) => {
+      state.classroomGroupData = {
+        ...state.classroomGroupData,
+        classroomGroups: state.classroomGroupData.classroomGroups.map(
+          (group) => ({
+            ...group,
+            synced: true,
+          })
+        ),
+      };
+    });
+    builder.addCase(upsertClassroomGroupLearners.fulfilled, (state, action) => {
+      state.classroomGroupData = {
+        ...state.classroomGroupData,
+        classroomGroups: state.classroomGroupData.classroomGroups.map(
+          (group) => ({
+            ...group,
+            learners: group.learners.map((learner) => ({
+              ...learner,
+              synced: true,
+            })),
+          })
+        ),
+      };
+    });
+    builder.addCase(
+      upsertClassroomGroupProgrammes.fulfilled,
+      (state, action) => {
+        state.classroomGroupData = {
+          ...state.classroomGroupData,
+          classroomGroups: state.classroomGroupData.classroomGroups.map(
+            (group) => ({
+              ...group,
+              classProgrammes: group.classProgrammes
+                .filter((x) => x.isActive)
+                .map((programme) => ({
+                  ...programme,
+                  synced: true,
+                })),
+            })
+          ),
+        };
+      }
+    );
+    setThunkActionStatus(builder, updateClassroomGroup);
+    builder.addCase(updateClassroomGroup.fulfilled, (state, action) => {
+      const isActive = action.meta?.arg?.classroomGroup?.isActive;
+      const classroomGroupId = action.meta?.arg?.id;
+
+      if (isActive === false) {
+        state.classroomGroupData.classroomGroups =
+          state.classroomGroupData.classroomGroups.filter(
+            (cg) => cg.id !== classroomGroupId
+          );
+      }
+
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

@@ -2,6 +2,7 @@ import { InfantDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
 import { EventRecordType, VisitDataStatus } from '@ecdlink/graphql';
 import { addMonths } from 'date-fns';
+import { isVisitInProgress } from '@/helpers/visit-helpers';
 
 export const getInfants = (state: RootState): InfantDto[] =>
   state.infants.infants || [];
@@ -159,7 +160,7 @@ export const getInfantCurrentVisitSelector = (
   } else {
     // Priority 2: if there is a visit in progress, we grab the first one
     const inProgressList =
-      allVisits?.filter((item) => item.visitInProgress) || [];
+      allVisits?.filter((item) => isVisitInProgress(item)) || [];
     if (inProgressList.length !== 0) {
       return inProgressList[0];
     }

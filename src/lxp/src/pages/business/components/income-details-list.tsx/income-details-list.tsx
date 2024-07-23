@@ -1,4 +1,10 @@
-import { Typography, Card, StackedList, BannerWrapper } from '@ecdlink/ui';
+import {
+  Typography,
+  Card,
+  StackedList,
+  BannerWrapper,
+  Button,
+} from '@ecdlink/ui';
 import React from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
@@ -12,17 +18,20 @@ import { getMonthName } from '@/utils/classroom/attendance/track-attendance-util
 import { childrenSelectors } from '@/store/children';
 import { IncomeDetailsListProps } from './income-details-list.types';
 import { format } from 'date-fns';
+import { useHistory } from 'react-router-dom';
+import ROUTES from '@/routes/routes';
 
 export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
   hideDetails,
   statementTitle,
   incomeItems,
   statementMonth,
+  statementId,
 }) => {
+  const history = useHistory();
   const children = useSelector(childrenSelectors.getChildren);
   const { isOnline } = useOnlineStatus();
 
-  // TODO better mapping, or pass in mapped items
   const incomeListDetailsItems = incomeItems?.map((item) => {
     return {
       title: item?.childUserId
@@ -32,7 +41,12 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => {
+        history.push(ROUTES.BUSINESS_UPDATE_INCOME, {
+          statementId: statementId,
+          incomeItem: item,
+        });
+      },
       classNames: 'bg-uiBg',
       subItem: `R ${numberWithSpaces(String(item?.amount!.toFixed(2)))}`,
       notRounded: true,
@@ -73,7 +87,7 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
           />
         )}
         <Card
-          className="bg-secondary flex items-center justify-between p-4"
+          className="bg-tertiary flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography

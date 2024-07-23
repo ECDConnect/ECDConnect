@@ -1,6 +1,11 @@
-import { Connect, ConnectItem } from '@ecdlink/graphql/lib';
+import {
+  CommunityProfile,
+  CommunityProfileInputModelInput,
+  Connect,
+  ConnectItem,
+} from '@ecdlink/graphql/lib';
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
+import { CommunityProfileDto, Config } from '@ecdlink/core';
 
 class CommunityService {
   _accessToken: string;
@@ -61,6 +66,212 @@ class CommunityService {
       throw new Error('Get All Connect Item Failed - Server connection error');
     }
     return response.data.data.GetAllConnectItem;
+  }
+
+  async getCommunityProfile(userId: string): Promise<CommunityProfile> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post(``, {
+      query: `
+      query GetCommunityProfile($userId: UUID!) {
+          communityProfile(userId: $userId) {            
+            id
+            userId
+            aboutShort
+            aboutLong
+            shareContactInfo
+            shareEmail            
+            sharePhoneNumber
+            shareProfilePhoto
+            shareProvince
+            provinceId
+            provinceName
+            shareRole
+            clickedECDHeros
+            coachUserId
+            coachName
+            coachPhoneNumber
+            completenessPerc
+            completenessPercColor
+            completenessPercImage
+            insertedDate
+            profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
+            communityUser {
+                id
+                fullName
+                email
+                phoneNumber
+                whatsAppNumber
+                profilePhoto
+                roleName
+            }
+            acceptedConnections {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
+            pendingConnections {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get community profile Failed - Server connection error');
+    }
+    return response.data.data.communityProfile;
+  }
+
+  async saveCommunityProfile(
+    input: CommunityProfileInputModelInput
+  ): Promise<CommunityProfileDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation SaveCommunityProfile($input: CommunityProfileInputModelInput) {
+          saveCommunityProfile(input: $input) {            
+           id
+            userId
+            aboutShort
+            aboutLong
+            shareContactInfo
+            shareEmail            
+            sharePhoneNumber
+            shareProfilePhoto
+            shareProvince
+            provinceId
+            provinceName
+            shareRole
+            clickedECDHeros
+            coachUserId
+            coachName
+            completenessPerc
+            completenessPercColor
+            completenessPercImage
+            insertedDate
+            profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
+            communityUser {
+                id
+                fullName
+                email
+                phoneNumber
+                whatsAppNumber
+                profilePhoto
+                roleName
+            }
+            acceptedConnections {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
+            pendingConnections {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
+        }
+}
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Updating practitioner community status failed - Server connection error'
+      );
+    }
+
+    return response.data.data.saveCommunityProfile;
   }
 }
 

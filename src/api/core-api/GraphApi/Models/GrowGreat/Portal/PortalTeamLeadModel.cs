@@ -1,5 +1,6 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
 using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 {
@@ -10,7 +11,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         }
 
         public PortalTeamLeadModel(ApplicationUser user, string clinicNames, string location, int totalClinics, int totalHealthCareWorkers,
-                              int totalPregnantMoms, int totalChildren, int totalMeetingReportsSubmitted, int totalInFieldVisitsCompleted)
+                              int totalPregnantMoms, int totalChildren, int totalMeetingReportsSubmitted, int totalInFieldVisitsCompleted, List<BaseClinicModel> clinics)
         {
             IdNumber = user.IdNumber;
             PhoneNumber = user.PhoneNumber;
@@ -26,6 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             TotalChildren = totalChildren;
             TotalMeetingReportsSubmitted = totalMeetingReportsSubmitted;
             TotalInFieldVisitsCompleted = totalInFieldVisitsCompleted;
+            Clinics = clinics;
         }
 
         public DateTime LastSeen { get; set; }
@@ -42,6 +44,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
         public int TotalChildren { get; set; } = 0;
         public int TotalMeetingReportsSubmitted { get; set; } = 0;
         public int TotalInFieldVisitsCompleted { get; set; } = 0;
-
+        public List<BaseClinicModel> Clinics { get; set; }
     }
 }

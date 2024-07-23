@@ -49,6 +49,7 @@ class UserService {
             roles {
               id
               name
+              systemName
             }   
             resetData         
           }

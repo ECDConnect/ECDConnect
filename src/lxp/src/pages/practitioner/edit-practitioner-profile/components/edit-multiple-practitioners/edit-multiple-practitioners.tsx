@@ -47,7 +47,7 @@ export default function EditMultiplePractitioners({
     {
       title: user?.fullName ?? '',
       idNumber: user?.idNumber ?? '',
-      subTitle: 'Principal/owner',
+      subTitle: 'Principal',
       titleStyle:
         'text-textDark font-body text-base font-semibold leading-snug ',
       subTitleStyle: 'text-textMid font-body text-sm leading-5 ',
@@ -227,7 +227,7 @@ export default function EditMultiplePractitioners({
                 <Button
                   size="small"
                   type="filled"
-                  color="primary"
+                  color="quatenary"
                   text="Add practitioner"
                   textColor="white"
                   icon="PlusIcon"

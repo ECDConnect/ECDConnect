@@ -3,6 +3,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
+  Divider,
   Dropdown,
   PasswordInput,
   SA_CELL_REGEX,
@@ -34,6 +35,7 @@ import {
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useUserRole } from '../../../../hooks/useUserRole';
 
 export interface PersonalInfoProps {
   userData: UserDto;
@@ -46,8 +48,8 @@ export interface PersonalInfoProps {
   refetchUserData: () => void;
   refetchCHW: () => void;
   isNotLockedOut: (user: UserDto) => boolean;
-  clinicIds?: string[];
   isAdministrator?: boolean;
+  userTypeToEdit: string;
 }
 
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({
@@ -61,8 +63,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   refetchUserData,
   refetchCHW,
   isNotLockedOut,
-  clinicIds,
   isAdministrator,
+  userTypeToEdit,
 }) => {
   const [updateHCWClinic] = useMutation(UpdateHealthCareWorkerClinic);
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -74,19 +76,28 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const [clinics, setClinics] = useState([]);
   const [hasClinicChange, setHasClinicChange] = useState(false);
   const [handleClinicChange, setHandleClinicChange] = useState(false);
-  const [idType, setIdType] = useState<string>('idNumber');
+  const [idType, setIdType] = useState<string>('');
 
-  const chwSchema = yup.object().shape({
-    idNumber:
-      idType === idTypeEnum.idNumber
-        ? yup
-            .string()
-            .matches(SA_ID_REGEX, 'Id number is not valid')
-            .required('ID Number is Required')
-        : yup
-            .string()
-            .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
-            .required('ID Number is Required'),
+  const { isTeamLead: isTeamLeadRole } = useUserRole();
+
+  const chwSchemaIdNr = yup.object().shape({
+    idNumber: yup
+      .string()
+      .matches(SA_ID_REGEX, 'Id number is not valid')
+      .required('ID Number is Required'),
+    phoneNumber: yup
+      .string()
+      .matches(SA_CELL_REGEX, 'Phone number is not valid')
+      .required('Cellphone number is required'),
+    firstName: yup.string().required('First name is required'),
+    surname: yup.string().required('Surname is required'),
+  });
+
+  const chwSchemaPassport = yup.object().shape({
+    idNumber: yup
+      .string()
+      .matches(SA_PASSPORT_REGEX, 'Passport is not valid')
+      .required('Passport is Required'),
     phoneNumber: yup
       .string()
       .matches(SA_CELL_REGEX, 'Phone number is not valid')
@@ -118,10 +129,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     (item) => item?.id === clinicId
   );
 
-  const tlClinics = clinicsData?.allPortalClinics?.filter((item) =>
-    clinicIds?.some((x) => x === item?.id?.toString())
-  );
-
   const updateHealthCareWorkerClinic = useCallback(async () => {
     const response = await updateHCWClinic({
       variables: {
@@ -142,7 +149,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     getValues: chwDetailGetValues,
     handleSubmit: handleSubmitChwDetails,
   } = useForm({
-    resolver: yupResolver(chwSchema),
+    resolver: yupResolver(
+      idType === idTypeEnum.idNumber ? chwSchemaIdNr : chwSchemaPassport
+    ),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -152,6 +161,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     formState: adminDetailFormState,
     getValues: adminDetailGetValues,
     handleSubmit: handleSubmitAdminDetails,
+    register: userRegister,
   } = useForm({
     resolver: yupResolver(adminSchema),
     defaultValues: initialUserDetailsValues,
@@ -171,12 +181,19 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const passwordForm = passwordGetValues();
 
   useEffect(() => {
-    const currentPreferedId = localStorage?.getItem('preferedId');
-
-    if (currentPreferedId === idTypeEnum.passport) {
+    // const currentPreferedId = localStorage?.getItem('preferedId');
+    // if (currentPreferedId) {
+    //   if (currentPreferedId === idTypeEnum.passport) {
+    //     setIdType(idTypeEnum.passport);
+    //   }
+    // } else {
+    if (userData?.idNumber?.length === 13) {
+      setIdType(idTypeEnum.idNumber);
+    } else {
       setIdType(idTypeEnum.passport);
     }
-  }, []);
+    // }
+  }, [userData]);
 
   useEffect(() => {
     adminDetailSetValue('email', userData?.email || chwData?.user.email, {
@@ -198,6 +215,16 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
         shouldValidate: true,
       }
     );
+    chwDetailSetValue(
+      'firstName',
+      userData?.firstName || chwData?.user.firstName,
+      {
+        shouldValidate: true,
+      }
+    );
+    chwDetailSetValue('surname', userData?.surname || chwData?.user.surname, {
+      shouldValidate: true,
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData, chwData]);
@@ -212,6 +239,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       phoneNumber: chwDataForm?.phoneNumber,
       email: adminDataForm?.email,
       userName: chwDataForm?.idNumber,
+      firstName: chwDataForm?.firstName,
+      surname: chwDataForm?.surname,
     };
 
     await updateUser({
@@ -258,7 +287,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       setHandleClinicChange(false);
     }
     let passwordChange = false;
-    if (passwordForm.password.length > 0) {
+    if (passwordForm?.password?.length > 0) {
       passwordChange = true;
     }
     await saveUser(passwordChange);
@@ -267,12 +296,11 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   };
 
   return (
-    <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+    <div className="border-l-primary border-primary mb-6 rounded-2xl border-2  border-l-8 bg-white lg:min-w-0 lg:flex-1">
       <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
         {/* Start main area*/}
-        <h3 className="border-b-4 border-dashed pb-2 text-xl ">
-          Personal information
-        </h3>
+        <Typography type="h3" text="Personal information" color="textMid" />
+        <Divider dividerType="dashed" className="my-4" />
         <form key={'formKey'} className="space-y-3 divide-y divide-gray-200">
           {editActive ? (
             <>
@@ -280,12 +308,14 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 <div className="grid grid-cols-1 ">
                   {userData && (
                     <>
-                      {!isRegistered && (
+                      {!isRegistered && !isAdministrator && (
                         <>
                           <div className="my-4 sm:col-span-3">
                             <Typography
                               text={
-                                'Which kind of identification do you have for the CHW? *'
+                                'Which kind of identification do you have for the ' +
+                                userTypeToEdit +
+                                '? *'
                               }
                               type={'body'}
                               color={'textMid'}
@@ -361,25 +391,48 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                               }
                             />
                           </div>
-                          {/* <div className="my-4 w-6/12 sm:col-span-3">
-                          <FormField
-                            label={'ID number *'}
-                            nameProp={'idNumber'}
-                            register={registerCHW}
-                            error={chwDetailFormErrors.idNumber?.message}
-                          />
-                        </div> */}
                         </>
                       )}
-                      <div className="my-4 w-6/12 sm:col-span-3">
-                        <FormField
-                          label={'Cellphone number *'}
-                          nameProp={'phoneNumber'}
-                          register={registerCHW}
-                          error={chwDetailFormErrors.phoneNumber?.message}
-                        />
-                      </div>
+                      {!isAdministrator && (
+                        <>
+                          <div className="my-4 w-6/12 sm:col-span-3">
+                            <FormField
+                              label={'First name'}
+                              nameProp={'firstName'}
+                              register={registerCHW}
+                              error={chwDetailFormErrors.firstName?.message}
+                            />
+                          </div>
+                          <div className="my-4 w-6/12 sm:col-span-3">
+                            <FormField
+                              label={'Surname *'}
+                              nameProp={'surname'}
+                              register={registerCHW}
+                              error={chwDetailFormErrors?.surname?.message}
+                            />
+                          </div>
+                          <div className="my-4 w-6/12 sm:col-span-3">
+                            <FormField
+                              label={'Cellphone number *'}
+                              nameProp={'phoneNumber'}
+                              register={registerCHW}
+                              error={chwDetailFormErrors.phoneNumber?.message}
+                            />
+                          </div>
+                        </>
+                      )}
                     </>
+                  )}
+
+                  {isAdministrator && (
+                    <div className="my-4 w-full sm:col-span-3">
+                      <FormField
+                        label={'Email address *'}
+                        nameProp={'email'}
+                        register={userRegister}
+                        error={chwDetailFormErrors.email?.message}
+                      />
+                    </div>
                   )}
 
                   <div>
@@ -399,7 +452,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                         selectedValue={clinic || clinicId}
                       />
                     )}
-                    {!isTeamLead && !hcwId && (
+                    {!isTeamLead && !hcwId && !isAdministrator && (
                       <div className="my-0 w-6/12 sm:col-span-2">
                         <PasswordInput
                           label={'Password'}
@@ -415,7 +468,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   </div>
                 </div>
               </div>
-              {component === UsersRouteRedirectTypeEnum?.chw ? (
+              {component === UsersRouteRedirectTypeEnum?.chw ||
+              component === UsersRouteRedirectTypeEnum?.teamLeads ? (
                 <Button
                   className={' w-4/12 rounded-md '}
                   type="filled"
@@ -450,56 +504,29 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               )}
             </>
           ) : userData && !isAdministrator ? (
-            <div>
-              <div className="grid grid-cols-3 justify-start gap-y-8 p-4 text-current">
-                <div className="flex items-center">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-x-12">
+                <div className="flex gap-2">
+                  <Typography type="h4" color="textMid" text={'ID:'} />
                   <Typography
-                    type="h2"
-                    hasMarkup
-                    fontSize="18"
-                    color="textMid"
-                    text={'ID:'}
-                    className="px-4"
-                  />
-                  <Typography
-                    type="h2"
-                    hasMarkup
-                    fontSize="18"
+                    type="body"
                     color="textMid"
                     text={userData?.idNumber || chwData?.user?.idNumber}
                   />
                 </div>
-                <div className="flex items-center">
+                <div className="flex gap-2">
+                  <Typography type="h4" color="textMid" text={'Cellphone:'} />
                   <Typography
-                    type="h2"
-                    hasMarkup
-                    fontSize="18"
-                    color="textMid"
-                    text={'Cellphone:'}
-                    className="px-4"
-                  />
-                  <Typography
-                    type="h2"
-                    hasMarkup
-                    fontSize="18"
+                    type="body"
                     color="textMid"
                     text={userData?.phoneNumber || chwData?.user?.phoneNumber}
                   />
                 </div>
                 {userData?.whatsAppNumber && (
-                  <div className="flex items-center">
+                  <div className="flex gap-2">
+                    <Typography type="h4" color="textMid" text={'WhatsApp:'} />
                     <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={'WhatsApp:'}
-                      className="px-4"
-                    />
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
+                      type="body"
                       color="textMid"
                       text={
                         userData?.whatsAppNumber ||
@@ -510,123 +537,34 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 )}
               </div>
               {hcwClinic && (
-                <div className="ml-4 flex w-11/12 items-center justify-between">
-                  <div className="flex w-4/12 items-center">
+                <div className="flex flex-wrap gap-x-12">
+                  <div className="flex gap-2">
+                    <Typography type="h4" color="textMid" text={'Clinic:'} />
                     <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
-                      color="textMid"
-                      text={'Clinic:'}
-                      className="px-4"
-                    />
-                    <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
+                      type="body"
                       color="textMid"
                       text={hcwClinic?.name}
                     />
                   </div>
-                  <div className="flex w-full items-center gap-1">
+                  <div className="flex flex-wrap gap-x-2">
+                    <Typography type="h4" color="textMid" text={'Location:'} />
                     <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
+                      type="body"
                       color="textMid"
-                      text={'Location:'}
-                      className="pl-4"
+                      text={`${hcwClinic?.subDistrict?.name}, `}
                     />
-                    <div className="flex w-10/12 items-center gap-1">
-                      <Typography
-                        type="h2"
-                        hasMarkup
-                        fontSize="18"
-                        color="textMid"
-                        text={`${hcwClinic?.subDistrict?.name}, `}
-                      />
-                      <Typography
-                        type="h2"
-                        hasMarkup
-                        fontSize="18"
-                        color="textMid"
-                        text={`${hcwClinic?.subDistrict?.district?.name}, `}
-                      />
-                      <Typography
-                        type="h2"
-                        hasMarkup
-                        fontSize="18"
-                        color="textMid"
-                        text={
-                          hcwClinic?.subDistrict?.district?.province
-                            ?.description
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-              {tlClinics?.length > 0 && (
-                <div className="flex w-10/12 items-center justify-between">
-                  <div className="flex w-4/12 items-center">
                     <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
+                      type="body"
                       color="textMid"
-                      text={'Clinic(s):'}
-                      className="px-4"
+                      text={`${hcwClinic?.subDistrict?.district?.name}, `}
                     />
-                    {tlClinics?.map((item) => {
-                      return (
-                        <Typography
-                          type="h2"
-                          hasMarkup
-                          fontSize="18"
-                          color="textMid"
-                          text={item?.name}
-                        />
-                      );
-                    })}
-                  </div>
-                  <div className="flex w-full items-center gap-1">
                     <Typography
-                      type="h2"
-                      hasMarkup
-                      fontSize="18"
+                      type="body"
                       color="textMid"
-                      text={'Location:'}
-                      className="pl-4"
+                      text={
+                        hcwClinic?.subDistrict?.district?.province?.description
+                      }
                     />
-                    {tlClinics?.map((item) => {
-                      return (
-                        <div className="flex w-10/12 items-center gap-1">
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={`${item?.subDistrict?.name}, `}
-                          />
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={`${item?.subDistrict?.district?.name}, `}
-                          />
-                          <Typography
-                            type="h2"
-                            hasMarkup
-                            fontSize="18"
-                            color="textMid"
-                            text={
-                              item?.subDistrict?.district?.province?.description
-                            }
-                          />
-                        </div>
-                      );
-                    })}
                   </div>
                 </div>
               )}
@@ -641,19 +579,22 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       </div>
 
       <div className="flex justify-end p-4">
-        {isNotLockedOut(userData ?? chwData?.user) && !isAdministrator && (
-          <button
-            onClick={() => {
-              setEditActive(!editActive);
-            }}
-            id="dropdownHoverButton"
-            className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-            type="button"
-          >
-            {' '}
-            {editActive ? 'Close' : 'Edit'}
-          </button>
-        )}
+        {isNotLockedOut(userData ?? chwData?.user) &&
+          !isTeamLeadRole &&
+          isAdministrator &&
+          !isRegistered && (
+            <button
+              onClick={() => {
+                setEditActive(!editActive);
+              }}
+              id="dropdownHoverButton"
+              className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+              type="button"
+            >
+              {' '}
+              {editActive ? 'Close' : 'Edit'}
+            </button>
+          )}
       </div>
       <Dialog
         className="absolute left-40 bottom-80 w-6/12"

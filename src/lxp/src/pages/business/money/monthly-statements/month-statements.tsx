@@ -2,7 +2,7 @@ import ROUTES from '@/routes/routes';
 import React, { useState, useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import { statementsActions, statementsSelectors } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { MonthStatementsDetails } from '../../components/month-statements-details';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -11,10 +11,19 @@ import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { practitionerSelectors } from '@/store/practitioner';
 import { UserOptions } from 'jspdf-autotable';
-import { BannerWrapper, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  Button,
+  Dialog,
+  DialogPosition,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '@/components/download-pdf-button/download-pdf-button';
 import { childrenSelectors } from '@/store/children';
+import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
 
 export interface MonthStatementsDetailsState {
   statementId: string;
@@ -22,6 +31,8 @@ export interface MonthStatementsDetailsState {
 
 export const MonthStatements: React.FC = () => {
   const history = useHistory();
+  const { generateReport } = useGeneratePdfReport();
+
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
 
@@ -30,6 +41,8 @@ export const MonthStatements: React.FC = () => {
   const location = useLocation<MonthStatementsDetailsState>();
   const statementId = location.state.statementId;
   const children = useSelector(childrenSelectors.getChildren);
+
+  const [showConfrimDialog, setShowConfirmDialog] = useState<boolean>(false);
 
   const [pdfReportData, setPdfReportData] = useState<
     ReportTableDataDto[] | undefined
@@ -93,26 +106,102 @@ export const MonthStatements: React.FC = () => {
     lineColor: 0x000000,
   };
 
+  const generatePdf = () => {
+    generateReport(
+      pdfReportData ?? [],
+      signature,
+      new Date().toDateString(), // TODO: Should this be the date the statement was submitted?,
+      children?.length || 0,
+      tableHeadStyles,
+      tableTopContent,
+      undefined,
+      `${getMonthName(statement!.month - 1)}-income-statement-report.pdf`,
+      'income-statements',
+      tableStyles,
+      [footer],
+      tableFootStyles,
+      'portrait'
+    );
+  };
+
+  const monthName = getMonthName(!!statement ? statement.month - 1 : 0);
+
   return (
     <BannerWrapper
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={`View ${getMonthName(
-        !!statement ? statement.month - 1 : 0
-      )} statement`}
+      title={`View ${monthName} statement`}
       color={'primary'}
       onBack={onBack}
       displayOffline={!isOnline}
     >
-      {!!statement ? (
-        <MonthStatementsDetails
-          incomeItems={statement.incomeItems}
-          expenseItems={statement.expenseItems}
-          month={statement.month - 1} // -1 for zero indexed javascript dates :(
-          year={statement.year}
-        />
-      ) : (
+      {!!statement && (
+        <>
+          <MonthStatementsDetails statement={statement} />
+          <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+            {!!pdfReportData && (
+              <Button
+                type="filled"
+                color="quatenary"
+                className={'w-full'}
+                onClick={() => {
+                  setShowConfirmDialog(true);
+                }}
+              >
+                {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
+                <Typography
+                  type="h6"
+                  color="white"
+                  text={'Download Statement'}
+                  className="ml-2"
+                />
+              </Button>
+            )}
+          </div>
+          <Dialog
+            stretch={false}
+            visible={showConfrimDialog}
+            position={DialogPosition.Middle}
+          >
+            <ActionModal
+              icon={'ExclamationCircleIcon'}
+              iconColor="alertMain"
+              importantText={`Are you sure you want to download your ${monthName} statement?`}
+              detailText={
+                'You will not be able to edit the statement after downloading.'
+              }
+              actionButtons={[
+                {
+                  text: 'Yes, download',
+                  textColour: 'white',
+                  colour: 'quatenary',
+                  type: 'filled',
+                  onClick: () => {
+                    appDispatch(
+                      statementsActions.markStatementAsDownloaded({
+                        statementId,
+                      })
+                    );
+                    generatePdf();
+                    setShowConfirmDialog(false);
+                  },
+                  leadingIcon: 'DownloadIcon',
+                },
+                {
+                  text: 'Close',
+                  textColour: 'quatenary',
+                  colour: 'quatenary',
+                  type: 'outlined',
+                  onClick: () => setShowConfirmDialog(false),
+                  leadingIcon: 'PencilIcon',
+                },
+              ]}
+            />
+          </Dialog>
+        </>
+      )}
+      {!statement && (
         <Typography
           type="h1"
           weight="bold"
@@ -120,27 +209,6 @@ export const MonthStatements: React.FC = () => {
           text={'Statement not found'}
         />
       )}
-      <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-        {!!pdfReportData && (
-          <GeneratePdfReportButton
-            component="income-statements"
-            title="Download Statement"
-            outputName={`${getMonthName(
-              statement?.month || 0
-            )}-income-statement-report.pdf`}
-            tableFooter={footer}
-            tableData={pdfReportData}
-            content={tableTopContent}
-            tableHeadStyles={tableHeadStyles}
-            tableFootStyles={tableFootStyles}
-            tableStyles={tableStyles}
-            pageOriantations={'portrait'}
-            signature={signature}
-            numberOfChildren={children?.length || 0}
-            downloadDate={new Date().toDateString()} // TODO: Should this be the date the statement was submitted?
-          />
-        )}
-      </div>
     </BannerWrapper>
   );
 };

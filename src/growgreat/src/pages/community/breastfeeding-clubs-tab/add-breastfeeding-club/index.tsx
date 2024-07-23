@@ -113,9 +113,13 @@ export const AddBreastfeedingClub: React.FC = () => {
   );
 
   const onSubmit = async () => {
+    if (!date) return;
+
     const input: AddBreastFeedingClubInputModelInput = {
       clinicId: clinic?.id,
-      meetingDate: date,
+      meetingDate: `${date?.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date?.getDate()}`,
       healthCareWorkerId: healthCareWorker?.id,
       clientsAttendedConfirmed: true,
       clients: attendance

@@ -1,250 +1,92 @@
 import ROUTES from '@/routes/routes';
-import { statementsSelectors } from '@/store/statements';
-import { numberWithSpaces } from '@/utils/statements/statements-utils';
+import { statementsActions, statementsSelectors } from '@/store/statements';
+import {
+  getStatementBalance,
+  getStatementExpenseTotal,
+  getStatementIncomeTotal,
+  numberWithSpaces,
+} from '@/utils/statements/statements-utils';
 import {
   Typography,
-  StatusChip,
   Button,
   Card,
   FADButton,
   Alert,
   renderIcon,
-  CelebrationCard,
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { differenceInDays, format } from 'date-fns';
+import { format, sub } from 'date-fns';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
-import StatementsWrapper from './components/statements-wrapper/StatementsWrapper';
+import StatementsWrapper from './components/walkthrough-statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
+  IncomeStatementDto,
   LocalStorageKeys,
-  SmartStartPointsLibrary,
-  getNextMonth,
   getPreviousMonth,
 } from '@ecdlink/core';
-import { IncomeStatementDates } from '@/constants/Dates';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { ReactComponent as EmojiYellowBigSmile } from '@/assets/ECD_Connect_emoji3.svg';
-import { ReactComponent as EmojiGreenSmile } from '@/assets/ECD_Connect_emoji1.svg';
-import { pointsSelectors } from '@/store/points';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@/utils/common/local-storage.utils';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { InfoPage } from './components/info-page';
 import { CoachInfo } from '../../components/coach-info';
+import { getStorageItem } from '@/utils/common/local-storage.utils';
+import { StatementsWalkthroughStart } from './components/walkthrough-statements-wrapper/walkthrough-start';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const SubmitIncomeStatements: React.FC = () => {
+  const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+
   const [isLearnMore, setIsLearnMore] = useState(false);
 
   const history = useHistory();
-  const { isOnline } = useOnlineStatus();
   const statements = useSelector(statementsSelectors.getIncomeStatements);
-  const unSubmittedIncomeItems = useSelector(
-    statementsSelectors.getUnsubmittedIncomeItems
-  );
-  const unSubmittedExpenseItems = useSelector(
-    statementsSelectors.getUnsubmittedExpenseItems
-  );
-
-  const { isLoading: isSubmittingStatement } = useThunkFetchCall(
-    'statements',
-    'submitIncomeStatement'
-  );
-
-  const hasIncomeStatements =
-    unSubmittedIncomeItems.length > 0 ||
-    unSubmittedExpenseItems.length > 0 ||
-    statements.length > 0;
-
-  const isThisMonthSubmitted = useMemo<boolean>(
-    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
-    [statements]
-  );
-
-  const isLastMonthSubmitted = useMemo(() => {
-    var currentMonth = new Date().getMonth();
-
-    if (currentMonth === 0) {
-      return !!statements?.find(
-        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
-      );
-    }
-
-    return !!statements?.find((x) => x.month === currentMonth);
-  }, [statements]);
-
-  const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
-    useState<number>(0);
-
-  const currentDate = new Date();
-  const isSubmitWindowOpen =
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
-    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
-
-  const isStatementSubmitted =
-    new Date().getDate() <= IncomeStatementDates.SubmitEndDay
-      ? isLastMonthSubmitted
-      : isThisMonthSubmitted;
-
-  useEffect(() => {
-    const date = new Date();
-    // Outside submit
-    if (
-      date.getDate() <= IncomeStatementDates.SubmitEndDay &&
-      !isLastMonthSubmitted
-    ) {
-      const nextSubmit = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        IncomeStatementDates.SubmitEndDay
-      );
-      setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-    } else {
-      const nextMonth = getNextMonth(date);
-      const nextSubmit = new Date(
-        nextMonth.getFullYear(),
-        nextMonth.getMonth(),
-        7
-      );
-      setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-    }
-  }, [statements, isSubmitWindowOpen, setDaysUntilFinalSubmission]);
-
-  const balanceNotifications = useMemo(() => {
-    const lastMonthStatement = statements[statements.length - 1];
-    const previousMonthStatement = statements[statements.length - 2];
-
-    // No data for last two months
-    if (!lastMonthStatement || !previousMonthStatement) {
-      return <></>;
-    }
-
-    if (lastMonthStatement.balance < 0 && previousMonthStatement.balance < 0) {
-      return (
-        <Alert
-          type="warning"
-          className="mt-4"
-          message="Over the past two months, you have made less money than you have earned. This means your business is running at a loss."
-          button={
-            <Button
-              text={`Learn more`}
-              type={'filled'}
-              color={'primary'}
-              textColor={'white'}
-              onClick={() => setIsLearnMore(true)}
-            />
-          }
-          customIcon={
-            <div className="rounded-full">
-              {renderIcon('ExclamationCircleIcon', 'text-alertMain w-5 h-5')}
-            </div>
-          }
-        />
-      );
-    }
-    if (lastMonthStatement.balance > 0 && previousMonthStatement.balance > 0) {
-      const lastTwoStatementsBalance =
-        lastMonthStatement.balance + previousMonthStatement.balance;
-      return (
-        <Alert
-          type="success"
-          className="mt-4"
-          message="Great job! You have made a profit for 2 months in a row!"
-          list={[
-            `You had R ${lastTwoStatementsBalance.toFixed(2)} left over for 
-            ${getMonthName(lastMonthStatement.month - 1).substring(0, 3)} & 
-            ${getMonthName(previousMonthStatement.month - 1).substring(
-              0,
-              3
-            )} combined.`,
-          ]}
-          customIcon={
-            <div className="rounded-full">
-              <img
-                src={PositiveBonusEmoticon}
-                alt="positive emoticon"
-                className="h-6 w-6"
-              />
-            </div>
-          }
-        />
-      );
-    }
-    return null;
-  }, [statements]);
-
-  const lastMonthStatement = statements[statements.length - 1];
-
-  const previousMonthRecord = !!lastMonthStatement
-    ? `${getMonthName(lastMonthStatement.month! - 1).substring(0, 3)} ${
-        lastMonthStatement.year
-      }`
-    : `-`;
-
-  const previousMonthTotalIncome = !!lastMonthStatement
-    ? lastMonthStatement.incomeTotal
-    : 0;
-
-  const previousMonthTotalExpenses = !!lastMonthStatement
-    ? lastMonthStatement.expenseTotal
-    : 0;
-
-  const previousMonthTotalBalance = !!lastMonthStatement
-    ? lastMonthStatement.balance
-    : 0;
-
-  const currentMonthRecord = useMemo(() => {
-    var date = new Date();
-    if (isThisMonthSubmitted) {
-      return format(getNextMonth(date), 'MMM yyyy');
-    }
-    if (
-      !isLastMonthSubmitted &&
-      date.getDate() <= IncomeStatementDates.SubmitEndDay
-    ) {
-      return format(getPreviousMonth(date), 'MMM yyyy');
-    }
-
-    return format(date, 'MMM yyyy');
-  }, [isThisMonthSubmitted, isLastMonthSubmitted]);
-
-  const currentMonthTotalIncome = unSubmittedIncomeItems.reduce(
-    (total, item) => {
-      return total + item.amount;
-    },
-    0
-  );
-
-  const currentMonthTotalExpenses = unSubmittedExpenseItems.reduce(
-    (total, item) => {
-      return total + item.amount;
-    },
-    0
-  );
-
-  const currentMonthTotalBalance =
-    currentMonthTotalIncome - currentMonthTotalExpenses;
-
-  const formatCurrentValue = (value: number) => {
-    if (value === 0) return `R ${numberWithSpaces(value.toFixed(2))}`;
-
-    if (value > 0) return `+ R ${numberWithSpaces(value.toFixed(2))}`;
-
-    if (value < 0) return `- R ${numberWithSpaces(Math.abs(value).toFixed(2))}`;
-  };
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const {
     setState,
-    state: { stepIndex, tourActive },
+    state: { stepIndex, run: isWalkthrough },
   } = useAppContext();
+
+  const currentMonth = new Date();
+  const lastMonth = getPreviousMonth(new Date());
+  const previousMonth = getPreviousMonth(lastMonth);
+
+  const currentMonthStatement = statements.find(
+    (x) =>
+      x.month === currentMonth.getMonth() + 1 &&
+      x.year === currentMonth.getFullYear()
+  );
+  const lastMonthStatement = statements.find(
+    (x) =>
+      x.month === lastMonth.getMonth() + 1 && x.year === lastMonth.getFullYear()
+  );
+  const previousMonthStatement = statements.find(
+    (x) =>
+      x.month === previousMonth.getMonth() + 1 &&
+      x.year === previousMonth.getFullYear()
+  );
+
+  const getStatementTitle = (statement: IncomeStatementDto | undefined) =>
+    !!statement
+      ? `${getMonthName(statement.month! - 1).substring(0, 3)} ${
+          statement.year
+        }`
+      : `-`;
+
+  const formatCurrentValue = (value: number, showSymbol: boolean = false) => {
+    if (value === 0) return `R ${numberWithSpaces(value.toFixed(2))}`;
+
+    if (value > 0)
+      return `${showSymbol ? '+ ' : ''}R ${numberWithSpaces(value.toFixed(2))}`;
+
+    if (value < 0)
+      return `${showSymbol ? '- ' : ''}R ${numberWithSpaces(
+        Math.abs(value).toFixed(2)
+      )}`;
+  };
 
   const nextStep = () => {
     setState({ stepIndex: 1 });
@@ -257,235 +99,80 @@ export const SubmitIncomeStatements: React.FC = () => {
       el?.scrollIntoView();
       return;
     }
-
-    if (stepIndex === 8) {
-      const el = document.getElementById('howMayDaysToSubmit');
-
-      el?.scrollIntoView();
-      return;
-    }
   }, [stepIndex]);
 
-  // POINTS LOGIC
-  const [pointsMessageDismissedDate, setPointsMessageDismissedDate] = useState<
-    string | undefined
-  >(undefined);
-
-  const submitStatementConsecutivePointLibrary = useSelector(
-    pointsSelectors.getPointsLibraryById(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS_CONSECUTIVE
-    )
+  const lastMonthIncomeTotal = useMemo(
+    () => (isWalkthrough ? 2000 : getStatementIncomeTotal(lastMonthStatement)),
+    [lastMonthStatement, isWalkthrough]
   );
 
-  const submitStatementPoints = useSelector(
-    pointsSelectors.getPointsSummariesForActivity(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS,
-      13 // Need to get last 13 months, in case we are in the next month but still the submit window
-    )
+  const currentMonthIncomeTotal = useMemo(
+    () =>
+      isWalkthrough ? 1800 : getStatementIncomeTotal(currentMonthStatement),
+    [currentMonthStatement, isWalkthrough]
   );
-  const submitPreschoolFeesPoints = useSelector(
-    pointsSelectors.getPointsSummariesForActivity(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS_PRESCHOOL_FEES_ADDED
-    )
+
+  const lastMonthExpenseTotal = useMemo(
+    () =>
+      isWalkthrough ? -2700 : getStatementExpenseTotal(lastMonthStatement),
+    [lastMonthStatement, isWalkthrough]
   );
-  const submitStatementConsecutivePoints = useSelector(
-    pointsSelectors.getPointsSummariesForActivity(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS_CONSECUTIVE
-    )
+
+  const currentMonthExpenseTotal = useMemo(
+    () =>
+      isWalkthrough ? -1700 : getStatementExpenseTotal(currentMonthStatement),
+    [currentMonthStatement, isWalkthrough]
   );
+
+  const previousMonthBalance = useMemo(
+    () => (isWalkthrough ? 300.1 : getStatementBalance(previousMonthStatement)),
+    [previousMonthStatement, isWalkthrough]
+  );
+
+  const lastMonthBalance = isWalkthrough
+    ? 300.1
+    : lastMonthIncomeTotal - lastMonthExpenseTotal;
+  const currentMonthBalance = isWalkthrough
+    ? 100.25
+    : currentMonthIncomeTotal - currentMonthExpenseTotal;
+
+  const hasIncomeStatements =
+    !!lastMonthIncomeTotal ||
+    !!lastMonthExpenseTotal ||
+    !!currentMonthExpenseTotal ||
+    !!currentMonthIncomeTotal;
+
+  const hasLastTwoMonthsStatements =
+    lastMonthStatement?.month === lastMonth.getMonth() &&
+    lastMonthStatement?.year === lastMonth.getFullYear() &&
+    previousMonthStatement?.month === previousMonth.getMonth() &&
+    previousMonthStatement.year === previousMonth.getFullYear();
+
+  const totalDownloadedStatements = statements.reduce(
+    (total, statement) => (statement.downloaded ? total + 1 : total),
+    0
+  );
+
+  const checkIfToShowInitialWalkthrough = useCallback(() => {
+    if (
+      !getStorageItem(LocalStorageKeys.incomeStatementsWalkthroughComplete) &&
+      !practitioner?.isCompletedBusinessWalkThrough
+    ) {
+      setShowInitialWalkthrough(true);
+    }
+  }, [practitioner?.isCompletedBusinessWalkThrough]);
 
   useEffect(() => {
-    const storageItem = getStorageItem<string>(
-      LocalStorageKeys.pointsSubmitStatementsMessageDismissed
-    );
-
-    if (storageItem) {
-      setPointsMessageDismissedDate(new Date(storageItem).toDateString());
-    }
-  }, []);
-
-  const onDismissCelebration = useCallback(() => {
-    const dismissedDate = new Date();
-    setStorageItem(
-      JSON.stringify(dismissedDate),
-      LocalStorageKeys.pointsSubmitStatementsMessageDismissed
-    );
-    setPointsMessageDismissedDate(dismissedDate.toDateString());
-  }, []);
-
-  const celebrationCard = useMemo<JSX.Element>(() => {
-    const messageDismissedDate = !!pointsMessageDismissedDate
-      ? new Date(pointsMessageDismissedDate)
-      : undefined;
-
-    if (
-      currentDate.getDate() < IncomeStatementDates.SubmitStartDay &&
-      currentDate.getDate() > IncomeStatementDates.SubmitEndDay
-    ) {
-      return <></>;
-    }
-
-    if (
-      currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
-      !isThisMonthSubmitted
-    ) {
-      return <></>;
-    }
-
-    if (
-      currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
-      isThisMonthSubmitted &&
-      !!messageDismissedDate &&
-      messageDismissedDate.getMonth() === currentDate.getMonth() &&
-      messageDismissedDate.getDate() >= IncomeStatementDates.SubmitStartDay
-    ) {
-      return <></>;
-    }
-
-    if (
-      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay &&
-      !isLastMonthSubmitted
-    ) {
-      return <></>;
-    }
-
-    if (
-      currentDate.getDate() < IncomeStatementDates.SubmitEndDay &&
-      isLastMonthSubmitted &&
-      !!messageDismissedDate &&
-      ((messageDismissedDate.getMonth() ===
-        getPreviousMonth(currentDate).getMonth() &&
-        messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay) ||
-        (messageDismissedDate.getMonth() === currentDate.getMonth() &&
-          messageDismissedDate.getDate() <= IncomeStatementDates.SubmitEndDay))
-    ) {
-      return <></>;
-    }
-
-    // Check depending on window if we need to try display last months message
-    // We can just add an offset of 1 to the logic below to ignore this months points if we want to show for last month
-    var offset =
-      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
-        ? 1 // Last month
-        : 0; // Current month
-
-    let submittedMonthsInARow = 0;
-    for (
-      let i = offset;
-      i < submitStatementPoints.length &&
-      submitStatementPoints[i].pointsTotal !== 0;
-      i++
-    ) {
-      submittedMonthsInARow++;
-    }
-
-    if (submittedMonthsInARow === 0) {
-      return <></>;
-    }
-
-    let monthsSinceConsecutiveBonus = 0;
-    for (
-      let i = offset;
-      i < submitStatementConsecutivePoints.length &&
-      submitStatementConsecutivePoints[i].pointsTotal === 0;
-      i++
-    ) {
-      monthsSinceConsecutiveBonus++;
-    }
-
-    const submittedPointsThisMonth = submitStatementPoints[offset].pointsTotal;
-    const submittedWithFeesPointsThisMonth =
-      submitPreschoolFeesPoints[offset].pointsTotal;
-    const submitConsecutiveBonusPointsThisMonth =
-      submitStatementConsecutivePoints[offset]?.pointsTotal;
-    const monthTotal =
-      submittedPointsThisMonth +
-      submittedWithFeesPointsThisMonth +
-      submitConsecutiveBonusPointsThisMonth;
-
-    const preschoolFeesMessage =
-      ' & you added preschool fees for each child this month';
-    const consecutiveBonusMessage = ' You earned 25 bonus points.';
-
-    // Improved messaging and colours for 12+ months submitted in a row
-    if (submittedMonthsInARow === 12) {
-      return (
-        <CelebrationCard
-          image={<EmojiYellowBigSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Amazing! You submitted statements for 12 months in a row${
-            submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-          }!`}
-          scoreMessage={`${monthTotal} points earned`}
-          scoreIcon="GiftIcon"
-          primaryTextColour="uiBg"
-          secondaryTextColour="uiBg"
-          backgroundColour="successMain"
-          onDismiss={onDismissCelebration}
-          secondaryMessage=""
-        />
-      );
-    }
-
-    // Only the last month submitted
-    if (submittedMonthsInARow === 1) {
-      return (
-        <CelebrationCard
-          image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Great jobl! You have submitted your ${format(
-            offset === 0 ? new Date() : getPreviousMonth(new Date()),
-            'MMMM'
-          )} statement${
-            submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-          }!`}
-          //scoreMessage={`${monthTotal} points earned`}
-          scoreIcon="GiftIcon"
-          primaryTextColour="successMain"
-          backgroundColour="successBg"
-          onDismiss={onDismissCelebration}
-          secondaryMessage=""
-          secondaryTextColour="black"
-        />
-      );
-    }
-
-    // Multiple months, but less than 12
-    return (
-      <CelebrationCard
-        image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-        primaryMessage={`Wow you're on a roll! You submitted statements for ${submittedMonthsInARow} months in a row${
-          submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
-        }! ${
-          submitConsecutiveBonusPointsThisMonth > 0
-            ? consecutiveBonusMessage
-            : ''
-        }`}
-        // scoreMessage={`${monthTotal} points earned`}
-        scoreIcon="GiftIcon"
-        primaryTextColour="successMain"
-        backgroundColour="successBg"
-        onDismiss={onDismissCelebration}
-        secondaryMessage={
-          monthsSinceConsecutiveBonus === 2
-            ? `Submit you next statement to earn ${submitStatementConsecutivePointLibrary?.points} bonus points.`
-            : ''
-        }
-        secondaryTextColour="black"
-      />
-    );
-  }, [
-    pointsMessageDismissedDate,
-    submitStatementPoints,
-    submitPreschoolFeesPoints,
-    submitStatementConsecutivePoints,
-  ]);
+    checkIfToShowInitialWalkthrough();
+  }, [checkIfToShowInitialWalkthrough]);
 
   return (
     <>
       <StatementsWrapper />
-      <div className="pb-180 flex flex-col justify-center p-4" id="lastStep">
+      <div className="pb-180 flex flex-col justify-center p-4">
         {!hasIncomeStatements && (
-          <div className="mt-2 flex flex-wrap justify-center p-8">
-            <div className="">
+          <div className="mt-2 flex flex-col justify-center p-8">
+            <div className="flex w-full justify-center">
               <MoneyIcon />
             </div>
             <div>
@@ -507,195 +194,231 @@ export const SubmitIncomeStatements: React.FC = () => {
           </div>
         )}
         {hasIncomeStatements && (
-          <div id="statementsDashboard">
-            {((isOnline &&
-              !isThisMonthSubmitted &&
-              isSubmitWindowOpen &&
-              !isSubmittingStatement) ||
-              (tourActive && stepIndex === 8)) && (
-              <div className="flex items-center" id="howMayDaysToSubmit">
-                <StatusChip
-                  backgroundColour={
-                    daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-                  }
-                  borderColour={
-                    daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-                  }
-                  text={`${daysUntilFinalSubmission} days`}
-                  textColour={'white'}
-                  className={'mr-2'}
-                />
-                <Typography
-                  className="truncate"
-                  type="h4"
-                  weight="bold"
-                  color="textDark"
-                  text={'To submit next income statement'}
-                />
-              </div>
-            )}
-            {!!celebrationCard && celebrationCard}
+          <>
+            <div id="statementsDashboard">
+              {/* {!!celebrationCard && celebrationCard} */}
 
-            {((isOnline &&
-              isSubmitWindowOpen &&
-              !isStatementSubmitted &&
-              !isSubmittingStatement) ||
-              (tourActive && stepIndex === 9)) && (
-              <Button
-                shape="normal"
-                color="primary"
-                type="filled"
-                icon="ArrowCircleRightIcon"
-                onClick={() =>
-                  history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
-                }
-                className="mt-6 w-full rounded-2xl"
-                id="submitIncomeButton"
+              <Card
+                className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
+                borderRaduis={'xl'}
+                shadowSize={'md'}
               >
                 <Typography
-                  type="help"
-                  color="white"
-                  text="Submit income statement"
+                  text={`${format(new Date(), 'MMMM')} balance`}
+                  type="h4"
+                  color={'white'}
+                  className="w-6/12"
                 />
-              </Button>
-            )}
-            <Card
-              className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
-              borderRaduis={'xl'}
-              shadowSize={'md'}
-            >
-              <Typography
-                text={`${
-                  isThisMonthSubmitted
-                    ? format(getNextMonth(currentDate), 'MMMM')
-                    : format(currentDate, 'MMMM')
-                } balance`}
-                type="h4"
-                color={'white'}
-                className="w-6/12"
-              />
-              <Typography
-                text={`${formatCurrentValue(currentMonthTotalBalance)}`}
-                color={'white'}
-                type="h1"
-                className="w-8/12 text-right"
-              />
-            </Card>
-            <table className="mt-4 w-full">
-              <tbody>
-                <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
-                  <th className="w-1/3"></th>
-                  <th className="text-textDark font-body">
-                    <Typography
-                      text={previousMonthRecord}
-                      type="body"
-                      color={'textDark'}
-                    />
-                  </th>
-                  <th className="w-1/3">
-                    <Typography
-                      text={currentMonthRecord}
-                      type="body"
-                      color={'textDark'}
-                    />
-                  </th>
-                </tr>
-                <tr className="h-14">
-                  <td className="w-1/3">
-                    <Typography
-                      text={`Income`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={`${formatCurrentValue(previousMonthTotalIncome)}`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={`${formatCurrentValue(currentMonthTotalIncome)}`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                </tr>
-                <tr className="bg-uiBg h-14">
-                  <td className="w-1/3">
-                    <Typography
-                      text={`Expenses`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={`${formatCurrentValue(previousMonthTotalExpenses)}`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={`${formatCurrentValue(currentMonthTotalExpenses)}`}
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                    />
-                  </td>
-                </tr>
-                <tr className=" h-14">
-                  <td className="w-1/3">
-                    <Typography
-                      text={`Balance`}
-                      weight="bold"
-                      type="body"
-                      color={'textDark'}
-                      align={'center'}
-                      className="font-bold"
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={formatCurrentValue(previousMonthTotalBalance)}
-                      type="body"
-                      color={
-                        previousMonthTotalBalance >= 0
-                          ? 'successMain'
-                          : 'errorMain'
-                      }
-                      align={'center'}
-                    />
-                  </td>
-                  <td className="w-1/3">
-                    <Typography
-                      text={formatCurrentValue(currentMonthTotalBalance)}
-                      type="body"
-                      color={
-                        currentMonthTotalBalance >= 0
-                          ? 'successMain'
-                          : 'errorMain'
-                      }
-                      align={'center'}
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                <Typography
+                  text={`${formatCurrentValue(currentMonthBalance)}`}
+                  color={'white'}
+                  type="h1"
+                  className="w-8/12 text-right"
+                />
+              </Card>
+              <table className="mt-4 w-full">
+                <tbody>
+                  <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
+                    <th className="w-1/3"></th>
+                    <th className="text-textDark font-body">
+                      <Typography
+                        text={
+                          isWalkthrough
+                            ? format(sub(new Date(), { months: 1 }), 'MMM yyyy')
+                            : getStatementTitle(lastMonthStatement)
+                        }
+                        type="body"
+                        color={'textDark'}
+                      />
+                    </th>
+                    <th className="w-1/3">
+                      <Typography
+                        text={`${getMonthName(
+                          currentMonth.getMonth()
+                        ).substring(0, 3)} ${currentMonth.getFullYear()}`}
+                        type="body"
+                        color={'textDark'}
+                      />
+                    </th>
+                  </tr>
+                  <tr className="h-14">
+                    <td className="w-1/3">
+                      <Typography
+                        text={`Income`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={`${formatCurrentValue(lastMonthIncomeTotal)}`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={`${formatCurrentValue(currentMonthIncomeTotal)}`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                  </tr>
+                  <tr className="bg-uiBg h-14">
+                    <td className="w-1/3">
+                      <Typography
+                        text={`Expenses`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={`${formatCurrentValue(lastMonthExpenseTotal)}`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={`${formatCurrentValue(currentMonthExpenseTotal)}`}
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                      />
+                    </td>
+                  </tr>
+                  <tr className=" h-14">
+                    <td className="w-1/3">
+                      <Typography
+                        text={`Balance`}
+                        weight="bold"
+                        type="body"
+                        color={'textDark'}
+                        align={'center'}
+                        className="font-bold"
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={formatCurrentValue(lastMonthBalance, true)}
+                        type="body"
+                        color={
+                          lastMonthBalance === 0
+                            ? 'primary'
+                            : lastMonthBalance >= 0
+                            ? 'successMain'
+                            : 'secondary'
+                        }
+                        align={'center'}
+                      />
+                    </td>
+                    <td className="w-1/3">
+                      <Typography
+                        text={formatCurrentValue(currentMonthBalance, true)}
+                        type="body"
+                        color={
+                          currentMonthBalance === 0
+                            ? 'primary'
+                            : currentMonthBalance > 0
+                            ? 'successMain'
+                            : 'secondary'
+                        }
+                        align={'center'}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
-            {balanceNotifications}
+              {hasLastTwoMonthsStatements &&
+                lastMonthBalance < 0 &&
+                previousMonthBalance < 0 && (
+                  <Alert
+                    type="warning"
+                    className="mt-4"
+                    message="Over the past two months, you have made less money than you have earned. This means your business is running at a loss."
+                    button={
+                      <Button
+                        text={`Learn more`}
+                        type={'filled'}
+                        color={'quatenary'}
+                        textColor={'white'}
+                        onClick={() => setIsLearnMore(true)}
+                      />
+                    }
+                    customIcon={
+                      <div className="rounded-full">
+                        {renderIcon(
+                          'ExclamationCircleIcon',
+                          'text-alertMain w-5 h-5'
+                        )}
+                      </div>
+                    }
+                  />
+                )}
+
+              {hasLastTwoMonthsStatements &&
+                lastMonthBalance > 0 &&
+                previousMonthBalance > 0 && (
+                  <Alert
+                    type="success"
+                    variant="outlined"
+                    className="mt-4"
+                    message="Great job! You have made a profit for 2 months in a row!"
+                    listColor="white"
+                    list={[
+                      `You had R ${(
+                        lastMonthBalance + previousMonthBalance
+                      ).toFixed(2)} left over for 
+                  ${getMonthName(lastMonthStatement.month - 1).substring(
+                    0,
+                    3
+                  )} & 
+                  ${getMonthName(previousMonthStatement.month - 1).substring(
+                    0,
+                    3
+                  )} combined.`,
+                    ]}
+                    customIcon={
+                      <div className="rounded-full">
+                        <img
+                          src={PositiveBonusEmoticon}
+                          alt="positive emoticon"
+                          className="h-6 w-6"
+                        />
+                      </div>
+                    }
+                  />
+                )}
+
+              {totalDownloadedStatements > 0 && (
+                <Alert
+                  type="success"
+                  variant="outlined"
+                  className="mt-4"
+                  message={`Well done! You have downloaded ${totalDownloadedStatements} statements this year. Keep going!`}
+                  customIcon={
+                    <div className="rounded-full">
+                      <img
+                        src={PositiveBonusEmoticon}
+                        alt="positive emoticon"
+                        className="h-6 w-6"
+                      />
+                    </div>
+                  }
+                />
+              )}
+            </div>
 
             <Button
               shape="normal"
-              color="primary"
+              color="quatenary"
               type="filled"
               icon="DocumentSearchIcon"
               onClick={() =>
@@ -708,26 +431,27 @@ export const SubmitIncomeStatements: React.FC = () => {
             >
               <Typography type="help" color="white" text="See all statements" />
             </Button>
-          </div>
+          </>
         )}
-
-        <FADButton
-          title={'Add income or expense'}
-          icon={'PlusIcon'}
-          iconDirection={'left'}
-          textToggle={true}
-          type={'filled'}
-          color={'primary'}
-          shape={'round'}
-          className={`absolute bottom-14 right-0 z-10 m-3 px-3.5 py-2.5 ${
-            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-          }`}
-          click={() => {
-            history.push(ROUTES.BUSINESS_ADD_AMOUNT);
-            nextStep();
-          }}
-          id="startStatements"
-        />
+        <div className="h-full flex-1 bg-white px-4 pt-4">
+          <FADButton
+            title={'Add income or expense'}
+            icon={'PlusIcon'}
+            iconDirection={'left'}
+            textToggle={true}
+            type={'filled'}
+            color={'quatenary'}
+            shape={'round'}
+            className={`absolute bottom-6 right-0 z-10 m-3 px-3.5 py-2.5 ${
+              stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
+            }`}
+            click={() => {
+              history.push(ROUTES.BUSINESS_ADD_AMOUNT);
+              nextStep();
+            }}
+            id="startStatements"
+          />
+        </div>
       </div>
       <Dialog fullScreen visible={isLearnMore} position={DialogPosition.Full}>
         <InfoPage
@@ -739,6 +463,12 @@ export const SubmitIncomeStatements: React.FC = () => {
           <CoachInfo />
         </InfoPage>
       </Dialog>
+      <div id="lastStep" />
+      {showInitialWalkthrough && (
+        <StatementsWalkthroughStart
+          onClose={() => setShowInitialWalkthrough(false)}
+        />
+      )}
     </>
   );
 };

@@ -15,6 +15,7 @@ import {
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
+import { isVisitInProgress } from '@/helpers/visit-helpers';
 
 interface IntroScreenProps {
   mother?: MotherDto;
@@ -34,7 +35,6 @@ export const IntroScreen = ({
   isFromProgressTab,
 }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const appDispatch = useAppDispatch();
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -51,9 +51,10 @@ export const IntroScreen = ({
   );
 
   const date =
-    !currentVisit?.attended && !currentVisit?.visitInProgress
+    !currentVisit ||
+    (!currentVisit?.attended && isVisitInProgress(currentVisit))
       ? previousVisit?.actualVisitDate
-      : currentVisit.actualVisitDate || currentVisit?.insertedDate || '';
+      : currentVisit?.actualVisitDate || ''; // Should find most recent completed visit
 
   return (
     <>

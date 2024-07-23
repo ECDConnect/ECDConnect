@@ -1,4 +1,4 @@
-import { ChildDto, LearnerDto, getAvatarColor } from '@ecdlink/core';
+import { ChildDto, getAvatarColor } from '@ecdlink/core';
 import {
   AlertSeverityType,
   ComponentBaseProps,
@@ -20,16 +20,15 @@ import { PractitionerProfileRouteState } from './coach-practitioner-child-list.t
 import SearchHeader from '../../../components/search-header/search-header';
 import * as styles from './coach-practitioner-child-list.styles';
 import { attendanceSelectors } from '@store/attendance';
-import { documentSelectors } from '@store/document';
-import { contentReportSelectors } from '@store/content/report';
 import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { IconInformationIndicator } from '../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
+import { LearnerDto } from '@/models/classroom/classroom-group.dto';
 
+// TODO: Remove this page and use the one from src/lxp/src/pages/classroom/child-list/child-list.tsx
 export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
@@ -43,24 +42,18 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const pendingStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
   );
+  const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildExternalLink
+  );
+
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
-  const childrenForPractitioner = useSelector(
-    childrenForPractitionerSelectors.getChildrenForPractitioner
-  );
+  const childrenForPractitioner = useSelector(childrenSelectors.getChildren);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const classroomGroupProgrammes = useSelector(
-    classroomsSelectors.getClassProgrammes
-  );
-  const childUsers = useSelector(childrenSelectors.getChildUsers);
-  const documents = useSelector(documentSelectors.getDocuments);
-  const childReportSummaries = useSelector(
-    contentReportSelectors.getChildLatestCompletedReports()
-  );
+  const children = useSelector(childrenSelectors.getChildren);
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
@@ -144,10 +137,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       const childListItem: UserAlertListDataItem[] = [];
 
       for (const child of childrenForPractitionerList) {
-        const learner = classroomGroupLearners.find(
-          (x) => x.userId === child.userId
-        );
-        childListItem.push(mapUserListDataItem(child, learner));
+        childListItem.push(mapUserListDataItem(child));
       }
 
       setChildUserListData(childListItem);
@@ -170,22 +160,21 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     if (childrenForPractitionerList && classroomGroupLearners) {
       if (value && value.length > 0) {
         for (const child of childrenForPractitionerList) {
-          const learner = classroomGroupLearners.find(
-            (x) =>
-              x.userId === child.userId &&
-              selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-          );
+          const learner = classroomGroups
+            .filter((cg) => selectedClassrooms.some((sc) => sc === cg.id))
+            .flatMap((cg) => cg.learners)
+            .find((x) => x.childUserId === child.userId);
           if (learner) {
-            childListItem.push(mapUserListDataItem(child, learner));
+            childListItem.push(mapUserListDataItem(child));
           }
         }
       } else {
         for (const child of childrenForPractitionerList) {
           const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId
+            (x) => x.childUserId === child.userId
           );
           if (learner) {
-            childListItem.push(mapUserListDataItem(child, learner));
+            childListItem.push(mapUserListDataItem(child));
           }
         }
       }
@@ -200,87 +189,45 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
         childUserListData?.some((x) => x.id === child.id)
       );
       const sorted = [...filteredChildren].sort((a: ChildDto, b: ChildDto) => {
-        const childUserOne = childUsers?.find((x) => x.id === a.userId);
-        const childUserTwo = childUsers?.find((x) => x.id === b.userId);
-        const childLearnerOne = classroomGroupLearners?.find(
-          (x) => x.userId === a.userId
-        );
-        const childLearnerTwo = classroomGroupLearners?.find(
-          (x) => x.userId === a.userId
-        );
-        const childClassroomGroupOne = classroomGroups?.filter(
-          (x) => x.id === childLearnerOne?.classroomGroupId
-        );
-        const childClassroomGroupTwo = classroomGroups?.filter(
-          (x) => x.id === childLearnerTwo?.classroomGroupId
-        );
-        const childClassroomGroupProgrammeOne =
-          classroomGroupProgrammes?.filter(
-            (x) => x.classroomGroupId === childLearnerOne?.classroomGroupId
-          );
-        const childClassroomGroupProgrammeTwo =
-          classroomGroupProgrammes?.filter(
-            (x) => x.classroomGroupId === childLearnerTwo?.classroomGroupId
-          );
+        const childUserOne = children?.find((x) => x.userId === a.userId);
+        const childUserTwo = children?.find((x) => x.userId === b.userId);
 
         switch (column) {
           case 'priority': {
-            const childUserDocumentsOne = documents?.filter(
-              (x) => x.userId === a.userId
-            );
-            const childReportsOne = childReportSummaries?.filter(
-              (x) => x.childId === a?.id
-            );
-            const childAlertOne = getChildAlertModel(
-              childLearnerOne,
-              pendingStatusId,
-              childUserOne,
-              a,
-              childUserDocumentsOne,
-              attendanceData,
-              childClassroomGroupOne,
-              childClassroomGroupProgrammeOne,
-              childReportsOne,
-              practitioner?.attendedChildProgress || false,
-              'coach'
-            );
-            const childUserDocumentsTwo = documents?.filter(
-              (x) => x.userId === b.userId
-            );
-            const childReportsTwo = childReportSummaries?.filter(
-              (x) => x.childId === b?.id
-            );
-            const childAlertTwo = getChildAlertModel(
-              childLearnerTwo,
-              pendingStatusId,
-              childUserTwo,
-              b,
-              childUserDocumentsTwo,
-              attendanceData,
-              childClassroomGroupTwo,
-              childClassroomGroupProgrammeTwo,
-              childReportsTwo,
-              practitioner?.attendedChildProgress || false,
-              'coach'
-            );
+            const childAlertOne = getChildAlertModel({
+              child: childUserOne,
+              attendance: attendanceData,
+              classroomGroups,
+              childExternalWorkflowStatusId,
+              childPendingWorkflowStatusId: pendingStatusId,
+            });
+            const childAlertTwo = getChildAlertModel({
+              child: childUserTwo,
+              attendance: attendanceData,
+              classroomGroups,
+              childExternalWorkflowStatusId,
+              childPendingWorkflowStatusId: pendingStatusId,
+            });
+
             return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
           }
           case 'surname':
-            return (childUserOne !== undefined && childUserOne?.surname!) >
-              (childUserTwo !== undefined && childUserTwo.surname!)
+            return (childUserOne !== undefined && childUserOne.user?.surname!) >
+              (childUserTwo !== undefined && childUserTwo.user?.surname!)
               ? 1
               : -1;
           case 'age':
             return (childUserOne !== undefined &&
-              childUserOne?.dateOfBirth !== undefined) >
+              childUserOne.user?.dateOfBirth !== undefined) >
               (childUserTwo !== undefined &&
-                childUserTwo?.dateOfBirth !== undefined)
+                childUserTwo.user?.dateOfBirth !== undefined)
               ? 1
               : -1;
           case 'firstName':
           default:
-            return (childUserOne !== undefined && childUserOne.firstName!) >
-              (childUserTwo !== undefined && childUserTwo.firstName!)
+            return (childUserOne !== undefined &&
+              childUserOne.user?.firstName!) >
+              (childUserTwo !== undefined && childUserTwo.user?.firstName!)
               ? 1
               : -1;
         }
@@ -288,56 +235,30 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
 
       const childListItem: UserAlertListDataItem[] = [];
       for (const child of sorted) {
-        const learner = classroomGroupLearners.find(
-          (x) => x.userId === child.userId
-        );
-        childListItem.push(mapUserListDataItem(child, learner));
+        childListItem.push(mapUserListDataItem(child));
       }
       setChildUserListData(childListItem || []);
     }
   };
 
   const mapUserListDataItem = (
-    childRecord: ChildDto,
-    childLearner?: LearnerDto
+    childRecord: ChildDto
   ): UserAlertListDataItem => {
-    const childUser = childUsers?.find((x) => x.id === childRecord.userId);
-    const childDocuments = documents?.filter(
-      (x) => x.userId === childRecord.userId
-    );
-    const reports = childReportSummaries?.filter(
-      (x) => x.childId === childRecord?.id
-    );
-    const childClassroomGroup = classroomGroups?.filter(
-      (classroomGroup) => classroomGroup.id === childLearner?.classroomGroupId
-    );
-    const childClassroomGroupProgramme = classroomGroupProgrammes?.filter(
-      (classroomGroupProgramme) =>
-        classroomGroupProgramme.classroomGroupId ===
-        childLearner?.classroomGroupId
-    );
+    const child = children?.find((x) => x.id === childRecord.userId);
 
-    const childAlert = getChildAlertModel(
-      childLearner,
-      pendingStatusId,
-      childUser,
-      childRecord,
-      childDocuments,
-      attendanceData,
-      childClassroomGroup,
-      childClassroomGroupProgramme,
-      reports,
-      practitioner?.attendedChildProgress || false,
-      'coach'
-    );
+    const childAlert = getChildAlertModel({
+      classroomGroups,
+      attendance: attendanceData,
+      child,
+    });
 
     return {
       id: childRecord.id,
-      profileDataUrl: childUser?.profileImageUrl,
-      title: `${childUser?.firstName} ${childUser?.surname}`,
+      profileDataUrl: child?.user?.profileImageUrl,
+      title: `${child?.user?.firstName} ${child?.user?.surname}`,
       subTitle: childAlert?.message ?? '',
-      profileText: `${childUser?.firstName && childUser?.firstName[0]}${
-        childUser?.surname && childUser?.surname[0]
+      profileText: `${child?.user?.firstName && child?.user?.firstName[0]}${
+        child?.user?.surname && child?.user?.surname[0]
       }`,
       alertSeverity: childAlert.status as AlertSeverityType,
       avatarColor: getAvatarColor() || '',
@@ -386,6 +307,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
         onBack={() => setSearchTextActive(false)}
         onSearchButtonClick={() => setSearchTextActive(true)}
       >
+        {/* 
+        No more programme types so no playgroup
         {isPlaygroup && (
           <SearchDropDown<string>
             displayMenuOverlay={true}
@@ -403,7 +326,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
               hint: filterInfo?.filterHint || '',
             }}
           />
-        )}
+        )} */}
 
         <SearchDropDown<string>
           displayMenuOverlay={true}

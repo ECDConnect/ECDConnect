@@ -153,6 +153,7 @@ export const ActivityList: React.FC = () => {
 
   const previousCurrentVisit = useSelector(getInfantLastVisitSelector);
 
+  // Seems to be fetching all question sections that have been saved as visit data so far
   const completedVisits = useSelector((state: RootState) =>
     getCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;

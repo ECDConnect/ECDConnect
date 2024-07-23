@@ -11,7 +11,9 @@ import {
   LicenseModelInput,
   NotificationDisplay,
   PrincipalInvitationStatus,
+  UserPermissionModel,
 } from '@ecdlink/graphql';
+import PermissionsService from '@/services/PermissionsService/PermissionsService';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
@@ -29,6 +31,10 @@ export const PractitionerActions = {
   UPDATE_PRACTITIONER_SHARE_INFO: 'updatePractitionerShareInfo',
   UPDATE_PRINCIPAL_INVITATION: 'updatePrincipalInvitation',
   GET_PRACTITIONERS_DISPLAY_METRICS: 'getPractitionersDisplayMetrics',
+  GET_PRACTITIONERS_FOR_COACH: 'getPractitionersForCoach',
+  GET_ALL_PRACTITIONERS: 'getAllPractitioners',
+  UPDATE_PRACTITIONER_PERMISSIONS: 'updateUserPermission',
+  UPDATE_PRACTITIONER_COMMUNITY_STATUS: 'updatePractitionerCommunityTabStatus',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -37,7 +43,7 @@ export const getPractitionersForCoach = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getPractitionersForCoach',
+  PractitionerActions.GET_PRACTITIONERS_FOR_COACH,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -148,7 +154,7 @@ export const getAllPractitioners = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getAllPractitioners',
+  PractitionerActions.GET_ALL_PRACTITIONERS,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -474,6 +480,59 @@ export const updatePrincipalInvitation = createAsyncThunk<
         ).UpdatePrincipalInvitation(userId, principalHierarchy, accepted);
       }
       return result;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerPermissions = createAsyncThunk<
+  UserPermissionModel[],
+  {
+    userId: string;
+    permissionsIds: string[];
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_PERMISSIONS,
+  async ({ userId, permissionsIds }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PermissionsService(
+          userAuth?.auth_token || ''
+        ).UpdateUserPermission({
+          userId: userId,
+          permissionIds: permissionsIds,
+        });
+      }
+      return rejectWithValue('No auth');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerCommunityTabStatus = createAsyncThunk<
+  any,
+  { practitionerUserId: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_COMMUNITY_STATUS,
+  async ({ practitionerUserId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token && practitionerUserId) {
+        return await new PractitionerService(
+          userAuth?.auth_token
+        ).updatePractitionerCommunityTabStatus(practitionerUserId);
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

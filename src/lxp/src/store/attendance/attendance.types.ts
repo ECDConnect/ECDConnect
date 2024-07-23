@@ -1,12 +1,26 @@
-import { AttendanceDto, MonthlyAttendanceRecord } from '@ecdlink/core';
+import { OfflineCache } from '@/models/sync/offline-cache';
+import { OfflineUpdate } from '@/models/sync/offline-update';
+import {
+  AttendanceDto,
+  ClassRoomChildAttendanceMonthlyReportModel,
+  MonthlyAttendanceRecord,
+} from '@ecdlink/core';
 
 export type AttendanceState = {
   attendance: AttendanceDto[] | undefined;
-  attendanceTracked: TrackAttendanceModelInput[] | undefined;
+  attendanceTracked:
+    | (TrackAttendanceModelInput & Partial<OfflineUpdate>)[]
+    | undefined;
 
   monthlyAttendanceRecordsByUser: {
-    [userId: string]: MonthlyAttendanceRecord[];
+    [userId: string]: { data: MonthlyAttendanceRecord[] } & OfflineCache;
   };
+  // TODO: not sure if it's necessary to split by user
+  classroomAttendanceOverviewReport: ({
+    startDate: string;
+    endDate: string;
+    data: ClassRoomChildAttendanceMonthlyReportModel;
+  } & OfflineCache)[];
 };
 
 export type AttendanceQueryParams = {
@@ -23,7 +37,6 @@ export type ChildAttendanceReportQueryParams = {
 
 export type MonthlyAttendanceReportQueryParams = {
   userId: string;
-  classroomId: string;
   startDate: Date;
   endDate: Date;
 };

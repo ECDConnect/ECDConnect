@@ -1,5 +1,4 @@
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Configuration.Setup.Seed;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -7,6 +6,7 @@ using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic;
 using ECDLink.DataAccessLayer.Services;
+using ECDLink.PostgresTenancy.Repository;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +19,7 @@ namespace ECDLink.EGraphQL
     {
         public static void ConfigureDataAccessServices(IServiceCollection services)
         {
+            services.AddTransient(typeof(ITenancyRepository<>), typeof(TenantRepository<>));
             services.AddScoped(typeof(IGenericRepositoryFactory), typeof(GenericRepositoryFactory));
             services.AddScoped(typeof(RolePermissionRepository));
             services.AddScoped(typeof(NavigationPermissionRepository));
@@ -30,7 +31,6 @@ namespace ECDLink.EGraphQL
             services.AddScoped<AttendanceTrackingRepository>();
 
             services.AddScoped<HierarchyEngine>();
-            services.AddScoped<PostgresDataSeed>();
 
             services.AddScoped<ILocaleService<Language>, LocaleService>();
 

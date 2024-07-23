@@ -22,26 +22,16 @@ namespace ECDLink.SmartStart.Reports
             _attendanceService = attendanceService;
         }
 
-        public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Guid classroomId, DateTime startMonth, DateTime endMonth)
-        {
-            var classroom = _attendanceService.GetUserClassroom(userId, classroomId);
-            return GenerateMonthlyAttendanceReport(userId, classroom, startMonth, endMonth);
-        }
+        public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, DateTime startMonth, DateTime endMonth)
+        {         
+            var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
 
-        public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Classroom classroom, DateTime startMonth, DateTime endMonth)
-        {
-            if (classroom == null)
-                classroom = _attendanceService.GetUserClassroom(userId);
+            var attendanceForPeriod = GetAttendanceTakenRecordsForPeriod(
+                classroomGroups.SelectMany(x => x.ClassProgrammes).Select(x => x.Id), 
+                startMonth, 
+                endMonth);
 
-            if (!classroom.ClassroomGroups.Any())
-            {
-                return null;
-            }
 
-            //retrieve only groups the user is allowed to see            
-            List<ClassroomGroup> groups = _attendanceService.GetUserClassroomGroups(userId);
-
-            var attendanceForPeriod = GetAttendanceRecordsForPeriod(classroom, userId, startMonth, endMonth);
             var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
 
             // Do monthly Tracking here
@@ -49,7 +39,7 @@ namespace ECDLink.SmartStart.Reports
             {
                 var attendance = new List<Tuple<int, int>>();
                 // Nest into class per month on only groups user is allowed to see
-                foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
+                foreach (var classroomGroup in classroomGroups.Where(x => classroomGroups.Select(y => y.UserId).Contains(x.UserId)))
                 {
                     var validClassDays = GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
 
@@ -59,12 +49,11 @@ namespace ECDLink.SmartStart.Reports
                         
                         if(daysOfClass.Count() > 0)
                         {
-                            // TODO - I think this needs to check the year as well
-                            var attendedClasses = attendanceForPeriod
-                                              .Where(x => x.UserId == Guid.Parse(userId)
-                                              && x.ClassroomProgrammeId == programme.Id
-                                              && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
-                                              && x.MonthOfYear == dt.Month);
+                            var attendedClasses = attendanceForPeriod.Where(x => 
+                                x.ClassroomProgrammeId == programme.Id
+                                && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
+                                && x.MonthOfYear == dt.Month
+                                && x.Year == dt.Year);
 
                             attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                         }
@@ -76,14 +65,6 @@ namespace ECDLink.SmartStart.Reports
                 }
             }
             return CreateReport(monthlyAttendance);
-        }
-
-        private List<Attendance> GetAttendanceRecordsForPeriod(Classroom classroom, string userId, DateTime startMonth, DateTime endMonth)
-        {
-            var classroomGroups = classroom.ClassroomGroups.ToList();
-            var programmeIdList = classroomGroups.SelectMany(x => x.ClassProgrammes).Select(x => x.Id);
-
-            return base.GetAttendanceRecordsForPeriod(programmeIdList, userId, startMonth.Date, endMonth.GetEndOfDay());
         }
 
         private IEnumerable<MonthlyAttendanceReportModel> CreateReport(Dictionary<DateTime, List<Tuple<int, int>>> monthlyAttendance)
@@ -107,6 +88,15 @@ namespace ECDLink.SmartStart.Reports
             }
 
             return report;
+        }
+
+        private List<Attendance> GetAttendanceTakenRecordsForPeriod(IEnumerable<Guid> ClassroomProgrammeIds, DateTime startMonth, DateTime endMonth)
+        {
+            return _dbContext.Attendances
+              .Include(i => i.ClassroomProgramme)
+              .Where(a => a.UserId.HasValue && a.ParentRecordId == a.UserId.Value.ToString() && ClassroomProgrammeIds.Contains(a.ClassroomProgrammeId))
+              .Where(f => f.AttendanceDate >= startMonth.Date && f.AttendanceDate < endMonth.GetEndOfDay())
+              .ToList();
         }
     }
 }

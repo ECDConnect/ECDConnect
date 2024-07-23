@@ -30,6 +30,7 @@ import { DocumentActions } from '@/store/document/document.actions';
 import { currentActivityKey } from '..';
 import { InfantModelInput } from '@/../../../packages/graphql/lib';
 import { infantThunkActions } from '@/store/infant';
+import { ButtonProps } from '@ecdlink/ui/lib/components/button/button.types';
 
 export interface Question {
   question: string;
@@ -64,9 +65,12 @@ export interface DynamicFormProps {
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setReferralsInput?: (value?: VisitDataStatusFilterInput[]) => void;
   setEnableButton?: (value: boolean) => void;
+  setButtonProperties?: (value?: ButtonProps) => void;
+  setExtraButtons?: (buttons?: JSX.Element[]) => void;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
   onClose?: () => void;
+  onSubmit?: () => void;
   setGrowthMonitoring?: (value: GrowthMonitoring) => void;
   setRisk?: (value: number) => void;
   setInfantInput?: (value?: InfantModelInput) => void;
@@ -84,6 +88,12 @@ export const DynamicForm = ({
   onClose,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
+  const [buttonProperties, setButtonProperties] = useState<
+    ButtonProps | undefined
+  >(undefined);
+  const [extraButtons, setExtraButtons] = useState<JSX.Element[] | undefined>(
+    undefined
+  );
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [referralsInput, setReferralsInput] =
@@ -202,6 +212,8 @@ export const DynamicForm = ({
 
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
+    setButtonProperties(undefined);
+    setExtraButtons(undefined);
     onNextStep?.();
   }, [onNextStep]);
 
@@ -320,7 +332,10 @@ export const DynamicForm = ({
         setGrowthMonitoring={handleGrowthMonitoring}
         setReferralsInput={handleSetReferrals}
         setEnableButton={setIsEnableButton}
+        setButtonProperties={setButtonProperties}
+        setExtraButtons={setExtraButtons}
         onNextStep={onNextStep}
+        onSubmit={onSubmit}
         setRisk={handleRisk}
         setInfantInput={handleSetInfant}
       />
@@ -335,6 +350,7 @@ export const DynamicForm = ({
     infant,
     isTipPage,
     onNextStep,
+    onSubmit,
     sectionQuestions,
     setIsTip,
     steps,
@@ -378,10 +394,18 @@ export const DynamicForm = ({
 
     return {
       action: onSubmit,
-      text: risk === 2 ? 'Close' : 'Save',
+      text: risk === 2 ? 'Close' : buttonProperties?.text || 'Save',
       icon: risk === 2 ? 'XIcon' : 'SaveIcon',
     };
-  }, [risk, currentStep, handleOnNext, onSubmit, steps?.length, name]);
+  }, [
+    risk,
+    currentStep,
+    handleOnNext,
+    onSubmit,
+    steps?.length,
+    name,
+    buttonProperties,
+  ]);
 
   useEffect(() => {
     if (
@@ -440,15 +464,21 @@ export const DynamicForm = ({
     infant?.user?.id,
   ]);
 
+  const renderExtraButtons = useCallback(() => {
+    if (!extraButtons || extraButtons.length === 0) return null;
+    return extraButtons.map((el, index) => el);
+  }, [extraButtons]);
+
   return (
     <div className="flex h-full flex-col">
       {renderContent}
       {!isTipPage && (
-        <div id="button" className="mx-4 mt-auto flex items-end">
+        <div id="button" className="mx-4 mt-auto flex flex-col items-end">
+          {renderExtraButtons()}
           <Button
-            type="filled"
-            color="primary"
-            textColor="white"
+            type={buttonProperties?.type || 'filled'}
+            color={buttonProperties?.color || 'primary'}
+            textColor={buttonProperties?.textColor || 'white'}
             icon={renderButton.icon}
             className="mb-4 w-full"
             text={renderButton.text}

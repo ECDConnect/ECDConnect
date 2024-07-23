@@ -13,7 +13,6 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Managers;
-using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;

@@ -3,11 +3,15 @@ using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
-    public class TeamLeadModel
+    public class BaseTeamLeadModel
     {
         public Guid Id { get; set; }
         public string FirstName { get; set; }
         public string Surname { get; set; }
+    }
+
+    public class TeamLeadModel : BaseTeamLeadModel
+    {        
         public string JobTitle { get; set; }
         public string PhoneNumber { get; set; }
         public string WhatsAppNumber { get; set; }

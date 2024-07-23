@@ -1,4 +1,5 @@
-﻿using ECDLink.DataAccessLayer.Entities.Users;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Input;
+using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
 
@@ -7,5 +8,6 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
     public interface IChildService
     {
         List<Child> GetChildrenForClassroom(Guid classroomId);
+        void UpdateChild(UpdateChildAndCaregiverInput input);
     }
 }

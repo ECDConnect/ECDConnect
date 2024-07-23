@@ -15,6 +15,8 @@ import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useMemo, useState } from 'react';
 import { HealthPromotion } from '../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import { getIsMotherFirstVisitSelector } from '@/store/mother/mother.selectors';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
 
 export const antenatalClinicQuestion = `Has {client} gone to the clinic for her first antenatal visit?`;
@@ -41,6 +43,8 @@ export const ClinicVisitsStep = ({
   ];
 
   const question = useMemo(() => antenatalClinicQuestion, []);
+
+  const isFirstVisit = useSelector(getIsMotherFirstVisitSelector);
 
   const onOptionSelected = useCallback(
     (value) => {
@@ -72,7 +76,12 @@ export const ClinicVisitsStep = ({
         <HealthPromotion
           title={`Discuss with ${motherName}`}
           subTitle="Clinic check-ups"
-          section={clinicVisitsSectionName}
+          sectionTitle={clinicVisitsSectionName}
+          section={
+            isFirstVisit
+              ? 'Healthcare (first antenatal visit)'
+              : 'Healthcare (after first visit)'
+          }
           onClose={() => setIsTip && setIsTip(false)}
         />
       </Dialog>

@@ -32,6 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
       data-testid={testId}
       type={buttonType}
       className={classNames(
+        disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         styles.getButtonClassName(
           type,
           disabled ?? false,
@@ -55,10 +56,20 @@ export const Button: React.FC<ButtonProps> = ({
       {icon &&
         iconPosition === 'start' &&
         renderIcon(icon, `h-5 w-4 mr-2 text-${textColor}`)}
-      {text && <Typography type={'button'} color={textColor} text={text} />}
+      {text && (
+        <Typography
+          type={'button'}
+          color={textColor}
+          text={text}
+          className={disabled ? 'opacity-50' : ''}
+        />
+      )}
       {icon &&
         iconPosition === 'end' &&
-        renderIcon(icon, `h-5 w-4 ml-2 text-${textColor}`)}
+        renderIcon(
+          icon,
+          `h-5 w-4 ml-2 text-${textColor} ${disabled ? 'opacity-50' : ''}`
+        )}
       {children}
     </button>
   );

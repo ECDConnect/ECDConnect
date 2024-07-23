@@ -154,8 +154,10 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       reassignedClassroomGroups?.length !==
         practitionerClassroomGroups?.length &&
       practitionersTeachList?.length > 0);
+
+  // TODO - fix this
   const practitionerProgramme = useMemo(
-    () => practitionerClassroomGroups?.[0]?.classroom?.name,
+    () => practitionerClassroomGroups?.[0]?.name,
     [practitionerClassroomGroups]
   );
 

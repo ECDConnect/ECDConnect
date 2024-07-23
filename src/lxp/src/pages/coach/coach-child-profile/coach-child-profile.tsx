@@ -28,7 +28,11 @@ import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remov
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
 import { Age } from '@models/common/Age';
-import { childrenActions, childrenSelectors } from '@store/children';
+import {
+  childrenActions,
+  childrenSelectors,
+  childrenThunkActions,
+} from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { documentActions, documentSelectors } from '@store/document';
 import {
@@ -46,6 +50,7 @@ import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { ChildAttendanceReportState } from '@/pages/child/child-attendance-report/child-attendance-report.types';
 
 export const CoachChildProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -66,17 +71,11 @@ export const CoachChildProfile: React.FC = () => {
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
 
-  const classGroupId = useSelector(
-    classroomsSelectors.getLearnerClassGroupId(child?.userId)
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
   const user = useSelector(userSelectors.getUser);
-  const playGroup = useSelector(
-    classroomsSelectors.getClassroomGroupById(classGroupId)
-  );
 
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
   const childDocuments = useSelector(
     documentSelectors.getDocumentsByUserId(child?.userId)
   );
@@ -94,7 +93,7 @@ export const CoachChildProfile: React.FC = () => {
 
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
   const profilePicture = useSelector(
-    documentSelectors.getDocumentByTypeId(childUser?.id, typeId)
+    documentSelectors.getDocumentByTypeId(child?.user?.id, typeId)
   );
 
   const allCompletedReports = useSelector(
@@ -153,7 +152,7 @@ export const CoachChildProfile: React.FC = () => {
   }, [isOnline]);
 
   useEffect(() => {
-    if (playGroup?.name === NoPlaygroupClassroomType.name) {
+    if (classroomGroup?.name === NoPlaygroupClassroomType.name) {
       setBelongsToNoPlaygroup(true);
     }
 
@@ -175,8 +174,8 @@ export const CoachChildProfile: React.FC = () => {
       onButtonClick: () => {
         history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
           childId: child?.id,
-          classroomGroupId: playGroup?.id,
-        });
+          classroomGroupId: classroomGroup?.id,
+        } as ChildAttendanceReportState);
       },
     });
 
@@ -256,10 +255,16 @@ export const CoachChildProfile: React.FC = () => {
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    const copy = Object.assign({}, childUser);
-    if (copy) {
-      copy.profileImageUrl = imageBaseString;
-      appDispatch(childrenActions.updateChildUser(copy));
+    const childCopy = Object.assign({}, child);
+    if (childCopy) {
+      childCopy.user!.profileImageUrl = imageBaseString;
+      appDispatch(childrenActions.updateChild(childCopy));
+      await appDispatch(
+        childrenThunkActions.updateChild({
+          child: childCopy,
+          id: String(childCopy.id),
+        })
+      ).unwrap();
     }
 
     if (profilePicture) {
@@ -270,7 +275,8 @@ export const CoachChildProfile: React.FC = () => {
         })
       );
     } else {
-      const fileName = `ProfilePicture_${childUser?.id}.png`;
+      // Should this include the Id of the child???
+      const fileName = `ProfilePicture_${child?.userId}.png`;
 
       const statusId = await getWorkflowStatusIdByEnum(
         WorkflowStatusEnum.DocumentVerified
@@ -278,7 +284,7 @@ export const CoachChildProfile: React.FC = () => {
 
       const documentInputModel: Document = {
         id: newGuid(),
-        userId: childUser?.id,
+        userId: child?.userId,
         createdUserId: user?.id ?? '',
         workflowStatusId: statusId ?? '',
         documentTypeId: typeId ?? '',
@@ -326,14 +332,14 @@ export const CoachChildProfile: React.FC = () => {
     (child?.workflowStatusId === childPendingWorkflowStatusId ||
       child?.workflowStatusId === childExternalWorkflowStatusId)
   ) {
-    return <ChildPending child={child} childUser={childUser} />;
+    return <ChildPending child={child} childUser={child?.user} />;
   }
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
-        title={`${childUser?.firstName} ${childUser?.surname}’s Profile`}
+        title={`${child?.user?.firstName} ${child?.user?.surname}’s Profile`}
         color={'primary'}
         size="medium"
         renderBorder={true}
@@ -347,7 +353,7 @@ export const CoachChildProfile: React.FC = () => {
           <ProfileAvatar
             hasConsent={childPhotoConsent ? true : false}
             canChangeImage={childPhotoConsent ? true : false}
-            dataUrl={profilePicture?.file || childUser?.profileImageUrl || ''}
+            dataUrl={profilePicture?.file || child?.user?.profileImageUrl || ''}
             size={'header'}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onPressed={() => setEditProfilePictureVisible(true)}
@@ -358,7 +364,7 @@ export const CoachChildProfile: React.FC = () => {
           <StatusChip
             backgroundColour="infoDark"
             borderColour="infoDark"
-            text={playGroup?.name || NoPlaygroupClassroomType.title}
+            text={classroomGroup?.name || NoPlaygroupClassroomType.title}
             textColour={'white'}
             className={'mr-2'}
           />
@@ -377,10 +383,10 @@ export const CoachChildProfile: React.FC = () => {
           <Alert
             className="m-4"
             title={`${
-              childUser?.firstName || 'This child'
+              child?.user?.firstName || 'This child'
             } does not have a class`}
             list={[
-              `Add ${childUser?.firstName || 'this child'} to a class now`,
+              `Add ${child?.user?.firstName || 'this child'} to a class now`,
             ]}
             type="error"
             button={
@@ -408,7 +414,7 @@ export const CoachChildProfile: React.FC = () => {
             title={'Problem with birth certificate or clinic card'}
             list={[
               `SmartStart found a problem with ${
-                childUser?.firstName || 'this child'
+                child?.user?.firstName || 'this child'
               }'s document. Please upload a new birth certificate or clinic card now.`,
             ]}
             type="error"
@@ -463,7 +469,7 @@ export const CoachChildProfile: React.FC = () => {
             {renderIcon('TrashIcon', styles.buttonIcon)}
             <Typography
               type="button"
-              text={`Remove ${childUser?.firstName}`}
+              text={`Remove ${child?.user?.firstName}`}
               color="primary"
               onClick={() => setRemoveChildConfirmationVisible(true)}
             />
@@ -478,7 +484,7 @@ export const CoachChildProfile: React.FC = () => {
       >
         <RemoveChildPrompt
           child={child}
-          childUser={childUser}
+          childUser={child?.user}
           onProceed={goToRemoveChild}
           onClose={() => setRemoveChildConfirmationVisible(false)}
         />

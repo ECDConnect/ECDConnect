@@ -52,6 +52,7 @@ import {
 import { progressSteps } from '../../../../walkthrough/steps';
 import { InfoCard, Item } from './info-card';
 import { getAge } from '../../care-for-baby-steps/care-for-baby';
+import { isVisitInProgress } from '@/helpers/visit-helpers';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -119,9 +120,10 @@ export const FollowUp = ({
   );
 
   const followUpDate =
-    !currentVisit?.attended && !currentVisit?.visitInProgress
+    !currentVisit ||
+    (!currentVisit?.attended && isVisitInProgress(currentVisit))
       ? previousVisit?.actualVisitDate
-      : currentVisit.actualVisitDate;
+      : currentVisit?.actualVisitDate;
 
   useEffect(() => {
     if (isPrint) {
@@ -240,7 +242,7 @@ export const FollowUp = ({
           secondaryColour: 'successBg',
           message: `${!!caregiverName ? caregiverName + ' &' : ''} ${name} ${
             !!caregiverName ? 'are' : 'is'
-          } going well`,
+          } doing well`,
           value: 100,
         };
       case 'Error':

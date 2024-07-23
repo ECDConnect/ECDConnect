@@ -121,7 +121,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                     <div className="flex justify-center">
                       <Button
                         type="filled"
-                        color="primary"
+                        color="quatenary"
                         className={'mt-6 mb-6 w-11/12 rounded-2xl'}
                         onClick={() => handleAbsenceModal(item)}
                       >
@@ -234,7 +234,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                     <div className="flex justify-center">
                       <Button
                         type="filled"
-                        color="primary"
+                        color="quatenary"
                         className={'mt-6 mb-6 w-11/12 rounded-2xl'}
                         onClick={() => handleAbsenceModal(item)}
                       >
@@ -343,7 +343,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                     <div className="flex justify-center">
                       <Button
                         type="filled"
-                        color="primary"
+                        color="quatenary"
                         className={'mt-6 mb-6 w-11/12 rounded-2xl'}
                         onClick={() => handleAbsenceModal(item)}
                       >
@@ -457,7 +457,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                     <div className="flex justify-center">
                       <Button
                         type="filled"
-                        color="primary"
+                        color="quatenary"
                         className={'mt-6 mb-6 w-11/12 rounded-2xl'}
                         onClick={() => handleAbsenceModal(item)}
                       >
@@ -498,7 +498,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
               <div className="flex justify-center">
                 <Button
                   type="filled"
-                  color="primary"
+                  color="quatenary"
                   className={'mt-6 mb-6 w-11/12 rounded-2xl'}
                   onClick={() => handleReassignClass(practitionerUserId)}
                 >

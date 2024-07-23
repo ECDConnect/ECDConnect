@@ -1,0 +1,7 @@
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('3f9121fd-47fe-4374-b752-9b9d46545771', true, CURRENT_DATE, CURRENT_DATE, '', 'push', 'league-setup-unassigned-clinics', 'One or more clinics are not assigned to leagues yet. Make sure you add all leagues & assign all clinics by 30 November [[year]]].', '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Add clinics to leagues before 30 November', '[[Add leagues]]', 'Add leagues', null, 'amber', 0, '{"url":"/clinics/leagues/view-season"}');
+
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('94fcb6c0-8702-41ae-b639-82184fdfaea1', true, CURRENT_DATE, CURRENT_DATE, '', 'push', 'unassigned-clinics', 'To make sure all teams can participate, assign all clinics to a league as soon as possible.', '39077d0e-e443-4076-aaf2-978dc6805aa0', 'Assign new clinic(s) to leagues', '[[Assign to leagues]]', 'Assign to leagues', null, 'amber', 0, '{"url":"/clinics/leagues/view-season"}');

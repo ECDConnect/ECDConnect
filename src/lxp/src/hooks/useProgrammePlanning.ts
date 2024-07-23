@@ -2,14 +2,20 @@ import {
   DailyProgrammeDto,
   ProgrammeDto,
   ProgrammeThemeDto,
+  getBusinessDaysOfWeek,
   sortDateFunction,
 } from '@ecdlink/core';
 import {
   addDays,
+  addWeeks,
   differenceInBusinessDays,
+  formatISO,
   isAfter,
   isFriday,
+  isSameDay,
   isWeekend,
+  parseISO,
+  subWeeks,
 } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -42,14 +48,17 @@ export const useProgrammePlanning = () => {
     return item?.userId === practitioner?.userId;
   });
 
-  const createProgramme = async (
+  const createOrEditProgramme = async (
+    classroomGroupId: string,
     startDate: Date,
     language: string,
     theme?: ProgrammeThemeDto,
-    endDate?: Date
+    endDate?: Date,
+    programme?: ProgrammeDto
   ): Promise<ProgrammeDto> => {
     const newProgramme: ProgrammeDto = {
-      id: newGuid(),
+      id: programme?.id || newGuid(),
+      insertedDate: formatISO(new Date()),
       classroomId:
         classroom?.id || practitionerClassroomGroups?.at(0)?.classroomId || '',
       name: theme?.name || 'No theme',
@@ -57,7 +66,7 @@ export const useProgrammePlanning = () => {
       startDate: startDate.toISOString(),
       endDate: endDate?.toISOString() || '',
       dailyProgrammes: [],
-      classroomGroupId: practitionerClassroomGroups?.at(0)?.id,
+      classroomGroupId: classroomGroupId,
     };
 
     const dailyProgrammesResult = createProgrammeDailyProgrammes(
@@ -73,7 +82,24 @@ export const useProgrammePlanning = () => {
 
     clearOverlappingDaysProgrammes(newProgramme);
 
-    dispatch(programmeActions.createProgramme(newProgramme));
+    if (!!programme) {
+      dispatch(
+        programmeActions.updateProgrammes({
+          programme: {
+            ...newProgramme,
+            dailyProgrammes: [
+              ...newProgramme.dailyProgrammes,
+              ...programme.dailyProgrammes?.map((day) => ({
+                ...day,
+                isActive: false,
+              })),
+            ],
+          },
+        })
+      );
+    } else {
+      dispatch(programmeActions.createProgramme(newProgramme));
+    }
 
     return newProgramme;
   };
@@ -128,8 +154,17 @@ export const useProgrammePlanning = () => {
     return date;
   };
 
-  const getConflictingProgramme = (startDate: Date, endDate: Date) => {
-    return findConflictingProgramme(programmes, startDate, endDate);
+  const getConflictingProgramme = (
+    startDate: Date,
+    endDate: Date,
+    classroomGroupId: string
+  ) => {
+    return findConflictingProgramme(
+      programmes,
+      startDate,
+      endDate,
+      classroomGroupId
+    );
   };
 
   const createProgrammeDailyProgrammes = (
@@ -158,7 +193,8 @@ export const useProgrammePlanning = () => {
       new Date(programme?.endDate),
       startDate
     );
-    while (dailyProgrammes.length < diffDays) {
+
+    while (dailyProgrammes.length <= diffDays) {
       if (dailyProgrammes.length > 0) {
         dayDate = getNextValidDate(dayDate);
       }
@@ -174,15 +210,9 @@ export const useProgrammePlanning = () => {
       endDate = isAfter(dayDate, endDate) ? dayDate : endDate;
     }
 
-    let skippedFridays = 0;
     const themeAppliedDailyProgrammes = [];
     for (const dailyProg of dailyProgrammes) {
-      if (isFriday(new Date(dailyProg.dayDate))) {
-        skippedFridays += 1;
-        themeAppliedDailyProgrammes.push(dailyProg);
-        continue;
-      }
-      const day = +dailyProg.day - skippedFridays;
+      const day = +dailyProg.day;
       const thDay = theme.themeDays.find((x) => +x.day === day);
 
       if (thDay) {
@@ -226,6 +256,7 @@ export const useProgrammePlanning = () => {
         dayDate: dayDate.toISOString(),
         programmeId: programme.id ?? '',
         messageBoardText: '',
+        isActive: true,
       });
       themeDay += 1;
     }
@@ -275,6 +306,7 @@ export const useProgrammePlanning = () => {
         conflictingProgrammeCopy = refreshProgrammeDateRange(
           conflictingProgrammeCopy
         );
+
         dispatch(
           programmeActions.updateProgrammes({
             programme: conflictingProgrammeCopy,
@@ -284,11 +316,113 @@ export const useProgrammePlanning = () => {
     }
   };
 
+  const findDailyProgrammesByDate = (
+    programmes: ProgrammeDto[],
+    dates: Date[]
+  ) => {
+    return dates.map((date) => {
+      for (const programme of programmes) {
+        const match = programme.dailyProgrammes.find((dp) =>
+          isSameDay(parseISO(dp.dayDate), date)
+        );
+        if (match) {
+          return { date, dailyProgramme: match };
+        }
+      }
+      return { date, dailyProgramme: null }; // No match found
+    });
+  };
+
+  const checkIfWholeWeekIsPlanned = (
+    selectedDate: Date,
+    classroomGroupId: string
+  ) => {
+    const classroomGroupProgrammes = programmes.filter(
+      (programme) => programme.classroomGroupId === classroomGroupId
+    );
+
+    const businessDaysOfWeek = getBusinessDaysOfWeek(selectedDate)?.filter(
+      (day) => !holiday.isHoliday(day)
+    );
+
+    const dailyProgrammesByDate = findDailyProgrammesByDate(
+      classroomGroupProgrammes,
+      businessDaysOfWeek
+    );
+
+    const dailyProgrammesUnplanned = dailyProgrammesByDate.filter(
+      ({ dailyProgramme }) =>
+        !dailyProgramme?.smallGroupActivityId ||
+        !dailyProgramme?.storyActivityId ||
+        !dailyProgramme?.largeGroupActivityId
+    );
+
+    return {
+      dailyProgrammesByDate,
+      dailyProgrammesUnplanned,
+      isWholeWeekPlanned: dailyProgrammesByDate.every(
+        ({ dailyProgramme }) =>
+          !!dailyProgramme?.smallGroupActivityId &&
+          !!dailyProgramme?.storyActivityId &&
+          !!dailyProgramme?.largeGroupActivityId
+      ),
+    };
+  };
+
+  const getPlannedWeeksCount = (
+    currentDate: Date,
+    classroomGroupId: string
+  ) => {
+    let plannedWeeksCount = 0;
+    const weeksStartDates: Date[] = [];
+
+    const checkWeeks = (date: Date, direction: 'forward' | 'backward') => {
+      let currentWeekStartDate = date;
+      while (true) {
+        const { isWholeWeekPlanned } = checkIfWholeWeekIsPlanned(
+          currentWeekStartDate,
+          classroomGroupId
+        );
+        if (!isWholeWeekPlanned) {
+          break;
+        }
+
+        plannedWeeksCount++;
+        weeksStartDates.push(currentWeekStartDate);
+        currentWeekStartDate =
+          direction === 'forward'
+            ? addWeeks(currentWeekStartDate, 1)
+            : subWeeks(currentWeekStartDate, 1);
+      }
+    };
+
+    // Check the current week
+    const { isWholeWeekPlanned: isCurrentWeekPlanned } =
+      checkIfWholeWeekIsPlanned(currentDate, classroomGroupId);
+
+    if (isCurrentWeekPlanned) {
+      plannedWeeksCount++;
+      weeksStartDates.push(currentDate);
+    } else {
+      return { plannedWeeksCount, weeksStartDates };
+    }
+
+    // Check future weeks
+    checkWeeks(addWeeks(currentDate, 1), 'forward');
+
+    // Check past weeks
+    checkWeeks(subWeeks(currentDate, 1), 'backward');
+
+    return { plannedWeeksCount, weeksStartDates };
+  };
+
   return {
-    createProgramme,
+    createOrEditProgramme,
     getConflictingProgramme,
     validateStartDate,
     getThemedProgrammeEndDate,
     getNoThemedProgrammeEndDate,
+    checkIfWholeWeekIsPlanned,
+    getPlannedWeeksCount,
   };
 };

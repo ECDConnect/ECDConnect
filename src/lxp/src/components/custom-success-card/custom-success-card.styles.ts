@@ -3,7 +3,7 @@ export const wrapper =
 export const textWrapper = 'px-4 flex flex-1 flex-col';
 export const button = 'mb-4 mt-4';
 
-export const closeWrapper = 'flex items-top mb-2 pr-1';
+export const closeWrapper = 'flex items-top mb-2 pr-1 self-start';
 
 export const iconRound = 'rounded-full p-3 bg-successDark';
 export const contentWrapper =

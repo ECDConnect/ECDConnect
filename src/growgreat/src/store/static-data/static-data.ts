@@ -27,6 +27,7 @@ const initialState: StaticDataState = {
   documentTypes: undefined,
   WorkflowStatuses: undefined,
   noteTypes: undefined,
+  permissions: undefined,
 };
 
 const staticDataSlice = createSlice({
@@ -44,6 +45,7 @@ const staticDataSlice = createSlice({
       state.reasonForLeaving = initialState.reasonForLeaving;
       state.documentTypes = initialState.documentTypes;
       state.noteTypes = initialState.noteTypes;
+      state.permissions = initialState.permissions;
     },
   },
   extraReducers: (builder) => {

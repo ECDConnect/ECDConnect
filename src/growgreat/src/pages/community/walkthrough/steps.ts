@@ -31,6 +31,7 @@ export const communityWalkthroughSteps: Step[] = [
       ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
     placement: 'bottom',
   },
   {
@@ -42,6 +43,7 @@ export const communityWalkthroughSteps: Step[] = [
     disableOverlayClose: true,
     disableCloseOnEsc: true,
     spotlightClicks: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-community-step-3',
@@ -51,6 +53,7 @@ export const communityWalkthroughSteps: Step[] = [
       ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-community-step-4',
@@ -60,6 +63,7 @@ export const communityWalkthroughSteps: Step[] = [
       ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-community-step-5',
@@ -69,6 +73,7 @@ export const communityWalkthroughSteps: Step[] = [
       ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-community-step-6',
@@ -78,6 +83,7 @@ export const communityWalkthroughSteps: Step[] = [
       ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-community-step-7',
@@ -87,6 +93,7 @@ export const communityWalkthroughSteps: Step[] = [
       ],
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-last-step',
@@ -94,5 +101,6 @@ export const communityWalkthroughSteps: Step[] = [
     disableOverlayClose: true,
     disableCloseOnEsc: true,
     placement: 'bottom',
+    disableBeacon: true,
   },
 ];

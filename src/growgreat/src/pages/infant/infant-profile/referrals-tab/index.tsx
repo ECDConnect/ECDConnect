@@ -49,6 +49,7 @@ import {
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationTagConfig } from '@/constants/notifications';
 import { Notification } from '@/store/notifications/notifications.types';
+import { isVisitInProgress } from '@/helpers/visit-helpers';
 
 const HEADER_HEIGHT = 64;
 interface GroupedData {
@@ -120,6 +121,20 @@ export const ReferralsTab: React.FC = () => {
       ) && item?.message?.action?.includes(infantId)
   );
 
+  const sassaNotifications = notifications?.filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.SassaReferral.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
+
+  const homeAffairsNotifications = notifications?.filter(
+    (item) =>
+      item?.message?.cta?.includes(
+        notificationTagConfig?.HomeAffairsReferral.cta ?? ''
+      ) && item?.message?.action?.includes(infantId)
+  );
+
   const dangerSignsNotifications = notifications?.filter(
     (item) =>
       item?.message?.cta?.includes(
@@ -153,9 +168,7 @@ export const ReferralsTab: React.FC = () => {
   );
 
   const isToGetPreviousVisitStatusData =
-    !currentVisit?.attended &&
-    !currentVisit?.visitInProgress &&
-    previousVisit?.id;
+    (!currentVisit || !isVisitInProgress(currentVisit)) && !!previousVisit?.id;
 
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
@@ -175,7 +188,7 @@ export const ReferralsTab: React.FC = () => {
       appDispatch(
         infantThunkActions.getReferralsForInfant({
           infantId: infantId,
-          visitId: previousVisit.id,
+          visitId: '',
         })
       ).unwrap();
     } else if (currentVisit) {
@@ -329,6 +342,28 @@ export const ReferralsTab: React.FC = () => {
           ) {
             removeNotifications(severeChildMuacNotifications);
           }
+
+          const removeSassaNotifications = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes(
+                'Has not applied for a child support grant'
+              )
+          );
+
+          if (sassaNotifications && removeSassaNotifications) {
+            removeNotifications(sassaNotifications);
+          }
+
+          const removeHomeAffairsNotifications = newState.find(
+            (item) =>
+              item.isCompleted &&
+              String(item.comment).includes('does not have a birth certificate')
+          );
+
+          if (homeAffairsNotifications && removeHomeAffairsNotifications) {
+            removeNotifications(homeAffairsNotifications);
+          }
         }
 
         return newState;
@@ -338,10 +373,12 @@ export const ReferralsTab: React.FC = () => {
       appDispatch,
       dangerSignsNotifications,
       growthIssuesNotifications,
+      homeAffairsNotifications,
       moderateChildMuacNotifications,
       redAlertNotifications,
       referralsForInfant?.length,
       removeNotifications,
+      sassaNotifications,
       severeChildMuacNotifications,
     ]
   );
@@ -713,7 +750,10 @@ export const ReferralsTab: React.FC = () => {
       {/* BODY: BACK-REFERRALS -----------------------------------------*/}
       {((!isReferralsView &&
         completedReferralsForInfant &&
-        completedReferralsForInfant?.length > 0) ||
+        completedReferralsForInfant?.length > 0 &&
+        !completedReferralsForInfant.every(
+          (referral) => referral.backReferralCompleted
+        )) ||
         (Number(walkthroughState?.stepIndex) >= 1 &&
           Number(walkthroughState?.stepIndex) < 3)) && (
         <div className="px-4 pb-4 pt-7">
@@ -882,7 +922,7 @@ export const ReferralsTab: React.FC = () => {
             </div>
 
             {/* Show back referral button when there are completed referrals  */}
-            {completedReferralsForInfant &&
+            {!!completedReferralsForInfant &&
               completedReferralsForInfant?.length > 0 && (
                 <Button
                   text="Manage back-referrals"
@@ -899,45 +939,51 @@ export const ReferralsTab: React.FC = () => {
         )}
 
       {/* EMPTY BODY: BACK-REFERRALS -----------------------------------------*/}
-      {!isReferralsView && completedReferralsForInfant?.length === 0 && (
-        <div className="px-4 pb-4 pt-7">
-          <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
-            <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
-              <img src={thumbsUpImage} alt="momImage" className="h-26 w-29" />
-            </div>
-            <div className="flex w-full justify-center">
+      {!isReferralsView &&
+        (completedReferralsForInfant?.length === 0 ||
+          (completedReferralsForInfant &&
+            completedReferralsForInfant?.length > 0 &&
+            completedReferralsForInfant.every(
+              (referral) => referral.backReferralCompleted
+            ))) && (
+          <div className="px-4 pb-4 pt-7">
+            <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
+              <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
+                <img src={thumbsUpImage} alt="momImage" className="h-26 w-29" />
+              </div>
+              <div className="flex w-full justify-center">
+                <Typography
+                  type="h3"
+                  color={'textDark'}
+                  text={`All back-referrals are completed for ${
+                    infant?.user?.firstName || ''
+                  }! `}
+                  className="pt-2"
+                  align="center"
+                />
+              </div>
               <Typography
-                type="h3"
-                color={'textDark'}
-                text={`All back-referrals are completed for ${
-                  infant?.user?.firstName || ''
-                }! `}
-                className="pt-2"
+                type="body"
                 align="center"
+                weight="skinny"
+                text="You can see your completed back-referrals here."
+                color="textMid"
               />
             </div>
-            <Typography
-              type="body"
-              align="center"
-              weight="skinny"
-              text="You can see your completed back-referrals here."
-              color="textMid"
+
+            {/* Show referral button here when there are no back-referral   */}
+            <Button
+              text="Manage referrals"
+              icon="ClipboardCheckIcon"
+              type="outlined"
+              color="primary"
+              textColor="primary"
+              className="mt-4 w-full"
+              iconPosition="start"
+              onClick={onShowReferrals}
             />
           </div>
-
-          {/* Show referral button here when there are no back-referral   */}
-          <Button
-            text="Manage referrals"
-            icon="ClipboardCheckIcon"
-            type="outlined"
-            color="primary"
-            textColor="primary"
-            className="mt-4 w-full"
-            iconPosition="start"
-            onClick={onShowReferrals}
-          />
-        </div>
-      )}
+        )}
     </div>
   );
 };

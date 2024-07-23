@@ -32,10 +32,10 @@ export const ChildProgressReportOverview: React.FC<
   const history = useHistory();
   const dialog = useDialog();
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
+
+  const currentChildClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
-  const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories
   );
@@ -103,7 +103,7 @@ export const ChildProgressReportOverview: React.FC<
       if (isOnline) {
         await completeReport(
           currentReport,
-          childLearner?.classroomGroupId || ''
+          currentChildClassroomGroup?.id || ''
         );
         history.replace('/download-child-progress-observation-reports', {
           childId: childId,
@@ -111,7 +111,7 @@ export const ChildProgressReportOverview: React.FC<
       } else {
         completeReportLocally(
           currentReport,
-          childLearner?.classroomGroupId || ''
+          currentChildClassroomGroup?.id || ''
         );
         history.replace('/completed-child-progress-observation-reports', {
           childId: childId,
@@ -138,7 +138,7 @@ export const ChildProgressReportOverview: React.FC<
         <Alert
           type={'info'}
           title={`Check and edit your responses to the four categories or create the report.`}
-          message={` Your responses below will be shared with ${childUser?.firstName}’s caregiver.`}
+          message={` Your responses below will be shared with ${child?.user?.firstName}’s caregiver.`}
           messageColor="textDark"
         />
         <Button
@@ -199,7 +199,7 @@ export const ChildProgressReportOverview: React.FC<
                   !categoryFromReport?.supportingTask
                 }
                 levelId={categoryFromReport?.achievedLevelId || 0}
-                childName={`${childUser?.firstName}`}
+                childName={`${child?.user?.firstName}`}
                 helpingSkillId={categoryFromReport?.supportingTask?.taskId || 0}
                 toDoNote={categoryFromReport?.supportingTask?.todoText || ''}
                 onEdit={() => onCategoryNavigation(cat.id)}

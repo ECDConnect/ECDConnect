@@ -154,30 +154,30 @@ export const DevelopmentalScreeningWeeksStep = ({
     const numberOfAgeInMonths = Number(ageInMonths);
 
     if (numberOfAgeInMonths >= 18) {
-      setSectionName('DevelopmentalScreenEighteenMonths');
+      setSectionName('18 month developmental screening');
       setHeaderText('18 month');
       return setAnswers(getQuestions('eighteenMonths'));
     }
 
     if (numberOfAgeInMonths >= 12) {
-      setSectionName('DevelopmentalScreenTwelveMonths');
+      setSectionName('12 month developmental screening');
       setHeaderText('12 month');
       return setAnswers(getQuestions('twelveMonths'));
     }
 
     if (numberOfAgeInMonths >= 9) {
-      setSectionName('DevelopmentalScreenNineMonths');
+      setSectionName('9 month developmental screening');
       setHeaderText('9 month');
       return setAnswers(getQuestions('nineMonths'));
     }
 
     if (numberOfAgeInMonths >= 6) {
-      setSectionName('DevelopmentalScreenSixMonths');
+      setSectionName('6 month developmental screening');
       setHeaderText('6 month');
       return setAnswers(getQuestions('sixMonths'));
     }
 
-    setSectionName('DevelopmentalScreenFourteenWeeks');
+    setSectionName('14 week developmental screening');
     setHeaderText('14 week');
 
     return setAnswers(getQuestions('fourteenWeeks'));

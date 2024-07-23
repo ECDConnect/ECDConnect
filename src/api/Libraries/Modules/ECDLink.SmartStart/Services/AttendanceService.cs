@@ -49,7 +49,7 @@ namespace ECDLink.SmartStart.Services
             _dbContext = dbContext;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
+            _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
@@ -148,11 +148,24 @@ namespace ECDLink.SmartStart.Services
 
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
+            Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => Guid.Parse(userId) == x.UserId);
+
+            if (practi != null && practi.IsPrincipal == true)
+            {
+               return _classGroupRepo.GetAll()
+              .Include(x => x.Classroom)
+              .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
+              .Where(x => x.IsActive && x.Classroom.UserId.ToString() == userId)
+              .OrderBy(x => x.Id)
+             .ToList();
+            }
+
+
             var groups = _classGroupRepo.GetAll()
-                .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
-                .Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
-                .OrderBy(x => x.Id)
-                .ToList();
+              .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
+              .Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
+              .OrderBy(x => x.Id)
+             .ToList();
 
             return groups;
         }

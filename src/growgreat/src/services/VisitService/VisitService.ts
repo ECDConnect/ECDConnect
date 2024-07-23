@@ -8,6 +8,9 @@ import {
   Progress_VisitDataStatus,
   VisitData,
   VisitVideos,
+  Infographics,
+  DangerSign,
+  DangerSignTranslation,
 } from '@ecdlink/graphql';
 import { HealthPromotion } from '@ecdlink/graphql';
 
@@ -119,6 +122,7 @@ class Visit {
           availableLanguages {
             id
             description
+            locale
           }
         }
       }    
@@ -138,7 +142,8 @@ class Visit {
 
   async getHealthPromotion(
     section: string,
-    locale: string
+    locale: string,
+    title?: string
   ): Promise<HealthPromotion[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
@@ -146,20 +151,35 @@ class Visit {
       errors?: {};
     }>(``, {
       query: `
-        query GetHealthPromotion($section: String, $locale: String) {
-          healthPromotion(section: $section, locale: $locale){
+        query GetHealthPromotion($section: String, $locale: String, $title: String, ) {
+          healthPromotion(section: $section, locale: $locale, title: $title,){
             description
             descriptionListIcon
+            descriptionB
+            descriptionC
+            descriptionD
+            descriptionE
+            descriptionF
+            descriptionG
+            descriptionH
+            descriptionI
+            descriptionJ
             id
             section
             type
             visit
+            availableLanguages {
+              id
+              description
+              locale
+            }
           }
         }
       `,
       variables: {
         section,
         locale,
+        title,
       },
     });
 
@@ -187,6 +207,11 @@ class Visit {
             type
             video
             visit
+            availableLanguages {
+              id
+              description
+              locale
+            }
           }
         }
       `,
@@ -201,6 +226,120 @@ class Visit {
     }
 
     return response.data.data.visitVideos;
+  }
+
+  async getInfographics(
+    section: string,
+    locale: string
+  ): Promise<Infographics[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { infographics: Infographics[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetInfographics($section: String, $locale: String) {
+          infographics(section: $section, locale: $locale){
+            id
+            section
+            type
+            imageA
+            availableLanguages {
+              id
+              description
+              locale
+            }
+          }
+        }
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Infographics Failed - Server connection error');
+    }
+
+    return response.data.data.infographics;
+  }
+
+  async getDangerSigns(section: string, locale: string): Promise<DangerSign[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { dangerSigns: DangerSign[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetDangerSigns($section: String, $locale: String) {
+          dangerSigns(section: $section, locale: $locale){
+            id
+            section
+            type {
+              id
+              name
+            }
+            dangerSignA
+            dangerSignB
+            dangerSignC
+            dangerSignD
+            dangerSignE
+            dangerSignF
+            dangerSignG
+            dangerSignH
+            dangerSignI
+            availableLanguages {
+              id
+              description
+              locale
+            }
+          }
+        }
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get DangerSigns Failed - Server connection error');
+    }
+
+    return response.data.data.dangerSigns;
+  }
+
+  async GetDangerSignTranslations(
+    section: string,
+    toTranslate: string
+  ): Promise<DangerSignTranslation[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { dangerSignTranslations: DangerSignTranslation[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetDangerSignTranslations($section: String, $toTranslate: String) {
+          dangerSignTranslations(section: $section, toTranslate: $toTranslate){
+            language
+            translation
+          }
+        }
+      `,
+      variables: {
+        section,
+        toTranslate,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get DangerSignTranslations Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.dangerSignTranslations;
   }
 
   async getCompletedVisitsForVisitId(visitId: string): Promise<string[]> {

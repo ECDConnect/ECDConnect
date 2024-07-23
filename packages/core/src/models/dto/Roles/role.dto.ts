@@ -5,4 +5,5 @@ export interface RoleDto extends EntityBase {
   name: string;
   normalizedName: string;
   permissions: PermissionDto[];
+  systemName: string;
 }

@@ -44,8 +44,16 @@ export enum NatalTypes {
   Infographic = 'Infographic',
 }
 
+export enum MediaTypes {
+  Infographic = 'infoGraphic',
+  Image = 'image',
+  InfographicSecondLanguage = 'infoGraphicsecondLanguageContent',
+  ImageSecondLanguage = 'imagesecondLanguageContent',
+}
+
 export enum TemplateTypenames {
-  DanngerSigns = 'DangerSign Form',
+  DangerSigns = 'DangerSign Form',
+  NatalGraphic = 'NatalGraphic Form',
 }
 
 export const sortByNatalTypeOptions: SearchDropDownOption<string>[] = [

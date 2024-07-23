@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clinics;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models

@@ -9,7 +9,6 @@ using ECDLink.EGraphQL.Interceptors;
 using ECDLink.EGraphQL.ObjectTypes.Input;
 using ECDLink.EGraphQL.Registration;
 using ECDLink.EGraphQL.Registration.Modules;
-using ECDLink.PostgresTenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Builder;
@@ -17,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace ECDLink.EGraphQL
 {
@@ -46,7 +46,6 @@ namespace ECDLink.EGraphQL
               .AddFiltering()
               .AddSorting()
               .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
-              .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Synchronized)
               .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
               .RegisterService<ApplicationUserManager>(ServiceKind.Synchronized)
@@ -61,9 +60,22 @@ namespace ECDLink.EGraphQL
 
         public static void AddGraphConfiguration(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var envEnableGraphQLPlayground = System.Environment.GetEnvironmentVariable("ENABLE_GRAPHQL_PLAYGROUND");
+            bool enableGraphQLPlayground = env.IsDevelopment();
+            if (!string.IsNullOrEmpty(envEnableGraphQLPlayground))
+            {
+                if (envEnableGraphQLPlayground == "1")
+                    enableGraphQLPlayground = true;
+                else if (envEnableGraphQLPlayground == "0")
+                    enableGraphQLPlayground = false;
+            }
+
             app.UseEndpoints(endpoints =>
              {
-                 endpoints.MapGraphQL();
+                 endpoints.MapGraphQL().WithOptions(new HotChocolate.AspNetCore.GraphQLServerOptions()
+                 {
+                     Tool = { Enable = enableGraphQLPlayground }
+                 });
              });
         }
     }

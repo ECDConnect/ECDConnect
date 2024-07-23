@@ -1,10 +1,9 @@
-import { useDialog } from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
   Button,
   DialogPosition,
-  Divider,
   Typography,
 } from '@ecdlink/ui';
 import { format, addDays } from 'date-fns';
@@ -24,6 +23,11 @@ import { CaregiverChildRegistrationModal } from '../../components/caregiver-chil
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
+import {
+  TabsItemForPrincipal,
+  TabsItems,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { ChildRegistrationDto } from '@/models/child/child-registration.dto';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
@@ -34,14 +38,18 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const [deadlineDateText, setDeadlineDateText] = useState<string>('');
   const dialog = useDialog();
   const childExpiryTime = useSelector(settingSelectors.getChildExpiryTime);
-  const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
+  const childClassroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child.userId!)
+  );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupId = classroomGroups?.at(0)?.id;
   const dispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
   const user = useSelector(userSelectors.getUser);
-  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
 
   const practitioners = useSelector(
     practitionerSelectors.getPractitioners
@@ -56,8 +64,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
 
     const formatedDate = format(addedDays, 'dd MMMM yyyy');
     setDeadlineDateText(formatedDate);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [child]);
+  }, [child, childExpiryTime]);
 
   const completeRegistration = async () => {
     if (isOnline) {
@@ -88,7 +95,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     });
   };
 
-  const onSendcaregiverLink = async () => {
+  const onSendCaregiverLink = async () => {
     if (isOnline) {
       createLink();
     } else {
@@ -97,15 +104,14 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   };
 
   const createLink = async () => {
-    const response = await dispatch(
+    const response: ChildRegistrationDto = await dispatch(
       childrenThunkActions.refreshCaregiverChildToken({
-        classgroupId: childLearner?.classroomGroupId || classroomGroupId,
+        classgroupId: childClassroomGroup?.id || classroomGroupId,
         childId: child.id,
       })
-    );
+    ).unwrap();
     const caregiverChildregUrl = history.createHref({
-      pathname: `${window.location.host}/child-registration-landing`,
-      search: `?token=${response.payload}`,
+      pathname: `${response?.caregiverRegistrationUrl}`,
     });
 
     const linkCopied = await copyToClip(caregiverChildregUrl);
@@ -115,6 +121,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     };
 
     dialog({
+      color: 'bg-white',
       render: (onSubmit, onCancel) => {
         return (
           <CaregiverChildRegistrationModal
@@ -137,12 +144,16 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     <BannerWrapper
       onBack={() => {
         if (isPrincipal && practitioners?.length! > 1) {
-          history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
+          history.push(ROUTES.CLASSROOM.ROOT, {
+            activeTabIndex: TabsItemForPrincipal.CLASSES,
+          });
         } else {
           if (isCoach) {
             history.goBack();
           } else {
-            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+            history.push(ROUTES.CLASSROOM.ROOT, {
+              activeTabIndex: TabsItems.CLASSES,
+            });
           }
         }
       }}
@@ -155,55 +166,50 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     >
       <div className="flex h-full w-full flex-col p-4">
         <Alert
+          className="mb-8 mt-4"
           title={`${childUser?.firstName}'s registration is not complete`}
           type={'error'}
         />
 
         <Typography
-          className="mt-4"
           type="body"
           color={'textMid'}
           text={`If the registration form is not completed, this profile will be removed on:`}
         />
 
-        <Typography
-          weight="bold"
-          type="body"
-          color={'textMid'}
-          text={`${deadlineDateText}`}
-        />
+        <Typography type="h4" color={'textDark'} text={`${deadlineDateText}`} />
 
         <Typography
           className="mt-4"
-          text="Remember, by allowing a child to attend your programme without getting
-        and uploading a parent’s consent, you might leave your programme open to
-        legal consequences"
+          text="Remember, by allowing a child to attend your preschool without getting and uploading a caregiver’s consent, you might leave your preschool open to legal consequences."
           type="body"
+          color="textMid"
         />
 
-        <Divider className="my-4" />
+        <div className="mt-auto">
+          <Button
+            className="w-full"
+            id="gtm-share-caregiver"
+            type="filled"
+            color="quatenary"
+            text="Copy link to send to caregiver"
+            textColor="white"
+            icon="LinkIcon"
+            iconPosition="start"
+            onClick={onSendCaregiverLink}
+          />
 
-        <Button
-          id="gtm-share-caregiver"
-          type="filled"
-          color="primary"
-          text="Copy link to send to caregiver"
-          textColor="white"
-          icon="LinkIcon"
-          iconPosition="start"
-          onClick={onSendcaregiverLink}
-        />
-
-        <Button
-          type="outlined"
-          className="mt-4"
-          color="primary"
-          text="Upload paper registration form"
-          textColor="primary"
-          icon="UploadIcon"
-          iconPosition="start"
-          onClick={completeRegistration}
-        />
+          <Button
+            type="outlined"
+            className="mt-4 w-full"
+            color="quatenary"
+            text="Fill child's registration form"
+            textColor="quatenary"
+            icon="DocumentDuplicateIcon"
+            iconPosition="start"
+            onClick={completeRegistration}
+          />
+        </div>
       </div>
     </BannerWrapper>
   );

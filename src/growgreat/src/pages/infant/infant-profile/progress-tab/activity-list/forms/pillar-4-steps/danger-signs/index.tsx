@@ -46,10 +46,12 @@ export const DangerSignsStep = ({
   const [optionList, setOptionList] = useState<
     {
       title: string;
+      id?: string;
       disabled?: boolean;
     }[]
   >(options);
   const [currentOption, setCurrentOption] = useState<string>();
+  const [currentId, setCurrentId] = useState<string>();
   const [question, setAnswers] = useState({
     question: dangerSignsQuestion,
     answer: [] as (string | number | undefined)[],
@@ -175,7 +177,8 @@ export const DangerSignsStep = ({
         <Translations
           toTranslate={currentOption}
           onClose={() => setIsTip && setIsTip(false)}
-          section={dangerSignsVisitSection}
+          section={'Health care - postnatal'}
+          id={currentId || ''}
         />
       </Dialog>
     );
@@ -212,6 +215,7 @@ export const DangerSignsStep = ({
                   className="ml-auto"
                   onClick={() => {
                     setCurrentOption(item.title);
+                    setCurrentId(item.id);
                     setIsTip && setIsTip(true);
                   }}
                 >

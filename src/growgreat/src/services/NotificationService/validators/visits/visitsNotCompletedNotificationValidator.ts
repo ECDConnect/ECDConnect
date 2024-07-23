@@ -1,7 +1,6 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
-import { VisitDto } from '@ecdlink/core';
 import {
   NotificationIntervals,
   NotificationPriority,
@@ -30,6 +29,8 @@ export class VisitsNotCompletedNotificationValidator
     const twoWeeksAgo = addDays(new Date(), -14);
     const lastCompletedVisit =
       new Date(visitData?.visitStatus?.lastCompletedVisit!) || undefined;
+    const motherOverDueVisits =
+      visitData?.visitStatus?.motherOverDueVisits || 0;
 
     if (userCreated.getTime() < twoWeeksAgo.getTime()) {
       if (
@@ -43,7 +44,7 @@ export class VisitsNotCompletedNotificationValidator
             message:
               'Other CHWs visit clients every week - join them and visit your clients often!',
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.higher,
+            priority: 4,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',
@@ -58,7 +59,27 @@ export class VisitsNotCompletedNotificationValidator
         ];
       }
     }
-
+    if (motherOverDueVisits > 0) {
+      return [
+        {
+          reference: `motherOverdue-visits`,
+          title: 'Visits overdue for mothers',
+          message: 'Schedule a visit as soon as possible.',
+          dateCreated: new Date().toISOString(),
+          priority: 21,
+          viewOnDashboard: false,
+          area: 'practitioner',
+          icon: 'SwitchVerticalIcon',
+          color: 'primary',
+          actionText: 'Visit clients',
+          cta: 'VisitMothers',
+          viewType: 'Messages',
+          routeConfig: {
+            route: ROUTES.CLIENTS.VISIT_TAB.PREGNANCY_VISITS,
+          },
+        },
+      ];
+    }
     return [];
   };
 }

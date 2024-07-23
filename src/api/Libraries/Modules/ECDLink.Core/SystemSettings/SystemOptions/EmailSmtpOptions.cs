@@ -49,17 +49,17 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         /// Port for SmtpServerSecondaryAddress connection
         /// </summary>
         public int SmtpServerSecondaryPort { get; set; } = 587;
-        
+
         /// <summary>
         /// Use a TLS connection to send message when using secondary server?
         /// </summary>
         public bool SmtpServerSecondaryUseTLS { get; set; } = true;
-        
+
         /// <summary>
         /// Number of times to retry sending if error occurs.
         /// </summary>
         public int RetryCount { get; set; } = 0;
-        
+
         /// <summary>
         /// Time to wait between retries
         /// </summary>
@@ -69,5 +69,10 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         /// Disable SMTP email sending
         /// </summary>
         public bool Disabled { get; set; } = false;
+
+        /// <summary>
+        /// Disable SMTP email sending
+        /// </summary>
+        public string DevOverrideEmailAddress { get; set; } = "";
     }
 }

@@ -8,8 +8,11 @@ import {
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ProgrammeService } from '@services/ProgrammeService';
 import { RootState, ThunkApiType } from '../types';
-import { isBefore } from 'date-fns';
+import { isBefore, isSameDay } from 'date-fns';
 
+export const ProgrammeActions = {
+  UPDATE_PROGRAMMES: 'updateProgrammes',
+};
 export const getProgrammes = createAsyncThunk<
   ProgrammeDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -24,28 +27,24 @@ export const getProgrammes = createAsyncThunk<
       programmeData: { programmes: programmeCache },
     } = getState();
 
-    if (!programmeCache) {
-      try {
-        let programmes: ProgrammeDto[] | undefined;
+    try {
+      let programmes: ProgrammeDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          programmes = await new ProgrammeService(
-            userAuth?.auth_token
-          ).getUserProgrammes();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!programmes) {
-          return rejectWithValue('Error getting programmes');
-        }
-
-        return programmes;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        programmes = await new ProgrammeService(
+          userAuth?.auth_token
+        ).getUserProgrammes();
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return programmeCache;
+
+      if (!programmes) {
+        return rejectWithValue('Error getting programmes');
+      }
+
+      return programmes;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
@@ -102,7 +101,7 @@ export const upsertProgrammes = createAsyncThunk<
     const {
       auth: { userAuth },
       programmeData: { programmes },
-      classroomData: { classroom, classroomGroups },
+      classroomData: { classroom, classroomGroupData },
     } = getState();
 
     try {
@@ -114,7 +113,8 @@ export const upsertProgrammes = createAsyncThunk<
             Id: programme.id,
             ClassroomId: programme.classroomId || classroom?.id,
             ClassroomGroupId:
-              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id,
+              programme?.classroomGroupId ??
+              classroomGroupData.classroomGroups.at(0)?.id, // Why does this use the first?
             Name: programme.name,
             StartDate: programme.startDate,
             EndDate: programme.endDate,
@@ -157,35 +157,43 @@ export const upsertProgrammes = createAsyncThunk<
 );
 
 export const updateProgrammes = createAsyncThunk<
-  boolean[],
+  ProgrammeModelInput[] | undefined,
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'updateProgrammes',
+  ProgrammeActions.UPDATE_PROGRAMMES,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       programmeData: { programmes },
-      classroomData: { classroom, classroomGroups },
+      classroomData: { classroom },
     } = getState();
 
     try {
-      if (userAuth?.auth_token && programmes) {
+      if (userAuth?.auth_token) {
+        if (!programmes?.length) return undefined;
+
+        const inputs: ProgrammeModelInput[] = [];
+
         for (let i = 0; i < programmes.length; i++) {
           let programme = programmes[i];
+
+          // Skip if already synced;
+          if (programme?.synced) continue;
 
           const input: ProgrammeModelInput = {
             id: programme.id,
             classroomId: programme.classroomId || classroom?.id,
-            classroomGroupId:
-              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id ?? null,
+            classroomGroupId: programme?.classroomGroupId,
             name: programme.name,
             startDate: programme.startDate,
             endDate: programme.endDate,
             preferredLanguage: programme.preferredLanguage,
-            isActive: isBefore(new Date(), new Date(programme.endDate)),
+            isActive:
+              isBefore(new Date(), new Date(programme.endDate)) ||
+              isSameDay(new Date(), new Date(programme.endDate)),
             dailyProgrammes: programme.dailyProgrammes
               ? formatDailyProgrammes(programme)
               : undefined,
@@ -193,9 +201,14 @@ export const updateProgrammes = createAsyncThunk<
           await new ProgrammeService(userAuth?.auth_token).updateProgrammes(
             input
           );
+
+          inputs.push(input);
         }
+
+        return inputs;
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-      return [true];
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -216,7 +229,11 @@ export const formatDailyProgrammes = (
       largeGroupActivityId: daily.largeGroupActivityId ?? 0,
       storyBookId: daily.storyBookId ?? 0,
       storyActivityId: daily.storyActivityId ?? 0,
-      isActive: isBefore(new Date(), new Date(programme.endDate)),
+      isActive:
+        daily.isActive === false
+          ? false
+          : isSameDay(new Date(), new Date(programme.endDate)) ||
+            isBefore(new Date(), new Date(programme.endDate)),
     };
   });
 };

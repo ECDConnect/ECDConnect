@@ -4,13 +4,9 @@ using ECDLink.Abstractrions.Notifications;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
-using HotChocolate;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Threading.Tasks;
 
@@ -34,11 +30,23 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
         public async Task SendAuthenticationCodeAsync(ApplicationUser user, string otp)
         {
-            var provider = _notificationProviderFactory.Create(user);
-
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var notificationProvider = _notificationProviderFactory.Create(user);
 
-            await provider.SetMessageTemplate(TemplateTypeEnum.AuthCode)
+            await notificationProvider.SetMessageTemplate(TemplateTypeEnum.AuthCode)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, otp)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.OTPCode, otp)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+                .SendMessageAsync();
+        }
+
+        public async Task SendOAWLAuthenticationCodeAsync(ApplicationUser user, string otp)
+        {
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider.SetMessageTemplate(TemplateTypeEnum.OAWLAuthCode)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, otp)
                 .AddOrUpdateFieldReplacement(MessageTemplateConstants.OTPCode, otp)
                 .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
                 .SendMessageAsync();
@@ -50,17 +58,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             var forgotPasswordCallback = $"{_options.Value.ForgotPassword}?username={user.UserName}&token={encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
-            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
-            string firstName = user.FirstName;
 
             var notificationProvider = _notificationProviderFactory.Create(user);
-
             await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.ForgotPassword)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, forgotPasswordCallback)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, user.FirstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.Username, user.UserName)
               .SendMessageAsync();
         }
 
@@ -68,7 +73,8 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
-            var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}{encodedToken}/{user.UserName}";
+            //var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}{encodedToken}?username={user.UserName}";
+            var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}?username={user.UserName}&token={encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
             string firstName = user.FirstName;
@@ -104,6 +110,25 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.VerifyEmailAddressLink, verifyEmailCallback)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
+        public async Task RequestVerifyCellphoneNumberAsync(ApplicationUser user, Uri hostUrl)
+        {
+            var token = await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PendingPhoneNumber);
+
+            var encodedToken = TokenHelper.EncodeToken(token);
+            var defaultVerificationUrl = new Uri(hostUrl, "/" + TemplateTypeConstants.VerifyCellphoneNumber.ToString()).ToString();
+            var verificationUrl = $"{_options?.Value?.VerifyCellphoneNumberUrl ?? defaultVerificationUrl}";
+            var verifyCellphoneNumberCallback = $"{verificationUrl}?username={user.UserName}&token={encodedToken}";
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.VerifyCellphoneNumber)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.VerifyCellphoneLink, verifyCellphoneNumberCallback)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
         }
@@ -164,6 +189,33 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .SetMessageTemplate(TemplateTypeEnum.AdminPasswordChanged)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.AffectedUserFullName, affectedUserFullName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
+        public async Task SendHelpFormSubmissionToAdministratorAsync(Guid adminUserId, UserHelp userHelp)
+        {
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            var helpLoginStatus = userHelp.IsLoggedIn  ? "Yes" : "No";
+            var helpContactDetail = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber;
+            var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
+            var affectedUserFullName = "anonymous";
+            if (userHelp.UserId != null)
+            {
+                var user = _userManager.FindByIdAsync(userHelp.UserId).Result;
+                affectedUserFullName = user.FullName;
+            }
+
+            var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.AdminUserHelpForm)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.AffectedUserFullName, affectedUserFullName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpContactDetail, helpContactDetail)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpCategory, userHelp.Subject)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpDescription, userHelp.Description)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpLoginStatus, helpLoginStatus)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
         }

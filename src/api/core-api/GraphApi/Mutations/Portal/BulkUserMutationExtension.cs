@@ -1,3 +1,4 @@
+using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -34,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class ImportUserMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public async Task<UserImportModel> ImportHealthCareWorkersAsync(
+        public async Task<UserImportModel> ImportPractitionersAsync(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
           [Service] InvitationNotificationManager notificationManager,
@@ -44,9 +45,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
-
-            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: currentUserId);
-            var clinicIds = clinicRepo.GetAll().Select(c => c.Id.ToString()).ToList();
 
             if (file is null || currentUserId is null)
             {
@@ -61,9 +59,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var userImportList = new List<ApplicationUser>();
-            var hcwUsers = new Dictionary<string, HealthCareWorker>();
+            var practitionerUsers = new Dictionary<string, Practitioner>();
             var createdUsers = new List<string>();
-            var hcwToClinicMap = new Dictionary<string, string>();
 
             var validationErrors = new List<InputValidationError>();
 
@@ -73,6 +70,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
+
+            var idPassportDuplications = ValidateIdPassportDuplications(sheet);
 
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
@@ -89,18 +88,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
                 var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                 var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
-                var clinicId = ExcelHelper.GetCellValue(currentRow.GetCell(6));
+                var coachIdOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(6));
 
                 if (idOrPassport is null
                     && id is null
                     && passport is null
                     && firstName is null
                     && surname is null
-                    && cellphone is null
-                    && clinicId is null)
+                    && cellphone is null)
                     continue;
 
-                var rowErrors = GetCHWValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, clinicId, clinicIds);
+                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, coachIdOrPassport);
+
+                if (idPassportDuplications.Any())
+                {
+                    // If there is duplicate id or passport numbers add them to the row error list
+                    var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
+                    if (duplicateError != null)
+                    {
+                        rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
+                    }
+                }
 
                 // Collect all row errors.
                 // Could be on a row with no errors, but previous rows had errors.
@@ -108,11 +116,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     // Dont add null rows
                     if (rowErrors.Any())
+                    {
                         validationErrors.Add(new InputValidationError(row, rowErrors, $"Errors on row {row}."));
+                    }
 
                     // Do not continue processing if errors.
                     continue;
                 }
+
+                var coachHierarchy = Guid.Empty;
                 var insertedDate = DateTime.UtcNow;
                 var userId = Guid.NewGuid();
                 var user = new ApplicationUser()
@@ -134,29 +146,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 };
                 userImportList.Add(user);
 
-                // Add usernames to dictionary, will return false on duplicate.
-                if (!hcwToClinicMap.TryAdd(user.UserName, clinicId))
-                    validationErrors.Add(new InputValidationError(row, new List<string> { }, $"Duplicate user: {user.UserName}."));
+                if (!string.IsNullOrEmpty(coachIdOrPassport))
+                {
+                    var coachUser = userManager.FindByNameAsync(coachIdOrPassport).Result;
 
-                // Add new community health worker.
-                hcwUsers.Add(user.UserName,
-                    new HealthCareWorker()
+                    if (coachUser != null)
+                    {
+                        coachHierarchy = coachUser.Id;
+                    }
+                    else
+                    {
+                        validationErrors.Add(
+                            new InputValidationError(row, new List<string> { }, $"Coach does not exist for id/passport {coachIdOrPassport}")
+                        );
+                    }
+                }
+                practitionerUsers.Add(user.UserName,
+                    new Practitioner()
                     {
                         Id = user.Id,
                         User = user,
-                        IsRegistered = false, //TODO: Registered by default?
-                        ConsentForPhoto = false,
+                        IsRegistered = false,
                         InsertedDate = insertedDate,
-                        ClinicId = new Guid(clinicId),
                         TenantId = tenantId,
                         IsActive = true,
-                        ClickedVisitTab = false,
-                        ClickedProgressTab = false,
-                        ClickedReferralsTab = false,
-                        ClickedContactTab = false,
-                        ClickedDashboardClientsTab = false,
-                        ClickedDashboardVisitsTab = false,
-                        ClickedDashboardHighlightsTab = false
+                        CoachHierarchy = coachHierarchy == Guid.Empty ? null : coachHierarchy
                     });
             }
 
@@ -166,7 +180,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ValidationErrors = validationErrors
                 };
 
-            var communityHealthWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: currentUserId);
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: currentUserId);
 
             var rowNum = 0;
             foreach (var user in userImportList)
@@ -208,30 +222,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 IdentityResult addToRoleResult = null;
                 try
                 {
-                    addToRoleResult = await userManager.AddToRoleAsync(user, RolesGG.HEALTH_CARE_WORKER);
+                    addToRoleResult = await userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     validationErrors.Add(
                         new InputValidationError(
                             rowNum,
                             addToRoleResult?.Errors.Select(e => e.Description),
-                            $"Could not add user to role: {RolesGG.HEALTH_CARE_WORKER}."));
+                            $"Could not add user to role: {Roles.PRACTITIONER}."));
                 }
 
                 try
                 {
-                    var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
-                    hcw.UserId = user.Id;
+                    var practitioner = practitionerUsers.First(u => u.Key == user.UserName).Value;
+                    practitioner.UserId = user.Id;
 
-                    communityHealthWorkerRepo.Insert(hcw);
+                    practitionerRepo.Insert(practitioner);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     validationErrors.Add(new InputValidationError(
                         rowNum,
                         addToRoleResult?.Errors?.Select(e => e?.Description?.ToString()),
-                        $"Could not create {RolesGG.HEALTH_CARE_WORKER}."));
+                        $"Could not create {Roles.PRACTITIONER}."));
                     continue;
                 }
 
@@ -247,6 +261,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         continue;
                     }
                     await notificationManager.SendInvitationAsync(user, token);
+                    await Task.Delay(1000);
                 }
                 catch (Exception ex)
                 {
@@ -262,15 +277,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             // Local function
-            static IEnumerable<string> GetCHWValidationErrors(
+            static List<string> GetPractitionerValidationErrors(
                 string idOrPassport,
                 string id,
                 string passport,
                 string firstName,
                 string surname,
                 string cellphone,
-                string clinicId,
-                List<string> clinicIds)
+                string coachIdOrPassport)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -299,47 +313,47 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
 
-                if (clinicId is null || clinicId.Length == 0)
+                if (TenantExecutionContext.Tenant.Modules.CoachRoleEnabled)
                 {
-                    errors.Add("Clinic Id is empty.");
-                } else
-                {
-                    if (!clinicIds.Contains(clinicId))
+                    if (!string.IsNullOrEmpty(coachIdOrPassport) && !UserHelper.IsSAIDValid(coachIdOrPassport))
                     {
-                        errors.Add("Invalid clinic Id.");
+                        errors.Add("Coach Id is empty or invalid");
                     }
                 }
+
 
                 return errors;
             }
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public async Task<UserImportModel> ImportTeamLeadsAsync(
+        public async Task<UserImportModel> ImportCoachesAsync(
           [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] ILogger<ImportUserMutationExtension> _logger,
+          IGenericRepositoryFactory repoFactory,
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
-          IGenericRepositoryFactory repoFactory,
+          [Service] ILogger<ImportUserMutationExtension> _logger,
           ApplicationUserManager userManager,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
 
             if (file is null || currentUserId is null)
             {
                 throw new QueryException("Invalid input.");
             }
 
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
             if (!userIsAdmin)
                 throw new QueryException("You do not have permission to use this function.");
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+
             var userImportList = new List<ApplicationUser>();
-            var teamLeadUsers = new Dictionary<string, TeamLead>();
+            var coachUsers = new Dictionary<string, Coach>();
             var createdUsers = new List<string>();
+
             var validationErrors = new List<InputValidationError>();
 
             var bytes = Convert.FromBase64String(file);
@@ -349,88 +363,102 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
 
+            var idPassportDuplications = ValidateIdPassportDuplications(sheet);
+
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
                 var currentRow = sheet.GetRow(row);
 
-                if (currentRow != null)
+                if (currentRow is null)
                 {
-                    var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
-                    var id = UserHelper.CoerceValidSAID(
-                        ExcelHelper.GetCellValue(currentRow.GetCell(1)));
-                    var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
-                    var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
-                    var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
-                    var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
-                    var email = ExcelHelper.GetCellValue(currentRow.GetCell(6));
-
-                    if (idOrPassport is null
-                        && id is null
-                        && passport is null
-                        && firstName is null
-                        && surname is null
-                        && cellphone is null
-                        && email is null
-                        )
-                        continue;
-
-                    var rowErrors = GetTeamLeadValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email);
-
-                    // Collect all row errors.
-                    // Could be on a row with no errors, but previous rows had errors.
-                    if (rowErrors.Any() || validationErrors.Any())
-                    {
-                        // Dont add null rows
-                        if (rowErrors.Any())
-                            validationErrors.Add(new InputValidationError(row, rowErrors));
-
-                        // Do not continue processing if errors.
-                        continue;
-                    }
-                    
-                    var insertedDate = DateTime.UtcNow;
-
-                    var userId = Guid.NewGuid();
-                    var user = new ApplicationUser()
-                    {
-                        Id = userId,
-                        IdNumber = id,
-                        UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
-                        FirstName = firstName,
-                        Surname = surname,
-                        FullName = $"{firstName} {surname}",
-                        Email = email,
-                        WhatsAppNumber = UserHelper.NormalizePhoneNumber(cellphone),
-                        PhoneNumber = UserHelper.NormalizePhoneNumber(cellphone),
-                        PhoneNumberConfirmed = true,
-                        PendingPhoneNumber = null,
-                        ContactPreference = MessageTypeConstants.SMS,
-                        TenantId = tenantId,
-                        InsertedDate = insertedDate,
-                        IsActive = true,
-                    };
-                    userImportList.Add(user);
-
-                    // Add new community health worker.
-                    teamLeadUsers.Add(user.UserName,
-                        new TeamLead()
-                        {
-                            Id = user.Id,
-                            User = user,
-                            JobTitle = RolesGG.TEAM_LEAD,
-                            TenantId = tenantId,
-                            InsertedDate = insertedDate,
-                            IsActive = true
-                        });
+                    break;
                 }
+                var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
+                var id = UserHelper.CoerceValidSAID(ExcelHelper.GetCellValue(currentRow.GetCell(1)));
+                var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
+                var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
+                var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
+                var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
+
+                if (idOrPassport is null
+                    && id is null
+                    && passport is null
+                    && firstName is null
+                    && surname is null
+                    && cellphone is null)
+                    continue;
+
+                var rowErrors = GetCoachValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone);
+
+                if (idPassportDuplications.Any())
+                {
+                    // If there is duplicate id or passport numbers add them to the row error list
+                    var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
+                    if (duplicateError != null)
+                    {
+                        rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
+                    }
+                }
+
+                // Collect all row errors.
+                // Could be on a row with no errors, but previous rows had errors.
+                if (rowErrors.Any() || validationErrors.Any())
+                {
+                    // Dont add null rows
+                    if (rowErrors.Any())
+                    {
+                        validationErrors.Add(new InputValidationError(row, rowErrors, $"Errors on row {row}."));
+                    }
+
+                    // Do not continue processing if errors.
+                    continue;
+                }
+                var insertedDate = DateTime.UtcNow;
+                var userId = Guid.NewGuid();
+                var user = new ApplicationUser()
+                {
+                    Id = userId,
+                    IdNumber = id,
+                    UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
+                    FirstName = firstName,
+                    Surname = surname,
+                    FullName = $"{firstName} {surname}",
+                    WhatsAppNumber = UserHelper.NormalizePhoneNumber(cellphone),
+                    PhoneNumber = UserHelper.NormalizePhoneNumber(cellphone),
+                    PhoneNumberConfirmed = true,
+                    PendingPhoneNumber = null,
+                    ContactPreference = MessageTypeConstants.SMS,
+                    TenantId = tenantId,
+                    InsertedDate = insertedDate,
+                    IsActive = true,
+                };
+                userImportList.Add(user);
+
+                coachUsers.Add(user.UserName,
+                    new Coach()
+                    {
+                        Id = user.Id,
+                        User = user,
+                        IsRegistered = false,
+                        InsertedDate = insertedDate,
+                        TenantId = tenantId,
+                        IsActive = true
+                    });
             }
+
+            if (validationErrors.Any())
+                return new UserImportModel()
+                {
+                    ValidationErrors = validationErrors
+                };
+
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: currentUserId);
 
             var rowNum = 0;
             foreach (var user in userImportList)
             {
                 rowNum++;
-
                 var userExists = await userManager.FindByNameAsync(user.UserName);
 
                 if (userExists is not null)
@@ -440,15 +468,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         );
                     continue;
                 }
-
             }
 
             // Return errors before trying to create users so the list doesn't need to be diff'd for users that were created.
             if (validationErrors.Any())
-                return new UserImportModel() { ValidationErrors = validationErrors };
-
-            // Create Team Leads
-            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: currentUserId);
+                return new UserImportModel()
+                {
+                    ValidationErrors = validationErrors
+                };
 
             rowNum = 0;
             foreach (var user in userImportList)
@@ -456,6 +483,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 rowNum++;
 
                 var created = await userManager.CreateAsync(user);
+
                 if (!created.Succeeded)
                 {
                     validationErrors.Add(
@@ -467,49 +495,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 IdentityResult addToRoleResult = null;
                 try
                 {
-                    addToRoleResult = await userManager.AddToRoleAsync(user, RolesGG.TEAM_LEAD);
-                    if (!addToRoleResult.Succeeded)
-                    {
-                        validationErrors.Add(
-                        new InputValidationError(
-                            rowNum,
-                            addToRoleResult?.Errors.Select(e => e.Description),
-                            $"Could not add user to role: {RolesGG.TEAM_LEAD}."));
-                        continue;
-                    }
+                    addToRoleResult = await userManager.AddToRoleAsync(user, Roles.COACH);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    _logger.LogError(ex.Message, ex);
                     validationErrors.Add(
                         new InputValidationError(
                             rowNum,
                             addToRoleResult?.Errors.Select(e => e.Description),
-                            $"Could not add user to role: {RolesGG.TEAM_LEAD}."));
-                    continue;
+                            $"Could not add user to role: {Roles.COACH}."));
                 }
 
-                if (addToRoleResult != null)
+                try
                 {
-                    // Get the current tl's user.
-                    var newTl = teamLeadUsers.First(tl => tl.Key == user.UserName).Value;
+                    var coach = coachUsers.First(u => u.Key == user.UserName).Value;
+                    coach.UserId = user.Id;
 
-                    // Assign newly created user
-                    newTl.UserId = user.Id;
-
-                    try
-                    {
-                        teamLeadRepo.Insert(newTl);
-                    }
-                    catch (Exception ex)
-                    {
-                        validationErrors.Add(
-                        new InputValidationError(
-                            rowNum,
-                            new string[] { ex.Message },
-                            $"Could not create team lead for user: {user.UserName}."));
-                        continue;
-                    }
+                    coachRepo.Insert(coach);
+                }
+                catch (Exception)
+                {
+                    validationErrors.Add(new InputValidationError(
+                        rowNum,
+                        addToRoleResult?.Errors?.Select(e => e?.Description?.ToString()),
+                        $"Could not create {Roles.COACH}."));
+                    continue;
                 }
 
                 createdUsers.Add(user.UserName);
@@ -524,11 +534,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         continue;
                     }
                     await notificationManager.SendInvitationAsync(user, token);
+                    await Task.Delay(1000);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.Message, ex);
-                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user.UserName}"));
+                    _logger.LogError(ex, $"Could not send invitation to user: {user?.UserName}");
+                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user?.UserName}"));
                 }
             }
 
@@ -539,14 +550,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             // Local function
-            static IEnumerable<string> GetTeamLeadValidationErrors(
-                string idOrPassport, 
-                string id, 
-                string passport, 
-                string firstName, 
-                string surname, 
-                string cellphone, 
-                string email)
+            static List<string> GetCoachValidationErrors(
+                string idOrPassport,
+                string id,
+                string passport,
+                string firstName,
+                string surname,
+                string cellphone)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -558,31 +568,79 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (idOrPassport?.ToLowerInvariant() == "id"
                     && !UserHelper.IsSAIDValid(id))
-                    errors.Add("Type of identification is \"id\", is empty or invalid");
+                {
+                    errors.Add("Id is empty or invalid");
+                }
 
-                if (idOrPassport?.ToLowerInvariant() == "passport"
-                    && passport.Length == 0)
-                    errors.Add("Type of identification is \"passport\", is empty or invalid");
+                if (idOrPassport is null ||
+                    (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
+                    errors.Add("Passport is empty or invalid");
 
-                if (string.IsNullOrWhiteSpace(firstName)
-                    || firstName.Length == 0)
+                if (firstName is null || firstName.Length == 0)
                     errors.Add("First Name is empty.");
 
-                if (string.IsNullOrWhiteSpace(surname)
-                    || surname.Length == 0)
+                if (surname is null || surname.Length == 0)
                     errors.Add("Surname is empty.");
 
-                if (string.IsNullOrWhiteSpace(cellphone)
-                    || cellphone.Length == 0)
+                if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
-
-                if (!string.IsNullOrEmpty(email) // Email is optional
-                    && !UserHelper.IsEmailValid(email))
-                    errors.Add("Email is invalid");
                 return errors;
             }
         }
+
+        private List<InputValidationError> ValidateIdPassportDuplications(ISheet sheet)
+        {
+            var validationErrors = new List<InputValidationError>();
+            var listItems = new Dictionary<int, String>();
+            for (var row = 1; row <= sheet.LastRowNum; row++)
+            {
+                var currentRow = sheet.GetRow(row);
+
+                if (currentRow is null)
+                {
+                    break;
+                }
+
+                var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
+                var id = UserHelper.CoerceValidSAID(ExcelHelper.GetCellValue(currentRow.GetCell(1)));
+                var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
+
+                if (idOrPassport is null
+                    && id is null
+                    && passport is null)
+                    continue;
+
+                if (id != null)
+                {
+                    listItems.Add(row, id);
+                }
+                if (passport != null)
+                {
+                    listItems.Add(row, passport);
+                }
+            }
+
+            var result = from item in listItems
+                         group item by item.Value into groupedItems
+                         where groupedItems.Count() > 1
+                         select groupedItems;
+
+            foreach (var row in result)
+            {
+                var sameValue = (from item in row select item.Key + "").ToArray();
+
+                if (sameValue.Length > 0)
+                {
+                    for (int i = 0; i < sameValue.Length; i++)
+                    {
+                        validationErrors.Add(new InputValidationError(int.Parse(sameValue[i]), new List<string> { $"Duplicate ID or Passport number for {row.Key}" }, $"Errors on row {sameValue[i]}."));
+                    }
+                }
+            }
+
+            return validationErrors;
+        }
+
+
     }
-
-
 }

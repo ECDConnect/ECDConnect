@@ -32,10 +32,6 @@ export const EditCoachProfile: React.FC = () => {
   const [coachProfileInformation, setCoachProfileInformation] =
     useState<EditProfileInformationModel>({
       email: coach?.user?.email || '',
-      siteAddress: coach?.siteAddress,
-      siteAddressId: coach?.siteAddressId,
-      franchisorAddress: coach?.franchisor?.siteAddress,
-      franchisorAddressId: coach?.franchisor?.siteAddressId,
     });
 
   useEffect(() => {
@@ -48,9 +44,6 @@ export const EditCoachProfile: React.FC = () => {
       const userCopy = cloneDeep(user);
 
       if (coachCopy && userCopy) {
-        coachCopy.siteAddress = coachProfileInformation.siteAddress;
-        coachCopy.siteAddressId = coachProfileInformation.siteAddressId;
-
         userCopy.email = coachProfileInformation.email;
 
         Object.assign(coachCopy.user as UserDto, userCopy);

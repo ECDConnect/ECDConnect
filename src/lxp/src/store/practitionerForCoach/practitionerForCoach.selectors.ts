@@ -23,24 +23,6 @@ export const getStatementsForUser = (userId: string) =>
     }
   );
 
-export const getUnsubmittedIncomeForUser = (userId: string) =>
-  createSelector(
-    (state: RootState) =>
-      state.practitionerForCoach.statementsForPractitionerUser,
-    (statements) => {
-      return statements[userId]?.unsubmittedIncomeItems || [];
-    }
-  );
-
-export const getUnsubmittedExpensesForUser = (userId: string) =>
-  createSelector(
-    (state: RootState) =>
-      state.practitionerForCoach.statementsForPractitionerUser,
-    (statements) => {
-      return statements[userId]?.unsubmittedExpenseItems || [];
-    }
-  );
-
 export const getUserStatementById = (userId: string, statementId: string) =>
   createSelector(
     (state: RootState) =>

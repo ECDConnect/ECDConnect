@@ -1,5 +1,6 @@
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
+import { TenantModel } from '@ecdlink/graphql';
 
 class ContextService {
   _accessToken: string;
@@ -8,13 +9,13 @@ class ContextService {
     this._accessToken = accessToken;
   }
 
-  async tenantContext(): Promise<any> {
+  async tenantContext(): Promise<TenantModel> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query {
        tenantContext {  
-        id adminSiteAddress siteAddress applicationName organisationName tenantType themePathVar var1 var2 moodleUrlVar 
+        id adminSiteAddress siteAddress applicationName organisationName tenantType themePath moodleUrl 
       }
     }
       `,

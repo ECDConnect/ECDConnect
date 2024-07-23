@@ -29,6 +29,7 @@ import { StorageFull } from './storage-full/storage-full';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { syncThunkActions } from '@/store/sync';
+import { userThunkActions } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 
 var CryptoJS = require('crypto-js');
@@ -38,9 +39,7 @@ export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
-  const [displayMessage, setDisplayMessage] = useState(
-    'Password or ID incorrect. Please try again'
-  );
+  const displayMessage = 'Password or ID incorrect. Please try again';
   const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
@@ -99,8 +98,10 @@ export const Login: React.FC = () => {
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
+    await appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
-    history.push(ROUTES.DASHBOARD);
+
+    history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
   const checkSyncData = async () => {
@@ -163,7 +164,6 @@ export const Login: React.FC = () => {
             ) {
               login();
             } else {
-              setDisplayMessage(isAuthenticated?.payload!);
               setDisplayError(true);
               setIsLoading(false);
             }
@@ -270,7 +270,7 @@ export const Login: React.FC = () => {
               <Button
                 className={'mt-1 mb-3'}
                 type="outlined"
-                color="primary"
+                color="secondary"
                 background={'transparent'}
                 size="small"
                 disabled={!isOnline}
@@ -278,7 +278,7 @@ export const Login: React.FC = () => {
               >
                 <Typography
                   type="buttonSmall"
-                  color="primary"
+                  color="secondary"
                   text={'Forgot my password'}
                 ></Typography>
               </Button>
@@ -287,7 +287,7 @@ export const Login: React.FC = () => {
             {displayError && (
               <Alert
                 className={'mt-5 mb-3'}
-                message={displayMessage}
+                title={displayMessage}
                 type={'error'}
               />
             )}

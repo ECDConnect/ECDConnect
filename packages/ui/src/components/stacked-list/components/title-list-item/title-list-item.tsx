@@ -14,6 +14,7 @@ export interface TitleListItemProps {
 export function TitleListItem({ item, onClickItem }: TitleListItemProps) {
   return (
     <div
+      id={item.id}
       className={classNames(styles.titlelistItemContainer, item.classNames)}
       onClick={() => {
         if (!!item.onActionClick) item.onActionClick();

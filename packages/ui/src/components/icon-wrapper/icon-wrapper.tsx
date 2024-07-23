@@ -8,6 +8,7 @@ interface IconWrapperProps extends ComponentBaseProps {
   icon: string;
   iconBorderColor: Colours;
   iconColor: Colours;
+  iconSize?: number;
 }
 
 export const IconWrapper: React.FC<IconWrapperProps> = ({
@@ -15,6 +16,7 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
   iconBorderColor,
   iconColor,
   className,
+  iconSize,
 }) => {
   return (
     <div className={styles.wrapperContainer}>
@@ -23,7 +25,10 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
         data-testid="icon-wrapper"
       ></div>
       <div className={styles.iconContainer}>
-        {renderIcon(icon, `z-20 w-6 h-6 text-${iconColor}`)}
+        {renderIcon(
+          icon,
+          `z-20 w-${iconSize ?? 6} h-${iconSize ?? 6} text-${iconColor}`
+        )}
       </div>
     </div>
   );

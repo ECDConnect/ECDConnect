@@ -14,21 +14,10 @@ import {
   NotificationDisplay,
   PractitionerInput,
   PractitionerRemovalHistory,
+  PractitionerReportDetails,
   PrincipalInvitationStatus,
 } from '@ecdlink/graphql';
 
-interface ReportDetailsForPractitionerData {
-  classroomGroupName: string;
-  name: string;
-  principalName: string;
-  classroomGroupId: string;
-  programmeTypeName: string;
-  idNumber: string;
-  insertedDate: string;
-  programmeDays: string;
-  phone: string;
-  classSiteAddress: null | string;
-}
 class PractitionerService {
   _accessToken: string;
 
@@ -250,6 +239,14 @@ class PractitionerService {
             id
             userId
             isNewInClub
+            permissions {
+              id
+              isActive
+              permissionId
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
             user {
               gender {
                 description
@@ -329,6 +326,14 @@ class PractitionerService {
             id
             userId
             isNewInClub
+            permissions {
+              id
+              isActive
+              permissionId
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
             user {
               gender {
                 description
@@ -336,6 +341,7 @@ class PractitionerService {
               firstName
               surname
               fullName
+              userName
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
@@ -384,6 +390,8 @@ class PractitionerService {
             isCompletedBusinessWalkThrough
             clubId
             clubName
+            clickedCommunityTab
+            communitySectionViewDate
             absentees {
               absentDate
               absentDateEnd
@@ -435,6 +443,14 @@ class PractitionerService {
             dateAccepted
             dateToBeRemoved
             daysAbsentLastMonth
+            permissions {
+              id
+              isActive
+              permissionId
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
             siteAddress {
               addressLine1
               addressLine2
@@ -465,6 +481,7 @@ class PractitionerService {
               fullName
               firstName
               surname
+              userName
               id
               email
               phoneNumber
@@ -535,6 +552,15 @@ class PractitionerService {
                 usePhotoInReport
                 isCompletedBusinessWalkThrough
               }
+                userPermissions {
+                id
+                isActive
+                permissionId
+               permission {
+                id
+                name
+               }
+            }
             }
             note
           }
@@ -585,9 +611,10 @@ class PractitionerService {
 
     return response.data.data.promotePractitionerToPrincipal;
   }
+
   async getReportDetailsForPractitioner(
     userId: string
-  ): Promise<ReportDetailsForPractitionerData> {
+  ): Promise<PractitionerReportDetails> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -619,42 +646,8 @@ class PractitionerService {
     return response.data.data.reportDetailsForPractitioner;
   }
 
-  async getClassroomDetailsForPractitioner(
-    userId: string
-  ): Promise<{ principalName: string; name: string }> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query classroomDetailsForPractitioner($userId: String) {
-          classroomDetailsForPractitioner(userId: $userId) {
-            principalName
-            name
-            classroomGroupName
-            classroomGroupId
-            insertedDate
-            classSiteAddress
-            id
-            preschoolFeeAmount
-            preschoolFeeAmountLastUpdateDate
-            programmeTypeId
-            classSiteAddressId
-          }
-        }
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Practitioner by ID number Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.classroomDetailsForPractitioner;
-  }
-
+  // Used only by coach stuff, we should refactor and remove this when we work on coach functionality
+  // Already removed on the BE
   async getClassroomGroupClassroomsForPractitioner(
     userId: string
   ): Promise<ClassroomGroupDto[]> {
@@ -839,13 +832,12 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String,  $programmeTypeId: UUID!) {
+        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String) {
           addPractitionerToPrincipal(
             firstName: $firstName
             idNumber: $idNumber
             lastName: $lastName
             userId: $userId
-            programmeTypeId: $programmeTypeId
           ) {
             userId
             isActive
@@ -1069,9 +1061,10 @@ class PractitionerService {
     return response.data.data.displayMetrics;
   }
 
+  // Can we remove this now?
   async classroomActionItems(
     practitionerId: string
-  ): Promise<PractitionerDto[]> {
+  ): Promise<NotificationDisplay[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -1096,7 +1089,7 @@ class PractitionerService {
       throw new Error('Display metrics Failed - Server connection error');
     }
 
-    return response.data.data.displayMetrics;
+    return response.data.data.classroomActionItems;
   }
 
   async practitionerColleagues(
@@ -1107,7 +1100,7 @@ class PractitionerService {
       query: `
       query practitionerColleagues($userId: String) {
         practitionerColleagues(userId: $userId) {
-          name title nickName contactNumber classroomNames profilePhoto
+          name title nickName contactNumber classroomNames profilePhoto userId
         }
       }
       `,
@@ -1191,25 +1184,22 @@ class PractitionerService {
     return true;
   }
 
-  async getMoodleSessionForUserId(userId: string): Promise<string> {
+  async getMoodleSessionForCurrentUser(): Promise<string> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
     const response = await apiInstance.post<any>(``, {
       query: `
-      query getMoodleSessionForUserId($userId: String) {
-        getMoodleSessionForUserId(userId: $userId) {
+      query getMoodleSessionForCurrentUser {
+        getMoodleSessionForCurrentUser {
         }
       }
       `,
-      variables: {
-        userId,
-      },
     });
     if (response.status !== 200) {
       throw new Error('Get Practitioner Failed - Server connection error');
     }
 
-    return response.data.data.getMoodleSessionForUserId;
+    return response.data.data.getMoodleSessionForCurrentUser;
   }
 
   async GetPractitionerInviteCount(userId: string): Promise<string> {
@@ -1255,15 +1245,16 @@ class PractitionerService {
     return response.data.data.lastPractitionerInviteDate;
   }
 
-  async GetAllPractitionerInvites(userId: string): Promise<string> {
+  async GetAllPractitionerInvites(userId: string): Promise<Date[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllPractitionerInvites($userId: String) {
-        allPractitionerInvites(userId: $userId) {}
-    }
-      `,
+    const response = await apiInstance.post<{
+      data: { allPractitionerInvites: Date[] };
+      errors?: {};
+    }>(``, {
+      query: `query GetAllPractitionerInvites($userId: String) {
+          allPractitionerInvites(userId: $userId) {}
+        }`,
       variables: {
         userId,
       },
@@ -1427,6 +1418,7 @@ class PractitionerService {
 
     return response.data.data.removalDetailsForPractitioners;
   }
+
   async updateRemovePractitionerFromProgramme(
     removalId: string,
     reasonForPractitionerLeavingProgrammeId: string | undefined = undefined,
@@ -1556,6 +1548,84 @@ class PractitionerService {
     }
 
     return response.data.data.updatePractitionerBusinessWalkthrough;
+  }
+
+  async practitionerInvitePrincipal(
+    principalPhoneNumber: string,
+    practitionerUserId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation SendPrincipalInviteToApplication($principalPhoneNumber: String, $practitionerUserId: UUID!) {
+  sendPrincipalInviteToApplication(principalPhoneNumber: $principalPhoneNumber, practitionerUserId: $practitionerUserId)
+}
+      `,
+      variables: {
+        principalPhoneNumber,
+        practitionerUserId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Invite principal Failed - Server connection error');
+    }
+
+    return response.data.data.sendPrincipalInviteToApplication;
+  }
+
+  async sendPractitionerInviteToPreschool(
+    practitionerPhoneNumber: string,
+    preSchoolNameCode: string,
+    principalUserId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation SendPractitionerInviteToPreSchool($practitionerPhoneNumber: String!, $preSchoolNameCode: String!, $principalUserId: UUID!) {
+    sendPractitionerInviteToPreSchool(practitionerPhoneNumber: $practitionerPhoneNumber, preSchoolNameCode: $preSchoolNameCode, principalUserId: $principalUserId) {
+    }
+}
+      `,
+      variables: {
+        practitionerPhoneNumber,
+        preSchoolNameCode,
+        principalUserId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Invite principal Failed - Server connection error');
+    }
+
+    return response.data.data.sendPrincipalInviteToApplication;
+  }
+
+  async updatePractitionerCommunityTabStatus(
+    practitionerUserId: string
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation UpdatePractitionerCommunityTabStatus($practitionerUserId: UUID!) {
+    updatePractitionerCommunityTabStatus(practitionerUserId: $practitionerUserId) {
+        id
+        clickedCommunityTab
+    }
+}
+      `,
+      variables: {
+        practitionerUserId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Updating practitioner community status failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerCommunityTabStatus;
   }
 }
 

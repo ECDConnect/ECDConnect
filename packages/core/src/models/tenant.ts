@@ -1,18 +1,31 @@
 export interface TenantModel {
   adminSiteAddress: string;
   applicationName: string;
+  id: string;
+  moodleUrl: string;
   organisationName: string;
   siteAddress: string;
-  themePathVar: string;
   tenantType: TenantType;
-  var1: string;
-  var2: string;
-  moodleUrlVar: string;
-  Id: string;
+  themePath: string;
+  modules: {
+    attendanceEnabled: boolean;
+    businessEnabled: boolean;
+    calendarEnabled: boolean;
+    classroomActivitiesEnabled: boolean;
+    coachRoleEnabled: boolean;
+    coachRoleName: string;
+    prgoressEnabled: boolean;
+    trainingEnabled: boolean;
+  } | null;
+  googleAnalyticsTag: string;
+  googleTagManager: string;
 }
 
-export interface TenantType {
-  Host: string;
-  Tenant: string;
-  organisationName: string;
+export enum TenantType {
+  ChwConnect = 'CHW_CONNECT',
+  Host = 'HOST',
+  OpenAccess = 'OPEN_ACCESS',
+  WhiteLabel = 'WHITE_LABEL',
+  WhiteLabelTemplate = 'WHITE_LABEL_TEMPLATE',
+  FundaApp = 'FUNDA_APP',
 }

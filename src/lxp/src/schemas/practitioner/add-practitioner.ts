@@ -7,8 +7,9 @@ export interface AddPractitionerModel {
   idNumber: string;
   passport: string;
   firstName: string;
-  surname: string;
+  surname?: string;
   preferId: boolean;
+  phoneNumber?: string;
 }
 
 export const initialAddPractitionerValues: AddPractitionerModel = {
@@ -17,6 +18,7 @@ export const initialAddPractitionerValues: AddPractitionerModel = {
   preferId: true,
   idNumber: '',
   passport: '',
+  phoneNumber: '',
 };
 
 export const setupPractitioner = Yup.object().shape({
@@ -37,5 +39,4 @@ export const addPractitionerSchema = Yup.object().shape({
       .required('Passport number is required')
       .matches(SA_PASSPORT_REGEX, 'Please enter a valid Passport number'),
   }),
-  surname: Yup.string().required(),
 });

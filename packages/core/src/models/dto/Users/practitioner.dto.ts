@@ -1,5 +1,6 @@
 import { DocumentDto } from '../Documents';
 import { EntityBase } from '../entity-base';
+import { PermissionDto } from '../Roles';
 import { SiteAddressDto } from '../SiteAddress';
 import { AbsenteeDto } from './absentee.dto';
 import { UserDto } from './user.dto';
@@ -43,4 +44,17 @@ export interface PractitionerDto extends EntityBase {
   clubName?: string;
   absentees?: AbsenteeDto[];
   daysAbsentLastMonth?: number | string;
+  permissions?: UserPermissionDto[];
+  communitySectionViewDate?: string;
+  clickedCommunityTab?: boolean;
+}
+
+export interface UserPermissionDto {
+  id: string;
+  userId: string;
+  permissionId: string;
+  isActive: boolean;
+  permissionName: string;
+  permissionNormalizedName: string;
+  permissionGrouping: string;
 }

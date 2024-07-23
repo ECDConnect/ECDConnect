@@ -174,16 +174,28 @@ export const LeagueTab: React.FC = () => {
   ]);
 
   const clinics = useMemo(() => {
+    let clinicList = [];
+
     if (isToShowRanking) {
-      return league?.clinics ?? [];
+      clinicList = league?.clinics ?? [];
+    } else {
+      clinicList =
+        league?.clinics.filter(
+          (clinic) => clinic.clinicId === currentClinic?.id
+        ) ?? [];
     }
 
-    return (
-      league?.clinics.filter(
-        (clinic) => clinic.clinicId !== currentClinic?.id
-      ) ?? []
-    );
-  }, [currentClinic?.id, isToShowRanking, league?.clinics]);
+    return [...clinicList].sort((a, b) => {
+      const aRanking = isEndOfTheYear
+        ? a?.leagueRankingForYear
+        : a?.leagueRankingForQuarter;
+      const bRanking = isEndOfTheYear
+        ? b?.leagueRankingForYear
+        : b?.leagueRankingForQuarter;
+
+      return aRanking - bRanking;
+    });
+  }, [currentClinic?.id, isEndOfTheYear, isToShowRanking, league?.clinics]);
 
   // Set up which clinics to show
   const handleClinicPosition = useCallback(() => {
