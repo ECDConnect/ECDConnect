@@ -47,6 +47,7 @@ export const Step1: React.FC<Step1Props> = ({
   const handleNextAction = async () => {
     if (shareContactInfo === true) {
       setStep(step + 1);
+      return;
     } else {
       setIsLoading(true);
       await dispatch(
