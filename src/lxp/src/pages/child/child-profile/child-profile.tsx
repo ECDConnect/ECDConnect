@@ -293,36 +293,6 @@ export const ChildProfile: React.FC = () => {
     });
   };
 
-  const progressTrackerNotAvailablePrompt = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          icon={'QuestionMarkCircleIcon'}
-          iconClassName="w-32 h-32"
-          className="bg-white"
-          iconColor="infoMain"
-          importantText={`Child progress tracker not available`}
-          detailText={`The child progress tracker is not available to you because you have not attended child progress training yet.
-
-          Please speak to your coach to find out when you can attend this training.`}
-          actionButtons={[
-            {
-              text: 'Close',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                onSubmit();
-              },
-              leadingIcon: 'XIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [dialog]);
-
   useEffect(() => {
     if (!attendanceData || !child) return;
 
@@ -441,12 +411,6 @@ export const ChildProfile: React.FC = () => {
   const onCreateChildNoteBack = () => {
     setCreateChildNoteVisible(false);
   };
-
-  const viewChildProgressObservationReports = useCallback(() => {
-    history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
-      childId: child?.id,
-    });
-  }, [child?.id, history]);
 
   const onNoteCreated = () => {
     setCreateChildNoteVisible(false);
@@ -637,12 +601,9 @@ export const ChildProfile: React.FC = () => {
       {
         key: 'progress',
         title: 'Progress reports',
-        subTitle: progressTrainingDone
-          ? 'See observations & reports'
-          : 'Not available before training',
         buttonType: 'filled',
         buttonIcon: 'EyeIcon',
-        buttonText: progressTrainingDone ? 'View' : 'Info',
+        buttonText: 'View',
         buttonTextColor: 'secondary',
         buttonColor: 'secondaryAccent2',
         showButton: true,
@@ -653,10 +614,10 @@ export const ChildProfile: React.FC = () => {
         onButtonClick: () => {
           if (!isReportWindowSet) {
             showNoReportingPeriodsDialog();
-          } else if (progressTrainingDone) {
-            viewChildProgressObservationReports();
           } else {
-            progressTrackerNotAvailablePrompt();
+            history.push(ROUTES.PROGRESS_REPORT_LIST, {
+              childId: child?.id,
+            });
           }
         },
       },
@@ -716,10 +677,8 @@ export const ChildProfile: React.FC = () => {
     isOnline,
     isPrincipal,
     practitionerIsOnLeave,
-    progressTrackerNotAvailablePrompt,
     progressTrainingDone,
     showOnlineOnly,
-    viewChildProgressObservationReports,
   ]);
 
   if (
