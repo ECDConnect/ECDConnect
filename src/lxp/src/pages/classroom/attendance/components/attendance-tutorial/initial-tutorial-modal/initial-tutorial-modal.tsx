@@ -32,9 +32,9 @@ export const InitialAttendanceTutorialModal = ({
         },
         {
           text: 'No, skip',
-          textColour: 'white',
+          textColour: 'quatenary',
           colour: 'quatenary',
-          type: 'filled',
+          type: 'outlined',
           onClick: onClose,
           leadingIcon: 'ClockIcon',
         },
