@@ -334,7 +334,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0
             ? isPrincipal
               ? 'Edit'
-              : 'View'
+              : 'ViewW'
             : 'Add',
         actionIcon: isPrincipal
           ? 'PencilIcon'

@@ -1,23 +1,13 @@
-import { AttendanceDto, useDialog } from '@ecdlink/core';
+import { AttendanceDto } from '@ecdlink/core';
 import {
   ComponentBaseProps,
   DialogPosition,
-  ActionModal,
   Dialog,
   BannerWrapper,
 } from '@ecdlink/ui';
-import {
-  addDays,
-  format,
-  getDayOfYear,
-  isFriday,
-  isSameDay,
-  isWeekend,
-  nextMonday,
-  startOfWeek,
-} from 'date-fns';
+import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
 import getDay from 'date-fns/getDay';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
 import { attendanceSelectors } from '@store/attendance';
@@ -38,11 +28,8 @@ import { isWorkingDay } from '@/utils/common/date.utils';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
 import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
-import { coachSelectors } from '@/store/coach';
 import { useHistory, useLocation } from 'react-router';
-import ROUTES from '@/routes/routes';
 import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
-import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useWindowSize } from '@reach/window-size';
 import { ClassDashboardRouteState } from '../class-dashboard/class-dashboard.types';
@@ -53,8 +40,6 @@ const headerHeight = 121;
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const { height } = useWindowSize();
-  const dialog = useDialog();
-  const coach = useSelector(coachSelectors.getCoach);
   const location = useLocation<ClassDashboardRouteState>();
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
@@ -108,89 +93,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   );
 
   const isAllRegistersCompleted = !missedDays?.length;
-  const call = () => {
-    window.open(`tel:${coach?.user?.phoneNumber}`);
-  };
-
-  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
-    practitioner!
-  );
 
   const { hasPermissionToTakeAttendance } = useUserPermissions();
 
   const hasPermissionToEdit =
     practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
-
-  const handleComebackDay = useCallback((date: Date) => {
-    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
-      return nextMonday(new Date(date));
-    }
-
-    return new Date(addDays(new Date(date), 1));
-  }, []);
-
-  const handleIsOnLeaveModal = () => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      render: (onClose) => {
-        return (
-          <ActionModal
-            icon="ExclamationCircleIcon"
-            iconBorderColor="alertBg"
-            iconColor="alertMain"
-            importantText={`You are on leave and cannot use this section`}
-            paragraphs={[
-              `You are on leave from ${format(
-                new Date((currentAbsentee?.absentDate as Date) || new Date()),
-                'd MMM yyyy'
-              )} to ${format(
-                new Date(
-                  handleComebackDay(
-                    (currentAbsentee?.absentDateEnd as Date) || new Date()
-                  )
-                ),
-                'd MMM yyyy'
-              )}. If you believe this is a mistake please reach out to ${
-                currentAbsentee?.loggedByPerson
-              }.`,
-            ]}
-            actionButtons={[
-              {
-                text: `Contact ${currentAbsentee?.loggedByPerson}`,
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: () => {
-                  call();
-                  history.push(ROUTES.DASHBOARD);
-                  onClose();
-                },
-                leadingIcon: 'PhoneIcon',
-              },
-              {
-                text: `Close`,
-                textColour: 'primary',
-                colour: 'primary',
-                type: 'outlined',
-                onClick: () => {
-                  history.push(ROUTES.DASHBOARD);
-                  onClose();
-                },
-                leadingIcon: 'XCircleIcon',
-              },
-            ]}
-          />
-        );
-      },
-    });
-  };
-
-  useEffect(() => {
-    if (practitionerIsOnLeave) {
-      handleIsOnLeaveModal();
-    }
-  }, [practitionerIsOnLeave]);
 
   useEffect(() => {
     if (location.state?.fromChildAttendanceReport && !seeCompletedRegisters) {
