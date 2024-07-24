@@ -26,6 +26,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<FeedbackType, Guid> _feedbackTypeRepo;
         private IGenericRepository<CommunitySkill, Guid> _communitySkillRepo;
         private IGenericRepository<CoachFeedback, Guid> _coachFeedbackRepo;
+        private IGenericRepository<CoachFeedbackType, Guid> _coachFeedbackTypeRepo;
         private IGenericRepository<CommunityProfileSkill, Guid> _communityProfileSkillRepo;
         private IGenericRepository<CommunityProfile, Guid> _communityProfileRepo;
         private IGenericRepository<CommunityProfileConnection, Guid> _communityProfileConnectionRepo;
@@ -51,6 +52,7 @@ namespace EcdLink.Api.CoreApi.Services
             _feedbackTypeRepo = repoFactory.CreateGenericRepository<FeedbackType>(userContext: _applicationUserId);
             _communitySkillRepo = repoFactory.CreateGenericRepository<CommunitySkill>(userContext: _applicationUserId);
             _coachFeedbackRepo = repoFactory.CreateGenericRepository<CoachFeedback>(userContext: _applicationUserId);
+            _coachFeedbackTypeRepo = repoFactory.CreateGenericRepository<CoachFeedbackType>(userContext: _applicationUserId);
             _communityProfileSkillRepo = repoFactory.CreateGenericRepository<CommunityProfileSkill>(userContext: _applicationUserId);
             _communityProfileRepo = repoFactory.CreateGenericRepository<CommunityProfile>(userContext: _applicationUserId);
             _communityProfileConnectionRepo = repoFactory.CreateGenericRepository<CommunityProfileConnection>(userContext: _applicationUserId);
@@ -86,13 +88,31 @@ namespace EcdLink.Api.CoreApi.Services
                 IsActive = true,
                 FromUserId = input.FromUserId,
                 ToUserId = input.ToUserId,
-                FeedbackTypeId = input.FeedbackTypeId,
                 SupportRatingId = input.SupportRatingId,
                 FeedbackDetails = input.FeedbackDetails,
             });
 
             if (coachFeedback != null )
             {
+                var coachFeedBackTypes = new List<CoachFeedbackType>();
+                if (input.FeedbackTypeIds.Count > 0)
+                {
+                    foreach (var item in input.FeedbackTypeIds)
+                    {
+                        coachFeedBackTypes.Add(new CoachFeedbackType() 
+                        {
+                            Id = Guid.NewGuid(),
+                            InsertedDate = DateTime.Now,
+                            UpdatedDate = DateTime.Now,
+                            UpdatedBy = _applicationUserId.ToString(),
+                            IsActive = true,
+                            CoachFeedbackId = coachFeedback.Id,
+                            FeedbackTypeId = item
+                        });
+                    }
+                    _coachFeedbackTypeRepo.InsertMany(coachFeedBackTypes);
+                }
+
                 var userToSend = _userManager.FindByIdAsync(input.FromUserId).Result;
                 var coach = _userManager.FindByIdAsync(coachFeedback.ToUserId).Result;
 

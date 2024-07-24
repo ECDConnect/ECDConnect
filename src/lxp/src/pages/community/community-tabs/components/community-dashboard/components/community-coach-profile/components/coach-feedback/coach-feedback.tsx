@@ -97,7 +97,7 @@ export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
 
   const sendCoachFeedback = async () => {
     const input: CoachFeedbackInputModelInput = {
-      feedbackTypeId: feedBackTypeId,
+      feedbackTypeIds: [feedBackTypeId],
       fromUserId: user?.id,
       supportRatingId: supportRatingId,
       feedbackDetails: feedbackValue,

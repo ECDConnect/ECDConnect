@@ -214,6 +214,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<SupportRating> SupportRatings { get; set; }
         public DbSet<FeedbackType> FeedbackTypes { get; set; }
         public DbSet<CoachFeedback> CoachFeedback { get; set; }
+        public DbSet<CoachFeedbackType> CoachFeedbackTypes { get; set; }
         public DbSet<CommunitySkill> CommunitySkills { get; set; }
         public DbSet<CommunityProfile> CommunityProfile { get; set; }
         public DbSet<CommunityProfileSkill> CommunityProfileSkill { get; set; }
