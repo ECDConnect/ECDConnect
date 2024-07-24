@@ -420,21 +420,27 @@ namespace EcdLink.Api.CoreApi.Services
 
         public CommunityProfileModel AcceptRejectCommunityRequests(AcceptRejectCommunityRequestsInputModel input)
         {
-            var accepted = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToAccept.Contains((Guid)x.FromProfile.UserId)).ToList();
-            foreach (var item in accepted)
+            if (input.UserIdsToAccept != null && input.UserIdsToAccept.Any())
             {
-                item.InviteAccepted = true;
-                item.UpdatedDate = DateTime.Now;
-                item.UpdatedBy = _applicationUserId.ToString();
-                _communityProfileConnectionRepo.Update(item);
+                var accepted = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToAccept.Contains((Guid)x.FromProfile.UserId)).ToList();
+                foreach (var item in accepted)
+                {
+                    item.InviteAccepted = true;
+                    item.UpdatedDate = DateTime.Now;
+                    item.UpdatedBy = _applicationUserId.ToString();
+                    _communityProfileConnectionRepo.Update(item);
+                }
             }
-            var rejected = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToReject.Contains((Guid)x.FromProfile.UserId)).ToList();
-            foreach (var item in rejected)
+            if (input.UserIdsToReject != null && input.UserIdsToReject.Any())
             {
-                item.InviteAccepted = false;
-                item.UpdatedDate = DateTime.Now;
-                item.UpdatedBy = _applicationUserId.ToString();
-                _communityProfileConnectionRepo.Update(item);
+                var rejected = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToReject.Contains((Guid)x.FromProfile.UserId)).ToList();
+                foreach (var item in rejected)
+                {
+                    item.InviteAccepted = false;
+                    item.UpdatedDate = DateTime.Now;
+                    item.UpdatedBy = _applicationUserId.ToString();
+                    _communityProfileConnectionRepo.Update(item);
+                }
             }
             return GetCommunityProfile(input.UserId);
         }
