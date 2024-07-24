@@ -1,3 +1,4 @@
+import { ProgrammeThemeDto } from '../ProgrammeTheme';
 import { ProgressTrackingSubCategoryDto } from '../ProgressTracking/progress-tracking-sub-category.dto';
 import { LanguageDto } from '../StaticData/language.dto';
 
@@ -12,4 +13,5 @@ export interface ActivityDto {
   notes: string; // MARKDOWN
   subCategories: ProgressTrackingSubCategoryDto[];
   availableLanguages: LanguageDto[];
+  themes: ProgrammeThemeDto[];
 }
