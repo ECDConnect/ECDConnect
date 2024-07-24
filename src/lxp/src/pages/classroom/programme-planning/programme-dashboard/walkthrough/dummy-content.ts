@@ -30,6 +30,7 @@ export const dummyActivity: ActivityDto = {
   type: 'Small group',
   subType: '',
   image: '',
+  themes: [],
   materials: 'Wooden blocks; One plastic animal per child',
   description:
     '<p>1. Give each child some wooden blocks and an animal </p><p>2. Ask them to balance all the blocks on top of each other to make a tower </p><p>3. They can make any type of tower they like </p><p>4. Talk about the shape of the tower and the shape of the block </p><p>5. Use words like ‘biggest, smallest, longest, shortest, widest’ etc. </p><p>6. Once they have balanced their blocks, ask them to balance an animal at the top of the tower </p><p>7. Ask them what their animals can see from the top of their tower</p>',
