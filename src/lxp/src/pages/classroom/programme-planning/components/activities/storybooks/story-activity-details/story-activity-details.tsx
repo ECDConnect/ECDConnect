@@ -156,7 +156,6 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
       +a.part >= +b.part ? 1 : -1
     )
   );
-  const [language, setLanguage] = useState({ locale: 'en-za' });
   const { isOnline } = useOnlineStatus();
   const authUser = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
@@ -165,10 +164,11 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   );
 
   const availableLanguages: LanguageCode[] = storyBook?.availableLanguages
+    ?.length
     ? storyBook.availableLanguages?.map((item) => {
         return item?.locale as LanguageCode;
       })
-    : [language.locale as LanguageCode];
+    : [defaultLanguage?.locale as LanguageCode];
 
   const onBookLocationClicked = (bookLocation: string) => {
     const _strippedHtml = stripPTag(bookLocation);
@@ -210,7 +210,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
           <LanguageSelector
             labelClassName="text-textDark mr-2"
             currentLocale={'en-za'}
-            availableLanguages={availableLanguages || [defaultLanguage]}
+            availableLanguages={availableLanguages}
             selectLanguage={getDataByLanguage}
           />
         </div>

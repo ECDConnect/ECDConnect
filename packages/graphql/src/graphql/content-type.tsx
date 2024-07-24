@@ -153,6 +153,15 @@ export const contentTypeImport = gql`
   }
 `;
 
+export const bulkDeleteContentTypes = gql`
+  mutation BulkDeleteContentTypes($contentIds: [Int!]) {
+    bulkDeleteContentTypes(contentIds: $contentIds) {
+      success
+      failed
+    }
+  }
+`;
+
 // export const contentTypeById = gql`
 //   query contentTypeById($id: UUID) {
 //     contentTypeById(id: $id) {

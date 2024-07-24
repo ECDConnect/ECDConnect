@@ -54,7 +54,6 @@ export interface ContentViewProps {
   choosedSectionTitle?: string;
   setSearchValue?: (item: string) => void;
   contentView?: ContentManagementView;
-  postNatalType?: ContentTypeDto;
   selectedTab?: number;
   languages: LanguageDto[];
   setOpenTopic?: (item: boolean) => void;
@@ -79,11 +78,7 @@ export default function ContentEdit({
   choosedSectionTitle,
   setSearchValue,
   contentView,
-  postNatalType,
-  selectedTab,
   languages,
-  setOpenTopic,
-  id,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
@@ -122,7 +117,7 @@ export default function ContentEdit({
   `;
 
   const createMutation = gql` 
-  mutation ${creationMutationName} ($input: ${contentType?.name}Input!, $localeId: String!) {
+  mutation ${creationMutationName} ($input: ${contentType.name}Input!, $localeId: String!) {
     ${creationMutationName} (input: $input, localeId: $localeId) 
     }
   `;
@@ -189,8 +184,7 @@ export default function ContentEdit({
           message={` If you leave now, you will lose all of your changes.`}
           onCancel={onCancel}
           onSubmit={() => {
-            // setSearchValue('');
-            contentType.name === ContentTypes.TOPIC && setOpenTopic(false);
+            setSearchValue('');
             cancelEdit();
             onCancel();
           }}
@@ -203,8 +197,6 @@ export default function ContentEdit({
   const [loading, setLoading] = useState<boolean>(false);
   const initialValues = getValues();
   const [smallLargeGroupsSkills, setSmallLargeGroupsSkills] = useState([]);
-  const [dangerSignsDisableInputs, setDangerSignsDisableInputs] =
-    useState(false);
   const selectedLanguage = languages?.find(
     (item) => item?.id === selectedLanguageId
   );
@@ -246,33 +238,6 @@ export default function ContentEdit({
         } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   useEffect(() => {
-    if (selectedTab === 2 || selectedTab === 3) {
-      const t: DynamicFormTemplate = {
-        title: `${postNatalType?.name} Form`,
-        fields: [],
-      };
-      const copy: ContentTypeFieldDto[] = Object.assign(
-        [],
-        postNatalType?.fields
-      );
-
-      const orderedList = copy?.sort(function (a, b) {
-        return a.fieldOrder - b.fieldOrder;
-      });
-
-      orderedList.forEach((item: ContentTypeFieldDto) => {
-        if (item.displayPage) {
-          const renderedField = getRenderField(item);
-
-          if (renderedField) t.fields.push(renderedField);
-        }
-      });
-
-      setTemplate(t);
-
-      return;
-    }
-
     if (contentType && contentValues && selectedLanguageId) {
       const t: DynamicFormTemplate = {
         title: `${contentType?.name} Form`,
@@ -293,17 +258,6 @@ export default function ContentEdit({
           const renderedField = getRenderField(item);
 
           if (renderedField) t.fields.push(renderedField);
-          // Check for second language on compare mode
-          if (
-            (renderedField?.propName === 'infoGraphic' ||
-              renderedField?.propName === 'image') &&
-            id
-          ) {
-            t.fields.push({
-              ...renderedField,
-              propName: `${renderedField?.propName}${id}`,
-            });
-          }
         }
       });
 
@@ -403,7 +357,7 @@ export default function ContentEdit({
       }
     });
 
-    if (!content?.id && !content?.childId) {
+    if (!content?.id) {
       await createContent({
         variables: {
           input: { ...model },
@@ -415,7 +369,7 @@ export default function ContentEdit({
     } else {
       await updateContent({
         variables: {
-          id: content?.id?.toString() || content?.childId?.toString(),
+          id: content.id.toString(),
           input: { ...model },
           localeId: selectedLanguageId.toString(),
         },
@@ -467,22 +421,13 @@ export default function ContentEdit({
     });
 
     savedContent();
-    setSearchValue('');
+
     setLoading(false);
 
     if (cancelEdit) {
       cancelEdit();
     }
   };
-
-  useEffect(() => {
-    if (
-      template?.title === TemplateTypenames.DangerSigns &&
-      template?.fields?.[0]?.selectedLanguageId === defaultLanguageId
-    ) {
-      setDangerSignsDisableInputs(true);
-    }
-  }, [defaultLanguageId, template?.fields, template?.title]);
 
   if (
     contentType &&
@@ -498,50 +443,8 @@ export default function ContentEdit({
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 {cancelEdit &&
-                  content?.__typename !== 'DangerSign' &&
-                  camelCaseToSentanceCase(
-                    content?.name ??
-                      content?.visit ??
-                      content?.type ??
-                      content?.title ??
-                      content?.section
-                  )}
-                {cancelEdit &&
-                  content?.__typename === 'DangerSign' &&
-                  camelCaseToSentanceCase(content?.section || '')}
+                  camelCaseToSentanceCase(content?.name ?? content?.type)}
               </h3>
-              {(selectedTab === 2 || selectedTab === 3) && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Typography
-                      className="truncate"
-                      type="h4"
-                      weight="bold"
-                      color="textMid"
-                      text={'Section:'}
-                    />
-                    <Typography
-                      type="h4"
-                      color="textMid"
-                      text={content?.section}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Typography
-                      className="truncate"
-                      type="h4"
-                      weight="bold"
-                      color="textMid"
-                      text={'Type:'}
-                    />
-                    <Typography
-                      type="h4"
-                      color="textMid"
-                      text={content?.childType}
-                    />
-                  </div>
-                </>
-              )}
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
               {!!cancelCompare && (
@@ -580,90 +483,62 @@ export default function ContentEdit({
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : null}
-
-            {Number(postNatalType?.id) === ContentTypeEnum?.NatalVideo && (
+            ) : (
               <Alert
                 className="mt-2 mb-2 rounded-md"
-                title="Make sure you do the following:"
+                message={`Note that any changes made below are not made to SmartLink.`}
                 list={[
-                  `Upload the correct language version (${selectedLanguage?.description})`,
-                  `Restrict the video size to standard smartphone resolution (300dpi) and make sure videos are 360px wide, 640px high at 15 frames per second. If the video is too large users will not be able to load the page.`,
+                  'If you make any major edits below, discuss them with the SmartLink team.',
                 ]}
                 type="warning"
               />
             )}
 
-            {Number(postNatalType?.id) === ContentTypeEnum?.NatalGraphic && (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                title={`Make sure you upload the correct language version (${selectedLanguage?.description}).`}
-                type="warning"
-              />
-            )}
-
-            {dangerSignsDisableInputs && (
-              <Alert
-                className={'mt-5 mb-3'}
-                title="You cannot edit the English version."
-                message={
-                  'To add or edit a translation, please choose a different language tab above.'
-                }
-                type={'warning'}
-              />
-            )}
-
-            {!dangerSignsDisableInputs && (
-              <DynamicForm
-                template={template}
-                handleform={handleform}
-                setValue={setValue}
-                defaultLanguageId={defaultLanguageId}
-                acceptedFileFormats={acceptedFileFormats}
-                allowedFileSize={allowedFileSize}
-                formType={formType}
-                choosedSectionTitle={choosedSectionTitle}
-                getValues={getValues}
-                requiredMessage={requiredMessage}
-                useWatch={useWatch}
-                contentView={contentView}
-                setSmallLargeGroupsSkills={setSmallLargeGroupsSkills}
-                id={id}
-              />
-            )}
+            <DynamicForm
+              template={template}
+              handleform={handleform}
+              setValue={setValue}
+              defaultLanguageId={defaultLanguageId}
+              acceptedFileFormats={acceptedFileFormats}
+              allowedFileSize={allowedFileSize}
+              formType={formType}
+              choosedSectionTitle={choosedSectionTitle}
+              getValues={getValues}
+              requiredMessage={requiredMessage}
+              useWatch={useWatch}
+              contentView={contentView}
+              setSmallLargeGroupsSkills={setSmallLargeGroupsSkills}
+            />
           </div>
 
-          {!dangerSignsDisableInputs && (
-            <div className="flex flex-row">
-              <button
-                type="submit"
-                className={disbleButtonStyles}
-                disabled={
-                  choosedSectionTitle ===
-                  ActivitiesTitles.SmallLargeGroupActivities
-                    ? disableButton?.length > 0 &&
-                      smallLargeGroupsSkills?.length < 2
-                    : disableButton?.length > 0
-                }
-              >
-                <SaveIcon width="22px" className="mr-2" />
-                Save & publish
-              </button>
-              {content?.id &&
-                content?.__typename !== ContentTypes.PROGRESS_TRACKING_SKILL &&
-                content?.__typename !== ContentTypes.MORE_INFORMATION &&
-                content?.__typename !== ContentTypes.CONSENT &&
-                content?.__typename !== ContentTypes.DANGERSIGN && (
-                  <button
-                    onClick={deleteAndRefresh}
-                    className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
-                  >
-                    <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
-                    Delete {content?.name}
-                  </button>
-                )}
-            </div>
-          )}
+          <div className="flex flex-row">
+            <button
+              type="submit"
+              className={disbleButtonStyles}
+              disabled={
+                choosedSectionTitle ===
+                ActivitiesTitles.SmallLargeGroupActivities
+                  ? disableButton?.length > 0 &&
+                    smallLargeGroupsSkills?.length < 2
+                  : disableButton?.length > 0
+              }
+            >
+              <SaveIcon width="22px" className="mr-2" />
+              Save & publish
+            </button>
+            {content?.id &&
+              content?.__typename !== ContentTypes.PROGRESS_TRACKING_SKILL &&
+              content?.__typename !== ContentTypes.MORE_INFORMATION &&
+              content?.__typename !== ContentTypes.CONSENT && (
+                <button
+                  onClick={deleteAndRefresh}
+                  className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+                >
+                  <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
+                  Delete {content?.name}
+                </button>
+              )}
+          </div>
         </form>
       </div>
     );

@@ -46,7 +46,7 @@ import { notificationsSelectors } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { PractitionerNotRegistered } from '../../practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
-import { TabsItemForPrincipal } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps
@@ -335,13 +335,12 @@ export const RemovePractitionerFromProgramme: React.FC<
               />
               {reasonDetailsVisible && (
                 <FormInput<RemovePractionerFromProgrammeModel>
-                  label={'Please add details'}
+                  label={'Please specify the reason for leaving'}
                   className={'mt-3'}
-                  textInputType="textarea"
+                  textInputType="input"
                   register={removePractionerFormRegister}
                   nameProp={'reasonDetail'}
-                  hint={'Optional'}
-                  placeholder={'E.g. Found the daily routine too difficult'}
+                  placeholder={'Retiring from work'}
                   error={errors.reasonDetail}
                 />
               )}
@@ -360,7 +359,14 @@ export const RemovePractitionerFromProgramme: React.FC<
                   onChange={(date) => {
                     setRemovePractionerFormValues(
                       'removalDate',
-                      date ? date.toString() : ''
+                      date
+                        ? new Date(
+                            date.getFullYear(),
+                            date.getMonth(),
+                            date.getDate(),
+                            12
+                          ).toString()
+                        : ''
                     );
                     triggerRemovePractionerForm();
                   }}
@@ -535,8 +541,8 @@ export const RemovePractitionerFromProgramme: React.FC<
                 removeNotifications();
                 handleFormSubmit(getRemovePractionerFormValues());
                 setRemovePractionerPromptVisible(false);
-                history.push(ROUTES.CLASSROOM.ROOT, {
-                  activeTabIndex: TabsItemForPrincipal.CLASSES,
+                history.push(ROUTES.BUSINESS, {
+                  activeTabIndex: BusinessTabItems.STAFF,
                 });
                 showMessage({
                   message: `${practitioner?.user?.firstName} removed`,

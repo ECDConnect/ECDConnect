@@ -49,7 +49,6 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const [loadingLink, setLoadingLink] = useState(false);
 
   const [loadingManualUpload, setLoadingManualUpload] = useState(false);
-  const { getWorkflowStatusIdByEnum } = useStaticData();
   const { isOnline } = useOnlineStatus();
 
   const user = useSelector(getUser);
@@ -132,12 +131,11 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     );
 
     const whatsapp = () => {
-      window.open(
-        `whatsapp://send?text=${practitioner?.user?.firstName} practitioner has invited you to register you child at their care centre. Tap this link to register ${childDetails.firstName} for ${classroom?.name}: ${childRegistrationDetails.caregiverRegistrationUrl}`
-      );
+      const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register you child at their care centre. Tap this link to register ${childDetails.firstName} for ${classroom?.name}: ${childRegistrationDetails.caregiverRegistrationUrl}`;
+      const whatsAppLink = `whatsapp://send?text=${textMessage}`;
+      window.open(whatsAppLink);
     };
 
-    await copyToClip(childRegistrationDetails.caregiverRegistrationUrl);
     setLoadingLink(false);
     dialog({
       color: 'bg-white',

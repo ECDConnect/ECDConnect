@@ -38,7 +38,6 @@ export function ContentManagement() {
   const previousTab = usePrevious(selectedTab);
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
-  const [natalType, setNatalType] = useState(0);
   const tenant = useTenant();
 
   const { data: languages } = useQuery(GetAllLanguage, {
@@ -81,77 +80,33 @@ export function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
-  const postNatalType = useMemo(
-    () => dataTypes?.contentTypes?.find((x) => x.id === natalType),
-    [dataTypes?.contentTypes, natalType]
-  );
-
   const getNavigationItems = () => {
-    if (tenant.isCHWConnect) {
-      return [
-        {
-          name: 'Consent',
-          // href: '/',
-          id: 0,
-        },
-        {
-          name: 'Info  pages',
-          href: 'MoreInformation',
-          id: 1,
-        },
-        {
-          name: 'Postnatal',
-          href: 'NatalInfo',
-          id: 2,
-        },
-        {
-          name: 'Antenatal',
-          href: 'NatalInfo',
-          id: 3,
-        },
-        {
-          name: 'Danger signs',
-          href: ContentTypes.DANGERSIGN,
-          id: 4,
-        },
-        // {
-        //   name: 'Natal',
-        //   href: 'Natal',
-        //   id: 5,
-        // },
-        {
-          name: ContentManagementTabs.GGCOMMUNITY.name,
-          id: ContentManagementTabs.GGCOMMUNITY.id,
-        },
-      ];
-    } else {
-      return [
-        {
-          name: 'Consent',
-          // href: '/content-management',
-          id: 0,
-        },
-        {
-          name: 'Info pages',
-          href: 'MoreInformation',
-          id: 1,
-        },
-        {
-          name: ContentManagementTabs.PROCESS.name,
-          // href: '/',
-          id: ContentManagementTabs.PROCESS.id,
-        },
-        {
-          name: ContentManagementTabs.PROGRAMMES.name,
-          // href: '/',
-          id: ContentManagementTabs.PROGRAMMES.id,
-        },
-        {
-          name: ContentManagementTabs.COMMUNITY.name,
-          id: ContentManagementTabs.COMMUNITY.id,
-        },
-      ];
-    }
+    return [
+      {
+        name: 'Consent',
+        // href: '/content-management',
+        id: 0,
+      },
+      {
+        name: 'Info pages',
+        href: 'MoreInformation',
+        id: 1,
+      },
+      {
+        name: ContentManagementTabs.PROCESS.name,
+        // href: '/',
+        id: ContentManagementTabs.PROCESS.id,
+      },
+      {
+        name: ContentManagementTabs.PROGRAMMES.name,
+        // href: '/',
+        id: ContentManagementTabs.PROGRAMMES.id,
+      },
+      {
+        name: ContentManagementTabs.COMMUNITY.name,
+        id: ContentManagementTabs.COMMUNITY.id,
+      },
+    ];
   };
 
   const navigation = getNavigationItems();
@@ -356,6 +311,7 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'Theme'
             );
+            setChoosedSectionTitleSectionTitle('');
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -460,18 +416,12 @@ export function ContentManagement() {
                       (type: ContentTypeDto) =>
                         type.name === item.name || type.name === item.href
                     );
+
                     if (selectedTypeObject) {
                       setSelectedTab(item.id);
                       setSpecialType('');
                       showGroupContentTypes(selectedTypeObject);
                     } else {
-                      if (natalType) {
-                        const postNatalType = dataTypes?.contentTypes?.find(
-                          (x) => x.id === natalType
-                        );
-
-                        setSelectedType(postNatalType);
-                      }
                       setSelectedTab(item.id);
                       setSpecialType(item.name);
                     }
@@ -501,8 +451,6 @@ export function ContentManagement() {
               savedContent={() => refreshParent()}
               choosedSectionTitle={choosedSectionTitle}
               setSearchValue={setSearchValue}
-              natalType={natalType}
-              postNatalType={postNatalType}
               selectedTab={selectedTab}
             />
           ) : (
@@ -553,7 +501,6 @@ export function ContentManagement() {
                         onSearch={search}
                         searchValue={searchValue}
                         choosedSectionTitle={choosedSectionTitle}
-                        setNatalType={setNatalType}
                         setSelectedType={setSelectedType}
                         dataTypes={dataTypes}
                       ></ContentList>

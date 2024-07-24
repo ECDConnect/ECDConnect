@@ -106,7 +106,7 @@ export default function Coaches() {
 
   const userIdsToSendInvitation = selectedUsers
     ?.filter((item) => !item?.isRegistered && item?.user?.phoneNumber)
-    ?.map((item) => item?.id);
+    ?.map((item) => item?.userId);
 
   const [sendInvitations, { loading: invitationsLoading }] = useMutation(
     sentInviteToMultipleUsers,
@@ -566,6 +566,7 @@ export default function Coaches() {
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
         <div className="rounded-xl bg-white p-12">
           <Table
+            watchMode={true}
             ref={tableRef}
             rows={rows}
             columns={columns}

@@ -4,7 +4,7 @@ type EmptyPageProps = {
   className?: string;
   image: string;
   title: string;
-  subTitle: string;
+  subTitle?: string;
 };
 
 export const EmptyPage = ({

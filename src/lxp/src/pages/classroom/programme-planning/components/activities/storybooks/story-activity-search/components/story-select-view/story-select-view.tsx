@@ -1,4 +1,4 @@
-import { Typography } from '@ecdlink/ui';
+import { Button } from '@ecdlink/ui';
 import { useState } from 'react';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../../../constants/ActivitySearch';
 import StoryCard from '../../../story-card/story-card';
@@ -30,14 +30,14 @@ export const StorySelectView: React.FC<StorySelectViewProps> = ({
         return <StoryCard key={`story-card-${idx}`} {...story} />;
       })}
       {pageSize < storieProps.length && (
-        <Typography
+        <Button
           onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
-          className={'mt-2'}
-          align={'center'}
-          text={'<u>See more stories</u>'}
-          hasMarkup
-          type={'unspecified'}
-          color={'primary'}
+          icon="EyeIcon"
+          className={'mt-4 w-full'}
+          text={'See more stories'}
+          color={'quatenary'}
+          textColor="quatenary"
+          type="outlined"
         />
       )}
     </>

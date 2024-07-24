@@ -1,9 +1,13 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
-import { add, isPast, isToday } from 'date-fns';
+import { add, isAfter, isPast, isToday } from 'date-fns';
 
 export const usePractitionerAbsentees = (practitioner: PractitionerDto) => {
-  const practitionerAbsentees = practitioner?.absentees;
+  const practitionerAbsentees = practitioner?.absentees?.map((absent) => ({
+    ...absent,
+    absentDate: (absent.absentDate as string).replace('Z', ''),
+    absentDateEnd: (absent.absentDateEnd as string).replace('Z', ''),
+  }));
 
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
@@ -30,5 +34,27 @@ export const usePractitionerAbsentees = (practitioner: PractitionerDto) => {
       add(new Date(currentAbsentee?.absentDateEnd as string), { days: 1 })
     );
 
-  return { practitionerIsOnLeave, currentAbsentee };
+  const isScheduledLeave = currentAbsentee?.absentDate
+    ? isAfter(new Date(currentAbsentee.absentDate), new Date())
+    : undefined;
+
+  const isMultiDayLeave =
+    currentAbsentee?.absentDate && currentAbsentee?.absentDateEnd
+      ? isAfter(
+          new Date(currentAbsentee.absentDateEnd),
+          new Date(currentAbsentee.absentDate)
+        )
+      : undefined;
+
+  const currentClassesReassigned = validAbsenteesDates?.filter(
+    (absentee) => absentee?.absentDate === currentAbsentee?.absentDate
+  );
+
+  return {
+    practitionerIsOnLeave,
+    isScheduledLeave,
+    isMultiDayLeave,
+    currentAbsentee,
+    currentClassesReassigned,
+  };
 };

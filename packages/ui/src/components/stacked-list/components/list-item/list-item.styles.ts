@@ -9,13 +9,14 @@ export const container = (
   backgroundColor: Colours,
   withPaddingY: boolean,
   withPaddingX: boolean,
+  withBorderRadius: boolean,
   showDivider: boolean,
   dividerType: DividerType,
   dividerColor: Colours
 ) =>
-  `flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer rounded-10 ${
-    withPaddingY ? 'py-4' : ''
-  } ${withPaddingX ? 'px-4' : ''}
+  `flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer ${
+    withBorderRadius ? 'rounded-10' : ''
+  } ${withPaddingY ? 'py-4' : ''} ${withPaddingX ? 'px-4' : ''}
    ${showDivider ? `border-t border-${dividerColor} border-${dividerType}` : ''}
   `;
 

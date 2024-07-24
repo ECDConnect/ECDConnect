@@ -10,20 +10,18 @@ import {
   Card,
   Typography,
   Button,
-  renderIcon,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal, LogoutModal } from '../../../modals';
+import { LogoutModal } from '../../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
 import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
-import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerJourney } from './practitioner-journey';
@@ -34,6 +32,9 @@ import { PractitionerProfileRouteState } from './practitioner-profile.types';
 import { NavigationNames } from '@/pages/navigation';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { useTenant } from '@/hooks/useTenant';
+import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
+import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
+import { LeaveCard } from '@/components/leave-card';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -63,6 +64,11 @@ export const PractitionerProfile: React.FC = () => {
 
   const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
 
+  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
+    practitioner!
+  );
+
+  console.log({ practitionerIsOnLeave, currentAbsentee });
   const selectedTab =
     wasJourneyFormOpen && !isJourneyFormOpen
       ? 1
@@ -115,7 +121,8 @@ export const PractitionerProfile: React.FC = () => {
       history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
         practitionerId,
         principalPractitioner: practitioner,
-      });
+        isFromPrincipalPractitionerProfile: true,
+      } as ReassignClassPageState);
     },
     [history, practitioner]
   );
@@ -295,41 +302,25 @@ export const PractitionerProfile: React.FC = () => {
           type={'error'}
         />
       )}
+      {practitioner?.isPrincipal && <LeaveCard practitioner={practitioner} />}
       {practitioner?.isPrincipal && (
-        <Card className={'bg-uiBg mt-4 ml-4 mb-8 w-11/12 rounded-xl pt-2'}>
-          <div className={'mt-6 ml-4'}>
-            <Typography
-              type={'h1'}
-              color="textDark"
-              text={`Log my time off`}
-              className={'mt-6 ml-4'}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`Need time off for more than 1 day? Record your leave here and your coach will get a notification.`}
-              className={'mt-4 ml-4'}
-            />
-            <div className="flex justify-center">
-              <Button
-                type="filled"
-                color="primary"
-                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                onClick={() => handleReassignClass(practitioner?.userId!)}
-              >
-                {renderIcon(
-                  'PencilAltIcon',
-                  'w-5 h-5 color-white text-white mr-1'
-                )}
-                <Typography
-                  type="body"
-                  className="mr-4"
-                  color="white"
-                  text={'Take time off'}
-                ></Typography>
-              </Button>
-            </div>
-          </div>
+        <Card className={'bg-uiBg mx-4 mt-4 rounded-xl p-4'}>
+          <Typography type={'h1'} color="textDark" text={`Log my time off`} />
+          <Typography
+            type={'body'}
+            color="textMid"
+            text={`Need time off? Record your leave here.`}
+            className={'mt-4'}
+          />
+          <Button
+            type="filled"
+            color="quatenary"
+            className={'mt-6 w-full rounded-2xl'}
+            icon="PencilAltIcon"
+            text="Take time off"
+            textColor="white"
+            onClick={() => handleReassignClass(practitioner?.userId!)}
+          />
         </Card>
       )}
     </BannerWrapper>

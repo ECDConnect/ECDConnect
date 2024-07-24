@@ -19,6 +19,7 @@ import {
   getRelations,
   getWorkflowStatuses,
   getRoles,
+  getCommunitySkills,
 } from './static-data.actions';
 import { StaticDataState } from './static-data.types';
 
@@ -41,6 +42,7 @@ const initialState: StaticDataState = {
   noteTypes: undefined,
   permissions: undefined,
   roles: undefined,
+  communitySkills: undefined,
 };
 
 const staticDataSlice = createSlice({
@@ -68,6 +70,7 @@ const staticDataSlice = createSlice({
       state.noteTypes = initialState.noteTypes;
       state.permissions = initialState.permissions;
       state.roles = initialState.roles;
+      state.communitySkills = initialState.communitySkills;
     },
   },
   extraReducers: (builder) => {
@@ -133,6 +136,9 @@ const staticDataSlice = createSlice({
     });
     builder.addCase(getRoles.fulfilled, (state, action) => {
       state.roles = action.payload;
+    });
+    builder.addCase(getCommunitySkills.fulfilled, (state, action) => {
+      state.communitySkills = action.payload;
     });
   },
 });

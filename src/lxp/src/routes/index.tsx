@@ -75,7 +75,6 @@ import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense'
 import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/attendance-tutorial/walkthrough-tutorial/walkthrough-tutorial';
 import { PreviousStatements } from '@/pages/business/money/previous-statements/previous-statements';
 import { MonthStatements } from '@/pages/business/money/monthly-statements/month-statements';
-import { Community } from '@/pages/community/community';
 import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journey';
 import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
 import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
@@ -89,30 +88,30 @@ import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-busi
 import { PractitionerPreviousStatements } from '@/pages/coach/coach-practitioner-business/components/statements/previous-statements';
 import { PractitionerMonthStatements } from '@/pages/coach/coach-practitioner-business/components/statements/month-statements';
 import { PointsSummary } from '@/pages/points/points-summary/points-summary';
-import { CommunityWelcome } from '@/pages/community/welcome';
-import { Club } from '@/pages/community/clubs-tab/club/individual-club-view';
-import { ClubMembers } from '@/pages/community/clubs-tab/club/club-members';
-import { ClubMembersEdit } from '@/pages/community/clubs-tab/club/club-members-edit';
-import { ClubEdit } from '@/pages/community/clubs-tab/club/club-edit';
+import { CommunityWelcome } from '@/pages/community-old/welcome';
+import { Club } from '@/pages/community-old/clubs-tab/club/individual-club-view';
+import { ClubMembers } from '@/pages/community-old/clubs-tab/club/club-members';
+import { ClubMembersEdit } from '@/pages/community-old/clubs-tab/club/club-members-edit';
+import { ClubEdit } from '@/pages/community-old/clubs-tab/club/club-edit';
 import { PointsYearView } from '@/pages/points/points-year-view/points-year-view';
-import { ClubLeaderEdit } from '@/pages/community/clubs-tab/club/club-leader-edit';
-import { ClubAdd } from '@/pages/community/clubs-tab/club/club-add';
+import { ClubLeaderEdit } from '@/pages/community-old/clubs-tab/club/club-leader-edit';
+import { ClubAdd } from '@/pages/community-old/clubs-tab/club/club-add';
 import { CoachContactDetails } from '@/pages/practitioner/coach-contact-details/coach-contact-details';
-import { ClubMembersAdd } from '@/pages/community/clubs-tab/club/club-members-add';
-import { UserProfile } from '@/pages/community/clubs-tab/club/user-profile';
+import { ClubMembersAdd } from '@/pages/community-old/clubs-tab/club/club-members-add';
+import { UserProfile } from '@/pages/community-old/clubs-tab/club/user-profile';
 import { CoachTraineeOnboarding } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/trainee-onboarding';
-import { ClubPoints } from '@/pages/community/clubs-tab/club/club-points';
-import { MeetRegularly } from '@/pages/community/clubs-tab/club/club-points/activities/meet-regularly';
-import { MeetingDetails } from '@/pages/community/clubs-tab/club/club-points/activities/meet-regularly/meeting-details';
-import { BeCreative } from '@/pages/community/clubs-tab/club/club-points/activities/be-creative';
-import { HostFamilyDays } from '@/pages/community/clubs-tab/club/club-points/activities/host-family-days';
-import { LeaveNoOneBehind } from '@/pages/community/clubs-tab/club/club-points/activities/leave-no-one-behind';
-import { CaptureChildAttendance } from '@/pages/community/clubs-tab/club/club-points/activities/capture-child-attendance';
-import { CompleteChildProgressReports } from '@/pages/community/clubs-tab/club/club-points/activities/complete-child-progress';
-import { LeagueLeaderBoard } from '@/pages/community/leagues-tab/league-leaderboard';
-import { ActivityHelp } from '@/pages/community/clubs-tab/0-components/help-screen';
-import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add';
-import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
+import { ClubPoints } from '@/pages/community-old/clubs-tab/club/club-points';
+import { MeetRegularly } from '@/pages/community-old/clubs-tab/club/club-points/activities/meet-regularly';
+import { MeetingDetails } from '@/pages/community-old/clubs-tab/club/club-points/activities/meet-regularly/meeting-details';
+import { BeCreative } from '@/pages/community-old/clubs-tab/club/club-points/activities/be-creative';
+import { HostFamilyDays } from '@/pages/community-old/clubs-tab/club/club-points/activities/host-family-days';
+import { LeaveNoOneBehind } from '@/pages/community-old/clubs-tab/club/club-points/activities/leave-no-one-behind';
+import { CaptureChildAttendance } from '@/pages/community-old/clubs-tab/club/club-points/activities/capture-child-attendance';
+import { CompleteChildProgressReports } from '@/pages/community-old/clubs-tab/club/club-points/activities/complete-child-progress';
+import { LeagueLeaderBoard } from '@/pages/community-old/leagues-tab/league-leaderboard';
+import { ActivityHelp } from '@/pages/community-old/clubs-tab/0-components/help-screen';
+import { ClubMemberAdd } from '@/pages/community-old/clubs-tab/club/club-member-add';
+import { ClubMemberView } from '@/pages/community-old/clubs-tab/club/club-member-view';
 import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
 import { AcceptClubLeaderRole } from '@/pages/practitioner/practitioner-community/accept-club-leader-role';
 import { PractitionerCommunity } from '@/pages/practitioner/practitioner-community';
@@ -123,7 +122,7 @@ import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/clu
 import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-community/welcome';
 import { PractitionerPdfSummaryReport } from '@/pages/classroom/progress-observation/practitioner-pdf-summary-report/practitioner-pdf-summary-report';
 import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points/coach-practitioner-points';
-import { MissingMeetingRegisters } from '@/pages/community/clubs-tab/club/club-points/activities/meet-regularly/missing-meeting-registers';
+import { MissingMeetingRegisters } from '@/pages/community-old/clubs-tab/club/club-points/activities/meet-regularly/missing-meeting-registers';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePrevious } from '@ecdlink/core';
 import { Location } from 'history';
@@ -136,6 +135,16 @@ import { EditRegisters } from '@/pages/classroom/attendance/edit-registers/edit-
 import { UpdateIncome } from '@/pages/business/add-amount/add-income/update-income';
 import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
 import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-expense';
+import { Community } from '@/pages/community/community';
+import { ChildProgressReportingPeriods } from '@/pages/classroom/progress-observation/child-progress-reporting-period/child-progress-reporting-window';
+import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
+import { ConnectionProfile } from '@/pages/community/connection-profile/connection-profile';
+import MonthlyAttendanceReport from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report';
+import { ChildProgressSkillTracking } from '@/pages/classroom/progress/child-progress-skill-tracking';
+import { ChildProgressReportsList } from '@/pages/classroom/progress/child-progress-reports-list';
+import { ProgressObservations } from '@/pages/classroom/progress/child-progress-observations';
+import { ECDHeroes } from '@/pages/community/community-tabs/components/community-dashboard/components/ecd-heroes/ecd-heroes';
+import { CommunityConnections } from '@/pages/community/community-tabs/components/community-dashboard/components/received-requests/community-connections';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -264,10 +273,26 @@ const AuthRoutes: React.FC = () => {
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact />
+      <Route path={ROUTES.COMMUNITY.WELCOME} component={Community} exact />
       <Route path={ROUTES.COMMUNITY.ROOT} component={Community} exact />
       <Route
         path={ROUTES.COMMUNITY.WELCOME}
         component={CommunityWelcome}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CONNECTION_PROFILE}
+        component={ConnectionProfile}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.ECD_HEROES_LIST}
+        component={ECDHeroes}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
+        component={CommunityConnections}
         exact
       />
       <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />
@@ -380,6 +405,11 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.PRACTITIONER.COMMUNITY.WELCOME}
         component={PractitionerCommunityWelcome}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.PROFILE}
+        component={CommunityProfile}
         exact
       />
       <Route
@@ -546,6 +576,11 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         exact
+        path={ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT}
+        component={MonthlyAttendanceReport}
+      />
+      <Route
+        exact
         path={ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT}
         component={ProgrammeDashboard}
       />
@@ -572,6 +607,10 @@ const AuthRoutes: React.FC = () => {
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
       <Route
+        path={ROUTES.CHILD_PROGRESS_REPORTING_PERIODS}
+        component={ChildProgressReportingPeriods}
+      />
+      <Route
         path={ROUTES.PROGRESS_TRACKING_CATEGORY}
         component={ProgressObservationCategory}
       />
@@ -582,6 +621,18 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.CHILD_PROGRESS_OBSERVATION}
         component={ChildProgressObservationPage}
+      />
+      <Route
+        path={ROUTES.PROGRESS_SKILL_TRACKING}
+        component={ChildProgressSkillTracking}
+      />
+      <Route
+        path={ROUTES.PROGRESS_REPORT_LIST}
+        component={ChildProgressReportsList}
+      />
+      <Route
+        path={ROUTES.PROGRESS_OBSERVATIONS}
+        component={ProgressObservations}
       />
       <Route
         path={ROUTES.CHILD_PROGRESS_OBSERVATION_NOTE}

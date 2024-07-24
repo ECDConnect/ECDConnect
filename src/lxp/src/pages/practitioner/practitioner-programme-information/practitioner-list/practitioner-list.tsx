@@ -169,7 +169,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                 text="Add practitioner"
                 textColor="white"
                 icon="PlusIcon"
-                className="mt-8"
+                className="my-8"
                 onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
               />
             </div>

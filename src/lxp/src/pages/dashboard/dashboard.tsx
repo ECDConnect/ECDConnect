@@ -53,10 +53,10 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { CommunityRouteState } from '../community/community.types';
+import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../community-old/clubs-tab/club/individual-club-view';
 import { notificationTagConfig } from '@/constants/notifications';
 import { childrenThunkActions } from '@/store/children';
 import {
@@ -328,6 +328,7 @@ export const Dashboard: React.FC = () => {
   const handle30DaysExpired = () => {
     dialog({
       position: DialogPosition.Middle,
+      blocking: true,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
@@ -359,8 +360,8 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (practitioner?.startDate) {
       const diffDays = differenceInDays(
-        new Date(practitioner?.startDate),
-        new Date()
+        new Date(),
+        new Date(practitioner?.startDate)
       );
 
       if (diffDays > 30 && !classroom?.preschoolCode && isOpenAccess) {
@@ -468,6 +469,7 @@ export const Dashboard: React.FC = () => {
       appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+      appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
       appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
       appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
       appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
@@ -563,7 +565,12 @@ export const Dashboard: React.FC = () => {
       blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+        return (
+          <JoinOrAddPreschoolModal
+            onSubmit={onSubmit}
+            isTrialPeriod={!!isTrialPeriod}
+          />
+        );
       },
     });
   };
@@ -943,8 +950,9 @@ export const Dashboard: React.FC = () => {
 
   const goToCommunity = () => {
     if (
-      (((classroom && classroom.id) ||
-        (classroomGroups && classroomGroups.length > 0)) &&
+      (classroom && classroom.id) ||
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&
@@ -952,12 +960,7 @@ export const Dashboard: React.FC = () => {
         !missingProgramme) ||
       isTrialPeriod
     ) {
-      history.push(
-        isFirstTimeCommunitySection
-          ? ROUTES.COMMUNITY.WELCOME
-          : ROUTES.COMMUNITY.ROOT,
-        { isFromDashboard: true } as CommunityRouteState
-      );
+      history?.push(ROUTES.COMMUNITY.WELCOME);
     } else if (missingProgramme && isWhiteLabel) {
       showCompleteProfileBlockingDialog();
     }

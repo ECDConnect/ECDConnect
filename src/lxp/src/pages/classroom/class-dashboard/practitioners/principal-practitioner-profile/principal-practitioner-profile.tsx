@@ -57,6 +57,7 @@ import { BusinessTabItems } from '@/pages/business/business.types';
 import { staticDataSelectors } from '@/store/static-data';
 import { ReassignClassPageState } from '../reassign-class/reassign-class.types';
 import { EditPractitionerPermissions } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/components/edit-practitioner-permissions';
+import { PractitionerNotAccepted } from './practitioner-not-accepted/practitioner-not-accepted';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -367,6 +368,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const [editPermissionsVisible, setEditPermissionsVisible] =
     useState<boolean>(false);
 
+  // If not accepted yet
+  if (!!practitioner?.dateLinked && !practitioner.dateAccepted) {
+    return <PractitionerNotAccepted practitioner={practitioner} />;
+  }
+
   return (
     <>
       {practitioner?.isRegistered === null ||
@@ -476,7 +482,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 <div className="mt-2 mr-4 mb-2 flex items-center">
                   <div className="mx-4 mt-2 mb-4 flex w-full items-center">
                     <XCircleIcon
-                      className="text-errorMain mt-2 h-7 w-7"
+                      className="text-errorMain mt-2 h-12 w-12"
                       aria-hidden="true"
                     />
                     <Typography

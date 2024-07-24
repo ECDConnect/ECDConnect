@@ -5,15 +5,12 @@ import { useSelector } from 'react-redux';
 import { format, subDays } from 'date-fns';
 import { classroomsSelectors } from '@/store/classroom';
 import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { EditRegistersAttendanceList } from './attendance-list/attendance-list';
 import { EditRegistersAttendanceListProps } from './attendance-list/attendance-list.types';
 import { attendanceSelectors } from '@/store/attendance';
 import ROUTES from '@/routes/routes';
-import {
-  ClassDashboardRouteState,
-  TabsItems,
-} from '../../class-dashboard/class-dashboard.types';
+import { MonthlyAttendanceReportRouteState } from '../components/attendance-report/components/attendance-monthly-report/attendance-report.types';
 
 export const EditRegisters = () => {
   const [selectedRegister, setSelectedRegister] =
@@ -43,7 +40,7 @@ export const EditRegisters = () => {
 
   const daysWithAttendance = monthlyReport?.totalAttendance?.filter((day) =>
     isCurrentMonth
-      ? day.value > 0
+      ? day.value !== null
       : day.key >= thirtyDaysAgoDay && day.value > 0
   );
   const reportPerDay = daysWithAttendance?.map((day) => {
@@ -76,9 +73,9 @@ export const EditRegisters = () => {
       size="small"
       className="p-4 pt-6"
       onBack={() =>
-        history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: TabsItems.ATTENDANCE,
-        } as ClassDashboardRouteState)
+        history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
+          selectedMonth: location.state.selectedMonth,
+        } as MonthlyAttendanceReportRouteState)
       }
     >
       <Typography
@@ -87,7 +84,7 @@ export const EditRegisters = () => {
         className="mb-8"
         color="textDark"
       />
-      {reportPerDay?.map((dayReport) => {
+      {reportPerDay?.map((dayReport, index) => {
         const date = new Date(
           startDate.getFullYear(),
           startDate.getMonth(),
@@ -106,7 +103,7 @@ export const EditRegisters = () => {
             (c) => c.id === classroomGroupId
           );
           return (
-            <>
+            <Fragment key={dayReport.day + index}>
               <div className="flex items-center justify-between">
                 <div>
                   <Typography
@@ -127,7 +124,7 @@ export const EditRegisters = () => {
                 />
               </div>
               <Divider dividerType="dashed" className="py-4" />
-            </>
+            </Fragment>
           );
         });
       })}

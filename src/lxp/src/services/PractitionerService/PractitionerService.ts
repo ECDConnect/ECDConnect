@@ -390,6 +390,8 @@ class PractitionerService {
             isCompletedBusinessWalkThrough
             clubId
             clubName
+            clickedCommunityTab
+            communitySectionViewDate
             absentees {
               absentDate
               absentDateEnd
@@ -1597,6 +1599,57 @@ class PractitionerService {
     }
 
     return response.data.data.sendPrincipalInviteToApplication;
+  }
+
+  async updatePractitionerCommunityTabStatus(
+    practitionerUserId: string
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation UpdatePractitionerCommunityTabStatus($practitionerUserId: UUID!) {
+    updatePractitionerCommunityTabStatus(practitionerUserId: $practitionerUserId) {
+        id
+        clickedCommunityTab
+    }
+}
+      `,
+      variables: {
+        practitionerUserId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Updating practitioner community status failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerCommunityTabStatus;
+  }
+
+  async updateClickedECDHeros(userId: string): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation UpdateClickedECDHeros($userId: UUID!) {
+    updateClickedECDHeros(userId: $userId) {
+        
+    }
+}
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Updating practitioner clicked ECD heroes status failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateClickedECDHeros;
   }
 }
 

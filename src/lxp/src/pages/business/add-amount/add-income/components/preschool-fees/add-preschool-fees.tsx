@@ -101,6 +101,7 @@ export const AddPreschoolFees: React.FC<AddPreschoolFeesProps> = ({
                 key={classroomGroup.id}
                 description={classroomGroup.name}
                 checkboxColor="quatenary"
+                checkedFocusColour="quatenary"
               />
             ))}
             <Button

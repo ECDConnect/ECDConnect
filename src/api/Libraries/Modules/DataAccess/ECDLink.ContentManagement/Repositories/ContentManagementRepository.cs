@@ -802,7 +802,7 @@ namespace ECDLink.ContentManagement.Repositories
             // Use global tenant as a fallback, mostly for static and dynamic links            
             content ??= _context.Contents
                           .Where(x => x.Id == contentId
-                            && x.TenantId == TenantExecutionContext.Tenant.Id)
+                            && x.TenantId == null)
                           .OrderBy(x => x.Id)
                           .FirstOrDefault();
 
