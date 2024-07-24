@@ -1,11 +1,21 @@
 import { LeaveCard } from '@/components/leave-card';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
-import { PractitionerDto } from '@ecdlink/core';
+import { PractitionerDto, useDialog } from '@ecdlink/core';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
-import { Button, Card, Typography, renderIcon } from '@ecdlink/ui';
+import {
+  Button,
+  Card,
+  DialogPosition,
+  Typography,
+  classNames,
+  renderIcon,
+} from '@ecdlink/ui';
 import { ReassignClassPageState } from '../../../reassign-class/reassign-class.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 interface AbsenceCardProps {
+  className?: string;
   practitioner: PractitionerDto;
   reassignClassRouteState?: Partial<ReassignClassPageState>;
   handleReassignClass: (
@@ -16,19 +26,38 @@ interface AbsenceCardProps {
 }
 
 export const AbsenceCard: React.FC<AbsenceCardProps> = ({
+  className,
   practitioner,
   handleReassignClass,
   practitionerUserId,
   reassignClassRouteState,
 }) => {
+  const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
+
   const { practitionerIsOnLeave, isScheduledLeave } = usePractitionerAbsentees(
     practitioner!
   );
 
+  const onClick = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onClose) => {
+          return <OnlineOnlyModal onSubmit={onClose} />;
+        },
+      });
+    }
+
+    handleReassignClass(practitionerUserId);
+  };
+
   if (practitioner && (practitionerIsOnLeave || isScheduledLeave)) {
     return (
       <LeaveCard
-        className="mx-4"
+        className={className}
         practitioner={practitioner}
         reassignClassRouteState={reassignClassRouteState}
       />
@@ -36,36 +65,45 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
   }
 
   return (
-    <Card className={'bg-uiBg mt-4 w-11/12 rounded-xl'}>
-      <div className={'mt-6 ml-4'}>
-        <Typography
-          type={'h1'}
-          color="textDark"
-          text={`Mark ${practitioner?.user?.firstName} absent`}
-          className={'mt-6 ml-4'}
-        />
-        <Typography
-          type={'body'}
-          color="textMid"
-          text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
-          className={'mt-4 ml-4'}
-        />
-        <div className="flex justify-center">
-          <Button
-            type="filled"
-            color="quatenary"
-            className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-            onClick={() => handleReassignClass(practitionerUserId)}
-          >
-            {renderIcon('PencilAltIcon', 'w-5 h-5 color-white text-white mr-1')}
-            <Typography
-              type="body"
-              className="mr-4"
-              color="white"
-              text={'Record absence/leave'}
-            ></Typography>
-          </Button>
-        </div>
+    <Card className={classNames(className, 'bg-uiBg rounded-xl p-4')}>
+      <Typography
+        type={'h1'}
+        color="textDark"
+        text={
+          practitioner?.isPrincipal
+            ? 'Log my time off'
+            : `Mark ${practitioner?.user?.firstName} absent`
+        }
+      />
+      <Typography
+        type={'body'}
+        color="textMid"
+        text={
+          practitioner?.isPrincipal
+            ? 'Need time off? Record your leave here.'
+            : `Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`
+        }
+        className={'mt-4 '}
+      />
+      <div className="flex justify-center">
+        <Button
+          type="filled"
+          color="quatenary"
+          className={'mt-6 w-full rounded-2xl'}
+          onClick={onClick}
+        >
+          {renderIcon('PencilAltIcon', 'w-5 h-5 color-white text-white mr-1')}
+          <Typography
+            type="body"
+            className="mr-4"
+            color="white"
+            text={
+              practitioner?.isPrincipal
+                ? 'Take time off'
+                : 'Record absence/leave'
+            }
+          ></Typography>
+        </Button>
       </div>
     </Card>
   );
