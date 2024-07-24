@@ -525,6 +525,7 @@ export const ChildProfile: React.FC = () => {
                     colour: 'quatenary',
                     text: 'Choose reporting dates',
                     onClick: () => {
+                      onSubmit();
                       history.push(ROUTES.CHILD_PROGRESS_REPORTING_PERIODS);
                     },
                     textColour: 'white',

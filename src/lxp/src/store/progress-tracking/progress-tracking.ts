@@ -44,6 +44,8 @@ const progressTrackingSlice = createSlice({
             name: x.name,
             startAgeInMonths: Number(x.startAgeInMonths),
             endAgeInMonths: Number(x.endAgeInMonths),
+            color: x.color,
+            description: x.description,
           })),
         ],
         dateRefreshed: new Date().toDateString(),

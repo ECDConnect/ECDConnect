@@ -44,18 +44,21 @@ export const ProgressObservations: React.FC = () => {
             'd MMM'
           )} and ${format(new Date(reportingPeriod!.endDate), 'd MMM yyyy')}`}
         />
-        <StatusChip
-          backgroundColour="secondary"
-          borderColour="secondary"
-          text={`${currentAgeGroup?.name} progress tracker`}
-          textColour={'white'}
-          className={'mt-4 mb-4'}
-          style={{ width: 'fit-content' }}
-        />
-
-        {/* TODO add language selector */}
-
-        {/* TODO add info box based on current age */}
+        <div
+          className={`mt-4 mb-4 flex flex-shrink-0 flex-row items-center justify-between rounded-full px-3 py-1 bg-${
+            currentAgeGroup?.color || 'secondary'
+          }`}
+          style={{ height: 'fit-content', width: 'fit-content' }}
+        >
+          <Typography
+            type="buttonSmall"
+            weight="bold"
+            color="white"
+            text={`${currentAgeGroup?.description} progress tracker`}
+            lineHeight={4}
+            className="text-center"
+          />
+        </div>
 
         <Button
           onClick={() =>
