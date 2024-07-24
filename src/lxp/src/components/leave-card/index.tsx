@@ -1,12 +1,20 @@
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { userSelectors } from '@/store/user';
-import { PractitionerDto, getNextBusinessDay } from '@ecdlink/core';
-import { Button, Card, classNames, Typography } from '@ecdlink/ui';
+import { PractitionerDto, getNextBusinessDay, useDialog } from '@ecdlink/core';
+import {
+  Button,
+  Card,
+  classNames,
+  DialogPosition,
+  Typography,
+} from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { LeaveCardMenu } from './components/menu';
 import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 interface LeaveCardProps {
   practitioner: PractitionerDto;
@@ -21,6 +29,10 @@ export const LeaveCard = ({
   const [showMenu, setShowMenu] = useState(false);
 
   const user = useSelector(userSelectors.getUser);
+
+  const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
 
   const {
     practitionerIsOnLeave,
@@ -75,14 +87,26 @@ export const LeaveCard = ({
     practitionerIsOnLeave,
   ]);
 
+  const onClick = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onClose) => {
+          return <OnlineOnlyModal onSubmit={onClose} />;
+        },
+      });
+    }
+
+    setShowMenu(true);
+  };
+
   if (!currentAbsentee) {
     return <></>;
   }
 
   return (
-    <Card
-      className={classNames(className, 'bg-uiBg mt-4 w-full rounded-xl p-4')}
-    >
+    <Card className={classNames(className, 'bg-uiBg rounded-xl p-4')}>
       <Typography type="h2" text={title} color="textDark" />
       <Typography
         type={'markdown'}
@@ -139,7 +163,7 @@ export const LeaveCard = ({
         icon="PencilAltIcon"
         text="Edit"
         textColor="white"
-        onClick={() => setShowMenu(true)}
+        onClick={onClick}
       />
       {showMenu && (
         <LeaveCardMenu

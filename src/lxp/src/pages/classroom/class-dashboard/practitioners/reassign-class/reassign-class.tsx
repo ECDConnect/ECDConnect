@@ -172,7 +172,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       );
 
       const duplicatedAbsentee = reassignedClassroomGroups?.find(
-        (item) => item?.absenteeId === classroomGroup?.absenteeId
+        (item) =>
+          !!item?.absenteeId && item?.absenteeId === classroomGroup?.absenteeId
       );
 
       if (duplicatedClass) {
@@ -206,7 +207,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     practitioner,
     reason,
     practitioner2,
-    reassignedClass,
   } = useWatch({
     control: control,
   });
@@ -228,6 +228,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     (practitionerClassroomGroups?.length > 0 &&
       reassignedClassroomGroups?.length !==
         practitionerClassroomGroups?.length);
+
   const reasonPayload = reason === 'Other' ? otherReason : reason;
 
   const onBack = () => {
@@ -708,7 +709,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           className={`w-full ${
             allAbsenteeClasses &&
             allAbsenteeClasses?.length > 0 &&
-            'pointer-events-none'
+            'pointer-events-none opacity-50'
           }`}
         />
         {isOneDayLeave !== undefined && (
