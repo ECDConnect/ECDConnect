@@ -48,6 +48,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { ChildProgressLanding } from '../progress-observation/child-progress-landing/child-progress-landing';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAppContext } from '@/walkthrougContext';
+import { PractitionerListRouteState } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list.types';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -95,7 +96,9 @@ export const ClassDashboard: React.FC = () => {
     []
   );
 
-  const { practitionerIsOnLeave } = usePractitionerAbsentees(practitioner!);
+  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
+    practitioner!
+  );
 
   const { hasPermissionToTakeAttendance } = useUserPermissions();
 
@@ -386,6 +389,80 @@ export const ClassDashboard: React.FC = () => {
     updatePractitionerUsePhotoReportPermission,
     user?.profileImageUrl,
   ]);
+
+  const handleIsOnLeaveModal = useCallback(() => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        history.push(ROUTES.DASHBOARD);
+
+        return (
+          <ActionModal
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            iconSize={24}
+            importantText={`You are on leave and cannot use this section`}
+            detailText={`You are on leave from ${format(
+              new Date((currentAbsentee?.absentDate as Date) || new Date()),
+              'd MMM yyyy'
+            )} to ${format(
+              currentAbsentee?.absentDateEnd
+                ? new Date(currentAbsentee?.absentDateEnd)
+                : new Date(),
+
+              'd MMM yyyy'
+            )}. If you believe this is a mistake please reach out to ${
+              currentAbsentee?.loggedByPerson
+            }.`}
+            actionButtons={[
+              {
+                text: `Contact ${currentAbsentee?.loggedByPerson}`,
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+                    returnRoute: ROUTES.DASHBOARD,
+                    isToShowPrincipal: true,
+                  } as PractitionerListRouteState);
+                  onClose();
+                },
+                leadingIcon: 'ChatAltIcon',
+              },
+              {
+                text: `Close`,
+                textColour: 'quatenary',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => {
+                  history.push(ROUTES.DASHBOARD);
+                  onClose();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [
+    currentAbsentee?.absentDate,
+    currentAbsentee?.absentDateEnd,
+    currentAbsentee?.loggedByPerson,
+    dialog,
+    history,
+  ]);
+
+  useEffect(() => {
+    if (practitionerIsOnLeave && !practitioner?.isPrincipal) {
+      handleIsOnLeaveModal();
+    }
+
+    // INFO: render once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitionerIsOnLeave, practitioner]);
 
   useEffect(() => {
     if (promptPhotoReportPermission) {

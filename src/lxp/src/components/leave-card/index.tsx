@@ -1,16 +1,23 @@
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { userSelectors } from '@/store/user';
 import { PractitionerDto, getNextBusinessDay } from '@ecdlink/core';
-import { Button, Card, Typography } from '@ecdlink/ui';
+import { Button, Card, classNames, Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { LeaveCardMenu } from './components/menu';
+import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
 
 interface LeaveCardProps {
   practitioner: PractitionerDto;
+  reassignClassRouteState?: Partial<ReassignClassPageState>;
+  className?: string;
 }
-export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
+export const LeaveCard = ({
+  practitioner,
+  reassignClassRouteState,
+  className,
+}: LeaveCardProps) => {
   const [showMenu, setShowMenu] = useState(false);
 
   const user = useSelector(userSelectors.getUser);
@@ -28,24 +35,32 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
   const title = useMemo(() => {
     if (practitionerIsOnLeave && isMultiDayLeave) {
       return `${
-        isLoggedInUser ? 'You are' : `${practitioner?.firstName} is`
+        isLoggedInUser
+          ? 'You are'
+          : `${practitioner?.firstName || practitioner?.user?.firstName} is`
       } on leave`;
     }
     if (practitionerIsOnLeave && !isMultiDayLeave) {
       return `${
-        isLoggedInUser ? 'You are' : `${practitioner?.firstName} is`
+        isLoggedInUser
+          ? 'You are'
+          : `${practitioner?.firstName || practitioner?.user?.firstName} is`
       } absent today`;
     }
 
     if (isScheduledLeave && isMultiDayLeave) {
       return `${
-        isLoggedInUser ? 'You' : `${practitioner?.firstName}`
+        isLoggedInUser
+          ? 'You'
+          : `${practitioner?.firstName || practitioner?.user?.firstName}`
       } will be on leave`;
     }
 
     if (isScheduledLeave && !isMultiDayLeave) {
       return `${
-        isLoggedInUser ? 'You' : `${practitioner?.firstName}`
+        isLoggedInUser
+          ? 'You'
+          : `${practitioner?.firstName || practitioner?.user?.firstName}`
       } will be on leave on ${format(
         new Date(currentAbsentee?.absentDate!),
         'EEEE, dd MMM'
@@ -56,7 +71,7 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
     isLoggedInUser,
     isMultiDayLeave,
     isScheduledLeave,
-    practitioner?.firstName,
+    practitioner,
     practitionerIsOnLeave,
   ]);
 
@@ -65,7 +80,9 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
   }
 
   return (
-    <Card className={'bg-uiBg mx-4 mt-4 rounded-xl p-4'}>
+    <Card
+      className={classNames(className, 'bg-uiBg mt-4 w-full rounded-xl p-4')}
+    >
       <Typography type="h2" text={title} color="textDark" />
       <Typography
         type={'markdown'}
@@ -96,7 +113,9 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
           type={'markdown'}
           className="text-textMid"
           text={`<b>${
-            isLoggedInUser ? 'You' : practitioner?.firstName
+            isLoggedInUser
+              ? 'You'
+              : practitioner?.firstName || practitioner?.user?.firstName
           } will be back on:</b> ${format(
             getNextBusinessDay(new Date(currentAbsentee?.absentDateEnd!)),
             'd MMM yyyy'
@@ -125,6 +144,7 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
       {showMenu && (
         <LeaveCardMenu
           practitioner={practitioner}
+          reassignClassRouteState={reassignClassRouteState}
           onClose={() => setShowMenu(false)}
         />
       )}
