@@ -3955,6 +3955,7 @@ export type CommunitySkillSortInput = {
 export type CommunityUserModel = {
   __typename?: 'CommunityUserModel';
   email?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
   fullName?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   phoneNumber?: Maybe<Scalars['String']>;

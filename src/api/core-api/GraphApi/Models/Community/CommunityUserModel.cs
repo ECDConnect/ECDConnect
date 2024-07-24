@@ -8,6 +8,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
     {
         public Guid Id { get; set; }
         public string FullName { get; set; }
+        public string FirstName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string WhatsAppNumber { get; set; }
@@ -20,6 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
             Id = user.Id;
             FullName = user.FullName;
             UserName = user.UserName;
+            FirstName = user.FirstName;
             Email = user.Email;
             PhoneNumber = user.PhoneNumber;
             WhatsAppNumber = user.WhatsAppNumber;
