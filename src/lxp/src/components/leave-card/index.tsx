@@ -1,28 +1,20 @@
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
-import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
-import ROUTES from '@/routes/routes';
 import { userSelectors } from '@/store/user';
-import { PractitionerDto, getNextBusinessDay, useDialog } from '@ecdlink/core';
-import {
-  ActionModal,
-  Button,
-  Card,
-  DialogPosition,
-  Typography,
-} from '@ecdlink/ui';
+import { PractitionerDto, getNextBusinessDay } from '@ecdlink/core';
+import { Button, Card, Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { LeaveCardMenu } from './components/menu';
 
 interface LeaveCardProps {
   practitioner: PractitionerDto;
 }
 export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
+  const [showMenu, setShowMenu] = useState(false);
+
   const user = useSelector(userSelectors.getUser);
 
-  const history = useHistory();
-  const dialog = useDialog();
   const {
     practitionerIsOnLeave,
     isMultiDayLeave,
@@ -68,54 +60,6 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
     practitionerIsOnLeave,
   ]);
 
-  const onEdit = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: () => (
-        <ActionModal
-          icon="QuestionMarkCircleIcon"
-          iconColor="infoMain"
-          iconSize={24}
-          title="What would you like to edit?"
-          actionButtons={[
-            {
-              type: 'filled',
-              colour: 'quatenary',
-              text: 'Edit this leave/absence',
-              textColour: 'white',
-              leadingIcon: 'PencilAltIcon',
-              onClick: () => {
-                history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
-                  practitionerId: practitioner?.id,
-                  principalPractitioner: practitioner?.isPrincipal
-                    ? practitioner
-                    : undefined,
-                  allAbsenteeClasses: currentClassesReassigned,
-                } as ReassignClassPageState);
-              },
-            },
-            {
-              type: 'outlined',
-              colour: 'quatenary',
-              text: 'Add a new leave/absence',
-              textColour: 'quatenary',
-              leadingIcon: 'PlusIcon',
-              onClick: () => {},
-            },
-            {
-              type: 'outlined',
-              colour: 'quatenary',
-              text: 'Delete this leave/absence',
-              textColour: 'quatenary',
-              leadingIcon: 'TrashIcon',
-              onClick: () => {},
-            },
-          ]}
-        />
-      ),
-    });
-  };
   if (!currentAbsentee) {
     return <></>;
   }
@@ -128,24 +72,47 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
         text={`<b>Reason:</b> ${currentAbsentee?.reason}`}
         className="text-textMid text-"
       />
-      <Typography
-        type={'markdown'}
-        className="text-textMid"
-        text={`<b>${
-          isLoggedInUser ? 'You' : practitioner?.firstName
-        } will be back on:</b> ${format(
-          getNextBusinessDay(new Date(currentAbsentee?.absentDateEnd!)),
-          'd MMM yyyy'
-        )}`}
-      />
-      {currentClassesReassigned?.map((item, index) => (
+      {isMultiDayLeave ? (
+        <>
+          <Typography
+            type={'markdown'}
+            className="text-textMid"
+            text={`<b>Start date:</b> ${format(
+              new Date(currentAbsentee?.absentDate!),
+              'd MMM yyyy'
+            )}`}
+          />
+          <Typography
+            type={'markdown'}
+            className="text-textMid"
+            text={`<b>End date:</b> ${format(
+              getNextBusinessDay(new Date(currentAbsentee?.absentDateEnd!)),
+              'd MMM yyyy'
+            )}`}
+          />
+        </>
+      ) : (
         <Typography
-          key={`${item.className}-${index}`}
           type={'markdown'}
           className="text-textMid"
-          text={`<b>${item.className} class reassigned to:</b> ${item.reassignedToPerson}`}
+          text={`<b>${
+            isLoggedInUser ? 'You' : practitioner?.firstName
+          } will be back on:</b> ${format(
+            getNextBusinessDay(new Date(currentAbsentee?.absentDateEnd!)),
+            'd MMM yyyy'
+          )}`}
         />
-      ))}
+      )}
+      {currentClassesReassigned?.map((item, index) =>
+        item.className ? (
+          <Typography
+            key={`${item.className}-${index}`}
+            type={'markdown'}
+            className="text-textMid"
+            text={`<b>${item.className} class reassigned to:</b> ${item.reassignedToPerson}`}
+          />
+        ) : null
+      )}
       <Button
         type="filled"
         color="quatenary"
@@ -153,8 +120,14 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
         icon="PencilAltIcon"
         text="Edit"
         textColor="white"
-        onClick={onEdit}
+        onClick={() => setShowMenu(true)}
       />
+      {showMenu && (
+        <LeaveCardMenu
+          practitioner={practitioner}
+          onClose={() => setShowMenu(false)}
+        />
+      )}
     </Card>
   );
 };
