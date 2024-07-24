@@ -15,11 +15,13 @@ import { useHistory } from 'react-router';
 
 interface LeaveCardMenuProps {
   practitioner: PractitionerDto;
+  reassignClassRouteState?: Partial<ReassignClassPageState>;
   onClose: () => void;
 }
 
 export const LeaveCardMenu = ({
   practitioner,
+  reassignClassRouteState,
   onClose,
 }: LeaveCardMenuProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -86,6 +88,7 @@ export const LeaveCardMenu = ({
                   ? practitioner
                   : undefined,
                 allAbsenteeClasses: currentClassesReassigned,
+                ...reassignClassRouteState,
               } as ReassignClassPageState);
               onClose();
             },
@@ -104,6 +107,7 @@ export const LeaveCardMenu = ({
                 principalPractitioner: practitioner?.isPrincipal
                   ? practitioner
                   : undefined,
+                ...reassignClassRouteState,
               } as ReassignClassPageState);
               onClose();
             },

@@ -303,7 +303,7 @@ export const PractitionerProfile: React.FC = () => {
       )}
       {practitioner?.isPrincipal &&
         (practitionerIsOnLeave || isScheduledLeave) && (
-          <LeaveCard practitioner={practitioner} />
+          <LeaveCard className="mx-4" practitioner={practitioner} />
         )}
       {practitioner?.isPrincipal &&
         !practitionerIsOnLeave &&
