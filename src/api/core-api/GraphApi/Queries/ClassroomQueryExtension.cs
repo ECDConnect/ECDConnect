@@ -54,6 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 ChildProgressReportPeriods = classroom.ChildProgressReportPeriods
                     .Select(x => new ChildProgressReportPeriodModel
                 {
+                    Id = x.Id,
                     StartDate = x.StartDate,
                     EndDate = x.EndDate
                 }).ToList(),

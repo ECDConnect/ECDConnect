@@ -10,6 +10,10 @@ import { createSelector } from '@reduxjs/toolkit';
 import { ProgressTrackingState } from '.';
 import { ChildProgressSubCategoryAssessment } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import { RootState } from '../types';
+import { ProgressSkill } from '@/models/progress/progress-skill';
+import { ChildProgressReport } from '@/models/progress/child-progress-report';
+import { getCurrentProgressReportPeriod as getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
+import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 
 // CATEGORIES
 export const getProgressTrackingCategories = (
@@ -213,7 +217,7 @@ export const getPractitionerProgressReportSummary = (
 ): PractitionerProgressReportSummaryDto | undefined =>
   state.progressTracking.practitionerProgressReportSummary || undefined;
 
-export const getProgressReportForAgeGroup = (ageGroupId: number) =>
+export const getSkillsForAgeGroup = (ageGroupId: number) =>
   createSelector(
     (state: RootState) =>
       state.progressTracking.progressTrackingCategories.data,
@@ -240,12 +244,38 @@ export const getProgressReportForAgeGroup = (ageGroupId: number) =>
         );
 
         return {
-          ...skill,
+          id: skill.id,
+          name: skill.name,
+          description: skill.description,
           subCategory: {
-            ...subCategory,
-            category: category,
+            id: subCategory?.id,
+            name: subCategory?.name,
+            category: {
+              id: category?.id,
+              name: category?.name,
+            },
           },
-        };
+        } as ProgressSkill;
       });
+    }
+  );
+
+export const getCurrentObservationsForChild = (childId: string) =>
+  createSelector(
+    getCurrentProgressReportPeriod(),
+    (state: RootState) => state.progressTracking.childProgressReports,
+    (
+      currentReportPeriod: ProgressReportPeriod | undefined,
+      childProgressReports: ChildProgressReport[]
+    ) => {
+      if (!currentReportPeriod) {
+        return undefined;
+      }
+
+      return childProgressReports.find(
+        (x) =>
+          x.childId === childId &&
+          x.reportingPeriodId === currentReportPeriod.id
+      );
     }
   );

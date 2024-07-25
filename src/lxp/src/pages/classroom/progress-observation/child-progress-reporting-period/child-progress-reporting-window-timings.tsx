@@ -1,12 +1,11 @@
+import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
 import { Alert, DatePicker, Divider, Typography } from '@ecdlink/ui';
 import { differenceInDays, format } from 'date-fns';
 import { useMemo } from 'react';
 
 export type ChildProgressReportingPeriodsTimingsProps = {
-  reportingPeriods: { startDate: string; endDate: string }[];
-  setReportingPeriods: (
-    input: { startDate: string; endDate: string }[]
-  ) => void;
+  reportingPeriods: ChildProgressReportPeriodDto[];
+  setReportingPeriods: (input: ChildProgressReportPeriodDto[]) => void;
 };
 
 export const ChildProgressReportingPeriodsTimings: React.FC<

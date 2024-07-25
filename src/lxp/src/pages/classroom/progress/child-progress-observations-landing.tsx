@@ -1,32 +1,24 @@
-import { BannerWrapper, Button, StatusChip, Typography } from '@ecdlink/ui';
-import { useSelector } from 'react-redux';
+import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { ChildProgressObservationPageState } from '../progress-observation/child-progress-observation/child-progress-observation.types';
-import { childrenSelectors } from '@/store/children';
-import { classroomsSelectors } from '@/store/classroom';
 import { format } from 'date-fns';
 import ROUTES from '@/routes/routes';
+import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 
-export const ProgressObservations: React.FC = () => {
+export const ChildProgressObservationsLanding: React.FC = () => {
   const history = useHistory();
 
   const { state: routeState } =
     useLocation<ChildProgressObservationPageState>();
 
-  const child = useSelector(childrenSelectors.getChildById(routeState.childId));
-  const currentAgeGroup = useSelector(
-    childrenSelectors.getProgressAgeGroupForChild(routeState.childId)
-  );
-
-  const { reportNumber, reportingPeriod } = useSelector(
-    classroomsSelectors.getCurrentProgressReportWindow()
-  );
+  const { child, currentReportingPeriod, currentAgeGroup } =
+    useObserveProgressForChild(routeState.childId);
 
   return (
     <BannerWrapper
       size={'small'}
       onBack={() => history.goBack()}
-      title={`Report ${reportNumber}`} // TODO, is this the number for the child, or for the reporting window???
+      title={`Report ${currentReportingPeriod?.reportNumber}`}
       subTitle={`${child?.user?.firstName} ${child?.user?.surname}`}
       renderOverflow
     >
@@ -34,15 +26,18 @@ export const ProgressObservations: React.FC = () => {
         <Typography
           type="h2"
           color="primary"
-          text={`Report ${reportNumber}`} // TODO, is this the number for the child, or for the reporting window???
+          text={`Report ${currentReportingPeriod?.reportNumber}`}
         />
         <Typography
           type="h4"
           color="textMid"
           text={`${format(
-            new Date(reportingPeriod!.startDate), // TODO - null checks - but shouln't happen if we get this far
+            new Date(currentReportingPeriod?.startDate || ''),
             'd MMM'
-          )} and ${format(new Date(reportingPeriod!.endDate), 'd MMM yyyy')}`}
+          )} and ${format(
+            new Date(currentReportingPeriod?.endDate || ''),
+            'd MMM yyyy'
+          )}`}
         />
         <div
           className={`mt-4 mb-4 flex flex-shrink-0 flex-row items-center justify-between rounded-full px-3 py-1 bg-${
@@ -62,7 +57,7 @@ export const ProgressObservations: React.FC = () => {
 
         <Button
           onClick={() =>
-            history.push(ROUTES.PROGRESS_SKILL_TRACKING, {
+            history.push(ROUTES.PROGRESS_OBSERVATIONS, {
               childId: routeState?.childId,
             })
           }

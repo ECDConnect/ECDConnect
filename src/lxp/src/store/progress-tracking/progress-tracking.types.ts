@@ -1,4 +1,6 @@
+import { ChildProgressReport } from '@/models/progress/child-progress-report';
 import { OfflineCache } from '@/models/sync/offline-cache';
+import { OfflineUpdate } from '@/models/sync/offline-update';
 import {
   PractitionerProgressReportSummaryDto,
   ProgressTrackingAgeGroupDto,
@@ -25,4 +27,7 @@ export type ProgressTrackingState = {
   practitionerProgressReportSummary?:
     | PractitionerProgressReportSummaryDto
     | undefined;
+
+  // Not sure if this should be on a different store
+  childProgressReports: (ChildProgressReport & OfflineUpdate)[];
 };

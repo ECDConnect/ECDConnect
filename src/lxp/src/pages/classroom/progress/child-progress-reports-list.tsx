@@ -53,7 +53,7 @@ export const ChildProgressReportsList: React.FC = () => {
   }, [isOnline]);
 
   const trackProgress = () => {
-    history.push(ROUTES.PROGRESS_OBSERVATIONS, {
+    history.push(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
       childId: routeState?.childId,
     });
   };

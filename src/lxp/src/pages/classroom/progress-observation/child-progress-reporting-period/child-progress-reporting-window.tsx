@@ -2,7 +2,6 @@ import {
   ActionModal,
   BannerWrapper,
   Button,
-  Dialog,
   DialogPosition,
   Typography,
 } from '@ecdlink/ui';
@@ -17,7 +16,8 @@ import { useSelector } from 'react-redux';
 import { useDialog, useSnackbar } from '@ecdlink/core';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import { format } from 'date-fns';
-import { ChildProgressReportPeriod } from '@/models/classroom/classroom.dto';
+import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const ChildProgressReportingPeriods: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -41,7 +41,7 @@ export const ChildProgressReportingPeriods: React.FC = () => {
 
   // If we have dates from last year, map them and just update the year
   const [reportingPeriods, setReportingPeriods] = useState<
-    ChildProgressReportPeriod[]
+    ChildProgressReportPeriodDto[]
   >(
     lastYearsReportingPeriods.map((p) => {
       const startDate = new Date(p.startDate);
@@ -51,6 +51,7 @@ export const ChildProgressReportingPeriods: React.FC = () => {
       endDate.setFullYear(new Date().getFullYear());
 
       return {
+        id: newGuid(),
         startDate: startDate.toString(),
         endDate: endDate.toString(),
       };
@@ -69,7 +70,7 @@ export const ChildProgressReportingPeriods: React.FC = () => {
     if (reportingPeriods.length < numberOfReportingPeriods) {
       const copy = [...reportingPeriods];
       for (let i = reportingPeriods.length; i < numberOfReportingPeriods; i++) {
-        copy.push({ startDate: '', endDate: '' });
+        copy.push({ id: newGuid(), startDate: '', endDate: '' });
       }
       setReportingPeriods(copy);
     }
@@ -87,6 +88,7 @@ export const ChildProgressReportingPeriods: React.FC = () => {
         await classroomsThunkActions.addChildProgressReportPeriods({
           classroomId: classroom!.id,
           childProgressReportPeriods: reportingPeriods.map((x) => ({
+            id: x.id,
             startDate: new Date(x.startDate),
             endDate: new Date(x.endDate),
           })),
