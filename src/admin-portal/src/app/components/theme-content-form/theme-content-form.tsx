@@ -39,6 +39,12 @@ const smallLargeActivitiesQuery = gql`
         imageUrl
         __typename
       }
+      themes {
+        id
+        name
+        imageUrl
+        color
+      }
       notes
       materials
       subType
@@ -267,6 +273,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     item.idx = idx;
     tempArray[idx] = item;
 
+    selectItem(e?.[0]?.id);
     setThemeDaysArr(tempArray);
   };
 

@@ -238,15 +238,6 @@ class PractitionerService {
           GetPractitionerById(id: $id) {
             id
             userId
-            isNewInClub
-            permissions {
-              id
-              isActive
-              permissionId
-              permissionName
-              permissionNormalizedName
-              permissionGrouping
-            }
             user {
               gender {
                 description
@@ -300,8 +291,6 @@ class PractitionerService {
             isOnStipend
             stipendType
             isCompletedBusinessWalkThrough
-            clubId
-            clubName
           }
         }
       `,
@@ -325,15 +314,6 @@ class PractitionerService {
           practitionerByUserId(userId: $userId) {
             id
             userId
-            isNewInClub
-            permissions {
-              id
-              isActive
-              permissionId
-              permissionName
-              permissionNormalizedName
-              permissionGrouping
-            }
             user {
               gender {
                 description
@@ -388,8 +368,6 @@ class PractitionerService {
             isOnStipend
             stipendType
             isCompletedBusinessWalkThrough
-            clubId
-            clubName
             clickedCommunityTab
             communitySectionViewDate
             absentees {

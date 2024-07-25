@@ -410,6 +410,7 @@ export const addChildProgressReportPeriods = createAsyncThunk<
   {
     classroomId: string;
     childProgressReportPeriods: {
+      id: string;
       startDate: Date;
       endDate: Date;
     }[];

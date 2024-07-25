@@ -19,7 +19,7 @@ export const ChildProgressReportingPeriodsNumber: React.FC<
       <Typography
         className="mt-2"
         color="textDark"
-        text="To start creating child progress reports, choose the start and end dates for each reporting period."
+        text="How many times a year would you like to create child progress reports to share with caregivers?"
         type={'body'}
       />
       <ButtonGroup<number>

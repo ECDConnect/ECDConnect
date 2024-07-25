@@ -9,7 +9,7 @@ import {
 } from './children.types';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { differenceInMonths } from 'date-fns';
-import { getCurrentProgressReportWindow } from '../classroom/classroom.selectors';
+import { getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
 
 export const getChildren = (state: RootState): ChildDto[] | undefined =>
   state.children.childData.children;
@@ -67,7 +67,7 @@ export const getChildrenByStatus = (workflowStatusId?: string) =>
 
 export const getProgressAgeGroupForChild = (childId: string) =>
   createSelector(
-    getCurrentProgressReportWindow(),
+    getCurrentProgressReportPeriod(),
     (state: RootState) => state.children.childData.children,
     (state: RootState) => state.classroomData.classroom,
     (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
@@ -89,7 +89,7 @@ export const getProgressAgeGroupForChild = (childId: string) =>
       }
 
       const ageInMonths = differenceInMonths(
-        new Date(currentProgressReportingPeriod.reportingPeriod.endDate),
+        new Date(currentProgressReportingPeriod.endDate),
         new Date(child.user.dateOfBirth)
       );
 

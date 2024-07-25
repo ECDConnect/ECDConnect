@@ -127,7 +127,7 @@ export const getPractitionerByUserId = createAsyncThunk<
     try {
       let practitioner: PractitionerDto | undefined;
 
-      if (userId === null || userId.trim() === '') {
+      if (userId === null || userId?.trim() === '') {
         return rejectWithValue('no user id supplied');
       }
 

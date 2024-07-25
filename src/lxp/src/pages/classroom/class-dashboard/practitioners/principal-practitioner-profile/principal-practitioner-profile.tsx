@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDialog, useTheme } from '@ecdlink/core';
+import { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -12,7 +12,6 @@ import {
   StatusChip,
   Typography,
   Card,
-  ActionModal,
   MenuListDataItem,
   StackedList,
 } from '@ecdlink/ui';
@@ -36,17 +35,7 @@ import { classroomsSelectors } from '@/store/classroom';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
-import {
-  addDays,
-  format,
-  isFriday,
-  isPast,
-  isSameDay,
-  isToday,
-  isWeekend,
-  nextMonday,
-  sub,
-} from 'date-fns';
+import { format, isPast, isToday, sub } from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
@@ -60,7 +49,6 @@ import { EditPractitionerPermissions } from '@/pages/practitioner/practitioner-p
 import { PractitionerNotAccepted } from './practitioner-not-accepted/practitioner-not-accepted';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
-  const dialog = useDialog();
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -95,11 +83,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const currentAbsentee = validAbsentee?.find(
     (item) => item?.absentDate === orderedDates?.[0]
   ) as AbsenteeDto;
-  const allAbsenteeClasses = practitionerAbsentees?.filter(
-    (item) =>
-      item?.absentDate === currentAbsentee?.absentDate &&
-      item?.reason !== 'Practitioner removed from programme'
-  );
 
   const classesWithAbsence =
     validAbsentee &&
@@ -113,22 +96,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   classesWithAbsence?.sort(function (a, b) {
     return a?.absentDate?.localeCompare(b?.absentDate);
   });
-
-  const isLeave = useMemo(
-    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
-    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
-  );
-
-  const isOnLeave =
-    isLeave &&
-    (isPast(new Date(currentAbsentee?.absentDate as string)) ||
-      isToday(new Date(currentAbsentee?.absentDate as string))) &&
-    !isPast(new Date(currentAbsentee?.absentDateEnd as string));
-
-  const absenceIsToday = isSameDay(
-    new Date(),
-    new Date(currentAbsentee?.absentDate || '')
-  );
 
   const lastMonth = sub(new Date(), {
     months: 1,
@@ -191,59 +158,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
       });
     },
     [history, practitionerUser]
-  );
-
-  const handleComebackDay = useCallback((date: Date) => {
-    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
-      return nextMonday(new Date(date));
-    }
-
-    return new Date(addDays(new Date(date), 1));
-  }, []);
-
-  const handleAbsenceModal = useCallback(
-    (item: AbsenteeDto) => {
-      const absenceClasses = validAbsentee?.filter(
-        (absence) => absence?.absenteeId === item?.absenteeId
-      );
-
-      dialog({
-        position: DialogPosition.Middle,
-        render: (onSubmit, onCancel) => (
-          <ActionModal
-            icon={'InformationCircleIcon'}
-            iconColor="alertMain"
-            iconBorderColor="alertBg"
-            importantText={`What would you like to edit?`}
-            actionButtons={[
-              {
-                text: 'Edit this absence',
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: () => {
-                  handleReassignClass(practitionerUserId, absenceClasses);
-                  onSubmit();
-                },
-                leadingIcon: 'PencilAltIcon',
-              },
-              {
-                text: 'Add a new leave/absence',
-                textColour: 'primary',
-                colour: 'primary',
-                type: 'outlined',
-                onClick: () => {
-                  handleReassignClass(practitionerUserId);
-                  onSubmit();
-                },
-                leadingIcon: 'PlusIcon',
-              },
-            ]}
-          />
-        ),
-      });
-    },
-    [dialog, handleReassignClass, practitionerUserId, validAbsentee]
   );
 
   useEffect(() => {
@@ -532,20 +446,13 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               )}
             {!existingRemoval && (
               <AbsenceCard
-                absenceIsToday={absenceIsToday}
-                currentAbsentee={currentAbsentee}
-                handleComebackDay={handleComebackDay}
+                className="mx-4 mt-6 w-full"
                 practitioner={practitioner!}
-                isOnLeave={isOnLeave}
                 handleReassignClass={handleReassignClass}
-                handleAbsenceModal={(item: AbsenteeDto) =>
-                  handleAbsenceModal(item)
-                }
-                isLeave={isLeave}
-                allAbsenteeClasses={allAbsenteeClasses}
                 practitionerUserId={practitionerUserId}
-                classesWithAbsence={classesWithAbsence}
-                practitionerAbsentees={practitionerAbsentees}
+                reassignClassRouteState={{
+                  isFromPrincipalPractitionerProfile: true,
+                }}
               />
             )}
           </div>

@@ -136,6 +136,8 @@ export const MonthlyAttendanceReport = () => {
   }, []);
 
   useEffect(() => {
+    if (!isOnline) return;
+
     const getClassroomDetails = async () => {
       const res = await new PractitionerService(
         userAuth?.auth_token || ''
@@ -266,7 +268,7 @@ export const MonthlyAttendanceReport = () => {
           />
         )}
         <GeneratePdfReportButton
-          isLoading={isLoadingReportDetails}
+          isLoading={isOnline && isLoadingReportDetails}
           title="Download Register"
           outputName={`${selectedMonth.month}-attendance-report.pdf`}
           tableData={finalTableData}

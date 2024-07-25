@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getPractitionerProgressReportSummary,
@@ -17,6 +17,8 @@ const initialState: ProgressTrackingState = {
   progressTrackingSkills: { data: [], dateRefreshed: undefined },
   progressTrackingLevels: undefined,
   practitionerProgressReportSummary: undefined,
+
+  childProgressReports: [],
 };
 
 const progressTrackingSlice = createSlice({
@@ -34,6 +36,54 @@ const progressTrackingSlice = createSlice({
       state.practitionerProgressReportSummary =
         initialState?.practitionerProgressReportSummary;
     },
+    updateSkill: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+        skillId: number;
+        value: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId, skillId, value } = action.payload;
+
+      const reportIndex = state.childProgressReports.findIndex(
+        (x) => x.childId === childId && x.reportingPeriodId
+      );
+
+      if (reportIndex < 0) {
+        // No current report so, create and add our first skill
+        state.childProgressReports = [
+          ...state.childProgressReports,
+          {
+            childId: childId,
+            reportingPeriodId: reportingPeriodId,
+            synced: false,
+            skillObservations: [
+              {
+                skillId: skillId,
+                value: value,
+              },
+            ],
+          },
+        ];
+      } else {
+        // Update existing report
+        state.childProgressReports = [
+          ...state.childProgressReports.slice(0, reportIndex),
+          ...state.childProgressReports.slice(reportIndex + 1),
+          {
+            ...state.childProgressReports[reportIndex],
+            skillObservations: [
+              ...state.childProgressReports[
+                reportIndex
+              ].skillObservations.filter((x) => x.skillId === skillId),
+              { skillId, value },
+            ],
+          },
+        ];
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getProgressTrackingAgeGroups.fulfilled, (state, action) => {
@@ -44,6 +94,8 @@ const progressTrackingSlice = createSlice({
             name: x.name,
             startAgeInMonths: Number(x.startAgeInMonths),
             endAgeInMonths: Number(x.endAgeInMonths),
+            color: x.color,
+            description: x.description,
           })),
         ],
         dateRefreshed: new Date().toDateString(),

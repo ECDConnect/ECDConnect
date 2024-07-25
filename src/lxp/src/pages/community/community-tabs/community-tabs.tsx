@@ -50,15 +50,6 @@ export const CommunityTabs = ({
     setSelectedTabIndex(tabIndex);
   }
 
-  function displayTutorial(type?: string) {
-    // TODO: add walkthrough
-    switch (type) {
-      default:
-        // showTutorial();
-        break;
-    }
-  }
-
   return (
     <BannerWrapper
       showBackground={false}

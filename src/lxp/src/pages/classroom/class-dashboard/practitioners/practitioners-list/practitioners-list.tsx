@@ -27,6 +27,7 @@ import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -159,6 +160,16 @@ export const PractitionersList: React.FC = () => {
   };
 
   const handleReassignClass = () => {
+    if (!isOnline) {
+      return dialog({
+        blocking: false,
+        position: DialogPosition.Middle,
+        render: (onClose) => {
+          return <OnlineOnlyModal onSubmit={onClose} />;
+        },
+      });
+    }
+
     history.push('principal/practitioner-reassign-class');
   };
 

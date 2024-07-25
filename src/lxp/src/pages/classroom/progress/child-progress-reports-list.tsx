@@ -8,7 +8,8 @@ import { childrenSelectors } from '@store/children';
 import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import { ChildCompletedObservsationReportsState } from '../progress-observation/child-completed-observation-reports/child-completed-observation-reports.types';
-import NoProgressEmoticon from '../../../assets/no-progress-emoticon.png';
+import { ReactComponent as NoProgressEmoticon } from '../../../assets/ECD_Connect_emoji4.svg';
+import { ReactComponent as ComingSoonIcon } from '../../../assets/icon/coming_soon.svg';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
@@ -20,7 +21,7 @@ export const ChildProgressReportsList: React.FC = () => {
   const { state: routeState } =
     useLocation<ChildCompletedObservsationReportsState>();
 
-  const childId = routeState?.childId;
+  const { childId } = routeState;
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
 
   const childProgressReports = useSelector(
@@ -33,6 +34,10 @@ export const ChildProgressReportsList: React.FC = () => {
   );
   const childPractioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(classroomGroup?.userId || '')
+  );
+
+  const ageGroup = useSelector(
+    childrenSelectors.getProgressAgeGroupForChild(childId)
   );
 
   useEffect(() => {
@@ -48,10 +53,12 @@ export const ChildProgressReportsList: React.FC = () => {
   }, [isOnline]);
 
   const trackProgress = () => {
-    history.push(ROUTES.PROGRESS_OBSERVATIONS, {
+    history.push(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
       childId: routeState?.childId,
     });
   };
+
+  //warningBg
 
   return (
     <BannerWrapper
@@ -61,71 +68,87 @@ export const ChildProgressReportsList: React.FC = () => {
         history.replace(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
       }
     >
-      <div className={'flex flex-col px-4 pb-4'}>
-        <Typography
-          className={'mt-4'}
-          type="h2"
-          color={'textDark'}
-          text={`${currentChild?.user?.firstName}'s reports`}
-        />
-        {/* NO REPORTS (TODO - NEED TO HANDLE CHILD TOO OLD)*/}
-        {(!childProgressReports || childProgressReports.length === 0) && (
-          <div className={'border-uiLight mt-4 flex flex-col items-stretch'}>
-            <div className="grid grid-cols-1 justify-center gap-4">
-              <div className="flex justify-center">
-                <img
-                  width={'30%'}
-                  src={NoProgressEmoticon}
-                  alt="No progress reports"
+      <div className={'flex h-full flex-col px-4 pb-4'}>
+        {/* No reports and no age group for child */}
+        {!ageGroup &&
+          (!childProgressReports || childProgressReports.length === 0) && (
+            <div className="mt-2 flex flex-col justify-center p-8">
+              <div>
+                <Typography
+                  className="mt-4 text-center"
+                  color="textDark"
+                  text="Progress tracking for older children coming soon!"
+                  type={'h2'}
                 />
               </div>
-              <div className="flex justify-center">
-                <div className="flex w-8/12 justify-center">
-                  <Typography
-                    type="h3"
-                    color="textDark"
-                    text={`${currentChild?.user?.firstName} doesn't have any progress reports yet!`}
-                    className={'text-center'}
-                  />
-                </div>
+              <div className="mt-6 flex w-full justify-center">
+                <ComingSoonIcon className="h-40 w-40" />
               </div>
-              <div className="flex justify-center">
-                <div className="flex w-8/12 justify-center">
-                  <Typography
-                    type="body"
-                    color="textMid"
-                    text={`Encourage ${
-                      childPractioner?.user?.firstName || 'the practioner'
-                    } to start observing ${
-                      currentChild?.user?.firstName
-                    } & track progress on Funda App.`}
-                    className={'text-center'}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-center">
+              <div>
                 <Typography
-                  type="body"
+                  className="mt-6 text-center"
                   color="textMid"
-                  text={'Tap the button below to start'}
-                  className={'mb-4'}
+                  text="We don't have a progress tracker for children over 5 years old yet!"
+                  type={'body'}
                 />
               </div>
             </div>
-            <Button
-              onClick={() => trackProgress()}
-              className="w-full"
-              size="small"
-              color="quatenary"
-              type="filled"
-              icon="PencilIcon"
-              text="Start tracking progress"
-              textColor="white"
-            />
-          </div>
-        )}
+          )}
+        {/* NO REPORTS */}
+        {!!ageGroup &&
+          (!childProgressReports || childProgressReports.length === 0) && (
+            <div className="flex h-full w-full flex-col">
+              <Typography
+                className={'mt-4'}
+                type="h2"
+                color={'textDark'}
+                text={`${currentChild?.user?.firstName}'s reports`}
+              />
+              <div className="mt-2 flex flex-col justify-center p-8">
+                <div className="mt-10 flex justify-center">
+                  <NoProgressEmoticon className="h-40 w-40" />
+                </div>
+                <div>
+                  <Typography
+                    className="mt-4 text-center"
+                    color="textDark"
+                    text={`${currentChild?.user?.firstName} doesn't have any progress reports yet!`}
+                    type={'h2'}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    className="mt-2 text-center"
+                    color="textMid"
+                    text="Tap the button below to start"
+                    type={'body'}
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={() => trackProgress()}
+                className="mt-auto w-full"
+                size="small"
+                color="quatenary"
+                type="filled"
+                icon="PencilIcon"
+                text="Start tracking progress"
+                textColor="white"
+              />
+            </div>
+          )}
 
         {/* REPORTS LIST */}
+        {!!ageGroup &&
+          !!childProgressReports &&
+          !!childProgressReports.length && (
+            <Typography
+              className={'mt-4'}
+              type="h2"
+              color={'textDark'}
+              text={`${currentChild?.user?.firstName}'s reports`}
+            />
+          )}
       </div>
     </BannerWrapper>
   );
