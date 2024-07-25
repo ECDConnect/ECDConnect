@@ -83,7 +83,7 @@ export const LeaveCardMenu = ({
             leadingIcon: 'PencilAltIcon',
             onClick: () => {
               history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
-                practitionerId: practitioner?.id,
+                practitionerId: practitioner?.userId,
                 principalPractitioner: practitioner?.isPrincipal
                   ? practitioner
                   : undefined,
@@ -103,7 +103,7 @@ export const LeaveCardMenu = ({
             leadingIcon: 'PlusIcon',
             onClick: () => {
               history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
-                practitionerId: practitioner?.id,
+                practitionerId: practitioner?.userId,
                 principalPractitioner: practitioner?.isPrincipal
                   ? practitioner
                   : undefined,

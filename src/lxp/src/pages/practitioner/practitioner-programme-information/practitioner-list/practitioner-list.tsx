@@ -166,7 +166,11 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         size="normal"
         renderBorder={true}
         renderOverflow={false}
-        onBack={history.goBack}
+        onBack={() =>
+          location?.state?.returnRoute
+            ? history.push(location.state.returnRoute)
+            : history.goBack()
+        }
         displayOffline={!isOnline}
       />
       <div className="h-screen overflow-y-scroll p-4">
