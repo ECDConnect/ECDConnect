@@ -79,6 +79,7 @@ export const CommunityItem = ({
           <EmptyPage
             image={AlienImage}
             title={`You haven't joined the ${appName} community yet!`}
+            className="p-4"
           />
           <div className="flex w-full justify-center">
             <Button
@@ -97,6 +98,6 @@ export const CommunityItem = ({
     } else {
       return <CommunityDashboard />;
     }
-  }, [communityProfile]);
+  }, [appName, communityProfile, setJoinCommunity]);
   return <div>{renderCommunityItemScreen}</div>;
 };

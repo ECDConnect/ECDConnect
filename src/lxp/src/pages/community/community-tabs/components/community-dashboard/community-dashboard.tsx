@@ -227,7 +227,7 @@ export const CommunityDashboard = () => {
         <Typography type={'h2'} text={'Your community'} color={'textDark'} />
         <div>{renderYourCommunityList}</div>
       </div>
-      <div className="mb-16 mt-6 flex w-full flex-col justify-center gap-3">
+      <div className="mb-28 mt-6 flex w-full flex-col justify-center gap-3">
         <Button
           className="w-full rounded-2xl px-2"
           type="filled"

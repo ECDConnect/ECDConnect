@@ -184,7 +184,7 @@ export const Step2: React.FC<Step1Props> = ({
             />
           )}
         </div>
-        <div className="mb-24 mt-12 flex max-h-20 w-full flex-col gap-3">
+        <div className="mb-32 mt-12 flex max-h-20 w-full flex-col gap-3">
           <Button
             size="normal"
             className="w-full"
