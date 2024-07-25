@@ -19,7 +19,7 @@ export const ProfileSkills: React.FC<ProfileSkillsProps> = ({
     if (skills?.length > 0) {
       return skills?.map((item, index) => {
         return (
-          <div>
+          <div key={item?.id}>
             <div className="flex items-center gap-2">
               <div className="bg-secondary flex h-8 w-8 items-center justify-center rounded-full p-2">
                 {renderIcon(`${item?.imageName}`, 'h-6 w-6 text-white')}
