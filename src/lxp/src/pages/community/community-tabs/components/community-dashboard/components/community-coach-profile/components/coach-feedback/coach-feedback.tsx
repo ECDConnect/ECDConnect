@@ -16,15 +16,7 @@ import { ReactComponent as Neutral } from '@/assets/ECD_Connect_emoji_neutral.sv
 import { ReactComponent as Unhappy } from '@/assets/ECD_Connect_emoji_unhappy.svg';
 import { ReactComponent as VeryUnhappy } from '@/assets/red_rating.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Config,
-  HelpFormModel,
-  NOTIFICATION,
-  useNotifications,
-  useSnackbar,
-} from '@ecdlink/core';
-import { HelpService } from '@/services/HelpService';
-import { isEmail } from '@/utils/common/string.utils';
+import { useNotifications, useSnackbar } from '@ecdlink/core';
 import { useTenant } from '@/hooks/useTenant';
 import { useSelector } from 'react-redux';
 import { coachSelectors } from '@/store/coach';
@@ -48,19 +40,11 @@ export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
   const { showMessage } = useSnackbar();
-  const { setNotification } = useNotifications();
-  const [feedBackTypeId, setFeedBackTypeId] = useState('');
+  const [feedBackTypeIds, setFeedBackTypeIds] = useState<string[]>([]);
   const coach = useSelector(coachSelectors?.getCoach);
   const user = useSelector(userSelectors.getUser);
-  const [isPhoneSelected, setIsPhoneSelected] = useState<boolean | undefined>(
-    undefined
-  );
   const [feedbackValue, setFeedbackValue] = useState('');
 
-  const [email, setEmail] = useState('');
-  const [isValidEmail, setIsValidEmail] = useState(true);
-  const [cellphone, setCellphone] = useState('');
-  const [isValidCellphone, setIsValidCellphone] = useState(true);
   const [isLoadingTypes, setIsLoadingTypes] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const tenant = useTenant();
@@ -69,7 +53,8 @@ export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
   const [supportRatings, setSupportRatings] =
     useState<SupportRatingSortInput[]>();
   const [supportRatingId, setSupportRatingId] = useState('');
-  const disableButton = !feedBackTypeId || !feedbackValue || !supportRatingId;
+  const disableButton =
+    feedBackTypeIds?.length === 0 || !feedbackValue || !supportRatingId;
 
   useEffect(() => {
     handleCoachFeedBackQueries();
@@ -96,8 +81,8 @@ export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
   }, []);
 
   const sendCoachFeedback = async () => {
-    const input: CoachFeedbackInputModelInput = {
-      feedbackTypeId: feedBackTypeId,
+    const input: any = {
+      feedbackTypeIds: feedBackTypeIds,
       fromUserId: user?.id,
       supportRatingId: supportRatingId,
       feedbackDetails: feedbackValue,
@@ -123,6 +108,17 @@ export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
     setIsLoading(false);
     closeAction && closeAction(false);
   };
+
+  function updateArray(checkbox: any, id: string) {
+    if (checkbox.checked) {
+      setFeedBackTypeIds([...feedBackTypeIds, id]);
+    } else {
+      const filteredPermissions = feedBackTypeIds?.filter(
+        (item) => item !== id
+      );
+      setFeedBackTypeIds(filteredPermissions);
+    }
+  }
 
   const handleSupportRatingsImage = (name: string) => {
     switch (name) {
@@ -186,8 +182,12 @@ export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
                     key={item?.id}
                     description={item?.name!}
                     value={item?.id!}
-                    checked={feedBackTypeId === item?.id}
-                    onChange={() => setFeedBackTypeId(item?.id!)}
+                    onChange={(e) => {
+                      updateArray(e, item?.id!);
+                    }}
+                    checked={feedBackTypeIds?.some(
+                      (option: any) => option === item?.id
+                    )}
                   />
                 ))}
             </fieldset>
@@ -205,22 +205,20 @@ export const CoachFeedback: React.FC<HelpFormProps> = ({ closeAction }) => {
               />
               {supportRatings &&
                 supportRatings?.map((item) => (
-                  <>
-                    <Radio
-                      key={item?.id}
-                      description={item?.name!}
-                      value={item?.id!}
-                      checked={item?.id === supportRatingId}
-                      onChange={() => setSupportRatingId(String(item?.id))}
-                      className="mb-4"
-                      variant="slim"
-                      customIcon={
-                        <div className="mx-4">
-                          {handleSupportRatingsImage(item?.name!)}
-                        </div>
-                      }
-                    />
-                  </>
+                  <Radio
+                    key={item?.id}
+                    description={item?.name!}
+                    value={item?.id!}
+                    checked={item?.id === supportRatingId}
+                    onChange={() => setSupportRatingId(String(item?.id))}
+                    className="mb-4"
+                    variant="slim"
+                    customIcon={
+                      <div className="mx-4">
+                        {handleSupportRatingsImage(item?.name!)}
+                      </div>
+                    }
+                  />
                 ))}
             </fieldset>
             <div className={'w-full py-4'}>
