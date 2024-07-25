@@ -15,13 +15,16 @@ import { LeaveCardMenu } from './components/menu';
 import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 
 interface LeaveCardProps {
   practitioner: PractitionerDto;
+  absentee: AbsenteeDto;
   reassignClassRouteState?: Partial<ReassignClassPageState>;
   className?: string;
 }
 export const LeaveCard = ({
+  absentee,
   practitioner,
   reassignClassRouteState,
   className,
@@ -34,13 +37,15 @@ export const LeaveCard = ({
 
   const dialog = useDialog();
 
+  const { getAbsenteeDetails } = usePractitionerAbsentees(practitioner);
+
   const {
     practitionerIsOnLeave,
     isMultiDayLeave,
     isScheduledLeave,
     currentClassesReassigned,
     currentAbsentee,
-  } = usePractitionerAbsentees(practitioner);
+  } = getAbsenteeDetails(absentee);
 
   const isLoggedInUser = user?.id === practitioner?.userId;
 
@@ -167,6 +172,7 @@ export const LeaveCard = ({
       />
       {showMenu && (
         <LeaveCardMenu
+          absentee={currentAbsentee}
           practitioner={practitioner}
           reassignClassRouteState={reassignClassRouteState}
           onClose={() => setShowMenu(false)}

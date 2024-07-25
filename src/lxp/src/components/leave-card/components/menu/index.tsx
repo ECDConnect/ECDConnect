@@ -8,6 +8,7 @@ import { authSelectors } from '@/store/auth';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
 import { PractitionerDto } from '@ecdlink/core';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -15,11 +16,13 @@ import { useHistory } from 'react-router';
 
 interface LeaveCardMenuProps {
   practitioner: PractitionerDto;
+  absentee: AbsenteeDto;
   reassignClassRouteState?: Partial<ReassignClassPageState>;
   onClose: () => void;
 }
 
 export const LeaveCardMenu = ({
+  absentee,
   practitioner,
   reassignClassRouteState,
   onClose,
@@ -35,7 +38,8 @@ export const LeaveCardMenu = ({
 
   const appDispatch = useAppDispatch();
 
-  const { currentClassesReassigned } = usePractitionerAbsentees(practitioner);
+  const { getAbsenteeDetails } = usePractitionerAbsentees(practitioner);
+  const { currentClassesReassigned } = getAbsenteeDetails(absentee);
 
   const onDelete = async () => {
     if (userAuth) {
