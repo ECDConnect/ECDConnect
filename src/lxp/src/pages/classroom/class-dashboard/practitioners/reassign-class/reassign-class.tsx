@@ -237,7 +237,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     }
 
     if (routeState?.isFromEditPractitionersPage) {
-      return history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
+      return history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+        ...routeState,
+      });
     }
 
     if (routeState?.isFromPrincipalPractitionerProfile) {
@@ -670,6 +672,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       size="medium"
       renderBorder={true}
       onBack={onBack}
+      onClose={onBack}
       displayOffline={!isOnline}
     >
       <div className="mb-3 flex h-full w-full flex-col p-4 pt-6">
@@ -774,7 +777,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             {reason === 'Other' && (
               <FormInput
                 className="my-4 w-full"
-                label={'Type the reason'}
+                label="Add short description of reason"
                 onChange={(e) => setOtherReason(e.target.value)}
                 textInputType="input"
                 value={otherReason}
