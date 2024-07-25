@@ -13,6 +13,7 @@ import { communitySelectors } from '@/store/community';
 import { CommunityDashboard } from '../community-dashboard/community-dashboard';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { useDialog } from '@ecdlink/core';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const CommunityItem = ({
   setJoinCommunity,
@@ -25,14 +26,15 @@ export const CommunityItem = ({
   const appName = tenant?.tenant?.applicationName;
   const dialog = useDialog();
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
-
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isFirstTimeInCommunity = practitioner?.clickedCommunityTab;
+  console.log({ notJoining });
   const handleDialog = () => {
     dialog({
       position: DialogPosition.Bottom,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
-            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
             textAlignment="center"
             customDetailText={
               <Typography
@@ -65,10 +67,10 @@ export const CommunityItem = ({
   };
 
   useEffect(() => {
-    if (notJoining) {
+    if (notJoining || isFirstTimeInCommunity) {
       handleDialog();
     }
-  }, []);
+  }, [notJoining, isFirstTimeInCommunity]);
 
   const renderCommunityItemScreen = useMemo(() => {
     if (!communityProfile) {
