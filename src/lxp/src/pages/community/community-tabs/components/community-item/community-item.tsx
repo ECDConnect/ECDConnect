@@ -27,8 +27,8 @@ export const CommunityItem = ({
   const dialog = useDialog();
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const isFirstTimeInCommunity = practitioner?.clickedCommunityTab;
-  console.log({ notJoining });
+  const isFirstTimeInCommunity = !practitioner?.clickedCommunityTab;
+
   const handleDialog = () => {
     dialog({
       position: DialogPosition.Bottom,
