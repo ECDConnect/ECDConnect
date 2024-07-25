@@ -122,24 +122,26 @@ export const ConnectionProfile = () => {
         userIdsToReject: [communityProfile?.userId],
       };
 
-      await dispatch(
+      const rejectResponse = await dispatch(
         communityThunkActions.acceptOrRejectCommunityRequests({
           input: rejectedInput,
         })
       );
 
-      await dispatch(
-        communityThunkActions.getCommunityProfile({
-          userId: loggedUserCommunityProfile?.userId!,
-        })
-      ).then(() => {
-        setAcceptOrRejectIsLoading(false);
-        showMessage({
-          message: 'Connection ignored!',
-          type: 'success',
-          duration: 3000,
+      if (rejectResponse) {
+        await dispatch(
+          communityThunkActions.getCommunityProfile({
+            userId: loggedUserCommunityProfile?.userId!,
+          })
+        ).then(() => {
+          setAcceptOrRejectIsLoading(false);
+          showMessage({
+            message: 'Connection ignored!',
+            type: 'success',
+            duration: 3000,
+          });
         });
-      });
+      }
     }
   };
 

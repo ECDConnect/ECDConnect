@@ -482,9 +482,12 @@ class CommunityService {
         id
         fromUserId
         toUserId
-        feedbackTypeId
         supportRatingId
         feedbackDetails
+        coachFeedbackTypes {
+            id
+            feedbackTypeId
+        }
     }
 }
       `,
@@ -550,7 +553,7 @@ class CommunityService {
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation AcceptRejectCommunityRequests($input: AcceptRejectCommunityRequestsInputModelInput) {
-          acceptRejectCommunityRequests(input: $input) {
+    acceptRejectCommunityRequests(input: $input) {
         id
             userId
             aboutShort
@@ -621,6 +624,29 @@ class CommunityService {
                 provinceId
                 provinceName
                 shareRole
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
+             receivedConnections {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                connectionAccepted
                 communityUser {
                     id
                     fullName
