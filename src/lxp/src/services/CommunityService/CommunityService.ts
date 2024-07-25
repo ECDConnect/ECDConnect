@@ -550,7 +550,7 @@ class CommunityService {
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation AcceptRejectCommunityRequests($input: AcceptRejectCommunityRequestsInputModelInput) {
-    acceptCommunityRequests(input: $input) {
+          acceptRejectCommunityRequests(input: $input) {
         id
             userId
             aboutShort
