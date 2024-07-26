@@ -139,6 +139,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
             pendingConnections {
                 id
@@ -162,6 +170,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
             userConnectionRequests {
                 id
@@ -185,6 +201,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
           }
         }
@@ -265,6 +289,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
             pendingConnections {
                 id
@@ -287,6 +319,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
         }
 }
