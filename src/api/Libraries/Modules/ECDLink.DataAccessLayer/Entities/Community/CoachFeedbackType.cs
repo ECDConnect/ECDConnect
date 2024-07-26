@@ -19,7 +19,7 @@ namespace ECDLink.DataAccessLayer.Entities.Community
         public Guid CoachFeedbackId { get; set; }
     }
 
-    public interface CoachFeedbackTypekJoin<TKey>
+    public interface CoachFeedbackTypeJoin<TKey>
     {
         [ForeignKey(nameof(CoachFeedbackTypeId))]
         public CoachFeedback CoachFeedbackType { get; set; }
