@@ -140,11 +140,11 @@ import { ChildProgressReportingPeriods } from '@/pages/classroom/progress-observ
 import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
 import { ConnectionProfile } from '@/pages/community/connection-profile/connection-profile';
 import MonthlyAttendanceReport from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report';
-import { ChildProgressReportsList } from '@/pages/classroom/progress/child-progress-reports-list';
 import { ECDHeroes } from '@/pages/community/community-tabs/components/community-dashboard/components/ecd-heroes/ecd-heroes';
 import { CommunityConnections } from '@/pages/community/community-tabs/components/community-dashboard/components/received-requests/community-connections';
 import { ProgressObservations } from '@/pages/classroom/progress/observations/child-progress-observations';
-import { ChildProgressObservationsLanding } from '@/pages/classroom/progress/child-progress-observations-landing';
+import { ChildProgressObservationsLanding } from '@/pages/classroom/progress/landing/child-progress-observations-landing';
+import { ChildProgressReportsList } from '@/pages/classroom/progress/child-reports-list/child-progress-reports-list';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();

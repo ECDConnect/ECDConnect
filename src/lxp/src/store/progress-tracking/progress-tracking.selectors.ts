@@ -279,3 +279,11 @@ export const getCurrentObservationsForChild = (childId: string) =>
       );
     }
   );
+
+export const getProgressReportsForChild = (childId: string) =>
+  createSelector(
+    (state: RootState) => state.progressTracking.childProgressReports,
+    (childProgressReports: ChildProgressReport[]) => {
+      return childProgressReports.filter((x) => x.childId === childId);
+    }
+  );

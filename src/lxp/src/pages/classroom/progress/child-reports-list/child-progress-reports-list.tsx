@@ -5,14 +5,15 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { childrenSelectors } from '@store/children';
-import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
-import { ChildCompletedObservsationReportsState } from '../progress-observation/child-completed-observation-reports/child-completed-observation-reports.types';
-import { ReactComponent as NoProgressEmoticon } from '../../../assets/ECD_Connect_emoji4.svg';
-import { ReactComponent as ComingSoonIcon } from '../../../assets/icon/coming_soon.svg';
+import { ChildCompletedObservsationReportsState } from '../../progress-observation/child-completed-observation-reports/child-completed-observation-reports.types';
+import { ReactComponent as NoProgressEmoticon } from '../../../../assets/ECD_Connect_emoji4.svg';
+import { ReactComponent as ComingSoonIcon } from '../../../../assets/icon/coming_soon.svg';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
+import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
+import { ProgressReportsList } from './reports-list';
 
 export const ChildProgressReportsList: React.FC = () => {
   const history = useHistory();
@@ -21,23 +22,21 @@ export const ChildProgressReportsList: React.FC = () => {
   const { state: routeState } =
     useLocation<ChildCompletedObservsationReportsState>();
 
+  const {
+    currentAgeGroup,
+    currentObservations,
+    currentReport,
+    completedReports,
+  } = useObserveProgressForChild(routeState.childId);
+
   const { childId } = routeState;
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
 
-  const childProgressReports = useSelector(
-    contentReportSelectors.getChildProgressObservationReports(
-      routeState?.childId
-    )
-  );
   const classroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupByChildUserId(currentChild?.userId!)
   );
   const childPractioner = useSelector(
     practitionerSelectors.getPractitionerByUserId(classroomGroup?.userId || '')
-  );
-
-  const ageGroup = useSelector(
-    childrenSelectors.getProgressAgeGroupForChild(childId)
   );
 
   useEffect(() => {
@@ -58,8 +57,6 @@ export const ChildProgressReportsList: React.FC = () => {
     });
   };
 
-  //warningBg
-
   return (
     <BannerWrapper
       size={'small'}
@@ -70,8 +67,8 @@ export const ChildProgressReportsList: React.FC = () => {
     >
       <div className={'flex h-full flex-col px-4 pb-4'}>
         {/* No reports and no age group for child */}
-        {!ageGroup &&
-          (!childProgressReports || childProgressReports.length === 0) && (
+        {!currentAgeGroup &&
+          (!completedReports || completedReports.length === 0) && (
             <div className="mt-2 flex flex-col justify-center p-8">
               <div>
                 <Typography
@@ -95,8 +92,8 @@ export const ChildProgressReportsList: React.FC = () => {
             </div>
           )}
         {/* NO REPORTS */}
-        {!!ageGroup &&
-          (!childProgressReports || childProgressReports.length === 0) && (
+        {!currentReport &&
+          (!completedReports || completedReports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography
                 className={'mt-4'}
@@ -139,16 +136,54 @@ export const ChildProgressReportsList: React.FC = () => {
           )}
 
         {/* REPORTS LIST */}
-        {!!ageGroup &&
-          !!childProgressReports &&
-          !!childProgressReports.length && (
+        {(!!currentReport ||
+          (!!completedReports && !!completedReports.length)) && (
+          <div className="flex h-full w-full flex-col">
             <Typography
-              className={'mt-4'}
+              className={'mt-4 mb-4'}
               type="h2"
               color={'textDark'}
               text={`${currentChild?.user?.firstName}'s reports`}
             />
-          )}
+            <ProgressReportsList
+              childId={childId}
+              currentReport={currentReport}
+              pastReports={completedReports}
+            />
+            {!!completedReports && !!completedReports.length && (
+              <Button
+                onClick={() => {}} // TODO - add option to share via phone share menu...
+                className="mt-auto w-full"
+                size="small"
+                color="quatenary"
+                type={'filled'}
+                textColor={'white'}
+                icon="ShareIcon"
+                text="Share a report"
+              />
+            )}
+            {!!currentReport && (
+              <Button
+                onClick={() => trackProgress()}
+                className="mt-auto w-full"
+                size="small"
+                color="quatenary"
+                type={
+                  !!completedReports && !!completedReports.length
+                    ? 'outlined'
+                    : 'filled'
+                }
+                textColor={
+                  !!completedReports && !!completedReports.length
+                    ? 'quatenary'
+                    : 'white'
+                }
+                icon="ArrowCircleRightIcon"
+                text="Track progress"
+              />
+            )}
+          </div>
+        )}
       </div>
     </BannerWrapper>
   );

@@ -190,6 +190,7 @@ export const PractitionersList: React.FC = () => {
         <RoundIcon
           backgroundColor="alertMain"
           icon="PresentationChartBarIcon"
+          iconColor="white"
           size={{ h: '12', w: '12' }}
         />
         <Typography

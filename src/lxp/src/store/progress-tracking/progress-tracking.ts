@@ -47,17 +47,18 @@ const progressTrackingSlice = createSlice({
     ) => {
       const { childId, reportingPeriodId, skillId, value } = action.payload;
 
-      const reportIndex = state.childProgressReports.findIndex(
+      const report = state.childProgressReports.find(
         (x) => x.childId === childId && x.reportingPeriodId
       );
 
-      if (reportIndex < 0) {
+      if (!report) {
         // No current report so, create and add our first skill
         state.childProgressReports = [
           ...state.childProgressReports,
           {
             childId: childId,
             reportingPeriodId: reportingPeriodId,
+            isComplete: false,
             synced: false,
             skillObservations: [
               {
@@ -70,14 +71,14 @@ const progressTrackingSlice = createSlice({
       } else {
         // Update existing report
         state.childProgressReports = [
-          ...state.childProgressReports.slice(0, reportIndex),
-          ...state.childProgressReports.slice(reportIndex + 1),
+          ...state.childProgressReports.filter(
+            (x) =>
+              x.childId !== childId && x.reportingPeriodId !== reportingPeriodId
+          ),
           {
-            ...state.childProgressReports[reportIndex],
+            ...report,
             skillObservations: [
-              ...state.childProgressReports[
-                reportIndex
-              ].skillObservations.filter((x) => x.skillId === skillId),
+              ...report.skillObservations.filter((x) => x.skillId !== skillId),
               { skillId, value },
             ],
           },
