@@ -163,7 +163,7 @@ class CommunityService {
                     roleName
                 }
             }
-            receivedConnections {
+            userConnectionRequests {
                 id
                 userId
                 aboutShort
@@ -634,7 +634,8 @@ class CommunityService {
                     roleName
                 }
             }
-             receivedConnections {
+             
+             userConnectionRequests {
                 id
                 userId
                 aboutShort

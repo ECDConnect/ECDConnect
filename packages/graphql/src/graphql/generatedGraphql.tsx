@@ -1624,11 +1624,13 @@ export type ChildProgressReportPeriodInput = {
 export type ChildProgressReportPeriodModel = {
   __typename?: 'ChildProgressReportPeriodModel';
   endDate: Scalars['DateTime'];
+  id: Scalars['UUID'];
   startDate: Scalars['DateTime'];
 };
 
 export type ChildProgressReportPeriodModelInput = {
   endDate: Scalars['DateTime'];
+  id: Scalars['UUID'];
   startDate: Scalars['DateTime'];
 };
 
@@ -3804,13 +3806,13 @@ export type CommunityProfileModel = {
   profileSkills?: Maybe<Array<Maybe<CommunityProfileSkillModel>>>;
   provinceId?: Maybe<Scalars['UUID']>;
   provinceName?: Maybe<Scalars['String']>;
-  receivedConnections?: Maybe<Array<Maybe<CommunityConnectionModel>>>;
   shareContactInfo?: Maybe<Scalars['Boolean']>;
   shareEmail?: Maybe<Scalars['Boolean']>;
   sharePhoneNumber?: Maybe<Scalars['Boolean']>;
   shareProfilePhoto?: Maybe<Scalars['Boolean']>;
   shareProvince?: Maybe<Scalars['Boolean']>;
   shareRole?: Maybe<Scalars['Boolean']>;
+  userConnectionRequests?: Maybe<Array<Maybe<CommunityConnectionModel>>>;
   userId?: Maybe<Scalars['UUID']>;
 };
 

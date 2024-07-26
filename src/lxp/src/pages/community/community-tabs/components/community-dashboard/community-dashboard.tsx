@@ -33,7 +33,7 @@ export const CommunityDashboard = () => {
   const profileName = communityProfile?.communityUser?.fullName;
   const communityAboutShort = communityProfile?.aboutShort;
   const communityAboutLong = communityProfile?.aboutLong;
-  const receivedConnections = communityProfile?.receivedConnections;
+  const receivedConnections = communityProfile?.pendingConnections;
   const profileCoachId = communityProfile?.coachUserId;
   const renderConnectionsRequestsString = useMemo(
     () =>

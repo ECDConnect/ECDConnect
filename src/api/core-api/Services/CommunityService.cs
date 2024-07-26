@@ -11,7 +11,6 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
-using HotChocolate.Execution;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -280,22 +279,23 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     lastViewed = userCommunityProfile?.User?.practitionerObjectData?.CommunitySectionViewDate;
                 }
-
-                var acceptedConnections = fromConnections
-                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true && x.FromCommunityProfileId == userCommunityProfile.Id)
-                    .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), x.InviteAccepted))
-                    .OrderByDescending(x => x.InsertedDate)
-                    .ToList();
-
-                var pendingConnections = fromConnections
-                    .Where(x => !x.InviteAccepted.HasValue && x.InsertedDate.Date >= lastViewed.Value.Date && x.FromCommunityProfileId == userCommunityProfile.Id)
-                    .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), x.InviteAccepted))
-                    .OrderByDescending(x => x.InsertedDate)
-                    .ToList();
-
-                var receivedConnections = toConnections
-                    .Where(x => x.ToCommunityProfileId == userCommunityProfile.Id)
+                // connections that was send to this user and were accepted
+                var acceptedConnections = toConnections
+                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
                     .Select(x => new CommunityConnectionModel(x.FromProfile, _userManager.GetRolesAsync(x.FromProfile.User).Result.ToList(), x.InviteAccepted))
+                    .OrderByDescending(x => x.InsertedDate)
+                    .ToList();
+
+                // new connections was send to this user and is still waiting for acceptance
+                var pendingConnections = toConnections
+                    .Where(x => !x.InviteAccepted.HasValue && x.InsertedDate.Date >= lastViewed.Value.Date)
+                    .Select(x => new CommunityConnectionModel(x.FromProfile, _userManager.GetRolesAsync(x.FromProfile.User).Result.ToList(), x.InviteAccepted))
+                    .OrderByDescending(x => x.InsertedDate)
+                    .ToList();
+
+                // showing all from this connections 
+                var userConnectionsRequests = fromConnections
+                    .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), x.InviteAccepted))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();
 
@@ -341,7 +341,7 @@ namespace EcdLink.Api.CoreApi.Services
                 return new CommunityProfileModel(userCommunityProfile, 
                                                  acceptedConnections,
                                                  pendingConnections,
-                                                 receivedConnections,
+                                                 userConnectionsRequests,
                                                  _userManager.GetRolesAsync(userCommunityProfile.User).Result.ToList(),
                                                  completenessPerc,
                                                  completenessPercColor);
@@ -357,9 +357,8 @@ namespace EcdLink.Api.CoreApi.Services
             var allCommunityProfiles = _communityProfileRepo.GetAll().Where(x => x.IsActive && x.ShareContactInfo.HasValue && x.ShareContactInfo.Value && x.UserId != userId).ToList();
             var allConnections = _communityProfileConnectionRepo
                                             .GetAll()
-                                            .Where(x => x.IsActive && x.FromProfile.UserId == userId || x.ToProfile.UserId == userId)
-                                            .ToList();
-
+                                            .Where(x => x.IsActive && x.FromProfile.UserId == userId || x.ToProfile.UserId == userId);
+            
             var connectionsToBeAccepted = allConnections
                                             .Where(x => x.IsActive && x.FromProfile.UserId == userId)
                                             .Select(x => new { x.ToCommunityProfileId, x.InviteAccepted})
@@ -431,10 +430,11 @@ namespace EcdLink.Api.CoreApi.Services
             }
             if (input.UserIdsToReject != null && input.UserIdsToReject.Any())
             {
-                var rejected = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToReject.Contains((Guid)x.FromProfile.UserId)).ToList();
+                var rejected = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.FromProfile.UserId == input.UserId && input.UserIdsToReject.Contains((Guid)x.ToProfile.UserId)).ToList();
                 foreach (var item in rejected)
                 {
                     item.InviteAccepted = false;
+                    item.IsActive = false;
                     item.UpdatedDate = DateTime.Now;
                     item.UpdatedBy = _applicationUserId.ToString();
                     _communityProfileConnectionRepo.Update(item);
@@ -481,28 +481,29 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var connectionRequest = _communityProfileConnectionRepo.GetAll()
                                         .Where(x => x.IsActive && x.FromCommunityProfileId == input.FromCommunityProfileId && x.ToCommunityProfileId == input.ToCommunityProfileId)
+                                        .OrderByDescending(x => x.InsertedDate)
                                         .FirstOrDefault();
             if (connectionRequest != null)
             {
-                _communityProfileConnectionRepo.Delete(connectionRequest.Id);
+                connectionRequest.InviteAccepted = false;
+                connectionRequest.IsActive = false;
+                connectionRequest.UpdatedDate = DateTime.Now;
+                connectionRequest.UpdatedBy = _applicationUserId.ToString();
+                _communityProfileConnectionRepo.Update(connectionRequest);
                 return connectionRequest;
-            } else
-            {
-                throw new QueryException("Connection Request not found.");
-
             }
+            return null;
         }
 
         public List<CommunityConnectionModel> GetOtherConnections(Guid userId, List<Guid> provinceIds = null, List<Guid> communitySkillIds = null)
         {
-            var allConnections = _communityProfileConnectionRepo
-                                    .GetAll()
-                                    .Where(x => x.IsActive && x.FromProfile.UserId == userId || x.ToProfile.UserId == userId)
-                                    .ToList();
+            var allConnections = _communityProfileConnectionRepo.GetAll()
+                                    .Where(x => x.IsActive && x.FromProfile.UserId == userId || x.ToProfile.UserId == userId);
 
             var fromConnections = allConnections.Where(x => x.FromProfile.UserId == userId).Select(x => x.ToCommunityProfileId).Distinct().ToList();
             var toConnections = allConnections.Where(x => x.ToProfile.UserId == userId).Select(x => x.FromCommunityProfileId).Distinct().ToList();
             
+            // exclude profiles where user is linked to any connection
             var allCommunityProfiles = _communityProfileRepo.GetAll().Where(x => x.IsActive && 
                                 x.ShareContactInfo.HasValue && 
                                 x.ShareContactInfo.Value && 
@@ -540,7 +541,6 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 return filteredConnection.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), null)).Distinct().ToList();
             }
-
             return allCommunityProfiles.Select(x => new CommunityConnectionModel(x, _userManager.GetRolesAsync(x.User).Result.ToList(), null)).Distinct().ToList();
         }
 

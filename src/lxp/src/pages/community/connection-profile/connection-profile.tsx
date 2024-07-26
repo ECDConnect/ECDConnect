@@ -41,7 +41,7 @@ export const ConnectionProfile = () => {
     boolean | null | undefined
   >(communityProfile?.connectionAccepted);
   const hasSentConnectionRequest =
-    loggedUserCommunityProfile?.receivedConnections?.find(
+    loggedUserCommunityProfile?.userConnectionRequests?.find(
       (item) => item?.id === communityProfile?.id
     );
 
