@@ -73,7 +73,7 @@ export const NewCommunityWelcome = ({
     const saveCommunityProfileInput: CommunityProfileInputModelInput = {
       userId: practitioner?.userId!,
       aboutShort: aboutShort,
-      shareContactInfo: shareContactInfo,
+      shareContactInfo: true,
       shareProfilePhoto: shareProfilePhoto,
       shareProvince: shareProvince,
       provinceId: provinceId || null,

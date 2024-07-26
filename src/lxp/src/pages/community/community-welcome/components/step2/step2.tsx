@@ -12,17 +12,11 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { yesOrNoOptions } from '../../community-welcome.types';
 import { FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { useEffect, useState } from 'react';
-import { useQuery } from '@apollo/client';
-import { GetAllProvince } from '@ecdlink/graphql';
 import { staticDataSelectors } from '@/store/static-data';
 import { useAppDispatch } from '@/store';
 

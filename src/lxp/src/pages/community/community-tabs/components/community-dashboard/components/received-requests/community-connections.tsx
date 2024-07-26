@@ -31,6 +31,7 @@ interface ReceivedRequestsProps {
 export interface CommunityProfileRouteState {
   usersData: CommunityProfileDto[];
   isConnectedScreen?: boolean;
+  isFromReceivedConnections?: boolean;
 }
 
 export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
@@ -42,6 +43,8 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
   const history = useHistory();
   const { state } = useLocation<CommunityProfileRouteState>();
   const isConnectedScreen = state?.isConnectedScreen;
+
+  const isFromReceivedConnections = state?.isFromReceivedConnections;
   const usersData = state?.usersData;
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const receivedRequestsUserIds = useMemo(
@@ -74,12 +77,6 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [acceptOrRejectIsLoading, setAcceptOrRejectIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (usersData) {
-      handleConnectionsQuery();
-    }
-  }, [usersData]);
-
   const handleConnectionsQuery = useCallback(async () => {
     if (communityProfile) {
       setIsLoading(true);
@@ -88,7 +85,13 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       }
       setIsLoading(false);
     }
-  }, [usersData]);
+  }, [communityProfile, usersData]);
+
+  useEffect(() => {
+    if (usersData) {
+      handleConnectionsQuery();
+    }
+  }, [handleConnectionsQuery, usersData]);
 
   const handleAcceptAllConnections = async () => {
     setAcceptOrRejectIsLoading(true);
@@ -140,14 +143,18 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
           onActionClick: () =>
             history.push(ROUTES.COMMUNITY.CONNECTION_PROFILE, {
               connectionProfile: item,
+              isFromReceivedConnections: true,
+              isConnectedScreen: isConnectedScreen,
             }),
-          profileDataUrl: item?.communityUser?.profilePhoto,
+          profileDataUrl: item?.shareProfilePhoto
+            ? item?.communityUser?.profilePhoto
+            : '',
         });
       });
     }
     setCommunityUsersList(communityUsersList);
     setCommunityUsersListFormatted(communityUsersList);
-  }, [communityUsers]);
+  }, [communityUsers, history, isConnectedScreen]);
 
   useEffect(() => {
     handleUsersList();
@@ -284,13 +291,17 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       onBack={
         isConnectActive
           ? () => setIsConnectActive(false)
-          : () => history?.goBack()
+          : isFromReceivedConnections
+          ? () => history?.push(ROUTES.COMMUNITY.ROOT)
+          : () => history.goBack()
       }
       displayOffline={!isOnline}
       onClose={
         isConnectActive
           ? () => setIsConnectActive(false)
-          : () => history?.goBack()
+          : isFromReceivedConnections
+          ? () => history?.push(ROUTES.COMMUNITY.ROOT)
+          : () => history.goBack()
       }
     >
       {searchTextActive && (
