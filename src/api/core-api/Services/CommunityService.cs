@@ -295,6 +295,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 // showing all from this connections 
                 var userConnectionsRequests = fromConnections
+                    .Where(x => x.IsActive && !x.InviteAccepted.HasValue)
                     .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), x.InviteAccepted))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();
