@@ -185,16 +185,14 @@ namespace EcdLink.Api.CoreApi.Services
                
             }
             // Update skills if available
-            if (input.CommunitySkillIds.Count > 0)
-            {
-                UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
-            }
+            UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
 
             return GetCommunityProfile(input.UserId);
         }
 
         public void UpdateProfileSkills(Guid communityProfileId, List<Guid> communitySkillIds)
         {
+
             var linkedSkills = _communityProfileSkillRepo.GetAll().Where(x => x.CommunityProfileId == communityProfileId).ToList();
             var linkedSkillIds = linkedSkills.Select(x => x.CommunitySkillId).ToList();
 
