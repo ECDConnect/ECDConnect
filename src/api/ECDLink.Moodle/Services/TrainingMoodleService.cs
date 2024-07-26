@@ -1,22 +1,23 @@
-﻿using ECDLink.Core.Services.Interfaces;
-using ECDLink.Moodle.Models;
-using ECDLink.Tenancy.Context;
-using Microsoft.Extensions.Configuration;
-using Npgsql;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
-using Newtonsoft.Json;
-using ECDLink.Core.Models;
-using ECDLink.DataAccessLayer.Repositories.Factories;
+﻿using ECDLink.Core.Models;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
-using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.Moodle.Models;
+using ECDLink.Tenancy.Context;
+using HotChocolate;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Npgsql;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.Services.Training
+namespace EcdLink.Moodle.Services
 {
     public class TrainingMoodleService : ITrainingService
     {
@@ -27,8 +28,14 @@ namespace EcdLink.Api.CoreApi.Services.Training
         private readonly Guid _adminUserId;
         private readonly ApplicationUserManager _userManager;
         private readonly ILogger<TrainingMoodleService> _logger;
+        private readonly IWLPointsService _pointsService;
 
-        public TrainingMoodleService(IConfiguration configuration, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine, ApplicationUserManager userManager, ILogger<TrainingMoodleService> logger)
+        public TrainingMoodleService(IConfiguration configuration, 
+            IGenericRepositoryFactory repoFactory, 
+            HierarchyEngine hierarchyEngine, 
+            ApplicationUserManager userManager, 
+            ILogger<TrainingMoodleService> logger,
+            [Service] IWLPointsService pointsService)
         {
             _configuration = configuration;
             _repoFactory = repoFactory;
@@ -36,6 +43,7 @@ namespace EcdLink.Api.CoreApi.Services.Training
             _adminUserId = _hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _userManager = userManager;
             _logger = logger;
+            _pointsService = pointsService;
 
             string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfig;
             if (!string.IsNullOrEmpty(moodleConfigVar))
@@ -418,6 +426,7 @@ where (mc.idnumber in ({inCohorts}) or mc.name in ({inCohorts}))
                             UpdatedBy = _adminUserId.ToString()
                         };
                         userTrainingCourseRepo.Insert(userTrainingCourse);
+                        _pointsService.CalculateCompleteOnlineTrainingCourse(userId.Value);
                         rows++;
                     }
                 }

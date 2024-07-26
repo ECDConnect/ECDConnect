@@ -183,6 +183,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ICommunityService, CommunityService>();
             services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
+            services.AddTransient<IWLPointsEngineService, WLPointsEngineService>();
 
             // Notification tasks (All will be run daily)
             foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()
