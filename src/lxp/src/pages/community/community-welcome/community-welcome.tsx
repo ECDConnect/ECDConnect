@@ -83,7 +83,7 @@ export const NewCommunityWelcome = ({
     const doThisLaterInput: CommunityProfileInputModelInput = {
       userId: practitioner?.userId!,
       aboutShort: '',
-      shareContactInfo: false,
+      shareContactInfo: true,
       shareProfilePhoto: false,
       shareProvince: false,
       provinceId: null,
