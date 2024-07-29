@@ -58,7 +58,7 @@ export const ConnectionsCard: React.FC<ConnectionsCardProps> = ({
               onClick={() =>
                 route &&
                 history.push(route, {
-                  usersData: usersData,
+                  isRequest: isConnectedScreen ? false : true,
                   isConnectedScreen: isConnectedScreen,
                 })
               }

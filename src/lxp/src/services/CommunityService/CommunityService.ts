@@ -7,7 +7,6 @@ import {
   Connect,
   ConnectItem,
   FeedbackTypeSortInput,
-  SupportRatingModel,
   SupportRatingSortInput,
 } from '@ecdlink/graphql/lib';
 import { api } from '../axios.helper';
@@ -712,7 +711,7 @@ class CommunityService {
       );
     }
 
-    return response.data.data.acceptCommunityRequests;
+    return response.data.data.acceptRejectCommunityRequests;
   }
 
   async deleteCommunityProfile(communityProfileId: string): Promise<string> {

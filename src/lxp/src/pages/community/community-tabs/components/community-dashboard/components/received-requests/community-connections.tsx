@@ -29,7 +29,7 @@ interface ReceivedRequestsProps {
 }
 
 export interface CommunityProfileRouteState {
-  usersData: CommunityProfileDto[];
+  isRequest: CommunityProfileDto[];
   isConnectedScreen?: boolean;
   isFromReceivedConnections?: boolean;
 }
@@ -42,11 +42,13 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
   const dispatch = useAppDispatch();
   const history = useHistory();
   const { state } = useLocation<CommunityProfileRouteState>();
+  const isRequest = state?.isRequest;
   const isConnectedScreen = state?.isConnectedScreen;
-
-  const isFromReceivedConnections = state?.isFromReceivedConnections;
-  const usersData = state?.usersData;
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
+  const isFromReceivedConnections = state?.isFromReceivedConnections;
+  const usersData = !!isRequest
+    ? communityProfile?.pendingConnections
+    : communityProfile?.acceptedConnections;
   const receivedRequestsUserIds = useMemo(
     () => usersData?.map((item) => item?.userId),
     [usersData]
@@ -93,7 +95,7 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
     }
   }, [handleConnectionsQuery, usersData]);
 
-  const handleAcceptAllConnections = async () => {
+  const handleAcceptAllConnections = useCallback(async () => {
     setAcceptOrRejectIsLoading(true);
     const acceptedInput: AcceptRejectCommunityRequestsInputModelInput = {
       userId: communityProfile?.userId,
@@ -106,11 +108,7 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       })
     );
 
-    await dispatch(
-      communityThunkActions.getCommunityProfile({
-        userId: communityProfile?.userId!,
-      })
-    ).then(() => {
+    await handleConnectionsQuery().then(() => {
       onClose && onClose(true);
       setAcceptOrRejectIsLoading(false);
       showMessage({
@@ -120,7 +118,14 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       });
     });
     setAcceptOrRejectIsLoading(false);
-  };
+  }, [
+    communityProfile?.userId,
+    dispatch,
+    handleConnectionsQuery,
+    onClose,
+    receivedRequestsUserIds,
+    showMessage,
+  ]);
 
   const handleUsersList = useCallback(() => {
     const communityUsersList: UserAlertListDataItem[] = [];
@@ -263,7 +268,17 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
         </div>
       );
     }
-  }, [communityUsersListFormatted]);
+  }, [
+    acceptOrRejectIsLoading,
+    communityUsersListFormatted,
+    handleAcceptAllConnections,
+    history,
+    isConnectedScreen,
+    isLoading,
+    renderConnectionsString,
+    renderECDHeroesString,
+    usersData,
+  ]);
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
