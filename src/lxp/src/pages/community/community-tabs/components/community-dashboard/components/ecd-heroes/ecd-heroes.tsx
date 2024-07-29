@@ -4,11 +4,7 @@ import SearchHeader, {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ConnectionsTypes } from '@/pages/community/community.types';
 import { useAppDispatch } from '@/store';
-import {
-  communityActions,
-  communitySelectors,
-  communityThunkActions,
-} from '@/store/community';
+import { communitySelectors, communityThunkActions } from '@/store/community';
 import { staticDataSelectors } from '@/store/static-data';
 import {
   CommunityProfileDto,
@@ -214,9 +210,10 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
     }
   }, [
     communityProfile,
+    dispatch,
     filteredProvinces,
-    filteredProfileSkills,
     filteredConnectionsType,
+    filteredProfileSkills,
   ]);
 
   const handleUsersList = useCallback(() => {
@@ -247,7 +244,7 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
     }
     setCommunityUsersList(communityUsersList);
     setCommunityUsersListFormatted(communityUsersList);
-  }, [communityUsers]);
+  }, [communityUsers, history]);
 
   useEffect(() => {
     handleUsersList();
@@ -316,12 +313,16 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
   };
 
   const saveNewConnections = async () => {
+    setIsLoading(true);
     dispatch(
       communityThunkActions.saveCommunityProfileConnections({
         input: addedConnections,
       })
-    ).then(() => {
+    ).then(async () => {
+      await handleConnectionsQuery();
+      setIsLoading(false);
       setIsConnectActive(false);
+      setAddedConnections([]);
       showMessage({
         message: 'Connections updated',
         type: 'success',
@@ -566,7 +567,7 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
           menuItemClassName={
             'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
           }
-          overlayTopOffset={'3'}
+          overlayTopOffset={isConnectActive ? '28' : '3'}
           options={provinces}
           selectedOptions={provincesFiltered}
           onChange={setProvincesFiltered}
@@ -581,7 +582,7 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
           menuItemClassName={
             'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
           }
-          overlayTopOffset={'3'}
+          overlayTopOffset={isConnectActive ? '28' : '3'}
           options={profileSkills}
           selectedOptions={profileSkillsFiltered}
           onChange={setProfileSkillsFiltered}
@@ -590,21 +591,23 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
           color={'quatenary'}
           preventCloseOnClick={true}
         />
-        <SearchDropDown<string>
-          displayMenuOverlay={true}
-          className={'mr-1'}
-          menuItemClassName={
-            'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-          }
-          overlayTopOffset={'3'}
-          options={SortByConnectionTypes}
-          selectedOptions={connectionTypesFilter}
-          onChange={setConnectionTypesFilter}
-          placeholder={'Connection'}
-          multiple={true}
-          color={'quatenary'}
-          preventCloseOnClick={true}
-        />
+        {!isConnectActive && (
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            className={'mr-1'}
+            menuItemClassName={
+              'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+            }
+            overlayTopOffset={'3'}
+            options={SortByConnectionTypes}
+            selectedOptions={connectionTypesFilter}
+            onChange={setConnectionTypesFilter}
+            placeholder={'Connection'}
+            multiple={true}
+            color={'quatenary'}
+            preventCloseOnClick={true}
+          />
+        )}
       </SearchHeader>
       <div className="p-4">
         <div>{renderUsersList}</div>
