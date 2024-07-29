@@ -46,7 +46,7 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
   const isConnectedScreen = state?.isConnectedScreen;
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const isFromReceivedConnections = state?.isFromReceivedConnections;
-  const usersData = !!isRequest
+  const usersData = isRequest
     ? communityProfile?.pendingConnections
     : communityProfile?.acceptedConnections;
   const receivedRequestsUserIds = useMemo(
@@ -84,7 +84,10 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       setIsLoading(true);
       if (usersData && usersData?.length > 0) {
         setCommunityUsers(usersData);
+      } else {
+        setCommunityUsers([]);
       }
+
       setIsLoading(false);
     }
   }, [communityProfile, usersData]);
