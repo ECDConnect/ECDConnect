@@ -283,7 +283,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // connections that was send to this user and from this user and were accepted
                 var acceptedConnections = toConnections
                      .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
-                     .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), x.InviteAccepted))
+                     .Select(x => new CommunityConnectionModel(x.FromProfile, _userManager.GetRolesAsync(x.FromProfile.User).Result.ToList(), x.InviteAccepted))
                      .OrderByDescending(x => x.InsertedDate)
                      .ToList();
                  acceptedConnections.AddRange(fromConnections
@@ -365,6 +365,11 @@ namespace EcdLink.Api.CoreApi.Services
             var allConnections = _communityProfileConnectionRepo
                                             .GetAll()
                                             .Where(x => x.IsActive && (x.FromProfile.UserId == userId || x.ToProfile.UserId == userId));
+
+
+
+
+
             
             var connectionsToBeAccepted = allConnections
                                             .Where(x => x.IsActive && x.FromProfile.UserId == userId)
@@ -397,20 +402,24 @@ namespace EcdLink.Api.CoreApi.Services
             }
             if (connectionTypes != null && connectionTypes.Any())
             {
+                var fromConnections = allConnections.Where(x => x.FromProfile.UserId == userId).ToList();
+                var toConnections = allConnections.Where(x => x.ToProfile.UserId == userId && x.FromProfile.UserId != userId).ToList();
+
                 if (connectionTypes.Contains("Connected"))
                 {
                     // Connected = people user currently connected with
-                    filteredConnection.AddRange(allConnections.Where(x => x.InviteAccepted.HasValue && x.InviteAccepted.Value).Select(x => x.ToProfile).ToList());
+                    filteredConnection.AddRange(toConnections.Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true).Select(x => x.FromProfile).ToList());
+                    filteredConnection.AddRange(fromConnections.Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true).Select(x => x.ToProfile).ToList());
                 }
                 if (connectionTypes.Contains("Received requests"))
                 {
                     // Received requests = all people who have sent the user a request and the user has not accepted yet, ie users with active requests
-                    filteredConnection.AddRange(allConnections.Where(x => !x.InviteAccepted.HasValue && x.ToProfile.UserId == userId).Select(x => x.FromProfile).ToList());
+                    filteredConnection.AddRange(toConnections.Where(x => !x.InviteAccepted.HasValue).Select(x => x.FromProfile).ToList());
                 }
                 if (connectionTypes.Contains("Sent requests"))
                 {
                     // Sent requests = all people the user has sent requests to, who haven't accepted yet
-                    filteredConnection.AddRange(allConnections.Where(x => !x.InviteAccepted.HasValue && x.FromProfile.UserId == userId).Select(x => x.ToProfile).ToList());
+                    filteredConnection.AddRange(fromConnections.Where(x => x.IsActive && !x.InviteAccepted.HasValue).Select(x => x.ToProfile).ToList());
                 }
             }
 
