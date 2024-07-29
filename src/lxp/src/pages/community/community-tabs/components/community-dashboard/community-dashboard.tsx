@@ -202,7 +202,7 @@ export const CommunityDashboard = () => {
               textColor={'white'}
               onClick={() =>
                 history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
-                  usersData: receivedConnections,
+                  isRequest: true,
                 })
               }
               size="small"
