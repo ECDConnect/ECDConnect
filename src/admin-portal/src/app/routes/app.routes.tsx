@@ -72,6 +72,7 @@ import { HealthCareWorkerOptedOut } from '../pages/health-care-worker/health-car
 import { TLLeagues } from '../pages/clinics/leagues/tl-leagues';
 import { useApolloClient } from '@apollo/client';
 import { useTenant } from '../hooks/useTenant';
+import { SetupOrg } from '../components/auth/setup-org/setup-org';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -84,6 +85,7 @@ const PublicRoutes: React.FC = () => {
         path={ROUTES.TEAM_LEAD_REGISTER}
         component={RegisterTeamLead}
       />
+      <Route exact path={ROUTES.SETUP_ORG} component={SetupOrg} />
       <Route exact path={ROUTES.FORGOT_PASSWORD} component={ForgotPassword} />
       <Route
         exact
