@@ -279,12 +279,17 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     lastViewed = userCommunityProfile?.User?.practitionerObjectData?.CommunitySectionViewDate;
                 }
-                // connections that was send to this user and were accepted
+                // connections that was send to this user and from this user and were accepted
                 var acceptedConnections = toConnections
                     .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
                     .Select(x => new CommunityConnectionModel(x.FromProfile, _userManager.GetRolesAsync(x.FromProfile.User).Result.ToList(), x.InviteAccepted))
                     .OrderByDescending(x => x.InsertedDate)
                     .ToList();
+                acceptedConnections.AddRange(fromConnections
+                    .Where(x => x.InviteAccepted.HasValue && x.InviteAccepted == true)
+                    .Select(x => new CommunityConnectionModel(x.ToProfile, _userManager.GetRolesAsync(x.ToProfile.User).Result.ToList(), x.InviteAccepted))
+                    .OrderByDescending(x => x.InsertedDate)
+                    .ToList());
 
                 // new connections was send to this user and is still waiting for acceptance
                 var pendingConnections = toConnections
