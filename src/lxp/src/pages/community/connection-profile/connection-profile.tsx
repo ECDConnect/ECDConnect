@@ -48,13 +48,9 @@ export const ConnectionProfile = () => {
     );
 
   const handleGoBack = () => {
-    const receivedConnections = loggedUserCommunityProfile?.pendingConnections;
-    const acceptedConnections = loggedUserCommunityProfile?.acceptedConnections;
     if (isFromReceivedConnections) {
       history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
-        usersData: isConnectedScreen
-          ? acceptedConnections
-          : receivedConnections,
+        isRequest: isConnectedScreen ? false : true,
         isFromReceivedConnections: true,
         isConnectedScreen: isConnectedScreen ? true : false,
       });

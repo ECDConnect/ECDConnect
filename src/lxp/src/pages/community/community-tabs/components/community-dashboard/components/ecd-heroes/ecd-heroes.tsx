@@ -431,11 +431,12 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
       );
     }
   }, [
-    communityUsersListFormatted,
-    isConnectActive,
     isLoading,
-    addedConnections,
+    isConnectActive,
     otherConnectionsFormatted,
+    addedConnections,
+    handleAddConnections,
+    communityUsersListFormatted,
   ]);
 
   const handleListScroll = (scrollTop: number) => {

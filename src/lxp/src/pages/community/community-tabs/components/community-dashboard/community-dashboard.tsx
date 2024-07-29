@@ -119,7 +119,8 @@ export const CommunityDashboard = () => {
 
   const renderYourCommunityList = useMemo(() => {
     if (communityAcceptedConnections?.length > 0) {
-      const lastFourConnections = communityAcceptedConnections?.slice(0, 4);
+      const newArrayOrder = communityAcceptedConnections?.reverse();
+      const lastFourConnections = newArrayOrder?.slice(0, 4);
       return (
         <StackedList
           isFullHeight={false}
@@ -202,7 +203,7 @@ export const CommunityDashboard = () => {
               textColor={'white'}
               onClick={() =>
                 history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
-                  usersData: receivedConnections,
+                  isRequest: true,
                 })
               }
               size="small"
