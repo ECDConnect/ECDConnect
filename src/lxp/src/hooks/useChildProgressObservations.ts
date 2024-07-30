@@ -714,12 +714,13 @@ export const useChildProgressObservation = (
       await appDispatch(
         contentReportThunkActions.saveUserContentChildProgressReport({
           ChildId: currentReportCopy.childId,
-          ClassroomGroupId: classroomGroupId,
+          //ClassroomGroupId: classroomGroupId,
           Id: currentReportCopy.id,
-          ReportDate: currentReportCopy.reportingDate,
+          //ReportDate: currentReportCopy.reportingDate,
           ReportContent: JSON.stringify(currentReportCopy),
           IsActive: true,
           DateCompleted: new Date(),
+          ChildProgressReportPeriodId: 'terst',
         })
       ).unwrap();
       // await appDispatch(

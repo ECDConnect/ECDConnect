@@ -6,6 +6,7 @@ import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ChildProgressObservationsSkillsToWorkOn } from './child-progress-observations-skills-to-work-on';
 import ROUTES from '@/routes/routes';
 import { ChildProgressObservationsSupportLearning } from './child-progress-observations-support-learning';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export type ProgressObservationsState = {
   childId: string;
@@ -15,6 +16,7 @@ export type ProgressObservationsState = {
 
 export const ProgressObservations: React.FC = () => {
   const history = useHistory();
+  const { isOnline } = useOnlineStatus();
 
   const { state: routeState } = useLocation<ProgressObservationsState>();
 
@@ -30,6 +32,7 @@ export const ProgressObservations: React.FC = () => {
     removeSkillToWorkOn,
     updateHowToSupport,
     updateSkillToWorkOn,
+    syncChildProgressReports,
   } = useObserveProgressForChild(routeState.childId);
 
   const ageGroupRequiresSupportLearningSteps = true; // TODO - only for certain age groups
@@ -124,6 +127,9 @@ export const ProgressObservations: React.FC = () => {
         <Button
           onClick={() => {
             if (currentStep === totalSteps) {
+              if (isOnline) {
+                syncChildProgressReports();
+              }
               history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
                 childId: routeState.childId,
               });
@@ -143,11 +149,14 @@ export const ProgressObservations: React.FC = () => {
           disabled={!nextEnabled}
         />
         <Button
-          onClick={() =>
+          onClick={() => {
+            if (isOnline) {
+              syncChildProgressReports();
+            }
             history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
               childId: routeState.childId,
-            })
-          }
+            });
+          }}
           className="mb-4 w-full"
           size="normal"
           color="quatenary"

@@ -843,119 +843,119 @@ namespace EcdLink.Api.CoreApi.Services
 
         public void CalculateCompleteChildProgressReports()
         {
-            var childProgressActivity = _clubPointsLibraryRepo.GetAll()
-                .Where(x => x.Activity == Constants.ClubSettings.child_progress_reports 
-                    && x.Type == Constants.ClubSettings.name_purple
-                    && x.SubActivity == Constants.ClubSettings.sub_progress_tracking)
-                .FirstOrDefault();
+            //var childProgressActivity = _clubPointsLibraryRepo.GetAll()
+            //    .Where(x => x.Activity == Constants.ClubSettings.child_progress_reports 
+            //        && x.Type == Constants.ClubSettings.name_purple
+            //        && x.SubActivity == Constants.ClubSettings.sub_progress_tracking)
+            //    .FirstOrDefault();
 
-            // Twice a year: by 31 July and 30 November
-            var startDate = DateTime.Now.Month <= 7 ? DateTime.Now.GetStartOfYear() : DateTime.Now.GetStartOfYear().AddMonths(7);
-            var scoringMonth = DateTime.Now.Month <= 7 ? 7 : 11;
+            //// Twice a year: by 31 July and 30 November
+            //var startDate = DateTime.Now.Month <= 7 ? DateTime.Now.GetStartOfYear() : DateTime.Now.GetStartOfYear().AddMonths(7);
+            //var scoringMonth = DateTime.Now.Month <= 7 ? 7 : 11;
 
-            // Get all active purple clubs
-            var purpleClubs = _clubRepo.GetAll()
-                .Where(x => x.IsActive && x.League.LeagueType.Name == Constants.ClubSettings.name_purple)
-                .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
-                .Include(x => x.ClubLeaders.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
-                .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
-                .ToList();
+            //// Get all active purple clubs
+            //var purpleClubs = _clubRepo.GetAll()
+            //    .Where(x => x.IsActive && x.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            //    .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
+            //    .Include(x => x.ClubLeaders.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
+            //    .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
+            //    .ToList();
 
-            foreach (var club in purpleClubs)
-            {
-                var totalComplete = 0;
+            //foreach (var club in purpleClubs)
+            //{
+            //    var totalComplete = 0;
 
-                var practitionerInClub = club.ClubLeaders.Select(x => x.Practitioner).ToList();
-                practitionerInClub.AddRange(club.ClubSupport.Select(x => x.Practitioner));
-                practitionerInClub.AddRange(club.ClubMembers.Select(x => x.Practitioner));
+            //    var practitionerInClub = club.ClubLeaders.Select(x => x.Practitioner).ToList();
+            //    practitionerInClub.AddRange(club.ClubSupport.Select(x => x.Practitioner));
+            //    practitionerInClub.AddRange(club.ClubMembers.Select(x => x.Practitioner));
 
-                practitionerInClub = practitionerInClub.Distinct().ToList();
+            //    practitionerInClub = practitionerInClub.Distinct().ToList();
 
-                if (!practitionerInClub.Any())
-                {
-                    continue;
-                }
+            //    if (!practitionerInClub.Any())
+            //    {
+            //        continue;
+            //    }
                 
-                foreach (var practitioner in practitionerInClub)
-                {
-                    var totalChildren = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy) && x.IsActive).Count();
-                    var totalReports = _childProgressReportRepo.GetAll().Where(x =>
-                            x.Hierarchy == practitioner.Hierarchy
-                            && x.ReportDate >= startDate.Date
-                            && x.ReportDate <= DateTime.Now.Date
-                            && x.IsActive
-                            && !x.ReportContent.Contains(Constants.ClubSettings.first_reporting_period))
-                        .Select(x => x.ChildId)
-                        .Distinct()
-                        .Count();
+            //    foreach (var practitioner in practitionerInClub)
+            //    {
+            //        var totalChildren = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy) && x.IsActive).Count();
+            //        var totalReports = _childProgressReportRepo.GetAll().Where(x =>
+            //                x.Hierarchy == practitioner.Hierarchy
+            //                && x.ReportDate >= startDate.Date
+            //                && x.ReportDate <= DateTime.Now.Date
+            //                && x.IsActive
+            //                && !x.ReportContent.Contains(Constants.ClubSettings.first_reporting_period))
+            //            .Select(x => x.ChildId)
+            //            .Distinct()
+            //            .Count();
 
-                    if (totalChildren != 0 && totalChildren == totalReports)
-                    {
-                        totalComplete++;
-                        //send notification
-                        List<TagsReplacements> replacements = new List<TagsReplacements>();
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "MeetingDate",
-                            ReplacementValue = startDate.ToShortDateString()
-                        });
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "ClubId",
-                            ReplacementValue = club.Id.ToString()
-                        });
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true);
-                    }
-                }
+            //        if (totalChildren != 0 && totalChildren == totalReports)
+            //        {
+            //            totalComplete++;
+            //            //send notification
+            //            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            //            replacements.Add(new TagsReplacements()
+            //            {
+            //                FindValue = "MeetingDate",
+            //                ReplacementValue = startDate.ToShortDateString()
+            //            });
+            //            replacements.Add(new TagsReplacements()
+            //            {
+            //                FindValue = "ClubId",
+            //                ReplacementValue = club.Id.ToString()
+            //            });
+            //            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.RecordCaregiverMeeting, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(14), false, true);
+            //        }
+            //    }
 
-                var pointsScored = Math.Round(childProgressActivity.Points * ((double)totalComplete / practitionerInClub.Count()));
+            //    var pointsScored = Math.Round(childProgressActivity.Points * ((double)totalComplete / practitionerInClub.Count()));
 
-                var currentPoints = _clubPointsRepo.GetAll().Where(x =>
-                        x.ClubId == club.Id
-                        && x.ClubPointsLibraryId == childProgressActivity.Id
-                        && x.Month == scoringMonth
-                        && x.Year == DateTime.Now.Year)
-                    .FirstOrDefault();
+            //    var currentPoints = _clubPointsRepo.GetAll().Where(x =>
+            //            x.ClubId == club.Id
+            //            && x.ClubPointsLibraryId == childProgressActivity.Id
+            //            && x.Month == scoringMonth
+            //            && x.Year == DateTime.Now.Year)
+            //        .FirstOrDefault();
 
-                var prevScore = 0;
-                if (scoringMonth > 7)
-                {
-                    // Get previous score for YTD total
-                    prevScore = _clubPointsRepo.GetAll().Where(x =>
-                        x.ClubId == club.Id
-                        && x.ClubPointsLibraryId == childProgressActivity.Id
-                        && x.Month == 7
-                        && x.Year == DateTime.Now.Year).FirstOrDefault()?.Points ?? 0;
-                }
+            //    var prevScore = 0;
+            //    if (scoringMonth > 7)
+            //    {
+            //        // Get previous score for YTD total
+            //        prevScore = _clubPointsRepo.GetAll().Where(x =>
+            //            x.ClubId == club.Id
+            //            && x.ClubPointsLibraryId == childProgressActivity.Id
+            //            && x.Month == 7
+            //            && x.Year == DateTime.Now.Year).FirstOrDefault()?.Points ?? 0;
+            //    }
 
-                if (currentPoints != null)
-                {
-                    currentPoints.Points = (int)pointsScored;
-                    currentPoints.PointsYTD = prevScore + (int)pointsScored;
-                    currentPoints.UpdatedDate = DateTime.Now;
-                    currentPoints.UpdatedBy = _uId.ToString();
+            //    if (currentPoints != null)
+            //    {
+            //        currentPoints.Points = (int)pointsScored;
+            //        currentPoints.PointsYTD = prevScore + (int)pointsScored;
+            //        currentPoints.UpdatedDate = DateTime.Now;
+            //        currentPoints.UpdatedBy = _uId.ToString();
 
-                    _clubPointsRepo.Update(currentPoints);
-                }
-                else
-                {
-                    _clubPointsRepo.Insert(new ClubPoints()
-                    {
-                        Id = Guid.NewGuid(),
-                        ClubId = club.Id,
-                        UserId = _uId,
-                        InsertedDate = DateTime.Now,
-                        UpdatedDate = DateTime.Now,
-                        UpdatedBy = _uId.ToString(),
-                        IsActive = true,
-                        ClubPointsLibraryId = childProgressActivity.Id,
-                        Month = scoringMonth,
-                        Year = DateTime.Now.Year,
-                        Points = (int)pointsScored,
-                        PointsYTD = prevScore + (int)pointsScored
-                    });
-                }
-            }
+            //        _clubPointsRepo.Update(currentPoints);
+            //    }
+            //    else
+            //    {
+            //        _clubPointsRepo.Insert(new ClubPoints()
+            //        {
+            //            Id = Guid.NewGuid(),
+            //            ClubId = club.Id,
+            //            UserId = _uId,
+            //            InsertedDate = DateTime.Now,
+            //            UpdatedDate = DateTime.Now,
+            //            UpdatedBy = _uId.ToString(),
+            //            IsActive = true,
+            //            ClubPointsLibraryId = childProgressActivity.Id,
+            //            Month = scoringMonth,
+            //            Year = DateTime.Now.Year,
+            //            Points = (int)pointsScored,
+            //            PointsYTD = prevScore + (int)pointsScored
+            //        });
+            //    }
+            //}
         }
 
         public void CalculateCompleteCaregiverReportBack()

@@ -7,6 +7,7 @@ import { classroomsSelectors } from '@/store/classroom';
 import {
   progressTrackingActions,
   progressTrackingSelectors,
+  progressTrackingThunkActions,
 } from '@/store/progress-tracking';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
@@ -69,7 +70,7 @@ export const useObserveProgressForChild = (childId: string) => {
   const detailedReports = useMemo<ChildProgressDetailedReport[]>(() => {
     const details = allReports.map((report) => {
       const reportingPeriod = allReportingPeriods.find(
-        (x) => x.id === report.reportingPeriodId
+        (x) => x.id === report.childProgressReportPeriodId
       );
 
       const missedSkillCount =
@@ -133,7 +134,7 @@ export const useObserveProgressForChild = (childId: string) => {
 
   const currentReport = useMemo(() => {
     return detailedReports.find(
-      (x) => x.reportingPeriodId === currentReportingPeriod?.id
+      (x) => x.childProgressReportPeriodId === currentReportingPeriod?.id
     );
   }, [detailedReports, currentReportingPeriod]);
 
@@ -227,6 +228,10 @@ export const useObserveProgressForChild = (childId: string) => {
     );
   };
 
+  const syncChildProgressReports = () => {
+    appDispatch(progressTrackingThunkActions.syncChildProgressReports({}));
+  };
+
   return {
     child,
     currentAgeGroup,
@@ -243,5 +248,6 @@ export const useObserveProgressForChild = (childId: string) => {
     updateSkillToWorkOn,
     updateHowToSupport,
     updateNotes,
+    syncChildProgressReports,
   };
 };

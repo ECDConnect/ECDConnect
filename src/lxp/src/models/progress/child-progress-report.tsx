@@ -1,6 +1,9 @@
 export type ChildProgressReport = {
+  id: string;
+  dateCreated: string;
+  dateCompleted?: string;
   childId: string;
-  reportingPeriodId: string;
+  childProgressReportPeriodId: string;
   isComplete: boolean;
   notes?: string;
   skillsToWorkOn: ChildProgressSkillToWorkOn[];
@@ -20,7 +23,7 @@ export type ChildProgressSkillToWorkOn = {
 
 export type ChildProgressDetailedReport = {
   childId: string;
-  reportingPeriodId: string;
+  childProgressReportPeriodId: string;
   reportingPeriodNumber: number;
   reportingPeriodStartDate: Date;
   reportingPeriodEndDate: Date;
