@@ -4,7 +4,7 @@ import { useAppDispatch } from '@/store';
 import { coachSelectors, coachThunkActions } from '@/store/coach';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { practitionerSelectors } from '@/store/practitioner';
-import { getAvatarColor } from '@ecdlink/core';
+import { getAvatarColor, LocalStorageKeys } from '@ecdlink/core';
 import {
   Alert,
   Button,
@@ -35,6 +35,10 @@ export const CommunityDashboard = () => {
   const communityAboutLong = communityProfile?.aboutLong;
   const receivedConnections = communityProfile?.pendingConnections;
   const profileCoachId = communityProfile?.coachUserId;
+  const firstTimeOnCommunityDashboard = window.localStorage.getItem(
+    LocalStorageKeys.firstTimeOnCommunityDashboard
+  );
+
   const renderConnectionsRequestsString = useMemo(
     () =>
       receivedConnections && receivedConnections?.length > 1
@@ -96,11 +100,15 @@ export const CommunityDashboard = () => {
           backgroundColor: 'adminBackground',
           subTitle: item?.aboutShort,
           subTitleStyle: 'text-infoDark',
-          onActionClick: () =>
+          onActionClick: () => {
+            localStorage.removeItem(
+              LocalStorageKeys.firstTimeOnCommunityDashboard
+            );
             history.push(ROUTES.COMMUNITY.CONNECTION_PROFILE, {
               connectionProfile: item,
               isFromDashboard: true,
-            }),
+            });
+          },
         };
       }) || []
     );
@@ -119,8 +127,7 @@ export const CommunityDashboard = () => {
 
   const renderYourCommunityList = useMemo(() => {
     if (communityAcceptedConnections?.length > 0) {
-      const newArrayOrder = communityAcceptedConnections?.reverse();
-      const lastFourConnections = newArrayOrder?.slice(0, 4);
+      const lastFourConnections = communityAcceptedConnections?.slice(0, 4);
       return (
         <StackedList
           isFullHeight={false}
@@ -169,11 +176,14 @@ export const CommunityDashboard = () => {
               type={'filled'}
               color={'quatenary'}
               textColor={'white'}
-              onClick={() =>
+              onClick={() => {
+                localStorage.removeItem(
+                  LocalStorageKeys.firstTimeOnCommunityDashboard
+                );
                 history.push(ROUTES.COMMUNITY.PROFILE, {
                   isFromAddMoreDetails: true,
-                })
-              }
+                });
+              }}
               size="small"
               icon="PencilIcon"
               className="rounded-xl"
@@ -181,38 +191,43 @@ export const CommunityDashboard = () => {
           }
         />
       )}
-      {receivedConnections && receivedConnections?.length > 0 && (
-        <Alert
-          className="mt-4"
-          type={'info'}
-          title={`You have ${receivedConnections?.length} new connection ${renderConnectionsRequestsString}!`}
-          titleType="h3"
-          titleColor="textDark"
-          customIcon={
-            <div
-              className={`bg-infoMain flex h-12 w-14 items-center justify-center rounded-full`}
-            >
-              <BellIcon className="h-8 w-8 text-white" />
-            </div>
-          }
-          button={
-            <Button
-              text={`See requests`}
-              type={'filled'}
-              color={'quatenary'}
-              textColor={'white'}
-              onClick={() =>
-                history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
-                  isRequest: true,
-                })
-              }
-              size="small"
-              icon="EyeIcon"
-              className="rounded-xl"
-            />
-          }
-        />
-      )}
+      {receivedConnections &&
+        receivedConnections?.length > 0 &&
+        firstTimeOnCommunityDashboard && (
+          <Alert
+            className="mt-4"
+            type={'info'}
+            title={`You have ${receivedConnections?.length} new connection ${renderConnectionsRequestsString}!`}
+            titleType="h3"
+            titleColor="textDark"
+            customIcon={
+              <div
+                className={`bg-infoMain flex h-12 w-14 items-center justify-center rounded-full`}
+              >
+                <BellIcon className="h-8 w-8 text-white" />
+              </div>
+            }
+            button={
+              <Button
+                text={`See requests`}
+                type={'filled'}
+                color={'quatenary'}
+                textColor={'white'}
+                onClick={() => {
+                  localStorage.removeItem(
+                    LocalStorageKeys.firstTimeOnCommunityDashboard
+                  );
+                  history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
+                    isRequest: true,
+                  });
+                }}
+                size="small"
+                icon="EyeIcon"
+                className="rounded-xl"
+              />
+            }
+          />
+        )}
       {coach?.user?.id && (
         <div className="py-4">
           <Typography
@@ -248,7 +263,12 @@ export const CommunityDashboard = () => {
           text="See ECD Heroes"
           icon="UserGroupIcon"
           iconPosition="start"
-          onClick={() => history.push(ROUTES.COMMUNITY.ECD_HEROES_LIST)}
+          onClick={() => {
+            localStorage.removeItem(
+              LocalStorageKeys.firstTimeOnCommunityDashboard
+            );
+            history.push(ROUTES.COMMUNITY.ECD_HEROES_LIST);
+          }}
         />
         <Button
           className="w-full rounded-2xl px-2"
@@ -258,7 +278,12 @@ export const CommunityDashboard = () => {
           text="Edit my profile"
           icon="PencilIcon"
           iconPosition="start"
-          onClick={() => history.push(ROUTES.COMMUNITY.PROFILE)}
+          onClick={() => {
+            localStorage.removeItem(
+              LocalStorageKeys.firstTimeOnCommunityDashboard
+            );
+            history.push(ROUTES.COMMUNITY.PROFILE);
+          }}
         />
       </div>
       <Dialog

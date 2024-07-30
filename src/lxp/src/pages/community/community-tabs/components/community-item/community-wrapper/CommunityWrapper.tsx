@@ -20,7 +20,7 @@ export default function CommunityWrapper() {
     {
       target: '#firstTimeECDHeroes',
       content: t('Ok, you can tap this button when you are ready to join!'),
-      placement: 'bottom-end',
+      placement: 'auto',
       offset: screenHeight < 650 ? 0 : 10,
       disableBeacon: true,
     },
