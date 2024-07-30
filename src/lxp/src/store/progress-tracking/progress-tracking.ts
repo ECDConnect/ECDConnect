@@ -60,6 +60,7 @@ const progressTrackingSlice = createSlice({
             reportingPeriodId: reportingPeriodId,
             isComplete: false,
             synced: false,
+            skillsToWorkOn: [],
             skillObservations: [
               {
                 skillId: skillId,
@@ -84,6 +85,160 @@ const progressTrackingSlice = createSlice({
           },
         ];
       }
+    },
+    addSkillToWorkOn: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+        skillId: number;
+      }>
+    ) => {
+      const { childId, reportingPeriodId, skillId } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.reportingPeriodId
+      );
+
+      if (!report || report.skillsToWorkOn.some((x) => x.skillId === skillId)) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId && x.reportingPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          skillsToWorkOn: [
+            ...report.skillsToWorkOn,
+            { skillId, howToSupport: '' },
+          ],
+        },
+      ];
+    },
+    removeSkillToWorkOn: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+        skillId: number;
+      }>
+    ) => {
+      const { childId, reportingPeriodId, skillId } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.reportingPeriodId
+      );
+
+      if (!report) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId && x.reportingPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          skillsToWorkOn: [
+            ...report.skillsToWorkOn.filter((x) => x.skillId !== skillId),
+          ],
+        },
+      ];
+    },
+    updateSkillToWorkOn: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+        skillId: number;
+        value: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId, skillId, value } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.reportingPeriodId
+      );
+
+      if (!report) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId && x.reportingPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          skillsToWorkOn: [
+            ...report.skillsToWorkOn.filter((x) => x.skillId !== skillId),
+            { skillId: skillId, howToSupport: value },
+          ],
+        },
+      ];
+    },
+    updateHowToSupport: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+        value: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId, value } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.reportingPeriodId
+      );
+
+      if (!report) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId && x.reportingPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          howToSupport: value,
+        },
+      ];
+    },
+    updateNotes: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+        value: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId, value } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.reportingPeriodId
+      );
+
+      if (!report) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId && x.reportingPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          notes: value,
+        },
+      ];
     },
   },
   extraReducers: (builder) => {
