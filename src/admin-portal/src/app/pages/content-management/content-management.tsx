@@ -93,11 +93,6 @@ export function ContentManagement() {
         id: 1,
       },
       {
-        name: ContentManagementTabs.PROCESS.name,
-        // href: '/',
-        id: ContentManagementTabs.PROCESS.id,
-      },
-      {
         name: ContentManagementTabs.PROGRAMMES.name,
         // href: '/',
         id: ContentManagementTabs.PROGRAMMES.id,
@@ -158,11 +153,6 @@ export function ContentManagement() {
         // contentTypeNameFilter: ''
       },
     });
-    // TODO: Use actual pagination when table component supports it.
-    // const getUserCountQueryVariables = getCountVariables(searchValue);
-    // getCountUsers({
-    //   variables: getUserCountQueryVariables
-    // });
   }, []);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,69 +160,6 @@ export function ContentManagement() {
   }, 500);
 
   const handleSubTabs = useCallback(() => {
-    if (specialType === ContentManagementTabs.PROCESS.name) {
-      return setSubTabs([
-        {
-          title: 'Levels',
-          description:
-            'Children will be placed at a specific level or stage of development',
-          titleIcon: 'ChartBarIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'ProgressTrackingLevel'
-            );
-            showGroupContentTypes(selectedTypeObject);
-          },
-          classNames: 'bg-white',
-        },
-        {
-          title: 'Progress categories & subcategories',
-          description: 'Development areas',
-          titleIcon: 'PresentationChartBarIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'ProgressTrackingCategory'
-            );
-            showGroupContentTypes(selectedTypeObject);
-          },
-          classNames: 'bg-white',
-        },
-        // {
-        //   title: 'Progress subcategories',
-        //   description: 'Development areas',
-        //   titleIcon: 'PresentationChartBarIcon',
-        //   titleIconClassName: 'bg-secondary text-white',
-        //   onActionClick: () => {
-        //     setSpecialType('');
-        //     const selectedTypeObject = dataTypes?.contentTypes.find(
-        //       (type: ContentTypeDto) =>
-        //         type.name === 'ProgressTrackingSubCategory'
-        //     );
-        //     showGroupContentTypes(selectedTypeObject);
-        //   },
-        //   classNames: 'bg-uiBg',
-        // },
-        {
-          title: 'Progress tool',
-          description: 'Edit the skills shown in the progress tracker',
-          titleIcon: 'PresentationChartBarIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'ProgressTrackingSkill'
-            );
-            showGroupContentTypes(selectedTypeObject);
-          },
-          classNames: 'bg-white',
-        },
-      ]);
-    }
-
     if (specialType === ContentManagementTabs.COMMUNITY.name) {
       if (!tenant.isCHWConnect) {
         return setSubTabs([

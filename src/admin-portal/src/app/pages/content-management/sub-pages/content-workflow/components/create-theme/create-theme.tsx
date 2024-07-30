@@ -45,8 +45,7 @@ export default function CreateTheme({
   cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, getValues, control } =
-    useForm();
+  const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
@@ -167,6 +166,7 @@ export default function CreateTheme({
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
   const [filteredThemeDays, setFilteredThemeDays] = useState([]);
+
   const validation =
     filteredThemeDays &&
     filteredThemeDays.every(
@@ -176,6 +176,7 @@ export default function CreateTheme({
         item.storyBook &&
         item.storyActivity
     );
+
   const allowedFileSize = 13631488;
 
   useEffect(() => {
@@ -278,7 +279,7 @@ export default function CreateTheme({
       variant: NOTIFICATION.SUCCESS,
     });
 
-    if (filteredThemeDays?.length > 0) {
+    if (filteredThemeDays?.length > 0 && (content?.id || newThemeId)) {
       for (let item of filteredThemeDays) {
         if (
           !item?.id &&
@@ -388,19 +389,10 @@ export default function CreateTheme({
     setLoading(false);
   };
 
-  const initialValues = getValues();
-  const disableButton = template?.fields?.filter(
-    (item) =>
-      item.propName !== 'themeDays' &&
-      item?.required.value &&
-      initialValues?.hasOwnProperty(item?.propName) &&
-      !initialValues[item?.propName]
-  );
-
   const disableButtonDays = filteredThemeDays?.length < 16;
 
   const disbleButtonStyles = `bg-secondary ${
-    disableButton?.length > 0 || disableButtonDays ? 'opacity-25' : ''
+    disableButtonDays ? 'opacity-25' : ''
   } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   if (
@@ -470,7 +462,7 @@ export default function CreateTheme({
           <div className="flex flex-row">
             <button
               type="submit"
-              disabled={disableButton?.length > 0 || disableButtonDays}
+              disabled={disableButtonDays}
               className={disbleButtonStyles}
             >
               <SaveIcon width="22px" className="mr-2" />

@@ -26,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return communityService.SaveCommunityProfile(input);
         }
 
-        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Update)]
         public CommunityProfileModel AcceptRejectCommunityRequests(
           [Service] ICommunityService communityService,
           AcceptRejectCommunityRequestsInputModel input)
@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return communityService.AcceptRejectCommunityRequests(input);
         }
 
-        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Delete)]
         public bool DeleteCommunityProfile(
           [Service] ICommunityService communityService,
           Guid communityProfileId)
@@ -65,7 +65,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return communityService.SaveCommunityProfileConnections(input);
         }
 
-        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Update)]
         public CommunityProfileConnection CancelCommunityRequest(
           [Service] ICommunityService communityService,
           CommunityConnectInputModel input
@@ -77,6 +77,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return communityService.CancelCommunityRequest(input);
+        }
+
+        [Permission(PermissionGroups.COMMUNITY, GraphActionEnum.Update)]
+        public bool UpdateClickedECDHeros(
+          [Service] ICommunityService communityService,
+          Guid userId
+          )
+        {
+            if (string.IsNullOrEmpty(userId.ToString()))
+            {
+                new ArgumentException("userId is empty.");
+            }
+
+            return communityService.UpdateClickedECDHeros(userId);
         }
 
     }

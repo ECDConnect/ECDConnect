@@ -1,15 +1,11 @@
 export const ssRoles = [
   {
-    id: 'trainees',
-    label: 'Trainees',
-  },
-  {
     id: 'practitioners_principals',
-    label: 'Practitioners - principals',
+    label: 'Principals',
   },
   {
     id: 'practitioners_non_principals',
-    label: 'Practitioners - non-principals',
+    label: 'Practitioners',
   },
   {
     id: 'coaches',

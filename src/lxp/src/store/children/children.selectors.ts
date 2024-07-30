@@ -1,4 +1,4 @@
-import { ChildDto } from '@ecdlink/core';
+import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import getWeek from 'date-fns/getWeek';
@@ -7,6 +7,9 @@ import {
   CaregiverContactHistory,
   CaregiverContactReason,
 } from './children.types';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { differenceInMonths } from 'date-fns';
+import { getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
 
 export const getChildren = (state: RootState): ChildDto[] | undefined =>
   state.children.childData.children;
@@ -49,5 +52,53 @@ export const findCaregiverContactHistoryLog = (
       );
 
       return contactHistoryLog;
+    }
+  );
+
+export const getChildrenByStatus = (workflowStatusId?: string) =>
+  createSelector(
+    (state: RootState) => state.children.childData.children,
+    (children: ChildDto[] | undefined) => {
+      return (children || []).filter(
+        (child) => child.workflowStatusId === workflowStatusId
+      );
+    }
+  );
+
+export const getProgressAgeGroupForChild = (childId: string) =>
+  createSelector(
+    getCurrentProgressReportPeriod(),
+    (state: RootState) => state.children.childData.children,
+    (state: RootState) => state.classroomData.classroom,
+    (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
+    (
+      currentProgressReportingPeriod,
+      children: ChildDto[],
+      classroom: ClassroomDto | undefined,
+      ageGroups: ProgressTrackingAgeGroupDto[]
+    ) => {
+      const child = children.find((child) => child.id === childId);
+
+      if (
+        !currentProgressReportingPeriod ||
+        !classroom ||
+        !child ||
+        !child.user?.dateOfBirth
+      ) {
+        return;
+      }
+
+      const ageInMonths = differenceInMonths(
+        new Date(currentProgressReportingPeriod.endDate),
+        new Date(child.user.dateOfBirth)
+      );
+
+      // Now get age group that matches
+      const ageGroup = ageGroups.find(
+        (x) =>
+          x.startAgeInMonths <= ageInMonths && x.endAgeInMonths > ageInMonths
+      );
+
+      return ageGroup;
     }
   );

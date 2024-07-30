@@ -91,6 +91,7 @@ export default function MessagePanel() {
   const message = localStorage.getItem('selectedMessage');
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [showSavingDialog, setShowSavingDialog] = useState(false);
+  const [showLoadingDialog, setShowLoadingDialog] = useState(false);
   const [isView, setIsView] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

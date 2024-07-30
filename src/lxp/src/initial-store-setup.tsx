@@ -52,7 +52,10 @@ import {
 import { analyticsActions } from './store/analytics';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
-import { classroomsForCoachThunkActions } from './store/classroomForCoach';
+import {
+  classroomsForCoachThunkActions,
+  classroomsForCoachActions,
+} from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
@@ -142,6 +145,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     appDispatch(notesActions.resetNotesState());
     appDispatch(classroomsActions.resetClassroomState());
+    appDispatch(classroomsForCoachActions.resetClassroomState());
     appDispatch(coachActions.resetCoachState());
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
@@ -283,6 +287,18 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(classroomsActions.resetClassroomState());
     await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
+
+    if (isCoach) {
+      appDispatch(classroomsForCoachActions.resetClassroomState());
+      await appDispatch(
+        classroomsForCoachThunkActions.getClassroomForCoach({
+          id: userData?.id!,
+        })
+      ).unwrap();
+      await appDispatch(
+        classroomsForCoachThunkActions.getClassroomGroupsForCoach({})
+      ).unwrap();
+    }
   };
 
   const getLoadingMessage = () => {

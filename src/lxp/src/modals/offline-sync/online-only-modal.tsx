@@ -14,7 +14,8 @@ export const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({
   return (
     <ActionModal
       className="bg-white"
-      customIcon={<ExclamationIcon className="text-alertMain h-10 w-10" />}
+      customIcon={<ExclamationIcon className="text-alertMain h-24 w-24" />}
+      icon="ExclamationIcon"
       iconColor="alertMain"
       iconBorderColor="alertBg"
       title={

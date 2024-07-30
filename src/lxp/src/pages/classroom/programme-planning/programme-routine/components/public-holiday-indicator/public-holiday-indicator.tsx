@@ -63,7 +63,7 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
       {hasPermissionToEdit && (
         <div className={'pt-2'}>
           <Button
-            color={'secondaryAccent2'}
+            color={'secondary'}
             type={'outlined'}
             onClick={() =>
               setSelectedDate && nextProgrammeDaysWithoutActivity?.length
@@ -74,9 +74,9 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
             }
             className={'mt-4 mb-4 w-full'}
           >
-            {renderIcon('ClipboardListIcon', `w-5 h-5 text-secondaryAccent2`)}
+            {renderIcon('ClipboardListIcon', `w-5 h-5 text-secondary`)}
             <Typography
-              color={'secondaryAccent2'}
+              color={'secondary'}
               type={'help'}
               weight={'normal'}
               text={'Start planning'}

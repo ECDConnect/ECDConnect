@@ -27,6 +27,7 @@ import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { PractitionerActions } from '@/store/practitioner/practitioner.actions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -113,7 +114,12 @@ export const PractitionersList: React.FC = () => {
       blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+        return (
+          <JoinOrAddPreschoolModal
+            onSubmit={onSubmit}
+            isTrialPeriod={!!isTrialPeriod}
+          />
+        );
       },
     });
   };
@@ -154,6 +160,16 @@ export const PractitionersList: React.FC = () => {
   };
 
   const handleReassignClass = () => {
+    if (!isOnline) {
+      return dialog({
+        blocking: false,
+        position: DialogPosition.Middle,
+        render: (onClose) => {
+          return <OnlineOnlyModal onSubmit={onClose} />;
+        },
+      });
+    }
+
     history.push('principal/practitioner-reassign-class');
   };
 
@@ -172,8 +188,9 @@ export const PractitionersList: React.FC = () => {
     return (
       <div className="pt-50 flex w-full flex-col items-center justify-center gap-4 p-12">
         <RoundIcon
-          backgroundColor="errorMain"
+          backgroundColor="alertMain"
           icon="PresentationChartBarIcon"
+          iconColor="white"
           size={{ h: '12', w: '12' }}
         />
         <Typography

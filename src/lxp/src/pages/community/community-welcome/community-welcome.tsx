@@ -5,7 +5,6 @@ import {
   BannerWrapper,
   DialogPosition,
 } from '@ecdlink/ui';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { useTenant } from '@/hooks/useTenant';
 import { Step1 } from './components/step1/step1';
 import { useCallback, useState } from 'react';
@@ -30,11 +29,14 @@ import { communitySelectors, communityThunkActions } from '@/store/community';
 import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import { AddPhotoDialog } from './components/add-photo-dialog';
+import { userSelectors } from '@/store/user';
 
 export const NewCommunityWelcome = ({
   setJoinCommunity,
+  seNotJoining,
 }: {
   setJoinCommunity: (item: boolean) => void;
+  seNotJoining: (item: boolean) => void;
 }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
@@ -43,18 +45,18 @@ export const NewCommunityWelcome = ({
   const dialog = useDialog();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const user = useSelector(userSelectors.getUser);
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const profilePhoto = communityProfile?.communityUser?.profilePhoto;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { getValues, setValue, register, trigger, formState, watch, control } =
-    useForm<WelcomeMessageModel>({
-      resolver: yupResolver(welcomeMessageSchema),
-      mode: 'onChange',
-      defaultValues: initialWelcomeMessageModel,
-    });
+  const { setValue, formState, watch } = useForm<WelcomeMessageModel>({
+    resolver: yupResolver(welcomeMessageSchema),
+    mode: 'onChange',
+    defaultValues: initialWelcomeMessageModel,
+  });
 
   const { errors } = formState;
   const {
@@ -65,21 +67,31 @@ export const NewCommunityWelcome = ({
     provinceId,
   } = watch();
 
-  const onAllStepsComplete = async () => {
+  const onAllStepsComplete = async (doThisLater: boolean) => {
     setIsLoading(true);
     const saveCommunityProfileInput: CommunityProfileInputModelInput = {
       userId: practitioner?.userId!,
       aboutShort: aboutShort,
-      shareContactInfo: shareContactInfo,
+      shareContactInfo: true,
       shareProfilePhoto: shareProfilePhoto,
       shareProvince: shareProvince,
-      provinceId: provinceId || '',
+      provinceId: provinceId || null,
+      communitySkillIds: [],
+    };
+
+    const doThisLaterInput: CommunityProfileInputModelInput = {
+      userId: practitioner?.userId!,
+      aboutShort: '',
+      shareContactInfo: true,
+      shareProfilePhoto: false,
+      shareProvince: false,
+      provinceId: null,
       communitySkillIds: [],
     };
 
     await dispatch(
       communityThunkActions.saveCommunityProfile({
-        input: saveCommunityProfileInput,
+        input: doThisLater ? doThisLaterInput : saveCommunityProfileInput,
       })
     );
 
@@ -91,7 +103,7 @@ export const NewCommunityWelcome = ({
 
     setIsLoading(false);
 
-    if (!profilePhoto) {
+    if (!user?.profileImageUrl && shareProfilePhoto) {
       return dialog({
         position: DialogPosition.Middle,
         color: 'bg-white',
@@ -100,6 +112,7 @@ export const NewCommunityWelcome = ({
             onClose={() => {
               history.push(ROUTES.COMMUNITY.ROOT);
               onClose();
+              setJoinCommunity(false);
             }}
             onSubmit={() => {
               history.push(ROUTES.PRACTITIONER.ABOUT.ROOT, {
@@ -126,6 +139,7 @@ export const NewCommunityWelcome = ({
             setValue={setValue}
             step={step}
             setJoinCommunity={setJoinCommunity}
+            seNotJoining={seNotJoining}
           />
         );
       default:
@@ -161,7 +175,13 @@ export const NewCommunityWelcome = ({
     } else {
       setStep(step - 1);
     }
-  }, [step, practitioner?.clickedCommunityTab]);
+  }, [
+    step,
+    practitioner?.clickedCommunityTab,
+    practitioner?.userId,
+    history,
+    dispatch,
+  ]);
 
   return (
     <>

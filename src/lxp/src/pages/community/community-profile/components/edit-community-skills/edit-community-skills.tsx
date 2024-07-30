@@ -100,7 +100,7 @@ export const EditCommunitySkills: React.FC<AboutDescriptionProps> = ({
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={`About`}
+      title={`ECD skills`}
       color={'primary'}
       onBack={() => onClose && onClose(false)}
       displayOffline={!isOnline}
@@ -109,8 +109,13 @@ export const EditCommunitySkills: React.FC<AboutDescriptionProps> = ({
       <div className="p-4">
         <Typography
           type={'h2'}
-          text={`About ${user?.firstName}`}
+          text={`Select your ECD skills`}
           color={'textDark'}
+        />
+        <Typography
+          type={'body'}
+          text={`Help others find and connect with you for support and collaboration.`}
+          color={'textMid'}
         />
         {communitySkills.map((item, index) => (
           <CheckboxGroup

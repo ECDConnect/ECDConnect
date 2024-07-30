@@ -74,7 +74,7 @@ namespace ECDLink.ContentManagement.Repositories
                 // Get the complete content for null tenant and current tenants.
                 var contentType = _context.ContentTypes
                   .Include(ct => ct.Content)
-                      .ThenInclude(c => c.ContentValues)
+                      .ThenInclude(c => c.ContentValues.Where(c => c.LocaleId == localeId))
                         .ThenInclude(c => c.ContentTypeField)
                   .Where(x => x.Id == contentTypeId
                         && x.IsActive
@@ -87,17 +87,17 @@ namespace ECDLink.ContentManagement.Repositories
 
                 var contents = contentType?.Content
                         .Where(x => x.IsActive
-                                && x.TenantId == currentTenant)
+                     && (x.TenantId == currentTenant || x.TenantId == null))
                         .OrderBy(x => x.Id)
                         .ToList();
 
-                // Use global tenant as a fallback, mostly for static and dynamic links
+              /*  // Use global tenant as a fallback, mostly for static and dynamic links
                 contents = contents?.Any() ?? false ? contents
                     : contentType?.Content
                         .Where(x => x.IsActive
                                 && x.TenantId == null)
                         .OrderBy(x => x.Id)
-                        .ToList();
+                        .ToList();*/
 
                 // No Content Found
                 if (contents == default)

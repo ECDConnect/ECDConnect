@@ -15,26 +15,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
         public string CompletenessPercImage { get; set; }
         public List<CommunityConnectionModel> AcceptedConnections { get; set; }
         public List<CommunityConnectionModel> PendingConnections { get; set; }
+        public List<CommunityConnectionModel> UserConnectionRequests { get; set; }
         
-
         public CommunityProfileModel(CommunityProfile profile, 
                                      List<CommunityConnectionModel> acceptedConnections, 
                                      List<CommunityConnectionModel> pendingConnections, 
+                                     List<CommunityConnectionModel> userConnectionRequests, 
                                      List<string> userRoles,
                                      decimal completenessPerc,
-                                     string completenessPercColor,
-                                     string completenessPercImage)
+                                     string completenessPercColor)
             : base(profile, userRoles)
         {
             ClickedECDHeros = profile.ClickedECDHeros;
             AcceptedConnections = acceptedConnections;
             PendingConnections = pendingConnections;
+            UserConnectionRequests = userConnectionRequests;
             CoachUserId = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.Id : null;
             CoachName = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.FullName : "";
             CoachPhoneNumber = profile.User.coachObjectData != null ? profile.User.coachObjectData.User.PhoneNumber : "";
             CompletenessPerc = completenessPerc;
             CompletenessPercColor = completenessPercColor;
-            CompletenessPercImage = completenessPercImage;
         }
 
         public CommunityProfileModel()
@@ -44,13 +44,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Community
 
     public class CommunityConnectionModel : CommunityProfileBaseModel
     {
-        public CommunityConnectionModel(CommunityProfile profile, List<string> userRoles) :
+        public bool? ConnectionAccepted { get; set; } = null;
+
+        public CommunityConnectionModel(CommunityProfile profile, List<string> userRoles, bool? connectionAccepted) :
             base(profile, userRoles)
         {
+            ConnectionAccepted = connectionAccepted;
         }
 
         public CommunityConnectionModel()
         {
         }
     }
+    
 }

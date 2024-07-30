@@ -24,6 +24,7 @@ export interface ListItemProps extends ComponentBaseProps {
   chipIcon?: string;
   withPaddingY?: boolean;
   withPaddingX?: boolean;
+  withBorderRadius?: boolean;
   dividerType?: DividerType;
   dividerColor?: Colours;
   iconName?: string;
@@ -75,6 +76,7 @@ export const ListItem: React.FC<ListItemProps> = ({
   title = '',
   withPaddingY = false,
   withPaddingX = false,
+  withBorderRadius = true,
   subTitle = '',
   subTitleShape = 'circle',
   titleTypographyType = 'body',
@@ -93,6 +95,7 @@ export const ListItem: React.FC<ListItemProps> = ({
           backgroundColor,
           withPaddingY,
           withPaddingX,
+          withBorderRadius,
           showDivider,
           dividerType,
           dividerColor

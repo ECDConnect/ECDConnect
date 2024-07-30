@@ -328,6 +328,7 @@ export const Dashboard: React.FC = () => {
   const handle30DaysExpired = () => {
     dialog({
       position: DialogPosition.Middle,
+      blocking: true,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
@@ -359,8 +360,8 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (practitioner?.startDate) {
       const diffDays = differenceInDays(
-        new Date(practitioner?.startDate),
-        new Date()
+        new Date(),
+        new Date(practitioner?.startDate)
       );
 
       if (diffDays > 30 && !classroom?.preschoolCode && isOpenAccess) {
@@ -564,7 +565,12 @@ export const Dashboard: React.FC = () => {
       blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
-        return <JoinOrAddPreschoolModal onSubmit={onSubmit} isTrialPeriod />;
+        return (
+          <JoinOrAddPreschoolModal
+            onSubmit={onSubmit}
+            isTrialPeriod={!!isTrialPeriod}
+          />
+        );
       },
     });
   };
@@ -944,8 +950,9 @@ export const Dashboard: React.FC = () => {
 
   const goToCommunity = () => {
     if (
-      (((classroom && classroom.id) ||
-        (classroomGroups && classroomGroups.length > 0)) &&
+      (classroom && classroom.id) ||
+      (classroomGroups &&
+        classroomGroups.length > 0 &&
         isRegistered &&
         isProgress &&
         isProgress > 0 &&

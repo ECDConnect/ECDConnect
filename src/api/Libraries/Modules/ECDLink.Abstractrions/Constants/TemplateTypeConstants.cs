@@ -28,6 +28,9 @@ namespace ECDLink.Abstractrions.Constants
         public const string PrincipalInvitation = "principal-invitation";
         public const string MultipleProgrammeInvitation = "multiple-programme-invitation";
 
+        // Tenant Setup Info
+        public const string NewTenantSetupInfoReceived = "new-tenant-setup-info-received";
+
         //app notifications
         public const string StartTraineeJourney = "start-trainee-journey";
         public const string ProgrammeInvitation = "ProgrammeInvitation";

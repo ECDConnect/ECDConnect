@@ -3,11 +3,12 @@ import { useAppDispatch } from '@/store';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { userSelectors } from '@/store/user';
 import { BannerWrapper, Button, FormInput, Typography } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { cloneDeep } from 'lodash';
 import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
 import { useSnackbar } from '@ecdlink/core';
+import { FieldError } from 'react-hook-form';
 
 interface AboutDescriptionProps {
   onClose?: (item: boolean) => void;
@@ -25,6 +26,21 @@ export const AboutDescription: React.FC<AboutDescriptionProps> = ({
   const [aboutLong, setAboutLong] = useState(communityProfile?.aboutLong);
   const skillIds = communityProfile?.profileSkills?.map((item) => item?.id);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUrl, setIsUrl] = useState('');
+
+  useEffect(() => {
+    if (
+      new RegExp(
+        '([a-zA-Z0-9]+://)?([a-zA-Z0-9_]+:[a-zA-Z0-9_]+@)?([a-zA-Z0-9.-]+\\.[A-Za-z]{2,4})(:[0-9]+)?(/.*)?'
+      ).test(aboutLong)
+    ) {
+      setIsUrl(
+        'Oops! No links allowed. Please remove all links to save your content.'
+      );
+    } else {
+      setIsUrl('');
+    }
+  }, [aboutLong]);
 
   const onSave = async () => {
     setIsLoading(true);
@@ -86,9 +102,13 @@ export const AboutDescription: React.FC<AboutDescriptionProps> = ({
           label={`Write a short description about yourself so that others can get to know you`}
           value={aboutLong}
           onChange={(e) => setAboutLong(e?.target?.value)}
-          placeholder={'e.g. 4'}
+          placeholder={'Add a short description....'}
           className="mt-6"
+          maxCharacters={250}
+          maxLength={250}
+          error={isUrl as unknown as FieldError}
         />
+        {isUrl && <Typography type={'help'} text={isUrl} color={'errorMain'} />}
         <div className="mt-4 flex w-full flex-col justify-center gap-3">
           <Button
             className="w-full rounded-2xl px-2"
@@ -99,7 +119,7 @@ export const AboutDescription: React.FC<AboutDescriptionProps> = ({
             icon="SaveIcon"
             iconPosition="start"
             isLoading={isLoading}
-            disabled={isLoading}
+            disabled={isLoading || !!isUrl}
             onClick={onSave}
           />
         </div>

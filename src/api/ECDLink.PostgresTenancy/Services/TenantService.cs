@@ -104,6 +104,24 @@ namespace ECDLink.PostgresTenancy.Services
             return GetAllTenants(null, siteAddress, includeModules);
         }
 
+        public TenantInternalModel UpdateTenantInfo(Guid? tenantId, TenantInfoInputModel input)
+        {
+            var tenantToUpdate = _repository.GetAll().Where(t => t.Id == tenantId).FirstOrDefault();
+
+            tenantToUpdate.OrganisationEmail = string.IsNullOrEmpty(input.OrganisationEmail) ? tenantToUpdate.OrganisationEmail : input.OrganisationEmail;
+            tenantToUpdate.OrganisationName = string.IsNullOrEmpty(input.OrganisationName) ? tenantToUpdate.OrganisationName : input.OrganisationName;
+            tenantToUpdate.ApplicationName = string.IsNullOrEmpty(input.ApplicationName) ? tenantToUpdate.ApplicationName : input.ApplicationName;
+
+            return Cast(_repository.Update(tenantToUpdate));
+        }
+
+        public TenantInternalModel UpdateTenantThemePath(Guid? tenantId, string themePath)
+        {
+            var tenantToUpdate = _repository.GetAll().Where(t => t.Id == tenantId).FirstOrDefault();
+            tenantToUpdate.ThemePath = themePath;
+            return Cast(_repository.Update(tenantToUpdate));
+        }
+
         private static TenantInternalModel Cast(TenantEntity tenantEntity)
         {
             return new TenantInternalModel
@@ -120,7 +138,10 @@ namespace ECDLink.PostgresTenancy.Services
                 MoodleUrl = tenantEntity.MoodleUrl,
                 MoodleConfig = tenantEntity.MoodleConfig,
                 GoogleAnalyticsTag = tenantEntity.GoogleAnalyticsTag,
-                GoogleTagManager = tenantEntity.GoogleTagManager
+                GoogleTagManager = tenantEntity.GoogleTagManager,
+                OrganisationEmail = tenantEntity.OrganisationEmail,
+                DefaultSystemSettings = tenantEntity.DefaultSystemSettings,
+                BlobStorageAddress = tenantEntity.BlobStorageAddress
             };
         }
     }

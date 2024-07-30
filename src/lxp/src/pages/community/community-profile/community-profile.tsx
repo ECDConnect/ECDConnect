@@ -1,6 +1,6 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { userSelectors } from '@/store/user';
-import { CommunityProfileDto, useTheme } from '@ecdlink/core';
+import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -10,19 +10,23 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
-import { CompleteProfilePerc } from './components/complete-profile-perc';
-import { ConnectionsCard } from './components/connections-card';
-import { DetailsCard } from './components/details-card';
+import { useHistory, useLocation } from 'react-router';
+import { CompleteProfilePerc } from './components/complete-procile-perc/complete-profile-perc';
+import { ConnectionsCard } from './components/connections-card/connections-card';
+import { DetailsCard } from './components/details-card/details-card';
 import { communitySelectors } from '@/store/community';
-import { ProfileSkills } from './components/profile-skills';
+import { ProfileSkills } from './components/profile-skills/profile-skills';
 import { useTenant } from '@/hooks/useTenant';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ContactDetails } from './components/contact-details/contact-details';
 import { AboutDescription } from './components/about-description/about-description';
 import { EditCommunitySkills } from './components/edit-community-skills/edit-community-skills';
 import { CommunityBasicInfo } from './components/community-basic-info/community-basic-info';
-import { BasicInfoItems } from './components/community-basic-info/community-basic-info.types';
+import { BasicInfoItems } from '../community.types';
+import ROUTES from '@/routes/routes';
+export interface CommunityProfileRouteState {
+  isFromAddMoreDetails: boolean;
+}
 
 export const CommunityProfile = () => {
   const { isOnline } = useOnlineStatus();
@@ -59,6 +63,12 @@ export const CommunityProfile = () => {
     }
   }, [communityProfile]);
 
+  // useEffect(() => {
+  //   if (isFromAddMoreDetails) {
+  //     setOpenAboutDescription(true);
+  //   }
+  // }, []);
+
   return (
     <div className="flex h-screen flex-1 flex-col overflow-y-auto bg-white">
       <BannerWrapper
@@ -75,7 +85,7 @@ export const CommunityProfile = () => {
       >
         <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
-            hasConsent={true}
+            hasConsent={communityProfile?.shareProfilePhoto || false}
             canChangeImage={false}
             dataUrl={communityProfile?.communityUser?.profilePhoto || ''}
             size={'header'}
@@ -93,20 +103,32 @@ export const CommunityProfile = () => {
           <ConnectionsCard
             title="New requests"
             subtitle="WAITING TO CONNECT WITH:"
-            connectionsNumber={communityProfile?.pendingConnections?.length}
+            connectionsNumber={
+              communityProfile?.pendingConnections?.length || 0
+            }
             icon="HandIcon"
+            route={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
+            usersData={communityProfile?.pendingConnections}
+            isConnectedScreen={false}
           />
           <ConnectionsCard
             title="Your connections"
             subtitle="CONNECT WITH:"
-            connectionsNumber={communityProfile?.acceptedConnections?.length}
+            connectionsNumber={
+              communityProfile?.acceptedConnections?.length || 0
+            }
             icon="ShareIcon"
+            route={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
+            usersData={communityProfile?.acceptedConnections}
+            isConnectedScreen={true}
           />
           <DetailsCard
             title="Contact details"
             detailOne="CONTACT INFO"
-            textOne={`Phone number: ${communityProfile?.communityUser?.phoneNumber}
-            Email: ${communityProfile?.communityUser?.email}`}
+            textOne={`Phone number: ${
+              communityProfile?.communityUser?.phoneNumber
+            }
+            Email: ${communityProfile?.communityUser?.email || 'None'}`}
             isFilled={
               !!communityProfile?.communityUser?.phoneNumber ||
               !!communityProfile?.communityUser?.email
@@ -123,7 +145,7 @@ export const CommunityProfile = () => {
             action={setOpenEditBasicInfo}
           />
           <DetailsCard
-            title={`About ${user?.fullName}`}
+            title={`About ${user?.fullName || ''}`}
             textOne={communityProfile?.aboutLong}
             isFilled={!!communityProfile?.aboutLong}
             isAbout={true}
@@ -143,7 +165,7 @@ export const CommunityProfile = () => {
               text={`Edit my ${appName} profile`}
               icon="UserIcon"
               iconPosition="start"
-              onClick={() => {}}
+              onClick={() => history.push(ROUTES.PRACTITIONER.ABOUT.ROOT)}
             />
           </div>
         </div>
