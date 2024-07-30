@@ -18,9 +18,12 @@ import Banner3 from '../../../../assets//setup_banner3.svg';
 import { useState } from 'react';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import { IndividualTerms } from './components/individual-terms/individual-terms';
+import { useHistory } from 'react-router';
+import ROUTES from '../../../routes/app.routes-constants';
 
 export const SetupOrg = () => {
   const { theme } = useTheme();
+  const history = useHistory();
   const [openSummaryModal, setOpenSummaryModal] = useState(false);
   const [viewIndividualTerms, setViewIndividualTerms] =
     useState<boolean>(false);
@@ -150,7 +153,7 @@ export const SetupOrg = () => {
               textColor="white"
               text="Start"
               disabled={false}
-              onClick={() => {}}
+              onClick={() => history.push(ROUTES.SETUP_ORG_FORM)}
             />
           </div>
         </div>
