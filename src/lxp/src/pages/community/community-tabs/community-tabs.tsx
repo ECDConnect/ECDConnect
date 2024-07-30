@@ -1,12 +1,9 @@
 import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { Connect } from '../../community-old/connect-tab/connect';
 import { useState } from 'react';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
-import { ClubsTab } from '../../community-old/clubs-tab';
-import { LeaguesTab } from '../../community-old/leagues-tab';
 import { CommunityItem } from './components/community-item/community-item';
 
 export const COMMUNITY_TABS = {
@@ -15,8 +12,11 @@ export const COMMUNITY_TABS = {
 
 export const CommunityTabs = ({
   setJoinCommunity,
+  notJoining,
 }: {
   setJoinCommunity: (item: boolean) => void;
+  seNotJoining: (item: boolean) => void;
+  notJoining: boolean;
 }) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -28,7 +28,12 @@ export const CommunityTabs = ({
     {
       title: 'Community',
       initActive: true,
-      child: <CommunityItem setJoinCommunity={setJoinCommunity} />,
+      child: (
+        <CommunityItem
+          setJoinCommunity={setJoinCommunity}
+          notJoining={notJoining}
+        />
+      ),
     },
     {
       title: 'Resources',
@@ -39,15 +44,6 @@ export const CommunityTabs = ({
 
   function setTabSelected(tab: TabItem, tabIndex: number) {
     setSelectedTabIndex(tabIndex);
-  }
-
-  function displayTutorial(type?: string) {
-    // TODO: add walkthrough
-    switch (type) {
-      default:
-        // showTutorial();
-        break;
-    }
   }
 
   return (

@@ -7,7 +7,7 @@ import { PractitionerRemovalHistory } from '@ecdlink/graphql';
 import { Button, Dialog, DialogPosition, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import EditRemovePractitionerFromProgrammePrompt from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { classroomsSelectors } from '@/store/classroom';
 import { EditPractitionerPermissions } from './edit-practitioner-permissions';
@@ -21,6 +21,8 @@ export const EditPractitionerModal = ({
   practitioner?: PractitionerDto;
 }) => {
   const history = useHistory();
+  const location = useLocation<object>();
+
   const userAuth = useSelector(authSelectors.getAuthUser);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const [existingRemovals, setExisitingRemovals] = useState<
@@ -91,7 +93,8 @@ export const EditPractitionerModal = ({
 
   const handleReassignClass = () => {
     history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
-      practitionerId: practitioner?.id!,
+      ...location.state,
+      practitionerId: practitioner?.userId!,
       isFromEditPractitionersPage: true,
     } as ReassignClassPageState);
   };

@@ -9,6 +9,7 @@ import {
   updateClassroomGroup,
   upsertClassroomGroupLearners,
   upsertClassroomGroupProgrammes,
+  addChildProgressReportPeriods,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
@@ -240,6 +241,22 @@ const classroomsSlice = createSlice({
 
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(
+      addChildProgressReportPeriods.fulfilled,
+      (state, action) => {
+        if (!!state.classroom) {
+          state.classroom = {
+            ...state.classroom,
+            childProgressReportPeriods:
+              action.meta.arg.childProgressReportPeriods.map((x) => ({
+                id: x.id,
+                startDate: x.startDate.toString(),
+                endDate: x.endDate.toString(),
+              })),
+          };
+        }
+      }
+    );
   },
 });
 

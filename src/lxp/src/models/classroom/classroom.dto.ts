@@ -13,10 +13,11 @@ export type ClassroomDto = {
   preschoolCode?: string;
   userId?: string;
   isDummySchool?: boolean;
-  childProgressReportPeriods?: ChildProgressReportPeriod[];
+  childProgressReportPeriods?: ChildProgressReportPeriodDto[];
 };
 
-export type ChildProgressReportPeriod = {
+export type ChildProgressReportPeriodDto = {
+  id: string;
   startDate: string;
   endDate: string;
 };

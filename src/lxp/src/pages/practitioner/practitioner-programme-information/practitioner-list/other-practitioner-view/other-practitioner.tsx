@@ -36,27 +36,27 @@ export const OtherPractitionerProfile: React.FC<
     colleagueProfile?.classroomNames.split(',');
 
   return (
-    <div className={styles.contentWrapper}>
-      <BannerWrapper
-        title={`${colleagueProfile?.name}`}
-        color={'primary'}
-        size="small"
-        renderOverflow={false}
-        onBack={() => setPractitionerInfo(false)}
-        displayOffline={!isOnline}
-        backgroundImageColour={'primary'}
-        showBackground={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
-      >
-        <div className={'inline-flex w-full justify-center pt-8'}>
-          <ProfileAvatar
-            dataUrl={colleagueProfile?.profilePhoto!}
-            size={'header'}
-            onPressed={() => {}}
-            hasConsent={true}
-          />
-        </div>
-      </BannerWrapper>
+    <BannerWrapper
+      title={`${colleagueProfile?.name}`}
+      color={'primary'}
+      size="small"
+      renderOverflow={false}
+      onBack={() => setPractitionerInfo(false)}
+      displayOffline={!isOnline}
+      backgroundImageColour={'primary'}
+      showBackground={true}
+      backgroundUrl={theme?.images.graphicOverlayUrl}
+      className="px-4"
+    >
+      <div className={'inline-flex w-full justify-center pt-8'}>
+        <ProfileAvatar
+          canChangeImage={false}
+          dataUrl={colleagueProfile?.profilePhoto!}
+          size={'header'}
+          onPressed={() => {}}
+          hasConsent={true}
+        />
+      </div>
       <div className={styles.chipsWrapper}>
         <StatusChip
           backgroundColour={
@@ -85,80 +85,66 @@ export const OtherPractitionerProfile: React.FC<
           ))}
       </div>
       <div>
-        <div>
-          <div>
-            <Typography
-              text={`Contact ${colleagueProfile?.name}`}
-              type="h3"
-              color="textDark"
-              className={'m-4'}
-            />
-          </div>
-          <div>
-            <Typography
-              text={`${colleagueProfile?.contactNumber}`}
-              type="h2"
-              weight="skinny"
-              color="primary"
-              className={'ml-4 mt-2'}
-            />
-          </div>
-        </div>
-        <div>
-          <div className={styles.contactButtons}>
-            <Button
-              color={'secondary'}
-              type={'outlined'}
-              className={'mr-4 rounded-xl'}
-              size={'normal'}
-              onClick={whatsapp}
-            >
-              <div className="flex items-center justify-center">
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className={styles.buttonIconStyle}
-                />
-                <Typography
-                  text={`Whatsapp ${colleagueProfile?.name}`}
-                  type="button"
-                  weight="skinny"
-                  color="secondary"
-                />
-              </div>
-            </Button>
-            <Button
-              color={'secondary'}
-              type={'outlined'}
-              className={'mr-4 rounded-xl'}
-              size={'small'}
-              onClick={call}
-            >
-              <div className="flex items-center justify-center">
-                <PhoneIcon
-                  className="text-secondary mr-2 h-6 w-5"
-                  aria-hidden="true"
-                />
-                <Typography
-                  text={`Call ${colleagueProfile?.name}`}
-                  type="button"
-                  weight="skinny"
-                  color="secondary"
-                />
-              </div>
-            </Button>
-          </div>
-          <div className="flex justify-center">
-            <div className="w-11/12 rounded-2xl">
-              <Alert
-                type="info"
-                className="mt-4"
-                message="WhatsApps and phone calls will be charged at your standard carrier rates."
+        <Typography
+          text={`Contact ${colleagueProfile?.name}`}
+          type="h3"
+          color="textDark"
+          className={'mt-6 mb-1'}
+        />
+        <Typography
+          text={`${colleagueProfile?.contactNumber}`}
+          type="body"
+          weight="skinny"
+          color="quatenary"
+        />
+        <div className="mt-4 flex flex-wrap gap-4">
+          <Button
+            color={'secondary'}
+            type={'outlined'}
+            onClick={whatsapp}
+            size="small"
+          >
+            <div className="flex items-center justify-center">
+              <img
+                src={getLogo(LogoSvgs.whatsapp)}
+                alt="whatsapp"
+                className={styles.buttonIconStyle}
+              />
+              <Typography
+                text={`WhatsApp ${colleagueProfile?.name}`}
+                type="button"
+                weight="skinny"
+                color="secondary"
               />
             </div>
-          </div>
+          </Button>
+          <Button
+            color={'secondary'}
+            type={'outlined'}
+            onClick={call}
+            size="small"
+          >
+            <div className="flex items-center justify-center">
+              <PhoneIcon
+                className="text-secondary mr-2 h-5 w-4"
+                aria-hidden="true"
+              />
+              <Typography
+                text={`Call ${colleagueProfile?.name}`}
+                type="button"
+                weight="skinny"
+                color="secondary"
+              />
+            </div>
+          </Button>
         </div>
+
+        <Alert
+          type="info"
+          className="mt-4"
+          message="WhatsApps and phone calls will be charged at your standard carrier rates."
+        />
       </div>
-    </div>
+    </BannerWrapper>
   );
 };

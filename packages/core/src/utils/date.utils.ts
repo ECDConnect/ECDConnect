@@ -1,4 +1,5 @@
 import {
+  addDays,
   addMonths,
   addWeeks,
   addYears,
@@ -221,4 +222,14 @@ export const isNextWeek = (date: Date) => {
   const endOfNextWeek = endOfWeek(addWeeks(new Date(), 1));
 
   return isWithinInterval(date, { start: startOfNextWeek, end: endOfNextWeek });
+};
+
+export const getNextBusinessDay = (date: Date) => {
+  let nextDay = addDays(date, 1);
+
+  while (isWeekend(nextDay)) {
+    nextDay = addDays(nextDay, 1);
+  }
+
+  return nextDay;
 };

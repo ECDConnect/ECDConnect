@@ -1,14 +1,20 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
 import ROUTES from '@/routes/routes';
-import { communitySelectors, communityThunkActions } from '@/store/community';
+import {
+  communityActions,
+  communitySelectors,
+  communityThunkActions,
+} from '@/store/community';
 import { cloneDeep } from 'lodash';
 import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
 import AlienImage from '@/assets/ECD_Connect_alien2.svg';
 import {
+  ActionModal,
   BannerWrapper,
   Button,
   CheckboxGroup,
+  DialogPosition,
   Divider,
   Dropdown,
   EmptyPage,
@@ -17,14 +23,15 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { MailIcon } from '@heroicons/react/solid';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
-import { ProvinceDto, useSnackbar } from '@ecdlink/core';
+import { ProvinceDto, useDialog, useSnackbar } from '@ecdlink/core';
 import { staticDataSelectors } from '@/store/static-data';
-import { BasicInfoItems } from './community-basic-info.types';
+import { BasicInfoItems } from '../../../community.types';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import { deleteCommunityProfile } from '@/store/community/community.actions';
 
 interface ContactDetailsProps {
   onClose?: (item: boolean) => void;
@@ -35,6 +42,7 @@ export const CommunityBasicInfo: React.FC<ContactDetailsProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
+  const dialog = useDialog();
   const history = useHistory();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
@@ -171,6 +179,56 @@ export const CommunityBasicInfo: React.FC<ContactDetailsProps> = ({
     }
   };
 
+  const handleDeleProfile = async () => {
+    await dispatch(
+      communityThunkActions.deleteCommunityProfile({
+        communityProfileId: communityProfile?.id!,
+      })
+    );
+
+    history.push(ROUTES.COMMUNITY.ROOT);
+  };
+
+  const handleDeleteProfileModal = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onClose) => {
+        return (
+          <ActionModal
+            customIcon={
+              <ExclamationCircleIcon className="text-alertMain h-10 w-10 rounded-full" />
+            }
+            title="Are you sure you want to delete your profile?"
+            detailText="You can always rejoin the community but you will need to add all of your details again."
+            actionButtons={[
+              {
+                colour: 'quatenary',
+                type: 'filled',
+                text: 'Yes, delete my profile',
+                textColour: 'white',
+                onClick: () => {
+                  handleDeleProfile();
+                  onClose();
+                },
+                leadingIcon: 'TrashIcon',
+              },
+              {
+                colour: 'quatenary',
+                type: 'outlined',
+                text: 'No, cancel',
+                textColour: 'quatenary',
+                onClick: () => {
+                  onClose();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const renderContactDetails = useMemo(() => {
     return (
       <>
@@ -266,6 +324,16 @@ export const CommunityBasicInfo: React.FC<ContactDetailsProps> = ({
               isLoading={isLoading}
               disabled={isLoading}
               onClick={onSave}
+            />
+            <Button
+              className="w-full rounded-2xl px-2"
+              type="outlined"
+              color="quatenary"
+              textColor="quatenary"
+              text="Delete my profile"
+              icon="TrashIcon"
+              iconPosition="start"
+              onClick={handleDeleteProfileModal}
             />
           </div>
         </div>

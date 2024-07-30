@@ -2,15 +2,14 @@ import {
   Typography,
   ComponentBaseProps,
   classNames,
-  Dialog,
-  DialogPosition,
   renderIcon,
 } from '@ecdlink/ui';
-import { useState } from 'react';
 import * as styles from './attendance-monthly-report.styles';
-import { MonthlyAttendanceReport } from './attendance-report';
 import { getYear } from 'date-fns';
 import { MonthlyAttendanceRecord } from '@ecdlink/core';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import { MonthlyAttendanceReportRouteState } from './attendance-report.types';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: MonthlyAttendanceRecord[];
@@ -19,12 +18,7 @@ interface AttendanceMonthlyReportProps extends ComponentBaseProps {
 export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
 > = ({ attendanceSummary }) => {
-  const [displayReport, setDisplayReport] = useState<boolean>(false);
-  const [selectedMonth, setSelectedMonth] = useState<MonthlyAttendanceRecord>();
-
-  const closeReport = () => {
-    setDisplayReport(!displayReport);
-  };
+  const history = useHistory();
 
   return (
     <div className={styles.wrapper}>
@@ -34,8 +28,9 @@ export const AttendanceMonthlyReport: React.FC<
             <div
               onClick={() => {
                 if (!attendanceItem.percentageAttendance) return;
-                setDisplayReport(true);
-                setSelectedMonth(attendanceItem);
+                history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
+                  selectedMonth: attendanceItem,
+                } as MonthlyAttendanceReportRouteState);
               }}
               key={`attendance-summary-item-${idx}`}
               className={classNames(
@@ -80,22 +75,6 @@ export const AttendanceMonthlyReport: React.FC<
             </div>
           );
         })}
-
-      {displayReport && selectedMonth && (
-        <Dialog
-          fullScreen
-          visible={displayReport}
-          position={DialogPosition.Top}
-        >
-          <div className={'h-full'}>
-            <MonthlyAttendanceReport
-              selectedMonth={selectedMonth}
-              onDownloadReport={() => {}}
-              onBack={closeReport}
-            />
-          </div>
-        </Dialog>
-      )}
     </div>
   );
 };

@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
-
 import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { CategoryLevelForm } from './category-level-form/category-level-form';

@@ -52,7 +52,7 @@ export const WeekendDayIndicator: React.FC<HolidayProps> = ({
       />
       <div className={'pt-2'}>
         <Button
-          color={'secondaryAccent2'}
+          color={'secondary'}
           type={'outlined'}
           onClick={() =>
             nextProgrammeDaysWithoutActivity?.length
@@ -63,9 +63,9 @@ export const WeekendDayIndicator: React.FC<HolidayProps> = ({
           }
           className={'mt-4 mb-4 w-full'}
         >
-          {renderIcon('ClipboardListIcon', `w-5 h-5 text-secondaryAccent2`)}
+          {renderIcon('ClipboardListIcon', `w-5 h-5 text-secondary`)}
           <Typography
-            color={'secondaryAccent2'}
+            color={'secondary'}
             type={'help'}
             weight={'normal'}
             text={'Start planning'}

@@ -534,6 +534,7 @@ export const CoachAbout: React.FC = () => {
           isFromEditCellPhone={true}
           saveNewPractitionerUserData={saveCoachUserData}
           setEditiCellPhoneNumber={setEditFieldVisible}
+          phoneNumber={cellphone}
         />
       </Dialog>
     </div>

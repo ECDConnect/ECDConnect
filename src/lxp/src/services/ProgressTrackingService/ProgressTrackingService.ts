@@ -94,6 +94,8 @@ class ProgressTrackingService {
             name            
             startAgeInMonths
             endAgeInMonths     
+            color
+            description
           }
         }`,
       variables: {

@@ -62,6 +62,7 @@ import {
   practitionerAccountModelSchema,
 } from '@/schemas/practitioner/practitioner-account';
 import { UserResetPasswrodParams } from '@/store/user/user.types';
+import { communitySelectors } from '@/store/community';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -76,6 +77,7 @@ export const PractitionerAbout: React.FC = () => {
     updateDocument,
   } = useDocuments();
 
+  const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
@@ -360,7 +362,21 @@ export const PractitionerAbout: React.FC = () => {
           });
         },
       },
-      // getPhotoOnProgressReportItem(),
+      {
+        title: 'Community profile',
+        subTitle: communityProfile
+          ? 'Edit your profile'
+          : 'Create a community profile',
+        switchTextStyles: true,
+        actionName: communityProfile ? 'Edit' : 'Add',
+        actionIcon: communityProfile ? 'PencilIcon' : 'PlusIcon',
+        buttonType: 'filled',
+        buttonColor: communityProfile ? 'secondaryAccent2' : 'quatenary',
+        textColor: communityProfile ? 'secondary' : 'white',
+        onActionClick: communityProfile
+          ? () => history.push(ROUTES.COMMUNITY.PROFILE)
+          : () => history.push(ROUTES.COMMUNITY.WELCOME),
+      },
     ];
 
     setListItems(list);

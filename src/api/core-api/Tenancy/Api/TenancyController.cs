@@ -1,7 +1,10 @@
-﻿using ECDLink.Tenancy.Context;
+﻿using ECDLink.DataAccessLayer.Managers;
+using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Model;
+using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Tenancy.Api
 {
@@ -10,8 +13,12 @@ namespace EcdLink.Api.CoreApi.Tenancy.Api
     [ApiController]
     public class TenancyController : ControllerBase
     {
-        public TenancyController()
+
+        private readonly ApplicationRoleManager _roleManager;
+
+        public TenancyController([Service] ApplicationRoleManager roleManager)
         {
+            _roleManager = roleManager;
         }
 
         [AllowAnonymous]
@@ -28,6 +35,14 @@ namespace EcdLink.Api.CoreApi.Tenancy.Api
             {
                 tenant = new TenantModel(internalModel);
             }
+
+            // Add tenant role name for coach if module for coach is enabled
+            if (tenant.Modules != null && tenant.Modules.CoachRoleEnabled)
+            {
+                var coachRole = _roleManager.Roles.Where(x => x.SystemName == "Coach").FirstOrDefault();
+                tenant.Modules.CoachRoleName = coachRole.TenantName;
+            }
+
             return new OkObjectResult(new TenantModelAPI(tenant));
         }
     }

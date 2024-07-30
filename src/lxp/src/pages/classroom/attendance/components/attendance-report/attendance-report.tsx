@@ -188,25 +188,31 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto p-4">
       <div className={'flex flex-col'}>
-        <Typography
-          type="h2"
-          color="textDark"
-          text="Choose a register to view"
-          className="mb-4"
-        />
-        <PointsSuccessCard
-          visible={!!isAllRegistersCompleted}
-          className={'mb-4'}
-          message={`Good job! All your attendance registers are up to date!`}
-          icon={'SparklesIcon'}
-        />
+        {(formattedAttendanceSummary.length > 1 ||
+          (formattedAttendanceSummary?.length === 1 &&
+            formattedAttendanceSummary[0].percentageAttendance !== 0)) && (
+          <>
+            <Typography
+              type="h2"
+              color="textDark"
+              text="Choose a register to view"
+              className="mb-4"
+            />
+            <PointsSuccessCard
+              visible={!!isAllRegistersCompleted}
+              className={'mb-4'}
+              message={`Good job! All your attendance registers are up to date!`}
+              icon={'SparklesIcon'}
+            />
+          </>
+        )}
         {!formattedAttendanceSummary.length ||
         (formattedAttendanceSummary?.length === 1 &&
           formattedAttendanceSummary[0].percentageAttendance === 0) ? (
           <IconInformationIndicator
             title={
               hasPermissionToEdit
-                ? "You don't have saved any attendance registers yet!"
+                ? 'You don’t have any attendance registers yet!'
                 : 'No registers to view yet!'
             }
             subTitle={

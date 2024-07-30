@@ -105,6 +105,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         ?.map((item) => item?.id)
         ?.toString()
     );
+    onStateChange(
+      'themes',
+      contentView?.content?.['themes']?.map((item) => item?.id)?.toString()
+    );
     setDisableActivitiesInputs(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentView?.content]);
@@ -403,7 +407,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           );
         }
         case FieldType.Link: {
-          if (propName === 'subCategories') {
+          if (propName === 'subCategories' || propName === 'themes') {
             const englishCatValues = contentView?.content?.[propName]
               ?.map((item) => item?.id)
               .toString();
