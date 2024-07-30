@@ -90,9 +90,9 @@ export default function ContentList({
 
   const sortByThemeOptions: SearchDropDownOption<string>[] = themes?.map(
     (item) => ({
-      id: item?.themes?.id,
-      label: item?.themes?.name,
-      value: item?.themes?.id,
+      id: item?.id,
+      label: item?.name,
+      value: item?.id,
     })
   );
 
@@ -283,13 +283,16 @@ export default function ContentList({
                   new Date(a.updatedDate).getTime()
               )
           );
-          setThemes(
-            moreInforItems?.map((x) => {
-              if (x.themes != null) {
-                return x.themes;
-              }
-            })
+          const itemsWithThemes = moreInforItems?.filter(
+            (item) => item?.themes != null && item?.themes.length > 0
           );
+          let themeArray = [];
+          itemsWithThemes?.map((x) => {
+            x.themes?.map((y) => {
+              themeArray.push(y);
+            });
+          });
+          setThemes(themeArray);
         }
 
         if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
@@ -456,6 +459,7 @@ export default function ContentList({
     tableData,
     startDate,
     typeFilterValues,
+    themeFilterValues,
   ]);
 
   const renderTables = useMemo(() => {
