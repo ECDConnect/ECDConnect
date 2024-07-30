@@ -4,7 +4,7 @@ import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
 
 export type ChildProgressObservationsSkillsProps = {
   currentStep: number;
-  skills: ChildProgressSkill[]; // TODO -> change to child skills, which would include the value selected
+  skills: ChildProgressSkill[];
   child: ChildDto;
   ageGroup: ProgressTrackingAgeGroupDto;
   onSetSkillValue: (skillId: number, value: string) => void;
@@ -26,7 +26,6 @@ export const ChildProgressObservationsSkills: React.FC<
   };
 
   // TODO - Should these be moved somewhere more central
-
   enum ProgressSkillValues {
     Yes = 'Yes',
     No = 'No',
@@ -61,7 +60,7 @@ export const ChildProgressObservationsSkills: React.FC<
           className="text-center"
         />
       </div>
-      {skills.slice((currentStep - 1) * 5, currentStep * 5 - 1).map((skill) => (
+      {skills.slice((currentStep - 1) * 5, currentStep * 5).map((skill) => (
         <div key={`skill-${skill.id}`} className="mb-4">
           <Typography
             type="h3"

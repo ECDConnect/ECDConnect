@@ -2,7 +2,6 @@ import {
   AcceptRejectCommunityRequestsInputModelInput,
   CoachFeedbackInputModelInput,
   CommunityConnectInputModelInput,
-  CommunityProfile,
   Connect,
   ConnectItem,
 } from '@ecdlink/graphql';

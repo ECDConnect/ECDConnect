@@ -29,8 +29,9 @@ interface ReceivedRequestsProps {
 }
 
 export interface CommunityProfileRouteState {
-  usersData: CommunityProfileDto[];
+  isRequest: CommunityProfileDto[];
   isConnectedScreen?: boolean;
+  isFromReceivedConnections?: boolean;
 }
 
 export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
@@ -41,9 +42,13 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
   const dispatch = useAppDispatch();
   const history = useHistory();
   const { state } = useLocation<CommunityProfileRouteState>();
+  const isRequest = state?.isRequest;
   const isConnectedScreen = state?.isConnectedScreen;
-  const usersData = state?.usersData;
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
+  const isFromReceivedConnections = state?.isFromReceivedConnections;
+  const usersData = isRequest
+    ? communityProfile?.pendingConnections
+    : communityProfile?.acceptedConnections;
   const receivedRequestsUserIds = useMemo(
     () => usersData?.map((item) => item?.userId),
     [usersData]
@@ -74,23 +79,26 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [acceptOrRejectIsLoading, setAcceptOrRejectIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (usersData) {
-      handleConnectionsQuery();
-    }
-  }, [usersData]);
-
   const handleConnectionsQuery = useCallback(async () => {
     if (communityProfile) {
       setIsLoading(true);
       if (usersData && usersData?.length > 0) {
         setCommunityUsers(usersData);
+      } else {
+        setCommunityUsers([]);
       }
+
       setIsLoading(false);
     }
-  }, [usersData]);
+  }, [communityProfile, usersData]);
 
-  const handleAcceptAllConnections = async () => {
+  useEffect(() => {
+    if (usersData) {
+      handleConnectionsQuery();
+    }
+  }, [handleConnectionsQuery, usersData]);
+
+  const handleAcceptAllConnections = useCallback(async () => {
     setAcceptOrRejectIsLoading(true);
     const acceptedInput: AcceptRejectCommunityRequestsInputModelInput = {
       userId: communityProfile?.userId,
@@ -103,11 +111,7 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       })
     );
 
-    await dispatch(
-      communityThunkActions.getCommunityProfile({
-        userId: communityProfile?.userId!,
-      })
-    ).then(() => {
+    await handleConnectionsQuery().then(() => {
       onClose && onClose(true);
       setAcceptOrRejectIsLoading(false);
       showMessage({
@@ -117,7 +121,14 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       });
     });
     setAcceptOrRejectIsLoading(false);
-  };
+  }, [
+    communityProfile?.userId,
+    dispatch,
+    handleConnectionsQuery,
+    onClose,
+    receivedRequestsUserIds,
+    showMessage,
+  ]);
 
   const handleUsersList = useCallback(() => {
     const communityUsersList: UserAlertListDataItem[] = [];
@@ -140,14 +151,18 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
           onActionClick: () =>
             history.push(ROUTES.COMMUNITY.CONNECTION_PROFILE, {
               connectionProfile: item,
+              isFromReceivedConnections: true,
+              isConnectedScreen: isConnectedScreen,
             }),
-          profileDataUrl: item?.communityUser?.profilePhoto,
+          profileDataUrl: item?.shareProfilePhoto
+            ? item?.communityUser?.profilePhoto
+            : '',
         });
       });
     }
     setCommunityUsersList(communityUsersList);
     setCommunityUsersListFormatted(communityUsersList);
-  }, [communityUsers]);
+  }, [communityUsers, history, isConnectedScreen]);
 
   useEffect(() => {
     handleUsersList();
@@ -256,7 +271,17 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
         </div>
       );
     }
-  }, [communityUsersListFormatted]);
+  }, [
+    acceptOrRejectIsLoading,
+    communityUsersListFormatted,
+    handleAcceptAllConnections,
+    history,
+    isConnectedScreen,
+    isLoading,
+    renderConnectionsString,
+    renderECDHeroesString,
+    usersData,
+  ]);
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -284,13 +309,17 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       onBack={
         isConnectActive
           ? () => setIsConnectActive(false)
-          : () => history?.goBack()
+          : isFromReceivedConnections
+          ? () => history?.push(ROUTES.COMMUNITY.ROOT)
+          : () => history.goBack()
       }
       displayOffline={!isOnline}
       onClose={
         isConnectActive
           ? () => setIsConnectActive(false)
-          : () => history?.goBack()
+          : isFromReceivedConnections
+          ? () => history?.push(ROUTES.COMMUNITY.ROOT)
+          : () => history.goBack()
       }
     >
       {searchTextActive && (

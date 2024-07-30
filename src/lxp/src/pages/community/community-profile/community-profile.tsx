@@ -30,8 +30,6 @@ export interface CommunityProfileRouteState {
 
 export const CommunityProfile = () => {
   const { isOnline } = useOnlineStatus();
-  const { state } = useLocation<CommunityProfileRouteState>();
-  const isFromAddMoreDetails = state?.isFromAddMoreDetails;
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const user = useSelector(userSelectors.getUser);
@@ -106,11 +104,12 @@ export const CommunityProfile = () => {
             title="New requests"
             subtitle="WAITING TO CONNECT WITH:"
             connectionsNumber={
-              communityProfile?.receivedConnections?.length || 0
+              communityProfile?.pendingConnections?.length || 0
             }
             icon="HandIcon"
             route={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
-            usersData={communityProfile?.receivedConnections}
+            usersData={communityProfile?.pendingConnections}
+            isConnectedScreen={false}
           />
           <ConnectionsCard
             title="Your connections"

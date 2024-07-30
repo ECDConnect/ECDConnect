@@ -17,14 +17,12 @@ export const ProgressObservations: React.FC = () => {
     child,
     currentReportingPeriod,
     currentAgeGroup,
-    allSkillsWithCurrentObservation,
+    currentObservations,
     addObservationForSkill,
   } = useObserveProgressForChild(routeState.childId);
 
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const totalSkillsSteps = Math.ceil(
-    allSkillsWithCurrentObservation.length / 5
-  );
+  const totalSkillsSteps = Math.ceil(currentObservations.length / 5);
 
   // TODO - might need to add extra steps for final sections, for now just based off of skills for age group.
 
@@ -44,7 +42,7 @@ export const ProgressObservations: React.FC = () => {
             ageGroup={currentAgeGroup!}
             child={child!}
             currentStep={currentStep}
-            skills={allSkillsWithCurrentObservation}
+            skills={currentObservations}
             onSetSkillValue={addObservationForSkill}
           />
         )}

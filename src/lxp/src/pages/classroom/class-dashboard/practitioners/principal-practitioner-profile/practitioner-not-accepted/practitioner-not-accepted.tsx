@@ -9,9 +9,9 @@ import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import ROUTES from '@/routes/routes';
 import { PractitionerDto, useSnackbar } from '@ecdlink/core';
-import { TabsItemForPrincipal } from '../../../class-dashboard.types';
 import { useTenant } from '@/hooks/useTenant';
 import { classroomsSelectors } from '@/store/classroom';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export interface PractitionerNotAcceptedProps {
   practitioner: PractitionerDto;
@@ -40,8 +40,8 @@ export const PractitionerNotAccepted: React.FC<
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
-    history.push(ROUTES.CLASSROOM.ROOT, {
-      activeTabIndex: TabsItemForPrincipal.CLASSES,
+    history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.STAFF,
     });
     showMessage({
       message: `${practitioner?.user?.firstName} removed`,

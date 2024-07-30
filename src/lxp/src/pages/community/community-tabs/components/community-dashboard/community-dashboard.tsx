@@ -33,7 +33,7 @@ export const CommunityDashboard = () => {
   const profileName = communityProfile?.communityUser?.fullName;
   const communityAboutShort = communityProfile?.aboutShort;
   const communityAboutLong = communityProfile?.aboutLong;
-  const receivedConnections = communityProfile?.receivedConnections;
+  const receivedConnections = communityProfile?.pendingConnections;
   const profileCoachId = communityProfile?.coachUserId;
   const renderConnectionsRequestsString = useMemo(
     () =>
@@ -81,7 +81,9 @@ export const CommunityDashboard = () => {
         return {
           title: item?.communityUser?.fullName!,
           titleStyle: 'text-textDark',
-          profileDataUrl: item?.communityUser?.profilePhoto || '',
+          profileDataUrl: item?.shareProfilePhoto
+            ? item?.communityUser?.profilePhoto
+            : '',
           profileText: item?.communityUser?.fullName
             ?.match(/^(\w)\w*\s+(\w{1,2})/)
             ?.slice(1)
@@ -97,11 +99,12 @@ export const CommunityDashboard = () => {
           onActionClick: () =>
             history.push(ROUTES.COMMUNITY.CONNECTION_PROFILE, {
               connectionProfile: item,
+              isFromDashboard: true,
             }),
         };
       }) || []
     );
-  }, [communityProfile]);
+  }, [communityProfile?.acceptedConnections, history]);
 
   useEffect(() => {
     if (profileCoachId) {
@@ -116,11 +119,14 @@ export const CommunityDashboard = () => {
 
   const renderYourCommunityList = useMemo(() => {
     if (communityAcceptedConnections?.length > 0) {
+      const newArrayOrder = communityAcceptedConnections?.reverse();
+      const lastFourConnections = newArrayOrder?.slice(0, 4);
       return (
         <StackedList
           isFullHeight={false}
           type={'UserAlertList' as StackedListType}
-          listItems={communityAcceptedConnections}
+          listItems={lastFourConnections}
+          className="my-2"
         />
       );
     } else {
@@ -132,7 +138,7 @@ export const CommunityDashboard = () => {
         />
       );
     }
-  }, [communityAcceptedConnections]);
+  }, [communityAcceptedConnections, communityProfile?.communityUser?.fullName]);
 
   return (
     <div className="p-4">
@@ -197,7 +203,7 @@ export const CommunityDashboard = () => {
               textColor={'white'}
               onClick={() =>
                 history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
-                  usersData: receivedConnections,
+                  isRequest: true,
                 })
               }
               size="small"
@@ -224,7 +230,13 @@ export const CommunityDashboard = () => {
         </div>
       )}
       <div>
-        <Typography type={'h2'} text={'Your community'} color={'textDark'} />
+        <Typography
+          type={'h2'}
+          text={'Your community'}
+          color={'textDark'}
+          className="
+        my-2"
+        />
         <div>{renderYourCommunityList}</div>
       </div>
       <div className="mb-28 mt-6 flex w-full flex-col justify-center gap-3">

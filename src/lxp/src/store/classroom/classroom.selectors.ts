@@ -178,3 +178,35 @@ export const getCurrentProgressReportPeriod = () =>
       } as ProgressReportPeriod;
     }
   );
+
+export const getAllProgressReportPeriods = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined) => {
+      const allReportingPeriods = classroom?.childProgressReportPeriods || [];
+
+      const years = allReportingPeriods
+        .map((x) => new Date(x.startDate).getFullYear())
+        .filter((value, index, array) => array.indexOf(value) === index);
+
+      let sortedReportingPeriods: ProgressReportPeriod[] = [];
+
+      years.forEach((year) => {
+        const reportingPeriodsForYear = allReportingPeriods
+          .filter((x) => new Date(x.startDate).getFullYear() === year)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
+
+        reportingPeriodsForYear?.forEach((value, index) =>
+          sortedReportingPeriods.push({
+            ...value,
+            reportNumber: index + 1,
+          })
+        );
+      });
+
+      return sortedReportingPeriods;
+    }
+  );
