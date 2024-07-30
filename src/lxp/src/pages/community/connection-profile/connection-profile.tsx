@@ -20,7 +20,7 @@ import { ConnectionProfileRouteState } from './connection-profile.types';
 import { ExclamationCircleIcon, HandIcon } from '@heroicons/react/solid';
 import { useAppDispatch } from '@/store';
 import { communitySelectors, communityThunkActions } from '@/store/community';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ConnectionContactDetails } from './connection-contact-details/connection-contact-details';
 import { AcceptRejectCommunityRequestsInputModelInput } from '@ecdlink/graphql';
 
@@ -33,7 +33,9 @@ export const ConnectionProfile = () => {
   );
   const { state } = useLocation<ConnectionProfileRouteState>();
   const communityProfile = state?.connectionProfile;
-
+  const isFromReceivedConnections = state?.isFromReceivedConnections;
+  const isConnectedScreen = state?.isConnectedScreen;
+  const isFromDashboard = state?.isFromDashboard;
   const { theme } = useTheme();
   const history = useHistory();
   const { showMessage } = useSnackbar();
@@ -41,11 +43,24 @@ export const ConnectionProfile = () => {
     boolean | null | undefined
   >(communityProfile?.connectionAccepted);
   const hasSentConnectionRequest =
-    loggedUserCommunityProfile?.receivedConnections?.find(
+    loggedUserCommunityProfile?.pendingConnections?.find(
       (item) => item?.id === communityProfile?.id
     );
 
   const handleGoBack = () => {
+    if (isFromReceivedConnections) {
+      history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
+        isRequest: isConnectedScreen ? false : true,
+        isFromReceivedConnections: true,
+        isConnectedScreen: isConnectedScreen ? true : false,
+      });
+      return;
+    }
+
+    if (isFromDashboard) {
+      history.push(ROUTES.COMMUNITY.WELCOME);
+      return;
+    }
     history?.push(ROUTES.COMMUNITY.ECD_HEROES_LIST, {
       isFromConnectionProfile: true,
     });
@@ -110,6 +125,7 @@ export const ConnectionProfile = () => {
         })
       ).then(() => {
         setAcceptOrRejectIsLoading(false);
+        setConnectionAccepted(true);
         showMessage({
           message: 'Connection accepted',
           type: 'success',
@@ -122,24 +138,26 @@ export const ConnectionProfile = () => {
         userIdsToReject: [communityProfile?.userId],
       };
 
-      await dispatch(
+      const rejectResponse = await dispatch(
         communityThunkActions.acceptOrRejectCommunityRequests({
           input: rejectedInput,
         })
       );
 
-      await dispatch(
-        communityThunkActions.getCommunityProfile({
-          userId: loggedUserCommunityProfile?.userId!,
-        })
-      ).then(() => {
-        setAcceptOrRejectIsLoading(false);
-        showMessage({
-          message: 'Connection ignored!',
-          type: 'success',
-          duration: 3000,
+      if (rejectResponse) {
+        await dispatch(
+          communityThunkActions.getCommunityProfile({
+            userId: loggedUserCommunityProfile?.userId!,
+          })
+        ).then(() => {
+          setAcceptOrRejectIsLoading(false);
+          showMessage({
+            message: 'Connection ignored!',
+            type: 'success',
+            duration: 3000,
+          });
         });
-      });
+      }
     }
   };
 
@@ -251,7 +269,7 @@ export const ConnectionProfile = () => {
         return (
           <Alert
             className="mb-4 mt-2 rounded-2xl"
-            title={`Connect with ${communityProfile?.communityUser?.fullName}`}
+            title={`Connected with ${communityProfile?.communityUser?.fullName}`}
             titleType="h4"
             type="success"
             button={

@@ -249,6 +249,7 @@ const classroomsSlice = createSlice({
             ...state.classroom,
             childProgressReportPeriods:
               action.meta.arg.childProgressReportPeriods.map((x) => ({
+                id: x.id,
                 startDate: x.startDate.toString(),
                 endDate: x.endDate.toString(),
               })),

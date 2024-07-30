@@ -1,59 +1,83 @@
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
-import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
-import ROUTES from '@/routes/routes';
 import { userSelectors } from '@/store/user';
 import { PractitionerDto, getNextBusinessDay, useDialog } from '@ecdlink/core';
 import {
-  ActionModal,
   Button,
   Card,
+  classNames,
   DialogPosition,
   Typography,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { LeaveCardMenu } from './components/menu';
+import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 
 interface LeaveCardProps {
   practitioner: PractitionerDto;
+  absentee: AbsenteeDto;
+  reassignClassRouteState?: Partial<ReassignClassPageState>;
+  className?: string;
 }
-export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
+export const LeaveCard = ({
+  absentee,
+  practitioner,
+  reassignClassRouteState,
+  className,
+}: LeaveCardProps) => {
+  const [showMenu, setShowMenu] = useState(false);
+
   const user = useSelector(userSelectors.getUser);
 
-  const history = useHistory();
+  const { isOnline } = useOnlineStatus();
+
   const dialog = useDialog();
+
+  const { getAbsenteeDetails } = usePractitionerAbsentees(practitioner);
+
   const {
     practitionerIsOnLeave,
     isMultiDayLeave,
     isScheduledLeave,
     currentClassesReassigned,
     currentAbsentee,
-  } = usePractitionerAbsentees(practitioner);
+  } = getAbsenteeDetails(absentee);
 
   const isLoggedInUser = user?.id === practitioner?.userId;
 
   const title = useMemo(() => {
     if (practitionerIsOnLeave && isMultiDayLeave) {
       return `${
-        isLoggedInUser ? 'You are' : `${practitioner?.firstName} is`
+        isLoggedInUser
+          ? 'You are'
+          : `${practitioner?.firstName || practitioner?.user?.firstName} is`
       } on leave`;
     }
     if (practitionerIsOnLeave && !isMultiDayLeave) {
       return `${
-        isLoggedInUser ? 'You are' : `${practitioner?.firstName} is`
+        isLoggedInUser
+          ? 'You are'
+          : `${practitioner?.firstName || practitioner?.user?.firstName} is`
       } absent today`;
     }
 
     if (isScheduledLeave && isMultiDayLeave) {
       return `${
-        isLoggedInUser ? 'You' : `${practitioner?.firstName}`
+        isLoggedInUser
+          ? 'You'
+          : `${practitioner?.firstName || practitioner?.user?.firstName}`
       } will be on leave`;
     }
 
     if (isScheduledLeave && !isMultiDayLeave) {
       return `${
-        isLoggedInUser ? 'You' : `${practitioner?.firstName}`
+        isLoggedInUser
+          ? 'You'
+          : `${practitioner?.firstName || practitioner?.user?.firstName}`
       } will be on leave on ${format(
         new Date(currentAbsentee?.absentDate!),
         'EEEE, dd MMM'
@@ -64,88 +88,79 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
     isLoggedInUser,
     isMultiDayLeave,
     isScheduledLeave,
-    practitioner?.firstName,
+    practitioner,
     practitionerIsOnLeave,
   ]);
 
-  const onEdit = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: () => (
-        <ActionModal
-          icon="QuestionMarkCircleIcon"
-          iconColor="infoMain"
-          iconSize={24}
-          title="What would you like to edit?"
-          actionButtons={[
-            {
-              type: 'filled',
-              colour: 'quatenary',
-              text: 'Edit this leave/absence',
-              textColour: 'white',
-              leadingIcon: 'PencilAltIcon',
-              onClick: () => {
-                history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
-                  practitionerId: practitioner?.id,
-                  principalPractitioner: practitioner?.isPrincipal
-                    ? practitioner
-                    : undefined,
-                  allAbsenteeClasses: currentClassesReassigned,
-                } as ReassignClassPageState);
-              },
-            },
-            {
-              type: 'outlined',
-              colour: 'quatenary',
-              text: 'Add a new leave/absence',
-              textColour: 'quatenary',
-              leadingIcon: 'PlusIcon',
-              onClick: () => {},
-            },
-            {
-              type: 'outlined',
-              colour: 'quatenary',
-              text: 'Delete this leave/absence',
-              textColour: 'quatenary',
-              leadingIcon: 'TrashIcon',
-              onClick: () => {},
-            },
-          ]}
-        />
-      ),
-    });
+  const onClick = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onClose) => {
+          return <OnlineOnlyModal onSubmit={onClose} />;
+        },
+      });
+    }
+
+    setShowMenu(true);
   };
+
   if (!currentAbsentee) {
     return <></>;
   }
 
   return (
-    <Card className={'bg-uiBg mx-4 mt-4 rounded-xl p-4'}>
+    <Card className={classNames(className, 'bg-uiBg rounded-xl p-4')}>
       <Typography type="h2" text={title} color="textDark" />
       <Typography
         type={'markdown'}
         text={`<b>Reason:</b> ${currentAbsentee?.reason}`}
         className="text-textMid text-"
       />
-      <Typography
-        type={'markdown'}
-        className="text-textMid"
-        text={`<b>${
-          isLoggedInUser ? 'You' : practitioner?.firstName
-        } will be back on:</b> ${format(
-          getNextBusinessDay(new Date(currentAbsentee?.absentDateEnd!)),
-          'd MMM yyyy'
-        )}`}
-      />
-      {currentClassesReassigned?.map((item, index) => (
+      {isMultiDayLeave ? (
+        <>
+          <Typography
+            type={'markdown'}
+            className="text-textMid"
+            text={`<b>Start date:</b> ${format(
+              new Date(currentAbsentee?.absentDate!),
+              'd MMM yyyy'
+            )}`}
+          />
+          <Typography
+            type={'markdown'}
+            className="text-textMid"
+            text={`<b>End date:</b> ${format(
+              getNextBusinessDay(new Date(currentAbsentee?.absentDateEnd!)),
+              'd MMM yyyy'
+            )}`}
+          />
+        </>
+      ) : (
         <Typography
-          key={`${item.className}-${index}`}
           type={'markdown'}
           className="text-textMid"
-          text={`<b>${item.className} class reassigned to:</b> ${item.reassignedToPerson}`}
+          text={`<b>${
+            isLoggedInUser
+              ? 'You'
+              : practitioner?.firstName || practitioner?.user?.firstName
+          } will be back on:</b> ${format(
+            getNextBusinessDay(new Date(currentAbsentee?.absentDateEnd!)),
+            'd MMM yyyy'
+          )}`}
         />
-      ))}
+      )}
+      {currentClassesReassigned?.map((item, index) =>
+        item.className ? (
+          <Typography
+            key={`${item.className}-${index}`}
+            type={'markdown'}
+            className="text-textMid"
+            text={`<b>${item.className} class reassigned to:</b> ${item.reassignedToPerson}`}
+          />
+        ) : null
+      )}
       <Button
         type="filled"
         color="quatenary"
@@ -153,8 +168,16 @@ export const LeaveCard = ({ practitioner }: LeaveCardProps) => {
         icon="PencilAltIcon"
         text="Edit"
         textColor="white"
-        onClick={onEdit}
+        onClick={onClick}
       />
+      {showMenu && (
+        <LeaveCardMenu
+          absentee={currentAbsentee}
+          practitioner={practitioner}
+          reassignClassRouteState={reassignClassRouteState}
+          onClose={() => setShowMenu(false)}
+        />
+      )}
     </Card>
   );
 };

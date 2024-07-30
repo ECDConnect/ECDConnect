@@ -7,7 +7,6 @@ import {
   Connect,
   ConnectItem,
   FeedbackTypeSortInput,
-  SupportRatingModel,
   SupportRatingSortInput,
 } from '@ecdlink/graphql/lib';
 import { api } from '../axios.helper';
@@ -139,6 +138,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
             pendingConnections {
                 id
@@ -162,8 +169,16 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
             }
-            receivedConnections {
+            }
+            userConnectionRequests {
                 id
                 userId
                 aboutShort
@@ -185,6 +200,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
           }
         }
@@ -265,6 +288,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
             pendingConnections {
                 id
@@ -287,6 +318,14 @@ class CommunityService {
                     profilePhoto
                     roleName
                 }
+                      profileSkills {
+                id
+                name
+                imageName
+                description
+                isActive
+                ordering
+            }
             }
         }
 }
@@ -482,9 +521,12 @@ class CommunityService {
         id
         fromUserId
         toUserId
-        feedbackTypeId
         supportRatingId
         feedbackDetails
+        coachFeedbackTypes {
+            id
+            feedbackTypeId
+        }
     }
 }
       `,
@@ -550,7 +592,7 @@ class CommunityService {
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation AcceptRejectCommunityRequests($input: AcceptRejectCommunityRequestsInputModelInput) {
-    acceptCommunityRequests(input: $input) {
+    acceptRejectCommunityRequests(input: $input) {
         id
             userId
             aboutShort
@@ -631,6 +673,30 @@ class CommunityService {
                     roleName
                 }
             }
+             
+             userConnectionRequests {
+                id
+                userId
+                aboutShort
+                aboutLong
+                shareEmail
+                sharePhoneNumber
+                shareProfilePhoto
+                shareProvince
+                provinceId
+                provinceName
+                shareRole
+                connectionAccepted
+                communityUser {
+                    id
+                    fullName
+                    email
+                    phoneNumber
+                    whatsAppNumber
+                    profilePhoto
+                    roleName
+                }
+            }
     }
 }
       `,
@@ -645,7 +711,7 @@ class CommunityService {
       );
     }
 
-    return response.data.data.acceptCommunityRequests;
+    return response.data.data.acceptRejectCommunityRequests;
   }
 
   async deleteCommunityProfile(communityProfileId: string): Promise<string> {

@@ -50,14 +50,14 @@ export const Step1: React.FC<Step1Props> = ({
       return;
     } else {
       setIsLoading(true);
+      seNotJoining(true);
+      setIsLoading(false);
+
       await dispatch(
         practitionerThunkActions.updatePractitionerCommunityTabStatus({
           practitionerUserId: practitioner?.userId!,
         })
       );
-
-      seNotJoining(true);
-      setIsLoading(false);
       handleSetJoinCommunity();
     }
   };

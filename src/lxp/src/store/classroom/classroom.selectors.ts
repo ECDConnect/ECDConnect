@@ -2,7 +2,7 @@ import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import {
-  ChildProgressReportPeriod,
+  ChildProgressReportPeriodDto,
   ClassroomDto,
   ClassroomDto as SimpleClassroomDto,
 } from '@/models/classroom/classroom.dto';
@@ -13,6 +13,7 @@ import {
 } from '@/models/classroom/classroom-group.dto';
 import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
 import { isBefore } from 'date-fns';
+import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 
 export const getClassroom = (
   state: RootState
@@ -35,7 +36,7 @@ export const getIsReportingPeriodsSet = () =>
 export const getPreviousYearsReportingPeriods = () =>
   createSelector(
     (state: RootState) => state.classroomData.classroom,
-    (classroom: ClassroomDto | undefined): ChildProgressReportPeriod[] => {
+    (classroom: ClassroomDto | undefined): ChildProgressReportPeriodDto[] => {
       const lastYear = new Date().getFullYear() - 1;
       return (
         classroom?.childProgressReportPeriods
@@ -147,7 +148,8 @@ export const getLearnersForClassroomGroups = (
     }
   );
 
-export const getCurrentProgressReportWindow = () =>
+// TODO - IDEALLY NEED TO MAKE THIS PER CHILD, SO IT CAN CHECK IF THEY NEED TO BE IN THE NEXT WINDOW AFTER THE REPORT IS COMPLETE
+export const getCurrentProgressReportPeriod = () =>
   createSelector(
     (state: RootState) => state.classroomData.classroom,
     (classroom: ClassroomDto | undefined) => {
@@ -166,9 +168,45 @@ export const getCurrentProgressReportWindow = () =>
         isBefore(new Date(), new Date(x.endDate))
       );
 
+      if (index < 0) {
+        return undefined;
+      }
+
       return {
         reportNumber: index + 1,
-        reportingPeriod: currentYearsReportingPeriods[index],
-      };
+        ...currentYearsReportingPeriods[index],
+      } as ProgressReportPeriod;
+    }
+  );
+
+export const getAllProgressReportPeriods = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined) => {
+      const allReportingPeriods = classroom?.childProgressReportPeriods || [];
+
+      const years = allReportingPeriods
+        .map((x) => new Date(x.startDate).getFullYear())
+        .filter((value, index, array) => array.indexOf(value) === index);
+
+      let sortedReportingPeriods: ProgressReportPeriod[] = [];
+
+      years.forEach((year) => {
+        const reportingPeriodsForYear = allReportingPeriods
+          .filter((x) => new Date(x.startDate).getFullYear() === year)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
+
+        reportingPeriodsForYear?.forEach((value, index) =>
+          sortedReportingPeriods.push({
+            ...value,
+            reportNumber: index + 1,
+          })
+        );
+      });
+
+      return sortedReportingPeriods;
     }
   );
