@@ -133,7 +133,7 @@ export const CommunityDashboard = () => {
           isFullHeight={false}
           type={'UserAlertList' as StackedListType}
           listItems={lastFourConnections}
-          className="my-2"
+          className="my-2 flex flex-col gap-1"
         />
       );
     } else {
