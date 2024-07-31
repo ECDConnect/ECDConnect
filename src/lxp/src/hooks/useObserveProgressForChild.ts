@@ -142,7 +142,10 @@ export const useObserveProgressForChild = (childId: string) => {
     return detailedReports.filter((x) => x.isComplete);
   }, [detailedReports, currentReportingPeriod]);
 
-  const addObservationForSkill = (skillId: number, value: string) => {
+  const addObservationForSkill = (
+    skillId: number,
+    value: ProgressSkillValues
+  ) => {
     if (!currentReportingPeriod) {
       return;
     }

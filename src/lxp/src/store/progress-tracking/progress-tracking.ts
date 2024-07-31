@@ -12,6 +12,7 @@ import {
 } from './progress-tracking.actions';
 import { ProgressTrackingState } from './progress-tracking.types';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 
 const initialState: ProgressTrackingState = {
   progressTrackingAgeGroups: { data: [], dateRefreshed: undefined },
@@ -45,7 +46,7 @@ const progressTrackingSlice = createSlice({
         childId: string;
         reportingPeriodId: string;
         skillId: number;
-        value: string;
+        value: ProgressSkillValues;
       }>
     ) => {
       const { childId, reportingPeriodId, skillId, value } = action.payload;
@@ -89,6 +90,15 @@ const progressTrackingSlice = createSlice({
               ...report.skillObservations.filter((x) => x.skillId !== skillId),
               { skillId, value },
             ],
+            // Filter out any skills to work, if they changed the answer to yes
+            skillsToWorkOn:
+              value === ProgressSkillValues.Yes
+                ? [
+                    ...report.skillsToWorkOn.filter(
+                      (x) => x.skillId !== skillId
+                    ),
+                  ]
+                : [...report.skillsToWorkOn],
           },
         ];
       }
@@ -260,7 +270,6 @@ const progressTrackingSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getChildProgressReports.fulfilled, (state, action) => {
-      console.log('action.payload', action.payload);
       if (action.payload && action.payload.length) {
         const unsyncedReports = state.childProgressReports.filter(
           (x) => !x.synced
@@ -276,7 +285,6 @@ const progressTrackingSlice = createSlice({
             })),
         ];
       }
-      console.log('state.childProgressReports', state.childProgressReports);
     });
     builder.addCase(getProgressTrackingAgeGroups.fulfilled, (state, action) => {
       state.progressTrackingAgeGroups = {
