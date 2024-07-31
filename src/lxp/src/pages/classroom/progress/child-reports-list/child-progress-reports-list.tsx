@@ -1,17 +1,13 @@
 import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { childrenSelectors } from '@store/children';
 import { analyticsActions } from '@store/analytics';
 import { ChildCompletedObservsationReportsState } from '../../progress-observation/child-completed-observation-reports/child-completed-observation-reports.types';
 import { ReactComponent as NoProgressEmoticon } from '../../../../assets/ECD_Connect_emoji4.svg';
 import { ReactComponent as ComingSoonIcon } from '../../../../assets/icon/coming_soon.svg';
 import ROUTES from '@/routes/routes';
-import { practitionerSelectors } from '@/store/practitioner';
-import { classroomsSelectors } from '@/store/classroom';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ProgressReportsList } from './reports-list';
 
@@ -22,22 +18,14 @@ export const ChildProgressReportsList: React.FC = () => {
   const { state: routeState } =
     useLocation<ChildCompletedObservsationReportsState>();
 
+  const { childId } = routeState;
   const {
+    child,
     currentAgeGroup,
-    currentObservations,
+    currentReportingPeriod,
     currentReport,
     completedReports,
-  } = useObserveProgressForChild(routeState.childId);
-
-  const { childId } = routeState;
-  const currentChild = useSelector(childrenSelectors.getChildById(childId));
-
-  const classroomGroup = useSelector(
-    classroomsSelectors.getClassroomGroupByChildUserId(currentChild?.userId!)
-  );
-  const childPractioner = useSelector(
-    practitionerSelectors.getPractitionerByUserId(classroomGroup?.userId || '')
-  );
+  } = useObserveProgressForChild(childId);
 
   useEffect(() => {
     if (!isOnline) {
@@ -60,7 +48,7 @@ export const ChildProgressReportsList: React.FC = () => {
   return (
     <BannerWrapper
       size={'small'}
-      title={`${currentChild?.user?.firstName}'s progress`}
+      title={`${child?.user?.firstName}'s progress`}
       onBack={() =>
         history.replace(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
       }
@@ -68,6 +56,7 @@ export const ChildProgressReportsList: React.FC = () => {
       <div className={'flex h-full flex-col px-4 pb-4'}>
         {/* No reports and no age group for child */}
         {!currentAgeGroup &&
+          !!currentReportingPeriod &&
           (!completedReports || completedReports.length === 0) && (
             <div className="mt-2 flex flex-col justify-center p-8">
               <div>
@@ -99,7 +88,7 @@ export const ChildProgressReportsList: React.FC = () => {
                 className={'mt-4'}
                 type="h2"
                 color={'textDark'}
-                text={`${currentChild?.user?.firstName}'s reports`}
+                text={`${child?.user?.firstName}'s reports`}
               />
               <div className="mt-2 flex flex-col justify-center p-8">
                 <div className="mt-10 flex justify-center">
@@ -109,7 +98,7 @@ export const ChildProgressReportsList: React.FC = () => {
                   <Typography
                     className="mt-4 text-center"
                     color="textDark"
-                    text={`${currentChild?.user?.firstName} doesn't have any progress reports yet!`}
+                    text={`${child?.user?.firstName} doesn't have any progress reports yet!`}
                     type={'h2'}
                   />
                 </div>
@@ -143,7 +132,7 @@ export const ChildProgressReportsList: React.FC = () => {
               className={'mt-4 mb-4'}
               type="h2"
               color={'textDark'}
-              text={`${currentChild?.user?.firstName}'s reports`}
+              text={`${child?.user?.firstName}'s reports`}
             />
             <ProgressReportsList
               childId={childId}
