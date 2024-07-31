@@ -28,7 +28,6 @@ import { useState } from 'react';
 import { FieldError, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import { VerifyPhoneNumberAuthCode } from '../verify-phone-number';
-import { error } from 'console';
 
 interface CreateUserFormProps {
   closeAction?: (item: boolean) => void;
@@ -58,18 +57,12 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const specialCharactersMessageErrorText = `Usernames can only include letters, numbers, . , and @. Please remove any other special characters.`;
   const [isFromAuthCodeScreen, setIsFromAuthCodeScreen] = useState(false);
 
-  const {
-    register: passwordRegister,
-    getValues: passwordGetValues,
-    watch,
-    formState,
-  } = useForm({
+  const { register: passwordRegister, watch } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
     mode: 'onChange',
   });
   const { password } = watch();
-  const { errors } = formState;
 
   const handleCreateUser = async () => {
     const registerOpenAccessUserInput: RegisterRequestModel = {
@@ -174,7 +167,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       const updateUsername = await new AuthService()
         ?.UpdateUsername(Config?.authApi, updateUserInputModel)
         .catch((error) => {
-          setMessageError(usernameMessageErrorText);
+          setMessageError(specialCharactersMessageErrorText);
           setIsLoading(false);
           return;
         });
