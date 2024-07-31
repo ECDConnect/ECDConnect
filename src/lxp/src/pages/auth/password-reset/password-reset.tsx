@@ -283,6 +283,7 @@ export const PasswordReset: React.FC = () => {
         visible={openHelp}
         position={DialogPosition.Full}
         className="w-full"
+        stretch
       >
         <HelpForm closeAction={setOpenHelp} />
       </Dialog>
