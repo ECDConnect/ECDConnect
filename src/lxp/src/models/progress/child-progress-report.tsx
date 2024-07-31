@@ -1,3 +1,5 @@
+import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
+
 export type ChildProgressReport = {
   id: string;
   dateCreated: string;
@@ -13,7 +15,7 @@ export type ChildProgressReport = {
 
 export type ChildProgressSkillObservation = {
   skillId: number;
-  value: string;
+  value: ProgressSkillValues;
 };
 
 export type ChildProgressSkillToWorkOn = {

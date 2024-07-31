@@ -1,3 +1,5 @@
+import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
+
 export type ProgressSkill = {
   id: number;
   name: string;
@@ -18,5 +20,5 @@ export type ProgressCategory = {
 };
 
 export type ChildProgressSkill = ProgressSkill & {
-  value?: string;
+  value?: ProgressSkillValues;
 };

@@ -1,7 +1,10 @@
 import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { ChildProgressSkill } from '@/models/progress/progress-skill';
 import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
-import { ProgressSkillValuesArray } from '@/enums/ProgressSkillValues';
+import {
+  ProgressSkillValues,
+  ProgressSkillValuesArray,
+} from '@/enums/ProgressSkillValues';
 
 export type ChildProgressObservationsSkillsProps = {
   currentStep: number;
@@ -9,7 +12,7 @@ export type ChildProgressObservationsSkillsProps = {
   child: ChildDto;
   ageGroup: ProgressTrackingAgeGroupDto;
   replaceSkillText: (skillText: string) => string;
-  onSetSkillValue: (skillId: number, value: string) => void;
+  onSetSkillValue: (skillId: number, value: ProgressSkillValues) => void;
 };
 
 export const ChildProgressObservationsSkills: React.FC<
@@ -52,14 +55,16 @@ export const ChildProgressObservationsSkills: React.FC<
             text={replaceSkillText(skill.name)}
           />
           {/* TODO - add option to show picture if required */}
-          <ButtonGroup<string>
+          <ButtonGroup<ProgressSkillValues>
             type={ButtonGroupTypes.Button}
             options={ProgressSkillValuesArray.map((x) => ({
               text: x,
               value: x,
             }))}
-            onOptionSelected={(value: string | string[]) => {
-              onSetSkillValue(skill.id, value as string);
+            onOptionSelected={(
+              value: ProgressSkillValues | ProgressSkillValues[]
+            ) => {
+              onSetSkillValue(skill.id, value as ProgressSkillValues);
             }}
             multiple={false}
             selectedOptions={skill.value}
