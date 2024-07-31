@@ -233,7 +233,7 @@ export const OaLogin: React.FC = () => {
                 />
                 <Typography
                   type={'h4'}
-                  text={'Sign up with Facebook'}
+                  text={'Log in with Facebook'}
                   className={'text-sm font-normal'}
                   color={'white'}
                 />
