@@ -1,12 +1,15 @@
 import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { Step1 } from './components/step1/step1';
 import { useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { setuOrgSchema, setupOrgValues } from '../../../schemas/setup-org';
 import { useTheme } from '@ecdlink/core';
 import { Step2 } from './components/step2/step2';
 import { Step3 } from './components/step3/step3';
+import { Step4 } from './components/step4/step4';
+import { Step5 } from './components/step5/step5';
+import { Step6 } from './components/step6/step6';
 
 export const SetupOrgForm = () => {
   const { theme } = useTheme();
@@ -17,12 +20,20 @@ export const SetupOrgForm = () => {
     [step]
   );
 
-  const { register, handleSubmit, getValues, setValue, formState } = useForm({
-    resolver: yupResolver(setuOrgSchema),
-    defaultValues: setupOrgValues,
-    mode: 'onChange',
-  });
+  const { register, handleSubmit, getValues, setValue, formState, control } =
+    useForm({
+      resolver: yupResolver(setuOrgSchema),
+      defaultValues: setupOrgValues,
+      mode: 'onChange',
+    });
   const { errors } = formState;
+  console.log(getValues());
+
+  const { darkVersionLogo, lightVersionLogo, favico } = useWatch({
+    control: control,
+  });
+
+  console.log({ darkVersionLogo, lightVersionLogo, favico });
 
   const handleNextStep = () => {
     if (step < 8) {
@@ -40,7 +51,40 @@ export const SetupOrgForm = () => {
         );
       case 3:
         return (
-          <Step3 setValue={setValue} register={register} errors={errors} />
+          <Step3
+            setValue={setValue}
+            register={register}
+            errors={errors}
+            getValues={getValues}
+          />
+        );
+      case 4:
+        return (
+          <Step4
+            setValue={setValue}
+            register={register}
+            errors={errors}
+            getValues={getValues}
+          />
+        );
+      case 5:
+        return (
+          <Step5
+            setValue={setValue}
+            register={register}
+            errors={errors}
+            getValues={getValues}
+          />
+        );
+      case 6:
+        return (
+          <Step6
+            setValue={setValue}
+            register={register}
+            errors={errors}
+            getValues={getValues}
+            control={control}
+          />
         );
       default:
         return (
@@ -61,15 +105,28 @@ export const SetupOrgForm = () => {
       <div className="p-24">
         <Typography type="h1" color="textDark" text={`Step ${step} of 8`} />
         <div>{renderStep(step)}</div>
-        <Button
-          className="mt-8 w-3/12 rounded-2xl"
-          icon={renderButtonIcon}
-          type="filled"
-          color="secondary"
-          textColor="white"
-          text={renderButtonText}
-          onClick={() => handleNextStep()}
-        />
+        <div className="flex gap-4">
+          <Button
+            className="mt-8 w-3/12 rounded-2xl"
+            icon={renderButtonIcon}
+            type="filled"
+            color="secondary"
+            textColor="white"
+            text={renderButtonText}
+            onClick={() => handleNextStep()}
+          />
+          {(step === 3 || step === 4) && (
+            <Button
+              className="mt-8 w-3/12 rounded-2xl"
+              icon={'ClockIcon'}
+              type="outlined"
+              color="secondary"
+              textColor="secondary"
+              text={'Do this later'}
+              onClick={() => handleNextStep()}
+            />
+          )}
+        </div>
       </div>
     </BannerWrapper>
   );

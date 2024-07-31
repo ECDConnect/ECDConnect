@@ -28,6 +28,7 @@ export interface FileModel {
 
 export interface FormFileInputProps {
   label: string;
+  hideAcceptedFormats?: boolean;
   nameProp: string;
   contentUrl?: string;
   acceptedFormats: string[];
@@ -59,6 +60,7 @@ const errorIconStyle = 'text-errorMain';
 
 const FormFileInput: React.FC<FormFileInputProps> = ({
   label,
+  hideAcceptedFormats,
   nameProp,
   acceptedFormats,
   contentUrl,
@@ -298,7 +300,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         className="font-lg block pb-1 text-sm text-gray-900"
       >
         {label}
-        {acceptedFormats && !isThemeFormFile && (
+        {acceptedFormats && !isThemeFormFile && !hideAcceptedFormats && (
           <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
         )}
       </label>

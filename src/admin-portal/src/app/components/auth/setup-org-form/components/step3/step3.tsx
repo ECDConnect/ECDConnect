@@ -1,14 +1,29 @@
 import { Typography } from '@ecdlink/ui';
 import { PhotographIcon } from '@heroicons/react/solid';
-import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import {
+  FieldErrors,
+  UseFormGetValues,
+  UseFormRegister,
+  UseFormSetValue,
+} from 'react-hook-form';
+import FormFileInput from '../../../../form-file-input/form-file-input';
 
 interface StepProps {
   setValue: UseFormSetValue<any>;
   register: UseFormRegister<any>;
   errors: FieldErrors;
+  getValues?: UseFormGetValues<any>;
 }
 
-export const Step3: React.FC<StepProps> = ({ register, errors }) => {
+export const Step3: React.FC<StepProps> = ({
+  register,
+  errors,
+  setValue,
+  getValues,
+}) => {
+  const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
+  const icoAcceptFormat = ['ico'];
+  const allowedFileSize = 13631488;
   return (
     <div>
       <div className="mt-12 flex flex-col gap-2">
@@ -24,7 +39,7 @@ export const Step3: React.FC<StepProps> = ({ register, errors }) => {
           text={`You will be able to update these on the admin portal in future.`}
         />
       </div>
-      <div className="my-12 grid grid-cols-3">
+      <div className="my-12 grid w-full grid-cols-3 gap-8">
         <div>
           <Typography
             type="h3"
@@ -37,10 +52,81 @@ export const Step3: React.FC<StepProps> = ({ register, errors }) => {
             text={`This version will be placed on a light background.`}
           />
           <Typography
-            text={`Size limit: <b class='text-errorMain'>ABC </b><span class='text-textMid'>MB</span>`}
+            text={`Size limit: <b class='text-errorMain'>${
+              allowedFileSize / (1024 * 1024)
+            } </b><span class='text-textMid'>MB</span>`}
             type={'markdown'}
             color="textDark"
             className="my-8"
+          />
+          <FormFileInput
+            acceptedFormats={acceptedFormats}
+            label={''}
+            hideAcceptedFormats={true}
+            nameProp={'darkVersionLogo'}
+            returnFullUrl={false}
+            setValue={setValue}
+            isImage={true}
+            allowedFileSize={allowedFileSize}
+            contentUrl={getValues()?.darkVersionLogo}
+          />
+        </div>
+        <div>
+          <Typography
+            type="h3"
+            color="textDark"
+            text={`Light version (svg, png, jpeg):`}
+          />
+          <Typography
+            type="help"
+            color="textMid"
+            text={`This version will be placed on a dark background. `}
+          />
+          <Typography
+            text={`Size limit: <b class='text-errorMain'>${
+              allowedFileSize / (1024 * 1024)
+            } </b><span class='text-textMid'>MB</span>`}
+            type={'markdown'}
+            color="textDark"
+            className="my-8"
+          />
+          <FormFileInput
+            acceptedFormats={acceptedFormats}
+            label={''}
+            hideAcceptedFormats={true}
+            nameProp={'lightVersionLogo'}
+            returnFullUrl={false}
+            setValue={setValue}
+            isImage={true}
+            allowedFileSize={allowedFileSize}
+            contentUrl={getValues()?.lightVersionLogo}
+          />
+        </div>
+        <div>
+          <Typography type="h3" color="textDark" text={`Favicon (ico):`} />
+          <Typography
+            type="help"
+            color="textMid"
+            text={`This version will be shown on the browser tab and app icon. You can use a free online service like favicon.io to convert your logo to a favicon. Choose the filename ending with “.ico”.`}
+          />
+          <Typography
+            text={`Size limit: <b class='text-errorMain'>${
+              allowedFileSize / (1024 * 1024)
+            } </b><span class='text-textMid'>MB</span>`}
+            type={'markdown'}
+            color="textDark"
+            className="mt-4 mb-2"
+          />
+          <FormFileInput
+            acceptedFormats={icoAcceptFormat}
+            label={''}
+            hideAcceptedFormats={true}
+            nameProp={'favico'}
+            returnFullUrl={false}
+            setValue={setValue}
+            isImage={true}
+            allowedFileSize={allowedFileSize}
+            contentUrl={getValues()?.favico}
           />
         </div>
       </div>
