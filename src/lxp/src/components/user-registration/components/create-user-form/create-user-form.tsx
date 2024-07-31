@@ -174,7 +174,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       const updateUsername = await new AuthService()
         ?.UpdateUsername(Config?.authApi, updateUserInputModel)
         .catch((error) => {
-          setMessageError('Something went wrong!');
+          setMessageError(usernameMessageErrorText);
           setIsLoading(false);
           return;
         });
@@ -231,9 +231,10 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           subLabel="Must be unique. Tip: use something that you will remember."
           placeholder="e.g. Nothando_123"
           onChange={(e) => {
-            setUsername(e?.target?.value);
+            setUsername(e?.target?.value?.replace(/\s+/g, ''));
             setMessageError('');
           }}
+          value={username}
           error={messageError as unknown as FieldError}
           className="my-2"
         />
