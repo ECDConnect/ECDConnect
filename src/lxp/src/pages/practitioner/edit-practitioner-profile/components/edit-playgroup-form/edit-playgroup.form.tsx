@@ -74,7 +74,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     reValidateMode: 'onChange',
   });
 
-  const { isFullDay, meetingDays, name, meetEveryday } = useWatch({
+  const { isFullDay, meetingDays, name, meetEveryday, userId } = useWatch({
     control: playgroupFormControl,
     defaultValue: playgroup,
   });
@@ -85,7 +85,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   } = playgroupsFormState;
 
   const isFormValid = () => {
-    return isValid && meetingDays && meetingDays?.length > 1;
+    return isValid && meetingDays && meetingDays?.length > 1 && !!userId;
   };
 
   const [practitionersList, setPractitionersList] = useState<
