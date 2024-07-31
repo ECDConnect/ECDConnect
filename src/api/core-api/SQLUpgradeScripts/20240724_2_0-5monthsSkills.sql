@@ -61,11 +61,9 @@ from "ContentValue" cvn
 inner join "ContentValue" cvs on cvn."ContentId" = cvs."ContentId" 
 inner join "Content" c on cvn."ContentId" = c."Id" 
 where cvn."ContentTypeFieldId" = 29 and cvs."ContentTypeFieldId" = 26 and cvs."LocaleId" = '9688cd08-adef-408c-9d34-5d75ae5c44df' and cvn."LocaleId" = '9688cd08-adef-408c-9d34-5d75ae5c44df' and c."IsActive" 
-	and cvn."Value" = 'Approaches to Learning'
+	and cvn."Value" = 'Approaches to Learning';
 
-select content_type_subcategory_skills_id, content_type_subcategory_new_skills_ids;
-
-update "ContentValue" set "Value" = content_type_subcategory_new_skills_ids where "Id" = content_type_subcategory_skills_id
+update "ContentValue" set "Value" = content_type_subcategory_new_skills_ids where "Id" = content_type_subcategory_skills_id;
 
 
 -- ########################################################################

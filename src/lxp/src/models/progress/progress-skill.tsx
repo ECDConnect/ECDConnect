@@ -3,6 +3,7 @@ export type ProgressSkill = {
   name: string;
   description: string;
   subCategory: ProgressSubCategory;
+  isReverseScored?: boolean;
 };
 
 export type ProgressSubCategory = {

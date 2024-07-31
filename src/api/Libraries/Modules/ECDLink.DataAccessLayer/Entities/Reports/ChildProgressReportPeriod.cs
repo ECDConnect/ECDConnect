@@ -25,4 +25,11 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
     }
+
+    public interface ChildProgressReportPeriodJoin<TKey>
+    {
+        [ForeignKey(nameof(ChildProgressReportPeriodId))]
+        public ChildProgressReportPeriod ChildProgressReportPeriod { get; set; }
+        public TKey ChildProgressReportPeriodId { get; set; }
+    }
 }

@@ -179,17 +179,16 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     setOtherLoading(true);
 
-    const promises = [
+    const promises: Promise<any>[] = [
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
       appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
-      appDispatch(contentReportThunkActions.getDetailedProgressReports(50)),
-      appDispatch(
-        contentReportThunkActions.getChildProgressReportSummary(50)
-      ).unwrap(),
       appDispatch(notesThunkActions.getNotes({})).unwrap(),
       appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getChildProgressReports({})
+      ).unwrap(),
       appDispatch(userThunkActions.getUserConsents({})).unwrap(),
       appDispatch(
         calendarThunkActions.getCalendarEvents({

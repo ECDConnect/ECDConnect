@@ -59,6 +59,7 @@ export const ChildProgressObservationsLanding: React.FC = () => {
             child={child!}
             currentReportingPeriod={currentReportingPeriod!}
             currentReport={currentReport}
+            currentAgeGroup={currentAgeGroup}
           />
         )}
       </div>
