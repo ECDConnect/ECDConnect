@@ -169,6 +169,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IPointsService, PointsEngineService>();
+            services.AddTransient<IWLPointsService, WLPointsEngineService>();
             services.AddTransient<IGrowGreatPointsCalculationsService, GrowGreatPointsCalculationService>();
             services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IChildService, ChildService>();

@@ -386,11 +386,6 @@ namespace EcdLink.Api.CoreApi.Services
             var allConnections = _communityProfileConnectionRepo
                                             .GetAll()
                                             .Where(x => x.IsActive && (x.FromProfile.UserId == userId || x.ToProfile.UserId == userId));
-
-
-
-
-
             
             var connectionsToBeAccepted = allConnections
                                             .Where(x => x.IsActive && x.FromProfile.UserId == userId)
@@ -465,9 +460,8 @@ namespace EcdLink.Api.CoreApi.Services
                     item.UpdatedDate = DateTime.Now;
                     item.UpdatedBy = _applicationUserId.ToString();
                     _communityProfileConnectionRepo.Update(item);
-
-                    _pointsService.CalculateConnectWithAnotherUser((Guid)item.FromProfile.UserId);
                 }
+                _pointsService.CalculateConnectWithAnotherUser(input.UserId);
             }
             if (input.UserIdsToReject != null && input.UserIdsToReject.Any())
             {

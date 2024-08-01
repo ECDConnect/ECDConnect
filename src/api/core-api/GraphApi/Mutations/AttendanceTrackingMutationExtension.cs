@@ -24,6 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> TrackAttendance(
           [Service] AttendanceTrackingRepository trackingRepository,
           [Service] IPointsEngineService pointsEngineService,
+          [Service] IWLPointsEngineService wlPointsEngineService,
           [Service] IHttpContextAccessor contextAccessor,
           List<TrackAttendanceModel> attendance
           )
@@ -74,7 +75,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (result == true)
             {
                 var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+                wlPointsEngineService.CalculateChildAttendanceRegisterSaved(applicationUserId);
+                
+                // TODO: to be removed
                 pointsEngineService.CalculateAttendanceSubmitted(applicationUserId.ToString(), DateTime.UtcNow);
+
             }
 
             return result;

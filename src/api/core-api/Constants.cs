@@ -902,23 +902,23 @@ namespace EcdLink.Api.CoreApi
             public static readonly Guid ChildrenImmunisationsUpToDateActivityId = new Guid("b3be1d39-c4e3-4fbc-bfb4-80099320436c");
 
 
-            public static readonly Guid ChildAttendanceRegisterSaved = new Guid("af31301f-2791-438f-8341-d605af9b4616");
-            public static readonly Guid ChildRegistrationComplete = new Guid("a012de24-582e-4631-9612-c847c9d166b1");
-            public static readonly Guid ChildRemovedFromPreschool = new Guid("ecff0efb-441d-4075-8ca4-82c0545d64e0");
-            public static readonly Guid ThemePlanned = new Guid("b16ca985-7b54-4968-9e43-d08e301f438b");
-            public static readonly Guid NoThemePlanned= new Guid("d0f30701-24c6-4a92-ab23-7db49edb9452");
-            public static readonly Guid AddNewPractitionerToPreschool = new Guid("9bf3b569-7518-47a2-9219-38d4040f2c72");
-            public static readonly Guid AddNewClassToPreschool= new Guid("1f0e6a37-62f8-4f1b-af82-4b3311c895c6");
-            public static readonly Guid DownloadIncomeStatement = new Guid("8a6f8457-3cda-4b3f-b32a-0d2e3694069e");
-            public static readonly Guid AddExpenseOrIncomeToStatement = new Guid("1be2ffb2-b119-4c9c-9991-6ec4e9686db8");
-            public static readonly Guid PreschoolFeesGreaterThan0ForEachChild= new Guid("913871dd-0199-427e-8158-d1453bbbd568");
-            public static readonly Guid CompleteChildProgressObservations = new Guid("959dbdce-6264-4bef-9d47-5d75e284162c");
-            public static readonly Guid CreateChildProgressReport = new Guid("0ae80716-6355-432f-8680-5df42c6ea677");
-            public static readonly Guid DownloadPreschoolOrClassProgressSummary = new Guid("a320a46f-3e00-4a8e-b7c7-f09629ed5d07");
-            public static readonly Guid CompleteOnlineTrainingCourse = new Guid("a6090402-766c-4298-a47d-3f4329276ca1");
-            public static readonly Guid AddingShortDescription = new Guid("06edbd89-60ca-409d-a65d-a8fc6283cc53");
-            public static readonly Guid CompleteCommunityProfile = new Guid("affdd04f-85bc-4bb3-b123-e9a80bcbd56e");
-            public static readonly Guid ConnectWithAnotherUser = new Guid("87da9e98-c977-4a72-9da0-9e3df7932c4b");
+            public static readonly Guid ChildAttendanceRegisterSavedId = new Guid("af31301f-2791-438f-8341-d605af9b4616");
+            public static readonly Guid ChildRegistrationCompleteId = new Guid("a012de24-582e-4631-9612-c847c9d166b1");
+            public static readonly Guid ChildRemovedFromPreschoolId = new Guid("ecff0efb-441d-4075-8ca4-82c0545d64e0");
+            public static readonly Guid ThemePlannedId = new Guid("b16ca985-7b54-4968-9e43-d08e301f438b");
+            public static readonly Guid NoThemePlannedId = new Guid("d0f30701-24c6-4a92-ab23-7db49edb9452");
+            public static readonly Guid AddNewPractitionerToPreschoolId = new Guid("9bf3b569-7518-47a2-9219-38d4040f2c72");
+            public static readonly Guid AddNewClassToPreschoolId = new Guid("1f0e6a37-62f8-4f1b-af82-4b3311c895c6");
+            public static readonly Guid DownloadIncomeStatementId = new Guid("8a6f8457-3cda-4b3f-b32a-0d2e3694069e");
+            public static readonly Guid AddExpenseOrIncomeToStatementId = new Guid("1be2ffb2-b119-4c9c-9991-6ec4e9686db8");
+            public static readonly Guid PreschoolFeesGreaterThan0ForEachChildId = new Guid("913871dd-0199-427e-8158-d1453bbbd568");
+            public static readonly Guid CompleteChildProgressObservationsId = new Guid("959dbdce-6264-4bef-9d47-5d75e284162c");
+            public static readonly Guid CreateChildProgressReportId = new Guid("0ae80716-6355-432f-8680-5df42c6ea677");
+            public static readonly Guid DownloadPreschoolOrClassProgressSummaryId = new Guid("a320a46f-3e00-4a8e-b7c7-f09629ed5d07");
+            public static readonly Guid CompleteOnlineTrainingCourseId = new Guid("a6090402-766c-4298-a47d-3f4329276ca1");
+            public static readonly Guid AddingShortDescriptionId = new Guid("06edbd89-60ca-409d-a65d-a8fc6283cc53");
+            public static readonly Guid CompleteCommunityProfileId = new Guid("affdd04f-85bc-4bb3-b123-e9a80bcbd56e");
+            public static readonly Guid ConnectWithAnotherUserId = new Guid("87da9e98-c977-4a72-9da0-9e3df7932c4b");
         }
 
         public static class ReferralTypes

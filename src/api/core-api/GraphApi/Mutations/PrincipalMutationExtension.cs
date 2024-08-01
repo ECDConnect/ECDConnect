@@ -34,6 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                                         [Service] PersonnelService personnelManager,
                                                         IGenericRepositoryFactory repoFactory,
                                                         [Service] INotificationService notificationService,
+                                                        [Service] IWLPointsEngineService pointsService,
                                                         AuthenticationDbContext dbContext,
                                                         string firstName,
                                                         string lastName,
@@ -125,6 +126,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             {
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
                             }
+                            // add points for adding practitioner to programme
+                            pointsService.CalculateAddNewPractitionerToPreschool(uId);
                         }
 
                         return practitioner;

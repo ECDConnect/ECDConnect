@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -23,6 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public bool UpdateProgrammes([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+         [Service] IWLPointsEngineService pointsService,
          IGenericRepositoryFactory repoFactory,
          ProgrammeModel programmeInput)
         {
@@ -133,6 +134,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Programme UpdateProgramme([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+          [Service] IWLPointsEngineService pointsService,
           IGenericRepositoryFactory repoFactory,
           Guid? id,
           Programme input)
@@ -176,6 +178,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public DailyProgramme UpdateDailyProgramme([Service] IHttpContextAccessor contextAccessor,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+             [Service] IWLPointsEngineService pointsService,
              IGenericRepositoryFactory repoFactory,
              Guid? id,
              DailyProgramme input)

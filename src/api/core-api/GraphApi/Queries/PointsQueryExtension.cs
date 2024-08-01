@@ -48,5 +48,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             return userStanding;
         }
+
+
+        //
+        // TESTING
+        // 
+        public bool TestCalculateConnectWithAnotherUser(
+            [Service] IWLPointsEngineService pointsService,
+            Guid userId)
+        {
+            pointsService.CalculateConnectWithAnotherUser(userId);
+            return true;
+
+        }
+
+        public bool TestCalculateChildAttendanceRegisterSaved(
+            [Service] IWLPointsEngineService pointsService,
+            Guid userId)
+        {
+            pointsService.CalculateChildAttendanceRegisterSaved(userId);
+            return true;
+
+        }
+
+        public bool TestCalculateChildRegistrationComplete(
+            [Service] IWLPointsEngineService pointsService,
+            Guid childUserId)
+        {
+            pointsService.CalculateChildRegistrationComplete(childUserId);
+            return true;
+
+        }
     }
 }
