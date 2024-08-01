@@ -29,6 +29,12 @@ export const setupOrgValues = {
   coachRoleName: '',
   prgoressEnabled: false,
   trainingEnabled: false,
+  superAdmin1FirstName: '',
+  superAdmin1Surname: '',
+  superAdmin1Email: '',
+  superAdmin2FirstName: '',
+  superAdmin2Surname: '',
+  superAdmin2Email: '',
 };
 
 export interface SetupOrgModel {
@@ -57,6 +63,12 @@ export interface SetupOrgModel {
   coachRoleName: string;
   prgoressEnabled: boolean;
   trainingEnabled: boolean;
+  superAdmin1FirstName: string;
+  superAdmin1Surname: string;
+  superAdmin1Email: string;
+  superAdmin2FirstName: string;
+  superAdmin2Surname: string;
+  superAdmin2Email: string;
 }
 
 export const setuOrgSchema = Yup.object().shape({
@@ -67,4 +79,14 @@ export const setuOrgSchema = Yup.object().shape({
   darkVersionLogo: Yup.string(),
   lightVersionLogo: Yup.string(),
   favico: Yup.string(),
+  superAdmin1FirstName: Yup.string().required('First name is required!'),
+  superAdmin1Surname: Yup.string().required('Surname is required!'),
+  superAdmin1Email: Yup.string()
+    .required('Email is Required')
+    .email('Invalid email'),
+  superAdmin2FirstName: Yup.string().required('First name is required!'),
+  superAdmin2Surname: Yup.string().required('Surname is required!'),
+  superAdmin2Email: Yup.string()
+    .required('Email is Required')
+    .email('Invalid email'),
 });

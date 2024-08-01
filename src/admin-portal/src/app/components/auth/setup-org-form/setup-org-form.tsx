@@ -10,6 +10,8 @@ import { Step3 } from './components/step3/step3';
 import { Step4 } from './components/step4/step4';
 import { Step5 } from './components/step5/step5';
 import { Step6 } from './components/step6/step6';
+import { Step7 } from './components/step7/step7';
+import { Step8 } from './components/step8/step8';
 
 export const SetupOrgForm = () => {
   const { theme } = useTheme();
@@ -19,6 +21,7 @@ export const SetupOrgForm = () => {
     () => (step < 8 ? 'ArrowCircleRightIcon' : 'SaveIcon'),
     [step]
   );
+  const [disableButton, setDisableButton] = useState(false);
 
   const { register, handleSubmit, getValues, setValue, formState, control } =
     useForm({
@@ -38,8 +41,12 @@ export const SetupOrgForm = () => {
   const handleNextStep = () => {
     if (step < 8) {
       setStep(step + 1);
-    } else {
-      console.log('savinnnggg.....');
+    }
+  };
+
+  const handleGoBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
     }
   };
 
@@ -86,6 +93,29 @@ export const SetupOrgForm = () => {
             control={control}
           />
         );
+      case 7:
+        return (
+          <Step7
+            setValue={setValue}
+            register={register}
+            errors={errors}
+            getValues={getValues}
+            control={control}
+            setDisableButton={setDisableButton}
+          />
+        );
+      case 8:
+        return (
+          <Step8
+            setValue={setValue}
+            register={register}
+            errors={errors}
+            getValues={getValues}
+            control={control}
+            setDisableButton={setDisableButton}
+            setStep={setStep}
+          />
+        );
       default:
         return (
           <Step1 setValue={setValue} register={register} errors={errors} />
@@ -100,7 +130,7 @@ export const SetupOrgForm = () => {
       color={'primary'}
       menuLogoUrl={theme?.images?.logoUrl}
       backgroundColour={'white'}
-      onBack={() => {}}
+      onBack={step > 1 ? () => handleGoBack() : null}
     >
       <div className="p-24">
         <Typography type="h1" color="textDark" text={`Step ${step} of 8`} />
@@ -113,6 +143,7 @@ export const SetupOrgForm = () => {
             color="secondary"
             textColor="white"
             text={renderButtonText}
+            disabled={disableButton}
             onClick={() => handleNextStep()}
           />
           {(step === 3 || step === 4) && (
