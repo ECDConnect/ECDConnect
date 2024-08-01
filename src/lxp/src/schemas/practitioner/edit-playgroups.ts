@@ -7,7 +7,7 @@ export interface EditPlaygroupModel {
   classroomId?: string;
   name: string;
   meetingDays: number[];
-  meetEveryday: boolean;
+  meetEveryday: boolean | undefined;
   isFullDay?: boolean;
   userId?: string;
   id?: string;
