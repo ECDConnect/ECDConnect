@@ -114,7 +114,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         setIsLoading(false);
         return;
       });
-
+    console.log({ checkUsername });
     if (isOpenAccess) {
       const registerOpenAccessUserInput: RegisterRequestModel = {
         username,
@@ -167,6 +167,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       const updateUsername = await new AuthService()
         ?.UpdateUsername(Config?.authApi, updateUserInputModel)
         .catch((error) => {
+          console.log(error);
           setMessageError(specialCharactersMessageErrorText);
           setIsLoading(false);
           return;
