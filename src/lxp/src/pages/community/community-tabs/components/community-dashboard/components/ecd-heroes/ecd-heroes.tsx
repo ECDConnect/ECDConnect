@@ -621,7 +621,7 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
             type={'filled'}
             color={'quatenary'}
             shape={'round'}
-            className={'absolute bottom-6 right-0 z-10 m-3 px-3.5 py-2.5'}
+            className={'absolute bottom-16 right-0 z-10 m-3 px-3.5 py-2.5'}
             click={() => setIsConnectActive(true)}
           />
         )}
@@ -634,7 +634,7 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
             type={'filled'}
             color={'quatenary'}
             shape={'round'}
-            className={'absolute bottom-6 right-0 z-10 m-3 px-3.5 py-2.5'}
+            className={'absolute bottom-16 right-0 z-10 m-3 px-3.5 py-2.5'}
             click={handleOpenSaveConnectionsModal}
           />
         )}
