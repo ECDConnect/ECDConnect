@@ -370,7 +370,7 @@ export const EditPlaygroups: React.FC = () => {
             {
               text: 'Exit',
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               onClick: () => {
                 onSubmit();
@@ -380,8 +380,8 @@ export const EditPlaygroups: React.FC = () => {
             },
             {
               text: 'Continue editing',
-              textColour: 'primary',
-              colour: 'primary',
+              textColour: 'quatenary',
+              colour: 'quatenary',
               type: 'outlined',
               onClick: () => onCancel(),
               leadingIcon: 'PencilIcon',
