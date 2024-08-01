@@ -156,7 +156,7 @@ export const CommunityProfile = () => {
             skills={communityProfile?.profileSkills!}
             action={setOpenEditCommunitySkills}
           />
-          <div className="mb-4 mt-4 flex w-full flex-col justify-center gap-3">
+          <div className="mb-12 mt-4 flex w-full flex-col justify-center gap-3">
             <Button
               className="w-full rounded-2xl px-2"
               type="filled"

@@ -446,7 +446,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
             if (input.UserIdsToReject != null && input.UserIdsToReject.Any())
             {
-                var rejected = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.FromProfile.UserId == input.UserId && input.UserIdsToReject.Contains((Guid)x.ToProfile.UserId)).ToList();
+                var rejected = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToReject.Contains((Guid)x.FromProfile.UserId)).ToList();
                 foreach (var item in rejected)
                 {
                     item.InviteAccepted = false;
