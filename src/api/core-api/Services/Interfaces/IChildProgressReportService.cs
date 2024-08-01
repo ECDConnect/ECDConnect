@@ -16,7 +16,7 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
         //IEnumerable<ChildProgressReportDetailedModel> GetChildProgressReports(Guid userId, int count);
         //(int reportsSubmittedOnTime, int reportsMissingOrIncomplete, int reportsSubmittedOverdue) GetChildProgressReportStatusCountsForPractitioner(string practitionerHierarcry, IEnumerable<Guid> classroomGroupIds);
         //IEnumerable<ChildProgressReportSummaryModel> GetChildProgressReportSummary(Guid userId, int count);
-        //PractitionerProgressReportSummaryModel GetPractitionerProgressReportSummary(Guid userId, DateTime startDate, DateTime endDate, string locale);
+        PractitionerProgressReportSummaryModel GetPractitionerProgressReportSummary(Guid userId, DateTime startDate, DateTime endDate, string locale);
         //PractitionerProgressReportSummaryModel GetPrincipalProgressReportSummary(Guid userId, DateTime startDate, DateTime endDate, string locale);
 
 

@@ -70,18 +70,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         //  return report.GetChildProgressReportSummary(httpContextAccessor.HttpContext.GetUser().Id, count);
         //}
 
-        // THIS AND BELOW, MIGHT JUST WORK FOR BOTH NOW... Just need to test to check
-        //[Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        //public PractitionerProgressReportSummaryModel GetProgressReportSummaryForPractitioner(
-        //    [Service] IHttpContextAccessor httpContextAccessor,
-        //    [Service] IChildProgressReportService report,
-        //    DateTime startDate,
-        //    DateTime endDate,
-        //    string locale)
-        //{
-        //    return report.GetPractitionerProgressReportSummary(httpContextAccessor.HttpContext.GetUser().Id, startDate, endDate, locale);
-        //}
-
         //[Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         //public PractitionerProgressReportSummaryModel GetProgressReportSummaryForPrincipalForPrincipal(
         //    [Service] IHttpContextAccessor httpContextAccessor,
@@ -93,21 +81,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         //    return report.GetPrincipalProgressReportSummary(httpContextAccessor.HttpContext.GetUser().Id, startDate, endDate, locale);
         //}
 
-
-
-
-
         // Temporary, so old stuff still works
-        //[Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        //public PractitionerProgressReportSummaryModel GetPractitionerProgressReportSummary(
-        //    [Service] IHttpContextAccessor httpContextAccessor,
-        //    [Service] IChildProgressReportService report,
-        //    string reportingPeriod,
-        //    string locale)
-        //{
-        //    var startDate = GetDateFromReportingPeriod(reportingPeriod);
-        //    return report.GetPractitionerProgressReportSummary(httpContextAccessor.HttpContext.GetUser().Id, startDate, startDate.GetEndOfMonth(), locale);
-        //}
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
+        public PractitionerProgressReportSummaryModel GetPractitionerProgressReportSummary(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] IChildProgressReportService report,
+            string reportingPeriod,
+            string locale)
+        {
+            var startDate = GetDateFromReportingPeriod(reportingPeriod);
+            return report.GetPractitionerProgressReportSummary(httpContextAccessor.HttpContext.GetUser().Id, startDate, startDate.GetEndOfMonth(), locale);
+        }
 
         //[Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         //public PractitionerProgressReportSummaryModel GetPrincipalProgressReportSummary(
