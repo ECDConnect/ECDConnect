@@ -114,7 +114,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         setIsLoading(false);
         return;
       });
-    console.log({ checkUsername });
+
     if (isOpenAccess) {
       const registerOpenAccessUserInput: RegisterRequestModel = {
         username,
