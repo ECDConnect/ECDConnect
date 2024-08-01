@@ -57,6 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] HierarchyEngine engine,
             [Service] INotificationService notificationService,
             [Service] UserManager<ApplicationUser> userManager,
+            [Service] IWLPointsEngineService pointsService,
             Guid id,
             ClassroomGroup input)
         {
@@ -86,6 +87,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     var newClassRoomGroup = classRepo.Insert(classRoomCreate);
                     UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
+                    // add points for adding a new class
+                    pointsService.CalculateAddNewClassToPreschool(uId);
                     return newClassRoomGroup;
 
                 }

@@ -919,6 +919,8 @@ namespace EcdLink.Api.CoreApi
             public static readonly Guid AddingShortDescriptionId = new Guid("06edbd89-60ca-409d-a65d-a8fc6283cc53");
             public static readonly Guid CompleteCommunityProfileId = new Guid("affdd04f-85bc-4bb3-b123-e9a80bcbd56e");
             public static readonly Guid ConnectWithAnotherUserId = new Guid("87da9e98-c977-4a72-9da0-9e3df7932c4b");
+
+            public static readonly string PreschoolFeeId = "3915acb0-db44-a323-c086-fe3376d2bfd4";
         }
 
         public static class ReferralTypes

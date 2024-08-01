@@ -38,12 +38,11 @@ namespace ECDLink.Core.Services
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
-        private IPointsEngineService _pointsEngineService;
-
         private ApplicationUserManager _userManager;
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
+        private IWLPointsEngineService _pointsService;
 
         private IConverter _pdfConverter;
 
@@ -53,7 +52,7 @@ namespace ECDLink.Core.Services
             [Service] DocumentManager documentManager,
             [Service] ApplicationUserManager userManager,
             [Service] PersonnelService personnelService,
-            IPointsEngineService pointsEngineService,
+            [Service] IWLPointsEngineService pointsService,
             HierarchyEngine hierarchyEngine,
             IConverter pdfConverter
             )
@@ -77,7 +76,7 @@ namespace ECDLink.Core.Services
             _userManager = userManager;
             _documentManager = documentManager;
             _personnelService = personnelService;
-            _pointsEngineService = pointsEngineService;
+            _pointsService = pointsService;
         }
 
         #region Utils
@@ -155,6 +154,8 @@ namespace ECDLink.Core.Services
                 }).ToList(),
             };
 
+            _pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+
             return _statementsRepo.Insert(newStatement);
         }
 
@@ -172,6 +173,10 @@ namespace ECDLink.Core.Services
             {
                 exisitingStatement.Downloaded = input.Downloaded;
                 _statementsRepo.Update(exisitingStatement);
+                if (input.Downloaded)
+                {
+                    _pointsService.CalculateDownloadIncomeStatement((Guid)exisitingStatement.UserId);
+                }
             }
 
             // If not downloaded, update income/expenses
@@ -327,7 +332,7 @@ namespace ECDLink.Core.Services
             }
             #endregion
 
-
+            _pointsService.CalculateAddExpenseOrIncomeToStatement((Guid)exisitingStatement.UserId);
             return exisitingStatement;
         }
 

@@ -13,7 +13,7 @@ namespace ECDLink.Core.Services.Interfaces
         void CalculateAddNewClassToPreschool(Guid userId);
         void CalculateDownloadIncomeStatement(Guid userId);
         void CalculateAddExpenseOrIncomeToStatement(Guid userId);
-        void CalculatePreschoolFeesGreaterThan0ForEachChild(Guid userId);
+        void CalculatePreschoolFeesGreaterThan0ForEachChild();
         void CalculateCompleteChildProgressObservations(Guid userId);
         void CalculateCreateChildProgressReport(Guid userId);
         void CalculateDownloadPreschoolOrClassProgressSummary(Guid userId);

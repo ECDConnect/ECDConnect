@@ -59,7 +59,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             pointsService.CalculateConnectWithAnotherUser(userId);
             return true;
-
         }
 
         public bool TestCalculateChildAttendanceRegisterSaved(
@@ -68,7 +67,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             pointsService.CalculateChildAttendanceRegisterSaved(userId);
             return true;
-
         }
 
         public bool TestCalculateChildRegistrationComplete(
@@ -77,7 +75,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             pointsService.CalculateChildRegistrationComplete(childUserId);
             return true;
+        }
 
+        public bool TestCalculateAddNewPractitionerToPreschool(
+            [Service] IWLPointsEngineService pointsService,
+            Guid userId)
+        {
+            pointsService.CalculateAddNewPractitionerToPreschool(userId);
+            return true;
+        }
+        public bool TestCalculateAddNewClassToPreschool(
+            [Service] IWLPointsEngineService pointsService,
+            Guid userId)
+        {
+            pointsService.CalculateAddNewClassToPreschool(userId);
+            return true;
+        }
+
+        public bool TestCalculateDownloadIncomeStatement(
+            [Service] IWLPointsEngineService pointsService,
+            Guid userId)
+        {
+            pointsService.CalculateDownloadIncomeStatement(userId);
+            return true;
+        }
+
+        public bool TestCalculateAddExpenseOrIncomeToStatement(
+            [Service] IWLPointsEngineService pointsService,
+            Guid userId)
+        {
+            pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+            return true;
+        }
+
+        public bool TestCalculatePreschoolFeesGreaterThan0ForEachChild(
+            [Service] IWLPointsEngineService pointsService)
+        {
+            pointsService.CalculatePreschoolFeesGreaterThan0ForEachChild();
+            return true;
         }
     }
 }

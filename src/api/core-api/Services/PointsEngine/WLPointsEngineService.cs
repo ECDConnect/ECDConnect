@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -245,25 +244,223 @@ namespace EcdLink.Api.CoreApi.Services
 
             }
         }
+
+        /// <summary>
+        /// Add a new practitioner to the preschool
+        /// 20 points per practitioner added
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateAddNewPractitionerToPreschool(Guid userId)
         {
-            var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddNewPractitionerToPreschoolId);
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            if (practitioner != null && practitioner.IsPrincipal == true)
+            {
+                var today = DateTime.Now;
+                var practitioners = _practitionerRepo.GetAll().Where(x => x.IsActive
+                                                                && x.PrincipalHierarchy == userId
+                                                                && x.DateLinked.HasValue
+                                                                && x.DateLinked.Value.Year == today.Year)
+                                            .Select(x => new { x.DateLinked.Value.Month, x.Id })
+                                            .ToList()
+                                            .GroupBy(x => x.Month)
+                                            .Select(x => new { Month = x.Key, Total = x.Count() })
+                                            .ToList();
+                if (practitioners.Any())
+                {
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddNewPractitionerToPreschoolId);
+                    foreach (var item in practitioners)
+                    {
+                        AddOrUpdatePoints(
+                          PointsActivityConstants.AddNewPractitionerToPreschoolId,
+                          userId,
+                          activity.Points * item.Total,
+                          item.Total,
+                          new DateTime(today.Year, item.Month, today.Day)
+                        );
+                    }
+                }
+            }
+
         }
+
+        /// <summary>
+        /// Add a new class to the preschool
+        /// 20 points per class added
+        /// Yearly max for principal is 20
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateAddNewClassToPreschool(Guid userId)
         {
-            var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddNewClassToPreschoolId);
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            if (practitioner != null && practitioner.IsPrincipal == true)
+            {
+                var today = DateTime.Now;
+                var schoolClasses = _classRepo.GetAll()
+                                            .Where(x => x.IsActive && x.UserId == userId && x.ClassroomGroups.Count != 0)
+                                            .SelectMany(x => x.ClassroomGroups.Where(x => x.InsertedDate.Year == today.Year))
+                                            .Select(x => new { x.InsertedDate.Month, x.Id })
+                                            .ToList()
+                                            .GroupBy(x => x.Month)
+                                            .Select(x => new { Month = x.Key, Total = x.Count() })
+                                            .ToList();
+                if (schoolClasses.Any())
+                {
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddNewClassToPreschoolId);
+                    var currentPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
+                                            x.UserId == userId
+                                            && x.PointsActivityId == activity.Id
+                                            && x.DateScored.Year >= today.Year)
+                                            .Count();
+
+                    var userPoints = currentPoints == 0 ? activity.Points : 0;
+                    foreach ( var item in schoolClasses)
+                    {
+                        AddOrUpdatePoints(
+                          PointsActivityConstants.AddNewClassToPreschoolId,
+                          userId,
+                          userPoints,
+                          item.Total,
+                          new DateTime(today.Year, item.Month, today.Day)
+                        );
+                        userPoints = 0; //reset user points - max 20 for year
+                    }
+                }
+            }
         }
+
+        /// <summary>
+        /// Downloading an income statement for the month for the first time (ie, don't give points for downloading the same statement multiple times)
+        /// 50 points for downloading a register for the month (earned once, see comment)
+        /// Month max 50 Year max 600
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateDownloadIncomeStatement(Guid userId)
         {
-            var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.DownloadIncomeStatementId);
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            if (practitioner != null && practitioner.IsPrincipal == true)
+            {
+                var today = DateTime.Now;
+                var statements = _statementsIncomeStatementRepo
+                                    .GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == today.Year && x.Downloaded)
+                                    .Select(x => new { x.Month, x.Id })
+                                    .ToList()
+                                    .GroupBy(x => x.Month)
+                                    .Select(x => new { Month = x.Key, Total = x.Count() })
+                                    .ToList();
+                if (statements.Count > 0)
+                {
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.DownloadIncomeStatementId);
+                    foreach (var item in statements)
+                    {
+                        AddOrUpdatePoints(
+                          PointsActivityConstants.DownloadIncomeStatementId,
+                          userId,
+                          activity.Points,
+                          item.Total,
+                          new DateTime(today.Year, item.Month, today.Day)
+                        );
+                    }
+                }
+            }
         }
+
+        /// <summary>
+        /// Adding an expense OR income item to a statement
+        /// 5 points per expense OR income item added
+        /// Month max 25 Year max 2500
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateAddExpenseOrIncomeToStatement(Guid userId)
         {
-            var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddExpenseOrIncomeToStatementId);
+            if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.BusinessEnabled)
+            {
+                var practitioner = _practitionerRepo.GetByUserId(userId);
+                if (practitioner != null && practitioner.IsPrincipal == true)
+                {
+                    var today = DateTime.Now;
+                    var incomeExpenseItems = _statementsIncomeStatementRepo
+                                            .GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == today.Year)
+                                            .Select(x => new { Month = x.Month, IncomeCount = x.IncomeItems.Where(y => y.Amount > 0).Count(), ExpenseCount = x.ExpenseItems.Where(y => y.Amount > 0).Count() })
+                                            .ToList();
+
+                    if (incomeExpenseItems.Count > 0)
+                    {
+                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddExpenseOrIncomeToStatementId);
+                        foreach (var item in incomeExpenseItems)
+                        {
+                            var monthPoints = (item.IncomeCount + item.ExpenseCount) * activity.Points;
+                            AddOrUpdatePoints(
+                              PointsActivityConstants.AddExpenseOrIncomeToStatementId,
+                              userId,
+                              monthPoints > 25 ? activity.Points : monthPoints,
+                              (item.IncomeCount + item.ExpenseCount),
+                              new DateTime(today.Year, item.Month, today.Day)
+                            );
+                        }
+                    }
+                }
+            }
         }
-        public void CalculatePreschoolFeesGreaterThan0ForEachChild(Guid userId)
+
+        /// <summary>
+        /// Preschool fees greater than 0 were added for each child this month
+        /// 50 points per month, calculated at the end of the month; IF the principal added a preschool fee for each active child in the preschool that is greater than zero Rand.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public void CalculatePreschoolFeesGreaterThan0ForEachChild()
         {
+            //if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.BusinessEnabled)
+            //{
+            var today = DateTime.Now;
+            var month = 7;
+            var year = 2024;
+            var preschoolFeeStatements = _statementsIncomeStatementRepo
+                                        .GetAll()
+                                        .Where(x => x.IsActive == true
+                                            && x.Month == month
+                                            && x.Year == year
+                                            && x.IncomeItems.Count > 0)
+                                        .ToList()
+                                        .SelectMany(x => x.IncomeItems)
+                                        .Where(x => x.IncomeTypeId == PointsActivityConstants.PreschoolFeeId && x.Amount > 0 && x.IsActive)
+                                        .Select(x => x.StatementsIncomeStatement)
+                                        .Distinct()
+                                        .ToList();
+            
+            var principalUserIds = preschoolFeeStatements.Select(x => x.UserId).Distinct().ToList();
+
+            var principalLearnerTotals = _classRepo
+                                            .GetAll()
+                                            .Where(x => x.IsActive && principalUserIds.Contains(x.UserId))
+                                            .ToList()
+                                            .Select(x => new { Key = x.UserId, Value = x.ClassroomGroups.SelectMany(y => y.Learners).Where(y => y.IsActive).Count() })
+                                            .ToList();
+
             var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId);
+            foreach (var item in preschoolFeeStatements)
+            {
+                var principalLearnerTotal = principalLearnerTotals.Where(x => x.Key == item.UserId).FirstOrDefault();
+                var preschoolIncomeTotal = item.IncomeItems.Count();
+
+                if (principalLearnerTotal != null)
+                {
+                    if (principalLearnerTotal.Value == preschoolIncomeTotal)
+                    {
+                        AddOrUpdatePoints(
+                            PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId,
+                            (Guid)item.UserId,
+                            activity.Points,
+                            1,
+                            new DateTime(today.Year, today.Month, today.Day)
+                        );
+                    }
+                }
+            }
         }
         public void CalculateCompleteChildProgressObservations(Guid userId)
         {
@@ -346,89 +543,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
-
-
-
-
-
-
-
-
-
-        /*
-
-
-
-                #region SS_Children
-
-                public bool CalculateChildrenRegistrationAdd(string userId)
-                {
-                    var pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
-                    var activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1).FirstOrDefault();
-
-                    var practitioner = _practitionerRepo.GetByUserId(userId);
-
-                    UpdateUserSummaryPoints(
-                        userId,
-                        activity,
-                        DateTime.Now,
-                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
-
-                    _notificationService.ExpireNotificationsTypesForUser(userId, TemplateTypeConstants.ChildRegistrationIncomplete);
-                    return true;
-                }
-
-                public bool CalculateChildrenRegistrationRemoval(string userId, DateTime today)
-                {
-                    Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
-                    if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
-                    {
-                        // Reading from audit table to retrieve data for practitioner 
-                        var childCount = _integrationAuditRepo.GetAll().Where(x => x.Entity == "Child" &&
-                                                                                   x.Property == "IsActive" &&
-                                                                                   x.ValueBefore == "True" &&
-                                                                                   x.ValueAfter == "False" &&
-                                                                                   x.UserId.ToString() == userId &&
-                                                                                   x.UpdatedDate.Year == today.Year &&
-                                                                                   x.UpdatedDate.Month == today.Month)
-                                                                        .OrderBy(x => x.InsertedDate)
-                                                                        .Count();
-                        if (childCount > 0)
-                        {
-                            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
-                            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac2).FirstOrDefault();
-
-                            UpdateUserSummaryPoints(
-                                userId, 
-                                activity,
-                                today,
-                                (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
-                        }               
-                    }
-                    return true;
-                }
-
-                #endregion
-
-               
-
-
-                public bool CalculatePreSchoolFees(string userId, DateTime today)
-                {
-                    var activity = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement).Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac1).FirstOrDefault();
-                    var activity_record = _pointsUserSummaryRepo.GetAll().Where(x => x.PointsLibraryId == activity.Id && x.UserId.ToString() == userId && x.Year == today.Year).FirstOrDefault();
-
-                    if (activity_record == null)
-                    {
-                        UpdateUserSummaryPoints(userId, activity, today);
-                    }
-
-                    return true;
-                }
-
-
-        */
-
-
     }
+
+    internal record NewRecord(Guid? UserId, IEnumerable<ICollection<Learner>> Item);
 }
