@@ -96,7 +96,7 @@ export const getProgressAgeGroupForChild = (childId: string) =>
       // Now get age group that matches
       const ageGroup = ageGroups.find(
         (x) =>
-          x.startAgeInMonths <= ageInMonths && x.endAgeInMonths > ageInMonths
+          x.startAgeInMonths <= ageInMonths && x.endAgeInMonths >= ageInMonths
       );
 
       return ageGroup;

@@ -48,13 +48,9 @@ export const ConnectionProfile = () => {
     );
 
   const handleGoBack = () => {
-    const receivedConnections = loggedUserCommunityProfile?.pendingConnections;
-    const acceptedConnections = loggedUserCommunityProfile?.acceptedConnections;
     if (isFromReceivedConnections) {
       history.push(ROUTES.COMMUNITY.RECEIVED_REQUESTS, {
-        usersData: isConnectedScreen
-          ? acceptedConnections
-          : receivedConnections,
+        isRequest: isConnectedScreen ? false : true,
         isFromReceivedConnections: true,
         isConnectedScreen: isConnectedScreen ? true : false,
       });
@@ -338,7 +334,7 @@ export const ConnectionProfile = () => {
               ?.toLocaleUpperCase()}
           />
         </div>
-        <div className="flex w-full flex-col gap-2 overflow-auto p-4">
+        <div className="mb-12 flex w-full flex-col gap-2 overflow-auto p-4">
           <div
             className={
               'mt-2.5 flex w-full flex-row items-center justify-center'

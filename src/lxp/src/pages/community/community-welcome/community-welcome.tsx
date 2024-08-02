@@ -52,12 +52,11 @@ export const NewCommunityWelcome = ({
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { getValues, setValue, register, trigger, formState, watch, control } =
-    useForm<WelcomeMessageModel>({
-      resolver: yupResolver(welcomeMessageSchema),
-      mode: 'onChange',
-      defaultValues: initialWelcomeMessageModel,
-    });
+  const { setValue, formState, watch } = useForm<WelcomeMessageModel>({
+    resolver: yupResolver(welcomeMessageSchema),
+    mode: 'onChange',
+    defaultValues: initialWelcomeMessageModel,
+  });
 
   const { errors } = formState;
   const {
@@ -83,7 +82,7 @@ export const NewCommunityWelcome = ({
     const doThisLaterInput: CommunityProfileInputModelInput = {
       userId: practitioner?.userId!,
       aboutShort: '',
-      shareContactInfo: false,
+      shareContactInfo: true,
       shareProfilePhoto: false,
       shareProvince: false,
       provinceId: null,
@@ -176,7 +175,13 @@ export const NewCommunityWelcome = ({
     } else {
       setStep(step - 1);
     }
-  }, [step, practitioner?.clickedCommunityTab]);
+  }, [
+    step,
+    practitioner?.clickedCommunityTab,
+    practitioner?.userId,
+    history,
+    dispatch,
+  ]);
 
   return (
     <>

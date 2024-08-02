@@ -1,6 +1,7 @@
 ﻿using ECDLink.PostgresTenancy.Entities;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy.Model;
+using HotChocolate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,6 +122,13 @@ namespace ECDLink.PostgresTenancy.Services
             tenantToUpdate.ThemePath = themePath;
             return Cast(_repository.Update(tenantToUpdate));
         }
+
+        public bool ValidateNewTenantName(string applicationName)
+        {
+            var tenant = _repository.GetAll().Where(t => t.ApplicationName == applicationName).FirstOrDefault();
+            return tenant == null ? true : false;
+        }
+
 
         private static TenantInternalModel Cast(TenantEntity tenantEntity)
         {

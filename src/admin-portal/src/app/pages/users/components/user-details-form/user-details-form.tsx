@@ -55,23 +55,16 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const { allPortalCoaches } =
-    apolloClient.readQuery<{ allPortalCoaches?: PortalCoachModel[] }>({
-      query: GetAllPortalCoaches,
-      variables: coachQueryVariables,
-    }) || {};
-
   const { idNumber } = useWatch({ control });
 
   const [identificationInUse, setIdentificationInUse] = useState<string>();
-
   useEffect(() => {
     const hasIdNumber = practitioners?.find(
-      (item) => item?.user?.idNumber === idNumber
+      (item) => item?.user?.idNumber?.toLowerCase() === idNumber?.toLowerCase()
     );
 
     if (hasIdNumber) {
-      setIdentificationInUse(hasIdNumber?.user?.idNumber);
+      setIdentificationInUse(hasIdNumber?.user?.idNumber?.toLocaleLowerCase());
     } else {
       setIdentificationInUse('');
     }
@@ -83,10 +76,10 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
     } else {
       setUserAlreadyExits(false);
     }
-  }, [identificationInUse]);
+  }, [identificationInUse, setUserAlreadyExits]);
 
   const isIdentificationInUse =
-    !!identificationInUse && identificationInUse === idNumber;
+    !!identificationInUse && identificationInUse === idNumber.toLowerCase();
 
   const identificationExists = () => {
     const practitioner = practitioners?.find(

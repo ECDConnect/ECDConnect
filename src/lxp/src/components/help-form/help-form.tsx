@@ -212,7 +212,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
           <div className={'w-full py-4'}>
             <Button
               type={'filled'}
-              color={'primary'}
+              color={'quatenary'}
               className={'mb-20 w-full'}
               disabled={disableButton}
               onClick={() => {

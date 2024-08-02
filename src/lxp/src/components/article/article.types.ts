@@ -9,6 +9,7 @@ export interface ArticleProps extends ComponentBaseProps {
   isOpen?: boolean;
   onClose: () => void;
   isFromRegistration?: boolean;
+  isConsentScreen?: boolean;
 }
 
 export const LanguagesModels: LanguageDto[] = [

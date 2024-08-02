@@ -47,6 +47,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const childClassroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupByChildUserId(child.userId!)
   );
+  const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupId = classroomGroups?.at(0)?.id;
   const dispatch = useAppDispatch();
@@ -130,7 +131,9 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     const linkCopied = await copyToClip(caregiverChildregUrl);
 
     const whatsapp = () => {
-      window.open(`whatsapp://send?text=${caregiverChildregUrl}`);
+      const textMessage = `${practitioner?.user?.firstName} practitioner has invited you to register you child at their care centre. Tap this link to register ${childUser?.firstName} for ${classroom?.name}: ${caregiverChildregUrl}`;
+      const whatsAppLink = `whatsapp://send?text=${textMessage}`;
+      window.open(whatsAppLink);
     };
 
     dialog({
