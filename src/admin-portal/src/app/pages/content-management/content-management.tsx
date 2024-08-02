@@ -41,7 +41,7 @@ export function ContentManagement() {
   const tenant = useTenant();
 
   const { data: languages } = useQuery(GetAllLanguage, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-first',
   });
 
   const [
@@ -55,13 +55,13 @@ export function ContentManagement() {
       // contentTypeIdFilter: '',
       // contentTypeNameFilter: ''
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-first',
   });
 
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
     contentDefinitions,
     {
-      fetchPolicy: 'cache-and-network',
+      fetchPolicy: 'cache-first',
     }
   );
 
@@ -128,14 +128,16 @@ export function ContentManagement() {
   };
 
   const getContentValues = (contentManagementView?: ContentManagementView) => {
-    refetch().then(() => {
-      const currentType = dataTypes.contentTypes.find(
-        (x: ContentTypeDto) => x.id === selectedType?.id
-      );
+    if (!dataTypes) {
+      refetch();
+    }
 
-      setSelectedType(currentType);
-      setSelectedContent(contentManagementView);
-    });
+    const currentType = dataTypes.contentTypes.find(
+      (x: ContentTypeDto) => x.id === selectedType?.id
+    );
+
+    setSelectedType(currentType);
+    setSelectedContent(contentManagementView);
   };
 
   const refreshParent = () => {
@@ -144,15 +146,15 @@ export function ContentManagement() {
   };
 
   useEffect(() => {
-    getContentTypes({
-      variables: {
-        search: searchValue,
-        searchInContent: true,
-        isVisiblePortal: true,
-        // contentTypeIdFilter: null,
-        // contentTypeNameFilter: ''
-      },
-    });
+    if (!dataTypes) {
+      getContentTypes({
+        variables: {
+          search: searchValue,
+          searchInContent: true,
+          isVisiblePortal: true,
+        },
+      });
+    }
   }, []);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -382,7 +384,7 @@ export function ContentManagement() {
             />
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">
-              <div className="h-full py-3">
+              <div className="h-full p-4 py-3">
                 {!!subTabs?.length && !specialType && (
                   <div className="justify-self col-end-3 pb-2">
                     <button
@@ -409,7 +411,7 @@ export function ContentManagement() {
                   </div>
                 )}
                 <div
-                  className="relative h-full rounded-xl bg-white p-4 md:p-12"
+                  className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
                 >
                   {selectedType &&

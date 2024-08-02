@@ -441,11 +441,7 @@ export default function CreateTheme({
                 type="info"
               />
             ) : (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
-                type="warning"
-              />
+              <></>
             )}
 
             <CreateThemeForm
