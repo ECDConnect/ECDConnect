@@ -49,7 +49,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return userStanding;
         }
 
-
         //
         // TESTING
         // 
@@ -112,6 +111,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IWLPointsEngineService pointsService)
         {
             pointsService.CalculatePreschoolFeesGreaterThan0ForEachChild();
+            return true;
+        }
+
+        public bool TestCalculateThemePlanned(
+            [Service] IWLPointsEngineService pointsService,
+            Guid userId)
+        {
+            pointsService.CalculateThemePlanned(userId);
+            return true;
+        }
+
+        public bool TestCalculateNoThemePlanned(
+            [Service] IWLPointsEngineService pointsService,
+            Guid userId)
+        {
+            pointsService.CalculateNoThemePlanned(userId);
             return true;
         }
     }

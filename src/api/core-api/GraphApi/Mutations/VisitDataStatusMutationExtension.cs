@@ -22,7 +22,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool UpdateVisitDataStatus(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
             [Service] INotificationService notificationService,
             IGenericRepositoryFactory repoFactory,
             VisitDataStatusReferral input)
@@ -57,10 +56,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 notificationService.DeleteAllNotificationsRelatedToEntity(entityToUpdate.Id);
             }
 
-            // TODO: check which needs to be called based on the referrals made
-            pointsCalculationService.CalculatePregnantMotherReferralPoints(applicationUserId);
-            pointsCalculationService.CalculateInfantVisitAndReferralPoints(applicationUserId);
-            
             return true;
         }
     }

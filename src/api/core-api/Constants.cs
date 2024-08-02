@@ -1,12 +1,5 @@
-using Castle.Components.DictionaryAdapter.Xml;
 using ECDLink.Abstractrions.Enums;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Users;
-using NPOI.SS.Formula.Functions;
 using System;
-using System.Collections.Concurrent;
-using static ECDLink.Core.SystemSettings.SettingGroups.Notifications;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -877,31 +870,6 @@ namespace EcdLink.Api.CoreApi
 
         public static class PointsActivityConstants
         {
-            // To be removed when done with wl points
-            public static readonly Guid ChildFoldersOpenedActivityId = new Guid("92c06990-7428-4a8f-8cfe-e1dfca83fb3e");
-            public static readonly Guid PregnantMomFolderOpenedActivityId = new Guid("f20f0917-b497-440c-836e-aa54cf2d10f0");
-            public static readonly Guid EarlyPregnacyIdentificationActivityId = new Guid("f5a72c31-5aa6-4852-9903-c9685420ab4b");
-            public static readonly Guid PregnantMotherReferralForMaternalDistressActivityId = new Guid("868743ae-a750-420b-94df-c00945c56367");
-            public static readonly Guid PregnantMotherReferralForMaternalMalnutritionActivityId = new Guid("3e4d346d-8190-439f-b000-a54d2b19f852");
-
-            public static readonly Guid ChildWeightMeasuredActivityId = new Guid("3075e510-6f2d-43f9-9171-9561a213b935");
-            public static readonly Guid ChildWeightMeasuredActionTakenOrNotRequiredActivityId = new Guid("6fe4149b-cfb6-4193-be04-c7ad6b091b8b");
-            public static readonly Guid ChildLengthMeasuredActivityId = new Guid("1a2fdde9-5644-4977-9acd-58957c9f30ac");
-            public static readonly Guid ChildLengthMeasuredActionTakenOrNotRequiredActivityId = new Guid("7ae6cfcb-85a3-4962-af8e-39901dc19848");
-            public static readonly Guid ChildMuacMeasuredActivityId = new Guid("78ed5347-3877-49f2-bf00-a6673df363a3");
-            public static readonly Guid ChildMuacMeasuredActionTakenOrNotRequiredActivityId = new Guid("1b0c8486-99e5-4670-a162-a4586d4a4c46");
-
-            public static readonly Guid MotherMaternalStressVisitsUpToDateActivityId = new Guid("05ffdb20-d420-458d-af15-8706ed8c8084");
-            public static readonly Guid MotherAlcoholAbuseVisitsUpToDateActivityId = new Guid("bd5bd8c7-0fda-464c-8f9d-2ed8f51ef69f");
-            public static readonly Guid MotherMalnutritionVisitsUpToDateActivityId = new Guid("91c0eeda-3acd-463d-90b8-808703d9b5c8");
-
-            public static readonly Guid ChildrenAllReceivingCSGActivityId = new Guid("4d57d1e6-976c-4220-a075-465042c7ddb4");
-            public static readonly Guid ChildrenDevelopmentScreeningUpToDateActivityId = new Guid("5be4e1ac-248c-41d0-9b0a-c4f820a49e83");
-            public static readonly Guid ChildrenVitaminAUpToDateActivityId = new Guid("ecbda3f8-9bd6-472d-a4c3-ec0f10c20797");
-            public static readonly Guid ChildrenDewormingUpToDateActivityId = new Guid("31b8633f-aeac-4970-99cf-e72745c963b7");
-            public static readonly Guid ChildrenImmunisationsUpToDateActivityId = new Guid("b3be1d39-c4e3-4fbc-bfb4-80099320436c");
-
-
             public static readonly Guid ChildAttendanceRegisterSavedId = new Guid("af31301f-2791-438f-8341-d605af9b4616");
             public static readonly Guid ChildRegistrationCompleteId = new Guid("a012de24-582e-4631-9612-c847c9d166b1");
             public static readonly Guid ChildRemovedFromPreschoolId = new Guid("ecff0efb-441d-4075-8ca4-82c0545d64e0");

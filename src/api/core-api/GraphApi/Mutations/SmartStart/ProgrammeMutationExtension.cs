@@ -125,6 +125,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         dbRepoDaily.Insert(dailyProgramme);
                     }
                 }
+                // points calculations for themes
+                pointsService.CalculateThemePlanned(uId);
+                pointsService.CalculateNoThemePlanned(uId);
                                   
                 return true;
             }

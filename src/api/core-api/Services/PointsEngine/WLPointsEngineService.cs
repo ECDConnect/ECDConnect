@@ -16,11 +16,11 @@ using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -232,16 +232,93 @@ namespace EcdLink.Api.CoreApi.Services
         {
             if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.ProgressEnabled)
             {
-                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
+                var practitioner = _practitionerRepo.GetByUserId(userId);
+                if (practitioner != null && practitioner.IsPrincipal == true)
+                {
+                    var today = DateTime.Now;
+                    var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
 
+                    if (schoolClasses.Any())
+                    {
+                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
+                        var classroomProgrammes = schoolClasses
+                                                    .SelectMany(x => x.Programmes)
+                                                    .Where(x => x.IsActive && x.StartDate.Year == today.Year && x.Name != "No theme")
+                                                    .ToList()
+                                                    .Select(x => new { x.StartDate.Month, x.Id })
+                                                    .ToList()
+                                                    .GroupBy(x => x.Month)
+                                                    .Select(x => new { Month = x.Key, Total = x.Count() })
+                                                    .ToList();
+
+                        if (classroomProgrammes.Count > 0)
+                        {
+                            foreach (var item in classroomProgrammes)
+                            {
+                                AddOrUpdatePoints(
+                                    PointsActivityConstants.ThemePlannedId,
+                                    userId,
+                                    activity.Points,
+                                    item.Total,
+                                    new DateTime(today.Year, item.Month, today.Day)
+                                    );
+                            }
+                        }
+
+                    }
+                }
             }
         }
+
+        /// <summary>
+        /// Full "No theme" day planned - all items are chosen for the day - small group, large group, story, story activity
+        /// 5 points per day planned
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateNoThemePlanned(Guid userId)
         {
-            if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.ProgressEnabled)
-            {
-                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
+           if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.ProgressEnabled)
+           {
+                var practitioner = _practitionerRepo.GetByUserId(userId);
+                if (practitioner != null && practitioner.IsPrincipal == true)
+                {
+                    var today = DateTime.Now;
+                    var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
 
+                    if (schoolClasses.Any())
+                    {
+                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
+
+                        var classroomProgrammes = schoolClasses
+                                                .SelectMany(x => x.Programmes)
+                                                .Where(x => x.IsActive && x.StartDate.Year == today.Year && x.EndDate.Year == today.Year && x.Name == "No theme")
+                                                .ToList()
+                                                .SelectMany(x => x.DailyProgrammes)
+                                                .Where(x => x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
+                                                .ToList()
+                                                .Select(x => new { x.DayDate.Month, x.DayDate }).Distinct()
+                                                .ToList()
+                                                .GroupBy(x => x.Month)
+                                                .Select(x => new { Month = x.Key, Total = x.Count() })
+                                                .ToList();
+
+                        if (classroomProgrammes.Count > 0)
+                        {
+                            foreach (var item in classroomProgrammes)
+                            {
+                                AddOrUpdatePoints(
+                                    PointsActivityConstants.NoThemePlannedId,
+                                    userId,
+                                    activity.Points * item.Total,
+                                    item.Total,
+                                    new DateTime(today.Year, item.Month, today.Day)
+                                    );
+                            }
+                        }
+
+                    }
+                }
             }
         }
 
@@ -414,54 +491,51 @@ namespace EcdLink.Api.CoreApi.Services
         /// <returns></returns>
         public void CalculatePreschoolFeesGreaterThan0ForEachChild()
         {
-            //if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.BusinessEnabled)
-            //{
-            var today = DateTime.Now;
-            var month = 7;
-            var year = 2024;
-            var preschoolFeeStatements = _statementsIncomeStatementRepo
-                                        .GetAll()
-                                        .Where(x => x.IsActive == true
-                                            && x.Month == month
-                                            && x.Year == year
-                                            && x.IncomeItems.Count > 0)
-                                        .ToList()
-                                        .SelectMany(x => x.IncomeItems)
-                                        .Where(x => x.IncomeTypeId == PointsActivityConstants.PreschoolFeeId && x.Amount > 0 && x.IsActive)
-                                        .Select(x => x.StatementsIncomeStatement)
-                                        .Distinct()
-                                        .ToList();
-            
-            var principalUserIds = preschoolFeeStatements.Select(x => x.UserId).Distinct().ToList();
-
-            var principalLearnerTotals = _classRepo
+            if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.BusinessEnabled)
+            {
+                var today = DateTime.Now;
+                var month = 7;
+                var year = 2024;
+                var preschoolFeeStatements = _statementsIncomeStatementRepo
                                             .GetAll()
-                                            .Where(x => x.IsActive && principalUserIds.Contains(x.UserId))
-                                            .ToList()
-                                            .Select(x => new { Key = x.UserId, Value = x.ClassroomGroups.SelectMany(y => y.Learners).Where(y => y.IsActive).Count() })
+                                            .Where(x => x.IsActive == true
+                                                && x.Month == month
+                                                && x.Year == year
+                                                && x.IncomeItems.Count > 0)
                                             .ToList();
 
-            var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId);
-            foreach (var item in preschoolFeeStatements)
-            {
-                var principalLearnerTotal = principalLearnerTotals.Where(x => x.Key == item.UserId).FirstOrDefault();
-                var preschoolIncomeTotal = item.IncomeItems.Count();
+                var principalUserIds = preschoolFeeStatements.Select(x => x.UserId).Distinct().ToList();
 
-                if (principalLearnerTotal != null)
+                var principalLearnerTotals = _classRepo
+                                                .GetAll()
+                                                .Where(x => x.IsActive && principalUserIds.Contains(x.UserId))
+                                                .ToList()
+                                                .Select(x => new { Key = x.UserId, Value = x.ClassroomGroups.SelectMany(y => y.Learners).Where(y => y.IsActive).Count() })
+                                                .ToList();
+
+                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId);
+                foreach (var item in preschoolFeeStatements)
                 {
-                    if (principalLearnerTotal.Value == preschoolIncomeTotal)
+                    var principalLearnerTotal = principalLearnerTotals.Where(x => x.Key == item.UserId).FirstOrDefault();
+                    var preschoolIncomeTotal = item.IncomeItems.Where(x => x.IncomeTypeId == PointsActivityConstants.PreschoolFeeId && x.Amount > 0 && x.IsActive).Count();
+
+                    if (principalLearnerTotal != null)
                     {
-                        AddOrUpdatePoints(
-                            PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId,
-                            (Guid)item.UserId,
-                            activity.Points,
-                            1,
-                            new DateTime(today.Year, today.Month, today.Day)
-                        );
+                        if (preschoolIncomeTotal == principalLearnerTotal.Value)
+                        {
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId,
+                                (Guid)item.UserId,
+                                activity.Points,
+                                1,
+                                new DateTime(today.Year, today.Month, today.Day)
+                            );
+                        }
                     }
                 }
             }
         }
+
         public void CalculateCompleteChildProgressObservations(Guid userId)
         {
             var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteChildProgressObservationsId);
@@ -474,22 +548,38 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.DownloadPreschoolOrClassProgressSummaryId);
         }
+
+        /// <summary>
+        /// Complete an online training course
+        /// 200 points per course completed in the "Training" section
+        /// Max Year 200
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateCompleteOnlineTrainingCourse(Guid userId)
         {
-            var today = DateTime.Now;
-            var trainingCourses = _userTrainingCourseRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.CompletedDate.Year == today.Year).ToList();
-            if (trainingCourses.Count > 0)
+            if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.TrainingEnabled)
             {
-                // 200 points per course completed in the "Training" section
-                // Max scores for the year is 200 
-                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
-                AddOrUpdatePoints(
-                    PointsActivityConstants.CompleteOnlineTrainingCourseId,
-                    userId,
-                    activity.Points,
-                    trainingCourses.Count);
+                var today = DateTime.Now;
+                var trainingCourses = _userTrainingCourseRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.CompletedDate.Year == today.Year).ToList();
+                if (trainingCourses.Count > 0)
+                {
+                    // 200 points per course completed in the "Training" section
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.CompleteOnlineTrainingCourseId,
+                        userId,
+                        activity.Points,
+                        trainingCourses.Count);
+                }
             }
         }
+
+        /// <summary>
+        /// 10 points for adding short description (once-off)
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateAddingShortDescription(Guid userId)
         {
             var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddingShortDescriptionId);
@@ -499,6 +589,12 @@ namespace EcdLink.Api.CoreApi.Services
                 activity.Points,
                 1);
         }
+
+        /// <summary>
+        /// 50 points for completing your community profile (once-off)
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateCompleteCommunityProfile(Guid userId)
         {
             var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteCommunityProfileId);
@@ -508,6 +604,13 @@ namespace EcdLink.Api.CoreApi.Services
                 activity.Points,
                 1);
         }
+
+        /// <summary>
+        /// 5 points for connecting with another user via the Community section (points earned when one of the following happens: i) user's sent request is accepted; ii) user accepts a request sent to them)
+        /// Max Month 10 Max Year 120
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public void CalculateConnectWithAnotherUser(Guid userId)
         {
             var today = DateTime.Now;
@@ -544,6 +647,4 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
     }
-
-    internal record NewRecord(Guid? UserId, IEnumerable<ICollection<Learner>> Item);
 }
