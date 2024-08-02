@@ -1319,14 +1319,6 @@ export type CaregiverSortInput = {
   whatsAppNumber?: InputMaybe<SortEnumType>;
 };
 
-export type CategoryTask = {
-  __typename?: 'CategoryTask';
-  description?: Maybe<Scalars['String']>;
-  levelId: Scalars['Int'];
-  skillId: Scalars['Int'];
-  value?: Maybe<Scalars['String']>;
-};
-
 export type Child = {
   __typename?: 'Child';
   allergies?: Maybe<Scalars['String']>;
@@ -1514,56 +1506,30 @@ export type ChildProgressReport = {
   __typename?: 'ChildProgressReport';
   child?: Maybe<Child>;
   childId: Scalars['UUID'];
-  classroomGroup?: Maybe<ClassroomGroup>;
-  classroomGroupId?: Maybe<Scalars['UUID']>;
+  childProgressReportPeriod?: Maybe<ChildProgressReportPeriod>;
+  childProgressReportPeriodId: Scalars['UUID'];
   dateCompleted?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
-  integrationSubmitDate?: Maybe<Scalars['DateTime']>;
   isActive: Scalars['Boolean'];
   reportContent?: Maybe<Scalars['String']>;
-  reportDate: Scalars['DateTime'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   userId?: Maybe<Scalars['UUID']>;
-};
-
-export type ChildProgressReportDetailedModel = {
-  __typename?: 'ChildProgressReportDetailedModel';
-  achievedLevelId: Scalars['Int'];
-  categories?: Maybe<Array<Maybe<ObservationCategory>>>;
-  childEnjoys?: Maybe<Scalars['String']>;
-  childFirstname?: Maybe<Scalars['String']>;
-  childId?: Maybe<Scalars['String']>;
-  childProgressedWith?: Maybe<Scalars['String']>;
-  childSurname?: Maybe<Scalars['String']>;
-  classroomName?: Maybe<Scalars['String']>;
-  dateCompleted?: Maybe<Scalars['String']>;
-  dateCreated?: Maybe<Scalars['String']>;
-  howCanCaregiverHelpChild?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  observationNote?: Maybe<Scalars['String']>;
-  practitionerFirstname?: Maybe<Scalars['String']>;
-  practitionerPhotoUrl?: Maybe<Scalars['String']>;
-  practitionerSurname?: Maybe<Scalars['String']>;
-  reportingDate?: Maybe<Scalars['String']>;
-  reportingPeriod?: Maybe<Scalars['String']>;
 };
 
 export type ChildProgressReportFilterInput = {
   and?: InputMaybe<Array<ChildProgressReportFilterInput>>;
   child?: InputMaybe<ChildFilterInput>;
   childId?: InputMaybe<ComparableGuidOperationFilterInput>;
-  classroomGroup?: InputMaybe<ClassroomGroupFilterInput>;
-  classroomGroupId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  childProgressReportPeriod?: InputMaybe<ChildProgressReportPeriodFilterInput>;
+  childProgressReportPeriodId?: InputMaybe<ComparableGuidOperationFilterInput>;
   dateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  integrationSubmitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<ChildProgressReportFilterInput>>;
   reportContent?: InputMaybe<StringOperationFilterInput>;
-  reportDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -1572,16 +1538,39 @@ export type ChildProgressReportFilterInput = {
 export type ChildProgressReportInput = {
   Child?: InputMaybe<ChildInput>;
   ChildId: Scalars['UUID'];
-  ClassroomGroup?: InputMaybe<ClassroomGroupInput>;
-  ClassroomGroupId?: InputMaybe<Scalars['UUID']>;
+  ChildProgressReportPeriod?: InputMaybe<ChildProgressReportPeriodInput>;
+  ChildProgressReportPeriodId: Scalars['UUID'];
   DateCompleted?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
-  IntegrationSubmitDate?: InputMaybe<Scalars['DateTime']>;
   IsActive: Scalars['Boolean'];
   ReportContent?: InputMaybe<Scalars['String']>;
-  ReportDate: Scalars['DateTime'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type ChildProgressReportModel = {
+  __typename?: 'ChildProgressReportModel';
+  childId: Scalars['UUID'];
+  childProgressReportPeriodId: Scalars['UUID'];
+  dateCompleted?: Maybe<Scalars['DateTime']>;
+  dateCreated: Scalars['DateTime'];
+  howToSupport?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  notes?: Maybe<Scalars['String']>;
+  skillObservations?: Maybe<Array<Maybe<SkillObservation>>>;
+  skillsToWorkOn?: Maybe<Array<Maybe<SkillToWorkOn>>>;
+};
+
+export type ChildProgressReportModelInput = {
+  childId: Scalars['UUID'];
+  childProgressReportPeriodId: Scalars['UUID'];
+  dateCompleted?: InputMaybe<Scalars['DateTime']>;
+  dateCreated: Scalars['DateTime'];
+  howToSupport?: InputMaybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  notes?: InputMaybe<Scalars['String']>;
+  skillObservations?: InputMaybe<Array<InputMaybe<SkillObservationInput>>>;
+  skillsToWorkOn?: InputMaybe<Array<InputMaybe<SkillToWorkOnInput>>>;
 };
 
 export type ChildProgressReportPeriod = {
@@ -1649,32 +1638,16 @@ export type ChildProgressReportPeriodSortInput = {
 export type ChildProgressReportSortInput = {
   child?: InputMaybe<ChildSortInput>;
   childId?: InputMaybe<SortEnumType>;
-  classroomGroup?: InputMaybe<ClassroomGroupSortInput>;
-  classroomGroupId?: InputMaybe<SortEnumType>;
+  childProgressReportPeriod?: InputMaybe<ChildProgressReportPeriodSortInput>;
+  childProgressReportPeriodId?: InputMaybe<SortEnumType>;
   dateCompleted?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
-  integrationSubmitDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   reportContent?: InputMaybe<SortEnumType>;
-  reportDate?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   userId?: InputMaybe<SortEnumType>;
-};
-
-export type ChildProgressReportSummaryModel = {
-  __typename?: 'ChildProgressReportSummaryModel';
-  categories?: Maybe<Array<Maybe<ObservationCategorySummary>>>;
-  childFirstname?: Maybe<Scalars['String']>;
-  childId?: Maybe<Scalars['String']>;
-  childSurname?: Maybe<Scalars['String']>;
-  classroomName?: Maybe<Scalars['String']>;
-  reportDate?: Maybe<Scalars['String']>;
-  reportDateCompleted?: Maybe<Scalars['String']>;
-  reportDateCreated?: Maybe<Scalars['String']>;
-  reportId: Scalars['UUID'];
-  reportPeriod?: Maybe<Scalars['String']>;
 };
 
 export type ChildProgressReportsStatus = {
@@ -7456,6 +7429,7 @@ export type Mutation = {
   createNavigation?: Maybe<Navigation>;
   createNote?: Maybe<Note>;
   createNoteType?: Maybe<NoteType>;
+  createOrUpdateChildProgressReport: Scalars['Boolean'];
   createPQA?: Maybe<Pqa>;
   createPQARating?: Maybe<PqaRating>;
   createPQASectionRating?: Maybe<PqaSectionRating>;
@@ -8020,7 +7994,6 @@ export type Mutation = {
   updateVisitVideos?: Maybe<VisitVideos>;
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
   updateWorkflowStatusType?: Maybe<WorkflowStatusType>;
-  uploadChildProgressReport: Scalars['Boolean'];
 };
 
 export type MutationAcceptNewClubLeaderRoleArgs = {
@@ -8733,6 +8706,10 @@ export type MutationCreateNoteArgs = {
 
 export type MutationCreateNoteTypeArgs = {
   input?: InputMaybe<NoteTypeInput>;
+};
+
+export type MutationCreateOrUpdateChildProgressReportArgs = {
+  input?: InputMaybe<ChildProgressReportModelInput>;
 };
 
 export type MutationCreatePqaArgs = {
@@ -11497,10 +11474,6 @@ export type MutationUpdateWorkflowStatusTypeArgs = {
   input?: InputMaybe<WorkflowStatusTypeInput>;
 };
 
-export type MutationUploadChildProgressReportArgs = {
-  report?: InputMaybe<Scalars['String']>;
-};
-
 export type Natal = {
   __typename?: 'Natal';
   availableLanguages?: Maybe<Array<Maybe<Language>>>;
@@ -11898,30 +11871,6 @@ export type NotificationSortInput = {
   subject?: InputMaybe<SortEnumType>;
   to?: InputMaybe<SortEnumType>;
   toGroups?: InputMaybe<SortEnumType>;
-};
-
-export type ObservationCategory = {
-  __typename?: 'ObservationCategory';
-  achievedLevelId: Scalars['Int'];
-  categoryId: Scalars['Int'];
-  missingTasks?: Maybe<Array<Maybe<CategoryTask>>>;
-  status: Scalars['Int'];
-  supportingTask?: Maybe<ProgressObservationCategorySupportingTask>;
-  tasks?: Maybe<Array<Maybe<CategoryTask>>>;
-};
-
-export type ObservationCategorySummary = {
-  __typename?: 'ObservationCategorySummary';
-  achievedLevelId: Scalars['Int'];
-  categoryId: Scalars['Int'];
-  tasks?: Maybe<Array<Maybe<ObservationCategoryTaskSummary>>>;
-};
-
-export type ObservationCategoryTaskSummary = {
-  __typename?: 'ObservationCategoryTaskSummary';
-  levelId: Scalars['Int'];
-  skillId: Scalars['Int'];
-  value?: Maybe<Scalars['String']>;
 };
 
 export type Pqa = {
@@ -13125,45 +13074,6 @@ export type PractitionerAttendance = {
   totalPresent: Scalars['Int'];
 };
 
-export type PractitionerClassProgressReportCategorySummary = {
-  __typename?: 'PractitionerClassProgressReportCategorySummary';
-  color?: Maybe<Scalars['String']>;
-  id: Scalars['Int'];
-  imageUrl?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  subCategories?: Maybe<
-    Array<Maybe<PractitionerClassProgressReportSubCategorySummary>>
-  >;
-};
-
-export type PractitionerClassProgressReportSkillSummary = {
-  __typename?: 'PractitionerClassProgressReportSkillSummary';
-  childCount: Scalars['Int'];
-  id: Scalars['Int'];
-  skill?: Maybe<Scalars['String']>;
-};
-
-export type PractitionerClassProgressReportSubCategorySummary = {
-  __typename?: 'PractitionerClassProgressReportSubCategorySummary';
-  childrenPerSkill?: Maybe<
-    Array<Maybe<PractitionerClassProgressReportSkillSummary>>
-  >;
-  id: Scalars['Int'];
-  imageUrl?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-};
-
-export type PractitionerClassProgressReportSummaryModel = {
-  __typename?: 'PractitionerClassProgressReportSummaryModel';
-  categories?: Maybe<
-    Array<Maybe<PractitionerClassProgressReportCategorySummary>>
-  >;
-  childCount: Scalars['Int'];
-  className?: Maybe<Scalars['String']>;
-  practitionerFullName?: Maybe<Scalars['String']>;
-  practitionerUserId: Scalars['UUID'];
-};
-
 export type PractitionerColleagues = {
   __typename?: 'PractitionerColleagues';
   classroomNames?: Maybe<Scalars['String']>;
@@ -13172,6 +13082,7 @@ export type PractitionerColleagues = {
   nickName?: Maybe<Scalars['String']>;
   profilePhoto?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerFilterInput = {
@@ -13347,14 +13258,6 @@ export type PractitionerPermissionModel = {
   id: Scalars['UUID'];
   name?: Maybe<Scalars['String']>;
   normalizedName?: Maybe<Scalars['String']>;
-};
-
-export type PractitionerProgressReportSummaryModel = {
-  __typename?: 'PractitionerProgressReportSummaryModel';
-  classSummaries?: Maybe<
-    Array<Maybe<PractitionerClassProgressReportSummaryModel>>
-  >;
-  reportingPeriod?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerRemovalHistory = {
@@ -14001,13 +13904,6 @@ export type ProgrammeTypeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
-export type ProgressObservationCategorySupportingTask = {
-  __typename?: 'ProgressObservationCategorySupportingTask';
-  taskDescription?: Maybe<Scalars['String']>;
-  taskId: Scalars['Int'];
-  todoText?: Maybe<Scalars['String']>;
-};
-
 export type ProgressSubCategoryModelInput = {
   name?: InputMaybe<Scalars['String']>;
   skills?: InputMaybe<Array<InputMaybe<SubCategorySkillModelInput>>>;
@@ -14588,11 +14484,7 @@ export type Query = {
   changesToSync: Scalars['Boolean'];
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childCreatedByDetail?: Maybe<ChildCreatedByDetail>;
-  childProgressReport?: Maybe<ChildProgressReportDetailedModel>;
-  childProgressReportSummary?: Maybe<
-    Array<Maybe<ChildProgressReportSummaryModel>>
-  >;
-  childProgressReports?: Maybe<Array<Maybe<ChildProgressReportDetailedModel>>>;
+  childProgressReportsForUser?: Maybe<Array<Maybe<ChildProgressReportModel>>>;
   childProgressReportsStatus?: Maybe<ChildProgressReportsStatus>;
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
@@ -14763,7 +14655,6 @@ export type Query = {
   feedbackTypes?: Maybe<Array<Maybe<FeedbackTypeModel>>>;
   franchisorByUserId?: Maybe<Franchisor>;
   franchisorSiteAddressById?: Maybe<SiteAddress>;
-  generateChildProgressReport?: Maybe<Scalars['String']>;
   getMoodleSessionForCurrentUser?: Maybe<Scalars['String']>;
   growthDataForInfant?: Maybe<Array<Maybe<VisitData>>>;
   hasContentTypeBeenTranslated: Scalars['Boolean'];
@@ -14826,7 +14717,6 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
-  practitionerProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
   practitionerRolePermissions?: Maybe<
     Array<Maybe<PractitionerPermissionModel>>
   >;
@@ -14836,9 +14726,6 @@ export type Query = {
   previousVisitInformationForInfant?: Maybe<Progress_VisitDataStatus>;
   previousVisitInformationForMother?: Maybe<Progress_VisitDataStatus>;
   principalByUserId?: Maybe<Practitioner>;
-  principalProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
-  progressReportSummaryForPractitioner?: Maybe<PractitionerProgressReportSummaryModel>;
-  progressReportSummaryForPrincipalForPrincipal?: Maybe<PractitionerProgressReportSummaryModel>;
   ratingsAndFeedbackTypes?: Maybe<CoachFeedbackSetupModel>;
   referrals?: Maybe<Array<Maybe<PortalReferralModel>>>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
@@ -14874,6 +14761,7 @@ export type Query = {
   userProgrammes?: Maybe<Array<Maybe<Programme>>>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
   usersToConnectWith?: Maybe<Array<Maybe<CommunityConnectionModel>>>;
+  validateNewTenantName: Scalars['Boolean'];
   validatePreSchoolCode?: Maybe<Classroom>;
   visitAnswersForInfant?: Maybe<Array<Maybe<VisitData>>>;
   visitAnswersForMother?: Maybe<Array<Maybe<VisitData>>>;
@@ -16851,16 +16739,8 @@ export type QueryChildCreatedByDetailArgs = {
   surname?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryChildProgressReportArgs = {
-  reportId: Scalars['UUID'];
-};
-
-export type QueryChildProgressReportSummaryArgs = {
-  count: Scalars['Int'];
-};
-
-export type QueryChildProgressReportsArgs = {
-  count: Scalars['Int'];
+export type QueryChildProgressReportsForUserArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryChildProgressReportsStatusArgs = {
@@ -17663,12 +17543,6 @@ export type QueryFranchisorSiteAddressByIdArgs = {
   franchisorId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryGenerateChildProgressReportArgs = {
-  childId: Scalars['UUID'];
-  classgroupId: Scalars['UUID'];
-  reportDate: Scalars['DateTime'];
-};
-
 export type QueryGrowthDataForInfantArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -17899,11 +17773,6 @@ export type QueryPractitionerNewSignupMetricArgs = {
   toDate: Scalars['DateTime'];
 };
 
-export type QueryPractitionerProgressReportSummaryArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  reportingPeriod?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryPractitionerTimelineArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -17922,23 +17791,6 @@ export type QueryPreviousVisitInformationForMotherArgs = {
 
 export type QueryPrincipalByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryPrincipalProgressReportSummaryArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  reportingPeriod?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryProgressReportSummaryForPractitionerArgs = {
-  endDate: Scalars['DateTime'];
-  locale?: InputMaybe<Scalars['String']>;
-  startDate: Scalars['DateTime'];
-};
-
-export type QueryProgressReportSummaryForPrincipalForPrincipalArgs = {
-  endDate: Scalars['DateTime'];
-  locale?: InputMaybe<Scalars['String']>;
-  startDate: Scalars['DateTime'];
 };
 
 export type QueryReferralsArgs = {
@@ -18053,6 +17905,10 @@ export type QueryUsersToConnectWithArgs = {
   connectionTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   provinceIds?: InputMaybe<Array<Scalars['UUID']>>;
   userId: Scalars['UUID'];
+};
+
+export type QueryValidateNewTenantNameArgs = {
+  applicationName?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryValidatePreSchoolCodeArgs = {
@@ -18691,6 +18547,28 @@ export type SiteAddressSortInput = {
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   ward?: InputMaybe<SortEnumType>;
+};
+
+export type SkillObservation = {
+  __typename?: 'SkillObservation';
+  skillId: Scalars['Int'];
+  value?: Maybe<Scalars['String']>;
+};
+
+export type SkillObservationInput = {
+  skillId: Scalars['Int'];
+  value?: InputMaybe<Scalars['String']>;
+};
+
+export type SkillToWorkOn = {
+  __typename?: 'SkillToWorkOn';
+  howToSupport?: Maybe<Scalars['String']>;
+  skillId: Scalars['Int'];
+};
+
+export type SkillToWorkOnInput = {
+  howToSupport?: InputMaybe<Scalars['String']>;
+  skillId: Scalars['Int'];
 };
 
 export type SmartSpaceVisit = {

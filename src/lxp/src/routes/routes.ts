@@ -166,6 +166,7 @@ const ROUTES = {
   CHILD_PROGRESS_OBSERVATION: '/child-progress-observation',
   PROGRESS_OBSERVATIONS: '/progress-observations',
   PROGRESS_OBSERVATIONS_LANDING: '/progress-observations-landing',
+  PROGRESS_OBSERVATIONS_NOTES: '/progress-observations-notes',
   PROGRESS_REPORT_LIST: '/child-progress-skill-tracking',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
   CHILD_PROGRESS_OBSERVATION_REPORT: '/child-progress-observation-report',

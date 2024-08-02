@@ -275,6 +275,18 @@ namespace ECDLink.AzureStorage.Blob
             return false;
         }
 
+        public bool IsImageFileType(string base64stringFile)
+        {
+            var bytes = Convert.FromBase64String(base64stringFile);
+            using MemoryStream fileStream = new MemoryStream(bytes);
+            var format = _inspector.DetermineFileFormat(fileStream);
+            if (format is FileSignatures.Formats.Image)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public async Task<string> GetFileAsBase64Async(string url) // return Task<string>
         {
             using (var client = new HttpClient())

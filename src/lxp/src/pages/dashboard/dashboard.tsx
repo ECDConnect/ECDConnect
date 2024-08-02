@@ -71,6 +71,7 @@ import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-moda
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { differenceInDays } from 'date-fns';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 const { version } = require('../../../package.json');
 
@@ -134,20 +135,21 @@ export const Dashboard: React.FC = () => {
       notificationTagConfig.AcceptAgreement.cta!
     );
 
-  const completedSteps = timelineSteps(
-    timeline!,
-    () => {},
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined,
-    '',
-    timeline?.consolidationMeetingStatus,
-    isOnStipend
-  ).filter((item) => item?.type === 'completed');
-
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
+
+  const offlineCommunity = () => {
+    if (!isOnline) {
+      return dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit} />;
+        },
+      });
+    }
+  };
 
   useEffect(() => {
     if (
@@ -576,6 +578,11 @@ export const Dashboard: React.FC = () => {
   };
 
   const onNavigation = (navItem: any) => {
+    if (navItem.href.includes('community') && !isOnline) {
+      history.push(ROUTES.DASHBOARD);
+      offlineCommunity();
+      return;
+    }
     if (
       ((classroom && classroom.id) ||
         (classroomGroups && classroomGroups.length > 0)) &&
@@ -910,9 +917,9 @@ export const Dashboard: React.FC = () => {
       title: NavigationNames.Community.Community,
       titleIcon: styles.communityIconName,
       titleIconClassName: styles.communityIcon,
-      onActionClick: () => {
-        goToCommunity();
-      },
+      onActionClick: !isOnline
+        ? () => offlineCommunity()
+        : () => goToCommunity(),
       classNames: 'bg-quatenaryBg',
     });
   }
@@ -931,9 +938,9 @@ export const Dashboard: React.FC = () => {
       title: NavigationNames.Community.Community,
       titleIcon: styles.communityIconName,
       titleIconClassName: styles.communityIcon,
-      onActionClick: () => {
-        goToCommunity();
-      },
+      onActionClick: !isOnline
+        ? () => offlineCommunity()
+        : () => goToCommunity(),
       classNames: 'bg-quatenaryBg',
     });
   }

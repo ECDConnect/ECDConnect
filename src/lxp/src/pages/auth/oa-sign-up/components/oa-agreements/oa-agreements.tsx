@@ -230,6 +230,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
           onClose={() => setPresentArticle(false)}
           isOpen={true}
           isFromRegistration={true}
+          isConsentScreen={true}
         />
       )}
     </BannerWrapper>

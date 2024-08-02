@@ -1,43 +1,30 @@
 import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { ChildProgressSkill } from '@/models/progress/progress-skill';
 import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
+import {
+  ProgressSkillValues,
+  ProgressSkillValuesArray,
+} from '@/enums/ProgressSkillValues';
 
 export type ChildProgressObservationsSkillsProps = {
   currentStep: number;
   skills: ChildProgressSkill[];
   child: ChildDto;
   ageGroup: ProgressTrackingAgeGroupDto;
-  onSetSkillValue: (skillId: number, value: string) => void;
+  replaceSkillText: (skillText: string) => string;
+  onSetSkillValue: (skillId: number, value: ProgressSkillValues) => void;
 };
 
 export const ChildProgressObservationsSkills: React.FC<
   ChildProgressObservationsSkillsProps
-> = ({ currentStep, skills, child, ageGroup, onSetSkillValue }) => {
-  const replaceText = (skillText: string) => {
-    let finalText = skillText;
-
-    // Child name
-    finalText = skillText.replace(
-      '[childFirstName]',
-      child?.user?.firstName || ''
-    );
-
-    return finalText;
-  };
-
-  // TODO - Should these be moved somewhere more central
-  enum ProgressSkillValues {
-    Yes = 'Yes',
-    No = 'No',
-    DoNotKnow = "Don't know",
-  }
-
-  const ProgressSkillValuesArray = [
-    ProgressSkillValues.Yes,
-    ProgressSkillValues.No,
-    ProgressSkillValues.DoNotKnow,
-  ];
-
+> = ({
+  currentStep,
+  skills,
+  child,
+  ageGroup,
+  replaceSkillText,
+  onSetSkillValue,
+}) => {
   return (
     <>
       <Typography
@@ -65,17 +52,19 @@ export const ChildProgressObservationsSkills: React.FC<
           <Typography
             type="h3"
             color="textDark"
-            text={replaceText(skill.name)}
+            text={replaceSkillText(skill.name)}
           />
           {/* TODO - add option to show picture if required */}
-          <ButtonGroup<string>
+          <ButtonGroup<ProgressSkillValues>
             type={ButtonGroupTypes.Button}
             options={ProgressSkillValuesArray.map((x) => ({
               text: x,
               value: x,
             }))}
-            onOptionSelected={(value: string | string[]) => {
-              onSetSkillValue(skill.id, value as string);
+            onOptionSelected={(
+              value: ProgressSkillValues | ProgressSkillValues[]
+            ) => {
+              onSetSkillValue(skill.id, value as ProgressSkillValues);
             }}
             multiple={false}
             selectedOptions={skill.value}

@@ -111,20 +111,19 @@ export const CommunityConnections: React.FC<ReceivedRequestsProps> = ({
       })
     );
 
-    await handleConnectionsQuery().then(() => {
-      onClose && onClose(true);
-      setAcceptOrRejectIsLoading(false);
-      showMessage({
-        message: 'Connections updated!',
-        type: 'success',
-        duration: 3000,
-      });
+    onClose && onClose(true);
+    setAcceptOrRejectIsLoading(false);
+    history.goBack();
+    showMessage({
+      message: 'Connections updated!',
+      type: 'success',
+      duration: 3000,
     });
     setAcceptOrRejectIsLoading(false);
   }, [
     communityProfile?.userId,
     dispatch,
-    handleConnectionsQuery,
+    history,
     onClose,
     receivedRequestsUserIds,
     showMessage,

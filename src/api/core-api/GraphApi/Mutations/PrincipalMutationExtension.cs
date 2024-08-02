@@ -123,7 +123,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
                             } else
                             {
-                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                                if (practitioner.Progress >= 2)
+                                {
+                                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                                }
                             }
                         }
 

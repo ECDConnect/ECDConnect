@@ -554,7 +554,7 @@ export default function Practitioners() {
       render: (onClose) => (
         <AlertModal
           title={`Deactivate ${
-            selectedUsers?.length - registeredOrInactiveUsers?.length
+            selectedUsers?.length - inactiveUsers?.length
           } Practitioners?`}
           message={`Are you sure you want to deactivate these Practitioners? Practitioners will lose their access to the app immediately. Make sure you have communicated this to Practitioners before deactivating them.`}
           btnText={['Yes, deactivate Practitioners', 'No, Cancel']}
@@ -576,8 +576,8 @@ export default function Practitioners() {
   }, [
     deactivateUser,
     dialog,
+    inactiveUsers?.length,
     isAllInactive,
-    registeredOrInactiveUsers?.length,
     selectedUsers?.length,
   ]);
 
@@ -621,7 +621,6 @@ export default function Practitioners() {
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
         <div className="rounded-xl bg-white p-12">
           <Table
-            watchMode={true}
             ref={tableRef}
             rows={rows}
             columns={columns}

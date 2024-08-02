@@ -21,7 +21,7 @@ export const ProgressReportsList: React.FC<ProgressReportsListProps> = ({
     <>
       {!!currentProgress && (
         <ListItem
-          key={`report-period-${currentProgress.reportingPeriodId}`}
+          key={`report-period-${currentProgress.childProgressReportPeriodId}`}
           title={`Report ${
             currentProgress.reportingPeriodNumber
           } - ${currentProgress.reportingPeriodStartDate.getFullYear()}`}
@@ -51,7 +51,7 @@ export const ProgressReportsList: React.FC<ProgressReportsListProps> = ({
       )}
       {pastReports.map((report) => (
         <ListItem
-          key={`report-period-${report.reportingPeriodId}`}
+          key={`report-period-${report.childProgressReportPeriodId}`}
           title={`Report ${
             report.reportingPeriodNumber
           } - ${report.reportingPeriodStartDate.getFullYear()}`}
