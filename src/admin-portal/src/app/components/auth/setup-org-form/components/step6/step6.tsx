@@ -16,7 +16,7 @@ import {
   useWatch,
 } from 'react-hook-form';
 import { SetupOrgModel } from '../../../../../schemas/setup-org';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { InformationCircleIcon } from '@heroicons/react/outline';
 
 interface StepProps {
@@ -24,6 +24,7 @@ interface StepProps {
   register: UseFormRegister<any>;
   errors: FieldErrors;
   getValues?: UseFormGetValues<any>;
+  setDisableButton?: (item: boolean) => void;
   control?: any;
 }
 
@@ -33,6 +34,7 @@ export const Step6: React.FC<StepProps> = ({
   errors,
   getValues,
   control,
+  setDisableButton,
 }) => {
   const {
     attendanceEnabled,
@@ -181,6 +183,14 @@ export const Step6: React.FC<StepProps> = ({
     e.preventDefault();
     e.stopPropagation();
   };
+
+  useEffect(() => {
+    if (coachRoleEnabled && !coachRoleName) {
+      setDisableButton(true);
+    } else {
+      setDisableButton(false);
+    }
+  }, [coachRoleEnabled, coachRoleName, setDisableButton]);
 
   return (
     <div>

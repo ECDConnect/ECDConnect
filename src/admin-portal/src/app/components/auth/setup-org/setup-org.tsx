@@ -28,7 +28,9 @@ export const SetupOrg = () => {
   const [viewIndividualTerms, setViewIndividualTerms] =
     useState<boolean>(false);
   const [viewOrganisationalTerms, setViewOrganisationalTerms] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptIndividualTerms, setAcceptIndidivualTerms] = useState(false);
+  const [acceptOrganisationalTerms, setAcceptOrganisationalTerms] =
+    useState(false);
 
   const headerSlide: HeaderSlide[] = [
     {
@@ -78,8 +80,10 @@ export const SetupOrg = () => {
             <div className="'flex items-center' w-full flex-row justify-start">
               <div className="mt-4 flex flex-wrap items-start">
                 <Checkbox<Boolean>
-                  checked={acceptTerms}
-                  onCheckboxChange={() => setAcceptTerms(!acceptTerms)}
+                  checked={acceptIndividualTerms}
+                  onCheckboxChange={() =>
+                    setAcceptIndidivualTerms(!acceptIndividualTerms)
+                  }
                 />
                 <div className="ml-4 flex">
                   <Typography
@@ -87,7 +91,9 @@ export const SetupOrg = () => {
                     type="help"
                     color={'textMid'}
                     className="whitespace-nowrap"
-                    onClick={() => setAcceptTerms(!acceptTerms)}
+                    onClick={() =>
+                      setAcceptIndidivualTerms(!acceptIndividualTerms)
+                    }
                   />
                   &nbsp;
                   <Typography
@@ -102,8 +108,10 @@ export const SetupOrg = () => {
               </div>
               <div className="mt-4 flex flex-wrap items-start">
                 <Checkbox<Boolean>
-                  checked={acceptTerms}
-                  onCheckboxChange={() => setAcceptTerms(!acceptTerms)}
+                  checked={acceptOrganisationalTerms}
+                  onCheckboxChange={() =>
+                    setAcceptOrganisationalTerms(!acceptOrganisationalTerms)
+                  }
                 />
                 <div className="flex">
                   <Typography
@@ -111,7 +119,9 @@ export const SetupOrg = () => {
                     type="help"
                     color={'textMid'}
                     className="ml-4 whitespace-nowrap"
-                    onClick={() => setAcceptTerms(!acceptTerms)}
+                    onClick={() =>
+                      setAcceptOrganisationalTerms(!acceptOrganisationalTerms)
+                    }
                   />
                   &nbsp;
                   <Typography

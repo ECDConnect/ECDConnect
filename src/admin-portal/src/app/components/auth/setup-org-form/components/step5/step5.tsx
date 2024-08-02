@@ -1,25 +1,27 @@
 import {
-  Button,
   ButtonGroup,
   ButtonGroupTypes,
   FormInput,
   Typography,
 } from '@ecdlink/ui';
 import { ChatIcon } from '@heroicons/react/solid';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FieldErrors,
   UseFormGetValues,
   UseFormRegister,
   UseFormSetValue,
+  useWatch,
 } from 'react-hook-form';
 import { SetupOrgModel } from '../../../../../schemas/setup-org';
 
 interface StepProps {
-  setValue: UseFormSetValue<any>;
+  setValue: UseFormSetValue<SetupOrgModel>;
   register: UseFormRegister<any>;
   errors: FieldErrors;
-  getValues?: UseFormGetValues<any>;
+  getValues?: UseFormGetValues<SetupOrgModel>;
+  setDisableButton?: (item: boolean) => void;
+  control?: any;
 }
 
 const optionsButtonGroup = [
@@ -39,99 +41,196 @@ export const Step5: React.FC<StepProps> = ({
   errors,
   setValue,
   getValues,
+  setDisableButton,
+  control,
 }) => {
-  const [smsProvider, setSmsProvider] = useState('');
-  console.log(getValues());
+  const [smsProviderName, setSmsProvider] = useState('');
 
-  const renderSmsFields = (smsProvider: string) => {
-    switch (smsProvider) {
-      case SmsProviders.BulkSMS:
-        return (
-          <div className="flex w-full flex-col gap-6">
-            <FormInput<SetupOrgModel>
-              label={'BulkSMS - Token ID *'}
-              visible={true}
-              nameProp={'tokenId'}
-              register={register}
-              error={errors['tokenId']}
-              placeholder={'Token ID'}
-              className="w-full"
-              isAdminPortalField={true}
-            />
-            <FormInput<SetupOrgModel>
-              label={'BulkSMS - Token Secret *'}
-              visible={true}
-              nameProp={'tokenSecret'}
-              register={register}
-              error={errors['tokenSecret']}
-              placeholder={'Token Secret'}
-              className="w-full"
-              isAdminPortalField={true}
-            />
-            <FormInput<SetupOrgModel>
-              label={'BulkSMS - Token Basic Auth *'}
-              visible={true}
-              nameProp={'tokenBasicAuth'}
-              register={register}
-              error={errors['tokenBasicAuth']}
-              placeholder={'Token Basic Auth'}
-              className="w-full"
-              isAdminPortalField={true}
-            />
-          </div>
-        );
-      case SmsProviders.iTouch:
-        return (
-          <div className="flex w-full flex-col gap-6">
-            <FormInput<SetupOrgModel>
-              label={'iTouch - Username *'}
-              visible={true}
-              nameProp={'tokenUserName'}
-              register={register}
-              error={errors['tokenUserName']}
-              placeholder={'Username'}
-              className="w-full"
-              isAdminPortalField={true}
-            />
-            <FormInput<SetupOrgModel>
-              label={'iTouch - Password *'}
-              visible={true}
-              nameProp={'tokenPassword'}
-              register={register}
-              error={errors['tokenPassword']}
-              placeholder={'Password'}
-              className="w-full"
-              isAdminPortalField={true}
-            />
-          </div>
-        );
-      case SmsProviders.SMSPortal:
-        return (
-          <div className="flex w-full flex-col gap-6">
-            <FormInput<SetupOrgModel>
-              label={'SMSPortal - API Key *'}
-              visible={true}
-              nameProp={'apiKey'}
-              register={register}
-              error={errors['apiKey']}
-              placeholder={'API Key'}
-              className="w-full"
-              isAdminPortalField={true}
-            />
-            <FormInput<SetupOrgModel>
-              label={'SMSPortal - API Secret *'}
-              visible={true}
-              nameProp={'apiSecret'}
-              register={register}
-              error={errors['apiSecret']}
-              placeholder={'API Secret'}
-              className="w-full"
-              isAdminPortalField={true}
-            />
-          </div>
-        );
+  const {
+    tokenId,
+    tokenSecret,
+    tokenBasicAuth,
+    tokenUserName,
+    tokenPassword,
+    apiKey,
+    apiSecret,
+    smsProvider,
+  } = useWatch({
+    control,
+  });
+
+  useEffect(() => {
+    if (getValues()?.smsProvider) {
+      setSmsProvider(getValues()?.smsProvider);
     }
-  };
+  }, [getValues]);
+
+  useEffect(() => {
+    if (!smsProviderName) {
+      setDisableButton(true);
+    } else {
+      setDisableButton(false);
+    }
+    if (smsProvider === SmsProviders.BulkSMS) {
+      if (!tokenId || !tokenSecret || !tokenBasicAuth) {
+        setDisableButton(true);
+      } else {
+        setDisableButton(false);
+      }
+    }
+
+    if (smsProvider === SmsProviders.iTouch) {
+      if (!tokenUserName || !tokenPassword) {
+        setDisableButton(true);
+      } else {
+        setDisableButton(false);
+      }
+    }
+
+    if (smsProvider === SmsProviders.SMSPortal) {
+      if (!apiKey || !apiSecret) {
+        setDisableButton(true);
+      } else {
+        setDisableButton(false);
+      }
+    }
+  }, [
+    apiKey,
+    apiSecret,
+    setDisableButton,
+    smsProvider,
+    smsProviderName,
+    tokenBasicAuth,
+    tokenId,
+    tokenPassword,
+    tokenSecret,
+    tokenUserName,
+  ]);
+
+  const renderSmsFields = useMemo(() => {
+    if (smsProviderName === SmsProviders.BulkSMS) {
+      return (
+        <div className="flex w-full flex-col gap-6">
+          <FormInput<SetupOrgModel>
+            label={'BulkSMS - Token ID *'}
+            visible={true}
+            nameProp={'tokenId'}
+            register={register}
+            error={errors['tokenId']}
+            placeholder={'Token ID'}
+            className="w-full"
+            isAdminPortalField={true}
+            value={tokenId}
+          />
+          <FormInput<SetupOrgModel>
+            label={'BulkSMS - Token Secret *'}
+            visible={true}
+            nameProp={'tokenSecret'}
+            register={register}
+            error={errors['tokenSecret']}
+            placeholder={'Token Secret'}
+            className="w-full"
+            isAdminPortalField={true}
+            value={tokenSecret}
+          />
+          <FormInput<SetupOrgModel>
+            label={'BulkSMS - Token Basic Auth *'}
+            visible={true}
+            nameProp={'tokenBasicAuth'}
+            register={register}
+            error={errors['tokenBasicAuth']}
+            placeholder={'Token Basic Auth'}
+            className="w-full"
+            isAdminPortalField={true}
+            value={tokenBasicAuth}
+          />
+        </div>
+      );
+    }
+    if (smsProviderName === SmsProviders.iTouch) {
+      return (
+        <div className="flex w-full flex-col gap-6">
+          <FormInput<SetupOrgModel>
+            label={'iTouch - Username *'}
+            visible={true}
+            nameProp={'tokenUserName'}
+            register={register}
+            error={errors['tokenUserName']}
+            placeholder={'Username'}
+            className="w-full"
+            isAdminPortalField={true}
+            value={tokenUserName}
+          />
+          <FormInput<SetupOrgModel>
+            label={'iTouch - Password *'}
+            visible={true}
+            nameProp={'tokenPassword'}
+            register={register}
+            error={errors['tokenPassword']}
+            placeholder={'Password'}
+            className="w-full"
+            isAdminPortalField={true}
+            value={tokenPassword}
+          />
+        </div>
+      );
+    }
+    if (smsProviderName === SmsProviders.SMSPortal) {
+      return (
+        <div className="flex w-full flex-col gap-6">
+          <FormInput<SetupOrgModel>
+            label={'SMSPortal - API Key *'}
+            visible={true}
+            nameProp={'apiKey'}
+            register={register}
+            error={errors['apiKey']}
+            placeholder={'API Key'}
+            className="w-full"
+            isAdminPortalField={true}
+            value={apiKey}
+          />
+          <FormInput<SetupOrgModel>
+            label={'SMSPortal - API Secret *'}
+            visible={true}
+            nameProp={'apiSecret'}
+            register={register}
+            error={errors['apiSecret']}
+            placeholder={'API Secret'}
+            className="w-full"
+            isAdminPortalField={true}
+            value={apiSecret}
+          />
+        </div>
+      );
+    }
+  }, [
+    apiKey,
+    apiSecret,
+    errors,
+    register,
+    smsProviderName,
+    tokenBasicAuth,
+    tokenId,
+    tokenPassword,
+    tokenSecret,
+    tokenUserName,
+  ]);
+
+  const handleChangeSmsProvider = useCallback(
+    (value: string) => {
+      setValue('smsProvider', value);
+      setSmsProvider(value as string);
+      setValue('tokenId', '');
+      setValue('tokenSecret', '');
+      setValue('tokenBasicAuth', '');
+      setValue('tokenUserName', '');
+      setValue('tokenPassword', '');
+      setValue('apiKey', '');
+      setValue('apiSecret', '');
+    },
+    [setValue]
+  );
+
   return (
     <div>
       <div className="mt-12 mb-2 flex items-center gap-4">
@@ -163,13 +262,13 @@ export const Step5: React.FC<StepProps> = ({
             type={ButtonGroupTypes.Button}
             options={optionsButtonGroup}
             onOptionSelected={(value) => {
-              setValue('smsProvider', value);
-              setSmsProvider(value as string);
+              handleChangeSmsProvider(value as string);
             }}
+            selectedOptions={smsProviderName}
           />
         </div>
       </div>
-      <div>{renderSmsFields(smsProvider)}</div>
+      <div>{renderSmsFields}</div>
     </div>
   );
 };

@@ -12,8 +12,34 @@ export const setupOrgValues = {
   lightVersionLogo: lightLogo,
   favico: favicon,
   primaryColor: '#27385A',
+  primaryAccent1: '',
+  primaryAccent2: '',
   secondaryColor: '#FF2180',
+  secondaryAccent1: '',
+  secondaryAccent2: '',
   tertiaryColor: '#83BB26',
+  tertiaryAccent1: '',
+  tertiaryAccent2: '',
+  textDark: '#1F192E',
+  textMid: '#483E63',
+  textLight: '#9B96A6',
+  uiMidDark: '#5e557a',
+  uiMid: '#827c93',
+  uiLight: '#cac5d8',
+  uiBg: '#F3F1F9',
+  modalBg: '#cac5d8',
+  errorMain: '#ED1414',
+  errorDark: '#D20000',
+  errorBg: '#FFEEF6',
+  alertMain: '#FF5C00',
+  alertDark: '#E43802',
+  alertBg: '#FFEEE4',
+  successMain: '#83BB26',
+  successDark: '#5A8F02',
+  successBg: '#E6F1D4',
+  infoMain: '#1D67D5',
+  infoDark: '#1752AB',
+  infoBb: '#EBF3FF',
   smsProvider: '',
   tokenId: '',
   tokenSecret: '',
@@ -22,14 +48,14 @@ export const setupOrgValues = {
   tokenPassword: '',
   apiKey: '',
   apiSecret: '',
-  attendanceEnabled: false,
-  businessEnabled: false,
-  calendarEnabled: false,
-  classroomActivitiesEnabled: false,
-  coachRoleEnabled: false,
+  attendanceEnabled: true,
+  businessEnabled: true,
+  calendarEnabled: true,
+  classroomActivitiesEnabled: true,
+  coachRoleEnabled: true,
   coachRoleName: '',
-  prgoressEnabled: false,
-  trainingEnabled: false,
+  progressEnabled: true,
+  trainingEnabled: true,
   superAdmin1FirstName: '',
   superAdmin1Surname: '',
   superAdmin1Email: '',
@@ -47,8 +73,34 @@ export interface SetupOrgModel {
   lightVersionLogo: string;
   favico: string;
   primaryColor: string;
+  primaryAccent1: string;
+  primaryAccent2: string;
   secondaryColor: string;
+  secondaryAccent1: string;
+  secondaryAccent2: string;
   tertiaryColor: string;
+  tertiaryAccent1: string;
+  tertiaryAccent2: string;
+  textDark: string;
+  textMid: string;
+  textLight: string;
+  uiMidDark: string;
+  uiMid: string;
+  uiLight: string;
+  uiBg: string;
+  modalBg: string;
+  errorMain: string;
+  errorDark: string;
+  errorBg: string;
+  alertMain: string;
+  alertDark: string;
+  alertBg: string;
+  successMain: string;
+  successDark: string;
+  successBg: string;
+  infoMain: string;
+  infoDark: string;
+  infoBb: string;
   smsProvider: string;
   tokenId: string;
   tokenSecret: string;
@@ -63,7 +115,7 @@ export interface SetupOrgModel {
   classroomActivitiesEnabled: boolean;
   coachRoleEnabled: boolean;
   coachRoleName: string;
-  prgoressEnabled: boolean;
+  progressEnabled: boolean;
   trainingEnabled: boolean;
   superAdmin1FirstName: string;
   superAdmin1Surname: string;

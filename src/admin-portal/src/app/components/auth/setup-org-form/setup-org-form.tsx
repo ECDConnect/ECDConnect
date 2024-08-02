@@ -16,29 +16,34 @@ import { Step8 } from './components/step8/step8';
 export const SetupOrgForm = () => {
   const { theme } = useTheme();
   const [step, setStep] = useState(1);
-  const renderButtonText = useMemo(() => (step < 8 ? 'Next' : 'Save'), [step]);
+  const renderButtonText = useMemo(
+    () => (step < 8 ? 'Next' : 'Confirm & ave'),
+    [step]
+  );
   const renderButtonIcon = useMemo(
     () => (step < 8 ? 'ArrowCircleRightIcon' : 'SaveIcon'),
     [step]
   );
   const [disableButton, setDisableButton] = useState(false);
 
-  const { register, handleSubmit, getValues, setValue, formState, control } =
-    useForm({
-      resolver: yupResolver(setuOrgSchema),
-      defaultValues: setupOrgValues,
-      mode: 'onChange',
-    });
-  const { errors, isValid } = formState;
-  console.log(getValues());
-
-  const { darkVersionLogo, lightVersionLogo, favico } = useWatch({
-    control: control,
+  const { register, getValues, setValue, formState, control } = useForm({
+    resolver: yupResolver(setuOrgSchema),
+    defaultValues: setupOrgValues,
+    mode: 'onChange',
   });
-
-  console.log({ darkVersionLogo, lightVersionLogo, favico });
+  const { errors } = formState;
 
   const handleNextStep = () => {
+    if (step < 8) {
+      setStep(step + 1);
+    }
+  };
+
+  const handleSte4NextStep = () => {
+    setValue('primaryColor', '#27385A');
+    setValue('secondaryColor', '#FF2180');
+    setValue('tertiaryColor', '#83BB26');
+
     if (step < 8) {
       setStep(step + 1);
     }
@@ -59,6 +64,8 @@ export const SetupOrgForm = () => {
             register={register}
             errors={errors}
             setDisableButton={setDisableButton}
+            getValues={getValues}
+            control={control}
           />
         );
       case 3:
@@ -77,6 +84,8 @@ export const SetupOrgForm = () => {
             register={register}
             errors={errors}
             getValues={getValues}
+            control={control}
+            setDisableButton={setDisableButton}
           />
         );
       case 5:
@@ -86,6 +95,8 @@ export const SetupOrgForm = () => {
             register={register}
             errors={errors}
             getValues={getValues}
+            setDisableButton={setDisableButton}
+            control={control}
           />
         );
       case 6:
@@ -96,6 +107,7 @@ export const SetupOrgForm = () => {
             errors={errors}
             getValues={getValues}
             control={control}
+            setDisableButton={setDisableButton}
           />
         );
       case 7:
@@ -157,7 +169,7 @@ export const SetupOrgForm = () => {
             disabled={disableButton}
             onClick={() => handleNextStep()}
           />
-          {(step === 3 || step === 4) && (
+          {step === 3 && (
             <Button
               className="mt-8 w-3/12 rounded-2xl"
               icon={'ClockIcon'}
@@ -166,6 +178,17 @@ export const SetupOrgForm = () => {
               textColor="secondary"
               text={'Do this later'}
               onClick={() => handleNextStep()}
+            />
+          )}
+          {step === 4 && (
+            <Button
+              className="mt-8 w-3/12 rounded-2xl"
+              icon={'ClockIcon'}
+              type="outlined"
+              color="secondary"
+              textColor="secondary"
+              text={'Do this later'}
+              onClick={() => handleSte4NextStep()}
             />
           )}
           {step === 8 && (

@@ -22,3 +22,5 @@ export const isRemovedUser = (word) => {
     return false;
   }
 };
+
+export const hyphenRegex = /^-|-$/;
