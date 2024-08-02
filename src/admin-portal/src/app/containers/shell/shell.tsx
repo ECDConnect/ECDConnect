@@ -16,6 +16,7 @@ import InformationPanel from '../../components/information-panel/information-pan
 import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
+import DGMTLogo from '../../../assets/dgmt_logo_primary.jpg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import {
   INavigation,
@@ -74,6 +75,7 @@ export default function Shell() {
   const [navigation, setNavigation] = useState<INavigation[]>();
   const [activeNavigation, setActiveNavigation] = useState<INavigation>();
   const tenant = useTenant();
+  const isOpenAccess = tenant?.isOpenAccess;
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
@@ -299,9 +301,11 @@ export default function Shell() {
           <div className="flex flex-grow flex-col overflow-y-auto pt-5 pb-4">
             <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
               <div></div>
-              <img className="h-100 mb-8" src={logo} alt="Login Logo" />
+              <img className="mb-8" src={logo} alt="Login Logo" />
 
-              <img className="h-16 w-8/12" src={getLogoUrl()} alt="Workflow" />
+              {!isOpenAccess && (
+                <img className="h-32 w-8/12" src={DGMTLogo} alt="Workflow" />
+              )}
             </div>
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">

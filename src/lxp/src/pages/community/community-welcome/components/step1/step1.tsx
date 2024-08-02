@@ -1,8 +1,5 @@
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
-import { useTheme } from '@ecdlink/core';
 import {
-  BannerWrapper,
   Button,
   ButtonGroup,
   ButtonGroupTypes,
@@ -10,9 +7,8 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { yesOrNoOptions } from '../../community-welcome.types';
-import { Control, FieldValues, UseFormSetValue } from 'react-hook-form';
+import { UseFormSetValue } from 'react-hook-form';
 import { useAppDispatch } from '@/store';
 import {
   practitionerSelectors,
@@ -113,7 +109,7 @@ export const Step1: React.FC<Step1Props> = ({
             textColor="secondary"
           />
         </div>
-        <div className="absolute right-0 left-0  bottom-0 mb-20 max-h-20 w-full p-4">
+        <div className="mt-32 mb-20 max-h-20 w-full p-4 align-bottom">
           <Button
             size="normal"
             className="w-full"
