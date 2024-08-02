@@ -76,6 +76,7 @@ export default function Shell() {
   const [activeNavigation, setActiveNavigation] = useState<INavigation>();
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
+  const isGrowGreatTenant = tenant.isCHWConnect;
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
@@ -126,10 +127,9 @@ export default function Shell() {
         NavbarTypes.CHWsOptedOut,
       ];
 
-      const navigationList = [
-        ...navigationData?.GetAllNavigation,
-        ...navigationFromFrontend,
-      ];
+      const navigationList = isGrowGreatTenant
+        ? [...navigationData?.GetAllNavigation, ...navigationFromFrontend]
+        : navigationData?.GetAllNavigation;
 
       const adminNavigationList: INavigation[] = navigationList?.filter(
         (item) =>
@@ -153,11 +153,11 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [user, navigationData, isAdministrator, isSuperAdmin]);
+  }, [user, navigationData, isAdministrator, isSuperAdmin, isGrowGreatTenant]);
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return theme.images.logoUrl;
+      return DGMTLogo;
     } else {
       return ggLogo;
     }
@@ -272,12 +272,13 @@ export default function Shell() {
               </Transition.Child>
               <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
                 <img className="h-100 mb-8" src={logo} alt="Login Logo" />
-
-                <img
-                  className="h-16 w-8/12"
-                  src={getLogoUrl()}
-                  alt="Workflow"
-                />
+                {!isOpenAccess && (
+                  <img
+                    className="h-28 w-8/12"
+                    src={getLogoUrl()}
+                    alt="Workflow"
+                  />
+                )}
               </div>
               <div className="mt-5 flex-1 flex-grow overflow-y-auto">
                 <nav className="space-y-1 px-2">
