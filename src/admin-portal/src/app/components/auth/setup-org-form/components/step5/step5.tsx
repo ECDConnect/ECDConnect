@@ -28,7 +28,7 @@ const optionsButtonGroup = [
   { text: 'SMSPortal', value: 'SMSPortal' },
 ];
 
-const SmsProviders = {
+export const SmsProviders = {
   BulkSMS: 'BulkSMS',
   iTouch: 'iTouch',
   SMSPortal: 'SMSPortal',
@@ -162,7 +162,10 @@ export const Step5: React.FC<StepProps> = ({
             notSelectedColor="tertiaryAccent2"
             type={ButtonGroupTypes.Button}
             options={optionsButtonGroup}
-            onOptionSelected={(value) => setSmsProvider(value as string)}
+            onOptionSelected={(value) => {
+              setValue('smsProvider', value);
+              setSmsProvider(value as string);
+            }}
           />
         </div>
       </div>

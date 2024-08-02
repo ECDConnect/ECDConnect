@@ -1,15 +1,40 @@
 import { FormInput, Typography } from '@ecdlink/ui';
 import { OfficeBuildingIcon } from '@heroicons/react/solid';
-import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import {
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+  useWatch,
+} from 'react-hook-form';
 import { SetupOrgModel } from '../../../../../schemas/setup-org';
+import { useEffect } from 'react';
 
 interface StepProps {
   setValue: UseFormSetValue<any>;
   register: UseFormRegister<any>;
   errors: FieldErrors;
+  control?: any;
+  setDisableButton?: (item: boolean) => void;
 }
 
-export const Step1: React.FC<StepProps> = ({ setValue, register, errors }) => {
+export const Step1: React.FC<StepProps> = ({
+  setValue,
+  register,
+  errors,
+  control,
+  setDisableButton,
+}) => {
+  const { orgName, catchyName, orgEmail } = useWatch({
+    control: control,
+  });
+  console.log({ orgName, catchyName, orgEmail });
+  console.log({ errors });
+  const disableButton =
+    !orgName || !catchyName || !orgEmail || errors?.orgEmail;
+  console.log({ disableButton });
+  useEffect(() => {
+    setDisableButton(disableButton);
+  }, [disableButton, setDisableButton]);
   return (
     <div>
       <div className="my-12 flex items-center gap-4">

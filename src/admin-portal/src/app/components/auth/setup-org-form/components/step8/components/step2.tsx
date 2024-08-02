@@ -17,7 +17,11 @@ export const Step2: React.FC<StepProps> = ({ getValues }) => {
           color="textDark"
           text={`App URL`}
         />
-        <Typography type="body" color="textDark" text={getValues().appUrl} />
+        <Typography
+          type="body"
+          color="textDark"
+          text={getValues().appUrl || 'None'}
+        />
       </div>
     </div>
   );

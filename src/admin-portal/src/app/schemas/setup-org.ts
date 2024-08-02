@@ -14,6 +14,7 @@ export const setupOrgValues = {
   primaryColor: '#27385A',
   secondaryColor: '#FF2180',
   tertiaryColor: '#83BB26',
+  smsProvider: '',
   tokenId: '',
   tokenSecret: '',
   tokenBasicAuth: '',
@@ -48,6 +49,7 @@ export interface SetupOrgModel {
   primaryColor: string;
   secondaryColor: string;
   tertiaryColor: string;
+  smsProvider: string;
   tokenId: string;
   tokenSecret: string;
   tokenBasicAuth: string;

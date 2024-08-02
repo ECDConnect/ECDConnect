@@ -29,7 +29,7 @@ export const SetupOrgForm = () => {
       defaultValues: setupOrgValues,
       mode: 'onChange',
     });
-  const { errors } = formState;
+  const { errors, isValid } = formState;
   console.log(getValues());
 
   const { darkVersionLogo, lightVersionLogo, favico } = useWatch({
@@ -54,7 +54,12 @@ export const SetupOrgForm = () => {
     switch (step) {
       case 2:
         return (
-          <Step2 setValue={setValue} register={register} errors={errors} />
+          <Step2
+            setValue={setValue}
+            register={register}
+            errors={errors}
+            setDisableButton={setDisableButton}
+          />
         );
       case 3:
         return (
@@ -118,7 +123,13 @@ export const SetupOrgForm = () => {
         );
       default:
         return (
-          <Step1 setValue={setValue} register={register} errors={errors} />
+          <Step1
+            setValue={setValue}
+            register={register}
+            errors={errors}
+            control={control}
+            setDisableButton={setDisableButton}
+          />
         );
     }
   };
@@ -155,6 +166,17 @@ export const SetupOrgForm = () => {
               textColor="secondary"
               text={'Do this later'}
               onClick={() => handleNextStep()}
+            />
+          )}
+          {step === 8 && (
+            <Button
+              className="mt-8 w-3/12 rounded-2xl"
+              icon={'PencilIcon'}
+              type="outlined"
+              color="secondary"
+              textColor="secondary"
+              text={'Edit my responses'}
+              onClick={() => setStep(1)}
             />
           )}
         </div>

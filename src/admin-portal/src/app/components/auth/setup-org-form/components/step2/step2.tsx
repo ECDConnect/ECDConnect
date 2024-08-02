@@ -7,9 +7,14 @@ interface StepProps {
   setValue: UseFormSetValue<any>;
   register: UseFormRegister<any>;
   errors: FieldErrors;
+  setDisableButton?: (item: boolean) => void;
 }
 
-export const Step2: React.FC<StepProps> = ({ register, errors }) => {
+export const Step2: React.FC<StepProps> = ({
+  register,
+  errors,
+  setDisableButton,
+}) => {
   return (
     <div>
       <div className="my-12 flex items-center gap-4">

@@ -1,17 +1,18 @@
-import { Alert, Button, Divider, FormInput, Typography } from '@ecdlink/ui';
-import { ThumbUpIcon, ViewGridAddIcon } from '@heroicons/react/solid';
+import { Button, Divider, Typography } from '@ecdlink/ui';
+import { ThumbUpIcon } from '@heroicons/react/solid';
 import {
   FieldErrors,
   UseFormGetValues,
   UseFormRegister,
   UseFormSetValue,
-  useWatch,
 } from 'react-hook-form';
-import { SetupOrgModel } from '../../../../../schemas/setup-org';
-import { useEffect } from 'react';
 import { Step1 } from './components/step1';
 import { Step2 } from './components/step2';
 import { Step3 } from './components/step3';
+import { Step4 } from './components/step4';
+import { Step5 } from './components/step5';
+import { Step6 } from './components/step6';
+import { Step7 } from './components/step7';
 
 interface StepProps {
   setValue: UseFormSetValue<any>;
@@ -25,8 +26,6 @@ interface StepProps {
 
 export const Step8: React.FC<StepProps> = ({
   register,
-  setValue,
-  errors,
   getValues,
   control,
   setDisableButton,
@@ -44,13 +43,8 @@ export const Step8: React.FC<StepProps> = ({
           text={`Confirm your responses`}
         />
       </div>
-      <Typography
-        type="body"
-        color="textMid"
-        text={`ECD Connect has been built in a modular way to support a broad range of ECD service providers. You are able to select which app features you want your users to have access to.`}
-      />
       <Button
-        className="mt-8 w-3/12 rounded-2xl"
+        className="mt-4 w-3/12 rounded-2xl"
         icon={'PencilIcon'}
         type="filled"
         color="secondary"
@@ -64,6 +58,14 @@ export const Step8: React.FC<StepProps> = ({
       <Step2 getValues={getValues} />
       <Divider dividerType="dashed" className="my-6" />
       <Step3 getValues={getValues} />
+      <Divider dividerType="dashed" className="my-6" />
+      <Step4 getValues={getValues} register={register} />
+      <Divider dividerType="dashed" className="my-6" />
+      <Step5 getValues={getValues} />
+      <Divider dividerType="dashed" className="my-6" />
+      <Step6 getValues={getValues} control={control} />
+      <Divider dividerType="dashed" className="my-6" />
+      <Step7 getValues={getValues} />
       <Divider dividerType="dashed" className="my-6" />
     </div>
   );

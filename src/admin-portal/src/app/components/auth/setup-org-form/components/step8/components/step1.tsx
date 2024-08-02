@@ -17,7 +17,11 @@ export const Step1: React.FC<StepProps> = ({ getValues }) => {
           color="textDark"
           text={`Organisation name`}
         />
-        <Typography type="body" color="textDark" text={getValues().orgName} />
+        <Typography
+          type="body"
+          color="textDark"
+          text={getValues().orgName || 'None'}
+        />
       </div>
       <div>
         <Typography
@@ -29,7 +33,7 @@ export const Step1: React.FC<StepProps> = ({ getValues }) => {
         <Typography
           type="body"
           color="textDark"
-          text={getValues().catchyName}
+          text={getValues().catchyName || 'None'}
         />
       </div>
       <div>
@@ -39,7 +43,11 @@ export const Step1: React.FC<StepProps> = ({ getValues }) => {
           color="textDark"
           text={`Email address for receiving app help requests`}
         />
-        <Typography type="body" color="textDark" text={getValues().orgEmail} />
+        <Typography
+          type="body"
+          color="textDark"
+          text={getValues().orgEmail || 'None'}
+        />
       </div>
     </div>
   );
