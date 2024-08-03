@@ -1,7 +1,7 @@
 import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { Step1 } from './components/step1/step1';
 import { useMemo, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { setuOrgSchema, setupOrgValues } from '../../../schemas/setup-org';
 import { useTheme } from '@ecdlink/core';
@@ -17,7 +17,7 @@ export const SetupOrgForm = () => {
   const { theme } = useTheme();
   const [step, setStep] = useState(1);
   const renderButtonText = useMemo(
-    () => (step < 8 ? 'Next' : 'Confirm & ave'),
+    () => (step < 8 ? 'Next' : 'Confirm & save'),
     [step]
   );
   const renderButtonIcon = useMemo(
