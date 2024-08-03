@@ -80,6 +80,11 @@ export function ViewUser(props: any) {
   const connectUsageColor = props?.location?.state?.connectUsageColor;
   const hcwId = props?.location?.state?.hcwId;
   const teamLeadId = props?.location?.state?.teamLeadId;
+  const isPractitioner =
+    props.location.state?.component ===
+    UsersRouteRedirectTypeEnum?.practitioner;
+  const isPrincipal =
+    props.location.state?.component === UsersRouteRedirectTypeEnum?.principal;
   const isTeamLead =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
   const isAdministrator =
@@ -90,7 +95,7 @@ export function ViewUser(props: any) {
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
   const tenant = useTenant();
-
+  console.log({ connectUsage });
   const { isTeamLead: isTeamLeadRole } = useUserRole();
 
   const [startDate, setStartDate] = useState(startDate1);
@@ -256,6 +261,30 @@ export function ViewUser(props: any) {
             />
           </div>
         );
+      case UsersRouteRedirectTypeEnum?.practitioner:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="primary"
+              backgroundColour="primary"
+              textColour="white"
+              text={UsersRolesTypeEnum?.practitioner}
+            />
+          </div>
+        );
+      case UsersRouteRedirectTypeEnum?.principal:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="primary"
+              backgroundColour="primary"
+              textColour="white"
+              text={UsersRolesTypeEnum?.principal}
+            />
+          </div>
+        );
       default:
         return (
           <div>
@@ -378,7 +407,8 @@ export function ViewUser(props: any) {
           />
           <div className="flex gap-2">
             {getRoleStatusChip(props.location.state?.component)}
-            {(isTeamLead || isCHWRole) && getConnectUsageChip(connectUsage)}
+            {(isTeamLead || isCHWRole || isPractitioner || isPrincipal) &&
+              getConnectUsageChip(connectUsage)}
           </div>
         </div>
       </div>

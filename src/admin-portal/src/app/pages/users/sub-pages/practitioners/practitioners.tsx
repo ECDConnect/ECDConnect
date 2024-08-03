@@ -47,6 +47,7 @@ import { ConnectUsage, PractionerType, Status } from '../../user.types';
 import PractitionerPanelCreate from './components/practitioner-panel-create/practitioner-panel-create';
 import { columnColor } from '../../../../utils/app-usage/app-usage-utils';
 import { useTenant } from '../../../../hooks/useTenant';
+import { UsersRouteRedirectTypeEnum } from '../../../view-user/view-user.types';
 
 export const oaSortByConnectUsage: SearchDropDownOption<string>[] = [
   ConnectUsage?.LastOnlineOver6Months,
@@ -194,28 +195,30 @@ export default function Practitioners() {
     [connectUsageFilter]
   );
 
-  // const viewSelectedRow = (selectedRow: any) => {
-  //   const user = tableData?.find(
-  //     (item) => item?.userId === selectedRow?.userId
-  //   );
-
-  //   localStorage.setItem(
-  //     'selectedUser',
-  //     selectedRow?.userId ?? selectedRow?.id
-  //   );
-  //   history.push({
-  //     pathname: ROUTES.USERS.VIEW_USER,
-  //     state: {
-  //       component: 'practitioners',
-  //       userId: selectedRow?.userId,
-  //       clinicId: selectedRow?.clinicId,
-  //       practitionerId: selectedRow?.id,
-  //       isRegistered: selectedRow?.isRegistered,
-  //       connectUsage: selectedRow?.connectUsage,
-  //       connectUsageColor: user?.user?.connectUsageColor,
-  //     },
-  //   });
-  // };
+  const viewSelectedRow = (selectedRow: any) => {
+    const user = tableData?.find(
+      (item) => item?.userId === selectedRow?.userId
+    );
+    console.log({ user });
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: ROUTES.USERS.VIEW_USER,
+      state: {
+        component: selectedRow?.isPrincipal
+          ? UsersRouteRedirectTypeEnum.principal
+          : UsersRouteRedirectTypeEnum.practitioner,
+        userId: selectedRow?.userId,
+        clinicId: selectedRow?.clinicId,
+        practitionerId: selectedRow?.id,
+        isRegistered: selectedRow?.isRegistered,
+        connectUsage: user?.user?.connectUsage,
+        connectUsageColor: user?.user?.connectUsageColor,
+      },
+    });
+  };
 
   const queryVariables = useMemo(
     () => ({
@@ -626,7 +629,7 @@ export default function Practitioners() {
             columns={columns}
             onClearFilters={clearFilters}
             onChangeSelectedRows={setSelectedUsers}
-            // onClickRow={viewSelectedRow}
+            onClickRow={viewSelectedRow}
             noContentText={noContentText}
             loading={{
               isLoading: tableData === undefined || isLoading,
