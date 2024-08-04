@@ -40,7 +40,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
       meetingDays: [],
       name: '',
       classroomGroupId: newGuid(),
-      meetEveryday: false,
+      meetEveryday: undefined,
     });
     onEditPlaygroup(playgroups, playgroups.length - 1, true);
   };

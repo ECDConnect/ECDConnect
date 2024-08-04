@@ -410,54 +410,54 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
                        
 
-            // TODO: Need to refactor dates for reporting periods
-            // Get Due/Overdue Reports
-            // Get Children not progressed
-            var isPeriod1 = previousMonthStart.Month <= 7;
-            DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportPeriodEnd = ChildProgressReportService.GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
+            //// TODO: Need to refactor dates for reporting periods
+            //// Get Due/Overdue Reports
+            //// Get Children not progressed
+            //var isPeriod1 = previousMonthStart.Month <= 7;
+            //DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            //DateTime reportPeriodEnd = ChildProgressReportService.GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
 
-            DateTime reportDueStart = ChildProgressReportService.GetReportDueStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportDueEnd = ChildProgressReportService.GetReportDueEnd(previousMonthStart.Year, isPeriod1);
+            //DateTime reportDueStart = ChildProgressReportService.GetReportDueStart(previousMonthStart.Year, isPeriod1);
+            //DateTime reportDueEnd = ChildProgressReportService.GetReportDueEnd(previousMonthStart.Year, isPeriod1);
 
-            var reportOverDueStart = ChildProgressReportService.GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-            var reportOverDueEnd = ChildProgressReportService.GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
+            //var reportOverDueStart = ChildProgressReportService.GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+            //var reportOverDueEnd = ChildProgressReportService.GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
 
-            // Notifications for child progress reports
-            var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
-            var childCount = reportCounts.reportsSubmittedOnTime + reportCounts.reportsSubmittedOverdue;
+            //// Notifications for child progress reports
+            //var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
+            //var childCount = reportCounts.reportsSubmittedOnTime + reportCounts.reportsSubmittedOverdue;
 
-            // If any children did not get a report submitted
-            if (practitioner?.IsPrincipal == true && reportCounts.reportsMissingOrIncomplete > 0
-                && currentDate >= reportOverDueEnd)
-            {
-                notifications.Add(new NotificationDisplay()
-                {
-                    Subject = $"{reportCounts.reportsMissingOrIncomplete} missed progress reports",
-                    Icon = MetricsIconEnum.Error.ToString(),
-                    Color = MetricsColorEnum.Error.ToString(),
-                    Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
-                    Notes = "",
-                    UserId = Guid.Parse(practitionerId),
-                    UserType = "practitioner"
-                });
-            }
+            //// If any children did not get a report submitted
+            //if (practitioner?.IsPrincipal == true && reportCounts.reportsMissingOrIncomplete > 0
+            //    && currentDate >= reportOverDueEnd)
+            //{
+            //    notifications.Add(new NotificationDisplay()
+            //    {
+            //        Subject = $"{reportCounts.reportsMissingOrIncomplete} missed progress reports",
+            //        Icon = MetricsIconEnum.Error.ToString(),
+            //        Color = MetricsColorEnum.Error.ToString(),
+            //        Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
+            //        Notes = "",
+            //        UserId = Guid.Parse(practitionerId),
+            //        UserType = "practitioner"
+            //    });
+            //}
 
-            // If any reports were submitted in the overdue period (2nd month of the submission window
-            if (reportCounts.reportsSubmittedOverdue > 0 && currentDate >= reportOverDueEnd)
-            {
-                notifications.Add(new NotificationDisplay()
-                {
-                    Subject = $"See progress summary",
-                    // TODO: Warnings or errors?
-                    Icon = MetricsIconEnum.None.ToString(),
-                    Color = MetricsColorEnum.None.ToString(),
-                    Message = $"{childCount} children",
-                    Notes = "",
-                    UserId = Guid.Parse(practitionerId),
-                    UserType = "practitioner"
-                });
-            }
+            //// If any reports were submitted in the overdue period (2nd month of the submission window
+            //if (reportCounts.reportsSubmittedOverdue > 0 && currentDate >= reportOverDueEnd)
+            //{
+            //    notifications.Add(new NotificationDisplay()
+            //    {
+            //        Subject = $"See progress summary",
+            //        // TODO: Warnings or errors?
+            //        Icon = MetricsIconEnum.None.ToString(),
+            //        Color = MetricsColorEnum.None.ToString(),
+            //        Message = $"{childCount} children",
+            //        Notes = "",
+            //        UserId = Guid.Parse(practitionerId),
+            //        UserType = "practitioner"
+            //    });
+            //}
 
             return notifications;
         }
@@ -478,8 +478,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var childProgressReportsFor2Years = repoFactory.CreateGenericRepository<ChildProgressReport>()
                 .GetAll()
                 .Where(r => childIds.Contains(r.ChildId)
-                    && r.ReportDate >= reportPeriodStart.GetStartOfYear().AddYears(-2))
-                .OrderBy(r => r.ReportDate);
+                    && r.ChildProgressReportPeriod.StartDate >= reportPeriodStart.GetStartOfYear().AddYears(-2))
+                .OrderBy(r => r.ChildProgressReportPeriod.StartDate);
             Dictionary<Guid, List<(DateTime, int)>> childProgressHistory = GetChildProgressHistory(childProgressReportsFor2Years);
 
             var hasProgressedInLast2Periods = 0;
@@ -562,10 +562,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (missingRegisterDayCount > 0)
             {
                 // TODO: Need to refactor dates for reporting periods
-                var isPeriod1 = currentDate.Month <= 7;
-                DateTime currentReportingPeriodEnd = ChildProgressReportService.GetReportDueEnd(currentDate.Year, isPeriod1);
-                var isPreviousMonthPeriod1 = previousMonthStart.Month <= 7;
-                DateTime nextReportingPeriodEnd = ChildProgressReportService.GetNextReportDuePeriodEnd(previousMonthStart.Year, isPreviousMonthPeriod1);
+                //var isPeriod1 = currentDate.Month <= 7;
+                //DateTime currentReportingPeriodEnd = ChildProgressReportService.GetReportDueEnd(currentDate.Year, isPeriod1);
+                //var isPreviousMonthPeriod1 = previousMonthStart.Month <= 7;
+                //DateTime nextReportingPeriodEnd = ChildProgressReportService.GetNextReportDuePeriodEnd(previousMonthStart.Year, isPreviousMonthPeriod1);
 
                 return new ActionItemMissedProgressReportsDisplay()
                 {
@@ -573,12 +573,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
                     Message = previousMonthStart.ToString("MMMM yyyy"),
-                    Notes = $"Remind {practitioner.User.FirstName} to track progress for the next reporting period ({nextReportingPeriodEnd.ToString("MMMM yyyy")})",
+                    //Notes = $"Remind {practitioner.User.FirstName} to track progress for the next reporting period ({nextReportingPeriodEnd.ToString("MMMM yyyy")})",
                     UserId = Guid.Parse(practitionerId),
                     UserType = "practitioner",
                     PractitionerUser = practitioner.User,
-                    NextReportingPeriodEnd = nextReportingPeriodEnd,
-                    CurrentReportingPeriodEnd = currentReportingPeriodEnd
+                    //NextReportingPeriodEnd = nextReportingPeriodEnd,
+                    //CurrentReportingPeriodEnd = currentReportingPeriodEnd
                 };
             }
 
@@ -604,8 +604,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
 
-            var isPeriod1 = previousMonthStart.Month <= 7;
-            DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            //var isPeriod1 = previousMonthStart.Month <= 7;
+            //DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
@@ -615,40 +615,40 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     .Include(c => c.User)
                     .ToListAsync();
 
-            var childProgress = GetChildProgress(repoFactory, reportPeriodStart, children);
+            //var childProgress = GetChildProgress(repoFactory, reportPeriodStart, children);
             var notifications = new List<ChildProgressDisplay>();
 
-            if (childProgress.notProgressedFor2Periods > 0)
-                notifications.Add(new ChildProgressDisplay()
-                {
-                    Subject = $"{childProgress.notProgressedFor2Periods} children haven't progressed",
-                    Icon = MetricsIconEnum.Warning.ToString(),
-                    Color = MetricsColorEnum.Warning.ToString(),
-                    Message = $"For 2 reporting periods.",
-                    Notes = "",
-                    UserId = Guid.Parse(practitionerId),
-                    UserType = "practitioner",
-                    numberOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods,
-                    percentageOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods / children?.Count ?? 1,
-                    totalChildren = children?.Count ?? 0,
-                    numberOfPeriods = 2
-                });
+            //if (childProgress.notProgressedFor2Periods > 0)
+            //    notifications.Add(new ChildProgressDisplay()
+            //    {
+            //        Subject = $"{childProgress.notProgressedFor2Periods} children haven't progressed",
+            //        Icon = MetricsIconEnum.Warning.ToString(),
+            //        Color = MetricsColorEnum.Warning.ToString(),
+            //        Message = $"For 2 reporting periods.",
+            //        Notes = "",
+            //        UserId = Guid.Parse(practitionerId),
+            //        UserType = "practitioner",
+            //        numberOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods,
+            //        percentageOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods / children?.Count ?? 1,
+            //        totalChildren = children?.Count ?? 0,
+            //        numberOfPeriods = 2
+            //    });
 
-            if (childProgress.notProgressedFor3Periods > 0)
-                notifications.Add(new ChildProgressDisplay()
-                {
-                    Subject = $"{childProgress.notProgressedFor3Periods} children haven't progressed",
-                    Icon = MetricsIconEnum.Warning.ToString(),
-                    Color = MetricsColorEnum.Warning.ToString(),
-                    Message = $"For 3 reporting periods.",
-                    Notes = "",
-                    UserId = Guid.Parse(practitionerId),
-                    UserType = "practitioner",
-                    numberOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor3Periods,
-                    percentageOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor3Periods / children?.Count ?? 1,
-                    totalChildren = children?.Count ?? 0,
-                    numberOfPeriods = 3
-                });
+            //if (childProgress.notProgressedFor3Periods > 0)
+            //    notifications.Add(new ChildProgressDisplay()
+            //    {
+            //        Subject = $"{childProgress.notProgressedFor3Periods} children haven't progressed",
+            //        Icon = MetricsIconEnum.Warning.ToString(),
+            //        Color = MetricsColorEnum.Warning.ToString(),
+            //        Message = $"For 3 reporting periods.",
+            //        Notes = "",
+            //        UserId = Guid.Parse(practitionerId),
+            //        UserType = "practitioner",
+            //        numberOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor3Periods,
+            //        percentageOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor3Periods / children?.Count ?? 1,
+            //        totalChildren = children?.Count ?? 0,
+            //        numberOfPeriods = 3
+            //    });
 
             return notifications;
         }
@@ -946,11 +946,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                .Count();
 
             // Notifications for child progress reports
-            var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
+            //var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
 
             return new ChildProgressReportsStatus
             {
-                CompletedReports = reportCounts.reportsSubmittedOnTime + reportCounts.reportsSubmittedOverdue,
+                CompletedReports = 0,//reportCounts.reportsSubmittedOnTime + reportCounts.reportsSubmittedOverdue,
                 NumberOfChildren = childCount
             };
         }

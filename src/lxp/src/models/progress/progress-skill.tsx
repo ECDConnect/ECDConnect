@@ -1,8 +1,11 @@
+import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
+
 export type ProgressSkill = {
   id: number;
   name: string;
   description: string;
   subCategory: ProgressSubCategory;
+  isReverseScored?: boolean;
 };
 
 export type ProgressSubCategory = {
@@ -17,5 +20,5 @@ export type ProgressCategory = {
 };
 
 export type ChildProgressSkill = ProgressSkill & {
-  value?: string;
+  value?: ProgressSkillValues;
 };

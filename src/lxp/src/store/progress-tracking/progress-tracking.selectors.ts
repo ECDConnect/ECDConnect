@@ -275,7 +275,7 @@ export const getCurrentObservationsForChild = (childId: string) =>
       return childProgressReports.find(
         (x) =>
           x.childId === childId &&
-          x.reportingPeriodId === currentReportPeriod.id
+          x.childProgressReportPeriodId === currentReportPeriod.id
       );
     }
   );

@@ -145,6 +145,7 @@ import { CommunityConnections } from '@/pages/community/community-tabs/component
 import { ProgressObservations } from '@/pages/classroom/progress/observations/child-progress-observations';
 import { ChildProgressObservationsLanding } from '@/pages/classroom/progress/landing/child-progress-observations-landing';
 import { ChildProgressReportsList } from '@/pages/classroom/progress/child-reports-list/child-progress-reports-list';
+import { ChildProgressObservationsNotes } from '@/pages/classroom/progress/landing/child-progress-observations-notes';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -625,6 +626,10 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.PROGRESS_OBSERVATIONS}
         component={ProgressObservations}
+      />
+      <Route
+        path={ROUTES.PROGRESS_OBSERVATIONS_NOTES}
+        component={ChildProgressObservationsNotes}
       />
       <Route
         path={ROUTES.PROGRESS_REPORT_LIST}
