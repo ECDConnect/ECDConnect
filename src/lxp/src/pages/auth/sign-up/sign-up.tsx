@@ -465,6 +465,7 @@ export const SignUp: React.FC = () => {
           title={articleTitle}
           onClose={() => setPresentArticle(false)}
           isOpen={true}
+          isConsentScreen={true}
         />
       )}
       <Dialog

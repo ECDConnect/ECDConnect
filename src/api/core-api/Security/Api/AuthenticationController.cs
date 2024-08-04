@@ -343,7 +343,7 @@ namespace ECDLink.Security.Api
                     {
                         // On WL the user is created in the portal and we need to check if the input username is equal to user's id number
                         var userWithIdNumberExists = !string.IsNullOrEmpty(userByUsername.IdNumber) && userByUsername.IdNumber == verifyModel.Username;
-                        if (!userWithIdNumberExists)
+                        if (userWithIdNumberExists)
                         {
                             return BadRequest(new FailedVerificationModel
                             {

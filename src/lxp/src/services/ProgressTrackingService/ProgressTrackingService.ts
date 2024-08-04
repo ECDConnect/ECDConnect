@@ -1,3 +1,4 @@
+import { ChildProgressReport } from '@/models/progress/child-progress-report';
 import { api } from '../axios.helper';
 import {
   Config,
@@ -10,6 +11,7 @@ import {
   ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
+import { ChildProgressReportModelInput } from '@ecdlink/graphql';
 class ProgressTrackingService {
   _accessToken: string;
 
@@ -220,6 +222,73 @@ class ProgressTrackingService {
     }
 
     return response.data.data.practitionerProgressReportSummary;
+  }
+
+  async getChildProgressReportsForUser(
+    userId: string
+  ): Promise<ChildProgressReport[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { childProgressReportsForUser: ChildProgressReport[] };
+      errors?: {};
+    }>(``, {
+      query: `query getChildProgressReportsForUser($userId: UUID!) {
+        childProgressReportsForUser(userId: $userId) {
+          id,
+          dateCreated,
+          childId,
+          dateCompleted,
+          notes,
+          howToSupport,
+          childProgressReportPeriodId
+          skillObservations {
+            skillId,
+            value
+          }
+          skillsToWorkOn {
+            skillId
+            howToSupport
+          }          
+        }
+      }`,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get Progress reports failed - Server connection error');
+    }
+
+    return response.data.data.childProgressReportsForUser;
+  }
+
+  async createOrUpdateChildProgressReport(
+    input: ChildProgressReportModelInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { createOrUpdateChildProgressReport: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation createOrUpdateChildProgressReport($input: ChildProgressReportModelInput) {
+          createOrUpdateChildProgressReport(input: $input) {
+          }
+        }
+      `,
+      variables: {
+        input: input,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Updating child progress report failed - Server connection error'
+      );
+    }
+
+    return response.data.data.createOrUpdateChildProgressReport;
   }
 }
 

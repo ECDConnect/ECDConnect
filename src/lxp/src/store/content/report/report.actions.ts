@@ -109,12 +109,13 @@ export const syncChildProgressReports = createAsyncThunk<
 
           const childProgressReportInput: ChildProgressReportInput = {
             ChildId: currentReportCopy.childId,
-            ClassroomGroupId: x.classroomGroupId,
+            //ClassroomGroupId: x.classroomGroupId,
             Id: currentReportCopy.id,
-            ReportDate: currentReportCopy.reportingDate,
+            //ReportDate: currentReportCopy.reportingDate,
             ReportContent: JSON.stringify(currentReportCopy),
             IsActive: true,
             DateCompleted: currentReportCopy.dateCompleted,
+            ChildProgressReportPeriodId: '',
           };
 
           return await new ContentReportService(

@@ -22,7 +22,6 @@ import {
 } from '@store/content/report';
 import { classroomsSelectors } from '@store/classroom';
 import { saveBase64Pdf } from '@utils/child/child-progress-report.utils';
-import { ChildProgressReportSummaryModel } from '@ecdlink/graphql';
 import { getReportingPeriod } from '@utils/child/child-profile-utils';
 import ROUTES from '@/routes/routes';
 
@@ -39,8 +38,7 @@ export const DownloadChildProgressReport: React.FC = () => {
   const currentChildClassroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupByChildUserId(currentChild?.userId!)
   );
-  const [selectedReport, setSelectedReport] =
-    useState<ChildProgressReportSummaryModel>();
+  const [selectedReport, setSelectedReport] = useState<any>();
   const [loading, setLoading] = useState(false);
   const [summaryDropDownItems, setSummaryDropDownItems] = useState<
     DropDownOption<string>[]
