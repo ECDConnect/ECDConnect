@@ -287,3 +287,15 @@ export const getProgressReportsForChild = (childId: string) =>
       return childProgressReports.filter((x) => x.childId === childId);
     }
   );
+
+export const getProgressReportsForReportingPeriod = (
+  childProgressReportPeriodId: string
+) =>
+  createSelector(
+    (state: RootState) => state.progressTracking.childProgressReports,
+    (childProgressReports: ChildProgressReport[]) => {
+      return childProgressReports.filter(
+        (x) => x.childProgressReportPeriodId === childProgressReportPeriodId
+      );
+    }
+  );
