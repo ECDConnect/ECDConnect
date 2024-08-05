@@ -40,6 +40,7 @@ import {
   bulkUpdateCoachingCircleTopicDates,
 } from '@ecdlink/graphql';
 import { format } from 'date-fns';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline';
 
 export interface ContentViewProps {
   content: any;
@@ -81,7 +82,7 @@ export default function ContentEdit({
   languages,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
-  const [allowedFileSize, setAllowedFileSize] = useState(13631488); // 13 MB
+  const [allowedFileSize, setAllowedFileSize] = useState(5242880); // 13 MB
   const [requiredMessage, setRequiredMessage] = useState(
     'This field is required'
   );
@@ -437,7 +438,7 @@ export default function ContentEdit({
     !isLoadingDeleteContent
   ) {
     return (
-      <div className="flex flex-col rounded-md ">
+      <div className="flex flex-col rounded-md p-4">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
@@ -445,6 +446,25 @@ export default function ContentEdit({
                 {cancelEdit &&
                   camelCaseToSentanceCase(content?.name ?? content?.type)}
               </h3>
+              {content?.shareContent && content?.shareContent === 'true' ? (
+                <div className="flex items-center gap-4">
+                  <CheckCircleIcon className="text-successMain h-8 w-8" />
+                  <h4 className="text-small text-successMain font-semibold leading-6">
+                    Shared with other organisations
+                  </h4>
+                </div>
+              ) : (
+                (content?.shareContent === '' ||
+                  content?.shareContent === 'false' ||
+                  content?.shareContent === null) && (
+                  <div className="flex items-center gap-4">
+                    <XCircleIcon className="text-errorMain h-8 w-8" />
+                    <h4 className="text-small text-errorMain font-semibold leading-6">
+                      Not shared with other organisations
+                    </h4>
+                  </div>
+                )
+              )}
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
               {!!cancelCompare && (
@@ -477,21 +497,8 @@ export default function ContentEdit({
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : contentType?.name === ContentTypes.INFO_PAGES ? (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
-                type="info"
-              />
             ) : (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Note that any changes made below are not made to SmartLink.`}
-                list={[
-                  'If you make any major edits below, discuss them with the SmartLink team.',
-                ]}
-                type="warning"
-              />
+              <></>
             )}
 
             <DynamicForm

@@ -28,6 +28,7 @@ export interface FileModel {
 
 export interface FormFileInputProps {
   label: string;
+  hideAcceptedFormats?: boolean;
   nameProp: string;
   contentUrl?: string;
   acceptedFormats: string[];
@@ -42,10 +43,8 @@ export interface FormFileInputProps {
   onChange?: (item: any) => void;
   isThemeFormFile?: boolean;
   isVideoInput?: boolean;
+  isWizardComponent?: boolean;
 }
-
-const containerBaseStyle =
-  ' relative flex flex-col justify-center items-center block w-full border-2 border-dashed rounded-lg text-center focus:outline-none focus:ring-2 hover:border-uiLight';
 
 const containerStyle = 'border-uiLight';
 const fileContainerStyle = 'border-successMain';
@@ -59,6 +58,7 @@ const errorIconStyle = 'text-errorMain';
 
 const FormFileInput: React.FC<FormFileInputProps> = ({
   label,
+  hideAcceptedFormats,
   nameProp,
   acceptedFormats,
   contentUrl,
@@ -73,6 +73,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   onChange,
   isThemeFormFile,
   isVideoInput,
+  isWizardComponent,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -95,6 +96,9 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   const isPdfExtension = acceptedFormats?.some((format) =>
     format.toLowerCase().includes('pdf')
   );
+  const containerBaseStyle = `${
+    isWizardComponent ? 'w-8/12' : 'w-4/12'
+  } relative flex flex-col justify-center items-center block border-2 border-dashed rounded-lg text-center focus:outline-none focus:ring-2 hover:border-uiLight`;
 
   useEffect(() => {
     if (acceptedFormats?.length > 0 && uploadTypes === '') {
@@ -163,8 +167,6 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   };
 
   const handleFile = async (file: any) => {
-    // setFile('');
-
     const fileExtension = file?.name ? file?.name?.split('.').pop() : undefined;
     const isVideoExtension = videoExtensions.includes(fileExtension);
 
@@ -287,7 +289,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   useLayoutEffect(() => {
     if (contentUrl) {
       const type = getBase64TypeFromBaseString(contentUrl);
-      setIsVideo(videoExtensions.includes(type));
+      setIsVideo(videoExtensions?.includes(type));
     }
   }, [contentUrl]);
 
@@ -295,21 +297,19 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     <>
       <label
         htmlFor={nameProp}
-        className="font-lg block pb-1 text-sm text-gray-900"
+        className="font-lg block pb-1 text-sm font-bold text-gray-900"
       >
         {label}
         {acceptedFormats && !isThemeFormFile && (
-          <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
+          <span className="font-bold"> ({acceptedFormats?.join(', ')})</span>
         )}
       </label>
 
       {nameProp === FieldType.Image && acceptedFormats?.length > 0 && (
         <p className="text-textMid mb-2 text-sm">
-          Size limit:
-          <span className="text-errorMain font-semibold">
-            {(allowedFileSize / (1024 * 1024))?.toFixed(0)}
-          </span>{' '}
-          MB.
+          Size limit: {(allowedFileSize / (1024 * 1024))?.toFixed(0)} MB. To
+          improve the image position & size, edit the image to fit 360 (width)
+          by 168 (height) pixels before uploading.
         </p>
       )}
 
@@ -377,13 +377,18 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         ) : (
           <div
             className={`${
-              contentUrl ? 'bg-darkBlue' : 'bg-adminPortalBg'
+              contentUrl ? '' : 'bg-adminPortalBg'
             } flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5`}
             style={
               file
                 ? {
                     height: 200,
                     backgroundImage: `url(${file})`,
+                  }
+                : contentUrl
+                ? {
+                    height: 200,
+                    backgroundImage: `url(${contentUrl})`,
                   }
                 : {}
             }
