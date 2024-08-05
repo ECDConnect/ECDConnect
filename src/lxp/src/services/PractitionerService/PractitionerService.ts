@@ -381,7 +381,16 @@ class PractitionerService {
               absenteeId
               loggedByPerson
               loggedByUserId
-          }
+            }
+            permissions {
+              id
+              userId
+              permissionId
+              isActive
+              permissionName
+              permissionNormalizedName
+              permissionGrouping
+            }
           }
         }
       `,
