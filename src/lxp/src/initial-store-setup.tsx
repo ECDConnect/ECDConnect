@@ -301,7 +301,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const getLoadingMessage = () => {
-    let message = 'Loading . . .';
+    let message = 'Waking up the robots';
 
     if (staticDataLoading) {
       message = 'Loading static data . . .';
