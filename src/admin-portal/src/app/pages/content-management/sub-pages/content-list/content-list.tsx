@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useQuery } from '@apollo/client';
+import { gql, useQuery, useLazyQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
@@ -39,7 +39,6 @@ import {
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import ReactDatePicker from 'react-datepicker';
-import { formatDate } from '../../../../utils/date-utils/date-utils';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -71,14 +70,18 @@ export default function ContentList({
 }: ContentListProps) {
   const { hasPermission } = useUser();
   const [tableData, setTableData] = useState<any[]>([]);
+  const [themes, setThemes] = useState<any[]>([]);
+  const [skills, setSkills] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
   const [buttonText, setButtonText] = useState(contentType.name);
-  const [themes, setThemes] = useState([]);
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
   const [typeFilter, setTypeFilter] = useState<SearchDropDownOption<string>[]>(
     []
   );
+  const [skillFilter, setSkillFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
 
   const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
     (item) => ({
@@ -88,6 +91,42 @@ export default function ContentList({
     })
   );
 
+  const getAllTheme = `GetAllTheme`;
+
+  const themeQuery = gql` 
+    query ${getAllTheme} ($localeId: String) {
+      ${getAllTheme} (localeId: $localeId) {
+          id
+          name
+      }
+     }
+  `;
+
+  const [fetchThemeData, { data: themesData }] = useLazyQuery(themeQuery, {
+    fetchPolicy: 'cache-first',
+    variables: {
+      localeId: languageId,
+    },
+  });
+
+  const getAllSkills = `GetAllProgressTrackingSubCategory`;
+
+  const SkillsQuery = gql` 
+    query ${getAllSkills} ($localeId: String) {
+      ${getAllSkills} (localeId: $localeId) {
+          id
+          name
+      }
+     }
+  `;
+
+  const [fetchSkillsData, { data: skillsData }] = useLazyQuery(SkillsQuery, {
+    fetchPolicy: 'cache-first',
+    variables: {
+      localeId: languageId,
+    },
+  });
+
   const sortByThemeOptions: SearchDropDownOption<string>[] = themes?.map(
     (item) => ({
       id: item?.id,
@@ -96,6 +135,13 @@ export default function ContentList({
     })
   );
 
+  const sortBySkillsOptions: SearchDropDownOption<string>[] = skills?.map(
+    (item) => ({
+      id: item?.id,
+      label: item?.name,
+      value: item?.id,
+    })
+  );
   const [themeFilter, setThemeFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
@@ -116,6 +162,10 @@ export default function ContentList({
   const typeFilterValues = useMemo(
     () => typeFilter?.map((item) => item?.value),
     [typeFilter]
+  );
+  const skillFilterValues = useMemo(
+    () => skillFilter?.map((item) => item?.value),
+    [skillFilter]
   );
   const [showFilter, setShowFilter] = useState(false);
 
@@ -147,6 +197,39 @@ export default function ContentList({
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
   }, []);
+
+  useEffect(() => {
+    if (choosedSectionTitle === 'Small/large group activities') {
+      if (!themes || themes?.length === 0) {
+        fetchThemeData();
+      }
+      if (!skills || skills?.length === 0) {
+        fetchSkillsData();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (themesData && themesData[getAllTheme]) {
+      setThemes(
+        themesData[getAllTheme].map((item: any) => ({
+          ...item,
+        }))
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themesData]);
+
+  useEffect(() => {
+    if (skillsData && skillsData[getAllSkills]) {
+      setSkills(
+        skillsData[getAllSkills].map((item: any) => ({
+          ...item,
+        }))
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skillsData]);
 
   useEffect(() => {
     if (contentType && contentType.fields) {
@@ -203,6 +286,7 @@ export default function ContentList({
           id
           name
           imageUrl
+          imageHexColor
         }
         `;
       else if (x?.fieldName === 'themes')
@@ -271,28 +355,21 @@ export default function ContentList({
         if (
           choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
         ) {
-          setTableData(
-            moreInforItems
-              ?.filter(
-                (item) =>
-                  item?.type === 'Small group' || item?.type === 'Large group'
-              )
-              .sort(
-                (a, b) =>
-                  new Date(b.updatedDate).getTime() -
-                  new Date(a.updatedDate).getTime()
-              )
+          const filteredList = moreInforItems?.filter(
+            (item) =>
+              item?.type === 'Small group' || item?.type === 'Large group'
           );
-          const itemsWithThemes = moreInforItems?.filter(
-            (item) => item?.themes != null && item?.themes.length > 0
+          const sortedList = filteredList.sort((a, b) =>
+            new Date(a?.updatedDate).getTime() >
+            new Date(b?.updatedDate).getTime()
+              ? -1
+              : new Date(a?.updatedDate).getTime() <
+                new Date(b?.updatedDate).getTime()
+              ? 1
+              : 0
           );
-          let themeArray = [];
-          itemsWithThemes?.map((x) => {
-            x.themes?.map((y) => {
-              themeArray.push(y);
-            });
-          });
-          setThemes(themeArray);
+          setTableData(sortedList);
+          return;
         }
 
         if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
@@ -375,14 +452,15 @@ export default function ContentList({
   );
 
   const filteredData = useMemo(() => {
-    const filteredByDate = tableData?.filter((d) => {
-      return (
-        new Date(d?.updatedDate).getTime() >= new Date(startDate)?.getTime() &&
-        new Date(d?.updatedDate).getTime() <= new Date(endDate)?.getTime()
-      );
-    });
-
     if (startDate && endDate) {
+      const filteredByDate = tableData?.filter((d) => {
+        return (
+          new Date(d?.updatedDate).getTime() >=
+            new Date(startDate)?.getTime() &&
+          new Date(d?.updatedDate).getTime() <= new Date(endDate)?.getTime()
+        );
+      });
+
       const filteredByType =
         typeFilterValues?.length > 0
           ? filteredByDate?.filter((el) => {
@@ -423,10 +501,28 @@ export default function ContentList({
       return typeFilterValue;
     }
 
+    if (skillFilterValues?.length > 0) {
+      const skillFilterValue = tableData?.filter((el) => {
+        return skillFilterValues?.some((f) => {
+          return el.subCategories?.some((x) => f === x.id);
+        });
+      });
+
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = skillFilterValue.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
+      return skillFilterValue;
+    }
     if (themeFilterValues?.length > 0) {
       const themeFilterValue = tableData?.filter((el) => {
         return themeFilterValues?.some((f) => {
-          return f === el.themes.id;
+          return el.themes?.some((x) => f === x.id);
         });
       });
 
@@ -459,6 +555,7 @@ export default function ContentList({
     tableData,
     startDate,
     typeFilterValues,
+    skillFilterValues,
     themeFilterValues,
   ]);
 
@@ -529,6 +626,7 @@ export default function ContentList({
     setEndDate('');
     setTypeFilter([]);
     setThemeFilter([]);
+    setSkillFilter([]);
     setLanguageFilter([]);
   };
 
@@ -655,7 +753,7 @@ export default function ContentList({
                   />
                 </div>
               )}
-              {(selectedTab === 2 || selectedTab === 3) && (
+              {selectedTab === 3 && (
                 <>
                   <div className="mr-2 flex items-center gap-2">
                     <SearchDropDown<string>
@@ -693,6 +791,26 @@ export default function ContentList({
                       color={'secondary'}
                       info={{
                         name: `Themes:`,
+                      }}
+                      bgColor="adminPortalBg"
+                    />
+                  </div>
+                  <div className="mr-2 flex items-center gap-2">
+                    <SearchDropDown<string>
+                      displayMenuOverlay={true}
+                      className={'mr-1 w-full'}
+                      menuItemClassName={
+                        'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                      }
+                      overlayTopOffset={'120'}
+                      options={sortBySkillsOptions}
+                      selectedOptions={skillFilter}
+                      onChange={setSkillFilter}
+                      placeholder={'Skills'}
+                      multiple={true}
+                      color={'secondary'}
+                      info={{
+                        name: `Skills:`,
                       }}
                       bgColor="adminPortalBg"
                     />
