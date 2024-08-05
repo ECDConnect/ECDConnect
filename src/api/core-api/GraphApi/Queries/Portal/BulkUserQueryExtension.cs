@@ -1,7 +1,5 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
@@ -12,15 +10,12 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
@@ -28,19 +23,17 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
-{
 
-    [ExtendObjectType(OperationTypeNames.Mutation)]
-    public class ImportUserMutationExtension
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+{
+    [ExtendObjectType(OperationTypeNames.Query)]
+    public class BulkUserQueryExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public async Task<UserImportModel> ImportPractitionersAsync(
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public async Task<UserImportModel> ValidatePractitionerImportSheet(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
-          [Service] InvitationNotificationManager notificationManager,
-          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
-          [Service] ILogger<ImportUserMutationExtension> _logger,
           ApplicationUserManager userManager,
           string file)
         {
@@ -57,11 +50,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new QueryException("You do not have permission to use this function.");
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-
             var userImportList = new List<ApplicationUser>();
             var practitionerUsers = new Dictionary<string, Practitioner>();
-            var createdUsers = new List<string>();
-
             var validationErrors = new List<InputValidationError>();
 
             var bytes = Convert.FromBase64String(file);
@@ -197,85 +187,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            // Return errors before trying to create users so the list doesn't need to be diff'd for users that were created.
-            if (validationErrors.Any())
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-
-            rowNum = 0;
-            foreach (var user in userImportList)
-            {
-                rowNum++;
-
-                var created = await userManager.CreateAsync(user);
-
-                if (!created.Succeeded)
-                {
-                    validationErrors.Add(
-                        new InputValidationError(rowNum, new List<string> { $": {string.Join(',', created.Errors.Select(e => e.Description))}" }, "Could not create this user.")
-                        );
-                    continue;
-                }
-
-                IdentityResult addToRoleResult = null;
-                try
-                {
-                    addToRoleResult = await userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
-                }
-                catch (Exception)
-                {
-                    validationErrors.Add(
-                        new InputValidationError(
-                            rowNum,
-                            addToRoleResult?.Errors.Select(e => e.Description),
-                            $"Could not add user to role: {Roles.PRACTITIONER}."));
-                }
-
-                try
-                {
-                    var practitioner = practitionerUsers.First(u => u.Key == user.UserName).Value;
-                    practitioner.UserId = user.Id;
-
-                    practitionerRepo.Insert(practitioner);
-                }
-                catch (Exception)
-                {
-                    validationErrors.Add(new InputValidationError(
-                        rowNum,
-                        addToRoleResult?.Errors?.Select(e => e?.Description?.ToString()),
-                        $"Could not create {Roles.PRACTITIONER}."));
-                    continue;
-                }
-
-                createdUsers.Add(user.UserName);
-
-                try
-                {
-                    var token = await invitationManager.GenerateTokenAsync(user);
-
-                    if (string.IsNullOrWhiteSpace(token))
-                    {
-                        validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
-                        continue;
-                    }
-                    await notificationManager.SendInvitationAsync(user, token);
-                    await Task.Delay(1000);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Could not send invitation to user: {user?.UserName}");
-                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user?.UserName}"));
-                }
-            }
-
             return new UserImportModel()
             {
-                CreatedUsers = createdUsers,
                 ValidationErrors = validationErrors
             };
 
+            
             // Local function
             static List<string> GetPractitionerValidationErrors(
                 string idOrPassport,
@@ -320,19 +237,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         errors.Add("Coach Id is empty or invalid");
                     }
                 }
-
-
                 return errors;
             }
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public async Task<UserImportModel> ImportCoachesAsync(
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public async Task<UserImportModel> ValidateCoachImportSheet(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
-          [Service] InvitationNotificationManager notificationManager,
-          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
-          [Service] ILogger<ImportUserMutationExtension> _logger,
           ApplicationUserManager userManager,
           string file)
         {
@@ -351,9 +263,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var userImportList = new List<ApplicationUser>();
-            var coachUsers = new Dictionary<string, Coach>();
-            var createdUsers = new List<string>();
-
             var validationErrors = new List<InputValidationError>();
 
             var bytes = Convert.FromBase64String(file);
@@ -434,17 +343,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     IsActive = true,
                 };
                 userImportList.Add(user);
-
-                coachUsers.Add(user.UserName,
-                    new Coach()
-                    {
-                        Id = user.Id,
-                        User = user,
-                        IsRegistered = false,
-                        InsertedDate = insertedDate,
-                        TenantId = tenantId,
-                        IsActive = true
-                    });
             }
 
             if (validationErrors.Any())
@@ -470,82 +368,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            // Return errors before trying to create users so the list doesn't need to be diff'd for users that were created.
-            if (validationErrors.Any())
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-
-            rowNum = 0;
-            foreach (var user in userImportList)
-            {
-                rowNum++;
-
-                var created = await userManager.CreateAsync(user);
-
-                if (!created.Succeeded)
-                {
-                    validationErrors.Add(
-                        new InputValidationError(rowNum, new List<string> { $": {string.Join(',', created.Errors.Select(e => e.Description))}" }, "Could not create this user.")
-                        );
-                    continue;
-                }
-
-                IdentityResult addToRoleResult = null;
-                try
-                {
-                    addToRoleResult = await userManager.AddToRoleAsync(user, Roles.COACH);
-                }
-                catch (Exception)
-                {
-                    validationErrors.Add(
-                        new InputValidationError(
-                            rowNum,
-                            addToRoleResult?.Errors.Select(e => e.Description),
-                            $"Could not add user to role: {Roles.COACH}."));
-                }
-
-                try
-                {
-                    var coach = coachUsers.First(u => u.Key == user.UserName).Value;
-                    coach.UserId = user.Id;
-
-                    coachRepo.Insert(coach);
-                }
-                catch (Exception)
-                {
-                    validationErrors.Add(new InputValidationError(
-                        rowNum,
-                        addToRoleResult?.Errors?.Select(e => e?.Description?.ToString()),
-                        $"Could not create {Roles.COACH}."));
-                    continue;
-                }
-
-                createdUsers.Add(user.UserName);
-
-                try
-                {
-                    var token = await invitationManager.GenerateTokenAsync(user);
-
-                    if (string.IsNullOrWhiteSpace(token))
-                    {
-                        validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
-                        continue;
-                    }
-                    await notificationManager.SendInvitationAsync(user, token);
-                    await Task.Delay(1000);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Could not send invitation to user: {user?.UserName}");
-                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user?.UserName}"));
-                }
-            }
-
             return new UserImportModel()
             {
-                CreatedUsers = createdUsers,
                 ValidationErrors = validationErrors
             };
 
@@ -640,7 +464,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return validationErrors;
         }
-
-
     }
 }

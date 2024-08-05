@@ -404,8 +404,8 @@ export default function CreateTheme({
   ) {
     return (
       <div className="flex flex-col rounded-md ">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
-          <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
+          <div className="ml-4 mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 {cancelEdit &&
@@ -427,27 +427,7 @@ export default function CreateTheme({
               )}
             </div>
           </div>
-          <div className="w-full rounded-xl bg-white px-12 pt-6 pb-8">
-            {contentType?.name === 'Consent' ? (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
-                type="info"
-              />
-            ) : contentType?.name === 'Info Pages' ? (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
-                type="info"
-              />
-            ) : (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
-                type="warning"
-              />
-            )}
-
+          <div className="w-full rounded-xl bg-white p-12 px-12 pt-6 pb-8">
             <CreateThemeForm
               template={template}
               handleform={handleform}

@@ -74,7 +74,7 @@
     "apollo-link-token-refresh": "^0.3.3",
     "apollo-upload-client": "^16.0.0",
     "axios": "^0.24.0",
-    "babel-eslint": "^10.1.0",
+    "babel-eslint": "10.1.0",
     "chart.js": "^3.7.0",
     "compressorjs": "^1.0.7",
     "core-js": "^3.6.5",
@@ -199,6 +199,7 @@
     "ansi-html": "^0.0.8",
     "**/postcss-functions/postcss": "^7.0.39",
     "@types/react": "17.0.3",
-    "@yarnpkg/parsers": "3.0.0-rc.46"
+    "@yarnpkg/parsers": "3.0.0-rc.46",
+    "@babel/core": "7.16.0"
   }
 }

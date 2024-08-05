@@ -306,6 +306,7 @@ export default function EditCategory({
               input: {
                 description: item?.description,
                 imageUrl: item?.imageUrl,
+                imageHexColor: item?.imageHexColor,
                 name: item?.name,
                 skills: subCategorySkills,
               },

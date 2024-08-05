@@ -45,7 +45,7 @@ import { InitialAttendanceTutorialModal } from '../attendance/components/attenda
 import { ActivitiesTab } from '../activities/activities';
 import { useTenant } from '@/hooks/useTenant';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
-import { ChildProgressLanding } from '../progress-observation/child-progress-landing/child-progress-landing';
+import { ChildProgressLanding } from '../progress/progress-tab/child-progress-landing';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAppContext } from '@/walkthrougContext';
 import { PractitionerListRouteState } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list.types';
