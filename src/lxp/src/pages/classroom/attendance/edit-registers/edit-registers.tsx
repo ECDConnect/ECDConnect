@@ -41,7 +41,9 @@ export const EditRegisters = () => {
   const daysWithAttendance = monthlyReport?.totalAttendance?.filter((day) =>
     isCurrentMonth
       ? day.value !== null
-      : day.key >= thirtyDaysAgoDay && day.value > 0
+      : day.key >= thirtyDaysAgoDay &&
+        day.value > 0 &&
+        day.key <= today.getDate()
   );
   const reportPerDay = daysWithAttendance?.map((day) => {
     const itemsPerDay = monthlyReport?.classroomAttendanceReport?.filter(
