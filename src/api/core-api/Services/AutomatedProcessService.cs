@@ -33,8 +33,12 @@ namespace EcdLink.Api.CoreApi.Services
 
         public void ProcessPractitionerRemovals()
         {
+            var today = DateTime.Now.Date;
+
+            today.AddDays(1).AddSeconds(-1);
+
             var removals = _removalRepo.GetAll()
-                .Where(x => x.IsActive && x.DateOfRemoval < DateTime.Now.GetEndOfDay())
+                .Where(x => x.IsActive && x.DateOfRemoval < today)
                 .ToList();
 
             foreach (var removal in removals)
