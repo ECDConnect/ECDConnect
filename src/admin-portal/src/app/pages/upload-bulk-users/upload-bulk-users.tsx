@@ -15,7 +15,7 @@ import {
   PaperAirplaneIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
-import { Alert, Button } from '@ecdlink/ui';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 import { useTenant } from '../../hooks/useTenant';
 import { pluralize } from '../pages.utils';
 
@@ -236,7 +236,7 @@ export default function UploadBulkUser(props: any) {
         </div>
 
         <div className="flex flex-row">
-          <div className="w-6/12 rounded-md bg-white p-16">
+          <div className="w-full rounded-md bg-white p-16">
             <form onSubmit={handleSubmit(onSubmit)} className=" ">
               <div className="pt-4 pb-8">
                 <div className="sm:col-span-12">
@@ -271,20 +271,26 @@ export default function UploadBulkUser(props: any) {
             </form>
 
             {docErrors.length > 0 ? (
-              <Alert
-                className="mt-5 mb-3 rounded-md"
-                message={`Error`}
-                type="error"
-                list={docErrors.map(
-                  (error) =>
-                    'Row ' +
-                    error?.row +
-                    ':' +
-                    '</br>' +
-                    (error.errors?.length ? error.errors.join('</br>') : '')
-                )}
-                listColor="errorMain"
-              />
+              <div>
+                <Typography
+                  type={'body'}
+                  hasMarkup
+                  text={
+                    'Try downloading the template again and follow the instructions.'
+                  }
+                  className={'mt-5'}
+                  color={'textMid'}
+                />
+                <Alert
+                  className="mt-2 mb-3 rounded-md"
+                  title={`${docErrors?.length} issues with your upload:`}
+                  type="error"
+                  list={docErrors.map(
+                    (error) => `Row ${error.row}: ${error?.errorDescription}`
+                  )}
+                  listColor="textDark"
+                />
+              </div>
             ) : null}
           </div>
           <div></div>
