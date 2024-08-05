@@ -45,7 +45,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             }
 
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
-            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
             if (!userIsAdmin)
                 throw new QueryException("You do not have permission to use this function.");
 
@@ -256,14 +256,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             }
 
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
-            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
             if (!userIsAdmin)
                 throw new QueryException("You do not have permission to use this function.");
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var userImportList = new List<ApplicationUser>();
-            var coachUsers = new Dictionary<string, Coach>();
             var validationErrors = new List<InputValidationError>();
 
             var bytes = Convert.FromBase64String(file);
@@ -344,17 +343,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     IsActive = true,
                 };
                 userImportList.Add(user);
-
-                coachUsers.Add(user.UserName,
-                    new Coach()
-                    {
-                        Id = user.Id,
-                        User = user,
-                        IsRegistered = false,
-                        InsertedDate = insertedDate,
-                        TenantId = tenantId,
-                        IsActive = true
-                    });
             }
 
             if (validationErrors.Any())

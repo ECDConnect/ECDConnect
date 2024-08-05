@@ -52,7 +52,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
-            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
             if (!userIsAdmin)
                 throw new QueryException("You do not have permission to use this function.");
 
@@ -344,7 +344,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
-            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
             if (!userIsAdmin)
                 throw new QueryException("You do not have permission to use this function.");
 
