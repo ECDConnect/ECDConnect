@@ -7,7 +7,6 @@ import {
   UseFormSetValue,
 } from 'react-hook-form';
 import FormFileInput from '../../../../form-file-input/form-file-input';
-import { useTheme } from '@ecdlink/core';
 import { useEffect } from 'react';
 import darkLogo from '../../../../../../assets/Logo-ECDConnect.svg';
 import lightLogo from '../../../../../../assets/Logo-ECDConnect-white.svg';
@@ -20,12 +19,7 @@ interface StepProps {
   getValues?: UseFormGetValues<any>;
 }
 
-export const Step3: React.FC<StepProps> = ({
-  register,
-  errors,
-  setValue,
-  getValues,
-}) => {
+export const Step3: React.FC<StepProps> = ({ setValue, getValues }) => {
   const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
   const icoAcceptFormat = ['ico'];
   const allowedFileSize = 13631488;
@@ -81,7 +75,8 @@ export const Step3: React.FC<StepProps> = ({
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
-            contentUrl={getValues()?.darkVersionLogo}
+            contentUrl={getValues()?.darkVersionLogo || darkLogo}
+            isWizardComponent={true}
           />
         </div>
         <div>
@@ -112,7 +107,8 @@ export const Step3: React.FC<StepProps> = ({
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
-            contentUrl={getValues()?.lightVersionLogo}
+            contentUrl={getValues()?.lightVersionLogo || lightLogo}
+            isWizardComponent={true}
           />
         </div>
         <div>
@@ -139,7 +135,8 @@ export const Step3: React.FC<StepProps> = ({
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
-            contentUrl={getValues()?.favicon}
+            contentUrl={getValues()?.favicon || favicon}
+            isWizardComponent={true}
           />
         </div>
       </div>

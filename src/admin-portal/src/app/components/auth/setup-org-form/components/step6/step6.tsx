@@ -232,6 +232,7 @@ export const Step6: React.FC<StepProps> = ({
           nameProp={item?.propName}
           infoIcon={
             <div
+              key={item?.title + Math.random()}
               onClick={(e) => {
                 handleInfoClick(e, item?.modalTitle, item?.modalText);
               }}

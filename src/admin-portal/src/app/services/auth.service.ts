@@ -10,6 +10,7 @@ import {
 } from '@ecdlink/core';
 import { api } from '../utils/axios.helper';
 import { AxiosResponse } from 'axios';
+import { SetupOrgModel } from '../schemas/setup-org';
 
 export interface DataError {
   errorCode?: number;
@@ -180,6 +181,28 @@ export async function GetCurrentTenant(
 ): Promise<TenantModel | null> {
   const response = await api(baseEndPoint)
     .get(APIs.tenantCurrent, {
+      headers: headers,
+    })
+    .catch(handlerError);
+
+  if (response.status < 300) return response.data;
+  return null;
+}
+
+export async function ValidateNewTenant(baseEndPoint: string, body: string) {
+  const response = await api(baseEndPoint)
+    .post(APIs.validateNewTenant, JSON.stringify(body), {
+      headers: headers,
+    })
+    .catch(handlerError);
+
+  if (response.status < 300) return response.data;
+  return null;
+}
+
+export async function AddTenantSetupInfo(baseEndPoint: string, body: string) {
+  const response = await api(baseEndPoint)
+    .post(APIs.addTenantSetupInfo, JSON.stringify(body), {
       headers: headers,
     })
     .catch(handlerError);

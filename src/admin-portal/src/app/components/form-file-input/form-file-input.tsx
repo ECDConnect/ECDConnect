@@ -43,10 +43,8 @@ export interface FormFileInputProps {
   onChange?: (item: any) => void;
   isThemeFormFile?: boolean;
   isVideoInput?: boolean;
+  isWizardComponent?: boolean;
 }
-
-const containerBaseStyle =
-  'w-4/12 relative flex flex-col justify-center items-center block border-2 border-dashed rounded-lg text-center focus:outline-none focus:ring-2 hover:border-uiLight';
 
 const containerStyle = 'border-uiLight';
 const fileContainerStyle = 'border-successMain';
@@ -75,6 +73,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   onChange,
   isThemeFormFile,
   isVideoInput,
+  isWizardComponent,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -97,6 +96,9 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   const isPdfExtension = acceptedFormats?.some((format) =>
     format.toLowerCase().includes('pdf')
   );
+  const containerBaseStyle = `${
+    isWizardComponent ? 'w-8/12' : 'w-4/12'
+  } relative flex flex-col justify-center items-center block border-2 border-dashed rounded-lg text-center focus:outline-none focus:ring-2 hover:border-uiLight`;
 
   useEffect(() => {
     if (acceptedFormats?.length > 0 && uploadTypes === '') {
@@ -202,7 +204,6 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                     fileName: file?.name,
                   }
             );
-            console.log(reader.result?.toString());
             setFile(reader.result?.toString() ?? '');
             setLoading(false);
           };

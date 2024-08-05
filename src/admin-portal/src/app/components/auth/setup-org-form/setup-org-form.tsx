@@ -1,10 +1,16 @@
-import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Dialog,
+  DialogPosition,
+  Typography,
+} from '@ecdlink/ui';
 import { Step1 } from './components/step1/step1';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { setuOrgSchema, setupOrgValues } from '../../../schemas/setup-org';
-import { useTheme } from '@ecdlink/core';
+import { Config, useTheme } from '@ecdlink/core';
 import { Step2 } from './components/step2/step2';
 import { Step3 } from './components/step3/step3';
 import { Step4 } from './components/step4/step4';
@@ -12,6 +18,8 @@ import { Step5 } from './components/step5/step5';
 import { Step6 } from './components/step6/step6';
 import { Step7 } from './components/step7/step7';
 import { Step8 } from './components/step8/step8';
+import { AddTenantSetupInfo } from '../../../services/auth.service';
+import { ConfirmationScreen } from './components/confirmation-screen/confirmation-screen';
 
 export const SetupOrgForm = () => {
   const { theme } = useTheme();
@@ -25,6 +33,8 @@ export const SetupOrgForm = () => {
     [step]
   );
   const [disableButton, setDisableButton] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [openConfirmationScreen, setOpenConfirmationScreen] = useState(false);
 
   const { register, getValues, setValue, formState, control } = useForm({
     resolver: yupResolver(setuOrgSchema),
@@ -54,6 +64,19 @@ export const SetupOrgForm = () => {
       setStep(step - 1);
     }
   };
+
+  const addNewTenant = useCallback(async () => {
+    setIsLoading(true);
+    const addNewTenant = await AddTenantSetupInfo(
+      Config.authApi,
+      JSON.stringify(getValues())
+    );
+
+    if (addNewTenant?.id) {
+      setOpenConfirmationScreen(true);
+    }
+    setIsLoading(false);
+  }, [getValues]);
 
   const renderStep = (step: number) => {
     switch (step) {
@@ -145,6 +168,7 @@ export const SetupOrgForm = () => {
         );
     }
   };
+
   return (
     <BannerWrapper
       size={'normal'}
@@ -166,8 +190,9 @@ export const SetupOrgForm = () => {
             color="secondary"
             textColor="white"
             text={renderButtonText}
-            disabled={disableButton}
-            onClick={() => handleNextStep()}
+            disabled={disableButton || isLoading}
+            isLoading={isLoading}
+            onClick={step === 8 ? () => addNewTenant() : () => handleNextStep()}
           />
           {step === 3 && (
             <Button
@@ -200,9 +225,19 @@ export const SetupOrgForm = () => {
               textColor="secondary"
               text={'Edit my responses'}
               onClick={() => setStep(1)}
+              disabled={isLoading}
+              isLoading={isLoading}
             />
           )}
         </div>
+        <Dialog
+          stretch={true}
+          visible={openConfirmationScreen}
+          position={DialogPosition.Full}
+          fullScreen
+        >
+          <ConfirmationScreen orgName={getValues()?.organisationName} />
+        </Dialog>
       </div>
     </BannerWrapper>
   );

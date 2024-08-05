@@ -10,8 +10,8 @@ import {
 } from 'react-hook-form';
 import { SetupOrgModel } from '../../../../../schemas/setup-org';
 import { useCallback, useEffect, useState } from 'react';
-import { useLazyQuery } from '@apollo/client';
-import { verifyUrl } from '@ecdlink/graphql';
+import { ValidateNewTenant } from '../../../../../services/auth.service';
+import { Config } from '@ecdlink/core';
 
 interface StepProps {
   setValue: UseFormSetValue<any>;
@@ -33,16 +33,21 @@ export const Step2: React.FC<StepProps> = ({
   const [urlError, setUrlError] = useState('');
   const urlRegex = /^[a-zA-Z0-9-]*$/;
   const checkUrl = urlRegex.test(getValues()?.applicationUrl);
-  const defaultUrl = `${getValues()?.applicationName.replace(
-    /\s/g,
-    '-'
-  )}-connect`;
+  const defaultUrl = `${getValues()
+    ?.applicationName?.toLocaleLowerCase()
+    .replace(/\s/g, '-')}-connect`;
   const { applicationUrl } = useWatch({ control });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const hyphenRegex = /^-|-$/;
+  const [isURLAvailable, setIsURLAvailable] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (getValues()?.applicationName) {
+    handleCheckUrl();
+  }, []);
+
+  useEffect(() => {
+    if (getValues()?.applicationName && !getValues()?.applicationUrl) {
       setValue('applicationUrl', defaultUrl);
     }
   }, [defaultUrl, getValues, setValue]);
@@ -66,26 +71,21 @@ export const Step2: React.FC<StepProps> = ({
     }
   }, [checkUrl, getValues, hyphenRegex]);
 
-  // TODO: Add check url name integration
-  //console.log(/^[aA-zZ0-9-]+$/g.test(getValues()?.applicationUrl));
+  const handleCheckUrl = useCallback(async () => {
+    setIsLoading(true);
+    const isValidURL = await ValidateNewTenant(
+      Config.authApi,
+      getValues()?.applicationUrl
+    );
 
-  // const [checkUrlQuery, { data: urlCheck, loading: checkUrlLoading }] =
-  //   useLazyQuery(verifyUrl, {
-  //     variables: {
-  //       applicationName: '',
-  //     },
-  //     fetchPolicy: 'network-only',
-  //   });
-
-  // console.log({ urlCheck });
-
-  // const handleCheckUrl = useCallback(() => {
-  //   checkUrlQuery({
-  //     variables: {
-  //       applicationName: getValues().appUrl,
-  //     },
-  //   });
-  // }, [checkUrlQuery, getValues]);
+    if (isValidURL === false) {
+      setUrlError('Sorry this name is taken! Please try a different name.');
+    } else {
+      setIsURLAvailable(true);
+      setDisableButton(false);
+    }
+    setIsLoading(false);
+  }, [getValues, setDisableButton]);
 
   return (
     <div>
@@ -126,6 +126,8 @@ export const Step2: React.FC<StepProps> = ({
           value={getValues()?.applicationUrl}
           onChange={(e) => {
             setUrlError('');
+            setIsURLAvailable(false);
+            setDisableButton(true);
             setValue('appUrl', e?.target?.value?.replace(/[^a-zA-Z0-9-]/g, ''));
           }}
         />
@@ -137,14 +139,23 @@ export const Step2: React.FC<StepProps> = ({
         />
       </div>
       {urlError && <Typography type="help" color="errorMain" text={urlError} />}
+      {isURLAvailable && (
+        <Alert
+          title={`${applicationUrl}  is available!`}
+          type={'success'}
+          className="my-4"
+        />
+      )}
       <Button
         className={'mt-6 rounded-xl px-2'}
         type="outlined"
         color="tertiary"
-        onClick={() => {}}
+        onClick={() => handleCheckUrl()}
         icon="SearchIcon"
         textColor="tertiary"
         text="Check if available"
+        disabled={isLoading}
+        isLoading={isLoading}
       ></Button>
     </div>
   );

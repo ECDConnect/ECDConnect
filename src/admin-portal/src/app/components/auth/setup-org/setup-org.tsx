@@ -162,7 +162,7 @@ export const SetupOrg = () => {
               color="secondary"
               textColor="white"
               text="Start"
-              disabled={false}
+              disabled={!acceptIndividualTerms || !acceptOrganisationalTerms}
               onClick={() => history.push(ROUTES.SETUP_ORG_FORM)}
             />
           </div>
