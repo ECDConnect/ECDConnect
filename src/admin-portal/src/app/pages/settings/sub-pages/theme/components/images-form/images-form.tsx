@@ -7,7 +7,7 @@ const acceptedFormats = ['svg', 'png', 'PNG'];
 
 export function ImagesForm({ setValue }: FormComponentProps<ThemeImages>) {
   const { theme } = useTheme();
-
+  console.log({ theme });
   return (
     <form key={`themeimagesForm:${new Date().getTime()}`}>
       <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">

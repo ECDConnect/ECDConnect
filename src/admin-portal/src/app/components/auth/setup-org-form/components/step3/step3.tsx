@@ -7,6 +7,11 @@ import {
   UseFormSetValue,
 } from 'react-hook-form';
 import FormFileInput from '../../../../form-file-input/form-file-input';
+import { useTheme } from '@ecdlink/core';
+import { useEffect } from 'react';
+import darkLogo from '../../../../../../assets/Logo-ECDConnect.svg';
+import lightLogo from '../../../../../../assets/Logo-ECDConnect-white.svg';
+import favicon from '../../../../../../assets/favicon.ico';
 
 interface StepProps {
   setValue: UseFormSetValue<any>;
@@ -24,6 +29,14 @@ export const Step3: React.FC<StepProps> = ({
   const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
   const icoAcceptFormat = ['ico'];
   const allowedFileSize = 13631488;
+
+  useEffect(() => {
+    if (!getValues()?.darkLogo) {
+      setValue('favicon', favicon);
+      setValue('darkVersionLogo', darkLogo);
+      setValue('lightVersionLogo', lightLogo);
+    }
+  }, []);
   return (
     <div>
       <div className="mt-12 flex flex-col gap-2">
@@ -64,7 +77,7 @@ export const Step3: React.FC<StepProps> = ({
             label={''}
             hideAcceptedFormats={true}
             nameProp={'darkVersionLogo'}
-            returnFullUrl={false}
+            returnFullUrl={true}
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
@@ -95,7 +108,7 @@ export const Step3: React.FC<StepProps> = ({
             label={''}
             hideAcceptedFormats={true}
             nameProp={'lightVersionLogo'}
-            returnFullUrl={false}
+            returnFullUrl={true}
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
@@ -121,12 +134,12 @@ export const Step3: React.FC<StepProps> = ({
             acceptedFormats={icoAcceptFormat}
             label={''}
             hideAcceptedFormats={true}
-            nameProp={'favico'}
-            returnFullUrl={false}
+            nameProp={'favicon'}
+            returnFullUrl={true}
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
-            contentUrl={getValues()?.favico}
+            contentUrl={getValues()?.favicon}
           />
         </div>
       </div>

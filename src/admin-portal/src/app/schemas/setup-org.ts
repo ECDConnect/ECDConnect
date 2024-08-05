@@ -1,16 +1,13 @@
 import * as Yup from 'yup';
-import darkLogo from '../../assets/Logo-ECDConnect.svg';
-import lightLogo from '../../assets/Logo-ECDConnect-white.svg';
-import favicon from '../../assets/favicon.ico';
 
 export const setupOrgValues = {
-  orgName: '',
-  catchyName: '',
-  orgEmail: '',
-  appUrl: '',
-  darkVersionLogo: darkLogo,
-  lightVersionLogo: lightLogo,
-  favico: favicon,
+  organisationName: '',
+  applicationName: '',
+  organisationEmail: '',
+  applicationUrl: '',
+  darkVersionLogo: '',
+  lightVersionLogo: '',
+  favicon: '',
   primaryColor: '#27385A',
   primaryAccent1: '',
   primaryAccent2: '',
@@ -65,13 +62,13 @@ export const setupOrgValues = {
 };
 
 export interface SetupOrgModel {
-  orgName: string;
-  catchyName: string;
-  orgEmail: string;
-  appUrl: string;
+  organisationName: string;
+  applicationName: string;
+  organisationEmail: string;
+  applicationUrl: string;
   darkVersionLogo: string;
   lightVersionLogo: string;
-  favico: string;
+  favicon: string;
   primaryColor: string;
   primaryAccent1: string;
   primaryAccent2: string;
@@ -126,13 +123,15 @@ export interface SetupOrgModel {
 }
 
 export const setuOrgSchema = Yup.object().shape({
-  orgName: Yup.string().required('Name is required'),
-  catchyName: Yup.string(),
-  orgEmail: Yup.string().email('Invalid email').required('Email is required'),
-  appUrl: Yup.string().required('URL is required'),
+  organisationName: Yup.string().required('Name is required'),
+  applicationName: Yup.string(),
+  organisationEmail: Yup.string()
+    .email('Invalid email')
+    .required('Email is required'),
+  applicationUrl: Yup.string().required('URL is required'),
   darkVersionLogo: Yup.string(),
   lightVersionLogo: Yup.string(),
-  favico: Yup.string(),
+  favicon: Yup.string(),
   superAdmin1FirstName: Yup.string().required('First name is required!'),
   superAdmin1Surname: Yup.string().required('Surname is required!'),
   superAdmin1Email: Yup.string()

@@ -24,14 +24,16 @@ export const Step1: React.FC<StepProps> = ({
   control,
   setDisableButton,
 }) => {
-  const { orgName, catchyName, orgEmail } = useWatch({
+  const { organisationName, applicationName, organisationEmail } = useWatch({
     control: control,
   });
-  console.log({ orgName, catchyName, orgEmail });
-  console.log({ errors });
+
   const disableButton =
-    !orgName || !catchyName || !orgEmail || errors?.orgEmail;
-  console.log({ disableButton });
+    !organisationName ||
+    !applicationName ||
+    !organisationEmail ||
+    errors?.orgEmail;
+
   useEffect(() => {
     setDisableButton(disableButton);
   }, [disableButton, setDisableButton]);
@@ -51,7 +53,7 @@ export const Step1: React.FC<StepProps> = ({
         <FormInput<SetupOrgModel>
           label={'Organisation name *'}
           visible={true}
-          nameProp={'orgName'}
+          nameProp={'organisationName'}
           register={register}
           error={errors['orgName']}
           placeholder={'Organisation name'}
@@ -62,7 +64,7 @@ export const Step1: React.FC<StepProps> = ({
           label={'Rename the app *'}
           subLabel={`Optional. Enter a catchy name for your app. This name will be seen by all your app users, including principals and practitioners.`}
           visible={true}
-          nameProp={'catchyName'}
+          nameProp={'applicationName'}
           register={register}
           error={errors['idField']}
           placeholder={'ECD Connect'}
@@ -75,7 +77,7 @@ export const Step1: React.FC<StepProps> = ({
           }
           subLabel={`You can update this email address on the admin portal at any time.`}
           visible={true}
-          nameProp={'orgEmail'}
+          nameProp={'organisationEmail'}
           register={register}
           error={errors['orgEmail']}
           placeholder={'ECD Connect'}

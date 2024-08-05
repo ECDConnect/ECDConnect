@@ -20,7 +20,7 @@ export const Step1: React.FC<StepProps> = ({ getValues }) => {
         <Typography
           type="body"
           color="textDark"
-          text={getValues().orgName || 'None'}
+          text={getValues().organisationName || 'None'}
         />
       </div>
       <div>
@@ -33,7 +33,7 @@ export const Step1: React.FC<StepProps> = ({ getValues }) => {
         <Typography
           type="body"
           color="textDark"
-          text={getValues().catchyName || 'None'}
+          text={getValues().applicationName || 'None'}
         />
       </div>
       <div>
@@ -46,7 +46,7 @@ export const Step1: React.FC<StepProps> = ({ getValues }) => {
         <Typography
           type="body"
           color="textDark"
-          text={getValues().orgEmail || 'None'}
+          text={getValues()?.organisationEmail || 'None'}
         />
       </div>
     </div>

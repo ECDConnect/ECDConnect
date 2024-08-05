@@ -204,6 +204,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                     fileName: file?.name,
                   }
             );
+            console.log(reader.result?.toString());
             setFile(reader.result?.toString() ?? '');
             setLoading(false);
           };
@@ -289,7 +290,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   useLayoutEffect(() => {
     if (contentUrl) {
       const type = getBase64TypeFromBaseString(contentUrl);
-      setIsVideo(videoExtensions.includes(type));
+      setIsVideo(videoExtensions?.includes(type));
     }
   }, [contentUrl]);
 

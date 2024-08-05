@@ -29,7 +29,7 @@ export const Step3: React.FC<StepProps> = ({ getValues }) => {
           </div>
           <div className="border-primary rounded-md border">
             <img
-              src={getValues().favico}
+              src={getValues().favicon}
               alt="dark logo"
               className="h-48 w-48"
             />

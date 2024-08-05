@@ -9,7 +9,9 @@ import {
   useWatch,
 } from 'react-hook-form';
 import { SetupOrgModel } from '../../../../../schemas/setup-org';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useLazyQuery } from '@apollo/client';
+import { verifyUrl } from '@ecdlink/graphql';
 
 interface StepProps {
   setValue: UseFormSetValue<any>;
@@ -30,28 +32,31 @@ export const Step2: React.FC<StepProps> = ({
 }) => {
   const [urlError, setUrlError] = useState('');
   const urlRegex = /^[a-zA-Z0-9-]*$/;
-  const checkUrl = urlRegex.test(getValues()?.appUrl);
-  const defaultUrl = `${getValues()?.catchyName.replace(/\s/g, '-')}-connect`;
-  const { appUrl } = useWatch({ control });
+  const checkUrl = urlRegex.test(getValues()?.applicationUrl);
+  const defaultUrl = `${getValues()?.applicationName.replace(
+    /\s/g,
+    '-'
+  )}-connect`;
+  const { applicationUrl } = useWatch({ control });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const hyphenRegex = /^-|-$/;
 
   useEffect(() => {
-    if (getValues().catchyName) {
-      setValue('appUrl', defaultUrl);
+    if (getValues()?.applicationName) {
+      setValue('applicationUrl', defaultUrl);
     }
   }, [defaultUrl, getValues, setValue]);
 
   useEffect(() => {
-    if (urlError || !appUrl) {
+    if (urlError || !applicationUrl) {
       setDisableButton(true);
     } else {
       setDisableButton(false);
     }
-  }, [appUrl, setDisableButton, urlError]);
+  }, [applicationUrl, setDisableButton, urlError]);
 
   useEffect(() => {
-    if (hyphenRegex.test(getValues()?.appUrl)) {
+    if (hyphenRegex.test(getValues()?.applicationUrl)) {
       setUrlError(
         'Oops! The URL cannot end with a hyphen. Please update the URL.'
       );
@@ -61,8 +66,8 @@ export const Step2: React.FC<StepProps> = ({
     }
   }, [checkUrl, getValues, hyphenRegex]);
 
-  //TODO: Add check url name integration
-  // console.log(/^[aA-zZ0-9-]+$/g.test(getValues()?.appUrl));
+  // TODO: Add check url name integration
+  //console.log(/^[aA-zZ0-9-]+$/g.test(getValues()?.applicationUrl));
 
   // const [checkUrlQuery, { data: urlCheck, loading: checkUrlLoading }] =
   //   useLazyQuery(verifyUrl, {
@@ -110,7 +115,7 @@ export const Step2: React.FC<StepProps> = ({
           label={'App url *'}
           subLabel="The URL must be unique"
           visible={true}
-          nameProp={'appUrl'}
+          nameProp={'applicationUrl'}
           register={register}
           error={urlError as unknown as FieldError}
           placeholder={'MyApp'}
@@ -118,7 +123,7 @@ export const Step2: React.FC<StepProps> = ({
           isAdminPortalField={true}
           maxCharacters={30}
           maxLength={30}
-          value={getValues()?.appUrl}
+          value={getValues()?.applicationUrl}
           onChange={(e) => {
             setUrlError('');
             setValue('appUrl', e?.target?.value?.replace(/[^a-zA-Z0-9-]/g, ''));
