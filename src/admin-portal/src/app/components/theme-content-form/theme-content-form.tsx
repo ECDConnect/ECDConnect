@@ -9,10 +9,12 @@ import {
   Dropdown,
   SearchDropDownOption,
   Typography,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
+import { DropDownFillType } from '../dropdown/models/DropDownOption';
 
 export interface DynamicSelectorProps {
   contentValue?: ContentValueDto;
@@ -29,30 +31,22 @@ const smallLargeActivitiesQuery = gql`
   query GetAllActivity($localeId: String) {
     GetAllActivity(localeId: $localeId) {
       id
+      shareContent
       availableLanguages {
         id
-        __typename
       }
       subCategories {
         id
         name
-        imageUrl
-        __typename
       }
       themes {
         id
         name
-        imageUrl
-        color
       }
-      notes
-      materials
       subType
       type
       description
       name
-      image
-      __typename
     }
   }
 `;
@@ -101,6 +95,18 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     optionDefinition?.fields?.map((x) => {
       if (x.dataType !== FieldType.Link && x.dataType !== FieldType.StaticLink)
         return x.name;
+      else if (
+        x.name === 'smallGroupActivity' ||
+        x.name === 'largeGroupActivity' ||
+        x.name === 'storyActivity' ||
+        x.name === 'storyBook'
+      )
+        return `
+        ${x.name} {
+          id
+          shareContent
+        }
+      `;
       else
         return `
       ${x.name} {
@@ -121,6 +127,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   const [handleInitialState, setHandleInitialState] = useState(true);
   const [currentThemeDaysArr, setCurrentThemeDaysArr] = useState([]);
   const [themeDaysArr, setThemeDaysArr] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (themeDaysArr?.length > 0) {
@@ -250,6 +257,31 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     }
   };
 
+  const getFillType = (idx, storyType) => {
+    let tempArray = [...themeDaysArr];
+
+    let item = { ...tempArray[idx] };
+    const activity =
+      storyType === ThemeStoryTypes?.smallGroup
+        ? item?.smallGroupActivity?.[0]
+        : storyType === ThemeStoryTypes?.largeGroup
+        ? item?.largeGroupActivity?.[0]
+        : storyType === ThemeStoryTypes?.storyActivity
+        ? item?.storyActivity?.[0]
+        : storyType === ThemeStoryTypes?.storyBook
+        ? item?.storyBook?.[0]
+        : null;
+
+    if (
+      activity?.shareContent === null ||
+      activity?.shareContent === '' ||
+      activity?.shareContent === 'false'
+    ) {
+      return 'outlined' as DropDownFillType;
+    }
+    return 'filled' as DropDownFillType;
+  };
+
   const handleGroupChange = (e, idx, storyType) => {
     let tempArray = [...themeDaysArr];
 
@@ -290,6 +322,12 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
       setThemeDaysArr(currentThemeDaysArr);
     }
   }, [currentThemeDaysArr]);
+
+  useEffect(() => {
+    if (themeDaysArr?.length > 0) {
+      setLoading(false);
+    }
+  }, [themeDaysArr]);
 
   if (tempData && displayFields) {
     if (isSkillType) {
@@ -347,299 +385,276 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
         </div>
       );
     }
-    return (
-      <div>
-        <Typography
-          type={'body'}
-          weight={'bold'}
-          color={'textMid'}
-          text={'Choose activities for each theme day *'}
-        />
-        {(title === 'C T F35 - theme Days' || title === 'theme Days') && (
-          <Typography
-            type={'body'}
-            color={'textMid'}
-            text={
-              'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
-            }
-          />
-        )}
-
-        <div className="mt-4 sm:rounded-lg">
-          {tableData &&
-            themeDaysArr &&
-            smallGroupOptions &&
-            largeGroupOptions &&
-            storyBookOptions &&
-            storyTimeOptions &&
-            tableData.map((item: any, idx: number) => (
-              <>
-                <div
-                  className="flex items-center justify-center"
-                  key={'theme_' + idx}
-                >
-                  <Typography
-                    type={'body'}
-                    text={`Day ${idx + 1}`}
-                    weight="normal"
-                    color={'textDark'}
-                    className={`${idx === 0 ? 'mt-8' : ''} w-1/12`}
-                  />
-                  <div className="grid grid-cols-4 gap-2">
-                    <div>
-                      {idx === 0 && (
-                        <Typography
-                          type={'h4'}
-                          text={'Small group activity'}
-                          weight="normal"
-                          color={'textDark'}
-                          className="my-2"
-                        />
-                      )}
-                      <Dropdown<any>
-                        placeholder={'Type to search...'}
-                        list={smallGroupOptions}
-                        fillType={
-                          themeDaysArr &&
-                          themeDaysArr?.[idx]?.idx === idx &&
-                          'smallGroupActivity' in themeDaysArr?.[idx]
-                            ? 'filled'
-                            : 'outlined'
-                        }
-                        fillColor={
-                          themeDaysArr &&
-                          themeDaysArr?.[idx]?.idx === idx &&
-                          'smallGroupActivity' in themeDaysArr?.[idx]
-                            ? 'adminPortalBg'
-                            : 'errorMain'
-                        }
-                        textColor="textLight"
-                        fullWidth
-                        className={`textDark h-full w-48 px-0`}
-                        selectedValue={
-                          smallGroupOptions?.filter(
-                            (option) =>
-                              option?.id ===
-                              themeDaysArr?.[idx]?.smallGroupActivity?.[0]?.id
-                          )?.length > 0
-                            ? smallGroupOptions?.find(
-                                (option) =>
-                                  option?.id ===
-                                  themeDaysArr?.[idx]?.smallGroupActivity?.[0]
-                                    ?.id
-                              ).id
-                            : smallGroupOptions?.find(
-                                (option) =>
-                                  option?.id ===
-                                  themeDaysArr?.[idx]?.smallGroupActivity
-                              )?.id
-                        }
-                        showSearch
-                        onChange={(e: string | string[]) => {
-                          const newItem = smallGroupOptions?.filter(
-                            (item) => item?.id === e
-                          );
-                          handleGroupChange(
-                            newItem,
-                            idx,
-                            ThemeStoryTypes?.smallGroup
-                          );
-                        }}
-                      />
-                    </div>
-                    <div>
-                      {idx === 0 && (
-                        <Typography
-                          type={'h4'}
-                          text={'Large group activity'}
-                          weight="normal"
-                          color={'textDark'}
-                          className="my-2"
-                        />
-                      )}
-                      <Dropdown<any>
-                        placeholder={'Type to search...'}
-                        list={largeGroupOptions}
-                        fillType={
-                          themeDaysArr &&
-                          themeDaysArr?.[idx]?.idx === idx &&
-                          'largeGroupActivity' in themeDaysArr?.[idx]
-                            ? 'filled'
-                            : 'outlined'
-                        }
-                        fillColor={
-                          themeDaysArr &&
-                          themeDaysArr?.[idx]?.idx === idx &&
-                          'largeGroupActivity' in themeDaysArr?.[idx]
-                            ? 'adminPortalBg'
-                            : 'errorMain'
-                        }
-                        textColor="textDark"
-                        fullWidth
-                        className="text-textDark h-full w-48"
-                        selectedValue={
-                          largeGroupOptions?.filter(
-                            (option) =>
-                              option?.id ===
-                              themeDaysArr?.[idx]?.largeGroupActivity?.[0]?.id
-                          )?.length > 0
-                            ? largeGroupOptions?.find(
-                                (option) =>
-                                  option?.id ===
-                                  themeDaysArr?.[idx]?.largeGroupActivity?.[0]
-                                    ?.id
-                              ).id
-                            : largeGroupOptions?.find(
-                                (option) =>
-                                  option?.id ===
-                                  themeDaysArr?.[idx]?.largeGroupActivity
-                              )?.id
-                        }
-                        showSearch
-                        onChange={(e: string | string[]) => {
-                          const newItem = largeGroupOptions?.filter(
-                            (item) => item?.id === e
-                          );
-                          handleGroupChange(
-                            newItem,
-                            idx,
-                            ThemeStoryTypes?.largeGroup
-                          );
-                        }}
-                      />
-                    </div>
-                    <div>
-                      {idx === 0 && (
-                        <Typography
-                          type={'h4'}
-                          text={'Story'}
-                          weight="normal"
-                          color={'textDark'}
-                          className="my-2"
-                        />
-                      )}
-                      <Dropdown<any>
-                        placeholder={'Type to search...'}
-                        list={storyBookOptions}
-                        fillType={
-                          themeDaysArr &&
-                          themeDaysArr?.[idx]?.idx === idx &&
-                          'storyBook' in themeDaysArr?.[idx]
-                            ? 'filled'
-                            : 'outlined'
-                        }
-                        fillColor={
-                          themeDaysArr &&
-                          themeDaysArr?.[idx]?.idx === idx &&
-                          'storyBook' in themeDaysArr?.[idx]
-                            ? 'adminPortalBg'
-                            : 'errorMain'
-                        }
-                        textColor="textDark"
-                        fullWidth
-                        className="text-textDark h-full w-48"
-                        selectedValue={
-                          storyBookOptions?.filter(
-                            (option) =>
-                              option?.id ===
-                              themeDaysArr?.[idx]?.storyBook?.[0]?.id
-                          )?.length > 0
-                            ? storyBookOptions?.find(
-                                (option) =>
-                                  option?.id ===
-                                  themeDaysArr?.[idx]?.storyBook?.[0]?.id
-                              ).id
-                            : storyBookOptions?.find(
-                                (option) =>
-                                  option?.id === themeDaysArr?.[idx]?.storyBook
-                              )?.id
-                        }
-                        showSearch
-                        onChange={(e: string | string[]) => {
-                          const newItem = storyBookOptions?.filter(
-                            (item) => item?.id === e
-                          );
-                          handleGroupChange(
-                            newItem,
-                            idx,
-                            ThemeStoryTypes?.storyBook
-                          );
-                        }}
-                      />
-                    </div>
-                    <div>
-                      {idx === 0 && (
-                        <Typography
-                          type={'h4'}
-                          text={'Story activity'}
-                          weight="normal"
-                          color={'textDark'}
-                          className="my-2"
-                        />
-                      )}
-                      <Dropdown<any>
-                        placeholder={'Type to search...'}
-                        list={storyTimeOptions}
-                        fillType={
-                          themeDaysArr &&
-                          themeDaysArr?.[idx]?.idx === idx &&
-                          'storyActivity' in themeDaysArr?.[idx]
-                            ? 'filled'
-                            : 'outlined'
-                        }
-                        fillColor={
-                          themeDaysArr &&
-                          themeDaysArr?.[idx]?.idx === idx &&
-                          'storyActivity' in themeDaysArr?.[idx]
-                            ? 'adminPortalBg'
-                            : 'errorMain'
-                        }
-                        textColor="textDark"
-                        fullWidth
-                        className="text-textDark h-full w-48"
-                        selectedValue={
-                          storyTimeOptions?.filter(
-                            (option) =>
-                              option?.id ===
-                              themeDaysArr?.[idx]?.storyActivity?.[0]?.id
-                          )?.length > 0
-                            ? storyTimeOptions?.find(
-                                (option) =>
-                                  option?.id ===
-                                  themeDaysArr?.[idx]?.storyActivity?.[0]?.id
-                              ).id
-                            : storyTimeOptions?.find(
-                                (option) =>
-                                  option?.id ===
-                                  themeDaysArr?.[idx]?.storyActivity
-                              )?.id
-                        }
-                        showSearch
-                        onChange={(e: string | string[]) => {
-                          const newItem = storyTimeOptions?.filter(
-                            (item) => item?.id === e
-                          );
-                          handleGroupChange(
-                            newItem,
-                            idx,
-                            ThemeStoryTypes?.storyActivity
-                          );
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </>
-            ))}
-
-          <Pagination
-            recordsPerPage={16}
-            items={tempDataArr}
-            responseData={setTableData}
+    if (loading) {
+      return (
+        <div>
+          <LoadingSpinner
+            size="medium"
+            spinnerColor="adminPortalBg"
+            backgroundColor="secondary"
           />
         </div>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <div>
+          <Typography
+            type={'body'}
+            weight={'bold'}
+            color={'textMid'}
+            text={'Choose activities for each theme day *'}
+          />
+          {(title === 'C T F35 - theme Days' || title === 'theme Days') && (
+            <Typography
+              type={'body'}
+              color={'textMid'}
+              text={
+                'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
+              }
+            />
+          )}
+
+          <div className="mt-4 sm:rounded-lg">
+            {tableData &&
+              themeDaysArr &&
+              smallGroupOptions &&
+              largeGroupOptions &&
+              storyBookOptions &&
+              storyTimeOptions &&
+              tableData.map((item: any, idx: number) => (
+                <>
+                  <div
+                    className="justify-left flex items-center"
+                    key={'theme_' + idx}
+                  >
+                    <Typography
+                      type={'body'}
+                      text={`Day ${idx + 1}`}
+                      weight="normal"
+                      color={'textDark'}
+                      className={`${idx === 0 ? 'mt-8' : ''} w-1/12`}
+                    />
+                    <div className="grid w-8/12 grid-cols-4 gap-2">
+                      <div>
+                        {idx === 0 && (
+                          <Typography
+                            type={'h4'}
+                            text={'Small group activity'}
+                            weight="normal"
+                            color={'textDark'}
+                            className="my-2"
+                          />
+                        )}
+                        <Dropdown<any>
+                          placeholder={'Type to search...'}
+                          list={smallGroupOptions}
+                          fillType={getFillType(
+                            idx,
+                            ThemeStoryTypes?.smallGroup
+                          )}
+                          fillColor={'adminPortalBg'}
+                          textColor="textLight"
+                          fullWidth
+                          className={`textDark w-58 h-full px-0`}
+                          selectedValue={
+                            smallGroupOptions?.filter(
+                              (option) =>
+                                option?.id ===
+                                themeDaysArr?.[idx]?.smallGroupActivity?.[0]?.id
+                            )?.length > 0
+                              ? smallGroupOptions?.find(
+                                  (option) =>
+                                    option?.id ===
+                                    themeDaysArr?.[idx]?.smallGroupActivity?.[0]
+                                      ?.id
+                                ).id
+                              : smallGroupOptions?.find(
+                                  (option) =>
+                                    option?.id ===
+                                    themeDaysArr?.[idx]?.smallGroupActivity
+                                )?.id
+                          }
+                          showSearch
+                          onChange={(e: string | string[]) => {
+                            const newItem = smallGroupOptions?.filter(
+                              (item) => item?.id === e
+                            );
+                            handleGroupChange(
+                              newItem,
+                              idx,
+                              ThemeStoryTypes?.smallGroup
+                            );
+                          }}
+                        />
+                      </div>
+                      <div>
+                        {idx === 0 && (
+                          <Typography
+                            type={'h4'}
+                            text={'Large group activity'}
+                            weight="normal"
+                            color={'textDark'}
+                            className="my-2"
+                          />
+                        )}
+                        <Dropdown<any>
+                          placeholder={'Type to search...'}
+                          list={largeGroupOptions}
+                          fillType={getFillType(
+                            idx,
+                            ThemeStoryTypes?.largeGroup
+                          )}
+                          fillColor={'adminPortalBg'}
+                          textColor="textDark"
+                          fullWidth
+                          className="text-textDark w-58 h-full"
+                          selectedValue={
+                            largeGroupOptions?.filter(
+                              (option) =>
+                                option?.id ===
+                                themeDaysArr?.[idx]?.largeGroupActivity?.[0]?.id
+                            )?.length > 0
+                              ? largeGroupOptions?.find(
+                                  (option) =>
+                                    option?.id ===
+                                    themeDaysArr?.[idx]?.largeGroupActivity?.[0]
+                                      ?.id
+                                ).id
+                              : largeGroupOptions?.find(
+                                  (option) =>
+                                    option?.id ===
+                                    themeDaysArr?.[idx]?.largeGroupActivity
+                                )?.id
+                          }
+                          showSearch
+                          onChange={(e: string | string[]) => {
+                            const newItem = largeGroupOptions?.filter(
+                              (item) => item?.id === e
+                            );
+                            handleGroupChange(
+                              newItem,
+                              idx,
+                              ThemeStoryTypes?.largeGroup
+                            );
+                          }}
+                        />
+                      </div>
+                      <div>
+                        {idx === 0 && (
+                          <Typography
+                            type={'h4'}
+                            text={'Story'}
+                            weight="normal"
+                            color={'textDark'}
+                            className="my-2"
+                          />
+                        )}
+                        <Dropdown<any>
+                          placeholder={'Type to search...'}
+                          list={storyBookOptions}
+                          fillType={getFillType(
+                            idx,
+                            ThemeStoryTypes?.storyBook
+                          )}
+                          fillColor={'adminPortalBg'}
+                          textColor="textDark"
+                          fullWidth
+                          className="text-textDark w-58 h-full"
+                          selectedValue={
+                            storyBookOptions?.filter(
+                              (option) =>
+                                option?.id ===
+                                themeDaysArr?.[idx]?.storyBook?.[0]?.id
+                            )?.length > 0
+                              ? storyBookOptions?.find(
+                                  (option) =>
+                                    option?.id ===
+                                    themeDaysArr?.[idx]?.storyBook?.[0]?.id
+                                ).id
+                              : storyBookOptions?.find(
+                                  (option) =>
+                                    option?.id ===
+                                    themeDaysArr?.[idx]?.storyBook
+                                )?.id
+                          }
+                          showSearch
+                          onChange={(e: string | string[]) => {
+                            const newItem = storyBookOptions?.filter(
+                              (item) => item?.id === e
+                            );
+                            handleGroupChange(
+                              newItem,
+                              idx,
+                              ThemeStoryTypes?.storyBook
+                            );
+                          }}
+                        />
+                      </div>
+                      <div>
+                        {idx === 0 && (
+                          <Typography
+                            type={'h4'}
+                            text={'Story activity'}
+                            weight="normal"
+                            color={'textDark'}
+                            className="my-2"
+                          />
+                        )}
+                        <Dropdown<any>
+                          placeholder={'Type to search...'}
+                          list={storyTimeOptions}
+                          fillType={getFillType(
+                            idx,
+                            ThemeStoryTypes?.storyActivity
+                          )}
+                          fillColor={'adminPortalBg'}
+                          textColor="textDark"
+                          fullWidth
+                          className="text-textDark w-58 h-full"
+                          selectedValue={
+                            storyTimeOptions?.filter(
+                              (option) =>
+                                option?.id ===
+                                themeDaysArr?.[idx]?.storyActivity?.[0]?.id
+                            )?.length > 0
+                              ? storyTimeOptions?.find(
+                                  (option) =>
+                                    option?.id ===
+                                    themeDaysArr?.[idx]?.storyActivity?.[0]?.id
+                                ).id
+                              : storyTimeOptions?.find(
+                                  (option) =>
+                                    option?.id ===
+                                    themeDaysArr?.[idx]?.storyActivity
+                                )?.id
+                          }
+                          showSearch
+                          onChange={(e: string | string[]) => {
+                            const newItem = storyTimeOptions?.filter(
+                              (item) => item?.id === e
+                            );
+                            handleGroupChange(
+                              newItem,
+                              idx,
+                              ThemeStoryTypes?.storyActivity
+                            );
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ))}
+
+            <Pagination
+              recordsPerPage={16}
+              items={tempDataArr}
+              responseData={setTableData}
+            />
+          </div>
+        </div>
+      );
+    }
   } else {
     return <div>...loading</div>;
   }

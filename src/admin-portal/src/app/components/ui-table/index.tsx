@@ -431,9 +431,6 @@ export default function UiTable({
                 className={`${
                   item?.imageHexColor ? '' : 'bg-tertiary'
                 } flex h-9 w-9 items-center justify-center rounded-full`}
-                style={{
-                  background: `#${item?.imageHexColor?.split('#')?.[1]}`,
-                }}
               >
                 <img
                   alt="skill"

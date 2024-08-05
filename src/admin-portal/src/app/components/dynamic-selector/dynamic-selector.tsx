@@ -219,6 +219,59 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
         </div>
       );
     }
+    if (title === 'Themes') {
+      return (
+        <div>
+          <Typography
+            type={'body'}
+            weight={'bold'}
+            color={'textMid'}
+            text={
+              title ??
+              camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
+            }
+          />
+
+          <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+            {tableData &&
+              tableData.map((item: any) => {
+                const maximumItemsChecked = tableData.filter((x) =>
+                  currentIds?.includes(x.id?.toString())
+                );
+                const itemChecked = currentIds?.some(
+                  (x) => x === item?.id?.toString()
+                );
+                return (
+                  <CheckboxGroup
+                    checkboxColor="secondary"
+                    id={item?.title}
+                    key={item?.title}
+                    title={item?.name}
+                    checked={itemChecked}
+                    value={item?.title}
+                    onChange={() => selectItem(item?.id)}
+                    imageHexColor={item?.imageHexColor}
+                    className={`${
+                      itemChecked ? 'bg-quaternary' : ''
+                    } mb-1 w-full`}
+                    disabled={
+                      choosedSectionTitle === ActivitiesTitles.StoryActivities
+                        ? null
+                        : maximumItemsChecked?.length === 2 && !itemChecked
+                    }
+                  />
+                );
+              })}
+
+            <Pagination
+              recordsPerPage={8}
+              items={tempData}
+              responseData={setTableData || setTempData}
+            />
+          </div>
+        </div>
+      );
+    }
     return (
       <div>
         <Typography
