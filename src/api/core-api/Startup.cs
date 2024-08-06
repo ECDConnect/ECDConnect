@@ -166,9 +166,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
-            services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IPointsService, PointsEngineService>();
-            services.AddTransient<IWLPointsService, WLPointsEngineService>();
             services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<DocumentManager>();
@@ -182,7 +180,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ICommunityService, CommunityService>();
             services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
-            services.AddTransient<IWLPointsEngineService, WLPointsEngineService>();
+            services.AddTransient<IPointsEngineService, PointsEngineService>();
 
             // Notification tasks (All will be run daily)
             foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()

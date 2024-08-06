@@ -24,7 +24,7 @@ public class MonthlyPreschoolFeesPointsCalculation : CronJobService
         
         if (DateTime.Now.Day == DateTime.Now.GetEndOfMonth().Day)
         {
-            var service = GetRequiredService<IWLPointsService>();
+            var service = GetRequiredService<IPointsService>();
             service.CalculatePreschoolFeesGreaterThan0ForEachChild();
         }
     }

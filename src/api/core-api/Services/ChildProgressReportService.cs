@@ -1,8 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.ContentManagement.Repositories;
-using ECDLink.Core.Extensions;
-using ECDLink.Core.Reporting;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -14,17 +12,14 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.PDFGenerator.Services.Interfaces;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports.ChildProgressReport;
 using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -84,6 +79,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IPersonnelService _personnelService;
         private readonly ContentManagementRepository _contentRepo;
         private readonly ILocaleService<Language> _localeService;
+        private readonly IPointsEngineService _pointsEngineService;
 
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<Learner, Guid> _learnerRepo;
@@ -105,7 +101,8 @@ namespace EcdLink.Api.CoreApi.Services
             [Service] IClassroomService classroomService,
             [Service] IPersonnelService personnelService,
             [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService
+            [Service] ILocaleService<Language> localeService,
+            [Service] IPointsEngineService pointsEngineService
             )
         {
             _repoFactory = repoFactory;
@@ -116,6 +113,7 @@ namespace EcdLink.Api.CoreApi.Services
             _personnelService = personnelService;
             _contentRepo = contentRepo;
             _localeService = localeService;
+            _pointsEngineService = pointsEngineService;
 
             _contextUserId = contextAccessor.HttpContext.GetUser().Id;
             _childRepo = repoFactory.CreateRepository<Child>(userContext: _contextUserId);
@@ -148,12 +146,15 @@ namespace EcdLink.Api.CoreApi.Services
                 if (input.DateCompleted != null)
                 {
                     existingReport.DateCompleted = input.DateCompleted;
+                    
                 }
 
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
                 existingReport.UserId = _contextUserId;
 
                 _childProgressReportRepo.Update(existingReport);
+                // when observations are completed, we need to call this.
+                // _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
             }
             else
             {
@@ -167,6 +168,8 @@ namespace EcdLink.Api.CoreApi.Services
                 };
 
                 _childProgressReportRepo.Insert(newReport);
+                // generate points for creating a new report
+                _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
             }
         }
 

@@ -42,7 +42,7 @@ namespace ECDLink.Core.Services
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
-        private IWLPointsEngineService _pointsService;
+        private IPointsEngineService _pointsService;
 
         private IConverter _pdfConverter;
 
@@ -52,7 +52,7 @@ namespace ECDLink.Core.Services
             [Service] DocumentManager documentManager,
             [Service] ApplicationUserManager userManager,
             [Service] PersonnelService personnelService,
-            [Service] IWLPointsEngineService pointsService,
+            [Service] IPointsEngineService pointsService,
             HierarchyEngine hierarchyEngine,
             IConverter pdfConverter
             )

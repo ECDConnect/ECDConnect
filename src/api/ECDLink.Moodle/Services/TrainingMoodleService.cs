@@ -28,14 +28,14 @@ namespace EcdLink.Moodle.Services
         private readonly Guid _adminUserId;
         private readonly ApplicationUserManager _userManager;
         private readonly ILogger<TrainingMoodleService> _logger;
-        private readonly IWLPointsService _pointsService;
+        private readonly IPointsService _pointsService;
 
         public TrainingMoodleService(IConfiguration configuration, 
             IGenericRepositoryFactory repoFactory, 
             HierarchyEngine hierarchyEngine, 
             ApplicationUserManager userManager, 
             ILogger<TrainingMoodleService> logger,
-            [Service] IWLPointsService pointsService)
+            [Service] IPointsService pointsService)
         {
             _configuration = configuration;
             _repoFactory = repoFactory;

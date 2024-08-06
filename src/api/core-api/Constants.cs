@@ -891,6 +891,14 @@ namespace EcdLink.Api.CoreApi
             public static readonly string PreschoolFeeId = "3915acb0-db44-a323-c086-fe3376d2bfd4";
         }
 
+        public static class PractitionerPermissions
+        {
+            public static readonly Guid TakeAttendanceId = new Guid("a929377d-79af-47f0-a65c-b5a81466d033");
+            public static readonly Guid CreateProgressReportsId = new Guid("5307eafe-a165-419e-a09d-9d9988c28676");
+            public static readonly Guid ManageChildren = new Guid("357350a6-cb12-49d9-8045-a69c520e1da5");
+            public static readonly Guid PlanClassroomActivitiesId = new Guid("c39c1be5-0f4b-43ad-aa9f-f1da524efe84");
+        }
+
         public static class ReferralTypes
         {
             public const string EarlyIdentificationOfPregnancy = "Early identification of pregnancy";

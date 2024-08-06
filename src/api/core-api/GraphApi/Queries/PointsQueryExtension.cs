@@ -34,9 +34,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<PointsLibrary> GetPointsLibrary(
             [Service] IPointsEngineService pointsService)
         {
-            var pointsLibrary = pointsService.GetPointsLibraryForTenant();
-
-            return pointsLibrary;
+            // TODO: REMOVE
+            //var pointsLibrary = pointsService.GetPointsLibraryForTenant();
+            //return pointsLibrary;
+            return null;
         }
         
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -44,90 +45,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IPointsEngineService pointsService,
             string userId)
         {
-            var userStanding = pointsService.GetUserClubStanding(userId);
-
-            return userStanding;
+            // TODO: REMOVE
+            //var userStanding = pointsService.GetUserClubStanding(userId);
+            //return userStanding;
+            return null;
         }
 
-        //
-        // TESTING
-        // 
-        public bool TestCalculateConnectWithAnotherUser(
-            [Service] IWLPointsEngineService pointsService,
-            Guid userId)
-        {
-            pointsService.CalculateConnectWithAnotherUser(userId);
-            return true;
-        }
-
-        public bool TestCalculateChildAttendanceRegisterSaved(
-            [Service] IWLPointsEngineService pointsService,
-            Guid userId)
-        {
-            pointsService.CalculateChildAttendanceRegisterSaved(userId);
-            return true;
-        }
-
-        public bool TestCalculateChildRegistrationComplete(
-            [Service] IWLPointsEngineService pointsService,
-            Guid childUserId)
-        {
-            pointsService.CalculateChildRegistrationComplete(childUserId);
-            return true;
-        }
-
-        public bool TestCalculateAddNewPractitionerToPreschool(
-            [Service] IWLPointsEngineService pointsService,
-            Guid userId)
-        {
-            pointsService.CalculateAddNewPractitionerToPreschool(userId);
-            return true;
-        }
-        public bool TestCalculateAddNewClassToPreschool(
-            [Service] IWLPointsEngineService pointsService,
-            Guid userId)
-        {
-            pointsService.CalculateAddNewClassToPreschool(userId);
-            return true;
-        }
-
-        public bool TestCalculateDownloadIncomeStatement(
-            [Service] IWLPointsEngineService pointsService,
-            Guid userId)
-        {
-            pointsService.CalculateDownloadIncomeStatement(userId);
-            return true;
-        }
-
-        public bool TestCalculateAddExpenseOrIncomeToStatement(
-            [Service] IWLPointsEngineService pointsService,
-            Guid userId)
-        {
-            pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
-            return true;
-        }
-
-        public bool TestCalculatePreschoolFeesGreaterThan0ForEachChild(
-            [Service] IWLPointsEngineService pointsService)
-        {
-            pointsService.CalculatePreschoolFeesGreaterThan0ForEachChild();
-            return true;
-        }
-
-        public bool TestCalculateThemePlanned(
-            [Service] IWLPointsEngineService pointsService,
-            Guid userId)
-        {
-            pointsService.CalculateThemePlanned(userId);
-            return true;
-        }
-
-        public bool TestCalculateNoThemePlanned(
-            [Service] IWLPointsEngineService pointsService,
-            Guid userId)
-        {
-            pointsService.CalculateNoThemePlanned(userId);
-            return true;
-        }
+        
     }
 }

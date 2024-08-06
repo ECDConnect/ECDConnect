@@ -1,10 +1,15 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
@@ -13,17 +18,11 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.Abstractrions.Constants;
-using ECDLink.DataAccessLayer.Entities.Notifications;
-using Microsoft.AspNetCore.Identity;
-using ECDLink.DataAccessLayer.Managers;
-using Microsoft.EntityFrameworkCore;
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.DataAccessLayer.Entities.Reports;
-using ECDLink.Core.Extensions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -57,7 +56,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] HierarchyEngine engine,
             [Service] INotificationService notificationService,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IWLPointsEngineService pointsService,
+            [Service] IPointsEngineService pointsService,
             Guid id,
             ClassroomGroup input)
         {
@@ -400,7 +399,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public bool AddChildProgressReportPeriods(
-            [Service] IPointsEngineService pointsEngineService,
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] INotificationService notificationService,

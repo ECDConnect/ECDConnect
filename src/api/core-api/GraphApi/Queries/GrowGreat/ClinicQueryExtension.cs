@@ -3,9 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -66,11 +64,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ClinicModel GetClinicById(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IPointsEngineService pointsEngineService,
             IGenericRepositoryFactory repoFactory,
             Guid clinicId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            /*var uId = contextAccessor.HttpContext.GetUser().Id;
             var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
             var pointsLibraryRepo = repoFactory.CreateRepository<PointsLibrary>(userContext: uId);
 
@@ -84,7 +81,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var clinicPoints = pointsEngineService.GetPointsDetailsForClinic(clinicId);
 
-            return new ClinicModel(clinic, clinicPoints);
+            return new ClinicModel(clinic, clinicPoints);*/
+            return null;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

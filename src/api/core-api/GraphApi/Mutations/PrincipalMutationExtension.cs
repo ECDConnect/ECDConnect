@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                                         [Service] PersonnelService personnelManager,
                                                         IGenericRepositoryFactory repoFactory,
                                                         [Service] INotificationService notificationService,
-                                                        [Service] IWLPointsEngineService pointsService,
+                                                        [Service] IPointsEngineService pointsService,
                                                         AuthenticationDbContext dbContext,
                                                         string firstName,
                                                         string lastName,

@@ -102,7 +102,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public HealthCareWorkerModel GetHealthCareWorkerByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            [Service] IPointsEngineService pointsEngineService,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -284,7 +283,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<PointsActivityModel> GetPointsForHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IPointsEngineService pointsEngineService,
             IGenericRepositoryFactory repoFactory,
             Guid userId,
             DateTime startDate,
@@ -294,31 +292,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
 
-            var points = pointsEngineService.GetSummaryUserPoints(userId, startDate, endDate);
+            //var points = pointsEngineService.GetSummaryUserPoints(userId, startDate, endDate);
 
-            return points.Select(x => new PointsActivityModel(x)).ToList();
+            //return points.Select(x => new PointsActivityModel(x)).ToList();
+            return null;
         }
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public TeamStandingModel GetHealthCareWorkerTeamStanding(
-            [Service] IPointsEngineService pointsService,
             Guid userId)
         {
-            var teamStanding = pointsService.GetHealthCareWorkerTeamStanding(userId);
+            //var teamStanding = pointsService.GetHealthCareWorkerTeamStanding(userId);
 
-            return teamStanding;
+            //return teamStanding;
+            return null;
         }
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<PointsPointsTodoItemModel> GetHealthCareWorkerPointsTodoItems(
-            [Service] IPointsEngineService pointsService,
             Guid healthCareWorkerId)
         {
-            var pointsTodoItems = pointsService.GetHealthCareWorkerPointsTodoItems(healthCareWorkerId);
+            //var pointsTodoItems = pointsService.GetHealthCareWorkerPointsTodoItems(healthCareWorkerId);
 
-            return pointsTodoItems;
+            //return pointsTodoItems;
+            return null;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

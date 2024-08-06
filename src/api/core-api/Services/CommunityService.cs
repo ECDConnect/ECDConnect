@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly INotificationService _notificationService;
         private readonly Guid? _applicationUserId;
         private readonly ApplicationUserManager _userManager;
-        private readonly IWLPointsEngineService _pointsService;
+        private readonly IPointsEngineService _pointsService;
 
 
         public CommunityService(
@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.Services
             [Service] AuthenticationDbContext dbContext,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager,
-            [Service] IWLPointsEngineService pointsService
+            [Service] IPointsEngineService pointsService
             )
         {
             _applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());

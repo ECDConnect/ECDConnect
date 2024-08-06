@@ -23,14 +23,14 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
         private IGenericRepository<Learner, Guid> _learnerRepo;
         private AuthenticationDbContext _dbContext;
-        private readonly IWLPointsEngineService _pointsService;
+        private readonly IPointsEngineService _pointsService;
 
         public ChildService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             HierarchyEngine hierarchyEngine,
             [Service] AuthenticationDbContext dbContext,
-            [Service] IWLPointsEngineService pointsService)
+            [Service] IPointsEngineService pointsService)
         {
             var applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());
 
