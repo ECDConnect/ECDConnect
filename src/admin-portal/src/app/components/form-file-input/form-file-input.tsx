@@ -1,6 +1,7 @@
 import { getBase64TypeFromBaseString, getCompressedImage } from '@ecdlink/core';
 import {
   DesktopComputerIcon,
+  DocumentTextIcon,
   PhotographIcon,
   UploadIcon,
   VideoCameraIcon,
@@ -44,6 +45,10 @@ export interface FormFileInputProps {
   isThemeFormFile?: boolean;
   isVideoInput?: boolean;
   isWizardComponent?: boolean;
+  onFileChange?: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  isFileInput?: boolean;
 }
 
 const containerStyle = 'border-uiLight';
@@ -74,6 +79,8 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   isThemeFormFile,
   isVideoInput,
   isWizardComponent,
+  onFileChange,
+  isFileInput,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -204,6 +211,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                     fileName: file?.name,
                   }
             );
+            onFileChange(file);
             setFile(reader.result?.toString() ?? '');
             setLoading(false);
           };
@@ -244,6 +252,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                   fileName: file?.name,
                 }
           );
+          onFileChange(file);
           onChange(splitString);
           setFile(reader.result?.toString() ?? '');
           setLoading(false);
@@ -418,6 +427,14 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                           ''
                         )}
                       />
+                    ) : isFileInput ? (
+                      <DocumentTextIcon
+                        className={classNames(
+                          getIconStyle(),
+                          iconBaseStyle,
+                          ''
+                        )}
+                      />
                     ) : (
                       <PhotographIcon
                         className={classNames(
@@ -433,7 +450,13 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                         <Typography
                           type={'h4'}
                           color={'white'}
-                          text={isVideoInput ? 'Change video' : 'Change image'}
+                          text={
+                            isVideoInput
+                              ? 'Change video'
+                              : isFileInput
+                              ? 'Change file'
+                              : 'Change image'
+                          }
                         />
                       ) : (
                         <Typography
