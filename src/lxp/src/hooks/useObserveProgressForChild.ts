@@ -41,10 +41,6 @@ export const useObserveProgressForChild = (childId: string) => {
     classroomsSelectors.getAllProgressReportPeriods()
   );
 
-  const isAllObservationsComplete =
-    skillsForAgeGroup.length ===
-    currentObservationsForChild?.skillObservations.length;
-
   const currentObservations = useMemo<ChildProgressSkill[]>(() => {
     return skillsForAgeGroup.map((x) => ({
       ...x,
@@ -158,6 +154,24 @@ export const useObserveProgressForChild = (childId: string) => {
         value,
       })
     );
+
+    // Check if we have added all observations
+    const allObsMade = skillsForAgeGroup.every((x) => {
+      return (
+        skillId === x.id ||
+        (currentObservationsForChild?.skillObservations || []).findIndex(
+          (y) => y.skillId === x.id
+        ) >= 0
+      );
+    });
+    if (allObsMade) {
+      appDispatch(
+        progressTrackingActions.markAllSkillsObserved({
+          childId,
+          reportingPeriodId: currentReportingPeriod.id,
+        })
+      );
+    }
   };
 
   const addSkillToWorkOn = (skillId: number) => {
@@ -239,7 +253,6 @@ export const useObserveProgressForChild = (childId: string) => {
     child,
     currentAgeGroup,
     skillsForAgeGroup,
-    isAllObservationsComplete,
     currentObservations,
     currentReport,
     completedReports,

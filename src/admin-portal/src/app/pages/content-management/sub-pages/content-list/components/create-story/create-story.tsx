@@ -20,12 +20,7 @@ import {
   FormTemplateField,
 } from '../../../../content-management-models';
 import { Alert, DialogPosition } from '@ecdlink/ui';
-import {
-  BookOpenIcon,
-  SaveIcon,
-  TrashIcon,
-  XIcon,
-} from '@heroicons/react/solid';
+import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateStoryForm from './components/create-story-form';
 import { LanguageId } from '../../../../../../constants/language';

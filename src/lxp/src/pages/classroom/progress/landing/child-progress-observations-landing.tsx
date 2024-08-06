@@ -12,13 +12,8 @@ export const ChildProgressObservationsLanding: React.FC = () => {
   const { state: routeState } =
     useLocation<ChildProgressObservationPageState>();
 
-  const {
-    child,
-    currentReportingPeriod,
-    currentAgeGroup,
-    isAllObservationsComplete,
-    currentReport,
-  } = useObserveProgressForChild(routeState.childId);
+  const { child, currentReportingPeriod, currentAgeGroup, currentReport } =
+    useObserveProgressForChild(routeState.childId);
 
   return (
     <BannerWrapper
@@ -46,14 +41,14 @@ export const ChildProgressObservationsLanding: React.FC = () => {
           )}`}
         />
         {/* Current observations still in progress */}
-        {!isAllObservationsComplete && (
+        {!currentReport?.isAllObservationsComplete && (
           <ProgressLandingNoObservations
             childId={routeState.childId}
             currentAgeGroup={currentAgeGroup!}
           />
         )}
         {/* All observations completed for current report period, but we are still outside the window */}
-        {isAllObservationsComplete && currentReport && (
+        {!!currentReport?.isAllObservationsComplete && currentReport && (
           <ProgressLandingComplete
             childId={routeState.childId}
             child={child!}

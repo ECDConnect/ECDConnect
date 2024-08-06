@@ -143,10 +143,10 @@ export const SubmitIncomeStatements: React.FC = () => {
     !!currentMonthIncomeTotal;
 
   const hasLastTwoMonthsStatements =
-    lastMonthStatement?.month === lastMonth.getMonth() &&
+    (lastMonthStatement?.month || 0) - 1 === lastMonth.getMonth() &&
     lastMonthStatement?.year === lastMonth.getFullYear() &&
-    previousMonthStatement?.month === previousMonth.getMonth() &&
-    previousMonthStatement.year === previousMonth.getFullYear();
+    (previousMonthStatement?.month || 0) - 1 === previousMonth.getMonth() &&
+    previousMonthStatement?.year === previousMonth.getFullYear();
 
   const totalDownloadedStatements = statements.reduce(
     (total, statement) => (statement.downloaded ? total + 1 : total),
@@ -457,9 +457,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           section="Business - Money tab, Learn more"
           childrenPosition="bottom"
           onClose={() => setIsLearnMore(false)}
-        >
-          <CoachInfo />
-        </InfoPage>
+        />
       </Dialog>
       <div id="lastStep" />
       {showInitialWalkthrough && (

@@ -1,0 +1,91 @@
+import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
+import ROUTES from '@/routes/routes';
+import { getAvatarColor } from '@ecdlink/core';
+import { Button, StackedList, Typography } from '@ecdlink/ui';
+import { useMemo, useState } from 'react';
+import { useHistory } from 'react-router';
+
+export const ProgressTabReportSummary: React.FC = () => {
+  const history = useHistory();
+
+  const [showDetails, setShowDetails] = useState(false);
+
+  const { childReports } = useObserveProgressForChildren();
+
+  const incompleteReportsList = useMemo(() => {
+    return childReports
+      .filter((x) => !x.report || !x.report.dateCompleted)
+      .map((childReport) => ({
+        id: childReport.childId,
+        profileDataUrl: childReport.childProfileImageUrl,
+        profileText: childReport.childFirstName,
+        avatarColor: getAvatarColor() || '',
+        title: childReport.childFirstName,
+        subTitle: childReport.isObservationsComplete
+          ? 'Observations complete'
+          : childReport.isInProgress
+          ? 'In progress'
+          : 'Not started',
+        alertSeverity: childReport.isObservationsComplete
+          ? 'success'
+          : childReport.isInProgress
+          ? 'warning'
+          : 'error',
+        onActionClick: () =>
+          history.push(ROUTES.PROGRESS_REPORT_LIST, {
+            childId: childReport.childId,
+          }),
+      }));
+  }, childReports);
+
+  const completeReportsList = useMemo(() => {
+    return childReports
+      .filter((x) => !!x.report && !!x.report.dateCompleted)
+      .map((childReport) => ({
+        id: childReport.childId,
+        profileDataUrl: childReport.childProfileImageUrl,
+        profileText: childReport.childFirstName,
+        avatarColor: getAvatarColor() || '',
+        title: childReport.childFirstName,
+        subTitle: 'Report complete',
+        alertSeverity: 'success',
+        onActionClick: () =>
+          history.push(ROUTES.PROGRESS_REPORT_LIST, {
+            childId: childReport.childId,
+          }),
+      }));
+  }, childReports);
+
+  return (
+    <>
+      <Typography
+        className="mt-4"
+        color="textDark"
+        text={'You have not created progress reports for:'}
+        type={'h3'}
+      />
+      <StackedList
+        className={'mt-4 flex flex-col gap-1'}
+        listItems={incompleteReportsList}
+        type={'UserAlertList'}
+      />
+      <Button
+        onClick={() => setShowDetails(!showDetails)}
+        className="mt-4 w-full"
+        size="normal"
+        color="quatenary"
+        type="outlined"
+        icon={showDetails ? 'EyeOffIcon' : 'EyeIcon'}
+        text={showDetails ? 'Hide completed reports' : 'Show completed reports'}
+        textColor="quatenary"
+      />
+      {showDetails && (
+        <StackedList
+          className={'mt-4 flex flex-col gap-1'}
+          listItems={completeReportsList}
+          type={'UserAlertList'}
+        />
+      )}
+    </>
+  );
+};
