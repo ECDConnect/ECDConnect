@@ -1512,7 +1512,7 @@ export type ChildProgressReport = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
-  isAllObservationsComplete: Scalars['Boolean'];
+  isAllObservationsComplete?: Maybe<Scalars['Boolean']>;
   observationsCompleteDate?: Maybe<Scalars['DateTime']>;
   reportContent?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
@@ -1547,7 +1547,7 @@ export type ChildProgressReportInput = {
   DateCompleted?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
-  IsAllObservationsComplete: Scalars['Boolean'];
+  IsAllObservationsComplete?: InputMaybe<Scalars['Boolean']>;
   ObservationsCompleteDate?: InputMaybe<Scalars['DateTime']>;
   ReportContent?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
