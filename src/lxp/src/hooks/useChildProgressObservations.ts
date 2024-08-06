@@ -721,6 +721,7 @@ export const useChildProgressObservation = (
           IsActive: true,
           DateCompleted: new Date(),
           ChildProgressReportPeriodId: 'terst',
+          IsAllObservationsComplete: false,
         })
       ).unwrap();
       // await appDispatch(
