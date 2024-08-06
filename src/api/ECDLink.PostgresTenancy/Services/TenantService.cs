@@ -125,10 +125,9 @@ namespace ECDLink.PostgresTenancy.Services
 
         public bool ValidateNewTenantName(string applicationName)
         {
-            var tenant = _repository.GetAll().Where(t => t.ApplicationName == applicationName).FirstOrDefault();
+            var tenant = _repository.GetAll().Where(t => t.SiteAddress.StartsWith(applicationName)).FirstOrDefault();
             return tenant == null ? true : false;
         }
-
 
         private static TenantInternalModel Cast(TenantEntity tenantEntity)
         {

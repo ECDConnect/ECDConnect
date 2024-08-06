@@ -1,5 +1,6 @@
 import {
   ActivityDto,
+  ChildDto,
   PractitionerProgressReportSummaryDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
@@ -299,3 +300,18 @@ export const getProgressReportsForReportingPeriod = (
       );
     }
   );
+
+// export const getChildrenWithoutProgressObservations = (
+//   childProgressReportPeriodId: string
+// ) =>
+//   createSelector(
+//     (state: RootState) => state.progressTracking.childProgressReports,
+//     (state: RootState) => state.children.childData.children,
+//     (childProgressReports: ChildProgressReport[],
+//       children: ChildDto[]
+//     ) => {
+//       return childProgressReports.filter(
+//         (x) => x.childProgressReportPeriodId === childProgressReportPeriodId
+//       );
+//     }
+//   );

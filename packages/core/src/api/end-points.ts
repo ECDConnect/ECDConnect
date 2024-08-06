@@ -22,4 +22,6 @@ export const APIs = {
   verifyOAWLAuthCodeStatus: 'api/invitation/verify-oa-wl-auth-code-status',
   verifyOAPrincipalInvitation: 'api/invitation/verify-oa-principal-invitation',
   verifyPrincipalToken: 'api/invitation/verify-principal-token',
+  addTenantSetupInfo: 'api/setup/add-tenant-setup-info',
+  validateNewTenant: 'api/setup/validate-new-tenant',
 };

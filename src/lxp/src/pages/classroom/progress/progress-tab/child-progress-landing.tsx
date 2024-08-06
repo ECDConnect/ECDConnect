@@ -1,11 +1,13 @@
 import { classroomsSelectors } from '@/store/classroom';
 import { practitionerSelectors } from '@/store/practitioner';
-import { Button, DialogPosition, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  Card,
+  DialogPosition,
+  ProgressBar,
+  Typography,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { ReactComponent as Emoji4Icon } from '@/assets/ECD_Connect_emoji4.svg';
-import { useHistory } from 'react-router';
-import ROUTES from '@/routes/routes';
-import { useProgressTracking } from '@/hooks/useProgressTracking';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -15,6 +17,10 @@ import { ProgressTabNoReportPeriodAndPractitioner } from './progress-tab-no-repo
 import { ProgressTabNoReports } from './progress-tab-no-reports';
 import { ProgressTabNoChildren } from './progress-tab-no-children';
 import { ProgressTabAllChildrenOverFive } from './progress-tab-all-children-over-five';
+import { ProgressTabReportSummary } from './progress-tab-report-summary';
+import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
+import { ProgressTabObservationsSummary } from './progress-tab-observations-summary';
+import { format } from 'date-fns';
 
 export const ChildProgressLanding: React.FC = () => {
   const dialog = useDialog();
@@ -23,10 +29,12 @@ export const ChildProgressLanding: React.FC = () => {
   const { hasPermissionToManageChildren } = useUserPermissions();
   const {
     isReportWindowSet,
-    currentReports,
+    isWithinReportPeriod,
+    childReports,
     currentReportingPeriod,
-    children,
-  } = useProgressTracking();
+    percentageReportsCompleted,
+    percentageObservationsCompleted,
+  } = useObserveProgressForChildren();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);
@@ -56,11 +64,11 @@ export const ChildProgressLanding: React.FC = () => {
         />
       )}
       {/* Report period setup, children, but no reports yet */}
-      {isReportWindowSet && !currentReports.length && !!children?.length && (
+      {isReportWindowSet && childReports.every((x) => x.isNotStarted) && (
         <ProgressTabNoReports />
       )}
       {/* Report period setup, no children */}
-      {isReportWindowSet && !children?.length && (
+      {isReportWindowSet && !childReports?.length && (
         <ProgressTabNoChildren
           canAddChildren={canAddChildren}
           isOnline={isOnline}
@@ -69,14 +77,73 @@ export const ChildProgressLanding: React.FC = () => {
       )}
       {/* Report period setup, all children over 5 years*/}
       {isReportWindowSet &&
-        !!children?.length &&
-        children.every((x) => !x.ageInMonths || x.ageInMonths > 60) && (
+        !!childReports?.length &&
+        childReports.every((x) => !x.ageInMonths || x.ageInMonths > 60) && (
           <ProgressTabAllChildrenOverFive
             canAddChildren={canAddChildren}
             isOnline={isOnline}
             showOnlineOnly={showOnlineOnly}
           />
         )}
+      {/* Observations sumamry */}
+      <div className="mt-2 flex flex-col p-4">
+        <Typography
+          color="textDark"
+          text={`Report ${currentReportingPeriod?.reportNumber}`}
+          type={'h2'}
+        />
+        <Typography
+          type="h4"
+          color="textDark"
+          text={`${format(
+            new Date(currentReportingPeriod?.startDate || ''),
+            'd MMM'
+          )} and ${format(
+            new Date(currentReportingPeriod?.endDate || ''),
+            'd MMM yyyy'
+          )}`}
+        />
+        <Button
+          onClick={() => {}} // TODO
+          className="mt-4 w-full"
+          size="small"
+          color="quatenary"
+          textColor="white"
+          type="filled"
+          icon={'PresentationChartBarIcon'}
+          text={'Continue tracking progress'}
+        />
+        <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
+          <div className="justify-center">
+            <ProgressBar
+              label={`${
+                isWithinReportPeriod
+                  ? percentageReportsCompleted
+                  : percentageObservationsCompleted
+              }%`}
+              hint={
+                isWithinReportPeriod
+                  ? 'Reports created'
+                  : 'Observations completed'
+              }
+              subLabel=""
+              isHiddenSubLabel={true}
+              value={
+                isWithinReportPeriod
+                  ? percentageReportsCompleted
+                  : percentageObservationsCompleted
+              }
+              primaryColour="alertMain"
+              secondaryColour="textLight"
+              textColour="textDark"
+            />
+          </div>
+        </Card>
+        {/* Within report period */}
+        {isWithinReportPeriod && <ProgressTabReportSummary />}
+        {/* Outside report period */}
+        {!isWithinReportPeriod && <ProgressTabObservationsSummary />}
+      </div>
     </>
   );
 };

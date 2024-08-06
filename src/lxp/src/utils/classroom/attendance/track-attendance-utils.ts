@@ -210,13 +210,18 @@ export const getMissedClassAttendance = (
 
           return isValidDay && !Boolean(x.stoppedAttendance);
         });
-      if (
-        classLearners &&
-        classLearners.length &&
-        classLearners.length > 0 &&
-        !attendance.some((att) => att.classroomProgrammeId === programme.id)
-      ) {
-        returnProgrammes.push({ ...programme, missedDate: missedDayDate });
+      if (classLearners && classLearners.length && classLearners.length > 0) {
+        const checkDate = new Date(missedDayDate.setHours(0, 0, 0));
+
+        if (
+          !attendance.some(
+            (att) =>
+              att.classroomProgrammeId === programme.id &&
+              att.attendanceDate === checkDate
+          )
+        ) {
+          returnProgrammes.push({ ...programme, missedDate: missedDayDate });
+        }
       }
     }
 

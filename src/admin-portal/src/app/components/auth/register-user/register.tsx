@@ -134,7 +134,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               <div className="flex">
                 <div>
                   <FormField
-                    label={'Terms and conditions *'}
+                    label={'Terms and conditions ***'}
                     nameProp={'acceptedTerms'}
                     type="checkbox"
                     register={register}
