@@ -217,10 +217,16 @@ export default function UploadBulkUser(props: any) {
         if (errors?.length === 0) {
           setDisableAddButton(false);
         }
+      } else {
+        setDisableAddButton(false);
+        setNotification({
+          title: `Check file passed!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
       }
     });
     setisLoadingCheckFile(false);
-  }, [getValues, validatePractitionerImportSheet]);
+  }, [getValues, setNotification, validatePractitionerImportSheet]);
 
   return (
     <div className="bg-adminPortalBg h-screen rounded-2xl p-4 ">
@@ -284,6 +290,11 @@ export default function UploadBulkUser(props: any) {
                     isImage={false}
                     allowedFileSize={allowedFileSize}
                     isWizardComponent={true}
+                    onFileChange={() => {
+                      setDocErrors([]);
+                      setDisableAddButton(true);
+                    }}
+                    isFileInput={true}
                   />
                 </div>
                 {isLoadingCheckFile && (
