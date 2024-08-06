@@ -20,16 +20,15 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
         [ForeignKey(nameof(ChildId))]
         public virtual Child Child { get; set; }
         public TKey ChildId { get; set; }
-
         public string ReportContent { get; set; }
-
         public Guid? UserId { get; set; }
-
         public DateTime? DateCompleted { get; set; }
 
         [ForeignKey(nameof(ChildId))]
         public virtual ChildProgressReportPeriod ChildProgressReportPeriod { get; set; }
         public TKey ChildProgressReportPeriodId { get; set; }
+        public bool IsAllObservationsComplete { get; set; } = false;
+        public DateTime? ObservationsCompleteDate { get; set; }
     }
 
     public interface ChildProgressReportJoin<TKey>
