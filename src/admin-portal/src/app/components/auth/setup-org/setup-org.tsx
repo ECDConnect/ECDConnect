@@ -54,10 +54,10 @@ export const SetupOrg = () => {
     <BannerWrapper
       size={'normal'}
       renderBorder={true}
+      className={'h-screen'}
       showBackground={false}
       color={'primary'}
       menuLogoUrl={theme?.images?.logoUrl}
-      backgroundColour={'white'}
     >
       <div className="grid grid-cols-2">
         <div className="flex h-screen items-center justify-center gap-4 p-24">
@@ -197,9 +197,9 @@ export const SetupOrg = () => {
                 <div>{`4. Preferred app URL`}</div>
                 <div>{`5. Organisation logos: light version, dark version and favicon (you can skip this step)`}</div>
                 <div>{`6. Organisation’s colours (you can skip this step or choose the ECD Connect colours)`}</div>
-                <div>{`7. Your SMS service provider details. Add some explainer text about how this SMS is used. Choose an SMS service provider: BulkSMS, SMSPortal, or \u00A0\u00A0\u00A0\u00A0iTouch. Set up a profile for your organisation & copy the following details:`}</div>
+                <div>{`7. Your SMS service provider details. Add some explainer text about how this SMS is used. Choose an SMS service provider: BulkSMS, SMSPortal, or \u00A0\u00A0iTouch. Set up a profile for your organisation & copy the following details:`}</div>
                 <div>{`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0a. If you choose BulkSMS, copy the “Token ID”, “Token Secret” and “Token Basic Auth”`}</div>
-                <div>{`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0b. If you choose SMSPortal, copy the “API Key” and “API Secret”`}</div>
+                <div>{`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0b. If you choose SMSPortal, create an API Key (select “REST”), then copy the “API Key” and “API Secret”`}</div>
                 <div>{`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0c. If you choose iTouch, copy “Username” and “Password.`}</div>
                 <div>{`8. Decide which modules you would like to make available to your users (Attendance, Child progress, Classroom activities, Income statements, Training, Calendar, Coach)`}</div>
                 <div>{`9. Two super-administrator login details: email addresses to create new accounts`}</div>
