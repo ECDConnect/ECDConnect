@@ -80,7 +80,7 @@ export const Step1: React.FC<StepProps> = ({
           nameProp={'organisationEmail'}
           register={register}
           error={errors['organisationEmail']}
-          placeholder={'ECD Connect'}
+          placeholder={'Email address'}
           className="w-full"
           isAdminPortalField={true}
         />
