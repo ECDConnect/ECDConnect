@@ -5,7 +5,6 @@ import {
   DialogPosition,
   Divider,
   Dropdown,
-  PasswordInput,
   SA_CELL_REGEX,
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
@@ -14,18 +13,21 @@ import {
 import FormField from '../../../../components/form-field/form-field';
 import { UsersRouteRedirectTypeEnum, idTypeEnum } from '../../view-user.types';
 import { SaveIcon } from '@heroicons/react/solid';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import {
   GetAllPortalClinics,
+  GetAllPortalCoaches,
+  PractitionerInput,
   ResetUserPassword,
-  UpdateHealthCareWorkerClinic,
+  UpdatePractitioner,
   UpdateUser,
   UserModelInput,
 } from '@ecdlink/graphql';
 import {
   HealthCareWorkerDto,
   NOTIFICATION,
+  PractitionerDto,
   UserDto,
   initialPasswordValue,
   initialUserDetailsValues,
@@ -36,6 +38,7 @@ import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUserRole } from '../../../../hooks/useUserRole';
+import { cloneDeep } from '@apollo/client/utilities';
 
 export interface PersonalInfoProps {
   userData: UserDto;
@@ -50,6 +53,9 @@ export interface PersonalInfoProps {
   isNotLockedOut: (user: UserDto) => boolean;
   isAdministrator?: boolean;
   userTypeToEdit: string;
+  isFromAdministratorTable?: boolean;
+  practitioner?: PractitionerDto;
+  refetchGetPractitionerByUserId?: () => void;
 }
 
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({
@@ -59,23 +65,26 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   isTeamLead,
   hcwId,
   clinicId,
+  practitioner,
   chwData,
   refetchUserData,
   refetchCHW,
   isNotLockedOut,
   isAdministrator,
   userTypeToEdit,
+  isFromAdministratorTable,
+  refetchGetPractitionerByUserId,
 }) => {
-  const [updateHCWClinic] = useMutation(UpdateHealthCareWorkerClinic);
   const [updateUser, { loading }] = useMutation(UpdateUser);
+  const [updatePractitioner] = useMutation(UpdatePractitioner);
   const [resetUserPassword] = useMutation(ResetUserPassword);
   const { setNotification } = useNotifications();
   const [editActive, setEditActive] = useState<boolean>(false);
-  const userObject = useMemo(() => userData, [userData]);
-  const [clinic, setClinic] = useState('');
-  const [clinics, setClinics] = useState([]);
-  const [hasClinicChange, setHasClinicChange] = useState(false);
-  const [handleClinicChange, setHandleClinicChange] = useState(false);
+  const [coach, setCoach] = useState('');
+  const [coaches, setCoaches] = useState([]);
+  const [hasCoachChange, setHasCoachChange] = useState(false);
+  const [practitionerDetailsHasChanged, setPractitionerDetailsHasChanged] =
+    useState(false);
   const [idType, setIdType] = useState<string>('');
 
   const { isTeamLead: isTeamLeadRole } = useUserRole();
@@ -112,35 +121,48 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     fetchPolicy: 'cache-and-network',
   });
 
+  const coachQueryVariables = useMemo(
+    () => ({
+      search: '',
+      connectUsageSearch: [],
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
+      order: [
+        {
+          insertedDate: 'DESC',
+        },
+      ],
+    }),
+    []
+  );
+
+  const { data: coachData } = useQuery(GetAllPortalCoaches, {
+    variables: coachQueryVariables,
+    fetchPolicy: 'network-only',
+  });
+
+  const practitionerCoach = coachData?.allPortalCoaches?.find(
+    (item) => item?.id === practitioner?.coachHierarchy
+  )?.id;
+
   useEffect(() => {
-    if (clinicsData?.allPortalClinics?.length > 0) {
-      setClinics(
-        clinicsData?.allPortalClinics?.map((item) => {
+    if (coachData?.allPortalCoaches?.length > 0) {
+      setCoaches(
+        coachData?.allPortalCoaches?.map((item) => {
           return {
             value: item?.id,
-            label: item?.name,
+            label: item?.user?.fullName || item?.user?.firstName,
           };
         })
       );
     }
-  }, [clinicsData?.allPortalClinics]);
+  }, [coachData?.allPortalCoaches]);
 
   const hcwClinic = clinicsData?.allPortalClinics?.find(
     (item) => item?.id === clinicId
   );
-
-  const updateHealthCareWorkerClinic = useCallback(async () => {
-    const response = await updateHCWClinic({
-      variables: {
-        userId: userObject?.id,
-        clinicId: clinic,
-      },
-    });
-
-    if (response) {
-      setEditActive(!editActive);
-    }
-  }, [clinic, editActive, updateHCWClinic, userObject?.id]);
 
   const {
     register: registerCHW,
@@ -155,6 +177,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
+  const { isDirty } = chwDetailFormState;
 
   const {
     setValue: adminDetailSetValue,
@@ -282,9 +305,22 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   };
 
   const onSave = async () => {
-    if (hasClinicChange) {
-      updateHealthCareWorkerClinic();
-      setHandleClinicChange(false);
+    if (hasCoachChange) {
+      const copy = cloneDeep(practitioner);
+
+      const input: PractitionerInput = {
+        Id: copy.id,
+        IsActive: true,
+        CoachHierarchy: coach,
+        Progress: copy?.progress,
+      };
+
+      await updatePractitioner({
+        variables: {
+          id: practitioner.id,
+          input: { ...input },
+        },
+      });
     }
     let passwordChange = false;
     if (passwordForm?.password?.length > 0) {
@@ -292,6 +328,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     }
     await saveUser(passwordChange);
     refetchUserData();
+    refetchGetPractitionerByUserId();
     setEditActive(!editActive);
   };
 
@@ -308,7 +345,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 <div className="grid grid-cols-1 ">
                   {userData && (
                     <>
-                      {!isRegistered && !isAdministrator && (
+                      {!isRegistered && !isFromAdministratorTable && (
                         <>
                           <div className="my-4 sm:col-span-3">
                             <Typography
@@ -389,11 +426,12 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                                   ? 'e.g 6201014800088'
                                   : 'e.g EN000666'
                               }
+                              defaultValue={userData?.idNumber}
                             />
                           </div>
                         </>
                       )}
-                      {!isAdministrator && (
+                      {!isFromAdministratorTable && (
                         <>
                           <div className="my-4 w-6/12 sm:col-span-3">
                             <FormField
@@ -424,7 +462,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                     </>
                   )}
 
-                  {isAdministrator && (
+                  {isFromAdministratorTable && (
                     <div className="my-4 w-full sm:col-span-3">
                       <FormField
                         label={'Email address *'}
@@ -436,40 +474,44 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   )}
 
                   <div>
-                    {component === UsersRouteRedirectTypeEnum?.chw && (
+                    {component === UsersRouteRedirectTypeEnum?.practitioner && (
                       <Dropdown
-                        placeholder={'Click to select a clinic'}
+                        placeholder={'Click to select a coach'}
                         className={'justify-between'}
-                        label={'Clinic *'}
-                        list={clinics}
+                        label={'Coach *'}
+                        list={coaches || []}
                         onChange={(item) => {
-                          setClinic(item);
-                          setHasClinicChange(true);
+                          setHasCoachChange(true);
+                          setCoach(item);
                         }}
                         fullWidth
                         labelColor="textMid"
                         fillColor="adminPortalBg"
-                        selectedValue={clinic || clinicId}
+                        selectedValue={coach || practitionerCoach}
                       />
                     )}
-                    {!isTeamLead && !hcwId && !isAdministrator && (
-                      <div className="my-0 w-6/12 sm:col-span-2">
-                        <PasswordInput
-                          label={'Password'}
-                          nameProp={'password'}
-                          sufficIconColor="black"
-                          value={passwordForm.password}
-                          register={passwordRegister}
-                          strengthMeterVisible={true}
-                          className="mb-9 "
-                        />
-                      </div>
-                    )}
+                    {/* {!isTeamLead &&
+                      !hcwId &&
+                      !isFromAdministratorTable &&
+                      !isRegistered && (
+                        <div className="my-0 w-6/12 sm:col-span-2">
+                          <PasswordInput
+                            label={'Password'}
+                            nameProp={'password'}
+                            sufficIconColor="black"
+                            value={passwordForm.password}
+                            register={passwordRegister}
+                            strengthMeterVisible={true}
+                            className="mb-9 "
+                          />
+                        </div>
+                      )} */}
                   </div>
                 </div>
               </div>
               {component === UsersRouteRedirectTypeEnum?.chw ||
-              component === UsersRouteRedirectTypeEnum?.teamLeads ? (
+              component === UsersRouteRedirectTypeEnum?.teamLeads ||
+              component === UsersRouteRedirectTypeEnum?.practitioner ? (
                 <Button
                   className={' w-4/12 rounded-md '}
                   type="filled"
@@ -477,8 +519,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   color="secondary"
                   disabled={!isChwDetailValid}
                   onClick={
-                    hasClinicChange
-                      ? () => setHandleClinicChange(true)
+                    isDirty
+                      ? () => setPractitionerDetailsHasChanged(true)
                       : handleSubmitChwDetails(onSave)
                   }
                 >
@@ -503,7 +545,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 </Button>
               )}
             </>
-          ) : userData && !isAdministrator ? (
+          ) : userData && !isFromAdministratorTable ? (
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-x-12">
                 <div className="flex gap-2">
@@ -581,8 +623,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       <div className="flex justify-end p-4">
         {isNotLockedOut(userData ?? chwData?.user) &&
           !isTeamLeadRole &&
-          isAdministrator &&
-          !isRegistered && (
+          isAdministrator && (
             <button
               onClick={() => {
                 setEditActive(!editActive);
@@ -597,8 +638,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
           )}
       </div>
       <Dialog
-        className="absolute left-40 bottom-80 w-6/12"
-        visible={handleClinicChange}
+        className="rounded-2xl py-36 px-72"
+        visible={practitionerDetailsHasChanged}
         position={DialogPosition.Middle}
       >
         <ActionModal
@@ -606,8 +647,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
           icon={'InformationCircleIcon'}
           iconColor="alertMain"
           iconBorderColor="alertBg"
-          importantText={`Are you sure you want to change ${userObject?.firstName} clinic?`}
-          detailText={`This change will reflect on the app for ${userObject?.firstName} immediately.`}
+          importantText={`Are you sure you want to change ${userData?.firstName}'s details?`}
+          detailText={`This change will reflect on the app for ${userData?.firstName} immediately.`}
           actionButtons={[
             {
               text: 'Yes, confirm',
@@ -623,10 +664,11 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               textColour: 'secondary',
               colour: 'secondary',
               type: 'outlined',
-              onClick: () => setHandleClinicChange(false),
+              onClick: () => setPractitionerDetailsHasChanged(false),
               leadingIcon: 'XIcon',
             },
           ]}
+          buttonClass="rounded-2xl"
         />
       </Dialog>
     </div>

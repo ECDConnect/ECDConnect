@@ -24,6 +24,8 @@ import {
   GetUserById,
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLeadSummary,
+  GetPractitionerById,
+  GetPractitionerByUserId,
 } from '@ecdlink/graphql';
 import { subDays } from 'date-fns';
 import {
@@ -42,9 +44,10 @@ import { PersonalInfo } from './components/personal-info/personal-info';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
 import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
-import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
+import { RoleSystemNameEnum } from '@ecdlink/core';
 import { useTenant } from '../../hooks/useTenant';
-import { ResetUserPassword } from './components/reset-password/reset-password';
+import { PractitionerSummary } from './components/practitioner-summary/practitioner-summary';
+import { PractitionerIssuesAndHighlights } from './components/practitioner-issues/practitioner-issues-and-highlights';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -83,11 +86,12 @@ export function ViewUser(props: any) {
   const isPractitioner =
     props.location.state?.component ===
     UsersRouteRedirectTypeEnum?.practitioner;
+  const practitionerUserId = props?.location?.state?.userId;
   const isPrincipal =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.principal;
   const isTeamLead =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
-  const isAdministrator =
+  const isFromAdministratorTable =
     props.location.state?.component === UsersRolesTypeEnum?.administrator;
   const isCHW =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.chw;
@@ -96,7 +100,7 @@ export function ViewUser(props: any) {
   const [successNotification] = useState<boolean>(false);
   const tenant = useTenant();
   console.log({ connectUsage });
-  const { isTeamLead: isTeamLeadRole } = useUserRole();
+  const { isTeamLead: isTeamLeadRole, isAdministrator } = useUserRole();
 
   const [startDate, setStartDate] = useState(startDate1);
   const [endDate, setEndDate] = useState(endDate1);
@@ -116,7 +120,7 @@ export function ViewUser(props: any) {
       ]
     : [
         { name: 'Users', url: ROUTES.USERS.ALL_ROLES },
-        ...(isAdministrator
+        ...(isFromAdministratorTable
           ? [{ name: 'Administrators', url: ROUTES.USERS.ADMINS }]
           : []),
         ...(isTeamLead
@@ -125,7 +129,7 @@ export function ViewUser(props: any) {
         ...(isCHW
           ? [{ name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS }]
           : []),
-        ...(!isAdministrator && !isTeamLead && !isCHW
+        ...(!isFromAdministratorTable && !isTeamLead && !isCHW
           ? [{ name: 'All roles', url: ROUTES.USERS.ALL_ROLES }]
           : []),
         { name: 'View user', url: '' },
@@ -140,6 +144,26 @@ export function ViewUser(props: any) {
     },
     fetchPolicy: 'cache-and-network',
   });
+
+  const [
+    getPractitionerByUserId,
+    {
+      data: practitionerData,
+      loading: loadingPractitioner,
+      refetch: refetchGetPractitionerByUserId,
+    },
+  ] = useLazyQuery(GetPractitionerByUserId, {
+    variables: {
+      userId: practitionerUserId,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  useEffect(() => {
+    if (isPractitioner) {
+      getPractitionerByUserId();
+    }
+  }, [getPractitionerByUserId, isPractitioner]);
 
   const {
     data: userData,
@@ -455,9 +479,12 @@ export function ViewUser(props: any) {
         refetchCHW={refetchCHW}
         isNotLockedOut={isNotLockedOut}
         isAdministrator={isAdministrator}
+        isFromAdministratorTable={isFromAdministratorTable}
         userTypeToEdit={
           userData?.userById?.roles.length && userData?.userById?.roles[0].name
         }
+        practitioner={practitionerData?.practitionerByUserId}
+        refetchGetPractitionerByUserId={refetchGetPractitionerByUserId}
       />
 
       {(isCHWRole ||
@@ -489,6 +516,16 @@ export function ViewUser(props: any) {
             summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
           />
         )}
+      {isPractitioner && isRegistered && (
+        <PractitionerSummary
+          summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+        />
+      )}
+      {isPractitioner && isRegistered && (
+        <PractitionerIssuesAndHighlights
+          summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+        />
+      )}
       {(isCHWRole ||
         props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
         isRegistered && (

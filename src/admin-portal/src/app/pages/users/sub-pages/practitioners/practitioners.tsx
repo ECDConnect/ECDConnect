@@ -212,7 +212,7 @@ export default function Practitioners() {
           : UsersRouteRedirectTypeEnum.practitioner,
         userId: selectedRow?.userId,
         clinicId: selectedRow?.clinicId,
-        practitionerId: selectedRow?.id,
+        practitionerUserId: selectedRow?.userId,
         isRegistered: selectedRow?.isRegistered,
         connectUsage: user?.user?.connectUsage,
         connectUsageColor: user?.user?.connectUsageColor,

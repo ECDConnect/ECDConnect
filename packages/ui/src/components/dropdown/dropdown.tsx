@@ -53,7 +53,8 @@ export function Dropdown<T>({
   const lowerSearch = search.toLowerCase();
 
   const filteredList = useMemo(
-    () => list.filter((item) => item.label.toLowerCase().includes(lowerSearch)),
+    () =>
+      list.filter((item) => item?.label?.toLowerCase().includes(lowerSearch)),
     [list, lowerSearch]
   );
 
