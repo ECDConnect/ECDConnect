@@ -1,13 +1,16 @@
 import * as Yup from 'yup';
+import darkLogo from '../../assets/Logo-ECDConnect.svg';
+import lightLogo from '../../assets/Logo-ECDConnect-white.svg';
+import favicon from '../../assets/favicon.ico';
 
 export const setupOrgValues = {
   organisationName: '',
   applicationName: 'ECD Connect',
   organisationEmail: '',
   applicationUrl: '',
-  darkVersionLogo: '',
-  lightVersionLogo: '',
-  favicon: '',
+  darkVersionLogo: darkLogo,
+  lightVersionLogo: lightLogo,
+  favicon: favicon,
   primaryColor: '#27385A',
   primaryAccent1: '',
   primaryAccent2: '',

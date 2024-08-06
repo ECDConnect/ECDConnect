@@ -49,6 +49,7 @@ export interface FormFileInputProps {
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   isFileInput?: boolean;
+  hideFileName?: boolean;
 }
 
 const containerStyle = 'border-uiLight';
@@ -81,6 +82,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   isWizardComponent,
   onFileChange,
   isFileInput,
+  hideFileName,
 }) => {
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
@@ -211,7 +213,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                     fileName: file?.name,
                   }
             );
-            onFileChange(file);
+            onFileChange && onFileChange(file);
             setFile(reader.result?.toString() ?? '');
             setLoading(false);
           };
@@ -252,7 +254,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                   fileName: file?.name,
                 }
           );
-          onFileChange(file);
+          onFileChange && onFileChange(file);
           onChange(splitString);
           setFile(reader.result?.toString() ?? '');
           setLoading(false);
@@ -506,7 +508,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
               )} ${lastAcceptedFormat} files`
         }`}</p>
       ) : (
-        fileName && <p className="pb-4">{fileName}</p>
+        fileName && !hideFileName && <p className="pb-4">{fileName}</p>
       )}
 
       {contentUrl && !fileName && !isSubcategoryInput && (
