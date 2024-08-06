@@ -457,9 +457,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           section="Business - Money tab, Learn more"
           childrenPosition="bottom"
           onClose={() => setIsLearnMore(false)}
-        >
-          <CoachInfo />
-        </InfoPage>
+        />
       </Dialog>
       <div id="lastStep" />
       {showInitialWalkthrough && (

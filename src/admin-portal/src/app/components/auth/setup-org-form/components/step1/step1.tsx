@@ -32,7 +32,7 @@ export const Step1: React.FC<StepProps> = ({
     !organisationName ||
     !applicationName ||
     !organisationEmail ||
-    errors?.orgEmail;
+    errors?.organisationEmail;
 
   useEffect(() => {
     setDisableButton(disableButton);
@@ -79,8 +79,8 @@ export const Step1: React.FC<StepProps> = ({
           visible={true}
           nameProp={'organisationEmail'}
           register={register}
-          error={errors['orgEmail']}
-          placeholder={'ECD Connect'}
+          error={errors['organisationEmail']}
+          placeholder={'Email address'}
           className="w-full"
           isAdminPortalField={true}
         />

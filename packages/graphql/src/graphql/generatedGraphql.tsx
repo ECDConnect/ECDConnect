@@ -1512,6 +1512,7 @@ export type ChildProgressReport = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  observationsCompleteDate?: Maybe<Scalars['DateTime']>;
   reportContent?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -1528,6 +1529,7 @@ export type ChildProgressReportFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  observationsCompleteDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   or?: InputMaybe<Array<ChildProgressReportFilterInput>>;
   reportContent?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
@@ -1543,6 +1545,7 @@ export type ChildProgressReportInput = {
   DateCompleted?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  ObservationsCompleteDate?: InputMaybe<Scalars['DateTime']>;
   ReportContent?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['UUID']>;
@@ -1644,6 +1647,7 @@ export type ChildProgressReportSortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  observationsCompleteDate?: InputMaybe<SortEnumType>;
   reportContent?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
@@ -7316,7 +7320,6 @@ export type Mutation = {
   addSupportVisitData: Scalars['Boolean'];
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<PortalUserTlModel>;
-  addTenantSetupInfo?: Maybe<TenantSetupInfo>;
   addUser?: Maybe<ApplicationUser>;
   addUsersToRole: Scalars['Boolean'];
   addVisitBackReferral?: Maybe<VisitBackReferral>;
@@ -8221,10 +8224,6 @@ export type MutationAddSupportVisitForPractitionerArgs = {
 
 export type MutationAddTeamLeadArgs = {
   input?: InputMaybe<AddTeamLeadInputModelInput>;
-};
-
-export type MutationAddTenantSetupInfoArgs = {
-  setupInfo?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddUserArgs = {
@@ -13074,6 +13073,45 @@ export type PractitionerAttendance = {
   totalPresent: Scalars['Int'];
 };
 
+export type PractitionerClassProgressReportCategorySummary = {
+  __typename?: 'PractitionerClassProgressReportCategorySummary';
+  color?: Maybe<Scalars['String']>;
+  id: Scalars['Int'];
+  imageUrl?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  subCategories?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSubCategorySummary>>
+  >;
+};
+
+export type PractitionerClassProgressReportSkillSummary = {
+  __typename?: 'PractitionerClassProgressReportSkillSummary';
+  childCount: Scalars['Int'];
+  id: Scalars['Int'];
+  skill?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerClassProgressReportSubCategorySummary = {
+  __typename?: 'PractitionerClassProgressReportSubCategorySummary';
+  childrenPerSkill?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSkillSummary>>
+  >;
+  id: Scalars['Int'];
+  imageUrl?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerClassProgressReportSummaryModel = {
+  __typename?: 'PractitionerClassProgressReportSummaryModel';
+  categories?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportCategorySummary>>
+  >;
+  childCount: Scalars['Int'];
+  className?: Maybe<Scalars['String']>;
+  practitionerFullName?: Maybe<Scalars['String']>;
+  practitionerUserId: Scalars['UUID'];
+};
+
 export type PractitionerColleagues = {
   __typename?: 'PractitionerColleagues';
   classroomNames?: Maybe<Scalars['String']>;
@@ -13258,6 +13296,14 @@ export type PractitionerPermissionModel = {
   id: Scalars['UUID'];
   name?: Maybe<Scalars['String']>;
   normalizedName?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerProgressReportSummaryModel = {
+  __typename?: 'PractitionerProgressReportSummaryModel';
+  classSummaries?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSummaryModel>>
+  >;
+  reportingPeriod?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerRemovalHistory = {
@@ -14717,6 +14763,7 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  practitionerProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
   practitionerRolePermissions?: Maybe<
     Array<Maybe<PractitionerPermissionModel>>
   >;
@@ -14761,7 +14808,8 @@ export type Query = {
   userProgrammes?: Maybe<Array<Maybe<Programme>>>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
   usersToConnectWith?: Maybe<Array<Maybe<CommunityConnectionModel>>>;
-  validateNewTenantName: Scalars['Boolean'];
+  validateCoachImportSheet?: Maybe<UserImportModel>;
+  validatePractitionerImportSheet?: Maybe<UserImportModel>;
   validatePreSchoolCode?: Maybe<Classroom>;
   visitAnswersForInfant?: Maybe<Array<Maybe<VisitData>>>;
   visitAnswersForMother?: Maybe<Array<Maybe<VisitData>>>;
@@ -17773,6 +17821,11 @@ export type QueryPractitionerNewSignupMetricArgs = {
   toDate: Scalars['DateTime'];
 };
 
+export type QueryPractitionerProgressReportSummaryArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  reportingPeriod?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryPractitionerTimelineArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -17907,8 +17960,12 @@ export type QueryUsersToConnectWithArgs = {
   userId: Scalars['UUID'];
 };
 
-export type QueryValidateNewTenantNameArgs = {
-  applicationName?: InputMaybe<Scalars['String']>;
+export type QueryValidateCoachImportSheetArgs = {
+  file?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryValidatePractitionerImportSheetArgs = {
+  file?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryValidatePreSchoolCodeArgs = {

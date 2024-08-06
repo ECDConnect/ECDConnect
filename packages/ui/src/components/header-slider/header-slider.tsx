@@ -101,6 +101,7 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
       infiniteLoop={infiniteLoop}
       autoPlay={autoPlay}
       renderIndicator={renderIndicator}
+      showIndicators={isSetupComponent ? false : true}
       {...(transitionTime && { transitionTime })}
     >
       {slides.map((slide, idx) => {
@@ -124,26 +125,23 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
               >
                 <img src={slide.image} className={styles.cardBanner} />
               </div>
-              {slide?.title ||
-                (slide?.text && (
-                  <div className={styles.cardInformation}>
-                    {slide.status && (
-                      <StatusChip
-                        backgroundColour={palette.backgroundColour}
-                        textColour={palette.textColour}
-                        borderColour={palette.borderColour}
-                        text={getChipStatusText(slide.status)}
-                        className={styles.statusChip}
-                      />
-                    )}
-                    {slide?.title && (
-                      <div className={styles.cardTitle}>{slide.title}</div>
-                    )}
-                    {slide?.text && (
-                      <div className={styles.cardText}>{slide.text}</div>
-                    )}
-                  </div>
-                ))}
+              <div className={styles.cardInformation}>
+                {slide.status && (
+                  <StatusChip
+                    backgroundColour={palette.backgroundColour}
+                    textColour={palette.textColour}
+                    borderColour={palette.borderColour}
+                    text={getChipStatusText(slide.status)}
+                    className={styles.statusChip}
+                  />
+                )}
+                {slide?.title && (
+                  <div className={styles.cardTitle}>{slide.title}</div>
+                )}
+                {slide?.text && (
+                  <div className={styles.cardText}>{slide.text}</div>
+                )}
+              </div>
             </div>
           </div>
         );

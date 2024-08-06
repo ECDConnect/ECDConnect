@@ -7,10 +7,6 @@ import {
   UseFormSetValue,
 } from 'react-hook-form';
 import FormFileInput from '../../../../form-file-input/form-file-input';
-import { useEffect } from 'react';
-import darkLogo from '../../../../../../assets/Logo-ECDConnect.svg';
-import lightLogo from '../../../../../../assets/Logo-ECDConnect-white.svg';
-import favicon from '../../../../../../assets/favicon.ico';
 
 interface StepProps {
   setValue: UseFormSetValue<any>;
@@ -24,13 +20,6 @@ export const Step3: React.FC<StepProps> = ({ setValue, getValues }) => {
   const icoAcceptFormat = ['ico'];
   const allowedFileSize = 13631488;
 
-  useEffect(() => {
-    if (!getValues()?.darkLogo) {
-      setValue('favicon', favicon);
-      setValue('darkVersionLogo', darkLogo);
-      setValue('lightVersionLogo', lightLogo);
-    }
-  }, []);
   return (
     <div>
       <div className="mt-12 flex flex-col gap-2">
@@ -75,8 +64,9 @@ export const Step3: React.FC<StepProps> = ({ setValue, getValues }) => {
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
-            contentUrl={getValues()?.darkVersionLogo || darkLogo}
+            contentUrl={getValues()?.darkVersionLogo}
             isWizardComponent={true}
+            hideFileName={true}
           />
         </div>
         <div>
@@ -107,8 +97,9 @@ export const Step3: React.FC<StepProps> = ({ setValue, getValues }) => {
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
-            contentUrl={getValues()?.lightVersionLogo || lightLogo}
+            contentUrl={getValues()?.lightVersionLogo}
             isWizardComponent={true}
+            hideFileName={true}
           />
         </div>
         <div>
@@ -135,8 +126,9 @@ export const Step3: React.FC<StepProps> = ({ setValue, getValues }) => {
             setValue={setValue}
             isImage={true}
             allowedFileSize={allowedFileSize}
-            contentUrl={getValues()?.favicon || favicon}
+            contentUrl={getValues()?.favicon}
             isWizardComponent={true}
+            hideFileName={true}
           />
         </div>
       </div>

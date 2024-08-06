@@ -123,12 +123,15 @@ export const Step2: React.FC<StepProps> = ({
           isAdminPortalField={true}
           maxCharacters={30}
           maxLength={30}
-          value={getValues()?.applicationUrl}
+          value={applicationUrl}
           onChange={(e) => {
             setUrlError('');
             setIsURLAvailable(false);
             setDisableButton(true);
-            setValue('appUrl', e?.target?.value?.replace(/[^a-zA-Z0-9-]/g, ''));
+            setValue(
+              'applicationUrl',
+              e?.target?.value?.replace(/[^a-zA-Z0-9-]/g, '')
+            );
           }}
         />
         <Typography
