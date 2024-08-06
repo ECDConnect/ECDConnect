@@ -176,6 +176,7 @@ export const SetupOrg = () => {
               autoPlay
               infiniteLoop
               transitionTime={500}
+              isSetupComponent={true}
             />
           </div>
         </div>
