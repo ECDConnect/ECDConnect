@@ -1,11 +1,11 @@
 import { Alert, Button, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import LoadingRocket from '../../assets/gifs/rocketclear.gif';
+import RobotHearts from '../../assets/gifs/robothearts.gif';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import ROUTES from '@routes/routes';
 
-const Loader = ({ loadingMessage = 'Loading . . .' }) => {
+const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const history = useHistory();
   const { resetAuth, resetAppStore } = useStoreSetup();
 
@@ -25,7 +25,7 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
     >
       <div className="flex flex-col items-center justify-center"></div>
       <div className="flex flex-col items-center justify-center">
-        <img src={LoadingRocket} alt="loading rocket" />
+        <img src={RobotHearts} alt="loading rocket" className="h-16 w-16" />
         <Typography
           type="h2"
           color="white"
