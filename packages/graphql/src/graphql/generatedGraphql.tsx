@@ -1512,7 +1512,6 @@ export type ChildProgressReport = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
-  isAllObservationsComplete?: Maybe<Scalars['Boolean']>;
   observationsCompleteDate?: Maybe<Scalars['DateTime']>;
   reportContent?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
@@ -1530,7 +1529,6 @@ export type ChildProgressReportFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
-  isAllObservationsComplete?: InputMaybe<BooleanOperationFilterInput>;
   observationsCompleteDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   or?: InputMaybe<Array<ChildProgressReportFilterInput>>;
   reportContent?: InputMaybe<StringOperationFilterInput>;
@@ -1547,7 +1545,6 @@ export type ChildProgressReportInput = {
   DateCompleted?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
-  IsAllObservationsComplete?: InputMaybe<Scalars['Boolean']>;
   ObservationsCompleteDate?: InputMaybe<Scalars['DateTime']>;
   ReportContent?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -1650,7 +1647,6 @@ export type ChildProgressReportSortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
-  isAllObservationsComplete?: InputMaybe<SortEnumType>;
   observationsCompleteDate?: InputMaybe<SortEnumType>;
   reportContent?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;

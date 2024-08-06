@@ -24,10 +24,9 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
         public Guid? UserId { get; set; }
         public DateTime? DateCompleted { get; set; }
 
-        [ForeignKey(nameof(ChildId))]
+        [ForeignKey(nameof(ChildProgressReportPeriodId))]
         public virtual ChildProgressReportPeriod ChildProgressReportPeriod { get; set; }
         public TKey ChildProgressReportPeriodId { get; set; }
-        public bool? IsAllObservationsComplete { get; set; }
         public DateTime? ObservationsCompleteDate { get; set; }
     }
 
