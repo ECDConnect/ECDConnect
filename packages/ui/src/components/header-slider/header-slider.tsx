@@ -101,6 +101,7 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
       infiniteLoop={infiniteLoop}
       autoPlay={autoPlay}
       renderIndicator={renderIndicator}
+      showIndicators={isSetupComponent ? false : true}
       {...(transitionTime && { transitionTime })}
     >
       {slides.map((slide, idx) => {
