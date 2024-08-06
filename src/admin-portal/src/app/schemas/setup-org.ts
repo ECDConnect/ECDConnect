@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 
 export const setupOrgValues = {
   organisationName: '',
-  applicationName: '',
+  applicationName: 'ECD Connect',
   organisationEmail: '',
   applicationUrl: '',
   darkVersionLogo: '',
