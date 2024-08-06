@@ -143,10 +143,10 @@ export const SubmitIncomeStatements: React.FC = () => {
     !!currentMonthIncomeTotal;
 
   const hasLastTwoMonthsStatements =
-    lastMonthStatement?.month === lastMonth.getMonth() &&
+    (lastMonthStatement?.month || 0) - 1 === lastMonth.getMonth() &&
     lastMonthStatement?.year === lastMonth.getFullYear() &&
-    previousMonthStatement?.month === previousMonth.getMonth() &&
-    previousMonthStatement.year === previousMonth.getFullYear();
+    (previousMonthStatement?.month || 0) - 1 === previousMonth.getMonth() &&
+    previousMonthStatement?.year === previousMonth.getFullYear();
 
   const totalDownloadedStatements = statements.reduce(
     (total, statement) => (statement.downloaded ? total + 1 : total),

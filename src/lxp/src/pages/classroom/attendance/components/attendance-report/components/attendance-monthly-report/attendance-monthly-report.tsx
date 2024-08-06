@@ -27,7 +27,7 @@ export const AttendanceMonthlyReport: React.FC<
           return (
             <div
               onClick={() => {
-                if (!attendanceItem.percentageAttendance) return;
+                if (attendanceItem.totalScheduledSessions === 0) return;
                 history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
                   selectedMonth: attendanceItem,
                 } as MonthlyAttendanceReportRouteState);
@@ -67,7 +67,7 @@ export const AttendanceMonthlyReport: React.FC<
                     className={'text-4xl'}
                   />
                   <div className={'h-6 w-6 pl-4 pt-2'}>
-                    {!!attendanceItem.percentageAttendance &&
+                    {attendanceItem.totalScheduledSessions > 0 &&
                       renderIcon('ChevronRightIcon', 'text-primary h-6')}
                   </div>
                 </div>

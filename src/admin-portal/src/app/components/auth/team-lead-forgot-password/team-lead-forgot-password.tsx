@@ -21,7 +21,6 @@ import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
-import ROUTES from '../../../routes/app.routes-constants';
 
 export default function TeamLeadForgotPassword() {
   const { theme } = useTheme();
