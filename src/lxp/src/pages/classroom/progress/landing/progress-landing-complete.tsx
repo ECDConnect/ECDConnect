@@ -264,33 +264,6 @@ export const ProgressLandingComplete: React.FC<
             </Card>
           )}
 
-          {/* Show notes */}
-          {!!currentReport.notes && (
-            <Card className="bg-uiBg mb-4 rounded-2xl p-4">
-              <Typography type="h3" color="textDark" text={'Notes'} />
-              <Typography
-                type="body"
-                color="textMid"
-                text={currentReport.notes}
-              />
-              <Button
-                onClick={() =>
-                  history.push(ROUTES.PROGRESS_OBSERVATIONS_NOTES, {
-                    childId: childId,
-                  })
-                }
-                className="mt-2"
-                size="normal"
-                color="quatenary"
-                type="filled"
-                icon="PencilIcon"
-                text="Edit"
-                textColor="white"
-                iconPosition="end"
-              />
-            </Card>
-          )}
-
           {/* Show skills to work on */}
           {!currentObservationsAllPositive &&
             skillsToWorkOnByCategory.map((category) => (
@@ -373,6 +346,34 @@ export const ProgressLandingComplete: React.FC<
               </div>
             ))}
 
+          {/* Show notes */}
+          {!!currentReport.notes && (
+            <Card className="bg-uiBg mb-4 rounded-2xl p-4">
+              <Typography type="h3" color="textDark" text={'Notes'} />
+              <Typography
+                type="body"
+                color="textMid"
+                text={currentReport.notes}
+              />
+              <Button
+                onClick={() =>
+                  history.push(ROUTES.PROGRESS_OBSERVATIONS_NOTES, {
+                    childId: childId,
+                  })
+                }
+                className="mt-2"
+                size="normal"
+                color="quatenary"
+                type="filled"
+                icon="PencilIcon"
+                text="Edit"
+                textColor="white"
+                iconPosition="end"
+              />
+            </Card>
+          )}
+
+          {/* Do not know skills */}
           {currentReport.skillObservations.some(
             (x) => x.value === ProgressSkillValues.DoNotKnow
           ) && (
