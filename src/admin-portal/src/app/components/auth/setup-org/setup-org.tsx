@@ -20,6 +20,7 @@ import { InformationCircleIcon } from '@heroicons/react/solid';
 import { IndividualTerms } from './components/individual-terms/individual-terms';
 import { useHistory } from 'react-router';
 import ROUTES from '../../../routes/app.routes-constants';
+import setupBackground from '../../../../assets/setup_background.svg';
 
 export const SetupOrg = () => {
   const { theme } = useTheme();
@@ -146,12 +147,14 @@ export const SetupOrg = () => {
                     color={'infoDark'}
                     className="text-sm"
                   ></Typography>
-                  <span
-                    className="text-secondary text-sm font-semibold"
+                  <Typography
+                    text={`<a>click here</a>.`}
+                    type="markdown"
+                    color={'secondary'}
+                    className="cursor-pointer text-sm font-semibold underline"
+                    hasMarkup
                     onClick={() => setOpenSummaryModal(true)}
-                  >
-                    click here
-                  </span>
+                  ></Typography>
                 </div>
               </div>
             </Card>
@@ -167,17 +170,20 @@ export const SetupOrg = () => {
             />
           </div>
         </div>
-        <div className="bg-adminPortalBg h-screen">
-          <div className="relative top-24 left-40 w-8/12">
-            <HeaderSlider
-              className="h-fullmx-4"
-              cardClassName="h-550 object-scale-down"
-              slides={headerSlide}
-              autoPlay
-              infiniteLoop
-              transitionTime={500}
-              isSetupComponent={true}
-            />
+        <div className="bg-adminPortalBg bg=[url('../../../../assets/setup_background.svg')] h-screen">
+          <div className="aboslute">
+            <img className="absolute" src={setupBackground} alt="" />
+            <div className="relative top-24 left-40 w-8/12">
+              <HeaderSlider
+                className="mx-4 h-full"
+                cardClassName="h-550"
+                slides={headerSlide}
+                autoPlay
+                infiniteLoop
+                transitionTime={500}
+                isSetupComponent={true}
+              />
+            </div>
           </div>
         </div>
         <Dialog
