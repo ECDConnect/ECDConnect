@@ -1,8 +1,5 @@
 import { ActionModal, Button, DialogPosition } from '@ecdlink/ui';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import {
-  HealthCareWorkerDto,
-  NOTIFICATION,
   RoleSystemNameEnum,
   UserDto,
   useDialog,
@@ -13,13 +10,11 @@ import { SendInviteToApplication } from '@ecdlink/graphql';
 
 interface SendInviteProps {
   userData: UserDto;
-  chwData: HealthCareWorkerDto;
   refetchUserData?: () => void;
 }
 
 export const SendInvite: React.FC<SendInviteProps> = ({
   userData,
-  chwData,
   refetchUserData,
 }) => {
   const dialog = useDialog();

@@ -1,9 +1,9 @@
-import { HealthCareWorkerSummaryForPeriodDto } from '@ecdlink/core';
+import { PractitionerStatsDto } from '@ecdlink/core';
 import { Divider, Typography } from '@ecdlink/ui';
 import { ExclamationCircleIcon, StarIcon } from '@heroicons/react/solid';
 
 interface PractitionerIssuesAndHighlightsProps {
-  summaryData: HealthCareWorkerSummaryForPeriodDto;
+  summaryData: PractitionerStatsDto;
 }
 
 export const PractitionerIssuesAndHighlights: React.FC<
@@ -36,7 +36,11 @@ export const PractitionerIssuesAndHighlights: React.FC<
                 type={'h1'}
                 hasMarkup
                 fontSize="24"
-                text={String(summaryData?.totalVisitsMissed)}
+                text={
+                  summaryData?.totalAttendanceRegistersNotCompleted !==
+                    undefined &&
+                  String(summaryData?.totalAttendanceRegistersNotCompleted)
+                }
                 color={'errorMain'}
               />
               <Typography
@@ -50,7 +54,10 @@ export const PractitionerIssuesAndHighlights: React.FC<
                 type={'h1'}
                 hasMarkup
                 fontSize="24"
-                text={String(summaryData?.totalPregnantMomsWithUrgentIssues)}
+                text={
+                  summaryData?.totalProgressReportsNotCompleted !== undefined &&
+                  String(summaryData?.totalProgressReportsNotCompleted)
+                }
                 color={'errorMain'}
               />
               <Typography
@@ -64,9 +71,10 @@ export const PractitionerIssuesAndHighlights: React.FC<
                 type={'h1'}
                 hasMarkup
                 fontSize="24"
-                text={String(
-                  summaryData?.totalCaregiversAndChildrenWithUrgentIssues
-                )}
+                text={
+                  summaryData?.totalIncomeStatementsWithNoItems !== undefined &&
+                  String(summaryData?.totalIncomeStatementsWithNoItems)
+                }
                 color={'errorMain'}
               />
               <Typography
@@ -104,7 +112,11 @@ export const PractitionerIssuesAndHighlights: React.FC<
                 type={'h1'}
                 hasMarkup
                 fontSize="24"
-                text={String(summaryData?.totalVisitsOverdue)}
+                text={
+                  summaryData?.totalAttendanceRegistersCompleted !==
+                    undefined &&
+                  String(summaryData?.totalAttendanceRegistersCompleted)
+                }
                 color={'successMain'}
               />
               <Typography
@@ -118,7 +130,10 @@ export const PractitionerIssuesAndHighlights: React.FC<
                 type={'h1'}
                 hasMarkup
                 fontSize="24"
-                text={String(summaryData?.totalPregnantMomsWithIssues)}
+                text={
+                  summaryData?.totalProgressReportsCompleted !== undefined &&
+                  String(summaryData?.totalProgressReportsCompleted)
+                }
                 color={'successMain'}
               />
               <Typography
@@ -132,7 +147,10 @@ export const PractitionerIssuesAndHighlights: React.FC<
                 type={'h1'}
                 hasMarkup
                 fontSize="24"
-                text={String(summaryData?.totalCaregiversAndChildrenWithIssues)}
+                text={
+                  summaryData?.totalIncomeStatementsDownloaded !== undefined &&
+                  String(summaryData?.totalIncomeStatementsDownloaded)
+                }
                 color={'successMain'}
               />
               <Typography

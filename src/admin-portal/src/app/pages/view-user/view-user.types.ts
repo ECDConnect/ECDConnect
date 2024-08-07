@@ -4,6 +4,7 @@ export enum UsersRouteRedirectTypeEnum {
   admins = 'Administrator',
   practitioner = 'Practitioner',
   principal = 'Principal',
+  coach = 'coach',
 }
 
 export enum UsersRolesTypeEnum {
@@ -13,6 +14,7 @@ export enum UsersRolesTypeEnum {
   administrator = 'Administrator',
   practitioner = 'Practitioner',
   principal = 'Principal',
+  coach = 'Coach',
 }
 
 export enum idTypeEnum {

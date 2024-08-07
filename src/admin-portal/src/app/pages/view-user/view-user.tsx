@@ -24,8 +24,8 @@ import {
   GetUserById,
   GetHealthCareWorkerSummaryForPeriod,
   GetTeamLeadSummary,
-  GetPractitionerById,
   GetPractitionerByUserId,
+  GetPractitionerStats,
 } from '@ecdlink/graphql';
 import { subDays } from 'date-fns';
 import {
@@ -37,6 +37,7 @@ import { TeamLeadMeetingReport } from './components/team-lead-meeting-reports/te
 import { ConenctUsage } from '../users/sub-pages/team-leads/team-leads.types';
 import { SendInvite } from './components/send-invite/send-invite';
 import { DeactivateUser } from './components/deactivate-user/deactivate-user';
+import { ReactivateUser } from './components/reactivate-user/reactivate-user';
 import { HealthCareWorkerSummary } from './components/health-care-worker-summary/health-care-worker-summary';
 import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
 import { HealthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
@@ -89,6 +90,8 @@ export function ViewUser(props: any) {
   const practitionerUserId = props?.location?.state?.userId;
   const isPrincipal =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.principal;
+  const isCoach =
+    props.location.state?.component === UsersRouteRedirectTypeEnum?.coach;
   const isTeamLead =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
   const isFromAdministratorTable =
@@ -99,7 +102,7 @@ export function ViewUser(props: any) {
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
   const tenant = useTenant();
-  console.log({ connectUsage });
+
   const { isTeamLead: isTeamLeadRole, isAdministrator } = useUserRole();
 
   const [startDate, setStartDate] = useState(startDate1);
@@ -136,16 +139,6 @@ export function ViewUser(props: any) {
       ];
 
   const [
-    getChwById,
-    { data: chwData, refetch: refetchCHW, loading: loadingChw },
-  ] = useLazyQuery(GetHealthCareWorkerByUserId, {
-    variables: {
-      userId: '',
-    },
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const [
     getPractitionerByUserId,
     {
       data: practitionerData,
@@ -165,6 +158,24 @@ export function ViewUser(props: any) {
     }
   }, [getPractitionerByUserId, isPractitioner]);
 
+  const [getPractitionerStats, { data: practitionerStatsData }] = useLazyQuery(
+    GetPractitionerStats,
+    {
+      variables: {
+        userId: practitionerUserId,
+        startDate: startDate?.[0]?.toISOString() ?? startDate?.toISOString(),
+        endDate: endDate?.[1]?.toISOString() ?? endDate?.toISOString(),
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+
+  useEffect(() => {
+    if (isPractitioner) {
+      getPractitionerStats();
+    }
+  }, [getPractitionerStats, isPractitioner]);
+
   const {
     data: userData,
     refetch: refetchUserData,
@@ -176,67 +187,7 @@ export function ViewUser(props: any) {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
-    useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
-      variables: {
-        userId: '',
-        healthCareWorkerId: '',
-        startDate: '',
-        endDate: '',
-      },
-      fetchPolicy: 'cache-and-network',
-    });
-
-  const isLoading = loadingChw || loadingUser;
-
-  useEffect(() => {
-    getHealthCareWorkerSummaryForPeriod({
-      variables: {
-        userId: props.location.state.userId ?? userId,
-        healthCareWorkerId:
-          chwData?.GetHealthCareWorkerById?.user?.id ??
-          props.location.state.userId ??
-          userId,
-        startDate: startDate?.[0]?.toISOString() ?? startDate?.toISOString(),
-        endDate: endDate?.[1]?.toISOString() ?? endDate?.toISOString(),
-      },
-    });
-  }, [
-    chwData?.GetHealthCareWorkerById?.user?.id,
-    endDate,
-    getHealthCareWorkerSummaryForPeriod,
-    props.location.state.userId,
-    startDate,
-    userId,
-  ]);
-
-  const [getTeamLeadSummary, { data: teamLeadSummary }] = useLazyQuery(
-    GetTeamLeadSummary,
-    {
-      variables: {
-        teamLeadId: teamLeadId,
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
-
-  useEffect(() => {
-    if (teamLeadId) {
-      getTeamLeadSummary();
-    }
-  }, [getTeamLeadSummary, teamLeadId]);
-
-  const teamLeadReportData = useMemo(
-    () => teamLeadSummary?.teamLeadSummary,
-    [teamLeadSummary?.teamLeadSummary]
-  );
-
-  useEffect(() => {
-    props.location.state?.component === UsersRouteRedirectTypeEnum?.chw &&
-      getChwById({
-        variables: { userId: props.location.state.userId ?? userId },
-      });
-  }, [userId]);
+  const isLoading = loadingUser;
 
   const isNotLockedOut = (user) => {
     if (!user) return true;
@@ -306,6 +257,18 @@ export function ViewUser(props: any) {
               backgroundColour="primary"
               textColour="white"
               text={UsersRolesTypeEnum?.principal}
+            />
+          </div>
+        );
+      case UsersRouteRedirectTypeEnum?.coach:
+        return (
+          <div>
+            <StatusChip
+              className="ml-auto self-center py-2"
+              borderColour="primary"
+              backgroundColour="primary"
+              textColour="white"
+              text={UsersRolesTypeEnum?.coach}
             />
           </div>
         );
@@ -412,10 +375,7 @@ export function ViewUser(props: any) {
       <div className="mt-9 mb-7 flex gap-7">
         <ProfileAvatar
           canChangeImage={false}
-          dataUrl={
-            userData?.userById?.profileImageUrl ||
-            chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
-          }
+          dataUrl={userData?.userById?.profileImageUrl}
           onPressed={() => {}}
           hasConsent
           size="header"
@@ -424,59 +384,36 @@ export function ViewUser(props: any) {
           <Typography
             type="h1"
             color="textMid"
-            text={
-              userData?.userById?.fullName ??
-              chwData?.GetHealthCareWorkerById?.user?.fullName
-            }
+            text={userData?.userById?.fullName}
           />
           <div className="flex gap-2">
             {getRoleStatusChip(props.location.state?.component)}
-            {(isTeamLead || isCHWRole || isPractitioner || isPrincipal) &&
+            {(isTeamLead ||
+              isCHWRole ||
+              isPractitioner ||
+              isPrincipal ||
+              isCoach) &&
               getConnectUsageChip(connectUsage)}
           </div>
         </div>
       </div>
-      {chwData &&
-        chwData?.GetHealthCareWorkerById?.user?.roles?.map(
-          (i: any, index: number) => {
-            return (
-              <div
-                key={i.id}
-                className={classNames(
-                  i.name === RoleSystemNameEnum.CHW
-                    ? 'bg-primary'
-                    : 'bg-tertiary',
-                  ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
-                )}
-              >
-                <p className="text-16">
-                  {' '}
-                  {i.name === RoleSystemNameEnum.CHW ? 'CHW' : i.name}
-                </p>
-              </div>
-            );
-          }
-        )}
-      {!isNotLockedOut(
-        userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-      ) && (
+
+      {!isNotLockedOut(userData?.userById) && (
         <Alert
           className="mt-5 mb-3"
-          message={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
+          title={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
           type="error"
         />
       )}
 
       <PersonalInfo
         userData={userData?.userById}
-        chwData={chwData?.GetHealthCareWorkerById}
         isRegistered={isRegistered}
         component={props?.location?.state?.component}
         isTeamLead={isTeamLead}
         hcwId={hcwId}
         clinicId={props?.location?.state?.clinicId}
         refetchUserData={refetchUserData}
-        refetchCHW={refetchCHW}
         isNotLockedOut={isNotLockedOut}
         isAdministrator={isAdministrator}
         isFromAdministratorTable={isFromAdministratorTable}
@@ -488,9 +425,9 @@ export function ViewUser(props: any) {
       />
 
       {(isCHWRole ||
-        props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
-        isRegistered &&
-        tenant.isCHWConnect && (
+        props.location.state?.component ===
+          UsersRouteRedirectTypeEnum?.practitioner) &&
+        isRegistered && (
           <DatePicker
             selectsRange
             selected={startDate}
@@ -509,37 +446,16 @@ export function ViewUser(props: any) {
           />
         )}
 
-      {(isCHWRole ||
-        props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
-        isRegistered && (
-          <HealthCareWorkerSummary
-            summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
-          />
-        )}
       {isPractitioner && isRegistered && (
         <PractitionerSummary
-          summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+          summaryData={practitionerStatsData?.practitionerStats}
         />
       )}
       {isPractitioner && isRegistered && (
         <PractitionerIssuesAndHighlights
-          summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
+          summaryData={practitionerStatsData?.practitionerStats}
         />
       )}
-      {(isCHWRole ||
-        props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
-        isRegistered && (
-          <HealthCareWorkerIssues
-            summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
-          />
-        )}
-      {(isCHWRole ||
-        props.location.state?.component === UsersRouteRedirectTypeEnum?.chw) &&
-        isRegistered && (
-          <HealthCareWorkerHighlights
-            summaryData={summaryData?.healthCareWorkerSummaryForPeriod}
-          />
-        )}
 
       {(isTeamLead ||
         props.location.state?.component ===
@@ -549,56 +465,43 @@ export function ViewUser(props: any) {
         </>
       )}
 
-      {(isTeamLead ||
-        props.location.state?.component ===
-          UsersRouteRedirectTypeEnum?.teamLeads) &&
-        isRegistered && (
-          <>
-            <TeamLeadSummary
-              teamLeadReportData={teamLeadReportData}
-              clinicIds={clinicIds}
-            />
-            <TeamLeadMeetingReport
-              teamLeadReportData={teamLeadReportData}
-              clinicIds={clinicIds}
-            />
-          </>
-        )}
-
       <div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
-        {isNotLockedOut(
-          userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-        ) &&
-          !isTeamLeadRole && (
-            <div className="flex flex-col gap-2 lg:flex-row">
-              {!isRegistered && (
-                <SendInvite
-                  userData={userData?.userById}
-                  chwData={chwData?.GetHealthCareWorkerById}
-                  refetchUserData={refetchUserData}
-                />
-              )}
-              {/* {isRegistered && isAdministrator && (
+        {isNotLockedOut(userData?.userById) && !isTeamLeadRole && (
+          <div className="flex flex-col gap-2 lg:flex-row">
+            {!isRegistered && (
+              <SendInvite
+                userData={userData?.userById}
+                refetchUserData={refetchUserData}
+              />
+            )}
+            {/* {isRegistered && isAdministrator && (
                 <ResetUserPassword userData={userData?.userById} />
               )} */}
-              <DeactivateUser
-                userData={userData?.userById}
-                chwData={chwData?.GetHealthCareWorkerById}
-                refetchUserData={refetchUserData}
-                isTeamLead={isTeamLead}
-                isAdministrator={isAdministrator}
-                teamLeadId={teamLeadId}
-                hcwId={hcwId}
-              />
-            </div>
-          )}
+            <DeactivateUser
+              userData={userData?.userById}
+              refetchUserData={refetchUserData}
+              isTeamLead={isTeamLead}
+              isAdministrator={isAdministrator}
+              teamLeadId={teamLeadId}
+              hcwId={hcwId}
+            />
+          </div>
+        )}
+
+        {!isNotLockedOut(userData?.userById) && (
+          <ReactivateUser
+            userData={userData?.userById}
+            refetchUserData={refetchUserData}
+            isTeamLead={isTeamLead}
+            isAdministrator={isAdministrator}
+            teamLeadId={teamLeadId}
+            hcwId={hcwId}
+          />
+        )}
 
         <p className="ml-auto text-sm text-gray-600">
           User added to {tenant.tenant?.applicationName} App :{' '}
-          {formatDate(
-            chwData?.GetHealthCareWorkerById?.insertedDate ||
-              userData?.userById?.insertedDate
-          )}
+          {formatDate(userData?.userById?.insertedDate)}
         </p>
       </div>
     </div>

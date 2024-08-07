@@ -1,8 +1,8 @@
-import { HealthCareWorkerSummaryForPeriodDto } from '@ecdlink/core';
+import { PractitionerStatsDto } from '@ecdlink/core';
 import { Divider, Typography } from '@ecdlink/ui';
 
 interface PractitionerSummaryProps {
-  summaryData: HealthCareWorkerSummaryForPeriodDto;
+  summaryData: PractitionerStatsDto;
 }
 
 export const PractitionerSummary: React.FC<PractitionerSummaryProps> = ({
@@ -25,8 +25,8 @@ export const PractitionerSummary: React.FC<PractitionerSummaryProps> = ({
               hasMarkup
               fontSize="48"
               text={
-                summaryData?.totalPregnantMoms !== undefined &&
-                String(summaryData?.totalPregnantMoms)
+                summaryData?.totalPractitionersForSchool !== undefined &&
+                String(summaryData?.totalPractitionersForSchool)
               }
               color={'textMid'}
             />
@@ -42,8 +42,8 @@ export const PractitionerSummary: React.FC<PractitionerSummaryProps> = ({
               hasMarkup
               fontSize="48"
               text={
-                summaryData?.totalChildren !== undefined &&
-                String(summaryData?.totalChildren)
+                summaryData?.totalChildrenForSchool !== undefined &&
+                String(summaryData?.totalChildrenForSchool)
               }
               color={'textMid'}
             />
@@ -55,8 +55,8 @@ export const PractitionerSummary: React.FC<PractitionerSummaryProps> = ({
               hasMarkup
               fontSize="48"
               text={
-                summaryData?.totalFoldersOpened !== undefined &&
-                String(summaryData?.totalFoldersOpened)
+                summaryData?.totalClassesForSchool !== undefined &&
+                String(summaryData?.totalClassesForSchool)
               }
               color={'textMid'}
             />

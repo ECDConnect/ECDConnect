@@ -325,3 +325,27 @@ export const GetPractitionerByUserId = gql`
     }
   }
 `;
+
+export const GetPractitionerStats = gql`
+  query GetPractitionerStats(
+    $userId: UUID!
+    $startDate: DateTime!
+    $endDate: DateTime!
+  ) {
+    practitionerStats(
+      userId: $userId
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      totalPractitionersForSchool
+      totalChildrenForSchool
+      totalClassesForSchool
+      totalAttendanceRegistersCompleted
+      totalAttendanceRegistersNotCompleted
+      totalProgressReportsCompleted
+      totalProgressReportsNotCompleted
+      totalIncomeStatementsDownloaded
+      totalIncomeStatementsWithNoItems
+    }
+  }
+`;

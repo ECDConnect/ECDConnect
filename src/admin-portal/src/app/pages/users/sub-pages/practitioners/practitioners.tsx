@@ -199,7 +199,6 @@ export default function Practitioners() {
     const user = tableData?.find(
       (item) => item?.userId === selectedRow?.userId
     );
-    console.log({ user });
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id

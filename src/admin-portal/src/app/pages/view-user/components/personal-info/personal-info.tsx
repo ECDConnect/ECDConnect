@@ -25,7 +25,6 @@ import {
   UserModelInput,
 } from '@ecdlink/graphql';
 import {
-  HealthCareWorkerDto,
   NOTIFICATION,
   PractitionerDto,
   UserDto,
@@ -42,14 +41,12 @@ import { cloneDeep } from '@apollo/client/utilities';
 
 export interface PersonalInfoProps {
   userData: UserDto;
-  chwData: HealthCareWorkerDto;
   isRegistered: boolean;
   component: string;
   isTeamLead: boolean;
   hcwId: string;
   clinicId: string;
   refetchUserData: () => void;
-  refetchCHW: () => void;
   isNotLockedOut: (user: UserDto) => boolean;
   isAdministrator?: boolean;
   userTypeToEdit: string;
@@ -66,9 +63,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   hcwId,
   clinicId,
   practitioner,
-  chwData,
   refetchUserData,
-  refetchCHW,
   isNotLockedOut,
   isAdministrator,
   userTypeToEdit,
@@ -190,6 +185,10 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
+  const isIdNumber = useMemo(
+    () => SA_ID_REGEX?.test(userData?.idNumber),
+    [userData?.idNumber]
+  );
 
   const { isValid: isAdminDetailValid } = adminDetailFormState;
 
@@ -219,38 +218,26 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   }, [userData]);
 
   useEffect(() => {
-    adminDetailSetValue('email', userData?.email || chwData?.user.email, {
+    adminDetailSetValue('email', userData?.email, {
       shouldValidate: true,
     });
 
-    chwDetailSetValue(
-      'idNumber',
-      userData?.idNumber || chwData?.user.idNumber,
-      {
-        shouldValidate: true,
-      }
-    );
+    chwDetailSetValue('idNumber', userData?.idNumber, {
+      shouldValidate: true,
+    });
 
-    chwDetailSetValue(
-      'phoneNumber',
-      userData?.phoneNumber || chwData?.user.phoneNumber,
-      {
-        shouldValidate: true,
-      }
-    );
-    chwDetailSetValue(
-      'firstName',
-      userData?.firstName || chwData?.user.firstName,
-      {
-        shouldValidate: true,
-      }
-    );
-    chwDetailSetValue('surname', userData?.surname || chwData?.user.surname, {
+    chwDetailSetValue('phoneNumber', userData?.phoneNumber, {
+      shouldValidate: true,
+    });
+    chwDetailSetValue('firstName', userData?.firstName, {
+      shouldValidate: true,
+    });
+    chwDetailSetValue('surname', userData?.surname, {
       shouldValidate: true,
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData, chwData]);
+  }, [userData]);
 
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
@@ -268,16 +255,12 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
     await updateUser({
       variables: {
-        id: userData?.id ?? chwData?.user.id,
+        id: userData?.id,
         input: userInputModel,
       },
     })
       .then(() => {
         if (userData?.phoneNumber) refetchUserData();
-
-        if (chwData?.user?.phoneNumber) {
-          refetchCHW();
-        }
 
         setNotification({
           title: 'Successfully Updated User!',
@@ -294,7 +277,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id: userData?.id ?? chwData?.user.id,
+          id: userData?.id,
           newPassword: passwordForm.password,
         },
       }).then(() => {
@@ -345,95 +328,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 <div className="grid grid-cols-1 ">
                   {userData && (
                     <>
-                      {!isRegistered && !isFromAdministratorTable && (
-                        <>
-                          <div className="my-4 sm:col-span-3">
-                            <Typography
-                              text={
-                                'Which kind of identification do you have for the ' +
-                                userTypeToEdit +
-                                '? *'
-                              }
-                              type={'body'}
-                              color={'textMid'}
-                            />
-                            <div className=" mb-4 flex flex-row">
-                              <Button
-                                className={'mt-3 mr-1 w-full rounded-md '}
-                                type={'filled'}
-                                color={
-                                  idType === idTypeEnum.idNumber
-                                    ? 'tertiary'
-                                    : 'errorBg'
-                                }
-                                onClick={() => {
-                                  setIdType(idTypeEnum.idNumber);
-                                  localStorage.setItem(
-                                    'preferedId',
-                                    idTypeEnum.idNumber
-                                  );
-                                }}
-                              >
-                                <Typography
-                                  type="help"
-                                  color={
-                                    idType === idTypeEnum.idNumber
-                                      ? 'white'
-                                      : 'tertiary'
-                                  }
-                                  text="Id Number"
-                                ></Typography>
-                              </Button>
-
-                              <Button
-                                className={'mt-3 mr-1 w-full rounded-md '}
-                                type={'filled'}
-                                color={
-                                  idType === idTypeEnum.idNumber
-                                    ? 'errorBg'
-                                    : 'tertiary'
-                                }
-                                onClick={() => {
-                                  setIdType(idTypeEnum.passport);
-                                  localStorage.setItem(
-                                    'preferedId',
-                                    idTypeEnum.passport
-                                  );
-                                }}
-                              >
-                                <Typography
-                                  type="help"
-                                  color={
-                                    idType === idTypeEnum.passport
-                                      ? 'white'
-                                      : 'tertiary'
-                                  }
-                                  text="Passport"
-                                ></Typography>
-                              </Button>
-                            </div>
-                            <FormField
-                              label={
-                                idType === idTypeEnum.idNumber
-                                  ? 'ID number *'
-                                  : 'Passport *'
-                              }
-                              nameProp={idTypeEnum.idNumber}
-                              register={registerCHW}
-                              error={chwDetailFormErrors.idNumber?.message}
-                              placeholder={
-                                idType === idTypeEnum.idNumber
-                                  ? 'e.g 6201014800088'
-                                  : 'e.g EN000666'
-                              }
-                              defaultValue={userData?.idNumber}
-                            />
-                          </div>
-                        </>
-                      )}
                       {!isFromAdministratorTable && (
                         <>
-                          <div className="my-4 w-6/12 sm:col-span-3">
+                          <div className="my-4 w-full sm:col-span-3">
                             <FormField
                               label={'First name'}
                               nameProp={'firstName'}
@@ -441,7 +338,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                               error={chwDetailFormErrors.firstName?.message}
                             />
                           </div>
-                          <div className="my-4 w-6/12 sm:col-span-3">
+                          <div className="w-full2 my-4 sm:col-span-3">
                             <FormField
                               label={'Surname *'}
                               nameProp={'surname'}
@@ -449,6 +346,92 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                               error={chwDetailFormErrors?.surname?.message}
                             />
                           </div>
+                          {!isRegistered && !isFromAdministratorTable && (
+                            <>
+                              <div className="my-4 sm:col-span-3">
+                                <Typography
+                                  text={
+                                    'Which kind of identification do you have for the ' +
+                                    userTypeToEdit +
+                                    '? *'
+                                  }
+                                  type={'body'}
+                                  color={'textMid'}
+                                />
+                                <div className=" mb-4 flex flex-row">
+                                  <Button
+                                    className={'mt-3 mr-1 w-full rounded-md '}
+                                    type={'filled'}
+                                    color={
+                                      idType === idTypeEnum.idNumber
+                                        ? 'tertiary'
+                                        : 'errorBg'
+                                    }
+                                    onClick={() => {
+                                      setIdType(idTypeEnum.idNumber);
+                                      localStorage.setItem(
+                                        'preferedId',
+                                        idTypeEnum.idNumber
+                                      );
+                                    }}
+                                  >
+                                    <Typography
+                                      type="help"
+                                      color={
+                                        idType === idTypeEnum.idNumber
+                                          ? 'white'
+                                          : 'tertiary'
+                                      }
+                                      text="Id Number"
+                                    ></Typography>
+                                  </Button>
+
+                                  <Button
+                                    className={'mt-3 mr-1 w-full rounded-md '}
+                                    type={'filled'}
+                                    color={
+                                      idType === idTypeEnum.idNumber
+                                        ? 'errorBg'
+                                        : 'tertiary'
+                                    }
+                                    onClick={() => {
+                                      setIdType(idTypeEnum.passport);
+                                      localStorage.setItem(
+                                        'preferedId',
+                                        idTypeEnum.passport
+                                      );
+                                    }}
+                                  >
+                                    <Typography
+                                      type="help"
+                                      color={
+                                        idType === idTypeEnum.passport
+                                          ? 'white'
+                                          : 'tertiary'
+                                      }
+                                      text="Passport"
+                                    ></Typography>
+                                  </Button>
+                                </div>
+                                <FormField
+                                  label={
+                                    idType === idTypeEnum.idNumber
+                                      ? 'ID number *'
+                                      : 'Passport *'
+                                  }
+                                  nameProp={idTypeEnum.idNumber}
+                                  register={registerCHW}
+                                  error={chwDetailFormErrors.idNumber?.message}
+                                  placeholder={
+                                    idType === idTypeEnum.idNumber
+                                      ? 'e.g 6201014800088'
+                                      : 'e.g EN000666'
+                                  }
+                                  defaultValue={userData?.idNumber}
+                                />
+                              </div>
+                            </>
+                          )}
                           <div className="my-4 w-6/12 sm:col-span-3">
                             <FormField
                               label={'Cellphone number *'}
@@ -474,22 +457,23 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   )}
 
                   <div>
-                    {component === UsersRouteRedirectTypeEnum?.practitioner && (
-                      <Dropdown
-                        placeholder={'Click to select a coach'}
-                        className={'justify-between'}
-                        label={'Coach *'}
-                        list={coaches || []}
-                        onChange={(item) => {
-                          setHasCoachChange(true);
-                          setCoach(item);
-                        }}
-                        fullWidth
-                        labelColor="textMid"
-                        fillColor="adminPortalBg"
-                        selectedValue={coach || practitionerCoach}
-                      />
-                    )}
+                    {component === UsersRouteRedirectTypeEnum?.practitioner &&
+                      practitioner?.isPrincipal && (
+                        <Dropdown
+                          placeholder={'Click to select a coach'}
+                          className={'justify-between'}
+                          label={'Coach *'}
+                          list={coaches || []}
+                          onChange={(item) => {
+                            setHasCoachChange(true);
+                            setCoach(item);
+                          }}
+                          fullWidth
+                          labelColor="textMid"
+                          fillColor="adminPortalBg"
+                          selectedValue={coach || practitionerCoach}
+                        />
+                      )}
                     {/* {!isTeamLead &&
                       !hcwId &&
                       !isFromAdministratorTable &&
@@ -549,11 +533,15 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-x-12">
                 <div className="flex gap-2">
-                  <Typography type="h4" color="textMid" text={'ID:'} />
+                  <Typography
+                    type="h4"
+                    color="textMid"
+                    text={isIdNumber ? 'ID:' : 'Passport:'}
+                  />
                   <Typography
                     type="body"
                     color="textMid"
-                    text={userData?.idNumber || chwData?.user?.idNumber}
+                    text={userData?.idNumber}
                   />
                 </div>
                 <div className="flex gap-2">
@@ -561,7 +549,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   <Typography
                     type="body"
                     color="textMid"
-                    text={userData?.phoneNumber || chwData?.user?.phoneNumber}
+                    text={userData?.phoneNumber}
                   />
                 </div>
                 {userData?.whatsAppNumber && (
@@ -570,10 +558,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                     <Typography
                       type="body"
                       color="textMid"
-                      text={
-                        userData?.whatsAppNumber ||
-                        chwData?.user?.whatsAppNumber
-                      }
+                      text={userData?.whatsAppNumber}
                     />
                   </div>
                 )}
@@ -621,21 +606,19 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       </div>
 
       <div className="flex justify-end p-4">
-        {isNotLockedOut(userData ?? chwData?.user) &&
-          !isTeamLeadRole &&
-          isAdministrator && (
-            <button
-              onClick={() => {
-                setEditActive(!editActive);
-              }}
-              id="dropdownHoverButton"
-              className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-              type="button"
-            >
-              {' '}
-              {editActive ? 'Close' : 'Edit'}
-            </button>
-          )}
+        {isNotLockedOut(userData) && !isTeamLeadRole && isAdministrator && (
+          <button
+            onClick={() => {
+              setEditActive(!editActive);
+            }}
+            id="dropdownHoverButton"
+            className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+            type="button"
+          >
+            {' '}
+            {editActive ? 'Close' : 'Edit'}
+          </button>
+        )}
       </div>
       <Dialog
         className="rounded-2xl py-36 px-72"
