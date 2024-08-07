@@ -542,9 +542,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public PractitionerStats GetPractitionerStats(Guid userId)
+        public PractitionerStats GetPractitionerStats(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory, 
+            Guid userId,
+            DateTime startDate,
+            DateTime endDate)
         {
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+
             PractitionerStats stats = new PractitionerStats();
+
+            var practitioner = practitionerRepo.GetByUserId(userId);
+            // var classroom = classroomRepo.GetByUserId((Guid)practitioner.PrincipalHierarchy);
+            // var classroomGroups = classroom.ClassroomGroups;
+
 
             stats.TotalPractitionersForSchool = 0;
             stats.TotalChildrenForSchool = 0;
