@@ -34,11 +34,10 @@ namespace EcdLink.Api.CoreApi.Services
         public void ProcessPractitionerRemovals()
         {
             var today = DateTime.Now.Date;
-
-            today.AddDays(1).AddSeconds(-1);
+            DateTime tomorrow = today.AddDays(1);
 
             var removals = _removalRepo.GetAll()
-                .Where(x => x.IsActive && x.DateOfRemoval < today)
+                .Where(x => x.IsActive && x.DateOfRemoval < tomorrow)
                 .ToList();
 
             foreach (var removal in removals)
@@ -52,7 +51,7 @@ namespace EcdLink.Api.CoreApi.Services
                     practitioner.PrincipalHierarchy = null;
                     practitioner.DateToBeRemoved = DateTime.Now;
                     practitioner.IsLeaving = true;
-                    practitioner.IsActive = false;
+                    //practitioner.IsActive = false;
                     practitioner.UpdatedBy = _adminUserId;
                     practitioner.UpdatedDate = DateTime.Now;
                     _practitionerRepo.Update(practitioner);
