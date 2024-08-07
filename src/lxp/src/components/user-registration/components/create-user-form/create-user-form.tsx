@@ -100,7 +100,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     }
 
     const body: CheckUsernamePhoneNumberModel = {
-      username,
+      username: username,
+      userId: userId,
     };
     setIsLoading(true);
     const checkUsername = await new AuthService()
