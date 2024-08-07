@@ -238,7 +238,9 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
             history.push(ROUTES.COMMUNITY.CONNECTION_PROFILE, {
               connectionProfile: item,
             }),
-          profileDataUrl: item?.communityUser?.profilePhoto,
+          profileDataUrl: item?.shareProfilePhoto
+            ? item?.communityUser?.profilePhoto
+            : '',
         });
       });
     }
@@ -402,7 +404,11 @@ export const ECDHeroes: React.FC<ECDHeroesProps> = ({ onClose }) => {
               icon={
                 <div className="ml-2">
                   <ProfileAvatar
-                    dataUrl={item?.communityUser?.profilePhoto!}
+                    dataUrl={
+                      item?.shareProfilePhoto
+                        ? item?.communityUser?.profilePhoto!
+                        : ''
+                    }
                     size={'md'}
                     hasConsent={true}
                     className="h-4 w-6 text-white"
