@@ -161,7 +161,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
         : rowsWithKey;
 
     const tableKey = watchMode
-      ? mergedRows.map((row) => `${row.key}_${row.checked}`).join('-')
+      ? rows?.map((row) => `${row.key}_${row.checked}`).join('-')
       : undefined;
 
     useEffect(() => {

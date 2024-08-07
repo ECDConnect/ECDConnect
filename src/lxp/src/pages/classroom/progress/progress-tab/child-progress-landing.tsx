@@ -1,6 +1,7 @@
 import { classroomsSelectors } from '@/store/classroom';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
+  ActionModal,
   Button,
   Card,
   DialogPosition,
@@ -21,8 +22,13 @@ import { ProgressTabReportSummary } from './progress-tab-report-summary';
 import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
 import { ProgressTabObservationsSummary } from './progress-tab-observations-summary';
 import { format } from 'date-fns';
+import { useCallback } from 'react';
+import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
 
 export const ChildProgressLanding: React.FC = () => {
+  const history = useHistory();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
 
@@ -50,6 +56,43 @@ export const ChildProgressLanding: React.FC = () => {
 
   const canAddChildren =
     hasPermissionToManageChildren || !!practitioner?.isPrincipal;
+
+  const handleContinueTrackingProgress = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          customIcon={<RobotIcon className="mb-6" />}
+          importantText="How would you like to track progress today?"
+          detailText="Would you prefer to track progress for a specific child, or by developmental category?"
+          actionButtons={[
+            {
+              text: 'Individual child',
+              textColour: 'white',
+              colour: 'quatenary',
+              type: 'filled',
+              onClick: () => {
+                history.push(ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK);
+                submit();
+              },
+              leadingIcon: 'UserIcon',
+            },
+            {
+              text: 'Category',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                submit();
+                history.push(ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK);
+              },
+              leadingIcon: 'ClipboardListIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog]);
 
   return (
     <>
@@ -104,7 +147,7 @@ export const ChildProgressLanding: React.FC = () => {
           )}`}
         />
         <Button
-          onClick={() => {}} // TODO
+          onClick={handleContinueTrackingProgress}
           className="mt-4 w-full"
           size="small"
           color="quatenary"

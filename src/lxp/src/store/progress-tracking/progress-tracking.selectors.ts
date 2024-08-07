@@ -2,6 +2,7 @@ import {
   ActivityDto,
   ChildDto,
   PractitionerProgressReportSummaryDto,
+  ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
@@ -15,6 +16,7 @@ import { ProgressSkill } from '@/models/progress/progress-skill';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
 import { getCurrentProgressReportPeriod as getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
+import { ChildrenPerAgeGroupProps } from '@/pages/coach/coach-practitioner-classroom/components/childrenPerAgeGroup/childrenperAgeGroup.types';
 
 // CATEGORIES
 export const getProgressTrackingCategories = (
@@ -301,6 +303,13 @@ export const getProgressReportsForReportingPeriod = (
     }
   );
 
+export const getProgressAgeGroups = () =>
+  createSelector(
+    (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
+    (progressTrackingAgeGroups: ProgressTrackingAgeGroupDto[]) => {
+      return progressTrackingAgeGroups;
+    }
+  );
 // export const getChildrenWithoutProgressObservations = (
 //   childProgressReportPeriodId: string
 // ) =>

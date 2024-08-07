@@ -102,13 +102,14 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   // );
 
   useEffect(() => {
+    const endOfDay = new Date(attendanceDate.setHours(12, 59, 59));
     if (classroomGroups?.length) {
       setSelectedClassroomGroups(selectedClassroomGroup);
 
       const _allLearners = allLearners.filter(
         (x) =>
           !Boolean(x.stoppedAttendance) &&
-          attendanceDate.getTime() >= new Date(x.startedAttendance).getTime()
+          endOfDay.getTime() >= new Date(x.startedAttendance).getTime()
       );
 
       const uniqueLearners = _allLearners.filter((object, index, array) => {

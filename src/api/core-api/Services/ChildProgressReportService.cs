@@ -150,6 +150,11 @@ namespace EcdLink.Api.CoreApi.Services
                     existingReport.DateCompleted = input.DateCompleted;
                 }
 
+                if (input.ObservationsCompleteDate != null)
+                {
+                    existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
+                }
+
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
                 existingReport.UserId = _contextUserId;
 
@@ -163,6 +168,7 @@ namespace EcdLink.Api.CoreApi.Services
                     ChildId = input.ChildId,
                     ChildProgressReportPeriodId = input.ChildProgressReportPeriodId,
                     DateCompleted = input.DateCompleted,
+                    ObservationsCompleteDate = input.ObservationsCompleteDate,
                     ReportContent = JsonConvert.SerializeObject(reportContent),
                 };
 
@@ -195,6 +201,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Notes = data.Notes,
                     SkillObservations = data.SkillObservations,
                     SkillsToWorkOn = data.SkillsToWorkOn,
+                    ObservationsCompleteDate = report.ObservationsCompleteDate
                 };
             }
         }

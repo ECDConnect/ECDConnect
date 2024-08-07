@@ -1,7 +1,11 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Managers;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +41,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var statements = incomeExpenseService.GetStatements(userId, startDate, endDate);
 
             return statements.Select(x => new IncomeStatementModel(x)).ToList();
+        }
+
+        public string GetIncomeStatementPdf(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IIncomeExpenseService incomeExpenseService,
+            Guid statementId)
+        {
+            var userId = contextAccessor.HttpContext.GetUser().Id;
+            var statement = incomeExpenseService.GetStatement(statementId);
+
+            var document = incomeExpenseService.CreateIncomeStatementPDFDocument(userId.ToString(), statement);
+
+            return document;
         }
     }
 }

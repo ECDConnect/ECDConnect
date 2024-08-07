@@ -122,7 +122,7 @@ namespace ECDLink.SmartStart.Reports
                                     totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
                                 }
 
-                                if (classReports.Where(x => x.ChildUserId == learner.UserId.ToString()).FirstOrDefault() != null)
+                                if (classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault() != null)
                                 {
                                     //append to existing report and not add if child already exists in report list based on different classes child may be in
                                     var existingReport = classReports.Where(x => x.ChildUserId == learner.UserId.ToString() && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();
