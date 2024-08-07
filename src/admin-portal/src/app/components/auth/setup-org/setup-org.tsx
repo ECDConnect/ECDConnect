@@ -20,6 +20,7 @@ import { InformationCircleIcon } from '@heroicons/react/solid';
 import { IndividualTerms } from './components/individual-terms/individual-terms';
 import { useHistory } from 'react-router';
 import ROUTES from '../../../routes/app.routes-constants';
+import setupBackground from '../../../../assets/setup_background.svg';
 
 export const SetupOrg = () => {
   const { theme } = useTheme();
@@ -54,10 +55,10 @@ export const SetupOrg = () => {
     <BannerWrapper
       size={'normal'}
       renderBorder={true}
+      className={'h-screen'}
       showBackground={false}
       color={'primary'}
       menuLogoUrl={theme?.images?.logoUrl}
-      backgroundColour={'white'}
     >
       <div className="grid grid-cols-2">
         <div className="flex h-screen items-center justify-center gap-4 p-24">
@@ -146,12 +147,14 @@ export const SetupOrg = () => {
                     color={'infoDark'}
                     className="text-sm"
                   ></Typography>
-                  <span
-                    className="text-secondary text-sm font-semibold"
+                  <Typography
+                    text={`<a>click here</a>.`}
+                    type="markdown"
+                    color={'secondary'}
+                    className="cursor-pointer text-sm font-semibold underline"
+                    hasMarkup
                     onClick={() => setOpenSummaryModal(true)}
-                  >
-                    click here
-                  </span>
+                  ></Typography>
                 </div>
               </div>
             </Card>
@@ -167,16 +170,20 @@ export const SetupOrg = () => {
             />
           </div>
         </div>
-        <div className="bg-adminPortalBg h-screen">
-          <div className="relative top-24 left-40 w-8/12">
-            <HeaderSlider
-              className="h-fullmx-4"
-              cardClassName="h-550 object-scale-down"
-              slides={headerSlide}
-              autoPlay
-              infiniteLoop
-              transitionTime={500}
-            />
+        <div className="bg-adminPortalBg bg=[url('../../../../assets/setup_background.svg')] h-screen">
+          <div className="aboslute">
+            <img className="absolute" src={setupBackground} alt="" />
+            <div className="relative top-24 left-40 w-8/12">
+              <HeaderSlider
+                className="mx-4 h-full"
+                cardClassName="h-550"
+                slides={headerSlide}
+                autoPlay
+                infiniteLoop
+                transitionTime={500}
+                isSetupComponent={true}
+              />
+            </div>
           </div>
         </div>
         <Dialog
@@ -197,9 +204,9 @@ export const SetupOrg = () => {
                 <div>{`4. Preferred app URL`}</div>
                 <div>{`5. Organisation logos: light version, dark version and favicon (you can skip this step)`}</div>
                 <div>{`6. Organisation’s colours (you can skip this step or choose the ECD Connect colours)`}</div>
-                <div>{`7. Your SMS service provider details. Add some explainer text about how this SMS is used. Choose an SMS service provider: BulkSMS, SMSPortal, or \u00A0\u00A0\u00A0\u00A0iTouch. Set up a profile for your organisation & copy the following details:`}</div>
+                <div>{`7. Your SMS service provider details. Add some explainer text about how this SMS is used. Choose an SMS service provider: BulkSMS, SMSPortal, or \u00A0\u00A0iTouch. Set up a profile for your organisation & copy the following details:`}</div>
                 <div>{`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0a. If you choose BulkSMS, copy the “Token ID”, “Token Secret” and “Token Basic Auth”`}</div>
-                <div>{`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0b. If you choose SMSPortal, copy the “API Key” and “API Secret”`}</div>
+                <div>{`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0b. If you choose SMSPortal, create an API Key (select “REST”), then copy the “API Key” and “API Secret”`}</div>
                 <div>{`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0c. If you choose iTouch, copy “Username” and “Password.`}</div>
                 <div>{`8. Decide which modules you would like to make available to your users (Attendance, Child progress, Classroom activities, Income statements, Training, Calendar, Coach)`}</div>
                 <div>{`9. Two super-administrator login details: email addresses to create new accounts`}</div>

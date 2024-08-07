@@ -202,7 +202,7 @@ namespace ECDLink.Security.Api
                 });
             }
 
-            return Ok();
+            return Ok(user.Id);
         }
 
         [Route("send-auth-code")]

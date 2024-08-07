@@ -12,7 +12,10 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
+import {
+  MutationAddPractitionerToPrincipalArgs,
+  UpdateUserPermissionInputModelInput,
+} from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
 import { UserDto, useSnackbar } from '@ecdlink/core';
 import { useState, useEffect } from 'react';
@@ -49,6 +52,7 @@ import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.typ
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import { HelpForm } from '@/components/help-form/help-form';
+import PermissionsService from '@/services/PermissionsService/PermissionsService';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -227,6 +231,15 @@ export const AddPractitioner = ({
       firstName: newPractitioner?.firstName,
       lastName: newPractitioner?.surname,
     };
+
+    const updatePermissionInput: UpdateUserPermissionInputModelInput = {
+      userId: newPractitioner?.userId,
+      permissionIds: permissionsAdded,
+    };
+
+    const updatePermissions = await new PermissionsService(
+      userAuth?.auth_token!
+    ).UpdateUserPermission(updatePermissionInput);
     await new PractitionerService(
       userAuth?.auth_token!
     ).AddPractitionerToPrincipal(input);

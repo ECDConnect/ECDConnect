@@ -329,21 +329,13 @@ namespace ECDLink.Security.Api
             {
                 // we use _dbContext to exclude tenantId validation
                 var userByUsername = _dbContext.Users.Where(user => user.UserName == verifyModel.Username).FirstOrDefault();
-                if (userByUsername != null)
+
+                if (TenantExecutionContext.Tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabel)
                 {
-                    if (TenantExecutionContext.Tenant.TenantType == Tenancy.Enums.TenantType.OpenAccess)
+                    // if userId, then user exists, we just need to check for unique username
+                    if (!string.IsNullOrEmpty(verifyModel.UserId))
                     {
-                        return BadRequest(new FailedVerificationModel
-                        {
-                            ErrorCode = 2,
-                            Error = "Invalid Username"
-                        });
-                    } 
-                    else
-                    {
-                        // On WL the user is created in the portal and we need to check if the input username is equal to user's id number
-                        var userWithIdNumberExists = !string.IsNullOrEmpty(userByUsername.IdNumber) && userByUsername.IdNumber == verifyModel.Username;
-                        if (!userWithIdNumberExists || userByUsername != null)
+                        if (userByUsername != null)
                         {
                             return BadRequest(new FailedVerificationModel
                             {
@@ -351,6 +343,17 @@ namespace ECDLink.Security.Api
                                 Error = "Invalid Username"
                             });
                         }
+                    }
+                }
+                else
+                {
+                    if (userByUsername != null)
+                    {
+                        return BadRequest(new FailedVerificationModel
+                        {
+                            ErrorCode = 2,
+                            Error = "Invalid Username"
+                        });
                     }
                 }
             }

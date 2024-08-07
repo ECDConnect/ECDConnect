@@ -149,3 +149,7 @@ select {
 thead{
   background-color: red !important;
 }
+
+.bg-logo {
+  background-repeat: no-repeat !important;
+}
