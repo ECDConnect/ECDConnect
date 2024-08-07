@@ -1,5 +1,5 @@
 import { Config, TenantModel, TenantType } from '@ecdlink/core';
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { GetCurrentTenant } from '../services/auth.service';
 
 export type TenantContextType = {
@@ -9,6 +9,9 @@ export type TenantContextType = {
   isCHWConnect: boolean;
   isFundaApp: boolean;
   modules: any | null;
+  loading: boolean;
+  error: boolean;
+  refresh: () => void;
 };
 
 const TenantContext = React.createContext<TenantContextType>({
@@ -18,6 +21,9 @@ const TenantContext = React.createContext<TenantContextType>({
   isCHWConnect: false,
   isFundaApp: false,
   modules: null,
+  loading: false,
+  error: false,
+  refresh: () => {},
 });
 
 export const TenantContextProvider: React.FC<{}> = ({ children }) => {
@@ -28,11 +34,23 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
     isCHWConnect: false,
     isFundaApp: false,
     modules: null,
+    loading: false,
+    error: false,
+    refresh: () => {},
   });
 
-  useEffect(() => {
-    (async () => {
-      const result = await GetCurrentTenant(Config.authApi);
+  const fetchData = useCallback(async () => {
+    setTenant({ ...tenant, loading: true, error: false });
+    const result = await GetCurrentTenant(Config.authApi);
+    if (!result) {
+      const value: TenantContextType = {
+        ...tenant,
+        loading: false,
+        error: true,
+        refresh: fetchData,
+      };
+      setTenant(value);
+    } else {
       const value: TenantContextType = {
         tenant: result,
         modules: result.modules,
@@ -47,10 +65,17 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
           ? false
           : result.tenantType === TenantType.ChwConnect,
         isFundaApp: !result ? false : result.tenantType === TenantType.FundaApp,
+        loading: false,
+        error: false,
+        refresh: fetchData,
       };
       setTenant(value);
-    })();
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <TenantContext.Provider value={tenant}>{children}</TenantContext.Provider>
