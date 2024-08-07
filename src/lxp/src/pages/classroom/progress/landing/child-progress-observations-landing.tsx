@@ -41,14 +41,14 @@ export const ChildProgressObservationsLanding: React.FC = () => {
           )}`}
         />
         {/* Current observations still in progress */}
-        {!currentReport?.isAllObservationsComplete && (
+        {!currentReport?.observationsCompleteDate && (
           <ProgressLandingNoObservations
             childId={routeState.childId}
             currentAgeGroup={currentAgeGroup!}
           />
         )}
         {/* All observations completed for current report period, but we are still outside the window */}
-        {!!currentReport?.isAllObservationsComplete && currentReport && (
+        {!!currentReport?.observationsCompleteDate && currentReport && (
           <ProgressLandingComplete
             childId={routeState.childId}
             child={child!}

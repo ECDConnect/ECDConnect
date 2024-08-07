@@ -22,6 +22,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public List<SkillToWorkOn> SkillsToWorkOn { get; set; }
 
         public string HowToSupport { get; set; }
+        
+        public DateTime? ObservationsCompleteDate { get; set; }
     }
 
     public class SkillObservation

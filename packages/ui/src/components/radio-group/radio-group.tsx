@@ -37,12 +37,14 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
         <RadioGroup.Option
           value={option.value}
           key={'radio.group.option.' + option.id}
+          //className={`${stateValue === option.value ? `border-${colour}` : 'border-uiBg'}`}
         >
           {({ checked }) => (
             <div
               className={styles.optionsWrapper(
                 index,
                 checked,
+                colour,
                 selectedOptionBackgroundColor
               )}
             >
@@ -53,7 +55,7 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
                 text={option.label}
                 type={'body'}
                 color={checked ? 'textDark' : 'textMid'}
-                weight={checked ? 'bold' : 'normal'}
+                weight={checked ? 'normal' : 'skinny'}
               />
             </div>
           )}

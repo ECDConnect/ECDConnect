@@ -21,6 +21,8 @@ using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
 using ECDLink.DataAccessLayer.Managers;
 using DinkToPdf.Contracts;
+using static iTextSharp.text.pdf.AcroFields;
+using AngleSharp.Text;
 
 namespace ECDLink.Core.Services
 {
@@ -33,7 +35,7 @@ namespace ECDLink.Core.Services
         private IGenericRepository<StatementsExpenses, Guid> _statementsExpensesRepo;
         private IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
         private IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
-        private IGenericRepository<StatementsContributionType, Guid> _statementsContributionTypeRepo;
+        private IGenericRepository<StatementsPayType, Guid> _statementsPayTypeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
@@ -67,7 +69,7 @@ namespace ECDLink.Core.Services
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
             _statementsIncomeTypeRepo = _repoFactory.CreateGenericRepository<StatementsIncomeType>(userContext: _applicationUserId);
             _statementsIncomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
-            _statementsContributionTypeRepo = _repoFactory.CreateGenericRepository<StatementsContributionType>(userContext: _applicationUserId);
+            _statementsPayTypeRepo = _repoFactory.CreateGenericRepository<StatementsPayType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
@@ -333,7 +335,7 @@ namespace ECDLink.Core.Services
 
         #region PDF STUFF
 
-        public Document CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
+        public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);
@@ -394,37 +396,37 @@ namespace ECDLink.Core.Services
                     }
                     incomeText += "</tr>";
 
-                    foreach (IncomeExpensePDFDataModel _data in item.Data)
+                    foreach (IncomeExpensePDFDataModel incomeItem in item.Data)
                     {
                         incomeText += "<tr>";
                         foreach (IncomeExpensePDFHeaderModel header in item.Headers)
                         {
                             if (header.Header == "Date")
                             {
-                                incomeText += "<td style='border-bottom: 1px solid black;width:10%;'>" + _data.Date?.ToString("dd/MM/yyyy") + "</td>";
+                                incomeText += "<td style='border: 1px solid black;width:10%; border-collapse: collapse;'>" + incomeItem.Date?.ToString("dd/MM/yyyy") + "</td>";
                             }
                             else if (header.Header == "Child")
                             {
-                                incomeText += "<td style='border-bottom: 1px solid black;width:20%;'>" + _data?.Child + "</td>";
+                                incomeText += "<td style='border: 1px solid black;width:20%; border-collapse: collapse;'>" + incomeItem.Child + "</td>";
                             }
                             else if (header.Header == "Description")
                             {
-                                incomeText += "<td style='border-bottom: 1px solid black;width:20%;'>" + _data?.Description + "</td>";
+                                incomeText += "<td style='border: 1px solid black;width:20%; border-collapse: collapse;'>" + incomeItem.Description + "</td>";
                             }
                             else if (header.Header == "Item")
                             {
-                                incomeText += "<td style='border-bottom: 1px solid black;width:20%;'>" + _data?.Description ?? "-" + "</td>";
+                                incomeText += "<td style='border: 1px solid black;width:20%; border-collapse: collapse;'>" + incomeItem.Description ?? "-" + "</td>";
                             }
                             else if (header.Header == "Type")
                             {
-                                incomeText += "<td style='border-bottom: 1px solid black;width:20%;'>" + _data?.Type + "</td>";
+                                incomeText += "<td style='border: 1px solid black;width:20%; border-collapse: collapse;'>" + incomeItem.Type + "</td>";
                             }
                             else if (header.Header == "Amount")
                             {
-                                incomeText += "<td style='border-bottom: 1px solid black;width:10%;text-align: right;'>R " + _data?.Amount.ToString("#,0.00", nfi) + "</td>";
+                                incomeText += "<td style='border: 1px solid black;width:10%;text-align: right; border-collapse: collapse;'>R " + incomeItem.Amount.ToString("#,0.00", nfi) + "</td>";
 
-                                allIncome += (double)_data?.Amount;
-                                totalIncome += (double)_data?.Amount;
+                                allIncome += (double)incomeItem.Amount;
+                                totalIncome += (double)incomeItem.Amount;
                             }
 
                         }
@@ -432,7 +434,7 @@ namespace ECDLink.Core.Services
                     }
                     if (item.TableName == "Subsidies, donations, contributions" || item.TableName == "Preschool fees: monetary contributions" || item.TableName == "Other")
                     {
-                        incomeText += "<tr><th style='border-bottom: 1px solid black;' colspan='" + (item.Headers.Count - 1) + "'>Total</th><td style='font-weight: bold;border-bottom: 1px solid black;text-align: right;'>R" + totalIncome.ToString("#,0.00", nfi) + "</td></tr>";
+                        incomeText += "<tr><th style='border: 1px solid black; border-collapse: collapse;' colspan='" + (item.Headers.Count - 1) + "'>Total</th><td style='font-weight: bold;border: 1px solid black;text-align: right;'>R" + totalIncome.ToString("#,0.00", nfi) + "</td></tr>";
                     }
                     incomeText += "</tbody></table><br>";
 
@@ -450,7 +452,9 @@ namespace ECDLink.Core.Services
 
             if (hasExpenses)
             {
-                expenseText += "<div style='padding-top:80px;page-break-before: always;'><h1>EXPENSES</h1></div>";
+                html += "<div style='page-break-before: always;'></div>";
+                html += userInfo;
+                expenseText += "<div style='padding-top:80px;'><h1>EXPENSES</h1></div>";
 
                 foreach (IncomeExpensePDFTableModel item in htmlData)
                 {
@@ -487,19 +491,19 @@ namespace ECDLink.Core.Services
                             {
                                 if (header.Header == "Date")
                                 {
-                                    expenseText += "<td style='border-bottom: 1px solid black;width:10%;'>" + _data.Date?.ToString("dd/MM/yyyy") + "</td>";
+                                    expenseText += "<td style='border: 1px solid black;width:10%; border-collapse: collapse;'>" + _data.Date?.ToString("dd/MM/yyyy") + "</td>";
                                 }
                                 else if (header.Header == "Description")
                                 {
-                                    expenseText += "<td style='border-bottom: 1px solid black;width:50%;'>" + _data?.Description + "</td>";
+                                    expenseText += "<td style='border: 1px solid black;width:50%; border-collapse: collapse;'>" + _data?.Description + "</td>";
                                 }
                                 else if (header.Header == "Invoice/Receipt #")
                                 {
-                                    expenseText += "<td style='border-bottom: 1px solid black;text-align: center; width:20%;'>" + _data?.InvoiceNr + "</td>";
+                                    expenseText += "<td style='border: 1px solid black;text-align: center; width:20%; border-collapse: collapse;'>" + _data?.InvoiceNr + "</td>";
                                 }
                                 else if (header.Header == "Amount")
                                 {
-                                    expenseText += "<td style='border-bottom: 1px solid black;width:20%;text-align: right;'>R " + _data?.Amount.ToString("#,0.00", nfi) + "</td>";
+                                    expenseText += "<td style='border: 1px solid black;width:20%;text-align: right; border-collapse: collapse;'>R " + _data?.Amount.ToString("#,0.00", nfi) + "</td>";
 
                                     allExpense += (double)_data?.Amount;
                                     totalExpense += (double)_data?.Amount;
@@ -509,7 +513,7 @@ namespace ECDLink.Core.Services
                             expenseText += "</tr>";
                         }
 
-                        expenseText += "<tr><th style='border-bottom: 1px solid black;' colspan='" + (item.Headers.Count - 1) + "'>Total</th><td style='font-weight: bold;border-bottom: 1px solid black;text-align: right;'>R" + totalExpense.ToString("#,0.00", nfi) + "</td></tr>";
+                        expenseText += "<tr><th style='border: 1px solid black; border-collapse: collapse;' colspan='" + (item.Headers.Count - 1) + "'>Total</th><td style='font-weight: bold;border: 1px solid black;text-align: right;'>R" + totalExpense.ToString("#,0.00", nfi) + "</td></tr>";
                         expenseText += "</tbody></table><br>";
                     }
                 }
@@ -521,12 +525,35 @@ namespace ECDLink.Core.Services
                 html += signDateRow;
             }
 
+            // SUMMARY
+            html += "<div style='page-break-before: always;'></div>";
+            html += userInfo;
+            html += "<div style='padding-top:80px;'><h1>SUMMARY</h1></div>";
+            string summaryText = "";
+            summaryText += "<table width='100%' cellspacing='0' cellpadding='0'><tbody>";
+            summaryText += "<tr><td style='border: 1px solid black;padding: 4px; border-collapse: collapse;'>Income</td><td style='border: 1px solid black;text-align: right;'>R " + allIncome.ToString("#,0.00", nfi) + "</td></tr>";
+            summaryText += "<tr><td style='border: 1px solid black;padding: 4px; border-collapse: collapse;'>Expenses</td><td style='border: 1px solid black;text-align: right;'>R " + allExpense.ToString("#,0.00", nfi) + "</td></tr>";
+            summaryText += "</tbody></table><br>";
+            html += summaryText;
+
+            string totalBalanceRow = "<table style='width: 100%; margin-top: 8px;'><tbody><tr><th style='background-color: #808080;padding: 4px;color: white;'>BALANCE</th><td style='background-color: #808080;padding: 4px;color: white;text-align: right;'>R " + (allIncome - allExpense).ToString("#,0.00", nfi) + "</td></tr></tbody></table>";
+            html += totalBalanceRow;
+
+            var notesText = "<table style='width: 100%; margin-top: 8px;'><tbody>";
+            notesText += "<tr><th style='background-color: #C0C0C0;padding: 4px; border-collapse: collapse;'>Additional notes</th></tr>";
+            notesText += "<tr style='height:200px'><td style='border: 1px solid black;'></td></tr>";
+            notesText += "</tbody></table><br>";
+            html += notesText;
+
+
             //
             //  RECEIPTS
             //
             if (receipts.Count > 0)
             {
-                var receiptsText = "<div style='padding-top:80px;page-break-before: always;'><h1>RECEIPTS</h1></div>";
+                html += "<div style='page-break-before: always;'></div>";
+                html += userInfo;
+                var receiptsText = "<div style='padding-top:80px;'><h1>RECEIPTS</h1></div>";
                 var count = 1;
                 foreach (var item in receipts)
                 {
@@ -544,18 +571,11 @@ namespace ECDLink.Core.Services
             html += "</body></html>";
 
             // discard result
-            Console.WriteLine($"HTML FOR DOCUMENT = {html.Length}");
             var doc = _documentManager.GetPdfSettings(html, filename, "portrait");
-            byte[] pdf = _pdfConverter.Convert(doc);
-            string Base64Result = Convert.ToBase64String(pdf);
+            var pdf = _pdfConverter.Convert(doc);
+            var base64Result = Convert.ToBase64String(pdf);
 
-            DocumentModel pdfDoc = new DocumentModel();
-            pdfDoc.Reference = Base64Result;
-            pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
-            pdfDoc.UserId = userId;
-            pdfDoc.CreatedUserId = _applicationUserId.ToString();
-            return null;
-
+            return base64Result;
         }
 
         public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId)
@@ -575,7 +595,7 @@ namespace ECDLink.Core.Services
 
             var expenseTypes = _statementsExpenseTypeRepo.GetAll().ToList();
             var incomeTypes = _statementsIncomeTypeRepo.GetAll().ToList();
-            var contributionTypes = _statementsContributionTypeRepo.GetAll().ToList();
+            var payTypes = _statementsPayTypeRepo.GetAll().ToList();
             var childUserIds = statement.IncomeItems.Where(x => x.ChildUserId.HasValue).Select(x => x.ChildUserId).Distinct().ToList();
             var childNamesById = _childRepo.GetAll()
                .Where(x => childUserIds.Contains(x.UserId))
@@ -609,7 +629,6 @@ namespace ECDLink.Core.Services
             //
             var otherId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.OTHER).Select(y => y.Id).First().ToString();
             var preschoolFeeId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.PRESCHOOL_FEE).Select(y => y.Id).First().ToString();
-            var moneyId = contributionTypes.Where(x => x.Description == IncomeExpensePDF.MONEY).Select(y => y.Id).First().ToString();
 
 
             // Preschool fees: Monetary contributions
@@ -619,7 +638,7 @@ namespace ECDLink.Core.Services
                 TableName = IncomeExpensePDF.MONETARY_CONTRIBUTIONS,
                 Type = IncomeExpensePDF.INCOME,
                 Headers = GetIncomePDFHeader(true, true, false, false, false),
-                Data = MapIncomeToPdfData(monetaryFeeIncome, childNamesById),
+                Data = MapIncomeToPdfData(monetaryFeeIncome, childNamesById, incomeTypes, payTypes),
                 Total = monetaryFeeIncome.Select(x => x.Amount).Sum(),
             });
 
@@ -632,7 +651,7 @@ namespace ECDLink.Core.Services
                     TableName = IncomeExpensePDF.SUBSIDIES_DONATIONS_CONTRIBUTIONS,
                     Type = IncomeExpensePDF.INCOME,
                     Headers = GetIncomePDFHeader(false, true, false, true, true),
-                    Data = MapIncomeToPdfData(subsidyAndDonationIncome, childNamesById),
+                    Data = MapIncomeToPdfData(subsidyAndDonationIncome, childNamesById, incomeTypes, payTypes),
                     Total = subsidyAndDonationIncome.Select(x => x.Amount).Sum()
                 });
             }
@@ -646,7 +665,7 @@ namespace ECDLink.Core.Services
                     TableName = IncomeExpensePDF.OTHER,
                     Type = IncomeExpensePDF.INCOME,
                     Headers = GetIncomePDFHeader(false, true, true, false, false),
-                    Data = MapIncomeToPdfData(otherIncome, childNamesById),
+                    Data = MapIncomeToPdfData(otherIncome, childNamesById, incomeTypes, payTypes),
                     Total = otherIncome.Select(x => x.Amount).Sum()
                 });
             }
@@ -765,7 +784,7 @@ namespace ECDLink.Core.Services
         }
 
 
-        private List<IncomeExpensePDFDataModel> MapIncomeToPdfData(IEnumerable<StatementsIncome> incomeRows, IDictionary<string, string> childNamesById)
+        private List<IncomeExpensePDFDataModel> MapIncomeToPdfData(IEnumerable<StatementsIncome> incomeRows, IDictionary<string, string> childNamesById, List<StatementsIncomeType> incomeTypes, List<StatementsPayType> payTypes)
         {
             var results = new List<IncomeExpensePDFDataModel>();
             foreach (var income in incomeRows)
@@ -774,6 +793,8 @@ namespace ECDLink.Core.Services
                 result.Description = income.Notes;
                 result.Date = income.DateReceived;
                 result.Amount = income.Amount;
+                result.Type = incomeTypes.FirstOrDefault(x => x.Id.ToString() == income.IncomeTypeId)?.Description +
+                    (!string.IsNullOrEmpty(income.PayTypeId) ? $" - {payTypes.FirstOrDefault(x => x.Id.ToString() == income.PayTypeId)?.Description}" : "");
                 result.PhotoProof = income.PhotoProof;
                 result.Child = income.ChildUserId.HasValue && childNamesById.ContainsKey(income.ChildUserId.ToString())
                     ? childNamesById[income.ChildUserId.ToString()]

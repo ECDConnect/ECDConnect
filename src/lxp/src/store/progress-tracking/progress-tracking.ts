@@ -66,7 +66,6 @@ const progressTrackingSlice = createSlice({
             childProgressReportPeriodId: reportingPeriodId,
             isComplete: false,
             synced: false,
-            isAllObservationsComplete: false,
             skillsToWorkOn: [],
             skillObservations: [
               {
@@ -281,7 +280,7 @@ const progressTrackingSlice = createSlice({
         (x) => x.childId === childId && x.childProgressReportPeriodId
       );
 
-      if (!report) {
+      if (!report || !!report.observationsCompleteDate) {
         return;
       }
 
@@ -294,7 +293,7 @@ const progressTrackingSlice = createSlice({
         {
           ...report,
           synced: false,
-          isAllObservationsComplete: true,
+          observationsCompleteDate: new Date().toISOString(),
         },
       ];
     },

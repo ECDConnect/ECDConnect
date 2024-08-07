@@ -241,6 +241,7 @@ class ProgressTrackingService {
           notes,
           howToSupport,
           childProgressReportPeriodId
+          observationsCompleteDate
           skillObservations {
             skillId,
             value
