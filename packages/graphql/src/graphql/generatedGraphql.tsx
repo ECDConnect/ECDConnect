@@ -13501,6 +13501,7 @@ export type PractitionerTimeline = {
 export type PractitionerUserAndNote = {
   __typename?: 'PractitionerUserAndNote';
   appUser?: Maybe<ApplicationUser>;
+  isRegistered?: Maybe<Scalars['Boolean']>;
   note?: Maybe<Scalars['String']>;
 };
 
@@ -17841,6 +17842,8 @@ export type QueryPractitionerProgressReportSummaryArgs = {
 };
 
 export type QueryPractitionerStatsArgs = {
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
   userId: Scalars['UUID'];
 };
 
