@@ -227,3 +227,12 @@ export const getTeamLeadCount = gql`
     )
   }
 `;
+
+export const ReactivateMultipleUsers = gql`
+  mutation bulkReactivateUsers($userIds: [String]) {
+    bulkReactivateUsers(userIds: $userIds) {
+      success
+      failed
+    }
+  }
+`;
