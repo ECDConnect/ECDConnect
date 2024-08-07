@@ -347,7 +347,7 @@ export default function UploadBulkUser(props: any) {
                       type="error"
                       list={docErrors.map(
                         (error) =>
-                          `Row ${error.row}: ${error?.errorDescription}`
+                          `Row ${error.row}: ${error?.errorDescription}: ${error?.errors[0]}`
                       )}
                       listColor="textDark"
                     />
