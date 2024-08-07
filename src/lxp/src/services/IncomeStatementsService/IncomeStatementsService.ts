@@ -268,6 +268,26 @@ class IncomeStatementsService {
 
     return response.data.data.updateUserContactStatusForStatement;
   }
+
+  async getIncomeStatementPdf(statementId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `query GetIncomeStatementPdf($statementId: UUID!) { 
+          incomeStatementPdf(statementId: $statementId) { 
+    }}`,
+      variables: {
+        statementId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Get income statement pdf Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.incomeStatementPdf;
+  }
 }
 
 export default IncomeStatementsService;
