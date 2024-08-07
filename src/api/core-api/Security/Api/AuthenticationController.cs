@@ -335,7 +335,8 @@ namespace ECDLink.Security.Api
                     // if userId, then user exists, we just need to check for unique username
                     if (!string.IsNullOrEmpty(verifyModel.UserId))
                     {
-                        if (userByUsername != null)
+                        var user = _dbContext.Users.Where(user => user.Id.ToString() == verifyModel.UserId).FirstOrDefault();
+                        if (user.IdNumber != verifyModel.Username)
                         {
                             return BadRequest(new FailedVerificationModel
                             {
