@@ -139,6 +139,12 @@ export const PreschoolCodeCheck: React.FC<{
         progress: 1.0,
       })
     );
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerShareInfo(user?.id!);
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerRegistered(user?.id!, true);
     onNext(PractitionerSetupSteps.ADD_PHOTO);
   };
 

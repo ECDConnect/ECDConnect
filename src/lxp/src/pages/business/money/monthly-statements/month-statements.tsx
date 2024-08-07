@@ -1,16 +1,14 @@
 import ROUTES from '@/routes/routes';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { statementsActions, statementsSelectors } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { MonthStatementsDetails } from '../../components/month-statements-details';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
-import { ReportTableDataDto } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { practitionerSelectors } from '@/store/practitioner';
-import { UserOptions } from 'jspdf-autotable';
 import {
   ActionModal,
   BannerWrapper,
@@ -21,32 +19,34 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
-import GeneratePdfReportButton from '@/components/download-pdf-button/download-pdf-button';
-import { childrenSelectors } from '@/store/children';
-import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export interface MonthStatementsDetailsState {
   statementId: string;
 }
 
 export const MonthStatements: React.FC = () => {
+  const dialog = useDialog();
   const history = useHistory();
-  const { generateReport } = useGeneratePdfReport();
+  const location = useLocation<MonthStatementsDetailsState>();
+
+  const statementId = location.state.statementId;
 
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
 
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const location = useLocation<MonthStatementsDetailsState>();
-  const statementId = location.state.statementId;
-  const children = useSelector(childrenSelectors.getChildren);
 
   const [showConfrimDialog, setShowConfirmDialog] = useState<boolean>(false);
 
-  const [pdfReportData, setPdfReportData] = useState<
-    ReportTableDataDto[] | undefined
-  >(undefined);
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
 
   const statement = useSelector(
     statementsSelectors.getStatementById(statementId)
@@ -56,78 +56,32 @@ export const MonthStatements: React.FC = () => {
     history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST);
   };
 
-  useEffect(() => {
+  const monthName = getMonthName(!!statement ? statement.month - 1 : 0);
+
+  const downloadPdf = useCallback(async () => {
     if (!isOnline || !statementId) {
+      showOnlineOnly();
       return;
     }
 
-    const monthlyDetailsdata = async () => {
+    const getPdf = async () => {
       const report = await new IncomeStatementsService(
         userAuth?.auth_token || ''
-      ).getMonthsIncomeExpensesReport(statementId);
-      setPdfReportData(report);
+      ).getIncomeStatementPdf(statementId);
+
+      return report;
     };
 
-    monthlyDetailsdata();
+    const base64String = await getPdf();
+
+    const downloadLink = document.createElement('a');
+
+    downloadLink.href = `data:application/pdf;base64,${base64String}`;
+
+    downloadLink.download = `${monthName}_statement.pdf`;
+
+    downloadLink.click();
   }, [appDispatch, userAuth, isOnline, statementId]);
-
-  const footer = [
-    'Total',
-    '', // Placeholder for Day 2 column
-  ];
-
-  const signature = practitioner?.signingSignature ?? '';
-
-  const tableTopContent = {
-    pageTitle: `Income Statement`,
-    subtitle: '',
-    //column2 with 3 rows of text
-    text_column_two_row_one: `Name: ${practitioner?.user?.firstName} ${
-      practitioner?.user?.surname ?? ''
-    }`,
-    text_column_two_row_two: `ID: ${practitioner?.user?.idNumber}`,
-    text_column_two_row_three: `Phone: ${practitioner?.user?.phoneNumber}`,
-  };
-
-  const tableHeadStyles: UserOptions['headStyles'] = {
-    fillColor: [211, 211, 211], // Light grey
-    textColor: [0, 0, 0],
-    fontSize: 8,
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
-  const tableStyles: UserOptions['styles'] = {
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
-  const tableFootStyles: UserOptions['footStyles'] = {
-    textColor: [0, 0, 0],
-    fillColor: [211, 211, 211], // Light grey
-    fontSize: 10,
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
-
-  console.log({ pdfReportData });
-  const generatePdf = () => {
-    generateReport(
-      pdfReportData ?? [],
-      signature,
-      new Date().toDateString(), // TODO: Should this be the date the statement was submitted?,
-      children?.length || 0,
-      tableHeadStyles,
-      tableTopContent,
-      undefined,
-      `${getMonthName(statement!.month - 1)}-income-statement-report.pdf`,
-      'income-statements',
-      tableStyles,
-      [footer],
-      tableFootStyles,
-      'portrait'
-    );
-  };
-
-  const monthName = getMonthName(!!statement ? statement.month - 1 : 0);
 
   return (
     <BannerWrapper
@@ -142,25 +96,23 @@ export const MonthStatements: React.FC = () => {
       {!!statement && (
         <>
           <MonthStatementsDetails statement={statement} />
-          <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-            {!!pdfReportData && (
-              <Button
-                type="filled"
-                color="quatenary"
-                className={'w-full'}
-                onClick={() => {
-                  setShowConfirmDialog(true);
-                }}
-              >
-                {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
-                <Typography
-                  type="h6"
-                  color="white"
-                  text={'Download Statement'}
-                  className="ml-2"
-                />
-              </Button>
-            )}
+          <div className={'flex w-full flex-1 flex-col px-4 py-4'}>
+            <Button
+              type="filled"
+              color="quatenary"
+              className={'w-full'}
+              onClick={() => {
+                setShowConfirmDialog(true);
+              }}
+            >
+              {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
+              <Typography
+                type="h6"
+                color="white"
+                text={'Download Statement'}
+                className="ml-2"
+              />
+            </Button>
           </div>
           <Dialog
             stretch={false}
@@ -186,7 +138,7 @@ export const MonthStatements: React.FC = () => {
                         statementId,
                       })
                     );
-                    generatePdf();
+                    downloadPdf();
                     setShowConfirmDialog(false);
                   },
                   leadingIcon: 'DownloadIcon',

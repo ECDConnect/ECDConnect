@@ -81,7 +81,7 @@ export const MonthlyAttendanceReport = () => {
       1
     );
 
-    const firstDayOfMonth = startOfMonth(date);
+    const firstDayOfMonth = new Date(startOfMonth(date).setHours(12, 59, 59));
     const lastDayOfMonth = endOfMonth(date);
 
     return { startDate: firstDayOfMonth, endDate: lastDayOfMonth };
@@ -128,8 +128,8 @@ export const MonthlyAttendanceReport = () => {
     appDispatch(
       attendanceThunkActions.getClassroomAttendanceReport({
         userId: userAuth?.id ?? '',
-        startDate,
-        endDate,
+        startDate: startDate,
+        endDate: endDate,
       })
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps

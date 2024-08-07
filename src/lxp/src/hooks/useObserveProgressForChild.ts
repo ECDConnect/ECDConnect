@@ -9,6 +9,8 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
+import { getProgressAgeGroupForChild } from '@/utils/classroom/progress/progress.utils';
+import { differenceInMonths } from 'date-fns';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -17,12 +19,8 @@ export const useObserveProgressForChild = (childId: string) => {
 
   const child = useSelector(childrenSelectors.getChildById(childId));
 
-  const currentAgeGroup = useSelector(
-    childrenSelectors.getProgressAgeGroupForChild(childId)
-  );
-
-  const skillsForAgeGroup = useSelector(
-    progressTrackingSelectors.getSkillsForAgeGroup(currentAgeGroup?.id || 0)
+  const allAgeGroups = useSelector(
+    progressTrackingSelectors.getProgressAgeGroups()
   );
 
   const currentObservationsForChild = useSelector(
@@ -37,8 +35,20 @@ export const useObserveProgressForChild = (childId: string) => {
     classroomsSelectors.getCurrentProgressReportPeriod()
   );
 
+  const currentAgeGroup = !!currentReportingPeriod
+    ? getProgressAgeGroupForChild(currentReportingPeriod, child!, allAgeGroups)
+    : undefined;
+
   const allReportingPeriods = useSelector(
     classroomsSelectors.getAllProgressReportPeriods()
+  );
+
+  const currentAge = !!child?.user?.dateOfBirth
+    ? differenceInMonths(new Date(), new Date(child.user.dateOfBirth))
+    : undefined;
+
+  const skillsForAgeGroup = useSelector(
+    progressTrackingSelectors.getSkillsForAgeGroup(currentAgeGroup?.id || 0)
   );
 
   const currentObservations = useMemo<ChildProgressSkill[]>(() => {
@@ -251,6 +261,7 @@ export const useObserveProgressForChild = (childId: string) => {
 
   return {
     child,
+    currentAge,
     currentAgeGroup,
     skillsForAgeGroup,
     currentObservations,
