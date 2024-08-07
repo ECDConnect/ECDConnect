@@ -13435,6 +13435,19 @@ export type PractitionerSortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
+export type PractitionerStats = {
+  __typename?: 'PractitionerStats';
+  totalAttendanceRegistersCompleted: Scalars['Int'];
+  totalAttendanceRegistersNotCompleted: Scalars['Int'];
+  totalChildrenForSchool: Scalars['Int'];
+  totalClassesForSchool: Scalars['Int'];
+  totalIncomeStatementsDownloaded: Scalars['Int'];
+  totalIncomeStatementsWithNoItems: Scalars['Int'];
+  totalPractitionersForSchool: Scalars['Int'];
+  totalProgressReportsCompleted: Scalars['Int'];
+  totalProgressReportsNotCompleted: Scalars['Int'];
+};
+
 export type PractitionerTimeline = {
   __typename?: 'PractitionerTimeline';
   childProgressTrainingColor?: Maybe<Scalars['String']>;
@@ -14767,6 +14780,7 @@ export type Query = {
   practitionerRolePermissions?: Maybe<
     Array<Maybe<PractitionerPermissionModel>>
   >;
+  practitionerStats?: Maybe<PractitionerStats>;
   practitionerTemplateGenerator?: Maybe<FileModel>;
   practitionerTimeline?: Maybe<PractitionerTimeline>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
@@ -17824,6 +17838,10 @@ export type QueryPractitionerNewSignupMetricArgs = {
 export type QueryPractitionerProgressReportSummaryArgs = {
   locale?: InputMaybe<Scalars['String']>;
   reportingPeriod?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPractitionerStatsArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryPractitionerTimelineArgs = {

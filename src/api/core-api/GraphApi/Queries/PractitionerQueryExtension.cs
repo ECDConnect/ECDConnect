@@ -1,4 +1,5 @@
 using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
@@ -539,5 +540,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var fileName = templateHeaderSheet.Replace(" ", "_");
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PractitionerStats GetPractitionerStats(Guid userId)
+        {
+            PractitionerStats stats = new PractitionerStats();
+
+            stats.TotalPractitionersForSchool = 0;
+            stats.TotalChildrenForSchool = 0;
+            stats.TotalClassesForSchool = 0;
+            stats.TotalAttendanceRegistersCompleted = 0;
+            stats.TotalAttendanceRegistersNotCompleted = 0;
+            stats.TotalProgressReportsCompleted = 0;
+            stats.TotalProgressReportsNotCompleted = 0;
+            stats.TotalIncomeStatementsDownloaded = 0;
+            stats.TotalIncomeStatementsWithNoItems = 0;
+
+            return stats;
+        }
+
+
     }
 }
