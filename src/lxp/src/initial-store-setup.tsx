@@ -203,11 +203,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       promises.push(
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
       );
-      promises.push(
-        appDispatch(
-          communityThunkActions.getCommunityProfile({ userId: userData?.id! })
-        ).unwrap()
-      );
+      // promises.push(
+      //   appDispatch(
+      //     communityThunkActions.getCommunityProfile({ userId: userData?.id! })
+      //   ).unwrap()
+      // );
       promises.push(
         appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
       );
