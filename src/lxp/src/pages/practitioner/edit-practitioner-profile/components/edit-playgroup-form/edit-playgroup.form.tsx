@@ -53,7 +53,6 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   );
 
   const { isOnline } = useOnlineStatus();
-
   const dialog = useDialog();
   const {
     getValues: getPlaygroupFormValues,
@@ -70,16 +69,15 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     reValidateMode: 'onChange',
   });
 
-  const { isFullDay, meetingDays, name, meetEveryday, userId } = useWatch({
+  const { meetingDays, name, meetEveryday, userId } = useWatch({
     control: playgroupFormControl,
     defaultValue: playgroup,
   });
-
   const {
     isValid,
-    errors: { name: playgroupName, userId: classroomGroupUserId },
+    errors: { name: playgroupName },
   } = playgroupsFormState;
-  console.log({ classroomGroupUserId });
+
   const isFormValid = () => {
     return isValid && meetingDays && meetingDays?.length > 1 && !!userId;
   };
@@ -87,6 +85,13 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
   >([]);
+
+  useEffect(() => {
+    if (practitionersList) {
+      setPlaygroupFormValue('name', title);
+      setPlaygroupFormValue('groupName', title);
+    }
+  }, [setPlaygroupFormValue, title, practitionersList]);
 
   useEffect(() => {
     const _list = practitioners
@@ -229,7 +234,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       shouldValidate: true,
     });
   };
-  console.log(playgroupName?.message);
+
   useEffect(() => {
     resetPlaygroupFormValue(playgroup);
 
@@ -252,7 +257,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playgroup]);
-  console.log('hihih');
+
   return (
     <div className="flex h-full flex-col">
       <Typography
@@ -266,6 +271,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         register={playgroupFormRegister}
         nameProp={'name'}
         placeholder={'E.g. Tuesday class'}
+        value={name}
       />
       <Typography
         text={playgroupName?.message || ''}
