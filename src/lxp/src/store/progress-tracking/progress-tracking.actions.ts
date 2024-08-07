@@ -304,6 +304,7 @@ export const syncChildProgressReports = createAsyncThunk<
               notes: report.notes,
               skillObservations: report.skillObservations,
               skillsToWorkOn: report.skillsToWorkOn,
+              observationsCompleteDate: report.observationsCompleteDate,
             };
 
             return await new ProgressTrackingService(

@@ -1560,6 +1560,7 @@ export type ChildProgressReportModel = {
   howToSupport?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   notes?: Maybe<Scalars['String']>;
+  observationsCompleteDate?: Maybe<Scalars['DateTime']>;
   skillObservations?: Maybe<Array<Maybe<SkillObservation>>>;
   skillsToWorkOn?: Maybe<Array<Maybe<SkillToWorkOn>>>;
 };
@@ -1572,6 +1573,7 @@ export type ChildProgressReportModelInput = {
   howToSupport?: InputMaybe<Scalars['String']>;
   id: Scalars['UUID'];
   notes?: InputMaybe<Scalars['String']>;
+  observationsCompleteDate?: InputMaybe<Scalars['DateTime']>;
   skillObservations?: InputMaybe<Array<InputMaybe<SkillObservationInput>>>;
   skillsToWorkOn?: InputMaybe<Array<InputMaybe<SkillToWorkOnInput>>>;
 };

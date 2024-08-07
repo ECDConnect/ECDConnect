@@ -168,6 +168,9 @@ const ROUTES = {
   PROGRESS_OBSERVATIONS_LANDING: '/progress-observations-landing',
   PROGRESS_OBSERVATIONS_NOTES: '/progress-observations-notes',
   PROGRESS_REPORT_LIST: '/child-progress-skill-tracking',
+  PROGRESS_SELECT_CHILD_TO_TRACK: '/progress-select-child',
+  PROGRESS_SELECT_CATEGORY_TO_TRACK: '/progress-select-category',
+  PROGRESS_OBSERVATIONS_BY_CATEGORY: '/progress-observations-by-category',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
   CHILD_PROGRESS_OBSERVATION_REPORT: '/child-progress-observation-report',
   COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS:

@@ -148,7 +148,6 @@ export const getLearnersForClassroomGroups = (
     }
   );
 
-// TODO - IDEALLY NEED TO MAKE THIS PER CHILD, SO IT CAN CHECK IF THEY NEED TO BE IN THE NEXT WINDOW AFTER THE REPORT IS COMPLETE
 export const getCurrentProgressReportPeriod = () =>
   createSelector(
     (state: RootState) => state.classroomData.classroom,

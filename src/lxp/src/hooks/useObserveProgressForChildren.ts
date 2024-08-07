@@ -9,6 +9,7 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
+import { getProgressAgeGroupForChild } from '@/utils/classroom/progress/progress.utils';
 import { differenceInMonths, isBefore } from 'date-fns';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
@@ -17,6 +18,10 @@ export const useObserveProgressForChildren = () => {
   const appDispatch = useAppDispatch();
 
   const children = useSelector(childrenSelectors.getChildren);
+
+  const allAgeGroups = useSelector(
+    progressTrackingSelectors.getProgressAgeGroups()
+  );
 
   const currentReportingPeriod = useSelector(
     classroomsSelectors.getCurrentProgressReportPeriod()
@@ -49,24 +54,39 @@ export const useObserveProgressForChildren = () => {
 
       return {
         childId: child.id,
+        childUserId: child.userId,
         childFirstName: child.user?.firstName,
         childProfileImageUrl: child.user?.profileImageUrl,
         ageInMonths: !!child.user?.dateOfBirth
           ? differenceInMonths(new Date(), new Date(child.user.dateOfBirth))
+          : undefined,
+        ageGroup: !!currentReportingPeriod
+          ? getProgressAgeGroupForChild(
+              currentReportingPeriod,
+              child!,
+              allAgeGroups
+            )
           : undefined,
         report: childReport,
         isNotStarted: !childReport,
         isInProgress: childReport?.skillObservations.some(
           (x) => x.value === ProgressSkillValues.DoNotKnow
         ),
-        isObservationsComplete: childReport?.isAllObservationsComplete,
+        isObservationsComplete: !!childReport?.observationsCompleteDate,
       };
     });
   }, [children, baseReports]);
 
+  const ageGroupsAvailableForTracking = useMemo(() => {
+    return allAgeGroups.filter((x) =>
+      childReports.some((y) => y.ageGroup?.id === x.id)
+    );
+  }, [childReports, allAgeGroups]);
+
   const percentageReportsCompleted = useMemo(() => {
     return Math.ceil(
-      (childReports.filter((x) => !!x.report?.isComplete).length /
+      (childReports.filter((x) => !!x.ageGroup && !!x.report?.isComplete)
+        .length /
         childReports.length) *
         100
     );
@@ -74,7 +94,8 @@ export const useObserveProgressForChildren = () => {
 
   const percentageObservationsCompleted = useMemo(() => {
     return Math.ceil(
-      (childReports.filter((x) => x.isObservationsComplete).length /
+      (childReports.filter((x) => !!x.ageGroup && x.isObservationsComplete)
+        .length /
         childReports.length) *
         100
     );
@@ -87,5 +108,6 @@ export const useObserveProgressForChildren = () => {
     childReports,
     percentageReportsCompleted,
     percentageObservationsCompleted,
+    ageGroupsAvailableForTracking,
   };
 };
