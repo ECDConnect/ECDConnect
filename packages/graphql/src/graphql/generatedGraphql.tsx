@@ -20388,6 +20388,7 @@ export type UserModel = {
   password?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
   profileImageUrl?: Maybe<Scalars['String']>;
+  profilePicIsEmoji?: Maybe<Scalars['Boolean']>;
   raceId?: Maybe<Scalars['UUID']>;
   resetData?: Maybe<Scalars['Boolean']>;
   surname?: Maybe<Scalars['String']>;
@@ -20417,6 +20418,7 @@ export type UserModelInput = {
   password?: InputMaybe<Scalars['String']>;
   phoneNumber?: InputMaybe<Scalars['String']>;
   profileImageUrl?: InputMaybe<Scalars['String']>;
+  profilePicIsEmoji?: InputMaybe<Scalars['Boolean']>;
   raceId?: InputMaybe<Scalars['UUID']>;
   resetData?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;
