@@ -223,7 +223,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                 }
 
-                if (idOrPassport is null ||
+                if (idOrPassport is null || passport is null ||
                     (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
                     errors.Add("Passport is empty");
 
@@ -409,7 +409,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                 }
 
-                if (idOrPassport is null ||
+                if (idOrPassport is null || passport is null ||
                     (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
                     errors.Add("Passport is empty");
 
