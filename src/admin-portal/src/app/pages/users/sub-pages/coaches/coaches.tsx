@@ -158,11 +158,10 @@ export default function Coaches() {
   );
 
   const viewSelectedRow = (selectedRow: any) => {
-    console.log({ selectedRow });
     const user = tableData?.find(
       (item) => item?.userId === selectedRow?.userId
     );
-    console.log({ user });
+
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id

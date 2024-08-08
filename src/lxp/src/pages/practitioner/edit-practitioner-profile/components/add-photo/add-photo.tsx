@@ -36,12 +36,15 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
   };
 
-  const picturePromtOnAction = async (imageBaseString: string) => {
+  const picturePromtOnAction = async (
+    imageBaseString: string,
+    isProfileEmojiPic?: boolean
+  ) => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
-
     const copy = Object.assign({}, user);
     if (copy) {
       copy.profileImageUrl = imageBaseString;
+      copy.profilePicIsEmoji = isProfileEmojiPic;
       appDispatch(userActions.updateUser(copy));
     }
 
@@ -62,6 +65,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
     if (userCopy) {
       if (imageBaseString?.length > 0) {
         userCopy.profileImageUrl = imageBaseString;
+        copy.profilePicIsEmoji = isProfileEmojiPic;
       }
       appDispatch(userActions.updateUser(userCopy));
       appDispatch(userThunkActions.updateUser(userCopy));

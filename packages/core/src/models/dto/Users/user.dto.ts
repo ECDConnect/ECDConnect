@@ -39,4 +39,5 @@ export interface UserDto extends EntityBase {
     isPrincipal?: boolean;
   };
   connectUsage?: string;
+  profilePicIsEmoji?: boolean;
 }

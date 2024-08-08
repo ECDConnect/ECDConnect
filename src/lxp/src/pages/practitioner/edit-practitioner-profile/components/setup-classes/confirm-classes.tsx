@@ -154,7 +154,7 @@ export const ConfirmClasses = ({
             color="primary"
             text="Save"
             textColor="white"
-            icon="SaveIcon"
+            icon="ArrowCircleRightIcon"
             onClick={() => {
               onSubmit();
             }}
