@@ -12,6 +12,10 @@ export type ChildProgressReport = {
   howToSupport?: string;
   skillObservations: ChildProgressSkillObservation[];
   observationsCompleteDate?: string;
+
+  childEnjoys?: string;
+  goodProgressWith?: string;
+  howCanCaregiverSupport?: string;
 };
 
 export type ChildProgressSkillObservation = {
@@ -38,6 +42,10 @@ export type ChildProgressDetailedReport = {
   unknownCount: number;
   howToSupport?: string;
   skillObservations: ChildProgressDetailedSkillObservation[];
+
+  childEnjoys?: string;
+  goodProgressWith?: string;
+  howCanCaregiverSupport?: string;
 };
 
 export type ChildProgressDetailedSkillObservation =

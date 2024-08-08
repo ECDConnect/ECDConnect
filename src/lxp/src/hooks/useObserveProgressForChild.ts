@@ -255,6 +255,48 @@ export const useObserveProgressForChild = (childId: string) => {
     );
   };
 
+  const updateChildEnjoys = (value: string) => {
+    if (!currentReportingPeriod) {
+      return;
+    }
+
+    appDispatch(
+      progressTrackingActions.updateChildEnjoys({
+        childId,
+        reportingPeriodId: currentReportingPeriod.id,
+        value,
+      })
+    );
+  };
+
+  const updateGoodProgressWith = (value: string) => {
+    if (!currentReportingPeriod) {
+      return;
+    }
+
+    appDispatch(
+      progressTrackingActions.updateGoodProgressWith({
+        childId,
+        reportingPeriodId: currentReportingPeriod.id,
+        value,
+      })
+    );
+  };
+
+  const updateHowCanCaregiverSupport = (value: string) => {
+    if (!currentReportingPeriod) {
+      return;
+    }
+
+    appDispatch(
+      progressTrackingActions.updateHowCanCaregiverSupport({
+        childId,
+        reportingPeriodId: currentReportingPeriod.id,
+        value,
+      })
+    );
+  };
+
   const syncChildProgressReports = () => {
     appDispatch(progressTrackingThunkActions.syncChildProgressReports({}));
   };
@@ -276,5 +318,8 @@ export const useObserveProgressForChild = (childId: string) => {
     updateHowToSupport,
     updateNotes,
     syncChildProgressReports,
+    updateChildEnjoys,
+    updateGoodProgressWith,
+    updateHowCanCaregiverSupport,
   };
 };
