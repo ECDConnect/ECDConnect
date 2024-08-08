@@ -1,6 +1,8 @@
 import {
   ActivityDto,
+  ChildDto,
   PractitionerProgressReportSummaryDto,
+  ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
@@ -10,6 +12,11 @@ import { createSelector } from '@reduxjs/toolkit';
 import { ProgressTrackingState } from '.';
 import { ChildProgressSubCategoryAssessment } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import { RootState } from '../types';
+import { ProgressSkill } from '@/models/progress/progress-skill';
+import { ChildProgressReport } from '@/models/progress/child-progress-report';
+import { getCurrentProgressReportPeriod as getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
+import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
+import { ChildrenPerAgeGroupProps } from '@/pages/coach/coach-practitioner-classroom/components/childrenPerAgeGroup/childrenperAgeGroup.types';
 
 // CATEGORIES
 export const getProgressTrackingCategories = (
@@ -212,3 +219,108 @@ export const getPractitionerProgressReportSummary = (
   state: RootState
 ): PractitionerProgressReportSummaryDto | undefined =>
   state.progressTracking.practitionerProgressReportSummary || undefined;
+
+export const getSkillsForAgeGroup = (ageGroupId: number) =>
+  createSelector(
+    (state: RootState) =>
+      state.progressTracking.progressTrackingCategories.data,
+    (state: RootState) =>
+      state.progressTracking.progressTrackingSubCategories.data,
+    (state: RootState) => state.progressTracking.progressTrackingSkills.data,
+    (
+      categories: ProgressTrackingCategoryDto[],
+      subCategories: ProgressTrackingSubCategoryDto[],
+      skills: ProgressTrackingSkillDto[]
+    ) => {
+      // Get all skills for age group
+      const ageSkills = skills.filter((x) =>
+        x.ageGroups?.some((x) => x.id === ageGroupId)
+      );
+
+      // Add categories and skills
+      return ageSkills.map((skill) => {
+        const subCategory = subCategories.find((x) =>
+          x.skills.some((x) => x.id === skill.id)
+        );
+        const category = categories.find((x) =>
+          x.subCategories.some((x) => x.id === subCategory?.id)
+        );
+
+        return {
+          id: skill.id,
+          name: skill.name,
+          description: skill.description,
+          subCategory: {
+            id: subCategory?.id,
+            name: subCategory?.name,
+            category: {
+              id: category?.id,
+              name: category?.name,
+            },
+          },
+        } as ProgressSkill;
+      });
+    }
+  );
+
+export const getCurrentObservationsForChild = (childId: string) =>
+  createSelector(
+    getCurrentProgressReportPeriod(),
+    (state: RootState) => state.progressTracking.childProgressReports,
+    (
+      currentReportPeriod: ProgressReportPeriod | undefined,
+      childProgressReports: ChildProgressReport[]
+    ) => {
+      if (!currentReportPeriod) {
+        return undefined;
+      }
+
+      return childProgressReports.find(
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === currentReportPeriod.id
+      );
+    }
+  );
+
+export const getProgressReportsForChild = (childId: string) =>
+  createSelector(
+    (state: RootState) => state.progressTracking.childProgressReports,
+    (childProgressReports: ChildProgressReport[]) => {
+      return childProgressReports.filter((x) => x.childId === childId);
+    }
+  );
+
+export const getProgressReportsForReportingPeriod = (
+  childProgressReportPeriodId: string
+) =>
+  createSelector(
+    (state: RootState) => state.progressTracking.childProgressReports,
+    (childProgressReports: ChildProgressReport[]) => {
+      return childProgressReports.filter(
+        (x) => x.childProgressReportPeriodId === childProgressReportPeriodId
+      );
+    }
+  );
+
+export const getProgressAgeGroups = () =>
+  createSelector(
+    (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
+    (progressTrackingAgeGroups: ProgressTrackingAgeGroupDto[]) => {
+      return progressTrackingAgeGroups;
+    }
+  );
+// export const getChildrenWithoutProgressObservations = (
+//   childProgressReportPeriodId: string
+// ) =>
+//   createSelector(
+//     (state: RootState) => state.progressTracking.childProgressReports,
+//     (state: RootState) => state.children.childData.children,
+//     (childProgressReports: ChildProgressReport[],
+//       children: ChildDto[]
+//     ) => {
+//       return childProgressReports.filter(
+//         (x) => x.childProgressReportPeriodId === childProgressReportPeriodId
+//       );
+//     }
+//   );

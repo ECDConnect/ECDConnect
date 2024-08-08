@@ -23,7 +23,7 @@ import {
   isSameDay,
   startOfWeek,
 } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PointsSuccessCard from '../../../../../components/points-success-card/points-success-card';
 import { MissedAttendanceGroups } from '@models/classroom/attendance/MissedAttendanceGroups';
@@ -409,7 +409,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
             </div>
           )}
         {attendanceActionList.slice(0, registersToShow).map((register) => (
-          <>
+          <Fragment key={register?.id}>
             <div className="flex items-center justify-between py-4">
               <div>
                 <Typography
@@ -437,7 +437,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
               />
             </div>
             <Divider dividerType="dashed" />
-          </>
+          </Fragment>
         ))}
         {registersToShow < attendanceActionList.length && (
           <Button

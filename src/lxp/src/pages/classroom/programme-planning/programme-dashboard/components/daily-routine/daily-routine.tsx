@@ -52,7 +52,6 @@ import { WeekendDayIndicator } from '../../../programme-routine/components/weeke
 import {
   addWeeks,
   isSameWeek,
-  isThisWeek,
   isWeekend,
   nextMonday,
   parseISO,
@@ -72,7 +71,6 @@ import {
 import { practitionerSelectors } from '@/store/practitioner';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
-import { ro } from 'date-fns/locale';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -448,14 +446,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   useEffect(() => {
     // Celebrate message
-    if (
-      plannedWeeksCount > 1 &&
-      weeksStartDates?.some((date) => isThisWeek(date))
-    ) {
+    if (plannedWeeksCount > 1) {
       setCelebrateMessage(
         `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
       );
-    } else if (selectedDate && isThisWeek(selectedDate) && isWholeWeekPlanned) {
+    } else if (selectedDate && isWholeWeekPlanned) {
       setCelebrateMessage(
         `Great job ${userData?.firstName}! Your whole week is planned.`
       );
@@ -467,12 +462,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       setSkillMixMessage('');
       setImproveProgrammeMessage('');
 
-      // Mix skill message
-      if (plannedActivities.length >= 10) {
-        setSkillMixMessage(
-          'Good job, your programme has a good mix of skills!'
-        );
-      }
       // Improve programme
       if (
         plannedActivities.length <= 10 &&
@@ -480,8 +469,15 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       ) {
         setImproveProgrammeMessage('Want to improve your programme?');
       }
+
+      if (improveProgrammeMessage === '' && plannedActivities.length >= 10) {
+        setSkillMixMessage(
+          'Good job, your programme has a good mix of skills!'
+        );
+      }
     }
   }, [
+    improveProgrammeMessage,
     isWholeWeekPlanned,
     plannedActivities,
     plannedWeeksCount,
@@ -531,7 +527,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             preSelectedActivityId={currentDailyProgramme?.storyActivityId}
             programmeId={programme?.id}
             routineItem={routineItem}
-            title={`Story & activity`}
             subtitle={new Date(
               currentDailyProgramme?.dayDate || new Date()
             ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}
@@ -604,7 +599,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 type={'body'}
               />
               <Button
-                color={'secondaryAccent2'}
+                color={'secondary'}
                 type={'outlined'}
                 onClick={() =>
                   setSelectedDate && nextProgrammeDaysWithoutActivity?.length
@@ -618,7 +613,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 className={'w-25 mt-6 mb-4'}
                 icon="ClipboardListIcon"
                 text="Start planning"
-                textColor="secondaryAccent2"
+                textColor="secondary"
               />
             </>
           )}
@@ -767,7 +762,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                       <div className="mb-1 flex items-center gap-3">
                         <RoundIcon
                           imageUrl={activityItem?.subCategory.imageUrl}
-                          backgroundColor="tertiary"
+                          backgroundColor="secondary"
                         />
                         <Typography
                           type={'body'}

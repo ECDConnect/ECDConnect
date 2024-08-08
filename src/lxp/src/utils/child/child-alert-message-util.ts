@@ -50,7 +50,7 @@ export const getChildAlertModel = ({
   const currentWeekOfYear = getWeek(new Date());
 
   const attendanceLastWeek = attendance?.filter(
-    (day) => day.weekOfYear === currentWeekOfYear - 1
+    (day) => day.weekOfYear === currentWeekOfYear - 2
   );
 
   const { percentage, attendedDays, totalDays } = getAttendanceData(

@@ -37,11 +37,9 @@ export enum ActivitiesTitles {
   SmallLargeGroupActivities = 'Small/large group activities',
 }
 
-export enum NatalTypes {
-  Info = 'Info',
-  HealthPromotion = 'Health promotion',
-  Video = 'Video',
-  Infographic = 'Infographic',
+export enum ActivityTypes {
+  SmallGroup = 'Small group',
+  LargeGroup = 'Large group',
 }
 
 export enum MediaTypes {
@@ -56,11 +54,9 @@ export enum TemplateTypenames {
   NatalGraphic = 'NatalGraphic Form',
 }
 
-export const sortByNatalTypeOptions: SearchDropDownOption<string>[] = [
-  NatalTypes?.HealthPromotion,
-  NatalTypes?.Info,
-  NatalTypes.Infographic,
-  NatalTypes?.Video,
+export const searchByActivityTypeOptions: SearchDropDownOption<string>[] = [
+  ActivityTypes?.SmallGroup,
+  ActivityTypes?.LargeGroup,
 ].map((item) => ({
   id: item,
   label: item,

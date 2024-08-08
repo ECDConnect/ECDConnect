@@ -2,7 +2,6 @@ export const ContentManagementTabs = {
   PROCESS: { id: 2, name: 'Progress' },
   PROGRAMMES: { id: 3, name: 'Programme' },
   COMMUNITY: { id: 4, name: 'Community' },
-  GGCOMMUNITY: { id: 5, name: 'Community' },
 };
 
 export const ContentTypes = {
@@ -13,10 +12,6 @@ export const ContentTypes = {
   CONSENT: 'Consent',
   MORE_INFORMATION: 'MoreInformation',
   INFO_PAGES: 'Info Pages',
-  POSTNATAL: 'Postnatal',
-  ANTENATAL: 'Antenatal',
-  NATALINFO: 'NatalInfo',
-  DANGERSIGN: 'DangerSign',
   TOPIC: 'Topic',
 };
 

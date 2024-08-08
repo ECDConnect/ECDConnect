@@ -29,7 +29,10 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   const displayAvatar: boolean = hasConsent && !!dataUrl;
   const displayUserAvatar: boolean = !hasConsent || (hasConsent && !dataUrl);
   return (
-    <a className={classNames(styles.wrapper, className)} onClick={onPressed}>
+    <a
+      className={classNames(styles.wrapper, className)}
+      {...(canChangeImage && { onClick: onPressed })}
+    >
       {displayAvatar && (
         <Avatar size={size} dataUrl={dataUrl as string} displayBorder />
       )}

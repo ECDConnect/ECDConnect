@@ -29,6 +29,7 @@ export const Article = ({
   showClose = true,
   isOpen = false,
   isFromRegistration,
+  isConsentScreen,
 }: ArticleProps) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -154,6 +155,7 @@ export const Article = ({
                   selectLanguage={(data) => changeLanugage(data)}
                   availableLanguages={availableLanguages}
                   notLogged={true}
+                  isConsentScreen={isConsentScreen}
                 />
               </div>
               <div className={styles.articleTextWrapper}>

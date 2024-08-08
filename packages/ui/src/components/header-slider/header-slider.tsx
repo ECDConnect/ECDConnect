@@ -18,6 +18,7 @@ export interface HeaderSliderProps extends ComponentBaseProps {
   transitionTime?: number;
   className?: string;
   cardClassName?: string;
+  isSetupComponent?: boolean;
 }
 
 const MARGIN = 32;
@@ -29,6 +30,7 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
   transitionTime,
   className,
   cardClassName,
+  isSetupComponent,
 }) => {
   const { width } = useWindowSize();
 
@@ -99,6 +101,7 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
       infiniteLoop={infiniteLoop}
       autoPlay={autoPlay}
       renderIndicator={renderIndicator}
+      showIndicators={isSetupComponent ? false : true}
       {...(transitionTime && { transitionTime })}
     >
       {slides.map((slide, idx) => {
@@ -113,7 +116,13 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
               className={styles.card}
               style={{ width: width - MARGIN }}
             >
-              <div className={styles.imageWrapper}>
+              <div
+                className={
+                  !slide?.title && !slide?.text
+                    ? styles.imageWrapperWithNoText
+                    : styles.imageWrapper
+                }
+              >
                 <img src={slide.image} className={styles.cardBanner} />
               </div>
               <div className={styles.cardInformation}>
@@ -126,8 +135,12 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({
                     className={styles.statusChip}
                   />
                 )}
-                <div className={styles.cardTitle}>{slide.title}</div>
-                <div className={styles.cardText}>{slide.text}</div>
+                {slide?.title && (
+                  <div className={styles.cardTitle}>{slide.title}</div>
+                )}
+                {slide?.text && (
+                  <div className={styles.cardText}>{slide.text}</div>
+                )}
               </div>
             </div>
           </div>

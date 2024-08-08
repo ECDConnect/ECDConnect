@@ -1,17 +1,53 @@
 import { ChildDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
-import { ClassroomDto as SimpleClassroomDto } from '@/models/classroom/classroom.dto';
+import {
+  ChildProgressReportPeriodDto,
+  ClassroomDto,
+  ClassroomDto as SimpleClassroomDto,
+} from '@/models/classroom/classroom.dto';
 import {
   ClassroomGroupDto,
   LearnerDto,
   ClassroomGroupDto as SimpleClassroomGroupDto,
 } from '@/models/classroom/classroom-group.dto';
 import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
+import { isBefore } from 'date-fns';
+import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 
 export const getClassroom = (
   state: RootState
 ): SimpleClassroomDto | undefined => state.classroomData.classroom;
+
+export const getIsReportingPeriodsSet = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined): boolean => {
+      const currentYear = new Date().getFullYear();
+      return (
+        !!classroom?.childProgressReportPeriods &&
+        !!classroom?.childProgressReportPeriods.some(
+          (x) => new Date(x.startDate).getFullYear() === currentYear
+        )
+      );
+    }
+  );
+
+export const getPreviousYearsReportingPeriods = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined): ChildProgressReportPeriodDto[] => {
+      const lastYear = new Date().getFullYear() - 1;
+      return (
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === lastYear)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          ) || []
+      );
+    }
+  );
 
 export const getClassroomGroups = (
   state: RootState
@@ -109,5 +145,67 @@ export const getLearnersForClassroomGroups = (
               ),
             })),
         }));
+    }
+  );
+
+export const getCurrentProgressReportPeriod = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined) => {
+      const currentYear = new Date().getFullYear();
+
+      const currentYearsReportingPeriods =
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === currentYear)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          ) || [];
+
+      // Get first in order where end date is after the current date
+      const index = currentYearsReportingPeriods.findIndex((x) =>
+        isBefore(new Date(), new Date(x.endDate))
+      );
+
+      if (index < 0) {
+        return undefined;
+      }
+
+      return {
+        reportNumber: index + 1,
+        ...currentYearsReportingPeriods[index],
+      } as ProgressReportPeriod;
+    }
+  );
+
+export const getAllProgressReportPeriods = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined) => {
+      const allReportingPeriods = classroom?.childProgressReportPeriods || [];
+
+      const years = allReportingPeriods
+        .map((x) => new Date(x.startDate).getFullYear())
+        .filter((value, index, array) => array.indexOf(value) === index);
+
+      let sortedReportingPeriods: ProgressReportPeriod[] = [];
+
+      years.forEach((year) => {
+        const reportingPeriodsForYear = allReportingPeriods
+          .filter((x) => new Date(x.startDate).getFullYear() === year)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
+
+        reportingPeriodsForYear?.forEach((value, index) =>
+          sortedReportingPeriods.push({
+            ...value,
+            reportNumber: index + 1,
+          })
+        );
+      });
+
+      return sortedReportingPeriods;
     }
   );

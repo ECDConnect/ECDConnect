@@ -11,12 +11,20 @@ import { ProgressTrackingService } from '@services/ProgressTrackingService';
 import { RootState, ThunkApiType } from '../types';
 import { OverrideCache } from '@/models/sync/override-cache';
 import { isBefore } from 'date-fns';
+import {
+  ChildAttendanceReportModel,
+  ChildProgressReportModel,
+  ChildProgressReportModelInput,
+} from '@ecdlink/graphql';
+import { ChildProgressReport } from '@/models/progress/child-progress-report';
 
 export const ProgressTrackingActions = {
   GET_PROGRESS_TRACKING_AGE_GROUPS: 'getProgressTrackingAgeGroup',
   GET_PROGRESS_TRACKING_CATEGORIES: 'getProgressTrackingCategories',
   GET_PROGRESS_TRACKING_SUB_CATEGORIES: 'getProgressTrackingSubCategories',
   GET_PROGRESS_TRACKING_SKILLS: 'getProgressTrackingSkills',
+  SYNC_CHILD_PROGRESS_REPORTS: 'syncChildProgressReports',
+  GET_CHILD_PROGRESS_REPORTS: 'getChildProgressReports',
 };
 
 export const getProgressTrackingAgeGroups = createAsyncThunk<
@@ -261,6 +269,81 @@ export const getProgressTrackingLevels = createAsyncThunk<
       }
     } else {
       return progressTrackingLevels;
+    }
+  }
+);
+
+export const syncChildProgressReports = createAsyncThunk<
+  boolean[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  ProgressTrackingActions.SYNC_CHILD_PROGRESS_REPORTS,
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      progressTracking: { childProgressReports },
+    } = getState();
+
+    try {
+      let promises: Promise<boolean>[] = [];
+
+      if (userAuth?.auth_token && childProgressReports.some((x) => !x.synced)) {
+        promises = childProgressReports
+          .filter((x) => !x.synced)
+          .map(async (report) => {
+            const childProgressReportInput: ChildProgressReportModelInput = {
+              childId: report.childId,
+              childProgressReportPeriodId: report.childProgressReportPeriodId,
+              dateCreated: new Date(report.dateCreated),
+              id: report.id,
+              dateCompleted: report.dateCompleted,
+              howToSupport: report.howToSupport,
+              notes: report.notes,
+              skillObservations: report.skillObservations,
+              skillsToWorkOn: report.skillsToWorkOn,
+              observationsCompleteDate: report.observationsCompleteDate,
+            };
+
+            return await new ProgressTrackingService(
+              userAuth?.auth_token
+            ).createOrUpdateChildProgressReport(childProgressReportInput);
+          });
+      }
+      return Promise.all(promises);
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getChildProgressReports = createAsyncThunk<
+  ChildProgressReport[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  ProgressTrackingActions.GET_CHILD_PROGRESS_REPORTS,
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const reports = await new ProgressTrackingService(
+          userAuth?.auth_token
+        ).getChildProgressReportsForUser(userAuth.id);
+
+        return reports;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

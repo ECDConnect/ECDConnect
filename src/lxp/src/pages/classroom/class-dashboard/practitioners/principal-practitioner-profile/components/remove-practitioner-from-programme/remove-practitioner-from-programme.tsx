@@ -156,11 +156,7 @@ export const RemovePractitionerFromProgramme: React.FC<
       })
       .filter(Boolean) as { label: string; value: string }[];
 
-    if (
-      principalPractitioner?.isPrincipal &&
-      principalPractitioner?.userId &&
-      (!_list || _list.length === 0)
-    ) {
+    if (principalPractitioner?.isPrincipal && principalPractitioner?.userId) {
       _list?.push({
         label: `${principalPractitioner?.user?.firstName} ${
           principalPractitioner?.user?.surname ||
@@ -359,7 +355,14 @@ export const RemovePractitionerFromProgramme: React.FC<
                   onChange={(date) => {
                     setRemovePractionerFormValues(
                       'removalDate',
-                      date ? date.toString() : ''
+                      date
+                        ? new Date(
+                            date.getFullYear(),
+                            date.getMonth(),
+                            date.getDate(),
+                            12
+                          ).toString()
+                        : ''
                     );
                     triggerRemovePractionerForm();
                   }}

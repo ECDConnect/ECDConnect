@@ -87,14 +87,23 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
           <div className={stackedListStyles.paragraphWrapper}>
             <div>
               <Typography
-                className="truncate"
+                className={
+                  item.titleStyle
+                    ? classNames(item.titleStyle, styles.actionTitle)
+                    : 'text-textMid truncate'
+                }
                 type="h4"
                 weight="bold"
-                color="textMid"
                 text={item.title}
               ></Typography>
               {!!item.subTitle && (
-                <div className={styles.menuSubTitle}>
+                <div
+                  className={
+                    item?.alertSeverity === 'none'
+                      ? styles.menuSubTitleWithAlertSeverityNone
+                      : styles.menuSubTitle
+                  }
+                >
                   {!item.hideAlertSeverity ? (
                     item.alertSeverityNoneIcon &&
                     item.alertSeverity === 'none' ? (
@@ -119,6 +128,8 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
                       item.subTitleStyle,
                       item?.breaksSubtitleLine
                         ? 'w-11/12 break-words pl-1'
+                        : item?.alertSeverity === 'none'
+                        ? 'truncate'
                         : 'truncate pl-1'
                     )}
                     type="help"

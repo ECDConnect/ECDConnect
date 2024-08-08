@@ -226,3 +226,16 @@ export const UploadPractitioners = gql`
     }
   }
 `;
+
+export const ValidatePractitionerImportSheet = gql`
+  query ValidatePractitionerImportSheet($file: String) {
+    validatePractitionerImportSheet(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+        __typename
+      }
+    }
+  }
+`;

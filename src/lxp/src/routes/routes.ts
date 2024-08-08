@@ -33,6 +33,7 @@ const ROUTES = {
     CHILDREN: '/children',
     ATTENDANCE: addPrefix('/attendance', {
       EDIT_REGISTERS: '/edit-registers',
+      MONTHLY_REPORT: '/monthly-report',
     }),
     ACTIVITIES: addPrefix('/activities', {
       PROGRAMME_DASHBOARD: addPrefix('/programme-dashboard/:classroomGroupId', {
@@ -50,6 +51,9 @@ const ROUTES = {
     HELP: '/help/:helpSection',
     WELCOME: '/welcome',
     PROFILE: '/profile',
+    CONNECTION_PROFILE: '/connection-profile',
+    ECD_HEROES_LIST: '/ecd-heroes-list',
+    RECEIVED_REQUESTS: '/received-requests',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
       EDIT: '/edit',
@@ -158,7 +162,15 @@ const ROUTES = {
   REMOVE_CHILD: '/remove-child',
   MESSAGES: '/messages',
   PROGRESS_TRACKING_CATEGORY: '/progress-tracking-category',
+  CHILD_PROGRESS_REPORTING_PERIODS: '/child-progress-reporting-period',
   CHILD_PROGRESS_OBSERVATION: '/child-progress-observation',
+  PROGRESS_OBSERVATIONS: '/progress-observations',
+  PROGRESS_OBSERVATIONS_LANDING: '/progress-observations-landing',
+  PROGRESS_OBSERVATIONS_NOTES: '/progress-observations-notes',
+  PROGRESS_REPORT_LIST: '/child-progress-skill-tracking',
+  PROGRESS_SELECT_CHILD_TO_TRACK: '/progress-select-child',
+  PROGRESS_SELECT_CATEGORY_TO_TRACK: '/progress-select-category',
+  PROGRESS_OBSERVATIONS_BY_CATEGORY: '/progress-observations-by-category',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
   CHILD_PROGRESS_OBSERVATION_REPORT: '/child-progress-observation-report',
   COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS:

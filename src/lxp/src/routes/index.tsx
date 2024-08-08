@@ -136,7 +136,19 @@ import { UpdateIncome } from '@/pages/business/add-amount/add-income/update-inco
 import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
 import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-expense';
 import { Community } from '@/pages/community/community';
+import { ChildProgressReportingPeriods } from '@/pages/classroom/progress-observation/child-progress-reporting-period/child-progress-reporting-window';
 import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
+import { ConnectionProfile } from '@/pages/community/connection-profile/connection-profile';
+import MonthlyAttendanceReport from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report';
+import { ECDHeroes } from '@/pages/community/community-tabs/components/community-dashboard/components/ecd-heroes/ecd-heroes';
+import { CommunityConnections } from '@/pages/community/community-tabs/components/community-dashboard/components/received-requests/community-connections';
+import { ProgressObservations } from '@/pages/classroom/progress/observations/child-progress-observations';
+import { ChildProgressObservationsLanding } from '@/pages/classroom/progress/landing/child-progress-observations-landing';
+import { ChildProgressReportsList } from '@/pages/classroom/progress/child-reports-list/child-progress-reports-list';
+import { ChildProgressObservationsNotes } from '@/pages/classroom/progress/landing/child-progress-observations-notes';
+import { SelectChildToTrack } from '@/pages/classroom/progress/select-child-to-track-progress/select-child-to-track-progress';
+import { SelectCategoryToTrack } from '@/pages/classroom/progress/select-category-to-track-progress/select-category-to-track-progress';
+import { ObservationsByCategory } from '@/pages/classroom/progress/observations-by-category/observations-by-category';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -270,6 +282,21 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.COMMUNITY.WELCOME}
         component={CommunityWelcome}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CONNECTION_PROFILE}
+        component={ConnectionProfile}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.ECD_HEROES_LIST}
+        component={ECDHeroes}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.RECEIVED_REQUESTS}
+        component={CommunityConnections}
         exact
       />
       <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />
@@ -553,6 +580,11 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         exact
+        path={ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT}
+        component={MonthlyAttendanceReport}
+      />
+      <Route
+        exact
         path={ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT}
         component={ProgrammeDashboard}
       />
@@ -579,6 +611,10 @@ const AuthRoutes: React.FC = () => {
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
       <Route
+        path={ROUTES.CHILD_PROGRESS_REPORTING_PERIODS}
+        component={ChildProgressReportingPeriods}
+      />
+      <Route
         path={ROUTES.PROGRESS_TRACKING_CATEGORY}
         component={ProgressObservationCategory}
       />
@@ -591,8 +627,36 @@ const AuthRoutes: React.FC = () => {
         component={ChildProgressObservationPage}
       />
       <Route
+        path={ROUTES.PROGRESS_OBSERVATIONS}
+        component={ProgressObservations}
+      />
+      <Route
+        path={ROUTES.PROGRESS_OBSERVATIONS_NOTES}
+        component={ChildProgressObservationsNotes}
+      />
+      <Route
+        path={ROUTES.PROGRESS_REPORT_LIST}
+        component={ChildProgressReportsList}
+      />
+      <Route
+        path={ROUTES.PROGRESS_OBSERVATIONS_LANDING}
+        component={ChildProgressObservationsLanding}
+      />
+      <Route
         path={ROUTES.CHILD_PROGRESS_OBSERVATION_NOTE}
         component={ChildProgressObservationNote}
+      />
+      <Route
+        path={ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK}
+        component={SelectChildToTrack}
+      />
+      <Route
+        path={ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK}
+        component={SelectCategoryToTrack}
+      />
+      <Route
+        path={ROUTES.PROGRESS_OBSERVATIONS_BY_CATEGORY}
+        component={ObservationsByCategory}
       />
       <Route
         path={ROUTES.CHILD_PROGRESS_OBSERVATION_REPORT}

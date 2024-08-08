@@ -36,14 +36,13 @@ import { classroomsSelectors } from '@/store/classroom';
 import ROUTES from '@/routes/routes';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { userSelectors } from '@store/user';
-import {
-  ClassDashboardRouteState,
-  TabsItems,
-} from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { MonthlyAttendanceReportRouteState } from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report.types';
 
 export const ChildAttendanceReportPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const history = useHistory();
+
   const { isOnline } = useOnlineStatus();
   const { state } = useLocation<ChildAttendanceReportState>();
   const { childId, classroomGroupId, childUserId } = state;
@@ -149,11 +148,10 @@ export const ChildAttendanceReportPage: React.FC = () => {
         if (isCoach) {
           history.goBack();
         } else {
-          childUserId
-            ? history.push(ROUTES.CLASSROOM.ROOT, {
-                activeTabIndex: TabsItems.ATTENDANCE,
-                fromChildAttendanceReport: true,
-              } as ClassDashboardRouteState)
+          state?.selectedMonth
+            ? history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
+                selectedMonth: state?.selectedMonth,
+              } as MonthlyAttendanceReportRouteState)
             : childId
             ? history.push(ROUTES.CHILD_PROFILE, { childId })
             : history.goBack();

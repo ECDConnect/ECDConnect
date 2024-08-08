@@ -431,9 +431,6 @@ export default function UiTable({
                 className={`${
                   item?.imageHexColor ? '' : 'bg-tertiary'
                 } flex h-9 w-9 items-center justify-center rounded-full`}
-                style={{
-                  background: `#${item?.imageHexColor?.split('#')?.[1]}`,
-                }}
               >
                 <img
                   alt="skill"
@@ -443,6 +440,23 @@ export default function UiTable({
               </div>
             </div>
           ))}
+        </div>
+      );
+    } else if (column.field === 'themes' && column?.use === 'Themes') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => {
+            return (
+              <div
+                key={`theme` + item?.id}
+                className={' text-textMid m-1 rounded-full py-1 text-xs'}
+              >
+                {index === display_value?.length - 1
+                  ? `${item?.name}`
+                  : `${item?.name};`}
+              </div>
+            );
+          })}
         </div>
       );
     } else if (
@@ -737,7 +751,7 @@ export default function UiTable({
           main: 'rounded-lg',
           table_head: {
             table_row: ` mb-10 border-b-2 border-secondary `,
-            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-quaternary text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
+            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-quaternary text-left text-xs font-medium text-gray-500 tracking-wider leading-none bg-D2F1F9`,
           },
           table_body: {
             main: ``,

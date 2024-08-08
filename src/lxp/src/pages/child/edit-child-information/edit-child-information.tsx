@@ -61,6 +61,9 @@ import { disableBackendNotification } from '@/store/notifications/notifications.
 import { notificationsSelectors } from '@/store/notifications';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { getClassroomGroupByChildUserId } from '@/store/classroom/classroom.selectors';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -72,6 +75,8 @@ export const EditChildInformation: React.FC = () => {
   const practitionerIsOnLeave = location.state.practitionerIsOnLeave;
   const isFromEditClass = location.state.isFromEditClass;
 
+  const isTrialPeriod = useIsTrialPeriod();
+
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Coach
@@ -82,6 +87,12 @@ export const EditChildInformation: React.FC = () => {
     classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const { hasPermissionToManageChildren } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
 
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
@@ -236,7 +247,9 @@ export const EditChildInformation: React.FC = () => {
             <CareGiverChildInformationForm
               enableReadOnlyMode
               careGiverInformation={childCareGiverChildInformationForm}
-              canEdit={!isCoach && !practitionerIsOnLeave}
+              canEdit={
+                !isCoach && !practitionerIsOnLeave && hasPermissionToEdit
+              }
               onSubmit={(form) => {
                 setChildCareGiverChildInformationForm(form);
                 saveChildAddress(form);
@@ -249,7 +262,9 @@ export const EditChildInformation: React.FC = () => {
               enableReadOnlyMode
               childName={child?.user?.firstName ?? ''}
               childHealthInformation={childHealthInformationForm}
-              canEdit={!isCoach && !practitionerIsOnLeave}
+              canEdit={
+                !isCoach && !practitionerIsOnLeave && hasPermissionToEdit
+              }
               onSubmit={(form) => {
                 setChildHealthInformationForm(form);
                 saveChildHealthInformation(form);
@@ -262,7 +277,7 @@ export const EditChildInformation: React.FC = () => {
               enableReadOnlyMode
               childCareGiverInformation={childCaregiverInformation}
               childName={child?.user?.firstName ?? ''}
-              canEdit={!isCoach}
+              canEdit={!isCoach && hasPermissionToEdit}
               onSubmit={(form) => {
                 setChildCaregiverInformation(form);
                 saveChildCaregiver(form);
@@ -276,7 +291,9 @@ export const EditChildInformation: React.FC = () => {
               childEmergencyContactForm={childEmergencyContactForm}
               childName={child?.user?.firstName ?? ''}
               variation="practitioner"
-              canEdit={!isCoach && !practitionerIsOnLeave}
+              canEdit={
+                !isCoach && !practitionerIsOnLeave && hasPermissionToEdit
+              }
               onSubmit={(form) => {
                 setChildEmergencyContactForm(form);
                 saveChildEmergencyContact(form);

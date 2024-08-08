@@ -45,6 +45,10 @@ import { InitialAttendanceTutorialModal } from '../attendance/components/attenda
 import { ActivitiesTab } from '../activities/activities';
 import { useTenant } from '@/hooks/useTenant';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { ChildProgressLanding } from '../progress/progress-tab/child-progress-landing';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useAppContext } from '@/walkthrougContext';
+import { PractitionerListRouteState } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list.types';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -77,6 +81,8 @@ export const ClassDashboard: React.FC = () => {
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
 
+  const { setState } = useAppContext();
+
   const isToShowAttendanceTutorial = useMemo(
     () =>
       selectedTabIndex === TabsItems.ATTENDANCE &&
@@ -90,7 +96,14 @@ export const ClassDashboard: React.FC = () => {
     []
   );
 
-  const { practitionerIsOnLeave } = usePractitionerAbsentees(practitioner!);
+  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
+    practitioner!
+  );
+
+  const { hasPermissionToTakeAttendance } = useUserPermissions();
+
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
   const hasCreatedReportForCurrentPeriod = useSelector(
     contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
@@ -157,11 +170,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: NavigationNames.Classroom.Progress,
       initActive: false,
-      child: (
-        <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
-        </div>
-      ),
+      child: <ChildProgressLanding />,
     },
     {
       title: NavigationNames.Classroom.Activities,
@@ -194,7 +203,7 @@ export const ClassDashboard: React.FC = () => {
   const displayTutorial = (type?: string) => {
     switch (type) {
       case NavigationNames.Classroom.Attendance:
-        setAttendanceTutorialActive(true);
+        setAttendanceTutorialActive(!!hasPermissionToEdit);
         break;
       default:
         break;
@@ -202,8 +211,9 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const displayHelp =
-    currentTab?.title === NavigationNames.Classroom.Attendance ||
-    currentTab?.title === NavigationNames.Classroom.Programme;
+    hasPermissionToEdit &&
+    (currentTab?.title === NavigationNames.Classroom.Attendance ||
+      currentTab?.title === NavigationNames.Classroom.Programme);
 
   const closeAttendanceTutorial = useCallback(() => {
     if (!attendanceTutorialComplete && previousTabIndex) {
@@ -212,14 +222,14 @@ export const ClassDashboard: React.FC = () => {
     setAttendanceTutorialActive(false);
   }, [attendanceTutorialComplete, previousTabIndex]);
 
-  const updatePractitionerProgress = async () => {
+  const updatePractitionerProgress = useCallback(async () => {
     await appDispatch(
       practitionerThunkActions.updatePractitionerProgress({
         practitionerId: practitioner?.userId,
         progress: 3.0,
       })
     );
-  };
+  }, [appDispatch, practitioner?.userId]);
 
   const completeTutorial = () => {
     setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
@@ -270,6 +280,12 @@ export const ClassDashboard: React.FC = () => {
     });
   }, [dialog]);
 
+  const handleWalkthroughStart = useCallback(() => {
+    setState({ run: true, tourActive: true, stepIndex: 0 });
+    updatePractitionerProgress();
+    history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
+  }, [history, setState, updatePractitionerProgress]);
+
   const handleAttendanceWalkthroughLanguage = useCallback(() => {
     setShowAttendanceWalkthrough(false);
 
@@ -280,16 +296,17 @@ export const ClassDashboard: React.FC = () => {
       render: (onClose) => (
         <WalkthroughModal
           onStart={() => {
-            setAttendanceTutorialActive(true);
+            handleWalkthroughStart();
             onClose();
           }}
         />
       ),
     });
-  }, [dialog]);
+  }, [dialog, handleWalkthroughStart]);
 
   useEffect(() => {
     if (
+      hasPermissionToEdit &&
       isToShowAttendanceTutorial &&
       !attendanceTutorialComplete &&
       !practitionerIsOnLeave
@@ -297,6 +314,7 @@ export const ClassDashboard: React.FC = () => {
       setShowAttendanceWalkthrough(true);
     }
   }, [
+    hasPermissionToEdit,
     attendanceTutorialComplete,
     practitionerIsOnLeave,
     isToShowAttendanceTutorial,
@@ -371,6 +389,80 @@ export const ClassDashboard: React.FC = () => {
     updatePractitionerUsePhotoReportPermission,
     user?.profileImageUrl,
   ]);
+
+  const handleIsOnLeaveModal = useCallback(() => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        history.push(ROUTES.DASHBOARD);
+
+        return (
+          <ActionModal
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            iconSize={24}
+            importantText={`You are on leave and cannot use this section`}
+            detailText={`You are on leave from ${format(
+              new Date((currentAbsentee?.absentDate as Date) || new Date()),
+              'd MMM yyyy'
+            )} to ${format(
+              currentAbsentee?.absentDateEnd
+                ? new Date(currentAbsentee?.absentDateEnd)
+                : new Date(),
+
+              'd MMM yyyy'
+            )}. If you believe this is a mistake please reach out to ${
+              currentAbsentee?.loggedByPerson
+            }.`}
+            actionButtons={[
+              {
+                text: `Contact ${currentAbsentee?.loggedByPerson}`,
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+                    returnRoute: ROUTES.DASHBOARD,
+                    isToShowPrincipal: true,
+                  } as PractitionerListRouteState);
+                  onClose();
+                },
+                leadingIcon: 'ChatAltIcon',
+              },
+              {
+                text: `Close`,
+                textColour: 'quatenary',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => {
+                  history.push(ROUTES.DASHBOARD);
+                  onClose();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [
+    currentAbsentee?.absentDate,
+    currentAbsentee?.absentDateEnd,
+    currentAbsentee?.loggedByPerson,
+    dialog,
+    history,
+  ]);
+
+  useEffect(() => {
+    if (practitionerIsOnLeave && !practitioner?.isPrincipal) {
+      handleIsOnLeaveModal();
+    }
+
+    // INFO: render once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitionerIsOnLeave, practitioner]);
 
   useEffect(() => {
     if (promptPhotoReportPermission) {

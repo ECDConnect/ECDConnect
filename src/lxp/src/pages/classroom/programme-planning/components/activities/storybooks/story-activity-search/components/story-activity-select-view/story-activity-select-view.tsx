@@ -1,4 +1,4 @@
-import { Button, Typography } from '@ecdlink/ui';
+import { Button, Divider, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../../../constants/ActivitySearch';
@@ -45,30 +45,21 @@ export const StoryActivitySelectView: React.FC<
       />
       <Button
         type={'filled'}
-        color={'primary'}
+        color={'quatenary'}
         className={'mt-4 w-full'}
         textColor={'white'}
         text={'Choose a different story'}
-        icon={'CheckCircleIcon'}
+        icon={'ArrowCircleLeftIcon'}
         iconPosition={'start'}
         onClick={() => onClearStory()}
       />
-
+      <Divider className={'mt-4 mb-6'} dividerType="dashed" />
       <Typography
         text={'Choose a story activity'}
-        color={'black'}
+        color={'textDark'}
         type={'h2'}
-        align={'left'}
-        className={'mt-4'}
       />
-      <Typography
-        text={'Step 2 of 2'}
-        hasMarkup
-        color={'black'}
-        type={'markdown'}
-        align={'left'}
-        className={'mt-2'}
-      />
+      <Typography text={'Step 2 of 2'} color={'textMid'} type={'h4'} />
 
       {storyActivities &&
         storyActivities.slice(0, pageSize).map((activity) => {
@@ -102,9 +93,9 @@ export const StoryActivitySelectView: React.FC<
           size="normal"
           className="mb-4 mt-3 w-full"
           type="outlined"
-          color="primary"
+          color="quatenary"
           text="See more activities"
-          textColor="primary"
+          textColor="quatenary"
           icon="EyeIcon"
           onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
         />

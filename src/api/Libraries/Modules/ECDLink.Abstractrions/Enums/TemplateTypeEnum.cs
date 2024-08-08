@@ -23,6 +23,7 @@ namespace ECDLink.Abstractrions.Enums
         AdminUserHelpForm = 18,
         OAWLAuthCode = 19,
         PrincipalInvitation = 20,
-        PreSchoolInvitation = 21
+        PreSchoolInvitation = 21,
+        NewTenantSetupInfoReceived = 22
     }
 }

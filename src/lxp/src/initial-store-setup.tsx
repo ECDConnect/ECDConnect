@@ -52,7 +52,10 @@ import {
 import { analyticsActions } from './store/analytics';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
-import { classroomsForCoachThunkActions } from './store/classroomForCoach';
+import {
+  classroomsForCoachThunkActions,
+  classroomsForCoachActions,
+} from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
@@ -142,6 +145,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     appDispatch(notesActions.resetNotesState());
     appDispatch(classroomsActions.resetClassroomState());
+    appDispatch(classroomsForCoachActions.resetClassroomState());
     appDispatch(coachActions.resetCoachState());
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
@@ -175,17 +179,16 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     setOtherLoading(true);
 
-    const promises = [
+    const promises: Promise<any>[] = [
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
       appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
-      appDispatch(contentReportThunkActions.getDetailedProgressReports(50)),
-      appDispatch(
-        contentReportThunkActions.getChildProgressReportSummary(50)
-      ).unwrap(),
       appDispatch(notesThunkActions.getNotes({})).unwrap(),
       appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getChildProgressReports({})
+      ).unwrap(),
       appDispatch(userThunkActions.getUserConsents({})).unwrap(),
       appDispatch(
         calendarThunkActions.getCalendarEvents({
@@ -283,10 +286,22 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(classroomsActions.resetClassroomState());
     await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
+
+    if (isCoach) {
+      appDispatch(classroomsForCoachActions.resetClassroomState());
+      await appDispatch(
+        classroomsForCoachThunkActions.getClassroomForCoach({
+          id: userData?.id!,
+        })
+      ).unwrap();
+      await appDispatch(
+        classroomsForCoachThunkActions.getClassroomGroupsForCoach({})
+      ).unwrap();
+    }
   };
 
   const getLoadingMessage = () => {
-    let message = 'Loading . . .';
+    let message = 'Waking up the robots';
 
     if (staticDataLoading) {
       message = 'Loading static data . . .';

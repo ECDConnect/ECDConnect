@@ -1,6 +1,5 @@
 ﻿using ECDLink.Tenancy.Enums;
 using System;
-using System.Collections.Generic;
 
 namespace ECDLink.Tenancy.Model
 {
@@ -22,6 +21,9 @@ namespace ECDLink.Tenancy.Model
         public TenantModuleModel Modules { get; set; }
         public string GoogleAnalyticsTag { get; set; }
         public string GoogleTagManager { get; set; }
+        public string OrganisationEmail { get; set; }
+        public string DefaultSystemSettings { get; set; }
+        public string BlobStorageAddress { get; set; }
 
         public string GetClaimString()
         {

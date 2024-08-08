@@ -34,12 +34,16 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const children = useSelector(childrenSelectors.getChildren);
+
   const location = useLocation<PractitionerProfileRouteState>();
 
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const activeStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildActive
+  );
+
+  const children = useSelector(
+    childrenSelectors.getChildrenByStatus(activeStatusId)
   );
 
   const practitionerUserId = location.state.practitionerId;
@@ -77,9 +81,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
 
   const childrenForPractitionerList = children?.filter((el) => {
     return learnersForPractitioner?.some((f) => {
-      return (
-        f.childUserId === el.userId && el.workflowStatusId === activeStatusId
-      );
+      return f.childUserId === el.userId;
     });
   });
 

@@ -46,6 +46,7 @@ class ClassroomService {
               profileImageUrl
             }
             childProgressReportPeriods {
+              id
               startDate
               endDate
             }

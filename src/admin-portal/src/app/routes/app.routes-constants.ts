@@ -2,6 +2,8 @@ import addPrefix from './withParentPrefix';
 
 const ROUTES = {
   ROOT: '/',
+  SETUP_ORG: '/setup-org',
+  SETUP_ORG_FORM: '/setup-org-form',
   FORGOT_PASSWORD: '/forgot-password',
   ROOT_TEAM_LEAD: '/team-lead',
   TEAM_LEAD_REGISTER: '/team-lead-register/:resetToken',

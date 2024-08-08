@@ -84,12 +84,12 @@ const SearchHeader = <T extends {}>({
               fontSize={'18'}
             />
             {alternativeSearchItemRender &&
-              searchItems.length > 0 &&
-              searchItems.map((item: T) =>
-                alternativeSearchItemRender.render(item)
+              searchItems?.length > 0 &&
+              searchItems?.map((item: T) =>
+                alternativeSearchItemRender?.render(item)
               )}
 
-            {!alternativeSearchItemRender && searchItems.length > 0 && (
+            {!alternativeSearchItemRender && searchItems?.length > 0 && (
               <StackedList
                 className={styles.dialogContentStackedList}
                 listItems={searchItems as any}

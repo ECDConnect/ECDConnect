@@ -1,8 +1,5 @@
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
-import { useTheme } from '@ecdlink/core';
 import {
-  BannerWrapper,
   Button,
   ButtonGroup,
   ButtonGroupTypes,
@@ -10,9 +7,15 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { yesOrNoOptions } from '../../community-welcome.types';
-import { Control, FieldValues, UseFormSetValue } from 'react-hook-form';
+import { UseFormSetValue } from 'react-hook-form';
+import { useAppDispatch } from '@/store';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
 
 interface Step1Props {
   setStep: (item: number) => void;
@@ -20,6 +23,7 @@ interface Step1Props {
   shareContactInfo: boolean | undefined;
   step: number;
   setJoinCommunity: (item: boolean) => void;
+  seNotJoining: (item: boolean) => void;
 }
 
 export const Step1: React.FC<Step1Props> = ({
@@ -28,17 +32,36 @@ export const Step1: React.FC<Step1Props> = ({
   shareContactInfo,
   step,
   setJoinCommunity,
+  seNotJoining,
 }) => {
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const dispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleNextAction = () => {
+  const handleNextAction = async () => {
     if (shareContactInfo === true) {
       setStep(step + 1);
+      return;
     } else {
-      setJoinCommunity(false);
+      setIsLoading(true);
+      seNotJoining(true);
+      setIsLoading(false);
+
+      await dispatch(
+        practitionerThunkActions.updatePractitionerCommunityTabStatus({
+          practitionerUserId: practitioner?.userId!,
+        })
+      );
+      handleSetJoinCommunity();
     }
   };
+
+  const handleSetJoinCommunity = () => {
+    setJoinCommunity(false);
+  };
+
   return (
     <div className={'h-screen overflow-auto px-4'}>
       <div className="h-screen overflow-auto pt-2">
@@ -86,7 +109,7 @@ export const Step1: React.FC<Step1Props> = ({
             textColor="secondary"
           />
         </div>
-        <div className="absolute right-0 left-0  bottom-0 mb-20 max-h-20 w-full p-4">
+        <div className="mt-32 mb-20 max-h-20 w-full p-4 align-bottom">
           <Button
             size="normal"
             className="w-full"
@@ -95,7 +118,8 @@ export const Step1: React.FC<Step1Props> = ({
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"
-            disabled={shareContactInfo === undefined}
+            isLoading={isLoading}
+            disabled={shareContactInfo === undefined || isLoading}
             onClick={handleNextAction}
           />
         </div>

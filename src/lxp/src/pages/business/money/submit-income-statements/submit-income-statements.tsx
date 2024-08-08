@@ -143,10 +143,10 @@ export const SubmitIncomeStatements: React.FC = () => {
     !!currentMonthIncomeTotal;
 
   const hasLastTwoMonthsStatements =
-    lastMonthStatement?.month === lastMonth.getMonth() &&
+    (lastMonthStatement?.month || 0) - 1 === lastMonth.getMonth() &&
     lastMonthStatement?.year === lastMonth.getFullYear() &&
-    previousMonthStatement?.month === previousMonth.getMonth() &&
-    previousMonthStatement.year === previousMonth.getFullYear();
+    (previousMonthStatement?.month || 0) - 1 === previousMonth.getMonth() &&
+    previousMonthStatement?.year === previousMonth.getFullYear();
 
   const totalDownloadedStatements = statements.reduce(
     (total, statement) => (statement.downloaded ? total + 1 : total),
@@ -433,25 +433,23 @@ export const SubmitIncomeStatements: React.FC = () => {
             </Button>
           </>
         )}
-        <div className="h-full flex-1 bg-white px-4 pt-4">
-          <FADButton
-            title={'Add income or expense'}
-            icon={'PlusIcon'}
-            iconDirection={'left'}
-            textToggle={true}
-            type={'filled'}
-            color={'quatenary'}
-            shape={'round'}
-            className={`absolute bottom-6 right-0 z-10 m-3 px-3.5 py-2.5 ${
-              stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-            }`}
-            click={() => {
-              history.push(ROUTES.BUSINESS_ADD_AMOUNT);
-              nextStep();
-            }}
-            id="startStatements"
-          />
-        </div>
+        <FADButton
+          title={'Add income or expense'}
+          icon={'PlusIcon'}
+          iconDirection={'left'}
+          textToggle={true}
+          type={'filled'}
+          color={'quatenary'}
+          shape={'round'}
+          className={`absolute bottom-10 right-0 z-10 m-3 px-3.5 py-2.5 ${
+            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
+          }`}
+          click={() => {
+            history.push(ROUTES.BUSINESS_ADD_AMOUNT);
+            nextStep();
+          }}
+          id="startStatements"
+        />
       </div>
       <Dialog fullScreen visible={isLearnMore} position={DialogPosition.Full}>
         <InfoPage
@@ -459,9 +457,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           section="Business - Money tab, Learn more"
           childrenPosition="bottom"
           onClose={() => setIsLearnMore(false)}
-        >
-          <CoachInfo />
-        </InfoPage>
+        />
       </Dialog>
       <div id="lastStep" />
       {showInitialWalkthrough && (

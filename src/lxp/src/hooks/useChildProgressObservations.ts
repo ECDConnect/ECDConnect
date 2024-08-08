@@ -467,15 +467,14 @@ export const useChildProgressObservation = (
           currentCategory.tasks.some(
             (x) =>
               x.skillId === skill.id &&
-              x.value === ProgressSkillValues.TryingToDo
+              x.value === ProgressSkillValues.DoNotKnow
           )
       ),
       notYet: allSkills.filter(
         (skill) =>
           subCategorySkillsIds.includes(skill.id) &&
           currentCategory.tasks.some(
-            (x) =>
-              x.skillId === skill.id && x.value === ProgressSkillValues.NotYet
+            (x) => x.skillId === skill.id && x.value === ProgressSkillValues.No
           )
       ),
       none: allSkills.filter(
@@ -715,12 +714,13 @@ export const useChildProgressObservation = (
       await appDispatch(
         contentReportThunkActions.saveUserContentChildProgressReport({
           ChildId: currentReportCopy.childId,
-          ClassroomGroupId: classroomGroupId,
+          //ClassroomGroupId: classroomGroupId,
           Id: currentReportCopy.id,
-          ReportDate: currentReportCopy.reportingDate,
+          //ReportDate: currentReportCopy.reportingDate,
           ReportContent: JSON.stringify(currentReportCopy),
           IsActive: true,
           DateCompleted: new Date(),
+          ChildProgressReportPeriodId: 'terst',
         })
       ).unwrap();
       // await appDispatch(

@@ -10,9 +10,19 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../../../../content-management-models';
-import { Alert } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
 import ThemeContentSelector from '../../../../../../../components/theme-content-form/theme-content-form';
+import {
+  Alert,
+  ActionModal,
+  DialogPosition,
+  Typography,
+  Button,
+  ButtonGroup,
+  ButtonGroupTypes,
+} from '@ecdlink/ui';
+import { useDialog } from '@ecdlink/core';
+import { InformationCircleIcon } from '@heroicons/react/solid';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
@@ -28,6 +38,10 @@ export interface CreateThemeFormProps {
 }
 
 const contentWrapper = '';
+const shareContentOptions = [
+  { text: 'Yes', value: 'true' },
+  { text: 'No', value: 'false' },
+];
 
 const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   template,
@@ -45,6 +59,43 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
     setValue(name, state);
   };
 
+  const dialog = useDialog();
+
+  const renderDialog = () => {
+    let title = 'Sharing content with other organisations';
+    let detailText = `If you select 'Yes', the content and all translations  of this content will be shared with other organisations. Any edits you make to this content in the future will also be shared.
+    After publishing, you will be able to change your response from 'No' to 'Yes' at any point, but once you select 'Yes' and publish, you cannot stop sharing the content.`;
+
+    return dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            customIcon={
+              <InformationCircleIcon className="text-infoMain mb-4 w-9" />
+            }
+            title={title}
+            detailText={detailText}
+            buttonClass="rounded-2xl"
+            actionButtons={[
+              {
+                colour: 'secondary',
+                text: 'Close',
+                textColour: 'secondary',
+                type: 'outlined',
+                leadingIcon: 'XIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const [fields, setFields] = useState<any>();
 
   useEffect(() => {
@@ -56,6 +107,8 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   }, [template]);
 
   const renderFields = (fields: FormTemplateField[]) => {
+    const isEdit = fields.some((f) => !!f.contentValue);
+
     return fields.map((field) => {
       const { type, title, propName, required, validation } = field;
 
@@ -63,11 +116,80 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
 
       switch (type) {
         case FieldType.Text:
+          if (propName === 'shareContent') {
+            if (field?.contentValue?.value === 'true') {
+              return null;
+            }
+            return (
+              <div key={propName} className={contentWrapper}>
+                {isEdit && (
+                  <Alert
+                    className="mt-2 mb-2 rounded-md"
+                    message={`Editing this version will share all translations of this content.`}
+                    type="warning"
+                  />
+                )}
+                <div className="flex">
+                  <Typography
+                    type={'body'}
+                    weight={'bold'}
+                    color={'textMid'}
+                    text={field?.title}
+                  />
+                  <div className="sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
+                    <div className="justify-stretch flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                      <button
+                        type="button"
+                        className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                        onClick={() => renderDialog()}
+                      >
+                        Learn more
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <Typography
+                  type={'body'}
+                  color={'textMid'}
+                  text={`If you select 'Yes', then any future edits made & all translations of this activity can be shared with other organisations.`}
+                />
+                <div className={`bg-uiBg sm:col-span-12`}>
+                  <ButtonGroup
+                    options={shareContentOptions}
+                    onOptionSelected={(value: string | string[]) => {
+                      onStateChange(propName, value);
+                    }}
+                    color="tertiary"
+                    selectedOptions={'true'}
+                    type={ButtonGroupTypes.Button}
+                    className={'mr-2 w-full rounded-2xl'}
+                    multiple={false}
+                  />
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={propName} className={contentWrapper}>
+              <div className="mb-2">
+                <Typography
+                  type={'body'}
+                  weight={'bold'}
+                  color={'textDark'}
+                  text={`${title}`}
+                />
+              </div>
+              {propName === 'name' && (
+                <Typography
+                  type={'body'}
+                  color={'textMid'}
+                  text={`Give your theme a name no longer than 20 characters`}
+                />
+              )}
+
               <div className="sm:col-span-12">
                 <FormField
-                  label={title}
+                  label={''}
                   nameProp={propName}
                   register={register}
                   error={errors[propName]?.message}
@@ -94,11 +216,13 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
         case FieldType.Image:
           return (
             <div key={propName} className={contentWrapper}>
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Editing the image here will update the image for all translations of this page.`}
-                type="warning"
-              />
+              {propName === 'imageUrl' && isEdit && (
+                <Alert
+                  className="mt-2 mb-4 rounded-md"
+                  message={`Editing the image here will update the image for all translations of this page.`}
+                  type="warning"
+                />
+              )}
               <div className="sm:col-span-12">
                 <FormFileInput
                   acceptedFormats={acceptedFileFormats || acceptedFormats}
