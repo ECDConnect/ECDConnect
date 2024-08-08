@@ -21,6 +21,7 @@ import { IndividualTerms } from './components/individual-terms/individual-terms'
 import { useHistory } from 'react-router';
 import ROUTES from '../../../routes/app.routes-constants';
 import setupBackground from '../../../../assets/setup_background.svg';
+import { OrganisationalTerms } from './components/organisational-terms/organisational-terms';
 
 export const SetupOrg = () => {
   const { theme } = useTheme();
@@ -231,6 +232,15 @@ export const SetupOrg = () => {
           className="rounded-2xl"
         >
           <IndividualTerms setViewIndividualTerms={setViewIndividualTerms} />
+        </Dialog>
+        <Dialog
+          visible={viewOrganisationalTerms}
+          position={DialogPosition.Full}
+          className="rounded-2xl"
+        >
+          <OrganisationalTerms
+            setViewOrganisationalTerms={setViewOrganisationalTerms}
+          />
         </Dialog>
       </div>
     </BannerWrapper>
