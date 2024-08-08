@@ -25,7 +25,7 @@ import { contentReportSelectors } from '@store/content/report';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { analyticsActions } from '@store/analytics';
 import { ChildCompletedObservsationReportsState } from './child-completed-observation-reports.types';
-import NoProgressEmoticon from '../../../../assets/no-progress-emoticon.png';
+import { ReactComponent as NoProgressEmoticon } from '../../../../assets/ECD_Connect_emoji4.svg';
 import ROUTES from '@/routes/routes';
 import { getReportingPeriod } from '@/utils/child/child-profile-utils';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -231,11 +231,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
             <div className={'border-uiLight mt-4 flex flex-col items-stretch'}>
               <div className="grid grid-cols-1 justify-center gap-4">
                 <div className="flex justify-center">
-                  <img
-                    width={'30%'}
-                    src={NoProgressEmoticon}
-                    alt="No progress reports"
-                  />
+                  <NoProgressEmoticon />
                 </div>
                 <div className="flex justify-center">
                   <div className="flex w-8/12 justify-center">

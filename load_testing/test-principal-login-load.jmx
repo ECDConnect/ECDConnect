@@ -1,0 +1,1186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Azure Load Testing Quickstart">
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+        <collectionProp name="HeaderManager.headers">
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Content-Type</stringProp>
+            <stringProp name="Header.value">application/json</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept</stringProp>
+            <stringProp name="Header.value">application/json, text/plain, */*</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Host</stringProp>
+            <stringProp name="Header.value">api.staging.ecdconnect.co.za</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Origin</stringProp>
+            <stringProp name="Header.value">https://whitelabel.staging.ecdconnect.co.za</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Referer</stringProp>
+            <stringProp name="Header.value">https://whitelabel.staging.ecdconnect.co.za/</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept-Encoding</stringProp>
+            <stringProp name="Header.value">gzip, deflate, br, zstd</stringProp>
+          </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults">
+        <stringProp name="HTTPSampler.domain">${APIURL}</stringProp>
+        <stringProp name="HTTPSampler.protocol">https</stringProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Login Load Test">
+        <stringProp name="ThreadGroup.num_threads">${NumberOfUsers}</stringProp>
+        <intProp name="ThreadGroup.ramp_time">20</intProp>
+        <stringProp name="ThreadGroup.duration">${TestDuration}</stringProp>
+        <longProp name="ThreadGroup.delay">0</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Practitioners">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="filename">principals.csv</stringProp>
+          <boolProp name="ignoreFirstLine">false</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">true</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+          <boolProp name="stopThread">false</boolProp>
+          <stringProp name="variableNames">username,password</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Simple Controller" enabled="true"/>
+        <hashTree>
+          <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+            <collectionProp name="CookieManager.cookies"/>
+            <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+            <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+          </CookieManager>
+          <hashTree/>
+          <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Initial"/>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login">
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.path">api/authentication/login</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.BROWSER_COMPATIBLE_MULTIPART">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;username&quot;: &quot;${username}&quot;, &quot;password&quot;: &quot;${password}&quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor" enabled="true">
+                <stringProp name="JSONPostProcessor.referenceNames">token;userid</stringProp>
+                <stringProp name="JSONPostProcessor.jsonPathExprs">.auth_token;.id</stringProp>
+                <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+                <stringProp name="JSONPostProcessor.defaultValues">none;none</stringProp>
+              </JSONPostProcessor>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Store GraphQL"/>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${token}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+              <stringProp name="HTTPSampler.domain">api.staging.ecdconnect.co.za</stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.path">graphql</stringProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+            </ConfigTestElement>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - userById" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query userById($userId: String) {\n          userById(userId: $userId) {\n            id\n            userName\n            email\n            isSouthAfricanCitizen\n            verifiedByHomeAffairs\n            dateOfBirth\n            idNumber   \n            isImported   \n            resetData      \n            firstName\n            surname\n            fullName\n            raceId\n            languageId\n            emergencyContactFirstName\n            emergencyContactSurname\n            emergencyContactPhoneNumber\n            nextOfKinContactNumber\n            nextOfKinFirstName\n            nextOfKinSurname\n            contactPreference\n            genderId\n            principalObjectData  {\n              isPrincipal\n            }\n            phoneNumber\n            profileImageUrl\n            roles {\n              id\n              name\n              systemName\n            }   \n            resetData         \n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - allNotifications" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query allNotifications($userId: String) {\n          allNotifications(userId: $userId) {\n            id\n            fromUserId\n            messageProtocol\n            message\n            messageTemplateType\n            subject\n            sentByUserId\n            from\n            id\n            messageDate\n            messageEndDate\n            status\n            cTA\n            cTAText\n            ordering\n            messageTemplate\n              {\n                id\n                ordering\n                templateType\n                subject\n                message\n                cTA\n                cTAText\n                typeCode                        \n              }\n             action \n          }\n        }\n\n      &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllConsent" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllConsent($locale: String) {\n          GetAllConsent(locale: $locale) {          \n            id\n            name\n            type\n            description\n            availableLanguages {\n              id\n              description\n              locale\n            }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetPractitionerByUserId" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetPractitionerByUserId($userId: String) {\n          practitionerByUserId(userId: $userId) {\n            id\n            userId\n            isNewInClub\n            permissions {\n              id\n              isActive\n              permissionId\n              permissionName\n              permissionNormalizedName\n              permissionGrouping\n            }\n            user {\n              gender {\n                description\n              }\n              firstName\n              surname\n              fullName\n              userName\n              email\n              isSouthAfricanCitizen\n              verifiedByHomeAffairs\n              idNumber\n              phoneNumber\n            }\n            siteAddress {\n              id\n              province {\n                id\n                description\n              }\n              name\n              addressLine1\n              addressLine2\n              addressLine3\n              postalCode\n              ward\n            }\n            programmeType\n            isPrincipal\n            isTrainee\n            isRegistered\n            isTrainee\n            principalHierarchy\n            coachHierarchy\n            attendanceRegisterLink\n            maxChildren\n            consentForPhoto\n            parentFees\n            languageUsedInGroups\n            signingSignature\n            startDate\n            monthSinceFranchisee\n            shareInfo\n            dateLinked\n            dateAccepted\n            dateToBeRemoved\n            isLeaving\n            progress\n            attendedChildProgress\n            usePhotoInReport\n            setupTraineeInitiated\n            isOnStipend\n            stipendType\n            isCompletedBusinessWalkThrough\n            clubId\n            clubName\n            clickedCommunityTab\n            communitySectionViewDate\n            absentees {\n              absentDate\n              absentDateEnd\n              className\n              classroomGroupId\n              reason\n              reassignedToPerson\n              reassignedToUserId\n              absenteeId\n              loggedByPerson\n              loggedByUserId\n          }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - clubForUser" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;query clubForUser($userId: String) {\n          clubForUser(userId: $userId) {\n            id\n            name\n            pointsTotal\n            maxPointsTotal\n            leagueRanking\n            league {\n              id\n              name\n              leagueTypeId\n              leagueTypeName\n              numberOfClubsInLeague\n            }\n            clubCoach {\n              userId\n              firstName\n              surname\n              phoneNumber\n              whatsAppNumber\n              aboutInfo\n            }\n            clubLeader {\n              userId\n              practitionerId\n              firstName\n              surname\n              phoneNumber\n              whatsAppNumber\n              profileImageUrl\n              dateAccepted\n              dateAssigned\n            }\n            clubSupport {\n              userId\n              practitionerId\n              firstName\n              surname\n              phoneNumber\n              whatsAppNumber\n              profileImageUrl\n              dateAssigned\n              isNewInSupportRole\n            }\n            clubMembers {\n              userId\n              practitionerId\n              firstName\n              surname\n              phoneNumber\n              whatsAppNumber\n              profileImageUrl\n              welcomeMessage\n              shareContactInfo\n            }\n            clubActivities {\n              name\n              points\n            }   \n          }\n        }&quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProgressTrackingAgeGroup" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;query GetAllProgressTrackingAgeGroup($locale: String) {\n          GetAllProgressTrackingAgeGroup(locale: $locale) {\n            id\n            name            \n            startAgeInMonths\n            endAgeInMonths     \n          }\n        }&quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetPractitionerByUserId" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetPractitionerByUserId($userId: String) {\n          practitionerByUserId(userId: $userId) {\n            id\n            userId\n            isNewInClub\n            permissions {\n              id\n              isActive\n              permissionId\n              permissionName\n              permissionNormalizedName\n              permissionGrouping\n            }\n            user {\n              gender {\n                description\n              }\n              firstName\n              surname\n              fullName\n              userName\n              email\n              isSouthAfricanCitizen\n              verifiedByHomeAffairs\n              idNumber\n              phoneNumber\n            }\n            siteAddress {\n              id\n              province {\n                id\n                description\n              }\n              name\n              addressLine1\n              addressLine2\n              addressLine3\n              postalCode\n              ward\n            }\n            programmeType\n            isPrincipal\n            isTrainee\n            isRegistered\n            isTrainee\n            principalHierarchy\n            coachHierarchy\n            attendanceRegisterLink\n            maxChildren\n            consentForPhoto\n            parentFees\n            languageUsedInGroups\n            signingSignature\n            startDate\n            monthSinceFranchisee\n            shareInfo\n            dateLinked\n            dateAccepted\n            dateToBeRemoved\n            isLeaving\n            progress\n            attendedChildProgress\n            usePhotoInReport\n            setupTraineeInitiated\n            isOnStipend\n            stipendType\n            isCompletedBusinessWalkThrough\n            clubId\n            clubName\n            clickedCommunityTab\n            communitySectionViewDate\n            absentees {\n              absentDate\n              absentDateEnd\n              className\n              classroomGroupId\n              reason\n              reassignedToPerson\n              reassignedToUserId\n              absenteeId\n              loggedByPerson\n              loggedByUserId\n          }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - incomeStatements" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;query incomeStatements($userId: UUID!, $startDate: DateTime!, $endDate: DateTime) { \n          incomeStatements(userId: $userId, startDate: $startDate, endDate: $endDate) { \n            id \n            month\n            year\n            contactedByCoach\n            downloaded\n            incomeItems {\n              incomeTypeId\n              id\n              dateReceived\n              amount\n              childUserId\n              notes\n              numberOfChildrenCovered\n              payTypeId\n              photoProof\n              description\n            } \n            expenseItems {\n              expenseTypeId\n              id\n              datePaid\n              amount\n              notes\n              photoProof\n            }    \n          }\n        }&quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;,&quot;startDate&quot;:&quot;2023-07-29T19:58:15.087Z&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - displayMetrics" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query displayMetrics($type: String) {\n        displayMetrics(type: $type) {\n          subject\n          icon\n          color\n          message\n          notes\n          userId\n          userType \n          groupingName     \n        }\n      }\n      &quot;,&quot;variables&quot;:{&quot;type&quot;:&quot;practitioner&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - coachByCoachUserId" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query coachByCoachUserId($userId: String) {\n        coachByCoachUserId(userId: $userId) {\n          signingSignature\n          id\n          startDate\n          clickedClubTab\n          user {\n            id\n            userName\n            email\n            isSouthAfricanCitizen\n            verifiedByHomeAffairs\n            dateOfBirth\n            idNumber\n            firstName\n            surname\n            fullName\n            contactPreference\n            genderId\n            phoneNumber\n            profileImageUrl\n            roles {\n              id\n              name\n            }\n          }\n          siteAddressId\n            siteAddress {\n              id\n              provinceId\n              province {\n                id\n                description\n              }\n                name\n                addressLine1\n                addressLine2\n                addressLine3\n                postalCode\n                ward\n                isActive\n            }\n            franchisorId\n            franchisor {\n                siteAddressId\n                siteAddress {\n                  id\n                  provinceId\n                  province {\n                    id\n                    description\n                  }\n                  name\n                  addressLine1\n                  addressLine2\n                  addressLine3\n                  postalCode\n                  ward\n                  }\n            }\n            signingSignature\n            isActive\n            traineeVisits {\n              id\n            }\n            practitionerVisits {\n              id\n            }\n        }\n      }\n      &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;a8252e63-f9e6-453d-9a8e-cafb93af0152&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProgressTrackingCategory" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllProgressTrackingCategory($locale: String) {\n        GetAllProgressTrackingCategory(locale: $locale) {\n          id\n          name\n          subTitle\n          description\n          imageUrl\n          color\n          subCategories {\n            id\n          }          \n        }\n      }        \n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProgressTrackingSubCategory" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllProgressTrackingSubCategory($locale: String) {\n        GetAllProgressTrackingSubCategory(locale: $locale) {\n          id\n          name\n          description\n          imageUrl\n          skills {\n            id\n          } \n        }\n      }         \n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProgressTrackingSkill" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllProgressTrackingSkill($locale: String) {\n        GetAllProgressTrackingSkill(locale: $locale) {\n          id                \n          name\n          level {\n            id\n          }\n          ageGroups {\n            id\n          }\n          value\n        }\n      }         \n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProgressTrackingLevel" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllProgressTrackingLevel($locale: String) {\n        GetAllProgressTrackingLevel(locale: $locale) {\n          id\n          name\n          description\n          imageUrl  \n          imageUrlDim\n          imageUrlDone\n        }\n      }        \n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllCalendarEventType" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllCalendarEventType($locale: String) {\n        GetAllCalendarEventType(locale: $locale) {\n          id\n          name\n          colour\n        }\n      }        \n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProgrammeRoutine" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllProgrammeRoutine($locale: String) {\n        GetAllProgrammeRoutine(locale: $locale) {          \n          id\n          description\n          name\n          headerBanner            \n          routineItems {\n            id\n            sequence\n            name\n            description\n            image\n            imageBackgroundColor\n            icon\n            iconBackgroundColor\n            alert\n            timeSpan\n            routineSubItems {\n              id                \n              name\n              description\n              image\n              imageBackgroundColor\n              timeSpan\n            }              \n          }            \n        }\n      }&quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - childProgressReportSummary" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query childProgressReportSummary($count: Int!) {\n          childProgressReportSummary(count: $count) {    \n            reportId      \n            categories {\n              achievedLevelId\n              categoryId\n              tasks {\n                levelId\n                skillId\n                value\n              }       \n            }\n            childId\n            childFirstname\n            childSurname\n            classroomName\n            reportDate      \n            reportPeriod\n            reportDateCreated\n            reportDateCompleted\n        }\n      }\n      &quot;,&quot;variables&quot;:{&quot;count&quot;:50}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllRoles" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllRoles(){\n        roles() {\n          id\n          name\n          systemName   \n        }\n      }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllChild" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;query($isActive: Boolean = true) {\n          GetAllChild(where: { isActive: { eq: $isActive } }) {\n            id\n            workflowStatusId\n            insertedDate\n            languageId\n            allergies\n            disabilities\n            otherHealthConditions\n            isActive\n            insertedBy\n            userId\n            user {\n              id\n              firstName\n              surname\n              fullName\n              email\n              genderId\n              dateOfBirth\n              profileImageUrl\n              isActive\n              isSouthAfricanCitizen\n              verifiedByHomeAffairs\n            }\n            caregiverId \n            caregiver {\n              id\n              phoneNumber\n              idNumber\n              firstName\n              surname\n              fullName  \n              siteAddressId          \n              siteAddress {\n                id\n                provinceId\n                province {\n                  id\n                  description\n                }\n                name\n                addressLine1\n                addressLine2\n                addressLine3\n                postalCode\n                ward\n                isActive\n              }\n              relationId\n              educationId\n              emergencyContactFirstName\n              emergencyContactSurname\n              emergencyContactPhoneNumber\n              additionalFirstName\n              additionalSurname\n              additionalPhoneNumber\n              joinReferencePanel\n              contribution\n              grants {\n                id\n                description\n              }\n              isActive\n              isAllowedCustody\n            }\n          }\n        }\n      &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllPractitioners" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllPractitioners {\n          allPractitioners {\n            id\n            userId\n            isPrincipal\n            isFundaAppAdmin\n            isTrainee\n            programmeType\n            principalHierarchy\n            isActive\n            coachHierarchy\n            isRegistered\n            shareInfo\n            signingSignature\n            dateLinked\n            dateAccepted\n            dateToBeRemoved\n            daysAbsentLastMonth\n            permissions {\n              id\n              isActive\n              permissionId\n              permissionName\n              permissionNormalizedName\n              permissionGrouping\n            }\n            siteAddress {\n              addressLine1\n              addressLine2\n              addressLine3\n              area\n              id\n              municipality\n              name\n              postalCode\n              province {\n                id\n                description\n              }\n              provinceId\n              updatedBy\n              updatedDate\n              ward\n            }\n            isLeaving\n            user {\n              gender {\n                description\n              }\n              emergencyContactFirstName\n              emergencyContactSurname\n              emergencyContactPhoneNumber\n              idNumber\n              fullName\n              firstName\n              surname\n              userName\n              id\n              email\n              phoneNumber\n              profileImageUrl\n              roles {\n                id\n                name\n              }\n            }\n            dateLinked\n            dateAccepted\n            dateToBeRemoved\n            isLeaving\n            progress\n            attendedChildProgress\n            usePhotoInReport\n            isOnStipend\n            isCompletedBusinessWalkThrough\n            clubId\n            absentees {\n              absentDate\n              absentDateEnd\n              className\n              classroomGroupId\n              reason\n              reassignedToPerson\n              reassignedToUserId\n              absenteeId\n          }\n          }\n        }\n      &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllDocument" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllDocument {\n          GetAllDocument {\n            id\n            isActive\n            user {\n              firstName\n              surname\n            }\n            userId\n            reference\n            name\n            workflowStatusId            \n            documentTypeId\n            documentType {\n              id\n              name\n              description\n            }\n          }\n        }        \n      &quot;,&quot;variables&quot;:{&quot;createdUserId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - childProgressReports" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query childProgressReports($count: Int!) {\n          childProgressReports(count: $count) {  \n            id\n            categories {\n              achievedLevelId\n              categoryId\n              status\n              supportingTask {\n                taskDescription\n                taskId\n                todoText\n              }\n              tasks {\n                description\n                levelId\n                skillId\n                value\n              }\n            }\n            childId\n            childFirstname\n            childSurname\n            classroomName\n            dateCompleted\n            dateCreated\n            reportingPeriod\n            reportingDate\n            howCanCaregiverHelpChild\n            practitionerPhotoUrl\n            practitionerSurname\n            practitionerFirstname\n            childEnjoys \n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;count&quot;:50}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetUserProgrammes" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetUserProgrammes {\n        userProgrammes {\n          id\n          insertedDate\n          classroomId\n          classroomGroupId\n          startDate\n          endDate\n          name\n          preferredLanguage\n          dailyProgrammes {\n            insertedDate\n            isActive\n            id\n            day\n            dayDate\n            smallGroupActivityId\n            largeGroupActivityId\n            storyActivityId\n            storyBookId\n          }\n        }\n      }\n      &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - userCalendarEvents" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query userCalendarEvents($start: DateTime!) {\n          userCalendarEvents(start: $start) {    \n            allDay\n            description\n            end\n            eventType\n            id\n            name\n            participants {\n              id\n              isActive\n              participantUserId\n              participantUser {\n                firstName\n                surname\n              }\n            }\n            start\n            action\n            isActive\n            userId\n            user {\n              firstName\n              surname\n            }\n            visit {\n              attended\n            }\n          }\n        }\n    &quot;,&quot;variables&quot;:{&quot;start&quot;:&quot;2024-05-29T22:00:00.000Z&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllNote" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllNote($createdUserId: UUID) {\n          GetAllNote (where: {\n            and: [{ \n              createdUserId: {eq: $createdUserId}\n            }]\n          }) {\n            id\n            name\n            bodyText\n            noteTypeId\n            userId            \n            insertedDate\n            isActive\n          }\n        } \n      &quot;,&quot;variables&quot;:{&quot;createdUserId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetCommunityProfile" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetCommunityProfile($userId: UUID!) {\n          communityProfile(userId: $userId) {            \n            id\n            userId\n            aboutShort\n            aboutLong\n            shareContactInfo\n            shareEmail            \n            sharePhoneNumber\n            shareProfilePhoto\n            shareProvince\n            provinceId\n            provinceName\n            shareRole\n            clickedECDHeros\n            coachUserId\n            coachName\n            coachPhoneNumber\n            completenessPerc\n            completenessPercColor\n            completenessPercImage\n            insertedDate\n            profileSkills {\n                id\n                name\n                imageName\n                description\n                isActive\n                ordering\n            }\n            communityUser {\n                id\n                fullName\n                email\n                phoneNumber\n                whatsAppNumber\n                profilePhoto\n                roleName\n            }\n            acceptedConnections {\n                id\n                userId\n                aboutShort\n                aboutLong\n                shareEmail\n                sharePhoneNumber\n                shareProfilePhoto\n                shareProvince\n                provinceId\n                provinceName\n                shareRole\n                communityUser {\n                    id\n                    fullName\n                    email\n                    phoneNumber\n                    whatsAppNumber\n                    profilePhoto\n                    roleName\n                }\n            }\n            pendingConnections {\n                id\n                userId\n                aboutShort\n                aboutLong\n                shareEmail\n                sharePhoneNumber\n                shareProfilePhoto\n                shareProvince\n                provinceId\n                provinceName\n                shareRole\n                communityUser {\n                    id\n                    fullName\n                    email\n                    phoneNumber\n                    whatsAppNumber\n                    profilePhoto\n                    roleName\n                }\n            }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllUserConsent" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllUserConsent($createdUserId: UUID) {\n          GetAllUserConsent (where: {\n            and: [{ \n              createdUserId: {eq: $createdUserId}\n            }]\n          }) {\n            id\n            isActive\n            consentId\n            consentType\n            userId\n            createdUserId\n            insertedDate            \n          }\n        }        \n      &quot;,&quot;variables&quot;:{&quot;createdUserId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetClassroomForUser" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;query GetClassroomForUser($userId: UUID!) {\n          classroomForUser(userId: $userId) {            \n            id\n            name\n            classroomImageUrl\n            numberPractitioners\n            numberOfAssistants\n            numberOfOtherAssistants\n            preschoolCode\n            siteAddress {\n              id\n              name\n              addressLine1\n              addressLine2\n              addressLine3\n              postalCode\n              ward\n            }\n            principal {\n              userId\n              firstName\n              surname\n              phoneNumber\n              email\n              profileImageUrl\n            }\n            childProgressReportPeriods {\n              startDate\n              endDate\n            }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetClassroomGroupsForUser" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetClassroomGroupsForUser($userId: UUID!) {\n          classroomGroupsForUser(userId: $userId) {\n            id\n            classroomId\n            name\n            userId\n            learners {\n              learnerId\n              childUserId\n              startedAttendance\n              stoppedAttendance\n              isActive\n            }\n            classProgrammes {\n              id\n              programmeStartDate\n              meetingDay\n              isFullDay\n              classroomGroupId\n              isActive\n            }\n          }\n        }\n          &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - attendance" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query attendance($startDate: DateTime!, $endDate: DateTime!) {\n        attendance(\n          startDate: $startDate\n          endDate: $endDate\n        ) {\n          classroomProgrammeId\n          userId\n          attended\n          attendanceDate\n          weekOfYear\n          monthOfYear\n          year\n        }\n      }\n      &quot;,&quot;variables&quot;:{&quot;startDate&quot;:&quot;2024-06-29T20:56:23.155Z&quot;,&quot;endDate&quot;:&quot;2024-07-29T20:56:23.164Z&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - allNotifications" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query allNotifications($userId: String) {\n          allNotifications(userId: $userId) {\n            id\n            fromUserId\n            messageProtocol\n            message\n            messageTemplateType\n            subject\n            sentByUserId\n            from\n            id\n            messageDate\n            messageEndDate\n            status\n            cTA\n            cTAText\n            ordering\n            messageTemplate\n              {\n                id\n                ordering\n                templateType\n                subject\n                message\n                cTA\n                cTAText\n                typeCode                        \n              }\n             action \n          }\n        }\n\n      &quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - settings" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query {\n          settings {\n            Reporting{\n              ChildProgressReportMonths\n            }\n            Children {\n              ChildInitialObservationPeriod\n              ChildExpiryTime\n            }\n          }\n        }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllRelation" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllRelation($isActive: Boolean = true){\n        GetAllRelation(where: { isActive: { eq: $isActive } }) {\n          id\n          description\n        }\n      }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProgrammeType" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query {\n          GetAllProgrammeType {\n            id\n            description\n            enumId\n          }\n        }\n      &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetUserProgrammes" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetUserProgrammes {\n        userProgrammes {\n          id\n          insertedDate\n          classroomId\n          classroomGroupId\n          startDate\n          endDate\n          name\n          preferredLanguage\n          dailyProgrammes {\n            insertedDate\n            isActive\n            id\n            day\n            dayDate\n            smallGroupActivityId\n            largeGroupActivityId\n            storyActivityId\n            storyBookId\n          }\n        }\n      }\n      &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProgrammeAttendanceReason" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllProgrammeAttendanceReason($isActive: Boolean = true){\n        GetAllProgrammeAttendanceReason(where: { isActive: { eq: $isActive } }) {\n          id\n          reason      \n        }\n      }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllGender" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllGender($isActive: Boolean = true){\n          GetAllGender (where: { isActive: { eq: $isActive } }){\n            id\n            description    \n            isActive  \n          }\n        }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllRace" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllRace($isActive: Boolean = true){\n        GetAllRace(where: { isActive: { eq: $isActive } }) {\n          id\n          description      \n        }\n      }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllLanguage" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllLanguage($isActive: Boolean = true){\n        GetAllLanguage(where: { isActive: { eq: $isActive } }){\n            id\n            description\n            locale\n            isActive\n        }\n    }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllEducation" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllEducation($isActive: Boolean = true) {\n        GetAllEducation(where: { isActive: { eq: $isActive } }) {\n          id\n          description      \n        }\n      }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - holidaysByYear" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query holidaysByYear($year: Int!) {\n          holidaysByYear(year: $year) {\n            day\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;year&quot;:2024}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllProvince" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllProvince($isActive: Boolean = true){\n          GetAllProvince(where: { isActive: { eq: $isActive } }) {\n            id\n            description      \n          }\n        }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllReasonForLeaving" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllReasonForLeaving($isActive: Boolean = true){\n        GetAllReasonForLeaving(where: { isActive: { eq: $isActive } }) {\n          id\n          description      \n        }\n      }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllReasonForPractitionerLeaving" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllReasonForPractitionerLeaving($isActive: Boolean = true) {\n          GetAllReasonForPractitionerLeaving(where: { isActive: { eq: $isActive } }) {\n            id\n            description      \n          }\n        }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllReasonForPractitionerLeavingProgramme" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllReasonForPractitionerLeavingProgramme($isActive: Boolean = true){\n          GetAllReasonForPractitionerLeavingProgramme(where: { isActive: { eq: $isActive } }) {\n            id\n            description      \n          }\n        }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllGrant" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllGrant($isActive: Boolean = true) {\n        GetAllGrant(where: { isActive: { eq: $isActive } }) {\n          id\n          description\n        }\n      }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllDocumentType" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllDocumentType($isActive: Boolean = true){\n          GetAllDocumentType(where: { isActive: { eq: $isActive } }) {\n            id\n            description\n            enumId\n          }\n        }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllNoteType" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllNoteType($isActive: Boolean = true){\n          GetAllNoteType(where: { isActive: { eq: $isActive } }) {\n            id\n            description\n            enumId\n          }\n        }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetPractitionerRolePermissions" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetPractitionerRolePermissions() {\n    practitionerRolePermissions() {\n        id\n        name \n        normalizedName\n        grouping\n    }\n}   &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetCommunitySkills" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetCommunitySkills() {\n    communitySkills() {\n        id\n        name\n        description\n        imageName\n        ordering\n    }\n}  &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllWorkflowStatus" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllWorkflowStatus($isActive: Boolean = true){\n          GetAllWorkflowStatus(where: { isActive: { eq: $isActive } }) {\n            id\n            description\n            enumId\n          }\n        }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllStatementsExpenseType" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllStatementsExpenseType() {\n        GetAllStatementsExpenseType() {\n            id description insertedDate notes\n        }\n    }\n          &quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllStatementsIncomeType" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;query GetAllStatementsIncomeType() {\n          GetAllStatementsIncomeType() {\n            id description insertedDate notes\n          }\n        }&quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllStatementsPayType" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;query GetAllStatementsPayType() {\n          GetAllStatementsPayType() {\n            id description insertedDate notes\n          }\n        }&quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllActivity" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllActivity($locale: String) {\n          GetAllActivity(locale: $locale) {\n            id\n            name\n            type\n            subType\n            image\n            materials\n            description\n            notes\n            availableLanguages {\n              id\n              description\n              locale\n            }\n            image\n            subCategories {\n              id\n              imageUrl\n              name\n            }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllStoryBook" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllStoryBook($locale: String) {\n          GetAllStoryBook(locale: $locale) {          \n            id\n            name\n            type\n            author\n            illustrator\n            bookLocation\n            keywords\n            availableLanguages {\n              id\n              description\n              locale\n            }\n            storyBookParts {\n              id\n              part\n              partText\n              storyBookPartQuestions {\n                id\n                name\n                question\n              }              \n            }\n                   \n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllTheme" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query GetAllTheme($locale: String) {\n          GetAllTheme(locale: $locale) {          \n            id\n            name\n            color\n            imageUrl\n            themeDays {\n              id\n              day\n              largeGroupActivity {\n                id\n              }\n              smallGroupActivity {\n                id\n              }\n              storyActivity {\n                id\n              }\n              storyBook {\n                id\n              }\n            }            \n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - GetAllCalendarEventType" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n      query GetAllCalendarEventType($locale: String) {\n        GetAllCalendarEventType(locale: $locale) {\n          id\n          name\n          colour\n        }\n      }        \n      &quot;,&quot;variables&quot;:{&quot;locale&quot;:&quot;en-za&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - pointsLibrary" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query pointsLibrary() {\n            pointsLibrary() {\n              id\n              activity\n              subActivity\n              description\n              todoDescription\n              points\n              maxPointsIndividualMonthly\n              maxPointsNonPrincipalMonthly\n              maxPointsNonPrincipalYearly\n              maxPointsPrincipalMonthly\n              maxPointsPrincipalYearly\n            }\n        }&quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - pointsSummaryForUser" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;\n        query pointsSummaryForUser($userId: String, $startDate: DateTime!, $endDate: DateTime!) {\n          pointsSummaryForUser(userId: $userId, startDate: $startDate, endDate: $endDate) {\n            pointsTotal\n            pointsYTD\n            timesScored\n            month\n            year\n            userId\n            pointsLibrary {\n              id\n              activity\n              subActivity\n              description\n              todoDescription\n            }\n          }\n      }&quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;,&quot;startDate&quot;:&quot;2023-07-29T20:56:23.679Z&quot;,&quot;endDate&quot;:&quot;2024-07-29T20:56:23.679Z&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GraphQL - userClubStanding" enabled="true">
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;query&quot;:&quot;query userClubStanding($userId: String) {\n          userClubStanding(userId: $userId) {\n            percentageMembersWithFewerPointsForCurrentMonth\n            percentageMembersWithFewerPointsForCurrentYear\n            percentageMembersWithMorePointsForCurrentMonth\n            percentageMembersWithMorePointsForCurrentYear\n          }\n        }&quot;,&quot;variables&quot;:{&quot;userId&quot;:&quot;{userid}&quot;}}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <ResultSaver guiclass="ResultSaverGui" testclass="ResultSaver" testname="Save Responses to a file">
+          <stringProp name="FileSaver.filename">ResponseFailedFolder</stringProp>
+          <boolProp name="FileSaver.errorsonly">true</boolProp>
+          <boolProp name="FileSaver.successonly">false</boolProp>
+          <boolProp name="FileSaver.skipsuffix">false</boolProp>
+          <boolProp name="FileSaver.skipautonumber">false</boolProp>
+          <stringProp name="FileSaver.numberPadLen">4</stringProp>
+        </ResultSaver>
+        <hashTree/>
+      </hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="TestDuration" elementType="Argument">
+            <stringProp name="Argument.name">TestDuration</stringProp>
+            <stringProp name="Argument.value">${__BeanShell( System.getenv(&quot;TEST_DURATION&quot;) )}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NumberOfUsers" elementType="Argument">
+            <stringProp name="Argument.name">NumberOfUsers</stringProp>
+            <stringProp name="Argument.value">${__BeanShell( System.getenv(&quot;TEST_NUMBER_OF_USERS&quot;) )}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="ResponseFailedFolder" elementType="Argument">
+            <stringProp name="Argument.name">ResponseFailedFolder</stringProp>
+            <stringProp name="Argument.value">${__BeanShell( System.getenv(&quot;TEST_RESPONSE_FAILED_FOLDER&quot;) )}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="APIURL" elementType="Argument">
+            <stringProp name="Argument.name">APIURL</stringProp>
+            <stringProp name="Argument.value">${__BeanShell( System.getenv(&quot;TEST_API_URL&quot;) )}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

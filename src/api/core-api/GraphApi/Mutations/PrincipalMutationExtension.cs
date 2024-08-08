@@ -123,7 +123,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
                             } else
                             {
-                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                                if (practitioner.Progress > 2)
+                                {
+                                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.MultipleProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                                }
                             }
                         }
 
@@ -237,6 +240,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     foreach (var practi in allPrincipalPractitioners)
                     {
                         practi.PrincipalHierarchy = newPrincipal.UserId;
+                        practi.CoachHierarchy = newPrincipal.CoachHierarchy;
                         practi.ShareInfo = true;
                         practitionerRepo.Update(practi);
                     }
@@ -362,6 +366,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             else
             {
                 practitioner.PrincipalHierarchy = principal.UserId;
+                practitioner.CoachHierarchy = principal.CoachHierarchy;
                 practitioner.DateToBeRemoved = null;
                 practitioner.DateAccepted = DateTime.Now;
                 practitioner.IsLeaving = false;

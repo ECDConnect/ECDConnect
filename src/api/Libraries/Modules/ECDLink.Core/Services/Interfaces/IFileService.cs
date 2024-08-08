@@ -16,5 +16,6 @@ namespace ECDLink.Core.Services.Interfaces
         Task<string> GetFileAsBase64Async(string url);
         Task<string> GetFileExtensionFromUrl(string url);
         Task<string> GetMimeType(string extension);
+        bool IsImageFileType(string base64stringFile);
     }
 }

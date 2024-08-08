@@ -5,6 +5,7 @@ type EmptyPageProps = {
   image: string;
   title: string;
   subTitle?: string;
+  isSmallScreen?: boolean;
 };
 
 export const EmptyPage = ({
@@ -12,12 +13,15 @@ export const EmptyPage = ({
   image,
   title,
   subTitle,
+  isSmallScreen,
 }: EmptyPageProps) => {
   return (
     <div
       className={classNames(
         className,
-        'flex flex-col items-center justify-center pt-16 text-center'
+        `flex flex-col items-center justify-center ${
+          isSmallScreen ? 'pt-2' : 'pt-16'
+        } text-center`
       )}
     >
       <img src={image} alt="alien" />

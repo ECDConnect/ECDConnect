@@ -195,13 +195,18 @@ const MessageForm: React.FC<MessageFormProps> = ({
             />
             <div className="center-items flex">
               <div className="w-full">
-                <Typography type={'markdown'} weight="normal" text={`Date`} />
+                <Typography
+                  type={'markdown'}
+                  weight="normal"
+                  text={`Date`}
+                  fontSize="18"
+                />
                 <DatePicker
                   placeholderText={`Click to choose a date`}
                   wrapperClassName="text-left"
                   name="messageDate"
                   disabled={isView}
-                  className="text-textMid bg-uiBg ml-4"
+                  className="text-textMid bg-uiBg mt-2 mr-4"
                   selected={messageDate ? new Date(messageDate) : undefined}
                   onChange={(date: Date) => {
                     setMessageDate(date);

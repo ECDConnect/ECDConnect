@@ -1,4 +1,5 @@
-﻿using ECDLink.Core.Services.Interfaces;
+﻿using ECDLink.Core.Extensions;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -32,8 +33,11 @@ namespace EcdLink.Api.CoreApi.Services
 
         public void ProcessPractitionerRemovals()
         {
+            var today = DateTime.Now.Date;
+            DateTime tomorrow = today.AddDays(1);
+
             var removals = _removalRepo.GetAll()
-                .Where(x => x.IsActive && x.DateOfRemoval < DateTime.Now)
+                .Where(x => x.IsActive && x.DateOfRemoval < tomorrow)
                 .ToList();
 
             foreach (var removal in removals)
@@ -47,15 +51,10 @@ namespace EcdLink.Api.CoreApi.Services
                     practitioner.PrincipalHierarchy = null;
                     practitioner.DateToBeRemoved = DateTime.Now;
                     practitioner.IsLeaving = true;
-                    practitioner.IsActive = false;
+                    //practitioner.IsActive = false;
                     practitioner.UpdatedBy = _adminUserId;
                     practitioner.UpdatedDate = DateTime.Now;
                     _practitionerRepo.Update(practitioner);
-
-                    user.IsActive = false;
-                    user.LockoutEnabled = true;
-                    user.LockoutEnd = DateTime.MaxValue;
-                    var userResult = _userManager.UpdateAsync(user).Result;
 
                     removal.IsActive = false;
                     removal.UpdatedBy = _adminUserId;

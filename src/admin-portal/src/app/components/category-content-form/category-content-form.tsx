@@ -158,6 +158,9 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
         item.imageUrl = e;
       }
 
+      if (propName === 'imageHexColor') {
+        item.imageHexColor = e?.target?.value;
+      }
       if (propName === 'description') {
         if (
           e?.target?.textLength === item?.description?.length &&
@@ -192,6 +195,10 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
 
       if (propName === 'icon') {
         item.imageUrl = e;
+      }
+
+      if (propName === 'imageHexColor') {
+        item.imageHexColor = e?.target?.value;
       }
 
       if (propName === 'description') {
@@ -279,6 +286,22 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
                       textInputType="input"
                       placeholder={'Add a response...'}
                     />
+                    <Typography
+                      type={'h4'}
+                      color={'textDark'}
+                      text={`Subcategory ${idx + 1} colour *`}
+                      weight="bold"
+                    />
+                    <FormInput
+                      key={idx}
+                      className="bg-adminPortalBg my-4 rounded-lg p-1"
+                      isAdminPortalField={true}
+                      id={subcategoriesFilt?.[idx]?.id}
+                      value={subcategoriesFilt?.[idx]?.imageHexColor}
+                      onChange={(e) => onChange(e, idx, 'imageHexColor')}
+                      textInputType="input"
+                      placeholder={'Add a colour...'}
+                    />
                     <div className="w-full rounded-lg" onClick={(e) => {}}>
                       <FormFileInput
                         acceptedFormats={acceptedFileFormats}
@@ -343,6 +366,27 @@ const CategoryContentForm: React.FC<CategoryContentFormProps> = ({
                       onKeyDown={(e) => onSecondColumnChange(e, idx, 'name')}
                       textInputType="input"
                       placeholder={'Add a response...'}
+                    />
+                    <Typography
+                      type={'h4'}
+                      color={'textDark'}
+                      text={`Subcategory ${idx + 1} colour *`}
+                      weight="bold"
+                    />
+                    <FormInput
+                      key={idx}
+                      className="bg-adminPortalBg my-4 rounded-lg p-1"
+                      isAdminPortalField={true}
+                      id={subcategoriesFiltB?.[idx]?.id}
+                      value={subcategoriesFiltB?.[idx]?.imageHexColor}
+                      onChange={(e) =>
+                        onSecondColumnChange(e, idx, 'imageHexColor')
+                      }
+                      onKeyDown={(e) =>
+                        onSecondColumnChange(e, idx, 'imageHexColor')
+                      }
+                      textInputType="input"
+                      placeholder={'Add a colour...'}
                     />
                     <div className="w-full rounded-lg" onClick={(e) => {}}>
                       <FormFileInput

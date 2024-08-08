@@ -27,6 +27,7 @@ export const UserList = gql`
         id
         name
         systemName
+        tenantName
         __typename
       }
       __typename
@@ -68,6 +69,7 @@ export const GetUserById = gql`
           name
         }
         systemName
+        tenantName
       }
     }
   }

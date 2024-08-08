@@ -10,10 +10,13 @@ import {
 } from '@ecdlink/ui';
 import { PractitionerColleagues } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
-import { PractitionerListProps } from './practitioner-list.types';
+import {
+  PractitionerListProps,
+  PractitionerListRouteState,
+} from './practitioner-list.types';
 import { practitionerSelectors } from '@/store/practitioner';
 import { EditPractitioner } from './edit-practitioner/edit-practitioner';
 import { userSelectors } from '@store/user';
@@ -24,6 +27,8 @@ import ROUTES from '@routes/routes';
 import { EditPractitionerModal } from './components/edit-practitioner-modal';
 
 export const PractitionerList: React.FC<PractitionerListProps> = () => {
+  const location = useLocation<PractitionerListRouteState>();
+
   const history = useHistory();
   const { theme } = useTheme();
   const user = useSelector(userSelectors.getUser);
@@ -44,18 +49,37 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const [practitionerEditModal, setEditPractitionerModal] = useState(false);
   const [selectedPractitioner, setSelectedPractitioner] =
     useState<PractitionerDto>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
     let practitionerColleagues: PractitionerColleagues[] = [];
 
     if (userAuth) {
+      setIsLoading(true);
       practitionerColleagues = await new PractitionerService(
         userAuth?.auth_token
       ).practitionerColleagues(user?.id!);
+      setIsLoading(false);
     }
 
     setOtherColleagues(practitionerColleagues);
+
+    if (location.state?.isToShowPrincipal) {
+      const principal = practitionerColleagues.find((item) =>
+        item?.title?.toLocaleLowerCase().includes('principal')
+      );
+      setPractitionerInfo(true);
+      setColleagueProfile({
+        name: principal?.name,
+        classroomNames: principal?.classroomNames,
+        contactNumber: principal?.contactNumber,
+        profilePhoto: principal?.profilePhoto,
+        title: 'Principal',
+        nickName: principal?.nickName,
+      });
+    }
+
     return practitionerColleagues;
   };
 
@@ -134,6 +158,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
     <>
       <BannerWrapper
         // showBackground={true}
+        isLoading={isLoading}
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
         title={isPrincipal ? `Edit Practitioners` : `View Practitioners`}
@@ -141,15 +166,21 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         size="normal"
         renderBorder={true}
         renderOverflow={false}
-        onBack={history.goBack}
+        onBack={() =>
+          location?.state?.returnRoute
+            ? history.push(location.state.returnRoute)
+            : history.goBack()
+        }
         displayOffline={!isOnline}
       />
       <div className="h-screen overflow-y-scroll p-4">
-        <Typography
-          type={'h2'}
-          text={isPrincipal ? 'Edit Practitioners' : 'View Practitioners'}
-          color={'textDark'}
-        />
+        {!isLoading && (
+          <Typography
+            type={'h2'}
+            text={isPrincipal ? 'Edit Practitioners' : 'View Practitioners'}
+            color={'textDark'}
+          />
+        )}
         {stackedListItems && (
           <div>
             <StackedList
@@ -169,7 +200,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                 text="Add practitioner"
                 textColor="white"
                 icon="PlusIcon"
-                className="mt-8"
+                className="my-8"
                 onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
               />
             </div>
@@ -192,7 +223,11 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
       >
         <OtherPractitionerProfile
           practitionerId={practitionerId!}
-          setPractitionerInfo={setPractitionerInfo}
+          setPractitionerInfo={(value: boolean) =>
+            location.state.isToShowPrincipal && location.state?.returnRoute
+              ? history.push(location.state.returnRoute)
+              : setPractitionerInfo(value)
+          }
           colleagueProfile={colleagueProfile}
         />
       </Dialog>

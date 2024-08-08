@@ -162,8 +162,7 @@ export const getMissedClassAttendance = (
 
     return programStartDateDay === dateDay
       ? (x.meetingDay || -1) === currentDayFilter
-      : (x.meetingDay || -1) <= currentDayFilter &&
-          programStartDate.getTime() < date.getTime();
+      : programStartDate.getTime() < date.getTime();
   });
 
   const last30BusinessDays = getLast30BusinessDays(date);
@@ -211,13 +210,18 @@ export const getMissedClassAttendance = (
 
           return isValidDay && !Boolean(x.stoppedAttendance);
         });
-      if (
-        classLearners &&
-        classLearners.length &&
-        classLearners.length > 0 &&
-        !attendance.some((att) => att.classroomProgrammeId === programme.id)
-      ) {
-        returnProgrammes.push({ ...programme, missedDate: missedDayDate });
+      if (classLearners && classLearners.length && classLearners.length > 0) {
+        const checkDate = new Date(missedDayDate.setHours(0, 0, 0));
+
+        if (
+          !attendance.some(
+            (att) =>
+              att.classroomProgrammeId === programme.id &&
+              att.attendanceDate === checkDate
+          )
+        ) {
+          returnProgrammes.push({ ...programme, missedDate: missedDayDate });
+        }
       }
     }
 
@@ -394,8 +398,7 @@ export const getMissedAttendanceSummaryGroups = (
 
     return programStartDate.getUTCDate() === currentDate.getUTCDate()
       ? (x.meetingDay || -1) === currentDayFilter
-      : (x.meetingDay || -1) <= currentDayFilter &&
-          programStartDate.getTime() < currentDate.getTime();
+      : programStartDate.getTime() < currentDate.getTime();
   });
 
   const meetingDays = getClassroomGroupSchoolDays(

@@ -46,8 +46,9 @@ namespace ECDLink.SmartStart.Reports
                     foreach (var programme in classroomGroup.ClassProgrammes)
                     {
                         var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
-                        
-                        if(daysOfClass.Count() > 0)
+                        var learners = _attendanceService.GetLearnersActiveDuringTimePeriod(classroomGroup.Id, programme.ProgrammeStartDate.Date, endMonth.Date);
+
+                        if (daysOfClass.Count() > 0 && learners.Count() > 0)
                         {
                             var attendedClasses = attendanceForPeriod.Where(x => 
                                 x.ClassroomProgrammeId == programme.Id

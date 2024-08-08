@@ -17,6 +17,7 @@ export interface LanguageSelectorProps extends ComponentBaseProps {
   availableLanguages?: LanguageCode[];
   notLogged?: boolean;
   showOfflineAlert?: boolean;
+  isConsentScreen?: boolean;
 }
 
 export const LanguageSelector = ({
@@ -29,6 +30,7 @@ export const LanguageSelector = ({
   notLogged,
   showOfflineAlert,
   className,
+  isConsentScreen,
 }: LanguageSelectorProps) => {
   const allLanguages = useSelector(staticDataSelectors.getLanguages);
   const languages = useSelector(staticDataSelectors.getLanguages);
@@ -111,7 +113,7 @@ export const LanguageSelector = ({
         onChange={(item) => {
           setLanguage(item);
         }}
-        className="w-auto"
+        className={`${isConsentScreen ? 'w-44' : 'w-auto'}`}
       />
     </div>
   );

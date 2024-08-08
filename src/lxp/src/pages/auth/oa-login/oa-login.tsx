@@ -1,4 +1,9 @@
-import { useTheme, LoginRequestModel, Config } from '@ecdlink/core';
+import {
+  useTheme,
+  LoginRequestModel,
+  Config,
+  LocalStorageKeys,
+} from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -97,6 +102,10 @@ export const OaLogin: React.FC = () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
     await appDispatch(userThunkActions.getUser({})).unwrap();
+    localStorage.setItem(
+      LocalStorageKeys.firstTimeOnCommunityDashboard,
+      'true'
+    );
     setIsLoading(false);
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
@@ -224,7 +233,7 @@ export const OaLogin: React.FC = () => {
                 />
                 <Typography
                   type={'h4'}
-                  text={'Sign up with Facebook'}
+                  text={'Log in with Facebook'}
                   className={'text-sm font-normal'}
                   color={'white'}
                 />

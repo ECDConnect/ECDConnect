@@ -41,7 +41,7 @@ export function ContentManagement() {
   const tenant = useTenant();
 
   const { data: languages } = useQuery(GetAllLanguage, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-first',
   });
 
   const [
@@ -55,13 +55,13 @@ export function ContentManagement() {
       // contentTypeIdFilter: '',
       // contentTypeNameFilter: ''
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-first',
   });
 
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
     contentDefinitions,
     {
-      fetchPolicy: 'cache-and-network',
+      fetchPolicy: 'cache-first',
     }
   );
 
@@ -91,11 +91,6 @@ export function ContentManagement() {
         name: 'Info pages',
         href: 'MoreInformation',
         id: 1,
-      },
-      {
-        name: ContentManagementTabs.PROCESS.name,
-        // href: '/',
-        id: ContentManagementTabs.PROCESS.id,
       },
       {
         name: ContentManagementTabs.PROGRAMMES.name,
@@ -133,14 +128,16 @@ export function ContentManagement() {
   };
 
   const getContentValues = (contentManagementView?: ContentManagementView) => {
-    refetch().then(() => {
-      const currentType = dataTypes.contentTypes.find(
-        (x: ContentTypeDto) => x.id === selectedType?.id
-      );
+    if (!dataTypes) {
+      refetch();
+    }
 
-      setSelectedType(currentType);
-      setSelectedContent(contentManagementView);
-    });
+    const currentType = dataTypes.contentTypes.find(
+      (x: ContentTypeDto) => x.id === selectedType?.id
+    );
+
+    setSelectedType(currentType);
+    setSelectedContent(contentManagementView);
   };
 
   const refreshParent = () => {
@@ -149,20 +146,15 @@ export function ContentManagement() {
   };
 
   useEffect(() => {
-    getContentTypes({
-      variables: {
-        search: searchValue,
-        searchInContent: true,
-        isVisiblePortal: true,
-        // contentTypeIdFilter: null,
-        // contentTypeNameFilter: ''
-      },
-    });
-    // TODO: Use actual pagination when table component supports it.
-    // const getUserCountQueryVariables = getCountVariables(searchValue);
-    // getCountUsers({
-    //   variables: getUserCountQueryVariables
-    // });
+    if (!dataTypes) {
+      getContentTypes({
+        variables: {
+          search: searchValue,
+          searchInContent: true,
+          isVisiblePortal: true,
+        },
+      });
+    }
   }, []);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,69 +162,6 @@ export function ContentManagement() {
   }, 500);
 
   const handleSubTabs = useCallback(() => {
-    if (specialType === ContentManagementTabs.PROCESS.name) {
-      return setSubTabs([
-        {
-          title: 'Levels',
-          description:
-            'Children will be placed at a specific level or stage of development',
-          titleIcon: 'ChartBarIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'ProgressTrackingLevel'
-            );
-            showGroupContentTypes(selectedTypeObject);
-          },
-          classNames: 'bg-white',
-        },
-        {
-          title: 'Progress categories & subcategories',
-          description: 'Development areas',
-          titleIcon: 'PresentationChartBarIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'ProgressTrackingCategory'
-            );
-            showGroupContentTypes(selectedTypeObject);
-          },
-          classNames: 'bg-white',
-        },
-        // {
-        //   title: 'Progress subcategories',
-        //   description: 'Development areas',
-        //   titleIcon: 'PresentationChartBarIcon',
-        //   titleIconClassName: 'bg-secondary text-white',
-        //   onActionClick: () => {
-        //     setSpecialType('');
-        //     const selectedTypeObject = dataTypes?.contentTypes.find(
-        //       (type: ContentTypeDto) =>
-        //         type.name === 'ProgressTrackingSubCategory'
-        //     );
-        //     showGroupContentTypes(selectedTypeObject);
-        //   },
-        //   classNames: 'bg-uiBg',
-        // },
-        {
-          title: 'Progress tool',
-          description: 'Edit the skills shown in the progress tracker',
-          titleIcon: 'PresentationChartBarIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'ProgressTrackingSkill'
-            );
-            showGroupContentTypes(selectedTypeObject);
-          },
-          classNames: 'bg-white',
-        },
-      ]);
-    }
-
     if (specialType === ContentManagementTabs.COMMUNITY.name) {
       if (!tenant.isCHWConnect) {
         return setSubTabs([
@@ -455,7 +384,7 @@ export function ContentManagement() {
             />
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">
-              <div className="h-full py-3">
+              <div className="h-full p-4 py-3">
                 {!!subTabs?.length && !specialType && (
                   <div className="justify-self col-end-3 pb-2">
                     <button
@@ -482,7 +411,7 @@ export function ContentManagement() {
                   </div>
                 )}
                 <div
-                  className="relative h-full rounded-xl bg-white p-4 md:p-12"
+                  className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
                 >
                   {selectedType &&

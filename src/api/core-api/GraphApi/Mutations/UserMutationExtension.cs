@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.AzureStorage.Blob;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -34,6 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<ApplicationUser> AddUser(
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] ILogger<UserMutationExtension> _logger,
+          [Service] IFileService fileService,
           IGenericRepositoryFactory repoFactory,
           ApplicationUserManager userManager,
           UserModel input)
@@ -46,6 +48,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (input is null)
             {
                 throw new QueryException("Invalid User input.");
+            }
+            if (!string.IsNullOrEmpty(input.ProfileImageUrl))
+            {
+                var parts = input.ProfileImageUrl.Split(';');
+                if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
+                if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
+                if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
             }
 
             if (input?.IsAdmin ?? false)
@@ -156,6 +165,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] SecurityNotificationManager securityNotificationManager,
           [Service] ILogger<UserMutationExtension> logger,
           [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] IFileService fileService,
           IGenericRepositoryFactory repoFactory,
           //IntegrationHelperManager integrationHelperManager,
           string id,
@@ -166,7 +176,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input is null)
                 throw new QueryException("Input cannot be null.");
-
+            if (!string.IsNullOrEmpty(input.ProfileImageUrl))
+            {
+                var parts = input.ProfileImageUrl.Split(';');
+                if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
+                if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
+                if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
+            }
             if (user is null || currentUserId is null)
                 throw new QueryException("User not found.");
             

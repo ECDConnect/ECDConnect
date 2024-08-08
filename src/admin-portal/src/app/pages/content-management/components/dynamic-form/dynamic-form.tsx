@@ -10,16 +10,24 @@ import {
   DynamicFormTemplate,
   FieldType,
   FormTemplateField,
-  MediaTypes,
-  TemplateTypenames,
 } from '../../content-management-models';
-import { Alert, Typography, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
+import {
+  Alert,
+  ActionModal,
+  DialogPosition,
+  Typography,
+  Button,
+  ButtonGroup,
+  ButtonGroupTypes,
+} from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 import { ContentForms } from '../../../../constants/content-management';
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
+import { InformationCircleIcon } from '@heroicons/react/solid';
+import { useDialog } from '@ecdlink/core';
 
-const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
-const accpedFormatsWithPdf = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg', 'pdf'];
+const acceptedFormats = ['svg', 'png', 'jpg', 'jpeg'];
+const accpedFormatsWithPdf = ['svg', 'png', 'jpg', 'jpeg', 'pdf'];
 const acceptedVideoFormats = ['mp4'];
 const allowedVideoFileSize = 13631488;
 
@@ -60,6 +68,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 }) => {
   const { register, control, errors } = handleform;
 
+  const dialog = useDialog();
+
+  const isEdit = contentView && contentView?.content;
+
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
   };
@@ -69,6 +81,46 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     { text: 'Small group', value: 'Small group' },
     { text: 'Large group', value: 'Large group' },
   ];
+
+  const shareContentOptions = [
+    { text: 'Yes', value: 'true' },
+    { text: 'No', value: 'false' },
+  ];
+
+  const renderDialog = () => {
+    let title = 'Sharing content with other organisations';
+    let detailText = `If you select 'Yes', the content and all translations  of this content will be shared with other organisations. Any edits you make to this content in the future will also be shared.
+    After publishing, you will be able to change your response from 'No' to 'Yes' at any point, but once you select 'Yes' and publish, you cannot stop sharing the content.`;
+
+    return dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            customIcon={
+              <InformationCircleIcon className="text-infoMain mb-4 w-9" />
+            }
+            title={title}
+            detailText={detailText}
+            buttonClass="rounded-2xl"
+            actionButtons={[
+              {
+                colour: 'secondary',
+                text: 'Close',
+                textColour: 'secondary',
+                type: 'outlined',
+                leadingIcon: 'XIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
 
   const isSmallLargeGroup =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities;
@@ -104,6 +156,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       contentView?.content?.['subCategories']
         ?.map((item) => item?.id)
         ?.toString()
+    );
+    onStateChange(
+      'themes',
+      contentView?.content?.['themes']?.map((item) => item?.id)?.toString()
     );
     setDisableActivitiesInputs(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -173,6 +229,59 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           ) {
             return null;
           }
+          if (propName === 'shareContent') {
+            if (field?.contentValue?.value === 'true') {
+              return null;
+            }
+            return (
+              <div key={propName} className={contentWrapper}>
+                {isEdit && (
+                  <Alert
+                    className="mt-2 mb-2 rounded-md"
+                    message={`Editing this version will share all translations of this content.`}
+                    type="warning"
+                  />
+                )}
+                <div className="flex">
+                  <Typography
+                    type={'body'}
+                    weight={'bold'}
+                    color={'textMid'}
+                    text={field?.title}
+                  />
+                  <div className="sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
+                    <div className="justify-stretch flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                      <button
+                        type="button"
+                        className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                        onClick={() => renderDialog()}
+                      >
+                        Learn more
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <Typography
+                  type={'body'}
+                  color={'textMid'}
+                  text={`If you select 'Yes', then any future edits made & all translations of this activity can be shared with other organisations.`}
+                />
+                <div className={`bg-uiBg sm:col-span-12`}>
+                  <ButtonGroup
+                    options={shareContentOptions}
+                    onOptionSelected={(value: string | string[]) => {
+                      onStateChange(propName, value);
+                    }}
+                    color="tertiary"
+                    selectedOptions={'true'}
+                    type={ButtonGroupTypes.Button}
+                    className={'w-full rounded-2xl'}
+                    multiple={false}
+                  />
+                </div>
+              </div>
+            );
+          }
           if (
             propName === 'type' &&
             isSmallLargeGroup &&
@@ -180,19 +289,19 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           ) {
             return (
               <div key={propName} className={contentWrapper}>
+                {isEdit && (
+                  <Alert
+                    className="mt-2 mb-2 rounded-md"
+                    message={`Editing the activity type here will update the activity type for all translations of this page.`}
+                    type="warning"
+                  />
+                )}
                 <label
                   htmlFor={propName}
                   className="mb-1 block text-lg font-medium text-gray-800"
                 >
                   {field?.title}
                 </label>
-                {disableActivitiesInputs && (
-                  <Alert
-                    className="mt-2 mb-4 rounded-md"
-                    message={`To edit this field, go to the English version.`}
-                    type="warning"
-                  />
-                )}
                 <div
                   className={`bg-uiBg sm:col-span-12 ${
                     disableActivitiesInputs
@@ -310,11 +419,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             return (
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
-                  <Alert
-                    className="mt-2 mb-4 rounded-md"
-                    message={`To edit this field, go to the English version.`}
-                    type="warning"
-                  />
                   <div
                     className={`${disableActivitiesInputs ? 'opacity-25' : ''}`}
                   ></div>
@@ -347,6 +451,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           }
           return (
             <div key={propName} className={contentWrapper}>
+              {propName === 'image' && isEdit && (
+                <Alert
+                  className="mt-2 mb-4 rounded-md"
+                  message={`Editing the image here will update the image for all translations of this page.`}
+                  type="warning"
+                />
+              )}
               <div className="sm:col-span-12">
                 <FormFileInput
                   acceptedFormats={acceptedFileFormats || acceptedFormats}
@@ -403,7 +514,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           );
         }
         case FieldType.Link: {
-          if (propName === 'subCategories') {
+          if (propName === 'subCategories' || propName === 'themes') {
             const englishCatValues = contentView?.content?.[propName]
               ?.map((item) => item?.id)
               .toString();
@@ -449,12 +560,20 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 setSmallLargeGroupsSkills(valueFormattedToArray);
                 return (
                   <div key={propName} className={contentWrapper}>
-                    {disableActivitiesInputs && (
+                    {disableActivitiesInputs ? (
                       <Alert
                         className="mt-2 mb-4 rounded-md"
                         message={`To edit this field, go to the English version.`}
                         type="warning"
                       />
+                    ) : isEdit ? (
+                      <Alert
+                        className="mt-2 mb-4 rounded-md"
+                        message={`Editing the skills here will update the skills for all translations of this page.`}
+                        type="warning"
+                      />
+                    ) : (
+                      <></>
                     )}
                     <div
                       className={`sm:col-span-12 ${
@@ -495,6 +614,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               setSmallLargeGroupsSkills(skillsArray);
               return (
                 <div key={propName} className={contentWrapper}>
+                  {isEdit && (
+                    <Alert
+                      className="mt-2 mb-4 rounded-md"
+                      message={`Editing the skills here will update the skills for all translations of this page.`}
+                      type="warning"
+                    />
+                  )}
                   <div className="sm:col-span-12">
                     <DynamicSelector
                       title={field.title}
@@ -523,6 +649,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             }
             return (
               <div key={propName} className={contentWrapper}>
+                {propName === 'themes' && isEdit && (
+                  <Alert
+                    className="mt-2 mb-4 rounded-md"
+                    message={`Editing the themes here will update the themes for all translations of this page.`}
+                    type="warning"
+                  />
+                )}
                 <div className="sm:col-span-12">
                   <DynamicSelector
                     title={isRequired ? field.title + ' *' : field.title}

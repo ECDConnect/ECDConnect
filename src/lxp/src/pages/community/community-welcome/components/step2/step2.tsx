@@ -12,17 +12,11 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { ReactComponent as JoinCommunity } from '@/assets/joinCommunity.svg';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { yesOrNoOptions } from '../../community-welcome.types';
 import { FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { useEffect, useState } from 'react';
-import { useQuery } from '@apollo/client';
-import { GetAllProvince } from '@ecdlink/graphql';
 import { staticDataSelectors } from '@/store/static-data';
 import { useAppDispatch } from '@/store';
 
@@ -31,7 +25,7 @@ interface Step1Props {
   setValue: UseFormSetValue<any>;
   shareContactInfo: boolean | undefined;
   step: number;
-  onAllStepsComplete: () => void;
+  onAllStepsComplete: (item: boolean) => void;
   shareProvince: boolean | undefined;
   shareProfilePhoto?: boolean | undefined;
   provinceId: string | undefined;
@@ -66,6 +60,8 @@ export const Step2: React.FC<Step1Props> = ({
     []
   );
 
+  const mandatoryProvince = shareProvince && !provinceId ? true : false;
+
   const disableButton =
     shareProvince === undefined || shareProfilePhoto === undefined;
 
@@ -94,16 +90,6 @@ export const Step2: React.FC<Step1Props> = ({
       );
     }
   }, [provincesData]);
-
-  const handleDoThisLater = async () => {
-    await dispatch(
-      practitionerThunkActions.updatePractitionerCommunityTabStatus({
-        practitionerUserId: practitioner?.userId!,
-      })
-    );
-
-    setJoinCommunity && setJoinCommunity(false);
-  };
 
   return (
     <div className={'h-screen overflow-auto px-4'}>
@@ -172,6 +158,7 @@ export const Step2: React.FC<Step1Props> = ({
             options={yesOrNoOptions}
             onOptionSelected={(option: boolean | boolean[]) => {
               setValue('shareProvince', option);
+              setValue('provinceId', '');
             }}
             notSelectedColor="secondaryAccent2"
             textColor="secondary"
@@ -179,18 +166,19 @@ export const Step2: React.FC<Step1Props> = ({
           {shareProvince && (
             <Dropdown
               placeholder={'Tap to choose province'}
-              className={'justify-between px-2'}
+              className={'justify-between'}
               label={'Which province are you in?'}
               selectedValue={provinceId}
               list={provinces}
               onChange={(item) => setValue('provinceId', item)}
               fullWidth
               labelColor="textMid"
-              fillColor="adminPortalBg"
+              fillColor="adminBackground"
+              fillType="filled"
             />
           )}
         </div>
-        <div className="mb-24 mt-12 flex max-h-20 w-full flex-col gap-3">
+        <div className="mb-32 mt-12 flex max-h-20 w-full flex-col gap-3">
           <Button
             size="normal"
             className="w-full"
@@ -200,8 +188,8 @@ export const Step2: React.FC<Step1Props> = ({
             textColor="white"
             icon="SaveIcon"
             isLoading={isLoading}
-            disabled={disableButton || isLoading}
-            onClick={onAllStepsComplete}
+            disabled={disableButton || isLoading || mandatoryProvince}
+            onClick={() => onAllStepsComplete(false)}
           />
           <Button
             size="normal"
@@ -211,7 +199,7 @@ export const Step2: React.FC<Step1Props> = ({
             text="Do this later"
             textColor="quatenary"
             icon="ClockIcon"
-            onClick={handleDoThisLater}
+            onClick={() => onAllStepsComplete(true)}
           />
         </div>
       </div>

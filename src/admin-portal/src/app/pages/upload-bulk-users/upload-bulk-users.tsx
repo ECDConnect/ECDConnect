@@ -4,10 +4,11 @@ import {
   PractitionersTemplate,
   UploadCoaches,
   UploadPractitioners,
+  ValidatePractitionerImportSheet,
 } from '@ecdlink/graphql';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import FormFileInput from '../../../../../admin-portal/src/app/components/form-file-input/form-file-input';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { b64toBlob, useNotifications, NOTIFICATION } from '@ecdlink/core';
 import {
   ArrowLeftIcon,
@@ -15,7 +16,7 @@ import {
   PaperAirplaneIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
-import { Alert, Button } from '@ecdlink/ui';
+import { Alert, Button, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { useTenant } from '../../hooks/useTenant';
 import { pluralize } from '../pages.utils';
 
@@ -24,23 +25,34 @@ const allowedFileSize = 13631488;
 
 export default function UploadBulkUser(props: any) {
   const tenant = useTenant();
-  const { setValue, handleSubmit } = useForm();
+  const { setValue, handleSubmit, getValues, control } = useForm();
+  const { templateFile } = useWatch({ control });
   const history = useHistory();
   const { setNotification } = useNotifications();
   // props.location.state?.component === 'practitioners'
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
   const [docErrors, setDocErrors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCheckFile, setisLoadingCheckFile] = useState(false);
 
   const [getCoachesExcelTemplateGenerator, { data: coachesTemplateData }] =
     useLazyQuery(CoachesTemplate, {
       fetchPolicy: 'cache-and-network',
     });
+  const [disableAddButton, setDisableAddButton] = useState(true);
+  const [userReadyToBeUpload, setUsersReadyToBeUpload] = useState(false);
 
   const [
     getPractitionerExcelTemplateGenerator,
     { data: practitionersTemplateData },
   ] = useLazyQuery(PractitionersTemplate, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const [
+    validatePractitionerImportSheet,
+    { data: validatePractitionerImportSheetData },
+  ] = useLazyQuery(ValidatePractitionerImportSheet, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -187,8 +199,39 @@ export default function UploadBulkUser(props: any) {
     }
   };
 
+  const handleCheckFile = useCallback(async () => {
+    setisLoadingCheckFile(true);
+    const model = { ...getValues() };
+    const isValidFile = await validatePractitionerImportSheet({
+      variables: {
+        file: model.templateFile?.file,
+      },
+    }).then((res) => {
+      if (
+        res.data?.validatePractitionerImportSheet?.validationErrors.length !== 0
+      ) {
+        setDocErrors(
+          res.data?.validatePractitionerImportSheet?.validationErrors
+        );
+        const errors =
+          res.data?.validatePractitionerImportSheet?.validationErrors;
+        if (errors?.length === 0) {
+          setDisableAddButton(false);
+        }
+      } else {
+        setDisableAddButton(false);
+        setUsersReadyToBeUpload(true);
+        setNotification({
+          title: `Check file passed!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+      }
+    });
+    setisLoadingCheckFile(false);
+  }, [getValues, setNotification, validatePractitionerImportSheet]);
+
   return (
-    <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
+    <div className="bg-adminPortalBg h-screen rounded-2xl p-4 ">
       <div className="flex flex-col">
         <div className="justify-self col-end-3 ">
           <button
@@ -236,10 +279,10 @@ export default function UploadBulkUser(props: any) {
         </div>
 
         <div className="flex flex-row">
-          <div className="w-6/12 rounded-md bg-white p-16">
-            <form onSubmit={handleSubmit(onSubmit)} className=" ">
-              <div className="pt-4 pb-8">
-                <div className="sm:col-span-12">
+          <div className="w-full rounded-md ">
+            <form onSubmit={handleSubmit(onSubmit)} className="">
+              <div className="mb-8 rounded-xl bg-white px-16 pt-16 pb-12">
+                <div className="mb-2 sm:col-span-12">
                   <FormFileInput
                     acceptedFormats={acceptedFormats}
                     label={'Template Upload'}
@@ -248,17 +291,91 @@ export default function UploadBulkUser(props: any) {
                     setValue={setValue}
                     isImage={false}
                     allowedFileSize={allowedFileSize}
+                    isWizardComponent={true}
+                    onFileChange={() => {
+                      setDocErrors([]);
+                      setDisableAddButton(true);
+                      setUsersReadyToBeUpload(false);
+                    }}
+                    isFileInput={true}
                   />
                 </div>
+                {isLoadingCheckFile && (
+                  <div className="flex items-center gap-2">
+                    <LoadingSpinner
+                      size="small"
+                      className="mt-4"
+                      spinnerColor="secondary"
+                      backgroundColor="uiBg"
+                    />
+                    <Typography
+                      type={'help'}
+                      hasMarkup
+                      text={'Checking upload...'}
+                      className={'mt-4'}
+                      color={'infoMain'}
+                    />
+                  </div>
+                )}
+                {!isLoadingCheckFile && (
+                  <Button
+                    type="outlined"
+                    color="secondary"
+                    isLoading={isLoadingCheckFile}
+                    disabled={isLoadingCheckFile || !templateFile}
+                    onClick={handleCheckFile}
+                    text="Check file"
+                    textColor="secondary"
+                    className="my-4 rounded-2xl px-28"
+                    icon="DocumentSearchIcon"
+                  ></Button>
+                )}
+                {docErrors?.length > 0 ? (
+                  <div>
+                    <Typography
+                      type={'body'}
+                      hasMarkup
+                      text={
+                        'Try downloading the template again and follow the instructions.'
+                      }
+                      className={'mt-5'}
+                      color={'textMid'}
+                    />
+                    <Alert
+                      className="mt-2 mb-3 rounded-md"
+                      title={`${docErrors?.length} issues with your upload:`}
+                      type="error"
+                      list={docErrors.map(
+                        (error) =>
+                          `Row ${error.row}: ${error?.errorDescription}: ${error?.errors[0]}`
+                      )}
+                      listColor="textDark"
+                    />
+                  </div>
+                ) : null}
+                {userReadyToBeUpload && (
+                  <div className="flex flex-col gap-4">
+                    <Alert
+                      className="mt-2 rounded-md"
+                      title={`Users ready for upload`}
+                      type="success"
+                    />
+                    <Alert
+                      className="rounded-md"
+                      title={`An invitation will be sent to all new users when you click add.`}
+                      type="info"
+                    />
+                  </div>
+                )}
               </div>
               <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
                 <div className="ml-4 mt-2 flex-shrink-0">
                   <Button
                     type="filled"
                     color="secondary"
-                    className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                    className="bg-secondary hover:bg-uiMid focus:outline-none mb-16 inline-flex items-center rounded-md rounded-2xl border border-transparent px-4 py-2.5 px-16 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                     isLoading={isLoading}
-                    disabled={isLoading}
+                    disabled={isLoading || disableAddButton}
                     onClick={handleSubmit(onSubmit)}
                   >
                     <PaperAirplaneIcon className=" mr-1 h-4 w-4">
@@ -269,23 +386,6 @@ export default function UploadBulkUser(props: any) {
                 </div>
               </div>
             </form>
-
-            {docErrors.length > 0 ? (
-              <Alert
-                className="mt-5 mb-3 rounded-md"
-                message={`Error`}
-                type="error"
-                list={docErrors.map(
-                  (error) =>
-                    'Row ' +
-                    error?.row +
-                    ':' +
-                    '</br>' +
-                    (error.errors?.length ? error.errors.join('</br>') : '')
-                )}
-                listColor="errorMain"
-              />
-            ) : null}
           </div>
           <div></div>
         </div>

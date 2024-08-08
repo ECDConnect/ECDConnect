@@ -38,6 +38,7 @@ export const CoachProgrammeInformation: React.FC = () => {
   const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
     []
   );
+
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);

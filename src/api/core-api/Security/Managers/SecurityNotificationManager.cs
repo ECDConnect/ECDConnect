@@ -7,6 +7,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Model;
 using System;
 using System.Threading.Tasks;
 
@@ -196,10 +197,21 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         public async Task SendHelpFormSubmissionToAdministratorAsync(Guid adminUserId, UserHelp userHelp)
         {
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
-            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            var organisationEmail = TenantExecutionContext.Tenant.OrganisationEmail;
+
             var helpLoginStatus = userHelp.IsLoggedIn  ? "Yes" : "No";
             var helpContactDetail = userHelp.ContactPreference == "email" ? userHelp.Email : userHelp.CellNumber;
             var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
+            var adminEmail = adminUser.Email;
+
+            if (organisationEmail != null)
+            {
+                // We need to update the user's email with the organisationEmail, send the mail and then revert
+                adminUser.Email = organisationEmail;
+                await _userManager.UpdateNormalizedEmailAsync(adminUser);
+            }
+
             var affectedUserFullName = "anonymous";
             if (userHelp.UserId != null)
             {
@@ -218,6 +230,41 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpLoginStatus, helpLoginStatus)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
+
+            if (organisationEmail != null)
+            {
+                // revert email address to previous
+                adminUser.Email = adminEmail;
+                await _userManager.UpdateNormalizedEmailAsync(adminUser);
+            }
+        }
+
+        public async Task SendNewTenantSetupToAdministratorAsync(Guid adminUserId, TenantOrgDetailModel tenantOrgDetail)
+        {
+            var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
+            var adminEmail = adminUser.Email;
+
+            if (TenantExecutionContext.Tenant.OrganisationEmail != null)
+            {
+                // We need to update the user's email with the organisationEmail, send the mail and then revert
+                adminUser.Email = TenantExecutionContext.Tenant.OrganisationEmail;
+                await _userManager.UpdateNormalizedEmailAsync(adminUser);
+            }
+
+            var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.NewTenantSetupInfoReceived)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, tenantOrgDetail.ApplicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, tenantOrgDetail.OrganisationName)
+              .SendMessageAsync();
+
+            if (TenantExecutionContext.Tenant.OrganisationEmail != null)
+            {
+                // revert email address to previous
+                adminUser.Email = adminEmail;
+                await _userManager.UpdateNormalizedEmailAsync(adminUser);
+            }
+
         }
     }
 }

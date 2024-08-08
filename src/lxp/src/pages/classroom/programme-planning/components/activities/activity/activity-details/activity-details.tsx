@@ -188,7 +188,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
             ) : (
               <Button
                 type={'filled'}
-                color={'primary'}
+                color={'quatenary'}
                 className={'mt-2 w-full'}
                 textColor={'white'}
                 text={'Choose this activity'}

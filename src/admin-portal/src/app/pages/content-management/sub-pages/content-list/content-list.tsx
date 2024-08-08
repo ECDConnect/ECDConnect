@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useQuery } from '@apollo/client';
+import { gql, useQuery, useLazyQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
@@ -16,6 +16,7 @@ import {
   ActivitiesTitles,
   ContentManagementView,
   FieldType,
+  searchByActivityTypeOptions,
 } from '../../content-management-models';
 import {
   ChevronDownIcon,
@@ -36,7 +37,6 @@ import {
   Table,
   Typography,
 } from '@ecdlink/ui';
-import { formatDate } from '../../../../utils/date-utils/date-utils';
 import { format } from 'date-fns';
 import ReactDatePicker from 'react-datepicker';
 
@@ -70,14 +70,18 @@ export default function ContentList({
 }: ContentListProps) {
   const { hasPermission } = useUser();
   const [tableData, setTableData] = useState<any[]>([]);
+  const [themes, setThemes] = useState<any[]>([]);
+  const [skills, setSkills] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
   const [buttonText, setButtonText] = useState(contentType.name);
-
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
   const [typeFilter, setTypeFilter] = useState<SearchDropDownOption<string>[]>(
     []
   );
+  const [skillFilter, setSkillFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
 
   const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
     (item) => ({
@@ -87,9 +91,69 @@ export default function ContentList({
     })
   );
 
+  const getAllTheme = `GetAllTheme`;
+
+  const themeQuery = gql` 
+    query ${getAllTheme} ($localeId: String) {
+      ${getAllTheme} (localeId: $localeId) {
+          id
+          name
+      }
+     }
+  `;
+
+  const [fetchThemeData, { data: themesData }] = useLazyQuery(themeQuery, {
+    fetchPolicy: 'cache-first',
+    variables: {
+      localeId: languageId,
+    },
+  });
+
+  const getAllSkills = `GetAllProgressTrackingSubCategory`;
+
+  const SkillsQuery = gql` 
+    query ${getAllSkills} ($localeId: String) {
+      ${getAllSkills} (localeId: $localeId) {
+          id
+          name
+      }
+     }
+  `;
+
+  const [fetchSkillsData, { data: skillsData }] = useLazyQuery(SkillsQuery, {
+    fetchPolicy: 'cache-first',
+    variables: {
+      localeId: languageId,
+    },
+  });
+
+  const sortByThemeOptions: SearchDropDownOption<string>[] = themes?.map(
+    (item) => ({
+      id: item?.id,
+      label: item?.name,
+      value: item?.id,
+    })
+  );
+
+  const sortBySkillsOptions: SearchDropDownOption<string>[] = skills?.map(
+    (item) => ({
+      id: item?.id,
+      label: item?.name,
+      value: item?.id,
+    })
+  );
+  const [themeFilter, setThemeFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+
   const [languageFilter, setLanguageFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
+
+  const themeFilterValues = useMemo(
+    () => themeFilter?.map((item) => item?.value),
+    [themeFilter]
+  );
 
   const languageFilterValues = useMemo(
     () => languageFilter?.map((item) => item?.value),
@@ -98,6 +162,10 @@ export default function ContentList({
   const typeFilterValues = useMemo(
     () => typeFilter?.map((item) => item?.value),
     [typeFilter]
+  );
+  const skillFilterValues = useMemo(
+    () => skillFilter?.map((item) => item?.value),
+    [skillFilter]
   );
   const [showFilter, setShowFilter] = useState(false);
 
@@ -131,6 +199,39 @@ export default function ContentList({
   }, []);
 
   useEffect(() => {
+    if (choosedSectionTitle === 'Small/large group activities') {
+      if (!themes || themes?.length === 0) {
+        fetchThemeData();
+      }
+      if (!skills || skills?.length === 0) {
+        fetchSkillsData();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (themesData && themesData[getAllTheme]) {
+      setThemes(
+        themesData[getAllTheme].map((item: any) => ({
+          ...item,
+        }))
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themesData]);
+
+  useEffect(() => {
+    if (skillsData && skillsData[getAllSkills]) {
+      setSkills(
+        skillsData[getAllSkills].map((item: any) => ({
+          ...item,
+        }))
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skillsData]);
+
+  useEffect(() => {
     if (contentType && contentType.fields) {
       const displayFields: ContentTypeFieldDto[] = [];
 
@@ -146,35 +247,14 @@ export default function ContentList({
             x.fieldType.dataType === FieldType.Link ||
             x.fieldType.dataType === FieldType.DatePicker) &&
             !!x.displayMainTable) ||
-          x?.displayName === 'CTF45 - Languages' ||
-          x?.displayName === 'Languages' ||
-          x?.displayName === 'GT - Available Languages'
+          !!x.displayMainTable
         )
           displayFields.push(x);
       });
 
-      // if (contentType.name === 'CoachingCircleTopics') {
-      //   displayFields.push(
-      //     {
-      //       "__typename": "ContentTypeField",
-      //       "fieldOrder": orderedList.length + 1,
-      //       "fieldName": "dateUpdated",
-      //       "fieldType": {
-      //           "__typename": "FieldType",
-      //           "name": "Text",
-      //           "dataType": "text"
-      //       },
-      //       "dataLinkName": "",
-      //       "displayName": "Date Updated",
-      //       "displayMainTable": true,
-      //       "displayPage": false
-      //   });
-      // }
-
       if (choosedSectionTitle === 'Small/large group activities') {
         const smallLargeGroupsDisplayFields = displayFields?.filter(
-          (item) =>
-            item?.fieldName !== 'subType' && item?.fieldName !== 'themes'
+          (item) => item?.fieldName !== 'subType'
         );
         setDisplayFields(smallLargeGroupsDisplayFields);
         return;
@@ -182,7 +262,8 @@ export default function ContentList({
 
       if (choosedSectionTitle === 'Story activities') {
         const smallLargeGroupsDisplayFields = displayFields?.filter(
-          (item) => item?.fieldName !== 'subCategories'
+          (item) =>
+            item?.fieldName !== 'subCategories' && item?.fieldName !== 'themes'
         );
         setDisplayFields(smallLargeGroupsDisplayFields);
         return;
@@ -204,6 +285,16 @@ export default function ContentList({
         ${x.fieldName} {
           id
           name
+          imageUrl
+          imageHexColor
+        }
+        `;
+      else if (x?.fieldName === 'themes')
+        return `
+        ${x.fieldName} {
+          id
+          name
+          color
           imageUrl
         }
         `;
@@ -259,23 +350,25 @@ export default function ContentList({
           )
         );
       } else if (selectedTab === 2) {
-        // let postNatalData = moreInforItems.filter(
-        //   (item: { type: string }) => item.type === 'postnatal'
-        // );
-        // setTableData(
-        //   postNatalData?.length > 0 ? postNatalData : moreInforItems
-        // );
         setTableData(moreInforItems);
       } else if (selectedTab === 3) {
         if (
           choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
         ) {
-          setTableData(
-            moreInforItems?.filter(
-              (item) =>
-                item?.type === 'Small group' || item?.type === 'Large group'
-            )
+          const filteredList = moreInforItems?.filter(
+            (item) =>
+              item?.type === 'Small group' || item?.type === 'Large group'
           );
+          const sortedList = filteredList.sort((a, b) =>
+            new Date(a?.updatedDate).getTime() >
+            new Date(b?.updatedDate).getTime()
+              ? -1
+              : new Date(a?.updatedDate).getTime() <
+                new Date(b?.updatedDate).getTime()
+              ? 1
+              : 0
+          );
+          setTableData(sortedList);
           return;
         }
 
@@ -358,10 +451,118 @@ export default function ContentList({
     [languageId, refetchContent, refreshParent]
   );
 
+  const filteredData = useMemo(() => {
+    if (startDate && endDate) {
+      const filteredByDate = tableData?.filter((d) => {
+        return (
+          new Date(d?.updatedDate).getTime() >=
+            new Date(startDate)?.getTime() &&
+          new Date(d?.updatedDate).getTime() <= new Date(endDate)?.getTime()
+        );
+      });
+
+      const filteredByType =
+        typeFilterValues?.length > 0
+          ? filteredByDate?.filter((el) => {
+              return typeFilterValues?.some((f) => {
+                return f === el.childType;
+              });
+            })
+          : filteredByDate;
+
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = filteredByType.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
+      return filteredByType;
+    }
+
+    if (typeFilterValues?.length > 0) {
+      const typeFilterValue = tableData?.filter((el) => {
+        return typeFilterValues?.some((f) => {
+          return f === el.type;
+        });
+      });
+
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = typeFilterValue.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
+      return typeFilterValue;
+    }
+
+    if (skillFilterValues?.length > 0) {
+      const skillFilterValue = tableData?.filter((el) => {
+        return skillFilterValues?.some((f) => {
+          return el.subCategories?.some((x) => f === x.id);
+        });
+      });
+
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = skillFilterValue.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
+      return skillFilterValue;
+    }
+    if (themeFilterValues?.length > 0) {
+      const themeFilterValue = tableData?.filter((el) => {
+        return themeFilterValues?.some((f) => {
+          return el.themes?.some((x) => f === x.id);
+        });
+      });
+
+      if (languageFilter?.length > 0) {
+        const filteredbyLanguageObjects = themeFilterValue.filter((item) =>
+          item.availableLanguages.some((languageId) =>
+            languageFilterValues.includes(languageId)
+          )
+        );
+        return filteredbyLanguageObjects;
+      }
+
+      return themeFilterValue;
+    }
+
+    if (languageFilter?.length > 0) {
+      const filteredbyLanguageObjects = tableData.filter((item) =>
+        item.availableLanguages.some((languageId) =>
+          languageFilterValues.includes(languageId)
+        )
+      );
+      return filteredbyLanguageObjects;
+    }
+
+    return tableData;
+  }, [
+    endDate,
+    languageFilter?.length,
+    languageFilterValues,
+    tableData,
+    startDate,
+    typeFilterValues,
+    skillFilterValues,
+    themeFilterValues,
+  ]);
+
   const renderTables = useMemo(() => {
     return (
       <UiTable
-        isLoading={!tableData.length && loadingContent}
+        isLoading={!filteredData.length && loadingContent}
         columns={displayFields?.map((item) => {
           return {
             field:
@@ -376,8 +577,8 @@ export default function ContentList({
         })}
         rows={
           searchValue !== 'Search by title or content...'
-            ? filterByValue(tableData, searchValue)
-            : tableData
+            ? filterByValue(filteredData, searchValue)
+            : filteredData
         }
         component={
           selectedTab === ContentManagementTabs.COMMUNITY.id
@@ -424,6 +625,8 @@ export default function ContentList({
     setStartDate('');
     setEndDate('');
     setTypeFilter([]);
+    setThemeFilter([]);
+    setSkillFilter([]);
     setLanguageFilter([]);
   };
 
@@ -450,25 +653,6 @@ export default function ContentList({
                 onChange={onSearch}
               />
             </div>
-            {hasPermission(PermissionEnum.create_static) &&
-              contentType?.name !== ContentTypes.CONSENT &&
-              contentType?.name !== ContentTypes.MORE_INFORMATION &&
-              contentType?.name !== ContentTypes.POSTNATAL &&
-              contentType?.name !== ContentTypes.ANTENATAL &&
-              contentType?.name !== ContentTypes.NATALINFO &&
-              contentType?.name !== ContentTypes.DANGERSIGN && (
-                <button
-                  onClick={() => {
-                    hasPermission(PermissionEnum.update_static) &&
-                      viewSelectedRow();
-                  }}
-                  type="button"
-                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
-                >
-                  <PlusIcon width="22px" className="pl-1" />
-                  Add {camelCaseToSentanceCase(buttonText)}
-                </button>
-              )}
             <div className="mt-0  flex w-10/12 justify-between sm:mt-0  sm:ml-4">
               {(selectedTab === 2 || selectedTab === 3) && (
                 <div className="pr-2 ">
@@ -518,6 +702,21 @@ export default function ContentList({
                   </span>
                 </div>
               )}
+              {hasPermission(PermissionEnum.create_static) &&
+                contentType?.name !== ContentTypes.CONSENT &&
+                contentType?.name !== ContentTypes.MORE_INFORMATION && (
+                  <button
+                    onClick={() => {
+                      hasPermission(PermissionEnum.update_static) &&
+                        viewSelectedRow();
+                    }}
+                    type="button"
+                    className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
+                  >
+                    <PlusIcon width="22px" className="pl-1" />
+                    Add {camelCaseToSentanceCase(buttonText)}
+                  </button>
+                )}
             </div>
           </div>
           <div className="pb-5 sm:flex sm:items-center sm:justify-between"></div>
@@ -554,27 +753,70 @@ export default function ContentList({
                   />
                 </div>
               )}
-              {/* <div className="mr-2 flex items-center gap-2">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={sortByNatalTypeOptions}
-                  selectedOptions={typeFilter}
-                  onChange={setTypeFilter}
-                  placeholder={'Types'}
-                  multiple={true}
-                  color={'secondary'}
-                  info={{
-                    name: `Types:`,
-                  }}
-                  bgColor="adminPortalBg"
-                />
-              </div> */}
-
+              {selectedTab === 3 && (
+                <>
+                  <div className="mr-2 flex items-center gap-2">
+                    <SearchDropDown<string>
+                      displayMenuOverlay={true}
+                      className={'mr-1 w-full'}
+                      menuItemClassName={
+                        'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                      }
+                      overlayTopOffset={'120'}
+                      options={searchByActivityTypeOptions}
+                      selectedOptions={typeFilter}
+                      onChange={setTypeFilter}
+                      placeholder={'Types'}
+                      multiple={true}
+                      color={'secondary'}
+                      info={{
+                        name: `Types:`,
+                      }}
+                      bgColor="adminPortalBg"
+                    />
+                  </div>
+                  <div className="mr-2 flex items-center gap-2">
+                    <SearchDropDown<string>
+                      displayMenuOverlay={true}
+                      className={'mr-1 w-full'}
+                      menuItemClassName={
+                        'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                      }
+                      overlayTopOffset={'120'}
+                      options={sortByThemeOptions}
+                      selectedOptions={themeFilter}
+                      onChange={setThemeFilter}
+                      placeholder={'Themes'}
+                      multiple={true}
+                      color={'secondary'}
+                      info={{
+                        name: `Themes:`,
+                      }}
+                      bgColor="adminPortalBg"
+                    />
+                  </div>
+                  <div className="mr-2 flex items-center gap-2">
+                    <SearchDropDown<string>
+                      displayMenuOverlay={true}
+                      className={'mr-1 w-full'}
+                      menuItemClassName={
+                        'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                      }
+                      overlayTopOffset={'120'}
+                      options={sortBySkillsOptions}
+                      selectedOptions={skillFilter}
+                      onChange={setSkillFilter}
+                      placeholder={'Skills'}
+                      multiple={true}
+                      color={'secondary'}
+                      info={{
+                        name: `Skills:`,
+                      }}
+                      bgColor="adminPortalBg"
+                    />
+                  </div>
+                </>
+              )}
               <div className="mr-2 flex items-center gap-2">
                 <SearchDropDown<string>
                   displayMenuOverlay={true}

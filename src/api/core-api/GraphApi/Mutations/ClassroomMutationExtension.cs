@@ -416,6 +416,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             reportPeriodRepo.InsertMany(childProgressReportPeriods.Select(x => new ChildProgressReportPeriod
             {
                 ClassroomId = classroomId,
+                Id = x.Id,
                 StartDate = x.StartDate,
                 EndDate = x.EndDate,
             }));

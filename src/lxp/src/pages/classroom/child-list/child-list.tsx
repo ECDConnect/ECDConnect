@@ -14,17 +14,9 @@ import {
   SearchDropDownOption,
   SearchSortOptions,
   UserAlertListDataItem,
-  ActionModal,
   BannerWrapper,
 } from '@ecdlink/ui';
-import {
-  addDays,
-  format,
-  isBefore,
-  isFriday,
-  isWeekend,
-  nextMonday,
-} from 'date-fns';
+import { format, isBefore } from 'date-fns';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -41,17 +33,16 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import { coachSelectors } from '@/store/coach';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import {
   ClassDashboardRouteState,
-  TabsItemForPrincipal,
   TabsItems,
 } from '../class-dashboard/class-dashboard.types';
 import { ChildData, ChildListRouteState } from './child-list.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { ChildProfileRouteState } from '@/pages/child/child-profile/child-profile.types';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -90,7 +81,6 @@ const sortOptions: SearchSortOptions = {
 export const ChildList: React.FC<ComponentBaseProps> = () => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
-  const coach = useSelector(coachSelectors.getCoach);
 
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(
@@ -136,34 +126,20 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const [classOptions, setClassOptions] = useState<
     SearchDropDownOption<ClassroomGroupDto>[]
   >([]);
-  const isPrincipal = practitioner?.isPrincipal === true;
 
   const today = new Date();
 
-  const call = useCallback(() => {
-    window.open(`tel:${coach?.user?.phoneNumber}`);
-  }, [coach?.user?.phoneNumber]);
-
-  const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
-    practitioner!
-  );
-
-  const handleComebackDay = useCallback((date: Date) => {
-    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
-      return nextMonday(new Date(date));
-    }
-
-    return new Date(addDays(new Date(date), 1));
-  }, []);
+  const { practitionerIsOnLeave } = usePractitionerAbsentees(practitioner!);
 
   const onChildListItemAction = useCallback(
     (childId: string) => {
       history.push(ROUTES.CHILD_PROFILE, {
         childId,
         practitionerIsOnLeave,
-      });
+        classroomGroupIdFromRedirect: state?.classroomGroupId,
+      } as ChildProfileRouteState);
     },
-    [history, practitionerIsOnLeave]
+    [history, practitionerIsOnLeave, state]
   );
 
   const onFilterClasses = (
@@ -289,10 +265,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const registerNewChild = () => {
     if (isOnline) {
-      if (practitionerIsOnLeave) {
-        handleIsOnLeaveModal();
-        return;
-      }
       history.push(ROUTES.CHILD_REGISTRATION_LANDING);
     } else {
       showOnlineOnly();
@@ -315,73 +287,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       },
     });
   };
-
-  const handleIsOnLeaveModal = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      blocking: true,
-      render: (onClose) => {
-        return (
-          <ActionModal
-            icon="ExclamationCircleIcon"
-            iconBorderColor="alertBg"
-            iconColor="alertMain"
-            importantText={`You are on leave and cannot use this section`}
-            paragraphs={[
-              `You are on leave from ${format(
-                new Date((currentAbsentee?.absentDate as Date) || today),
-                'd MMM yyyy'
-              )} to ${format(
-                new Date(
-                  handleComebackDay(
-                    (currentAbsentee?.absentDateEnd as Date) || today
-                  )
-                ),
-                'd MMM yyyy'
-              )}. If you believe this is a mistake please reach out to ${
-                currentAbsentee?.loggedByPerson
-              }.`,
-            ]}
-            actionButtons={[
-              {
-                text: `Contact ${currentAbsentee?.loggedByPerson}`,
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: () => {
-                  call();
-                  onClose();
-                },
-                leadingIcon: 'PhoneIcon',
-              },
-              {
-                text: `Close`,
-                textColour: 'primary',
-                colour: 'primary',
-                type: 'outlined',
-                onClick: () => {
-                  onClose();
-                },
-                leadingIcon: 'XCircleIcon',
-              },
-            ]}
-          />
-        );
-      },
-    });
-  }, [
-    call,
-    coach?.user?.firstName,
-    currentAbsentee?.absentDateEnd,
-    dialog,
-    handleComebackDay,
-  ]);
-
-  useEffect(() => {
-    if (practitionerIsOnLeave) {
-      handleIsOnLeaveModal();
-    }
-  }, []);
 
   const populateClassOptions = useCallback(() => {
     const classOptions = classroomGroups?.map((currentClass) => ({
@@ -440,9 +345,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       subTitle={format(today, 'EEEE, dd MMMM')}
       onBack={() =>
         history.push(ROUTES.CLASSROOM.ROOT, {
-          activeTabIndex: isPrincipal
-            ? TabsItemForPrincipal.CLASSES
-            : TabsItems.CLASSES,
+          activeTabIndex: TabsItems.CLASSES,
         } as ClassDashboardRouteState)
       }
       size="small"
