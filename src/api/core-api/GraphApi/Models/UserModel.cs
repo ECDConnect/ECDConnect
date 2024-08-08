@@ -65,5 +65,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public bool? IsAdmin { get; set; } = false;
         public bool? ResetData { get; set; } = false;
         public string WelcomeMessage { get; set; }
+        public bool? ProfilePicIsEmoji { get; set; } = false;
     }
 }
