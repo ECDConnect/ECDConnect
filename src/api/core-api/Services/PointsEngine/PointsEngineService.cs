@@ -92,7 +92,13 @@ namespace EcdLink.Api.CoreApi.Services
                 // After the start
                 (x.DateScored >= startDate) &&
                 // Before the end or no end date
-                (!endDate.HasValue || x.DateScored <= endDate)).Distinct().ToList();
+                (!endDate.HasValue || x.DateScored <= endDate)
+                ).Distinct().ToList();
+        }
+
+        public List<PointsActivity> GetPointActivities()
+        {
+            return _pointsActivityRepo.GetAll().Where(x => x.IsActive).Distinct().ToList();
         }
 
         private void AddOrUpdatePoints(Guid activityId, Guid userId, int pointsTotal, int? timesScored = null, DateTime? dateScored = null)

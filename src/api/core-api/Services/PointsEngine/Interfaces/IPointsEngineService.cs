@@ -7,7 +7,7 @@ namespace ECDLink.Core.Services.Interfaces
     public interface IPointsEngineService
     {
         List<PointsUserSummary> GetSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null);
-
+        List<PointsActivity> GetPointActivities();
         void CalculateChildAttendanceRegisterSaved(Guid userId);
         void CalculateChildRegistrationComplete(Guid childUserId);
         void CalculateChildRemovedFromPreschool(Guid userId);

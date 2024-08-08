@@ -25,10 +25,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime startDate,
             DateTime? endDate)
         {
-            var pointsSummary = pointsService.GetSummaryUserPoints(Guid.Parse(userId), startDate, endDate);
-
-            return pointsSummary;
+            return pointsService.GetSummaryUserPoints(Guid.Parse(userId), startDate, endDate);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<PointsActivity> GetPointActivities([Service] IPointsEngineService pointsService)
+        {
+            return pointsService.GetPointActivities();
+        }
+
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<PointsLibrary> GetPointsLibrary(

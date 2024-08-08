@@ -25,21 +25,21 @@ class PointsService {
     }>(``, {
       query: `
         query pointsSummaryForUser($userId: String, $startDate: DateTime!, $endDate: DateTime!) {
-          pointsSummaryForUser(userId: $userId, startDate: $startDate, endDate: $endDate) {
+            pointsSummaryForUser(userId: $userId, startDate: $startDate, endDate: $endDate) {
             pointsTotal
             pointsYTD
             timesScored
             month
             year
             userId
-            pointsLibrary {
-              id
-              activity
-              subActivity
-              description
-              todoDescription
+            pointsActivity {
+              name
+              points
+              maxPointsIndividualMonthly
+              maxPointsIndividualYearly
             }
           }
+        }
       }`,
       variables: {
         userId,
