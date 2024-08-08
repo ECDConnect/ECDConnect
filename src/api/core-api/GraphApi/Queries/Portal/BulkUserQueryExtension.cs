@@ -214,12 +214,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 if (idOrPassport?.ToLowerInvariant() == "id"
                     && !UserHelper.IsSAIDValid(id))
                 {
-                    errors.Add("Id is empty or invalid");
+                    if (string.IsNullOrEmpty(id))
+                    {
+                        errors.Add("Id is empty");
+                    } else
+                    {
+                        errors.Add("Id invalid " + id);
+                    }
                 }
 
-                if (idOrPassport is null ||
+                if (idOrPassport is null || passport is null ||
                     (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
-                    errors.Add("Passport is empty or invalid");
+                    errors.Add("Passport is empty");
 
                 if (firstName is null || firstName.Length == 0)
                     errors.Add("First Name is empty.");
@@ -393,12 +399,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 if (idOrPassport?.ToLowerInvariant() == "id"
                     && !UserHelper.IsSAIDValid(id))
                 {
-                    errors.Add("Id is empty or invalid");
+                    if (string.IsNullOrEmpty(id))
+                    {
+                        errors.Add("Id is empty");
+                    }
+                    else
+                    {
+                        errors.Add("Id invalid " + id);
+                    }
                 }
 
-                if (idOrPassport is null ||
+                if (idOrPassport is null || passport is null ||
                     (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
-                    errors.Add("Passport is empty or invalid");
+                    errors.Add("Passport is empty");
 
                 if (firstName is null || firstName.Length == 0)
                     errors.Add("First Name is empty.");

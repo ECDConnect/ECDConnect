@@ -187,7 +187,11 @@ export const ProgressLandingComplete: React.FC<
       )}
       {!isBeforePeriod && currentReport.unknownPercentage < 25 && (
         <Button
-          onClick={() => {}} // TODO - Go to create report
+          onClick={() =>
+            history.push(ROUTES.PROGRESS_CREATE_REPORT, {
+              childId: childId,
+            })
+          }
           className="mt-auto mb-4 w-full"
           size="normal"
           color="quatenary"

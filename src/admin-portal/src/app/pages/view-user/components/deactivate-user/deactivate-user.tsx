@@ -1,7 +1,6 @@
 import { Button, DialogPosition } from '@ecdlink/ui';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import {
-  HealthCareWorkerDto,
   NOTIFICATION,
   RoleDefaultNameEnum,
   UserDto,
@@ -18,7 +17,6 @@ import { useHistory } from 'react-router';
 
 interface DeactivateUserProps {
   userData: UserDto;
-  chwData: HealthCareWorkerDto;
   refetchUserData?: () => void;
   isTeamLead?: boolean;
   isAdministrator?: boolean;
@@ -28,7 +26,6 @@ interface DeactivateUserProps {
 
 export const DeactivateUser: React.FC<DeactivateUserProps> = ({
   userData,
-  chwData,
   refetchUserData,
   isTeamLead,
   teamLeadId,
@@ -84,14 +81,14 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
       history.push(`/users/health-care-worker`);
     }
   }, [
-    chwData?.user.id,
     deactivateHcw,
     deactivateTeamLead,
+    hcwId,
     history,
     isTeamLead,
     refetchUserData,
     setNotification,
-    userData?.id,
+    teamLeadId,
   ]);
 
   const deactivaterUser = async () => {
@@ -106,9 +103,7 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
               ? RoleDefaultNameEnum.TeamLead
               : RoleDefaultNameEnum.CHW
           }`}
-          message={`You are about to deactivate ${
-            chwData?.user?.fullName ?? userData?.fullName
-          }`}
+          message={`You are about to deactivate ${userData?.fullName}`}
           btnText={['Yes, deactivate', 'No, Cancel']}
           onCancel={onCancel}
           onSubmit={() => {

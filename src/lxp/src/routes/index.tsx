@@ -146,6 +146,10 @@ import { ProgressObservations } from '@/pages/classroom/progress/observations/ch
 import { ChildProgressObservationsLanding } from '@/pages/classroom/progress/landing/child-progress-observations-landing';
 import { ChildProgressReportsList } from '@/pages/classroom/progress/child-reports-list/child-progress-reports-list';
 import { ChildProgressObservationsNotes } from '@/pages/classroom/progress/landing/child-progress-observations-notes';
+import { SelectChildToTrack } from '@/pages/classroom/progress/select-child-to-track-progress/select-child-to-track-progress';
+import { SelectCategoryToTrack } from '@/pages/classroom/progress/select-category-to-track-progress/select-category-to-track-progress';
+import { ObservationsByCategory } from '@/pages/classroom/progress/observations-by-category/observations-by-category';
+import { ProgressCreateReport } from '@/pages/classroom/progress/create-report/create-report';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -644,8 +648,24 @@ const AuthRoutes: React.FC = () => {
         component={ChildProgressObservationNote}
       />
       <Route
+        path={ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK}
+        component={SelectChildToTrack}
+      />
+      <Route
+        path={ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK}
+        component={SelectCategoryToTrack}
+      />
+      <Route
+        path={ROUTES.PROGRESS_OBSERVATIONS_BY_CATEGORY}
+        component={ObservationsByCategory}
+      />
+      <Route
         path={ROUTES.CHILD_PROGRESS_OBSERVATION_REPORT}
         component={ChildProgressObservationReport}
+      />
+      <Route
+        path={ROUTES.PROGRESS_CREATE_REPORT}
+        component={ProgressCreateReport}
       />
       <Route
         path={ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS}

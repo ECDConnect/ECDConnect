@@ -12,7 +12,10 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
+import {
+  MutationAddPractitionerToPrincipalArgs,
+  UpdateUserPermissionInputModelInput,
+} from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
 import { UserDto, useSnackbar } from '@ecdlink/core';
 import { useState, useEffect } from 'react';
@@ -49,6 +52,7 @@ import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.typ
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import { HelpForm } from '@/components/help-form/help-form';
+import PermissionsService from '@/services/PermissionsService/PermissionsService';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -147,13 +151,10 @@ export const AddPractitioner = ({
         if (p?.note !== undefined) {
           setAddNote(p?.note);
         }
-        if (
-          p?.appUser?.practitionerObjectData?.isRegistered === false ||
-          p?.appUser?.practitionerObjectData?.isRegistered === null
-        ) {
+        if (p?.isRegistered === false || p?.isRegistered === null) {
           setIsPractitionerRegistered(false);
         }
-        if (p?.appUser?.practitionerObjectData?.isRegistered === true) {
+        if (p?.isRegistered === true) {
           setIsPractitionerRegistered(true);
         }
         setIsValidPractitioner(
@@ -227,6 +228,15 @@ export const AddPractitioner = ({
       firstName: newPractitioner?.firstName,
       lastName: newPractitioner?.surname,
     };
+
+    const updatePermissionInput: UpdateUserPermissionInputModelInput = {
+      userId: newPractitioner?.userId,
+      permissionIds: permissionsAdded,
+    };
+
+    const updatePermissions = await new PermissionsService(
+      userAuth?.auth_token!
+    ).UpdateUserPermission(updatePermissionInput);
     await new PractitionerService(
       userAuth?.auth_token!
     ).AddPractitionerToPrincipal(input);
@@ -459,7 +469,17 @@ export const AddPractitioner = ({
                 )}
               {isValidPractitioner === true && !isPrincipal && !addNote && (
                 <div className="mb-8">
-                  <Alert type={'success'} title={'Practitioner found!'} />
+                  <Alert
+                    type={'success'}
+                    title={'Practitioner found!'}
+                    list={
+                      isPractitionerRegistered
+                        ? []
+                        : [
+                            'Encourage Thandi to register for the app as soon as possible!',
+                          ]
+                    }
+                  />
                 </div>
               )}
               {!addNote &&

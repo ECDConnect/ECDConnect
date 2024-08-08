@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GetAllNavigation = gql`
-  {
-    GetAllNavigation {
+  query GetAllNavigation($isActive: Boolean = true) {
+    GetAllNavigation(where: { isActive: { eq: $isActive } }) {
       id
       name
       icon

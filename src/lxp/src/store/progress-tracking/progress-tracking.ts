@@ -66,7 +66,6 @@ const progressTrackingSlice = createSlice({
             childProgressReportPeriodId: reportingPeriodId,
             isComplete: false,
             synced: false,
-            isAllObservationsComplete: false,
             skillsToWorkOn: [],
             skillObservations: [
               {
@@ -268,14 +267,15 @@ const progressTrackingSlice = createSlice({
         },
       ];
     },
-    markAllSkillsObserved: (
+    updateChildEnjoys: (
       state,
       action: PayloadAction<{
         childId: string;
         reportingPeriodId: string;
+        value: string;
       }>
     ) => {
-      const { childId, reportingPeriodId } = action.payload;
+      const { childId, reportingPeriodId, value } = action.payload;
 
       const report = state.childProgressReports.find(
         (x) => x.childId === childId && x.childProgressReportPeriodId
@@ -294,7 +294,99 @@ const progressTrackingSlice = createSlice({
         {
           ...report,
           synced: false,
-          isAllObservationsComplete: true,
+          childEnjoys: value,
+        },
+      ];
+    },
+    updateGoodProgressWith: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+        value: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId, value } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.childProgressReportPeriodId
+      );
+
+      if (!report) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId &&
+            x.childProgressReportPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          synced: false,
+          goodProgressWith: value,
+        },
+      ];
+    },
+    updateHowCanCaregiverSupport: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+        value: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId, value } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.childProgressReportPeriodId
+      );
+
+      if (!report) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId &&
+            x.childProgressReportPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          synced: false,
+          howCanCaregiverSupport: value,
+        },
+      ];
+    },
+    markAllSkillsObserved: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.childProgressReportPeriodId
+      );
+
+      if (!report || !!report.observationsCompleteDate) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId &&
+            x.childProgressReportPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          synced: false,
+          observationsCompleteDate: new Date().toISOString(),
         },
       ];
     },

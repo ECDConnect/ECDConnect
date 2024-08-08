@@ -549,6 +549,7 @@ class PractitionerService {
                }
             }
             }
+            isRegistered
             note
           }
         }

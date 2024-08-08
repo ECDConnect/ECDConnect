@@ -241,6 +241,10 @@ class ProgressTrackingService {
           notes,
           howToSupport,
           childProgressReportPeriodId
+          observationsCompleteDate
+          childEnjoys
+          goodProgressWith
+          howCanCaregiverSupport
           skillObservations {
             skillId,
             value

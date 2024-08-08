@@ -1553,25 +1553,33 @@ export type ChildProgressReportInput = {
 
 export type ChildProgressReportModel = {
   __typename?: 'ChildProgressReportModel';
+  childEnjoys?: Maybe<Scalars['String']>;
   childId: Scalars['UUID'];
   childProgressReportPeriodId: Scalars['UUID'];
   dateCompleted?: Maybe<Scalars['DateTime']>;
   dateCreated: Scalars['DateTime'];
+  goodProgressWith?: Maybe<Scalars['String']>;
+  howCanCaregiverSupport?: Maybe<Scalars['String']>;
   howToSupport?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   notes?: Maybe<Scalars['String']>;
+  observationsCompleteDate?: Maybe<Scalars['DateTime']>;
   skillObservations?: Maybe<Array<Maybe<SkillObservation>>>;
   skillsToWorkOn?: Maybe<Array<Maybe<SkillToWorkOn>>>;
 };
 
 export type ChildProgressReportModelInput = {
+  childEnjoys?: InputMaybe<Scalars['String']>;
   childId: Scalars['UUID'];
   childProgressReportPeriodId: Scalars['UUID'];
   dateCompleted?: InputMaybe<Scalars['DateTime']>;
   dateCreated: Scalars['DateTime'];
+  goodProgressWith?: InputMaybe<Scalars['String']>;
+  howCanCaregiverSupport?: InputMaybe<Scalars['String']>;
   howToSupport?: InputMaybe<Scalars['String']>;
   id: Scalars['UUID'];
   notes?: InputMaybe<Scalars['String']>;
+  observationsCompleteDate?: InputMaybe<Scalars['DateTime']>;
   skillObservations?: InputMaybe<Array<InputMaybe<SkillObservationInput>>>;
   skillsToWorkOn?: InputMaybe<Array<InputMaybe<SkillToWorkOnInput>>>;
 };
@@ -13435,6 +13443,19 @@ export type PractitionerSortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
+export type PractitionerStats = {
+  __typename?: 'PractitionerStats';
+  totalAttendanceRegistersCompleted: Scalars['Int'];
+  totalAttendanceRegistersNotCompleted: Scalars['Int'];
+  totalChildrenForSchool: Scalars['Int'];
+  totalClassesForSchool: Scalars['Int'];
+  totalIncomeStatementsDownloaded: Scalars['Int'];
+  totalIncomeStatementsWithNoItems: Scalars['Int'];
+  totalPractitionersForSchool: Scalars['Int'];
+  totalProgressReportsCompleted: Scalars['Int'];
+  totalProgressReportsNotCompleted: Scalars['Int'];
+};
+
 export type PractitionerTimeline = {
   __typename?: 'PractitionerTimeline';
   childProgressTrainingColor?: Maybe<Scalars['String']>;
@@ -13488,6 +13509,7 @@ export type PractitionerTimeline = {
 export type PractitionerUserAndNote = {
   __typename?: 'PractitionerUserAndNote';
   appUser?: Maybe<ApplicationUser>;
+  isRegistered?: Maybe<Scalars['Boolean']>;
   note?: Maybe<Scalars['String']>;
 };
 
@@ -14720,6 +14742,7 @@ export type Query = {
   healthPromotion: Array<Maybe<HealthPromotion>>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
+  incomeStatementPdf?: Maybe<Scalars['String']>;
   incomeStatements?: Maybe<Array<Maybe<IncomeStatementModel>>>;
   infantCountForHealthCareWorkerForMonth: Scalars['Int'];
   infantSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
@@ -14767,6 +14790,7 @@ export type Query = {
   practitionerRolePermissions?: Maybe<
     Array<Maybe<PractitionerPermissionModel>>
   >;
+  practitionerStats?: Maybe<PractitionerStats>;
   practitionerTemplateGenerator?: Maybe<FileModel>;
   practitionerTimeline?: Maybe<PractitionerTimeline>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
@@ -17653,6 +17677,10 @@ export type QueryHolidaysByYearArgs = {
   year: Scalars['Int'];
 };
 
+export type QueryIncomeStatementPdfArgs = {
+  statementId: Scalars['UUID'];
+};
+
 export type QueryIncomeStatementsArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   startDate: Scalars['DateTime'];
@@ -17824,6 +17852,12 @@ export type QueryPractitionerNewSignupMetricArgs = {
 export type QueryPractitionerProgressReportSummaryArgs = {
   locale?: InputMaybe<Scalars['String']>;
   reportingPeriod?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPractitionerStatsArgs = {
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
+  userId: Scalars['UUID'];
 };
 
 export type QueryPractitionerTimelineArgs = {

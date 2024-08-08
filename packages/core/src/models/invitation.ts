@@ -32,6 +32,7 @@ export interface VerifyPrincipalInvitationModel {
 export interface CheckUsernamePhoneNumberModel {
   username: string;
   phoneNumber?: string;
+  userId?: string;
 }
 
 export interface UpdateUsernameModel {

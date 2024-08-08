@@ -40,6 +40,7 @@ export default function UploadBulkUser(props: any) {
       fetchPolicy: 'cache-and-network',
     });
   const [disableAddButton, setDisableAddButton] = useState(true);
+  const [userReadyToBeUpload, setUsersReadyToBeUpload] = useState(false);
 
   const [
     getPractitionerExcelTemplateGenerator,
@@ -217,10 +218,17 @@ export default function UploadBulkUser(props: any) {
         if (errors?.length === 0) {
           setDisableAddButton(false);
         }
+      } else {
+        setDisableAddButton(false);
+        setUsersReadyToBeUpload(true);
+        setNotification({
+          title: `Check file passed!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
       }
     });
     setisLoadingCheckFile(false);
-  }, [getValues, validatePractitionerImportSheet]);
+  }, [getValues, setNotification, validatePractitionerImportSheet]);
 
   return (
     <div className="bg-adminPortalBg h-screen rounded-2xl p-4 ">
@@ -284,6 +292,12 @@ export default function UploadBulkUser(props: any) {
                     isImage={false}
                     allowedFileSize={allowedFileSize}
                     isWizardComponent={true}
+                    onFileChange={() => {
+                      setDocErrors([]);
+                      setDisableAddButton(true);
+                      setUsersReadyToBeUpload(false);
+                    }}
+                    isFileInput={true}
                   />
                 </div>
                 {isLoadingCheckFile && (
@@ -333,12 +347,28 @@ export default function UploadBulkUser(props: any) {
                       type="error"
                       list={docErrors.map(
                         (error) =>
-                          `Row ${error.row}: ${error?.errorDescription}`
+                          `Row ${error.row}: ${error?.errorDescription} ${
+                            error?.errors[0] ? ':' + error?.errors[0] : ''
+                          }`
                       )}
                       listColor="textDark"
                     />
                   </div>
                 ) : null}
+                {userReadyToBeUpload && (
+                  <div className="flex flex-col gap-4">
+                    <Alert
+                      className="mt-2 rounded-md"
+                      title={`Users ready for upload`}
+                      type="success"
+                    />
+                    <Alert
+                      className="rounded-md"
+                      title={`An invitation will be sent to all new users when you click add.`}
+                      type="info"
+                    />
+                  </div>
+                )}
               </div>
               <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
                 <div className="ml-4 mt-2 flex-shrink-0">

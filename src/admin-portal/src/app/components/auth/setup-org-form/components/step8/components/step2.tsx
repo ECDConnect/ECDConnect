@@ -20,7 +20,7 @@ export const Step2: React.FC<StepProps> = ({ getValues }) => {
         <Typography
           type="body"
           color="textDark"
-          text={getValues().applicationUrl || 'None'}
+          text={`${getValues().applicationUrl}.ecdconnect.co.za` || 'None'}
         />
       </div>
     </div>

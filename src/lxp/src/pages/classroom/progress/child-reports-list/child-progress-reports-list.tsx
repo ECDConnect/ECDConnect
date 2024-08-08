@@ -81,7 +81,9 @@ export const ChildProgressReportsList: React.FC = () => {
             </div>
           )}
         {/* NO REPORTS */}
-        {!currentReport &&
+        {!!currentReportingPeriod &&
+          !!currentAgeGroup &&
+          !currentReport &&
           (!completedReports || completedReports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography

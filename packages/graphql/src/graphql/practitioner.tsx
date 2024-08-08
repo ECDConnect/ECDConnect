@@ -239,3 +239,113 @@ export const ValidatePractitionerImportSheet = gql`
     }
   }
 `;
+
+export const GetPractitionerByUserId = gql`
+  query GetPractitionerByUserId($userId: String) {
+    practitionerByUserId(userId: $userId) {
+      id
+      userId
+      user {
+        gender {
+          description
+        }
+        firstName
+        surname
+        fullName
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        idNumber
+        phoneNumber
+      }
+      siteAddress {
+        id
+        province {
+          id
+          description
+        }
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        ward
+      }
+      programmeType
+      isPrincipal
+      isTrainee
+      isRegistered
+      isTrainee
+      principalHierarchy
+      coachHierarchy
+      attendanceRegisterLink
+      maxChildren
+      consentForPhoto
+      parentFees
+      languageUsedInGroups
+      signingSignature
+      startDate
+      monthSinceFranchisee
+      shareInfo
+      dateLinked
+      dateAccepted
+      dateToBeRemoved
+      isLeaving
+      progress
+      attendedChildProgress
+      usePhotoInReport
+      setupTraineeInitiated
+      isOnStipend
+      stipendType
+      isCompletedBusinessWalkThrough
+      clickedCommunityTab
+      communitySectionViewDate
+      absentees {
+        absentDate
+        absentDateEnd
+        className
+        classroomGroupId
+        reason
+        reassignedToPerson
+        reassignedToUserId
+        absenteeId
+        loggedByPerson
+        loggedByUserId
+      }
+      permissions {
+        id
+        userId
+        permissionId
+        isActive
+        permissionName
+        permissionNormalizedName
+        permissionGrouping
+      }
+    }
+  }
+`;
+
+export const GetPractitionerStats = gql`
+  query GetPractitionerStats(
+    $userId: UUID!
+    $startDate: DateTime!
+    $endDate: DateTime!
+  ) {
+    practitionerStats(
+      userId: $userId
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      totalPractitionersForSchool
+      totalChildrenForSchool
+      totalClassesForSchool
+      totalAttendanceRegistersCompleted
+      totalAttendanceRegistersNotCompleted
+      totalProgressReportsCompleted
+      totalProgressReportsNotCompleted
+      totalIncomeStatementsDownloaded
+      totalIncomeStatementsWithNoItems
+    }
+  }
+`;

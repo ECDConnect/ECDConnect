@@ -11,7 +11,11 @@ export type ChildProgressReport = {
   skillsToWorkOn: ChildProgressSkillToWorkOn[];
   howToSupport?: string;
   skillObservations: ChildProgressSkillObservation[];
-  isAllObservationsComplete: boolean;
+  observationsCompleteDate?: string;
+
+  childEnjoys?: string;
+  goodProgressWith?: string;
+  howCanCaregiverSupport?: string;
 };
 
 export type ChildProgressSkillObservation = {
@@ -32,12 +36,16 @@ export type ChildProgressDetailedReport = {
   reportingPeriodEndDate: Date;
   isComplete: boolean;
   notes?: string;
-  isAllObservationsComplete: boolean;
+  observationsCompleteDate?: string;
   skillsToWorkOn: ChildProgressDetailedSkillToWorkOn[];
   unknownPercentage: number;
   unknownCount: number;
   howToSupport?: string;
   skillObservations: ChildProgressDetailedSkillObservation[];
+
+  childEnjoys?: string;
+  goodProgressWith?: string;
+  howCanCaregiverSupport?: string;
 };
 
 export type ChildProgressDetailedSkillObservation =

@@ -157,28 +157,29 @@ export default function Coaches() {
     [connectUsageFilter]
   );
 
-  // const viewSelectedRow = (selectedRow: any) => {
-  //   const user = tableData?.find(
-  //     (item) => item?.userId === selectedRow?.userId
-  //   );
-
-  //   localStorage.setItem(
-  //     'selectedUser',
-  //     selectedRow?.userId ?? selectedRow?.id
-  //   );
-  //   history.push({
-  //     pathname: ROUTES.USERS.VIEW_USER,
-  //     state: {
-  //       component: 'Coaches',
-  //       userId: selectedRow?.userId,
-  //       clinicId: selectedRow?.clinicId,
-  //       practitionerId: selectedRow?.id,
-  //       isRegistered: selectedRow?.isRegistered,
-  //       connectUsage: selectedRow?.connectUsage,
-  //       connectUsageColor: user?.user?.connectUsageColor,
-  //     },
-  //   });
-  // };
+  const viewSelectedRow = (selectedRow: any) => {
+    console.log({ selectedRow });
+    const user = tableData?.find(
+      (item) => item?.userId === selectedRow?.userId
+    );
+    console.log({ user });
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: ROUTES.USERS.VIEW_USER,
+      state: {
+        component: 'coach',
+        userId: selectedRow?.userId,
+        clinicId: selectedRow?.clinicId,
+        practitionerId: selectedRow?.id,
+        isRegistered: selectedRow?.isRegistered,
+        connectUsage: selectedRow?.connectUsage,
+        connectUsageColor: user?.user?.connectUsageColor,
+      },
+    });
+  };
 
   const queryVariables = useMemo(
     () => ({
@@ -564,12 +565,13 @@ export default function Coaches() {
       <div className="bg-adminPortalBg h-full rounded-2xl p-4 ">
         <div className="rounded-xl bg-white p-12">
           <Table
+            watchMode={true}
             ref={tableRef}
             rows={rows}
             columns={columns}
             onClearFilters={clearFilters}
             onChangeSelectedRows={setSelectedUsers}
-            // onClickRow={viewSelectedRow}
+            onClickRow={viewSelectedRow}
             noContentText={noContentText}
             loading={{
               isLoading: tableData === undefined || isLoading,

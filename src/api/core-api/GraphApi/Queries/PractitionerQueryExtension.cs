@@ -1,4 +1,5 @@
 using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
@@ -100,16 +101,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     {
                         if (practitioner.PrincipalHierarchy == null)
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, IsRegistered = practitioner.IsRegistered };
                         }
                         else
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme", IsRegistered = practitioner.IsRegistered };
                         }
                     }
                     else
                     {
-                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app" };
+                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", IsRegistered = false };
                     }
                 }
             }
@@ -539,5 +540,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var fileName = templateHeaderSheet.Replace(" ", "_");
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PractitionerStats GetPractitionerStats(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory, 
+            Guid userId,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+
+            PractitionerStats stats = new PractitionerStats();
+
+            var practitioner = practitionerRepo.GetByUserId(userId);
+            // var classroom = classroomRepo.GetByUserId((Guid)practitioner.PrincipalHierarchy);
+            // var classroomGroups = classroom.ClassroomGroups;
+
+
+            stats.TotalPractitionersForSchool = 0;
+            stats.TotalChildrenForSchool = 0;
+            stats.TotalClassesForSchool = 0;
+            stats.TotalAttendanceRegistersCompleted = 0;
+            stats.TotalAttendanceRegistersNotCompleted = 0;
+            stats.TotalProgressReportsCompleted = 0;
+            stats.TotalProgressReportsNotCompleted = 0;
+            stats.TotalIncomeStatementsDownloaded = 0;
+            stats.TotalIncomeStatementsWithNoItems = 0;
+
+            return stats;
+        }
+
+
     }
 }

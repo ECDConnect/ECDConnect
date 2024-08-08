@@ -69,6 +69,12 @@ namespace EcdLink.Api.CoreApi.Services
             public List<SkillToWorkOn> SkillsToWorkOn { get; set; }
 
             public string HowToSupport { get; set; }
+
+            public string ChildEnjoys { get; set; }
+
+            public string GoodProgressWith { get; set; }
+
+            public string HowCanCaregiverSupport { get; set; }
         }
 
         private readonly IGenericRepositoryFactory _repoFactory;
@@ -136,6 +142,9 @@ namespace EcdLink.Api.CoreApi.Services
                 SkillsToWorkOn = input.SkillsToWorkOn,
                 HowToSupport = input.HowToSupport,
                 Notes = input.Notes,
+                ChildEnjoys = input.ChildEnjoys,
+                GoodProgressWith = input.GoodProgressWith,
+                HowCanCaregiverSupport = input.HowCanCaregiverSupport
             };
 
             // Check if report exists
@@ -147,6 +156,11 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     existingReport.DateCompleted = input.DateCompleted;
                     
+                }
+
+                if (input.ObservationsCompleteDate != null)
+                {
+                    existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
                 }
 
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
@@ -164,6 +178,7 @@ namespace EcdLink.Api.CoreApi.Services
                     ChildId = input.ChildId,
                     ChildProgressReportPeriodId = input.ChildProgressReportPeriodId,
                     DateCompleted = input.DateCompleted,
+                    ObservationsCompleteDate = input.ObservationsCompleteDate,
                     ReportContent = JsonConvert.SerializeObject(reportContent),
                 };
 
@@ -198,6 +213,10 @@ namespace EcdLink.Api.CoreApi.Services
                     Notes = data.Notes,
                     SkillObservations = data.SkillObservations,
                     SkillsToWorkOn = data.SkillsToWorkOn,
+                    ObservationsCompleteDate = report.ObservationsCompleteDate,
+                    ChildEnjoys = data.ChildEnjoys,
+                    GoodProgressWith = data.GoodProgressWith,
+                    HowCanCaregiverSupport = data.HowCanCaregiverSupport
                 };
             }
         }
