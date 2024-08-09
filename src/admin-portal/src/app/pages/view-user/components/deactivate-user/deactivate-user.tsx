@@ -11,6 +11,7 @@ import { useMutation } from '@apollo/client';
 import {
   DeactivateHealthCareWorker,
   DeactivateTeamLead,
+  DeleteUser,
 } from '@ecdlink/graphql';
 import { useCallback } from 'react';
 import { useHistory } from 'react-router';
@@ -34,62 +35,28 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
 }) => {
   const dialog = useDialog();
   const { setNotification } = useNotifications();
-  const [deactivateTeamLead] = useMutation(DeactivateTeamLead);
-  const [deactivateHcw] = useMutation(DeactivateHealthCareWorker);
-  const history = useHistory();
+  const [deactivateHcw] = useMutation(DeleteUser);
 
   const handleDeactivateUser = useCallback(() => {
-    if (isTeamLead) {
-      deactivateTeamLead({
-        variables: {
-          teamLeadId: teamLeadId,
-        },
-      })
-        .then(() => {
-          refetchUserData();
-          setNotification({
-            title: 'Successfully to deactivate Team Lead!',
-            variant: NOTIFICATION.SUCCESS,
-          });
-        })
-        .catch((err) => {
-          setNotification({
-            title: 'Failed to deactivate Team Lead',
-            variant: NOTIFICATION.ERROR,
-          });
+    deactivateHcw({
+      variables: {
+        id: userData?.id,
+      },
+    })
+      .then(() => {
+        refetchUserData();
+        setNotification({
+          title: 'Successfully deactivate User!',
+          variant: NOTIFICATION.SUCCESS,
         });
-      history.push(`/users/team-leads`);
-    } else {
-      deactivateHcw({
-        variables: {
-          hcwId: hcwId,
-        },
       })
-        .then(() => {
-          refetchUserData();
-          setNotification({
-            title: 'Successfully deactivate Health Care Worker!',
-            variant: NOTIFICATION.SUCCESS,
-          });
-        })
-        .catch((err) => {
-          setNotification({
-            title: 'Failed to deactivate Health Care Worker!',
-            variant: NOTIFICATION.ERROR,
-          });
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to deactivate User!',
+          variant: NOTIFICATION.ERROR,
         });
-      history.push(`/users/health-care-worker`);
-    }
-  }, [
-    deactivateHcw,
-    deactivateTeamLead,
-    hcwId,
-    history,
-    isTeamLead,
-    refetchUserData,
-    setNotification,
-    teamLeadId,
-  ]);
+      });
+  }, [deactivateHcw, refetchUserData, setNotification, userData?.id]);
 
   const deactivaterUser = async () => {
     dialog({

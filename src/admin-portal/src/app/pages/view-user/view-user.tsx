@@ -2,7 +2,6 @@ import {
   Alert,
   AlertType,
   ProfileAvatar,
-  classNames,
   StatusChip,
   Breadcrumb,
   BreadcrumbProps,
@@ -14,16 +13,12 @@ import {
   JSXElementConstructor,
   ReactElement,
   useEffect,
-  useMemo,
   useState,
 } from 'react';
 import { ThumbUpIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useQuery } from '@apollo/client';
 import {
-  GetHealthCareWorkerByUserId,
   GetUserById,
-  GetHealthCareWorkerSummaryForPeriod,
-  GetTeamLeadSummary,
   GetPractitionerByUserId,
   GetPractitionerStats,
 } from '@ecdlink/graphql';
@@ -32,15 +27,10 @@ import {
   UsersRolesTypeEnum,
   UsersRouteRedirectTypeEnum,
 } from './view-user.types';
-import { TeamLeadSummary } from './components/team-lead-summary/team-lead-summary';
-import { TeamLeadMeetingReport } from './components/team-lead-meeting-reports/team-lead-meeting-reports';
 import { ConenctUsage } from '../users/sub-pages/team-leads/team-leads.types';
 import { SendInvite } from './components/send-invite/send-invite';
 import { DeactivateUser } from './components/deactivate-user/deactivate-user';
 import { ReactivateUser } from './components/reactivate-user/reactivate-user';
-import { HealthCareWorkerSummary } from './components/health-care-worker-summary/health-care-worker-summary';
-import { HealthCareWorkerIssues } from './components/health-care-worker-issues/health-care-worker-issues';
-import { HealthCareWorkerHighlights } from './components/health-care-worker-highlights/health-care-worker-highlights';
 import { PersonalInfo } from './components/personal-info/personal-info';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
@@ -188,11 +178,6 @@ export function ViewUser(props: any) {
   });
 
   const isLoading = loadingUser;
-
-  const isNotLockedOut = (user) => {
-    if (!user) return true;
-    return !user?.lockoutEnd || user?.lockoutEnd < new Date();
-  };
 
   let isCHWRole = userData?.userById?.roles?.some(
     (role: any) => role.systemName === RoleSystemNameEnum.CHW
@@ -398,7 +383,7 @@ export function ViewUser(props: any) {
         </div>
       </div>
 
-      {!isNotLockedOut(userData?.userById) && (
+      {!userData?.userById?.isActive && (
         <Alert
           className="mt-5 mb-3"
           title={`This user has been deactivated and cannot access ${tenant.tenant?.applicationName} App`}
@@ -414,7 +399,6 @@ export function ViewUser(props: any) {
         hcwId={hcwId}
         clinicId={props?.location?.state?.clinicId}
         refetchUserData={refetchUserData}
-        isNotLockedOut={isNotLockedOut}
         isAdministrator={isAdministrator}
         isFromAdministratorTable={isFromAdministratorTable}
         userTypeToEdit={
@@ -466,7 +450,7 @@ export function ViewUser(props: any) {
       )}
 
       <div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
-        {isNotLockedOut(userData?.userById) && !isTeamLeadRole && (
+        {userData?.userById?.isActive && (
           <div className="flex flex-col gap-2 lg:flex-row">
             {!isRegistered && (
               <SendInvite
@@ -488,7 +472,7 @@ export function ViewUser(props: any) {
           </div>
         )}
 
-        {!isNotLockedOut(userData?.userById) && (
+        {!userData?.userById?.isActive && (
           <ReactivateUser
             userData={userData?.userById}
             refetchUserData={refetchUserData}

@@ -280,7 +280,9 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
                     <img
                       src={item}
                       alt="emojis"
-                      onClick={() => onAction && onAction(item)}
+                      onClick={async () => {
+                        onAction && onAction(item);
+                      }}
                     />
                   </div>
                 ))
