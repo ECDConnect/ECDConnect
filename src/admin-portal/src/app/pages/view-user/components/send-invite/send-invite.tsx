@@ -1,5 +1,6 @@
 import { ActionModal, Button, DialogPosition } from '@ecdlink/ui';
 import {
+  NOTIFICATION,
   RoleSystemNameEnum,
   UserDto,
   useDialog,
@@ -48,8 +49,18 @@ export const SendInvite: React.FC<SendInviteProps> = ({
               type: 'filled',
               leadingIcon: 'PaperAirplaneIcon',
               onClick: () => {
-                // onClose();
-                // onBack();
+                sendInviteToApplication({
+                  variables: {
+                    userId: userData?.id,
+                    inviteToPortal: false,
+                  },
+                }).then(() => {
+                  setNotification({
+                    title: 'Successfully Sent User Invite!',
+                    variant: NOTIFICATION.SUCCESS,
+                  });
+                });
+                onSubmit();
               },
             },
             {

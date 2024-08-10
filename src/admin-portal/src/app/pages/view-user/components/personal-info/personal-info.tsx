@@ -47,7 +47,6 @@ export interface PersonalInfoProps {
   hcwId: string;
   clinicId: string;
   refetchUserData: () => void;
-  isNotLockedOut: (user: UserDto) => boolean;
   isAdministrator?: boolean;
   userTypeToEdit: string;
   isFromAdministratorTable?: boolean;
@@ -64,7 +63,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   clinicId,
   practitioner,
   refetchUserData,
-  isNotLockedOut,
   isAdministrator,
   userTypeToEdit,
   isFromAdministratorTable,
@@ -606,7 +604,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       </div>
 
       <div className="flex justify-end p-4">
-        {isNotLockedOut(userData) && !isTeamLeadRole && isAdministrator && (
+        {userData?.isActive && !isTeamLeadRole && isAdministrator && (
           <button
             onClick={() => {
               setEditActive(!editActive);

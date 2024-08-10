@@ -5,7 +5,7 @@ interface AddressMapProps {
   onClose: () => void;
   onSubmit: (address: string) => void;
 }
-const COMPONENT_HEIGHT = 150;
+const COMPONENT_HEIGHT = 62;
 
 const getInfo = (address: Address[] | undefined, type: string) =>
   address?.find((item) =>
@@ -66,7 +66,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
         <div className="mb-5 flex flex-col gap-3">
           <Button
             type="filled"
-            color="primary"
+            color="quatenary"
             className={'max-h-10 w-full'}
             icon={'SaveIcon'}
             onClick={saveAddress}
@@ -80,7 +80,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
           </Button>
           <Button
             type="outlined"
-            color="primary"
+            color="quatenary"
             className={'max-h-10 w-full'}
             icon={'XCircleIcon'}
             onClick={onClose}

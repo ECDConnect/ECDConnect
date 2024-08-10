@@ -149,7 +149,7 @@ export const ConfirmClasses = ({
             color="quatenary"
             text="Next"
             textColor="white"
-            icon="SaveIcon"
+            icon="ArrowCircleRightIcon"
             onClick={() => {
               onSubmit(PractitionerSetupSteps.ADD_PHOTO);
             }}
