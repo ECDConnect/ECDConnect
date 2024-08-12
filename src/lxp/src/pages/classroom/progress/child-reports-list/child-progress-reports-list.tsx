@@ -143,7 +143,11 @@ export const ChildProgressReportsList: React.FC = () => {
             />
             {!!completedReports && !!completedReports.length && (
               <Button
-                onClick={() => {}} // TODO - add option to share via phone share menu...
+                onClick={() =>
+                  history.push(ROUTES.PROGRESS_SHARE_REPORT, {
+                    childId: routeState.childId,
+                  })
+                }
                 className="mt-auto w-full"
                 size="small"
                 color="quatenary"
@@ -156,7 +160,7 @@ export const ChildProgressReportsList: React.FC = () => {
             {!!currentReport && (
               <Button
                 onClick={() => trackProgress()}
-                className="mt-auto w-full"
+                className="mt-4 w-full"
                 size="small"
                 color="quatenary"
                 type={

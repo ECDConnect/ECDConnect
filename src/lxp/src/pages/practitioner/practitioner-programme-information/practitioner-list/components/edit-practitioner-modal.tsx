@@ -37,7 +37,7 @@ export const EditPractitionerModal = ({
   const modalTitle = !practitioner?.isPrincipal
     ? `What do you want to do on ${
         practitioner?.user?.firstName || practitioner?.user?.userName
-      } profile?`
+      }'s profile?`
     : `What do you want to do on your profile?`;
 
   const getRemovalsForPractitioners = async () => {

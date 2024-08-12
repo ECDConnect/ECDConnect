@@ -101,6 +101,10 @@ export const SetupPrincipal: React.FC = () => {
   useEffect(() => {
     if (previousPage === page) return;
 
+    if (page === PractitionerSetupSteps.ADD_PHOTO && isNotPrincipal) {
+      return setLabel('step 2 of 2');
+    }
+
     if (page === PractitionerSetupSteps.ADD_PHOTO) {
       return setLabel('step 4 of 4');
     }
@@ -114,6 +118,11 @@ export const SetupPrincipal: React.FC = () => {
 
     if (page === PractitionerSetupSteps.CONFIRM_PRACTITIONERS) {
       setLabel('Step 2 of 4');
+    }
+
+    if (page === PractitionerSetupSteps.SETUP_PROGRAMME && isNotPrincipal) {
+      setLabel('Step 1 of 2');
+      return;
     }
 
     if (page === PractitionerSetupSteps.SETUP_PROGRAMME) {
@@ -130,7 +139,7 @@ export const SetupPrincipal: React.FC = () => {
     ) {
       return setLabel('step 3 of 4');
     }
-  }, [classesPage, page, previousPage]);
+  }, [classesPage, isNotPrincipal, page, previousPage]);
 
   const onAllStepsComplete = async () => {
     if (isNotPrincipal === true && practitioner?.progress !== 1) {

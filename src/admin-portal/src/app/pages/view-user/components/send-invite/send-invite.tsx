@@ -1,7 +1,5 @@
-import { Button, DialogPosition } from '@ecdlink/ui';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
+import { ActionModal, Button, DialogPosition } from '@ecdlink/ui';
 import {
-  HealthCareWorkerDto,
   NOTIFICATION,
   RoleSystemNameEnum,
   UserDto,
@@ -13,13 +11,11 @@ import { SendInviteToApplication } from '@ecdlink/graphql';
 
 interface SendInviteProps {
   userData: UserDto;
-  chwData: HealthCareWorkerDto;
   refetchUserData?: () => void;
 }
 
 export const SendInvite: React.FC<SendInviteProps> = ({
   userData,
-  chwData,
   refetchUserData,
 }) => {
   const dialog = useDialog();
@@ -37,36 +33,78 @@ export const SendInvite: React.FC<SendInviteProps> = ({
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Invite User"
-          message={`You are about to send an invite to ${
-            chwData?.user?.fullName ?? userData?.fullName
-          }`}
-          btnText={['Yes, Resend Invitation', 'No, Cancel']}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            sendInviteToApplication({
-              variables: {
-                userId: userData?.id ?? chwData?.user.id,
-                inviteToPortal: isAdminUser,
+        <ActionModal
+          className="z-50"
+          icon="ExclamationCircleIcon"
+          iconColor="infoMain"
+          iconClassName="h-10 w-10 bg-infoMain"
+          title="Would you like to re-send the SMS or copy the URL?"
+          buttonClass="rounded-2xl"
+          detailText="You can re-send the SMS or, if the user is struggling to receive the SMS, you can copy the invite URL and paste it into a message to the user."
+          actionButtons={[
+            {
+              colour: 'secondary',
+              text: 'Re-send the SMS',
+              textColour: 'white',
+              type: 'filled',
+              leadingIcon: 'PaperAirplaneIcon',
+              onClick: () => {
+                sendInviteToApplication({
+                  variables: {
+                    userId: userData?.id,
+                    inviteToPortal: false,
+                  },
+                }).then(() => {
+                  setNotification({
+                    title: 'Successfully Sent User Invite!',
+                    variant: NOTIFICATION.SUCCESS,
+                  });
+                });
+                onSubmit();
               },
-            })
-              .then(() => {
-                refetchUserData();
-                setNotification({
-                  title: 'Successfully Sent Invite!',
-                  variant: NOTIFICATION.SUCCESS,
-                });
-              })
-              .catch((err) => {
-                setNotification({
-                  title: 'Failed to Send Invite!',
-                  variant: NOTIFICATION.ERROR,
-                });
-              });
-          }}
+            },
+            {
+              colour: 'secondary',
+              text: 'Copy the invite URL',
+              textColour: 'secondary',
+              type: 'outlined',
+              leadingIcon: 'DuplicateIcon',
+              onClick: onCancel,
+            },
+          ]}
         />
+
+        // <AlertModal
+        //   title="Would you like to re-send the SMS or copy the URL?"
+        //   message={`You are about to send an invite to ${
+        //     chwData?.user?.fullName ?? userData?.fullName
+        //   }`}
+        //   btnText={['Re-send the SMS', 'Copy the invite URL']}
+        //   onCancel={onCancel}
+
+        //   onSubmit={() => {
+        //     onSubmit();
+        //     sendInviteToApplication({
+        //       variables: {
+        //         userId: userData?.id ?? chwData?.user.id,
+        //         inviteToPortal: isAdminUser,
+        //       },
+        //     })
+        //       .then(() => {
+        //         refetchUserData();
+        //         setNotification({
+        //           title: 'Successfully Sent Invite!',
+        //           variant: NOTIFICATION.SUCCESS,
+        //         });
+        //       })
+        //       .catch((err) => {
+        //         setNotification({
+        //           title: 'Failed to Send Invite!',
+        //           variant: NOTIFICATION.ERROR,
+        //         });
+        //       });
+        //   }}
+        // />
       ),
     });
   };

@@ -149,6 +149,9 @@ import { ChildProgressObservationsNotes } from '@/pages/classroom/progress/landi
 import { SelectChildToTrack } from '@/pages/classroom/progress/select-child-to-track-progress/select-child-to-track-progress';
 import { SelectCategoryToTrack } from '@/pages/classroom/progress/select-category-to-track-progress/select-category-to-track-progress';
 import { ObservationsByCategory } from '@/pages/classroom/progress/observations-by-category/observations-by-category';
+import { ProgressCreateReport } from '@/pages/classroom/progress/create-report/create-report';
+import { ProgressShareReport } from '@/pages/classroom/progress/share-report/share-report';
+import { ProgressViewReport } from '@/pages/classroom/progress/view-report/view-report';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -661,6 +664,18 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.CHILD_PROGRESS_OBSERVATION_REPORT}
         component={ChildProgressObservationReport}
+      />
+      <Route
+        path={ROUTES.PROGRESS_CREATE_REPORT}
+        component={ProgressCreateReport}
+      />
+      <Route
+        path={ROUTES.PROGRESS_SHARE_REPORT}
+        component={ProgressShareReport}
+      />
+      <Route
+        path={ROUTES.PROGRESS_VIEW_REPORT}
+        component={ProgressViewReport}
       />
       <Route
         path={ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS}

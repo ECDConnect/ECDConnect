@@ -7,6 +7,7 @@ namespace ECDLink.DataAccessLayer.Entities
     public class PractitionerUserAndNote
     {
         public ApplicationUser AppUser { get; set; }
+        public bool? IsRegistered { get; set; }
 
         public string Note { get; set; }
     }
