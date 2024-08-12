@@ -1,16 +1,19 @@
 import {
+  ActionModal,
   BannerWrapper,
   Button,
+  DialogPosition,
   Divider,
   FormInput,
   Typography,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ProgressCreateReportSkillsToWorkOnSumamry } from './create-report-skills-to-work-on-summary';
+import { useDialog } from '@ecdlink/core';
 
 export type ProgressCreateReportState = {
   childId: string;
@@ -18,6 +21,7 @@ export type ProgressCreateReportState = {
 
 export const ProgressCreateReport: React.FC = () => {
   const history = useHistory();
+  const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
 
   const { state: routeState } = useLocation<ProgressCreateReportState>();
@@ -31,9 +35,53 @@ export const ProgressCreateReport: React.FC = () => {
     updateGoodProgressWith,
     updateHowCanCaregiverSupport,
     syncChildProgressReports,
+    completeReport,
   } = useObserveProgressForChild(childId);
 
   const [currentStep, setCurrentStep] = useState<number>(1);
+
+  const confirmCreateReport = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          icon="ExclamationCircleIcon"
+          iconColor="alertMain"
+          iconSize={12}
+          importantText="Are you sure you want to create the report?"
+          detailText="Once you create the report, you will not be able to edit it."
+          actionButtons={[
+            {
+              text: 'Yes, create report',
+              textColour: 'white',
+              colour: 'quatenary',
+              type: 'filled',
+              onClick: () => {
+                completeReport();
+                syncChildProgressReports();
+                history.push(ROUTES.PROGRESS_SHARE_REPORT, {
+                  childId: routeState.childId,
+                  reportId: currentReport?.id,
+                });
+                submit();
+              },
+              leadingIcon: 'DocumentReportIcon',
+            },
+            {
+              text: 'No, edit report',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                submit();
+              },
+              leadingIcon: 'PencilIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog]);
 
   return (
     <BannerWrapper
@@ -113,7 +161,7 @@ export const ProgressCreateReport: React.FC = () => {
             if (currentStep < 3) {
               setCurrentStep(currentStep + 1);
             } else {
-              //goto share report
+              confirmCreateReport();
             }
           }}
           className="mt-auto mb-4 w-full"

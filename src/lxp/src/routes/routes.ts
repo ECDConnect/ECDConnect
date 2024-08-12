@@ -172,6 +172,8 @@ const ROUTES = {
   PROGRESS_SELECT_CATEGORY_TO_TRACK: '/progress-select-category',
   PROGRESS_OBSERVATIONS_BY_CATEGORY: '/progress-observations-by-category',
   PROGRESS_CREATE_REPORT: '/progress-create-report',
+  PROGRESS_SHARE_REPORT: '/progress-share-report',
+  PROGRESS_VIEW_REPORT: '/progress-view-report',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
   CHILD_PROGRESS_OBSERVATION_REPORT: '/child-progress-observation-report',
   COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS:

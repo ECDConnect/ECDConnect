@@ -6,7 +6,6 @@ export type ChildProgressReport = {
   dateCompleted?: string;
   childId: string;
   childProgressReportPeriodId: string;
-  isComplete: boolean;
   notes?: string;
   skillsToWorkOn: ChildProgressSkillToWorkOn[];
   howToSupport?: string;
@@ -29,13 +28,14 @@ export type ChildProgressSkillToWorkOn = {
 };
 
 export type ChildProgressDetailedReport = {
+  id: string;
   childId: string;
   childProgressReportPeriodId: string;
   reportingPeriodNumber: number;
   reportingPeriodStartDate: Date;
   reportingPeriodEndDate: Date;
-  isComplete: boolean;
   notes?: string;
+  dateCompleted?: string;
   observationsCompleteDate?: string;
   skillsToWorkOn: ChildProgressDetailedSkillToWorkOn[];
   unknownPercentage: number;
