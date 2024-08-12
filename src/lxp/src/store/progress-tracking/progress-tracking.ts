@@ -64,7 +64,6 @@ const progressTrackingSlice = createSlice({
             dateCreated: new Date().toDateString(),
             childId: childId,
             childProgressReportPeriodId: reportingPeriodId,
-            isComplete: false,
             synced: false,
             skillsToWorkOn: [],
             skillObservations: [
@@ -387,6 +386,36 @@ const progressTrackingSlice = createSlice({
           ...report,
           synced: false,
           observationsCompleteDate: new Date().toISOString(),
+        },
+      ];
+    },
+    completeReport: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) => x.childId === childId && x.childProgressReportPeriodId
+      );
+
+      if (!report || !!report.dateCompleted) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter(
+          (x) =>
+            x.childId !== childId &&
+            x.childProgressReportPeriodId !== reportingPeriodId
+        ),
+        {
+          ...report,
+          synced: false,
+          dateCompleted: new Date().toISOString(),
         },
       ];
     },
