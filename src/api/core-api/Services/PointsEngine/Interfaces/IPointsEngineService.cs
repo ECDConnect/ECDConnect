@@ -10,6 +10,7 @@ namespace ECDLink.Core.Services.Interfaces
         List<PointsUserSummary> GetSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null);
         PointsToDoItemModel GetPointsTodoItems(Guid userId);
         List<PointsActivity> GetPointActivities();
+        List<UserRankingPointsModel> GetRankingDataForUser(Guid userId, DateTime startDate, DateTime? endDate = null);
         void CalculateChildAttendanceRegisterSaved(Guid userId);
         void CalculateChildRegistrationComplete(Guid childUserId);
         void CalculateChildRemovedFromPreschool(Guid userId);

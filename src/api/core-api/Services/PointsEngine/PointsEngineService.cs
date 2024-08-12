@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -167,6 +168,52 @@ namespace EcdLink.Api.CoreApi.Services
             return pointsToDoItems;
         }
 
+        public List<UserRankingPointsModel> GetRankingDataForUser(Guid userId, DateTime startDate, DateTime? endDate = null)
+        {
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            var userIds = new List<Guid>();
+
+            if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value)
+            {
+                userIds = _practitionerRepo.GetAll().Where(x => x.IsActive
+                                                            && x.IsRegistered.HasValue && x.IsRegistered.Value
+                                                            && x.IsPrincipal.HasValue && x.IsPrincipal.Value).Select(x => (Guid)x.UserId).Distinct().ToList();
+            }
+            else
+            {
+                userIds = _practitionerRepo.GetAll().Where(x => x.IsActive
+                                                            && x.IsRegistered.HasValue && x.IsRegistered.Value
+                                                            && !x.IsPrincipal.HasValue || (x.IsPrincipal.HasValue && !x.IsPrincipal.Value)).Select(x => (Guid)x.UserId).Distinct().ToList();
+            }
+
+
+            var allUserPoints = _pointsUserSummaryRepo.GetAll().Where(
+                                                    x => x.UserId.HasValue && userIds.Contains(x.UserId.Value) &&
+                                                    // After the start
+                                                    (x.DateScored >= startDate) &&
+                                                    // Before the end or no end date
+                                                    (!endDate.HasValue || x.DateScored <= endDate)
+                                                    ).GroupBy(x => x.UserId)
+                                                    .Select(x => new UserRankingPointsModel() { UserId = (Guid)x.First().UserId, PointsTotal= x.Sum(y => y.PointsTotal) })
+                                                    .ToList()
+                                                    .OrderByDescending(x => x.PointsTotal)
+                                                    .ToList();
+
+            allUserPoints[0].UserRanking = 1;
+            for (int i = 1; i < allUserPoints.Count; i++)
+            {
+                if (allUserPoints[i].PointsTotal == allUserPoints[i - 1].PointsTotal)
+                {
+                    allUserPoints[i].UserRanking = allUserPoints[i - 1].UserRanking;
+                }
+                else
+                {
+                    allUserPoints[i].UserRanking = i + 1;
+                }
+            }
+
+            return allUserPoints;
+        }
 
         private void AddOrUpdatePoints(Guid activityId, Guid userId, int pointsTotal, int? timesScored = null, DateTime? dateScored = null)
         {
