@@ -1553,10 +1553,13 @@ export type ChildProgressReportInput = {
 
 export type ChildProgressReportModel = {
   __typename?: 'ChildProgressReportModel';
+  childEnjoys?: Maybe<Scalars['String']>;
   childId: Scalars['UUID'];
   childProgressReportPeriodId: Scalars['UUID'];
   dateCompleted?: Maybe<Scalars['DateTime']>;
   dateCreated: Scalars['DateTime'];
+  goodProgressWith?: Maybe<Scalars['String']>;
+  howCanCaregiverSupport?: Maybe<Scalars['String']>;
   howToSupport?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   notes?: Maybe<Scalars['String']>;
@@ -1566,10 +1569,13 @@ export type ChildProgressReportModel = {
 };
 
 export type ChildProgressReportModelInput = {
+  childEnjoys?: InputMaybe<Scalars['String']>;
   childId: Scalars['UUID'];
   childProgressReportPeriodId: Scalars['UUID'];
   dateCompleted?: InputMaybe<Scalars['DateTime']>;
   dateCreated: Scalars['DateTime'];
+  goodProgressWith?: InputMaybe<Scalars['String']>;
+  howCanCaregiverSupport?: InputMaybe<Scalars['String']>;
   howToSupport?: InputMaybe<Scalars['String']>;
   id: Scalars['UUID'];
   notes?: InputMaybe<Scalars['String']>;
@@ -13502,6 +13508,7 @@ export type PractitionerTimeline = {
 export type PractitionerUserAndNote = {
   __typename?: 'PractitionerUserAndNote';
   appUser?: Maybe<ApplicationUser>;
+  isRegistered?: Maybe<Scalars['Boolean']>;
   note?: Maybe<Scalars['String']>;
 };
 
@@ -14734,6 +14741,7 @@ export type Query = {
   healthPromotion: Array<Maybe<HealthPromotion>>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
+  incomeStatementPdf?: Maybe<Scalars['String']>;
   incomeStatements?: Maybe<Array<Maybe<IncomeStatementModel>>>;
   infantCountForHealthCareWorkerForMonth: Scalars['Int'];
   infantSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
@@ -17668,6 +17676,10 @@ export type QueryHolidaysByYearArgs = {
   year: Scalars['Int'];
 };
 
+export type QueryIncomeStatementPdfArgs = {
+  statementId: Scalars['UUID'];
+};
+
 export type QueryIncomeStatementsArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   startDate: Scalars['DateTime'];
@@ -17842,6 +17854,8 @@ export type QueryPractitionerProgressReportSummaryArgs = {
 };
 
 export type QueryPractitionerStatsArgs = {
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
   userId: Scalars['UUID'];
 };
 
@@ -20357,6 +20371,7 @@ export type UserModel = {
   password?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
   profileImageUrl?: Maybe<Scalars['String']>;
+  profilePicIsEmoji?: Maybe<Scalars['Boolean']>;
   raceId?: Maybe<Scalars['UUID']>;
   resetData?: Maybe<Scalars['Boolean']>;
   surname?: Maybe<Scalars['String']>;
@@ -20386,6 +20401,7 @@ export type UserModelInput = {
   password?: InputMaybe<Scalars['String']>;
   phoneNumber?: InputMaybe<Scalars['String']>;
   profileImageUrl?: InputMaybe<Scalars['String']>;
+  profilePicIsEmoji?: InputMaybe<Scalars['Boolean']>;
   raceId?: InputMaybe<Scalars['UUID']>;
   resetData?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;

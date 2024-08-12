@@ -24,6 +24,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string HowToSupport { get; set; }
         
         public DateTime? ObservationsCompleteDate { get; set; }
+        
+        public string ChildEnjoys { get; set; }
+
+        public string GoodProgressWith { get; set; }
+
+        public string HowCanCaregiverSupport { get; set; }
     }
 
     public class SkillObservation

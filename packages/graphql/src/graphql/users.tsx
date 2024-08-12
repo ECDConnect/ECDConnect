@@ -227,3 +227,9 @@ export const getTeamLeadCount = gql`
     )
   }
 `;
+
+export const ReactivateMultipleUsers = gql`
+  mutation bulkReactivateUsers($userIds: [UUID!]) {
+    bulkReactivateUsers(userIds: $userIds)
+  }
+`;

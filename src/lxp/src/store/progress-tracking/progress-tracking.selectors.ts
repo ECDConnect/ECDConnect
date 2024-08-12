@@ -99,12 +99,48 @@ export const getProgressTrackingCategoryBySubCategoryId = (
       return category;
     }
   );
-
-// SKILLS
 export const getProgressTrackingSkills = (
   state: RootState
 ): ProgressTrackingSkillDto[] =>
   state.progressTracking.progressTrackingSkills.data;
+
+export const getProgressTrackingSkillsWithCateogryInfo = () =>
+  createSelector(
+    (state: RootState) =>
+      state.progressTracking.progressTrackingCategories.data,
+    (state: RootState) =>
+      state.progressTracking.progressTrackingSubCategories.data,
+    (state: RootState) => state.progressTracking.progressTrackingSkills.data,
+    (
+      categories: ProgressTrackingCategoryDto[],
+      subCategories: ProgressTrackingSubCategoryDto[],
+      skills: ProgressTrackingSkillDto[]
+    ) => {
+      // Add categories and skills
+      return skills.map((skill) => {
+        const subCategory = subCategories.find((x) =>
+          x.skills.some((x) => x.id === skill.id)
+        );
+        const category = categories.find((x) =>
+          x.subCategories.some((x) => x.id === subCategory?.id)
+        );
+
+        return {
+          id: skill.id,
+          name: skill.name,
+          description: skill.description,
+          subCategory: {
+            id: subCategory?.id,
+            name: subCategory?.name,
+            category: {
+              id: category?.id,
+              name: category?.name,
+            },
+          },
+        } as ProgressSkill;
+      });
+    }
+  );
 
 export const getProgressTrackingSkillById = (skillId: number) =>
   createSelector(

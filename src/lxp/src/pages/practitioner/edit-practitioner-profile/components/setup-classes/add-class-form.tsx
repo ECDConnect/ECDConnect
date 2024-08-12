@@ -2,8 +2,6 @@ import {
   EditClassModel,
   editClassroomSchema,
 } from '@/schemas/practitioner/edit-class';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
-import { ClassProgrammeDto } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import {
@@ -27,7 +25,6 @@ import {
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { isFullDayOptions } from '../../edit-practitioner-profile.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {

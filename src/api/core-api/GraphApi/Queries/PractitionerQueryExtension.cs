@@ -101,16 +101,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     {
                         if (practitioner.PrincipalHierarchy == null)
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, IsRegistered = practitioner.IsRegistered };
                         }
                         else
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme", IsRegistered = practitioner.IsRegistered };
                         }
                     }
                     else
                     {
-                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app" };
+                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", IsRegistered = false };
                     }
                 }
             }

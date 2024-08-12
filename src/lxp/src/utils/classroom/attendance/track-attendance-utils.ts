@@ -204,20 +204,24 @@ export const getMissedClassAttendance = (
       const classLearners = classGroups
         .flatMap((x) => x.learners)
         .filter((x) => {
+          const checkEndOfDay = new Date(missedDayDate.setHours(12, 59, 59));
           const isValidDay =
             isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
-            missedDayDate.getTime() >= new Date(x.startedAttendance).getTime();
+            checkEndOfDay.getTime() >= new Date(x.startedAttendance).getTime();
 
           return isValidDay && !Boolean(x.stoppedAttendance);
         });
       if (classLearners && classLearners.length && classLearners.length > 0) {
-        const checkDate = new Date(missedDayDate.setHours(0, 0, 0));
-
         if (
           !attendance.some(
             (att) =>
+              att.attendanceDate &&
               att.classroomProgrammeId === programme.id &&
-              att.attendanceDate === checkDate
+              new Date(att.attendanceDate).getFullYear() ===
+                missedDayDate.getFullYear() &&
+              new Date(att.attendanceDate).getMonth() ===
+                missedDayDate.getMonth() &&
+              new Date(att.attendanceDate).getDay() === missedDayDate.getDay()
           )
         ) {
           returnProgrammes.push({ ...programme, missedDate: missedDayDate });

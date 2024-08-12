@@ -151,13 +151,10 @@ export const AddPractitioner = ({
         if (p?.note !== undefined) {
           setAddNote(p?.note);
         }
-        if (
-          p?.appUser?.practitionerObjectData?.isRegistered === false ||
-          p?.appUser?.practitionerObjectData?.isRegistered === null
-        ) {
+        if (p?.isRegistered === false || p?.isRegistered === null) {
           setIsPractitionerRegistered(false);
         }
-        if (p?.appUser?.practitionerObjectData?.isRegistered === true) {
+        if (p?.isRegistered === true) {
           setIsPractitionerRegistered(true);
         }
         setIsValidPractitioner(
@@ -472,7 +469,17 @@ export const AddPractitioner = ({
                 )}
               {isValidPractitioner === true && !isPrincipal && !addNote && (
                 <div className="mb-8">
-                  <Alert type={'success'} title={'Practitioner found!'} />
+                  <Alert
+                    type={'success'}
+                    title={'Practitioner found!'}
+                    list={
+                      isPractitionerRegistered
+                        ? []
+                        : [
+                            'Encourage Thandi to register for the app as soon as possible!',
+                          ]
+                    }
+                  />
                 </div>
               )}
               {!addNote &&
