@@ -32,7 +32,6 @@ export const LanguageSelector = ({
   className,
   isConsentScreen,
 }: LanguageSelectorProps) => {
-  const allLanguages = useSelector(staticDataSelectors.getLanguages);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const [isOfflineAlert, setIsOfflineAlert] = useState(false);
   const { i18n } = useTranslation();

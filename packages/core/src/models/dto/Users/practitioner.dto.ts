@@ -58,3 +58,15 @@ export interface UserPermissionDto {
   permissionNormalizedName: string;
   permissionGrouping: string;
 }
+
+export interface PractitionerStatsDto {
+  totalPractitionersForSchool: number;
+  totalChildrenForSchool: number;
+  totalClassesForSchool: number;
+  totalAttendanceRegistersCompleted: number;
+  totalAttendanceRegistersNotCompleted: number;
+  totalProgressReportsCompleted: number;
+  totalProgressReportsNotCompleted: number;
+  totalIncomeStatementsDownloaded: number;
+  totalIncomeStatementsWithNoItems: number;
+}

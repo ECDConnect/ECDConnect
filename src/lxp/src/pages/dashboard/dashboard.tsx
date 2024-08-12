@@ -72,6 +72,8 @@ import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { differenceInDays } from 'date-fns';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import DashboardWrapper from './dashboard-wrapper/dashboard-wrapper';
+import { useAppContext } from '@/walkthrougContext';
 
 const { version } = require('../../../package.json');
 
@@ -107,6 +109,7 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+  const { setState } = useAppContext();
 
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
@@ -251,82 +254,6 @@ export const Dashboard: React.FC = () => {
     }
   }, [pointsSummaryData]);
 
-  const handleDialog = () => {
-    dialog({
-      position: DialogPosition.Bottom,
-      render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
-            textAlignment="right"
-            customDetailText={
-              <Typography
-                type="h4"
-                className="mb-7 mt-4"
-                text={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
-                color="black"
-                align="center"
-              />
-            }
-            actionButtons={[
-              {
-                text: 'Close',
-                textColour: 'white',
-                colour: 'quatenary',
-                type: 'filled',
-                onClick: () => onSubmit(),
-                leadingIcon: 'XIcon',
-              },
-            ]}
-            customIcon={
-              <div className="mb-2 flex w-full justify-center">
-                <Cebisa />
-              </div>
-            }
-          />
-        );
-      },
-    });
-  };
-
-  const handlePrincipalCompleteProfileDialog = () => {
-    dialog({
-      position: DialogPosition.Bottom,
-      render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            // importantText={`Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.`}
-            textAlignment="right"
-            customDetailText={
-              <Typography
-                type="h4"
-                className="mb-7 mt-4"
-                text={`If you want to change these details later, tap your profile and go to “Preschool”.`}
-                color="black"
-                align="center"
-              />
-            }
-            actionButtons={[
-              {
-                text: 'Close',
-                textColour: 'white',
-                colour: 'quatenary',
-                type: 'filled',
-                onClick: () => onSubmit(),
-                leadingIcon: 'XIcon',
-              },
-            ]}
-            customIcon={
-              <div className="mb-2 flex w-full justify-center">
-                <Cebisa />
-              </div>
-            }
-          />
-        );
-      },
-    });
-  };
-
   const handle30DaysExpired = () => {
     dialog({
       position: DialogPosition.Middle,
@@ -374,13 +301,13 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (isFromCompleteProfile && !practitioner?.isPrincipal) {
-      handleDialog();
+      setState({ run: true, tourActive: true, stepIndex: 1 });
     }
   }, []);
 
   useEffect(() => {
     if (isFromCompleteProfile && practitioner?.isPrincipal) {
-      handlePrincipalCompleteProfileDialog();
+      setState({ run: true, tourActive: true, stepIndex: 0 });
     }
   }, []);
 
@@ -1079,86 +1006,92 @@ export const Dashboard: React.FC = () => {
     userProfilePicture?.reference;
 
   return (
-    <BannerWrapper
-      backgroundColour={'white'}
-      backgroundImageColour={'primary'}
-      avatar={
-        profilePc ? (
-          <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
-        ) : (
-          <UserAvatar
-            size="sm-md"
-            color="secondary"
-            displayBorder
-            borderColour="secondary"
-          />
-        )
-      }
-      menuItems={isCoach ? navigationForCoach : navigation}
-      onNavigation={onNavigation}
-      menuLogoUrl={hamburgerLogo}
-      calendarRender={() => {
-        return (
-          <IconBadge
-            onClick={() => goToCalendar()}
-            badgeColor={'errorMain'}
-            badgeTextColor={'white'}
-            icon={styles.calendarIconName}
-            iconColor={'white'}
-            badgeText={''}
-          />
-        );
-      }}
-      notificationRender={() => {
-        return (
-          <IconBadge
-            onClick={() => history.push(ROUTES.MESSAGES)}
-            badgeColor={'errorMain'}
-            badgeTextColor={'white'}
-            icon={styles.messagesIconName}
-            iconColor={'white'}
-            badgeText={newNotificationCount ? `${newNotificationCount}` : ''}
-          />
-        );
-      }}
-      onAvatarSelect={goToProfile}
-      showBackground
-      size="large"
-      renderBorder={true}
-      backgroundUrl={theme?.images.graphicOverlayUrl}
-      className={styles.bannerContent}
-      displayOffline={!isOnline}
-      version={`v ${version}`}
-    >
-      <Typography
-        type={'h1'}
-        color="white"
-        text={`Hi ${(userData && userData?.firstName) || userData?.userName}!`}
-        className={styles.welcomeText}
-      />
-      <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
-        <DashboardItems
-          listItems={dashboardItems}
-          notification={dashboardNotification}
+    <>
+      <DashboardWrapper />
+      <BannerWrapper
+        backgroundColour={'white'}
+        backgroundImageColour={'primary'}
+        avatar={
+          profilePc ? (
+            <div id="wantToConnectWithPrincipal">
+              <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
+            </div>
+          ) : (
+            <UserAvatar
+              size="sm-md"
+              color="secondary"
+              displayBorder
+              borderColour="secondary"
+            />
+          )
+        }
+        menuItems={isCoach ? navigationForCoach : navigation}
+        onNavigation={onNavigation}
+        menuLogoUrl={hamburgerLogo}
+        calendarRender={() => {
+          return (
+            <IconBadge
+              onClick={() => goToCalendar()}
+              badgeColor={'errorMain'}
+              badgeTextColor={'white'}
+              icon={styles.calendarIconName}
+              iconColor={'white'}
+              badgeText={''}
+            />
+          );
+        }}
+        notificationRender={() => {
+          return (
+            <IconBadge
+              onClick={() => history.push(ROUTES.MESSAGES)}
+              badgeColor={'errorMain'}
+              badgeTextColor={'white'}
+              icon={styles.messagesIconName}
+              iconColor={'white'}
+              badgeText={newNotificationCount ? `${newNotificationCount}` : ''}
+            />
+          );
+        }}
+        onAvatarSelect={goToProfile}
+        showBackground
+        size="large"
+        renderBorder={true}
+        backgroundUrl={theme?.images.graphicOverlayUrl}
+        className={styles.bannerContent}
+        displayOffline={!isOnline}
+        version={`v ${version}`}
+      >
+        <Typography
+          type={'h1'}
+          color="white"
+          text={`Hi ${
+            (userData && userData?.firstName) || userData?.userName
+          }!`}
+          className={styles.welcomeText}
         />
-        {!!pointsScoreProps && !isCoach && (
-          <ScoreCard
-            className="mt-5 mb-1 h-20"
-            progressBarClassName="flex pt-2"
-            mainText={pointsScoreProps.mainText}
-            hint={pointsScoreProps?.hint}
-            currentPoints={pointsScoreProps.currentPoints}
-            maxPoints={pointsScoreProps.maxPoints}
-            onClick={pointsScoreProps.onClick}
-            barBgColour={pointsScoreProps.barBgColour}
-            barColour={pointsScoreProps.barColour}
-            bgColour={pointsScoreProps.bgColour}
-            image={pointsScoreProps.image}
-            textColour={pointsScoreProps.textColour}
-            textPosition={pointsScoreProps.textPosition}
+        <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
+          <DashboardItems
+            listItems={dashboardItems}
+            notification={dashboardNotification}
           />
-        )}
-        {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (
+          {!!pointsScoreProps && !isCoach && (
+            <ScoreCard
+              className="mt-5 mb-1 h-20"
+              progressBarClassName="flex pt-2"
+              mainText={pointsScoreProps.mainText}
+              hint={pointsScoreProps?.hint}
+              currentPoints={pointsScoreProps.currentPoints}
+              maxPoints={pointsScoreProps.maxPoints}
+              onClick={pointsScoreProps.onClick}
+              barBgColour={pointsScoreProps.barBgColour}
+              barColour={pointsScoreProps.barColour}
+              bgColour={pointsScoreProps.bgColour}
+              image={pointsScoreProps.image}
+              textColour={pointsScoreProps.textColour}
+              textPosition={pointsScoreProps.textPosition}
+            />
+          )}
+          {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
             mainText={clubCard.mainText}
@@ -1175,7 +1108,7 @@ export const Dashboard: React.FC = () => {
             textColour={clubCard.textColour}
           />
         )} */}
-        {/* {isPractitioner &&
+          {/* {isPractitioner &&
           (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
             <div className="mt-1">
               <TitleListItem
@@ -1196,8 +1129,9 @@ export const Dashboard: React.FC = () => {
               />
             </div>
           )} */}
-      </div>
-    </BannerWrapper>
+        </div>
+      </BannerWrapper>
+    </>
   );
 };
 

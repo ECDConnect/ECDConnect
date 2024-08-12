@@ -109,5 +109,25 @@ namespace ECDLink.PostgresTenancy.Caching
             return tenant;
         }
 
+        public TenantInternalModel UpdateTenantInfo(Guid? tenantId, TenantInfoInputModel input)
+        {
+            var result = _tenantService.UpdateTenantInfo(tenantId, input);
+            if (result == null) return null;
+            AddToCache(result);
+            return result;
+        }
+
+        public TenantInternalModel UpdateTenantThemePath(Guid? tenantId, string themePath)
+        {
+            var result = _tenantService.UpdateTenantThemePath(tenantId, themePath);
+            if (result == null) return null;
+            AddToCache(result);
+            return result;
+        }
+
+        public bool ValidateNewTenantName(string applicationName)
+        {
+            return _tenantService.ValidateNewTenantName(applicationName);
+        }
     }
 }

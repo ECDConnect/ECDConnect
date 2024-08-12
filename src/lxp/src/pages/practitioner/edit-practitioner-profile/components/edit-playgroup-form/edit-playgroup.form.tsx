@@ -16,11 +16,7 @@ import {
   EditPlaygroupModel,
   editPlaygroupSchema,
 } from '@schemas/practitioner/edit-playgroups';
-import {
-  buttonDays,
-  dayTypes,
-  EditPlaygroupProps,
-} from './edit-playgroup.form.types';
+import { buttonDays, EditPlaygroupProps } from './edit-playgroup.form.types';
 import {
   canDeleteClassroomGroup,
   Weekdays,
@@ -57,7 +53,6 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   );
 
   const { isOnline } = useOnlineStatus();
-
   const dialog = useDialog();
   const {
     getValues: getPlaygroupFormValues,
@@ -74,11 +69,10 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     reValidateMode: 'onChange',
   });
 
-  const { isFullDay, meetingDays, name, meetEveryday, userId } = useWatch({
+  const { meetingDays, name, meetEveryday, userId } = useWatch({
     control: playgroupFormControl,
     defaultValue: playgroup,
   });
-
   const {
     isValid,
     errors: { name: playgroupName },
@@ -91,6 +85,13 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
   >([]);
+
+  useEffect(() => {
+    if (practitionersList) {
+      setPlaygroupFormValue('name', title);
+      setPlaygroupFormValue('groupName', title);
+    }
+  }, [setPlaygroupFormValue, title, practitionersList]);
 
   useEffect(() => {
     const _list = practitioners
@@ -270,6 +271,12 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         register={playgroupFormRegister}
         nameProp={'name'}
         placeholder={'E.g. Tuesday class'}
+        value={name}
+      />
+      <Typography
+        text={playgroupName?.message || ''}
+        className="text-errorMain -mb-4"
+        type={'small'}
       />
       <div>
         <Controller
@@ -283,18 +290,13 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
               fillType="clear"
               label={'Which Practitioner teaches this class?'}
               fullWidth
-              className={'mt-3 w-full'}
+              className={'mt-6 w-full'}
               selectedValue={value}
               onChange={onChange}
             />
           )}
         />
       </div>
-      <Typography
-        text={playgroupName?.message || ''}
-        className="text-errorMain -mb-4"
-        type={'small'}
-      />
       <div className="mt-6">
         <span className="text-textDark font-semibold">{`Does ${
           name ? `${name}` : 'this'

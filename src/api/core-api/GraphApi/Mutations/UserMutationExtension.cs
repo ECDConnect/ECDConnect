@@ -176,13 +176,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input is null)
                 throw new QueryException("Input cannot be null.");
-            if (!string.IsNullOrEmpty(input.ProfileImageUrl))
+
+            if (input.ProfilePicIsEmoji.HasValue && !input.ProfilePicIsEmoji.Value)
             {
-                var parts = input.ProfileImageUrl.Split(';');
-                if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
-                if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
-                if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
+                if (!string.IsNullOrEmpty(input.ProfileImageUrl))
+                {
+                    var parts = input.ProfileImageUrl.Split(';');
+                    if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
+                    if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
+                    if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
+                }
             }
+
             if (user is null || currentUserId is null)
                 throw new QueryException("User not found.");
             
@@ -543,6 +548,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.LockoutEnd = DateTime.UtcNow;
                 user.IsActive = true;
 
+                userManager.UpdateAsync(user);
+
                 // Reset Roles
                 var practitioner = practitionerRepo.GetByUserId(user.Id);
 
@@ -565,6 +572,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     userManager.AddToRoleAsync(user, Roles.COACH);
                 }
+
+                
             }
 
             return true;
