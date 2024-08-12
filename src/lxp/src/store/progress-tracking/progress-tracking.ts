@@ -52,7 +52,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, skillId, value } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report) {
@@ -113,7 +115,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, skillId } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report || report.skillsToWorkOn.some((x) => x.skillId === skillId)) {
@@ -147,7 +151,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, skillId } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report) {
@@ -181,7 +187,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, skillId, value } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report) {
@@ -215,7 +223,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, value } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report) {
@@ -246,7 +256,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, value } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report) {
@@ -277,7 +289,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, value } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report) {
@@ -308,7 +322,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, value } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report) {
@@ -339,7 +355,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId, value } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report) {
@@ -369,7 +387,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report || !!report.observationsCompleteDate) {
@@ -399,7 +419,9 @@ const progressTrackingSlice = createSlice({
       const { childId, reportingPeriodId } = action.payload;
 
       const report = state.childProgressReports.find(
-        (x) => x.childId === childId && x.childProgressReportPeriodId
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
       );
 
       if (!report || !!report.dateCompleted) {

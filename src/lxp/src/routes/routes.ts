@@ -174,6 +174,9 @@ const ROUTES = {
   PROGRESS_CREATE_REPORT: '/progress-create-report',
   PROGRESS_SHARE_REPORT: '/progress-share-report',
   PROGRESS_VIEW_REPORT: '/progress-view-report',
+  PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP:
+    '/progress-view-reports-summary-select',
+  PROGRESS_VIEW_REPORTS_SUMMARY: '/progress-view-reports-summary',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
   CHILD_PROGRESS_OBSERVATION_REPORT: '/child-progress-observation-report',
   COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS:

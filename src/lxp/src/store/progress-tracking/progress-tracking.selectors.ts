@@ -346,17 +346,41 @@ export const getProgressAgeGroups = () =>
       return progressTrackingAgeGroups;
     }
   );
-// export const getChildrenWithoutProgressObservations = (
-//   childProgressReportPeriodId: string
-// ) =>
-//   createSelector(
-//     (state: RootState) => state.progressTracking.childProgressReports,
-//     (state: RootState) => state.children.childData.children,
-//     (childProgressReports: ChildProgressReport[],
-//       children: ChildDto[]
-//     ) => {
-//       return childProgressReports.filter(
-//         (x) => x.childProgressReportPeriodId === childProgressReportPeriodId
-//       );
-//     }
-//   );
+
+export const getProgressCategoryStructure = () =>
+  createSelector(
+    (state: RootState) =>
+      state.progressTracking.progressTrackingCategories.data,
+    (state: RootState) =>
+      state.progressTracking.progressTrackingSubCategories.data,
+    (state: RootState) => state.progressTracking.progressTrackingSkills.data,
+    (
+      categories: ProgressTrackingCategoryDto[],
+      subCategories: ProgressTrackingSubCategoryDto[],
+      skills: ProgressTrackingSkillDto[]
+    ) => {
+      return categories.map((cat) => {
+        return {
+          ...cat,
+          subCategories: cat.subCategories
+            .filter((x) => subCategories.some((y) => y.id === x.id))
+            .map((subCatMin) => {
+              const subCategory = subCategories.find(
+                (x) => x.id === subCatMin.id
+              )!;
+
+              return {
+                ...subCategory,
+                skills: subCategory.skills
+                  .filter((x) => skills.some((y) => y.id === x.id))
+                  .map((skillMin) => {
+                    const skill = skills.find((x) => x.id === skillMin.id)!;
+
+                    return skill;
+                  }),
+              };
+            }),
+        };
+      });
+    }
+  );
