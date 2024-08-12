@@ -69,7 +69,12 @@ export const ProgressReportsList: React.FC<ProgressReportsListProps> = ({
           withBorderRadius={false}
           dividerType={'dashed'}
           withPaddingY={true}
-          onButtonClick={() => {}} // TODO - Go to report view
+          onButtonClick={() =>
+            history.push(ROUTES.PROGRESS_VIEW_REPORT, {
+              childId: childId,
+              reportId: report.id,
+            })
+          }
         />
       ))}
     </>

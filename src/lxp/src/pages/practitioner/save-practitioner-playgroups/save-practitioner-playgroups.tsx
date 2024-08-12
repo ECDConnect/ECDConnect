@@ -24,7 +24,6 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
-import { s } from 'msw/lib/glossary-297d38ba';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const EditPlaygroups: React.FC = () => {

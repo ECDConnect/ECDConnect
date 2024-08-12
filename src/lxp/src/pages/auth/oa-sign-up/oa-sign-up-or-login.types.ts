@@ -3,7 +3,7 @@ export const contentWrapper =
 export const checkboxWrapper =
   'flex w-full flex-row gap-2 justify-between items-center bg-uiBg p-4 rounded-xl';
 export const formStyle = 'py-4 px-2 w-full ';
-export const wrapper = 'h-full overflow-y-auto';
+export const wrapper = 'h-full overflow-y-auto overflow-x-hidden';
 export const marginBottom = 'mb-4';
 export const marginTop = 'mt-4';
 export const listStyles = 'list-disc text-uiMidDark pl-5 mb-4 mt-4';

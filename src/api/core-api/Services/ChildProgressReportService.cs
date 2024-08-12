@@ -14,17 +14,14 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.PDFGenerator.Services.Interfaces;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports.ChildProgressReport;
 using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -74,6 +71,12 @@ namespace EcdLink.Api.CoreApi.Services
             public List<SkillToWorkOn> SkillsToWorkOn { get; set; }
 
             public string HowToSupport { get; set; }
+
+            public string ChildEnjoys { get; set; }
+
+            public string GoodProgressWith { get; set; }
+
+            public string HowCanCaregiverSupport { get; set; }
         }
 
         private readonly IGenericRepositoryFactory _repoFactory;
@@ -138,6 +141,9 @@ namespace EcdLink.Api.CoreApi.Services
                 SkillsToWorkOn = input.SkillsToWorkOn,
                 HowToSupport = input.HowToSupport,
                 Notes = input.Notes,
+                ChildEnjoys = input.ChildEnjoys,
+                GoodProgressWith = input.GoodProgressWith,
+                HowCanCaregiverSupport = input.HowCanCaregiverSupport
             };
 
             // Check if report exists
@@ -201,7 +207,10 @@ namespace EcdLink.Api.CoreApi.Services
                     Notes = data.Notes,
                     SkillObservations = data.SkillObservations,
                     SkillsToWorkOn = data.SkillsToWorkOn,
-                    ObservationsCompleteDate = report.ObservationsCompleteDate
+                    ObservationsCompleteDate = report.ObservationsCompleteDate,
+                    ChildEnjoys = data.ChildEnjoys,
+                    GoodProgressWith = data.GoodProgressWith,
+                    HowCanCaregiverSupport = data.HowCanCaregiverSupport
                 };
             }
         }

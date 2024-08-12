@@ -31,17 +31,40 @@ export const useObserveProgressForChild = (childId: string) => {
     progressTrackingSelectors.getProgressReportsForChild(childId)
   );
 
-  const currentReportingPeriod = useSelector(
+  const activeReportingPeriod = useSelector(
     classroomsSelectors.getCurrentProgressReportPeriod()
   );
-
-  const currentAgeGroup = !!currentReportingPeriod
-    ? getProgressAgeGroupForChild(currentReportingPeriod, child!, allAgeGroups)
-    : undefined;
 
   const allReportingPeriods = useSelector(
     classroomsSelectors.getAllProgressReportPeriods()
   );
+
+  const currentReportingPeriod = useMemo(() => {
+    if (!activeReportingPeriod) {
+      return undefined;
+    }
+
+    if (
+      allReports.some(
+        (x) =>
+          !!x.dateCompleted &&
+          x.childProgressReportPeriodId === activeReportingPeriod.id
+      )
+    ) {
+      // Report already completed for active report period, so just use the next available
+      return allReportingPeriods
+        .filter(
+          (x) => new Date(x.endDate).getFullYear() === new Date().getFullYear()
+        )
+        .find((x) => x.reportNumber === activeReportingPeriod.reportNumber + 1);
+    }
+
+    return activeReportingPeriod;
+  }, [allReports, activeReportingPeriod, allReportingPeriods]);
+
+  const currentAgeGroup = !!currentReportingPeriod
+    ? getProgressAgeGroupForChild(currentReportingPeriod, child!, allAgeGroups)
+    : undefined;
 
   const currentAge = !!child?.user?.dateOfBirth
     ? differenceInMonths(new Date(), new Date(child.user.dateOfBirth))
@@ -49,6 +72,10 @@ export const useObserveProgressForChild = (childId: string) => {
 
   const skillsForAgeGroup = useSelector(
     progressTrackingSelectors.getSkillsForAgeGroup(currentAgeGroup?.id || 0)
+  );
+
+  const allSkills = useSelector(
+    progressTrackingSelectors.getProgressTrackingSkillsWithCateogryInfo()
   );
 
   const currentObservations = useMemo<ChildProgressSkill[]>(() => {
@@ -95,9 +122,7 @@ export const useObserveProgressForChild = (childId: string) => {
         unknownCount: missedSkillCount + doNotKnowSkillCount,
         skillsToWorkOn: report.skillsToWorkOn
           .map((skillToWorkOn) => {
-            const skill = skillsForAgeGroup.find(
-              (x) => x.id === skillToWorkOn.skillId
-            );
+            const skill = allSkills.find((x) => x.id === skillToWorkOn.skillId);
             return {
               ...skillToWorkOn,
               skillName: replaceSkillText(skill?.name || ''),
@@ -107,9 +132,7 @@ export const useObserveProgressForChild = (childId: string) => {
           })
           .sort((a, b) => a.skillId - b.skillId),
         skillObservations: report.skillObservations.map((skillObs) => {
-          const skill = skillsForAgeGroup.find(
-            (x) => x.id === skillObs.skillId
-          );
+          const skill = allSkills.find((x) => x.id === skillObs.skillId);
           return {
             ...skillObs,
             skillName: replaceSkillText(skill?.name || ''),
@@ -145,7 +168,7 @@ export const useObserveProgressForChild = (childId: string) => {
   }, [detailedReports, currentReportingPeriod]);
 
   const completedReports = useMemo(() => {
-    return detailedReports.filter((x) => x.isComplete);
+    return detailedReports.filter((x) => !!x.dateCompleted);
   }, [detailedReports, currentReportingPeriod]);
 
   const addObservationForSkill = (
@@ -255,6 +278,61 @@ export const useObserveProgressForChild = (childId: string) => {
     );
   };
 
+  const updateChildEnjoys = (value: string) => {
+    if (!currentReportingPeriod) {
+      return;
+    }
+
+    appDispatch(
+      progressTrackingActions.updateChildEnjoys({
+        childId,
+        reportingPeriodId: currentReportingPeriod.id,
+        value,
+      })
+    );
+  };
+
+  const updateGoodProgressWith = (value: string) => {
+    if (!currentReportingPeriod) {
+      return;
+    }
+
+    appDispatch(
+      progressTrackingActions.updateGoodProgressWith({
+        childId,
+        reportingPeriodId: currentReportingPeriod.id,
+        value,
+      })
+    );
+  };
+
+  const updateHowCanCaregiverSupport = (value: string) => {
+    if (!currentReportingPeriod) {
+      return;
+    }
+
+    appDispatch(
+      progressTrackingActions.updateHowCanCaregiverSupport({
+        childId,
+        reportingPeriodId: currentReportingPeriod.id,
+        value,
+      })
+    );
+  };
+
+  const completeReport = () => {
+    if (!currentReportingPeriod) {
+      return;
+    }
+
+    appDispatch(
+      progressTrackingActions.completeReport({
+        childId,
+        reportingPeriodId: currentReportingPeriod.id,
+      })
+    );
+  };
+
   const syncChildProgressReports = () => {
     appDispatch(progressTrackingThunkActions.syncChildProgressReports({}));
   };
@@ -276,5 +354,9 @@ export const useObserveProgressForChild = (childId: string) => {
     updateHowToSupport,
     updateNotes,
     syncChildProgressReports,
+    updateChildEnjoys,
+    updateGoodProgressWith,
+    updateHowCanCaregiverSupport,
+    completeReport,
   };
 };

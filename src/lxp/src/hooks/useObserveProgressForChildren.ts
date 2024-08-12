@@ -85,7 +85,7 @@ export const useObserveProgressForChildren = () => {
 
   const percentageReportsCompleted = useMemo(() => {
     return Math.ceil(
-      (childReports.filter((x) => !!x.ageGroup && !!x.report?.isComplete)
+      (childReports.filter((x) => !!x.ageGroup && !!x.report?.dateCompleted)
         .length /
         childReports.length) *
         100
