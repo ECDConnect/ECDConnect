@@ -760,9 +760,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                                     && x.CompletedDate.Month == today.Month).Count();
                 if (trainingCoursesCount > 0)
                 {
-                    // 200 points per course completed in the "Training" section
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
-
                     var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
                                            x.UserId == userId
                                            && x.PointsActivityId == activity.Id
