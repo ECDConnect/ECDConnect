@@ -1,5 +1,4 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ namespace ECDLink.Core.Services.Interfaces
     public interface IPointsEngineService
     {
         List<PointsUserSummary> GetSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null);
-        List<PointsPhase1TodoItemModel> GetPhase1TodoItems(Guid userId);
+        PointsToDoItemModel GetPointsTodoItems(Guid userId);
         List<PointsActivity> GetPointActivities();
         void CalculateChildAttendanceRegisterSaved(Guid userId);
         void CalculateChildRegistrationComplete(Guid childUserId);

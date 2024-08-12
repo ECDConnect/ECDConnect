@@ -107,9 +107,9 @@ namespace EcdLink.Api.CoreApi.Services
             return _pointsActivityRepo.GetAll().Where(x => x.IsActive).Distinct().ToList();
         }
 
-        public List<PointsPhase1TodoItemModel> GetPhase1TodoItems(Guid userId)
+        public PointsToDoItemModel GetPointsTodoItems(Guid userId)
         {
-            var phaseTodoItems = new List<PointsPhase1TodoItemModel>();
+            var pointsToDoItems = new PointsToDoItemModel();
 
             var monthStart = DateTime.Now.GetStartOfMonth();
             var monthEnd = DateTime.Now.GetEndOfMonth();
@@ -121,12 +121,9 @@ namespace EcdLink.Api.CoreApi.Services
             if (!practitionerRecord.IsPrincipal.HasValue || (practitionerRecord.IsPrincipal.HasValue && !practitionerRecord.IsPrincipal.Value))
             {
                 var schoolClasses = _classroomService.GetClassroomGroupsForUser(userId);
-                if (schoolClasses.Count == 0)
+                if (schoolClasses.Count > 0)
                 {
-                    phaseTodoItems.Add(new PointsPhase1TodoItemModel
-                    {
-                        Message = $"Not part of a preschool yet"
-                    });
+                    pointsToDoItems.PhaseOne.NotPartOfPreschool = true;
                 }
             }
 
@@ -134,12 +131,9 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitionerRecord.IsPrincipal.HasValue && practitionerRecord.IsPrincipal.Value)
             {
                 var itemsCount = _statementsRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == monthStart.Year && x.IncomeItems.Count > 0 && x.ExpenseItems.Count > 0).Count();
-                if (itemsCount == 0)
+                if (itemsCount > 0)
                 {
-                    phaseTodoItems.Add(new PointsPhase1TodoItemModel
-                    {
-                        Message = $"Has not saved any income or expenses"
-                    });
+                    pointsToDoItems.PhaseOne.SavedIncomeOrExpense = true;
                 }
             }
 
@@ -156,33 +150,21 @@ namespace EcdLink.Api.CoreApi.Services
                                                 .SelectMany(x => x.DailyProgrammes)
                                                 .Where(x => x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
                                                 .Count();
-                    if (programmeCount == 0)
+                    if (programmeCount > 0)
                     {
-                        phaseTodoItems.Add(new PointsPhase1TodoItemModel
-                        {
-                            Message = $"Has not planned one day"
-                        });
+                        pointsToDoItems.PhaseOne.PlannedOneDay = true;
                     }
-                }
-                else
-                {
-                    phaseTodoItems.Add(new PointsPhase1TodoItemModel
-                    {
-                        Message = $"Has not planned one day"
-                    });
                 }
             }
 
             // 4.Gone to Community section of app at least once
             if (!practitionerRecord.ClickedCommunityTab.HasValue)
             {
-                phaseTodoItems.Add(new PointsPhase1TodoItemModel
-                {
-                    Message = $"Has not clicked the community tab"
-                });
+                pointsToDoItems.PhaseOne.ViewedCommunitySection = true;
             }
 
-            return phaseTodoItems;
+
+            return pointsToDoItems;
         }
 
 

@@ -37,7 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<PointsPhase1TodoItemModel> GetPhase1TodoItems(
+        public PointsToDoItemModel GetPointsTodoItems(
             [Service] IPointsEngineService pointsService,
             Guid userId)
         {
