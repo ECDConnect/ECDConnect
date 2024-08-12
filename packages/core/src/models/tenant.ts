@@ -4,6 +4,7 @@ export interface TenantModel {
   id: string;
   moodleUrl: string;
   organisationName: string;
+  organisationEmail: string;
   siteAddress: string;
   tenantType: TenantType;
   themePath: string;
