@@ -1,3 +1,5 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -17,6 +19,7 @@ using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +32,6 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repositoryFactory;
 
-        private readonly IGenericRepository<PointsCategory, Guid> _pointsCategoryRepo;
         private readonly IGenericRepository<PointsActivity, Guid> _pointsActivityRepo;
         private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
 
@@ -39,14 +41,17 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<UserTrainingCourse, Guid> _userTrainingCourseRepo;
         private readonly IGenericRepository<Classroom, Guid> _classRepo;
         private readonly IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
-        private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsIncomeStatementRepo;
         private readonly IGenericRepository<IntegrationAudit, Guid> _integrationAuditRepo;
         private readonly IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
         private readonly IGenericRepository<UserPermission, Guid> _userPermissionRepo;
-        private readonly MonthlyAttendanceReport _monthlyAttendanceReportService;
+        private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
+        private readonly IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
 
+
+        private MonthlyAttendanceReport _monthlyAttendanceReportService;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
+        private IClassroomService _classroomService;
 
         private readonly Guid _uId;
 
@@ -55,7 +60,8 @@ namespace EcdLink.Api.CoreApi.Services
             IGenericRepositoryFactory repositoryFactory,
             HierarchyEngine hierarchyEngine,
             [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
-            [Service] INotificationService notificationService)
+            [Service] INotificationService notificationService,
+            [Service] IClassroomService classroomService)
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
@@ -63,14 +69,11 @@ namespace EcdLink.Api.CoreApi.Services
             _monthlyAttendanceReportService = monthlyAttendanceReportService;
             _uId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().GetValueOrDefault());
 
-            _pointsCategoryRepo = _repositoryFactory.CreateGenericRepository<PointsCategory>(userContext: _uId);
             _pointsActivityRepo = _repositoryFactory.CreateGenericRepository<PointsActivity>(userContext: _uId);
             _pointsUserSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _uId);
 
             _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
             _childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
-
-            _statementsIncomeStatementRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
 
             _classRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
             _classroomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
@@ -79,10 +82,13 @@ namespace EcdLink.Api.CoreApi.Services
 
             _communityProfileConnectionRepo = _repositoryFactory.CreateGenericRepository<CommunityProfileConnection>(userContext: _uId);
             _userTrainingCourseRepo = _repositoryFactory.CreateGenericRepository<UserTrainingCourse>(userContext: _uId);
-            _integrationAuditRepo = _repositoryFactory.CreateRepository<IntegrationAudit>(userContext: _uId);
-            _userPermissionRepo = _repositoryFactory.CreateRepository<UserPermission>(userContext: _uId);
+            _integrationAuditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
+            _userPermissionRepo = _repositoryFactory.CreateGenericRepository<UserPermission>(userContext: _uId);
+            _statementsRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
+            _statementsIncomeRepo = _repositoryFactory.CreateGenericRepository<StatementsIncome>(userContext: _uId);
 
             _notificationService = notificationService;
+            _classroomService = classroomService;
         }
 
         public List<PointsUserSummary> GetSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null)
@@ -100,6 +106,85 @@ namespace EcdLink.Api.CoreApi.Services
         {
             return _pointsActivityRepo.GetAll().Where(x => x.IsActive).Distinct().ToList();
         }
+
+        public List<PointsPhase1TodoItemModel> GetPhase1TodoItems(Guid userId)
+        {
+            var phaseTodoItems = new List<PointsPhase1TodoItemModel>();
+
+            var monthStart = DateTime.Now.GetStartOfMonth();
+            var monthEnd = DateTime.Now.GetEndOfMonth();
+
+            var practitionerRecord = _practitionerRepo.GetByUserId(userId);
+
+            // Phase 1
+            // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
+            if (!practitionerRecord.IsPrincipal.HasValue || (practitionerRecord.IsPrincipal.HasValue && !practitionerRecord.IsPrincipal.Value))
+            {
+                var schoolClasses = _classroomService.GetClassroomGroupsForUser(userId);
+                if (schoolClasses.Count == 0)
+                {
+                    phaseTodoItems.Add(new PointsPhase1TodoItemModel
+                    {
+                        Message = $"Not part of a preschool yet"
+                    });
+                }
+            }
+
+            // 2.Principal only-- save 1 income or expense yet(W12)
+            if (practitionerRecord.IsPrincipal.HasValue && practitionerRecord.IsPrincipal.Value)
+            {
+                var itemsCount = _statementsRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == monthStart.Year && x.IncomeItems.Count > 0 && x.ExpenseItems.Count > 0).Count();
+                if (itemsCount == 0)
+                {
+                    phaseTodoItems.Add(new PointsPhase1TodoItemModel
+                    {
+                        Message = $"Has not saved any income or expenses"
+                    });
+                }
+            }
+
+            // 3.Practitioner(non - principal) only-- plan at least 1 day - ie picked all activities & story for the day (W11)
+            if (!practitionerRecord.IsPrincipal.HasValue || (practitionerRecord.IsPrincipal.HasValue && !practitionerRecord.IsPrincipal.Value))
+            {
+                var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
+                if (schoolClasses.Count > 0)
+                {
+                    var programmeCount = schoolClasses
+                                                .SelectMany(x => x.Programmes)
+                                                .Where(x => x.IsActive && x.StartDate.Year == monthStart.Year && x.EndDate.Year == monthStart.Year)
+                                                .ToList()
+                                                .SelectMany(x => x.DailyProgrammes)
+                                                .Where(x => x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
+                                                .Count();
+                    if (programmeCount == 0)
+                    {
+                        phaseTodoItems.Add(new PointsPhase1TodoItemModel
+                        {
+                            Message = $"Has not planned one day"
+                        });
+                    }
+                }
+                else
+                {
+                    phaseTodoItems.Add(new PointsPhase1TodoItemModel
+                    {
+                        Message = $"Has not planned one day"
+                    });
+                }
+            }
+
+            // 4.Gone to Community section of app at least once
+            if (!practitionerRecord.ClickedCommunityTab.HasValue)
+            {
+                phaseTodoItems.Add(new PointsPhase1TodoItemModel
+                {
+                    Message = $"Has not clicked the community tab"
+                });
+            }
+
+            return phaseTodoItems;
+        }
+
 
         private void AddOrUpdatePoints(Guid activityId, Guid userId, int pointsTotal, int? timesScored = null, DateTime? dateScored = null)
         {
@@ -169,10 +254,11 @@ namespace EcdLink.Api.CoreApi.Services
                                 timesScored += monthlyReport.NumberOfSessions;
                             }
                         }
+                        var userPoints = timesScored * activity.Points;
                         AddOrUpdatePoints(
                             PointsActivityConstants.ChildAttendanceRegisterSavedId,
                             userId,
-                            timesScored > 20 ? (int)activity.MaxPointsIndividualMonthly : timesScored * activity.Points,
+                            userPoints >= (int)activity.MaxPointsIndividualMonthly ? (int)activity.MaxPointsIndividualMonthly : userPoints,
                             timesScored);
                     }
                 }
@@ -193,15 +279,16 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildRegistrationCompleteId);
                 var today = DateTime.Now;
-                var practitionerChildren = _childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)
+                var userChildrenCount = _childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)
                                                                     && x.UpdatedDate.Year == today.Year
-                                                                    && x.CaregiverId.HasValue).ToList();
+                                                                    && x.WorkflowStatusId == Constants.WorkflowStatus.ActiveId).Count();
 
+                var userPoints = userChildrenCount * activity.Points;
                 AddOrUpdatePoints(
                     PointsActivityConstants.ChildRegistrationCompleteId,
                     (Guid)parentUserId,
-                    practitionerChildren.Count > 4 ? (int)activity.MaxPointsIndividualYearly : practitionerChildren.Count * activity.Points,
-                    practitionerChildren.Count
+                    userPoints >= (int)activity.MaxPointsIndividualYearly ? (int)activity.MaxPointsIndividualYearly : userPoints,
+                    userChildrenCount
                    );
             }
         }
@@ -231,11 +318,11 @@ namespace EcdLink.Api.CoreApi.Services
                 if (childCount > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildRemovedFromPreschoolId);
-
+                    var userPoints = childCount * activity.Points;
                     AddOrUpdatePoints(
                         PointsActivityConstants.ChildRemovedFromPreschoolId,
                         userId,
-                        childCount > 4 ? (int)activity.MaxPointsIndividualYearly : childCount * activity.Points,
+                        userPoints >= (int)activity.MaxPointsIndividualYearly ? (int)activity.MaxPointsIndividualYearly : userPoints,
                         childCount
                        );
                 }
@@ -261,28 +348,19 @@ namespace EcdLink.Api.CoreApi.Services
                     if (schoolClasses.Any())
                     {
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
-                        var classroomProgrammes = schoolClasses
+                        var classroomProgrammesCount = schoolClasses
                                                     .SelectMany(x => x.Programmes)
-                                                    .Where(x => x.IsActive && x.StartDate.Year == today.Year && x.Name != "No theme")
-                                                    .ToList()
-                                                    .Select(x => new { x.StartDate.Month, x.Id })
-                                                    .ToList()
-                                                    .GroupBy(x => x.Month)
-                                                    .Select(x => new { Month = x.Key, Total = x.Count() })
-                                                    .ToList();
+                                                    .Where(x => x.IsActive && x.StartDate.Year == today.Year && x.StartDate.Month == today.Month && x.Name != "No theme")
+                                                    .Count();
 
-                        if (classroomProgrammes.Count > 0)
+                        if (classroomProgrammesCount > 0)
                         {
-                            foreach (var item in classroomProgrammes)
-                            {
-                                AddOrUpdatePoints(
-                                    PointsActivityConstants.ThemePlannedId,
-                                    userId,
-                                    activity.Points,
-                                    item.Total,
-                                    new DateTime(today.Year, item.Month, today.Day)
-                                    );
-                            }
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.ThemePlannedId,
+                                userId,
+                                activity.Points,
+                                classroomProgrammesCount
+                            );
                         }
 
                     }
@@ -311,7 +389,9 @@ namespace EcdLink.Api.CoreApi.Services
 
                         var classroomProgrammes = schoolClasses
                                                 .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.StartDate.Year == today.Year && x.EndDate.Year == today.Year && x.Name == "No theme")
+                                                .Where(x => x.IsActive 
+                                                        && (x.StartDate.Year == today.Year && x.StartDate.Month == today.Month)
+                                                        && x.Name == "No theme")
                                                 .ToList()
                                                 .SelectMany(x => x.DailyProgrammes)
                                                 .Where(x => x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
@@ -353,31 +433,22 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitioner != null && practitioner.IsPrincipal == true)
             {
                 var today = DateTime.Now;
-                var practitioners = _practitionerRepo.GetAll().Where(x => x.IsActive
+                var practitionersCount = _practitionerRepo.GetAll().Where(x => x.IsActive
                                                                 && x.PrincipalHierarchy == userId
                                                                 && x.DateLinked.HasValue
-                                                                && x.DateLinked.Value.Year == today.Year)
-                                            .Select(x => new { x.DateLinked.Value.Month, x.Id })
-                                            .ToList()
-                                            .GroupBy(x => x.Month)
-                                            .Select(x => new { Month = x.Key, Total = x.Count() })
-                                            .ToList();
-                if (practitioners.Any())
+                                                                && x.DateLinked.Value.Year == today.Year
+                                                                && x.DateLinked.Value.Month == today.Month).Count();
+                if (practitionersCount > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddNewPractitionerToPreschoolId);
-                    foreach (var item in practitioners)
-                    {
-                        AddOrUpdatePoints(
-                          PointsActivityConstants.AddNewPractitionerToPreschoolId,
-                          userId,
-                          activity.Points * item.Total,
-                          item.Total,
-                          new DateTime(today.Year, item.Month, today.Day)
+                    AddOrUpdatePoints(
+                            PointsActivityConstants.AddNewPractitionerToPreschoolId,
+                            userId,
+                            activity.Points * practitionersCount,
+                            practitionersCount
                         );
-                    }
                 }
             }
-
         }
 
         /// <summary>
@@ -393,35 +464,25 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitioner != null && practitioner.IsPrincipal == true)
             {
                 var today = DateTime.Now;
-                var schoolClasses = _classRepo.GetAll()
+                var schoolClassesCount = _classRepo.GetAll()
                                             .Where(x => x.IsActive && x.UserId == userId && x.ClassroomGroups.Count != 0)
-                                            .SelectMany(x => x.ClassroomGroups.Where(x => x.InsertedDate.Year == today.Year))
-                                            .Select(x => new { x.InsertedDate.Month, x.Id })
-                                            .ToList()
-                                            .GroupBy(x => x.Month)
-                                            .Select(x => new { Month = x.Key, Total = x.Count() })
-                                            .ToList();
-                if (schoolClasses.Any())
+                                            .SelectMany(x => x.ClassroomGroups.Where(x => x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month))
+                                            .Count();
+                if (schoolClassesCount > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddNewClassToPreschoolId);
                     var currentPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
                                             x.UserId == userId
                                             && x.PointsActivityId == activity.Id
-                                            && x.DateScored.Year >= today.Year)
-                                            .Count();
+                                            && x.DateScored.Year >= today.Year).Count();
 
                     var userPoints = currentPoints == 0 ? activity.Points : 0;
-                    foreach ( var item in schoolClasses)
-                    {
-                        AddOrUpdatePoints(
-                          PointsActivityConstants.AddNewClassToPreschoolId,
-                          userId,
-                          userPoints,
-                          item.Total,
-                          new DateTime(today.Year, item.Month, today.Day)
-                        );
-                        userPoints = 0; //reset user points - max 20 for year
-                    }
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.AddNewClassToPreschoolId,
+                        userId,
+                        userPoints,
+                        schoolClassesCount
+                    );
                 }
             }
         }
@@ -439,26 +500,23 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitioner != null && practitioner.IsPrincipal == true)
             {
                 var today = DateTime.Now;
-                var statements = _statementsIncomeStatementRepo
-                                    .GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == today.Year && x.Downloaded)
-                                    .Select(x => new { x.Month, x.Id })
-                                    .ToList()
-                                    .GroupBy(x => x.Month)
-                                    .Select(x => new { Month = x.Key, Total = x.Count() })
-                                    .ToList();
-                if (statements.Count > 0)
+                var statementCount = _statementsRepo
+                                    .GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == today.Year && x.Month == today.Month && x.Downloaded)
+                                    .Count();
+                if (statementCount > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.DownloadIncomeStatementId);
-                    foreach (var item in statements)
-                    {
-                        AddOrUpdatePoints(
-                          PointsActivityConstants.DownloadIncomeStatementId,
-                          userId,
-                          activity.Points,
-                          item.Total,
-                          new DateTime(today.Year, item.Month, today.Day)
-                        );
-                    }
+                    var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
+                                            x.UserId == userId
+                                            && x.PointsActivityId == activity.Id
+                                            && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
+                    
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.DownloadIncomeStatementId,
+                        userId,
+                        yearPoints >= (int)activity.MaxPointsIndividualYearly ? 0 : activity.Points,
+                        statementCount
+                    );
                 }
             }
         }
@@ -478,9 +536,13 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null && practitioner.IsPrincipal == true)
                 {
                     var today = DateTime.Now;
-                    var incomeExpenseItems = _statementsIncomeStatementRepo
-                                            .GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == today.Year)
-                                            .Select(x => new { Month = x.Month, IncomeCount = x.IncomeItems.Where(y => y.Amount > 0).Count(), ExpenseCount = x.ExpenseItems.Where(y => y.Amount > 0).Count() })
+                    var incomeExpenseItems = _statementsRepo
+                                            .GetAll()
+                                            .Where(x => x.IsActive 
+                                                    && x.UserId == userId 
+                                                    && x.Year == today.Year 
+                                                    && x.Month == today.Month 
+                                                    && (x.IncomeItems.Count > 0 || x.ExpenseItems.Count > 0))
                                             .ToList();
 
                     if (incomeExpenseItems.Count > 0)
@@ -488,13 +550,14 @@ namespace EcdLink.Api.CoreApi.Services
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddExpenseOrIncomeToStatementId);
                         foreach (var item in incomeExpenseItems)
                         {
-                            var monthPoints = (item.IncomeCount + item.ExpenseCount) * activity.Points;
+                            var itemsCount = item.IncomeItems.Count + item.ExpenseItems.Count;
+                            var monthPoints = itemsCount * activity.Points;
+
                             AddOrUpdatePoints(
                               PointsActivityConstants.AddExpenseOrIncomeToStatementId,
                               userId,
                               monthPoints > 25 ? activity.Points : monthPoints,
-                              (item.IncomeCount + item.ExpenseCount),
-                              new DateTime(today.Year, item.Month, today.Day)
+                              itemsCount
                             );
                         }
                     }
@@ -513,42 +576,52 @@ namespace EcdLink.Api.CoreApi.Services
             if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.BusinessEnabled)
             {
                 var today = DateTime.Now;
-                var month = 7;
-                var year = 2024;
-                var preschoolFeeStatements = _statementsIncomeStatementRepo
+                var monthlyPreSchoolItems = _statementsIncomeRepo
                                             .GetAll()
-                                            .Where(x => x.IsActive == true
-                                                && x.Month == month
-                                                && x.Year == year
-                                                && x.IncomeItems.Count > 0)
+                                            .Where(x => x.IsActive 
+                                                && x.StatementsIncomeStatement.Month == today.Month 
+                                                && x.StatementsIncomeStatement.Year == today.Year
+                                                && x.StatementsIncomeStatement.IsActive
+                                                && x.ChildUserId.HasValue
+                                                && x.IncomeTypeId == PointsActivityConstants.PreschoolFeeId
+                                                && x.Amount > 0
+                                                && x.ChildUser.IsActive)
+                                            .Select(x => new { x.StatementsIncomeStatement.UserId, x.Id})
+                                            .ToList()
+                                            .GroupBy(x => x.UserId)
+                                            .Select(x => new { UserId = x.Key, Total = x.Count() })
                                             .ToList();
 
-                var principalUserIds = preschoolFeeStatements.Select(x => x.UserId).Distinct().ToList();
-
-                var principalLearnerTotals = _classRepo
-                                                .GetAll()
-                                                .Where(x => x.IsActive && principalUserIds.Contains(x.UserId))
-                                                .ToList()
-                                                .Select(x => new { Key = x.UserId, Value = x.ClassroomGroups.SelectMany(y => y.Learners).Where(y => y.IsActive).Count() })
-                                                .ToList();
-
-                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId);
-                foreach (var item in preschoolFeeStatements)
+                if (monthlyPreSchoolItems.Any())
                 {
-                    var principalLearnerTotal = principalLearnerTotals.Where(x => x.Key == item.UserId).FirstOrDefault();
-                    var preschoolIncomeTotal = item.IncomeItems.Where(x => x.IncomeTypeId == PointsActivityConstants.PreschoolFeeId && x.Amount > 0 && x.IsActive).Count();
+                    var principalUserIds = monthlyPreSchoolItems.Select(x => x.UserId).Distinct().ToList();
+                    var principalLearnerTotals = _classroomGroupRepo
+                                                .GetAll()
+                                                .Where(x => x.IsActive && principalUserIds.Contains(x.Classroom.UserId) && x.Classroom.IsActive)
+                                                .SelectMany(x => x.Learners.Where(y => y.IsActive && y.User.IsActive))
+                                                .Select(x => new { x.ClassroomGroup.Classroom.UserId, x.Id })
+                                                .GroupBy(x => x.UserId)
+                                                .Select(x => new { UserId = x.Key, Total = x.Count() })
+                                                .ToList(); 
 
-                    if (principalLearnerTotal != null)
+                    if (principalLearnerTotals.Any())
                     {
-                        if (preschoolIncomeTotal == principalLearnerTotal.Value)
+                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId);
+                        foreach (var item in monthlyPreSchoolItems)
                         {
-                            AddOrUpdatePoints(
-                                PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId,
-                                (Guid)item.UserId,
-                                activity.Points,
-                                1,
-                                new DateTime(today.Year, today.Month, today.Day)
-                            );
+                            var principalLearnerTotal = principalLearnerTotals.Where(x => x.UserId == item.UserId).FirstOrDefault();
+                            if (principalLearnerTotal != null)
+                            {
+                                if (item.Total == principalLearnerTotal.Total)
+                                {
+                                    AddOrUpdatePoints(
+                                        PointsActivityConstants.PreschoolFeesGreaterThan0ForEachChildId,
+                                        (Guid)item.UserId,
+                                        activity.Points,
+                                        1
+                                    );
+                                }
+                            }
                         }
                     }
                 }
@@ -577,6 +650,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                     .Where(x => x.IsActive
                                                             && schoolClassIds.Contains(x.ChildProgressReportPeriod.ClassroomId)
                                                             && x.ChildProgressReportPeriod.StartDate.Year == today.Year
+                                                            && x.ChildProgressReportPeriod.StartDate.Month == today.Month
                                                             && x.ObservationsCompleteDate.HasValue)
                                                     .Select(x => new { x.ObservationsCompleteDate.Value.Month, x.Id })
                                                     .ToList()
@@ -586,10 +660,12 @@ namespace EcdLink.Api.CoreApi.Services
 
                     foreach (var item in childProgressReports)
                     {
+                        var userPoints = activity.Points * item.Total;
+
                         AddOrUpdatePoints(
                             PointsActivityConstants.CompleteChildProgressObservationsId,
                             userId,
-                            item.Total > 2 ? activity.Points * 3 : activity.Points * item.Total,
+                            userPoints >= (int)activity.MaxPointsIndividualMonthly ? (int)activity.MaxPointsIndividualMonthly : userPoints,
                             item.Total,
                             new DateTime(today.Year, item.Month, today.Day)
                         );
@@ -619,16 +695,20 @@ namespace EcdLink.Api.CoreApi.Services
                                                     .GetAll()
                                                     .Where(x => x.IsActive 
                                                             && schoolClassIds.Contains(x.ChildProgressReportPeriod.ClassroomId)
-                                                            && x.ChildProgressReportPeriod.StartDate.Year == today.Year)
+                                                            && x.ChildProgressReportPeriod.StartDate.Year == today.Year
+                                                            && x.ChildProgressReportPeriod.StartDate.Month == today.Month)
                                                     .Count();
-                var userPoints = childProgressReportsCount > 10 ? activity.Points : childProgressReportsCount * activity.Points;
-                AddOrUpdatePoints(
-                        PointsActivityConstants.CreateChildProgressReportId,
-                        userId,
-                        userPoints,
-                        childProgressReportsCount
+                    var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
+                                           x.UserId == userId
+                                           && x.PointsActivityId == activity.Id
+                                           && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
+                    var userPoints = (childProgressReportsCount * activity.Points);
+                    AddOrUpdatePoints(
+                            PointsActivityConstants.CreateChildProgressReportId,
+                            userId,
+                            userPoints + yearPoints >= (int)activity.MaxPointsIndividualYearly ? (int)activity.MaxPointsIndividualYearly : userPoints,
+                            childProgressReportsCount
                     );
-
                 }
            }
         }
@@ -674,16 +754,25 @@ namespace EcdLink.Api.CoreApi.Services
             if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.TrainingEnabled)
             {
                 var today = DateTime.Now;
-                var trainingCourses = _userTrainingCourseRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.CompletedDate.Year == today.Year).ToList();
-                if (trainingCourses.Count > 0)
+                var trainingCoursesCount = _userTrainingCourseRepo.GetAll().Where(x => x.IsActive 
+                                                                                    && x.UserId == userId 
+                                                                                    && x.CompletedDate.Year == today.Year
+                                                                                    && x.CompletedDate.Month == today.Month).Count();
+                if (trainingCoursesCount > 0)
                 {
                     // 200 points per course completed in the "Training" section
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
+
+                    var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
+                                           x.UserId == userId
+                                           && x.PointsActivityId == activity.Id
+                                           && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
+                    var userPoints = yearPoints == 0 ? activity.Points : 0;
                     AddOrUpdatePoints(
                         PointsActivityConstants.CompleteOnlineTrainingCourseId,
                         userId,
-                        activity.Points,
-                        trainingCourses.Count);
+                        userPoints,
+                        trainingCoursesCount);
                 }
             }
         }
@@ -727,34 +816,28 @@ namespace EcdLink.Api.CoreApi.Services
         public void CalculateConnectWithAnotherUser(Guid userId)
         {
             var today = DateTime.Now;
-            var acceptedConnectionsForYear = _communityProfileConnectionRepo
+            var acceptedConnectionsCount = _communityProfileConnectionRepo
                                             .GetAll()
                                             .Where(x => x.IsActive
                                                     && x.InviteAccepted.HasValue
                                                     && x.InviteAccepted == true
                                                     && (x.FromProfile.UserId == userId || x.ToProfile.UserId == userId)
                                                     && x.UpdatedDate.Year == today.Year
+                                                    && x.UpdatedDate.Month == today.Month
                                                     )
-                                            .Select(x => new { x.UpdatedDate.Month, x.Id })
-                                            .ToList()
-                                            .GroupBy(x => x.Month)
-                                            .Select(x => new { Month = x.Key, ConnectionCount = x.Count() })
-                                            .ToList();
-            if (acceptedConnectionsForYear.Count > 0)
+                                            .Count();
+            if (acceptedConnectionsCount > 0)
             {
                 // principal and practitioner max month(10) and max year(120)
                 var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ConnectWithAnotherUserId);
+                var userPoints = acceptedConnectionsCount * activity.Points;
 
-                foreach (var item in acceptedConnectionsForYear)
-                {
-                    AddOrUpdatePoints(
-                      PointsActivityConstants.ConnectWithAnotherUserId,
-                      userId,
-                      item.ConnectionCount > 2 ? (int)activity.MaxPointsIndividualMonthly : item.ConnectionCount * activity.Points,
-                      acceptedConnectionsForYear.Count,
-                      new DateTime(today.Year, item.Month, today.Day)
-                    );
-                }
+                AddOrUpdatePoints(
+                    PointsActivityConstants.ConnectWithAnotherUserId,
+                    userId,
+                    userPoints >= (int)activity.MaxPointsIndividualMonthly ? (int)activity.MaxPointsIndividualMonthly : userPoints,
+                    acceptedConnectionsCount
+                );
 
             }
         }

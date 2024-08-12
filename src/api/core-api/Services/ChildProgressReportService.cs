@@ -161,14 +161,14 @@ namespace EcdLink.Api.CoreApi.Services
                 if (input.ObservationsCompleteDate != null)
                 {
                     existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
+                    _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
                 }
 
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
                 existingReport.UserId = _contextUserId;
 
                 _childProgressReportRepo.Update(existingReport);
-                // when observations are completed, we need to call this.
-                // _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
+                
             }
             else
             {

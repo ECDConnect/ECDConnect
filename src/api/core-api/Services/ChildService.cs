@@ -163,7 +163,10 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
             // Calculate points for practitioner
-            _pointsService.CalculateChildRegistrationComplete((Guid)child.UserId);
+            if (child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
+            {
+                _pointsService.CalculateChildRegistrationComplete((Guid)child.UserId);
+            }
                       
         }
 

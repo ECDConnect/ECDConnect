@@ -891,6 +891,12 @@ namespace EcdLink.Api.CoreApi
             public static readonly string PreschoolFeeId = "3915acb0-db44-a323-c086-fe3376d2bfd4";
         }
 
+        public static class WorkflowStatus
+        {
+            public static readonly Guid ActiveId = new Guid("9c63bce4-7864-4c32-95ea-736ec6564204");
+        }
+
+
         public static class PractitionerPermissions
         {
             public static readonly Guid TakeAttendanceId = new Guid("a929377d-79af-47f0-a65c-b5a81466d033");

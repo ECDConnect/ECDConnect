@@ -175,9 +175,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (input is null)
                 throw new QueryException("Input cannot be null.");
 
-            if (input.ProfilePicIsEmoji.HasValue && !input.ProfilePicIsEmoji.Value)
+            if (!string.IsNullOrEmpty(input.ProfileImageUrl))
             {
-                if (!string.IsNullOrEmpty(input.ProfileImageUrl))
+                if (!input.ProfilePicIsEmoji.HasValue || (input.ProfilePicIsEmoji.HasValue && !input.ProfilePicIsEmoji.Value))
                 {
                     var parts = input.ProfileImageUrl.Split(';');
                     if (parts.Length != 2) throw new QueryException("Invalid profile image data.");

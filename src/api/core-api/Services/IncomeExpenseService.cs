@@ -1,28 +1,25 @@
 ﻿
+using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
+using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ECDLink.Security.Extensions;
-using ECDLink.Core.Extensions;
-using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
-using HotChocolate;
-using EcdLink.Api.CoreApi.Managers;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
-using ECDLink.DataAccessLayer.Hierarchy;
 using System.Globalization;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
-using ECDLink.DataAccessLayer.Managers;
-using DinkToPdf.Contracts;
-using static iTextSharp.text.pdf.AcroFields;
-using AngleSharp.Text;
 
 namespace ECDLink.Core.Services
 {

@@ -1,4 +1,6 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
@@ -34,6 +36,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return pointsService.GetPointActivities();
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<PointsPhase1TodoItemModel> GetPhase1TodoItems(
+            [Service] IPointsEngineService pointsService,
+            Guid userId)
+        {
+            return pointsService.GetPhase1TodoItems(userId);
+        }
+
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<PointsLibrary> GetPointsLibrary(
@@ -56,6 +66,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return null;
         }
 
-        
     }
 }

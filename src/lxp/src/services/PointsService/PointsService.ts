@@ -33,12 +33,12 @@ class PointsService {
             year
             userId
             pointsActivity {
+              id
               name
               points
               maxPointsIndividualMonthly
               maxPointsIndividualYearly
             }
-          }
         }
       }`,
       variables: {
