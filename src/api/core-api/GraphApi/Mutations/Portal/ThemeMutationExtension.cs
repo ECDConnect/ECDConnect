@@ -2,10 +2,10 @@ using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Model;
+using ECDLink.Tenancy.Services;
 using HotChocolate;
 using HotChocolate.Types;
 using Newtonsoft.Json;
@@ -21,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
         public async Task<string> UpdateTenantTheme(
-            [Service] TenantService tenantService,
+            [Service] ITenantService tenantService,
             [Service] IFileService fileService, 
             string theme)
         {
@@ -41,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
         public TenantInternalModel UpdateTenantInfo(
-            [Service]TenantService tenantService,
+            [Service] ITenantService tenantService,
             TenantInfoInputModel input)
         {
             if (input == null)
@@ -54,7 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
         public async Task<TenantInternalModel> RevertTenantSettingsToDefault(
-            [Service] TenantService tenantService,
+            [Service] ITenantService tenantService,
             [Service] IFileService fileService)
         {
             var orgDetail = JsonConvert.DeserializeObject<TenantOrgDetailModel>(TenantExecutionContext.Tenant.DefaultSystemSettings);
