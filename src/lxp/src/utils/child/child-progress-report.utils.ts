@@ -8,6 +8,16 @@ import { differenceInDays } from 'date-fns';
 import { childRegistrationConstants } from '../../constants/Child';
 import { SeperatedCategoryResult } from '@hooks/useChildProgressObservations';
 import { saveAs } from 'file-saver';
+
+export const replaceSkillText = (skillText: string, childFirstName: string) => {
+  let finalText = skillText;
+
+  // Child name
+  finalText = skillText.replace('[childFirstName]', childFirstName);
+
+  return finalText;
+};
+
 export const isChildsFirstReport = (
   child: ChildDto,
   completedReports: ChildProgressObservationReport[]

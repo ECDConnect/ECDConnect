@@ -152,6 +152,8 @@ import { ObservationsByCategory } from '@/pages/classroom/progress/observations-
 import { ProgressCreateReport } from '@/pages/classroom/progress/create-report/create-report';
 import { ProgressShareReport } from '@/pages/classroom/progress/share-report/share-report';
 import { ProgressViewReport } from '@/pages/classroom/progress/view-report/view-report';
+import { ProgressViewReportsSummary } from '@/pages/classroom/progress/view-reports-summary/view-reports-summary';
+import { ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup } from '@/pages/classroom/progress/view-reports-summary/view-reports-summary-select-class-and-age-group';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -676,6 +678,16 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.PROGRESS_VIEW_REPORT}
         component={ProgressViewReport}
+      />
+      <Route
+        path={
+          ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+        }
+        component={ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup}
+      />
+      <Route
+        path={ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY}
+        component={ProgressViewReportsSummary}
       />
       <Route
         path={ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS}

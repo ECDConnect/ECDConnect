@@ -1,18 +1,19 @@
-﻿using ECDLink.DataAccessLayer.Entities;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Input;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using ECDLink.Security.Extensions;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using System.Linq;
-using EcdLink.Api.CoreApi.GraphApi.Models.Input;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
-using ECDLink.DataAccessLayer.Context;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -22,18 +23,22 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
         private IGenericRepository<Learner, Guid> _learnerRepo;
         private AuthenticationDbContext _dbContext;
+        private readonly IPointsEngineService _pointsService;
 
         public ChildService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             HierarchyEngine hierarchyEngine,
-            [Service] AuthenticationDbContext dbContext)
+            [Service] AuthenticationDbContext dbContext,
+            [Service] IPointsEngineService pointsService)
         {
             var applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());
 
             _childRepo = repoFactory.CreateGenericRepository<Child>(userContext: applicationUserId);
             _classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: applicationUserId);
             _learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: applicationUserId);
+
+            _pointsService = pointsService;
 
             _dbContext = dbContext;
         }
@@ -157,6 +162,12 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
             }
+            // Calculate points for practitioner
+            if (child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
+            {
+                _pointsService.CalculateChildRegistrationComplete((Guid)child.UserId);
+            }
+                      
         }
 
         public void UpdateCaregiverGrants(Guid childUserId, List<Guid> grantIds)

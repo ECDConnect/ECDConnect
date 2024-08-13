@@ -74,7 +74,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (result == true)
             {
                 var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-                pointsEngineService.CalculateAttendanceSubmitted(applicationUserId.ToString(), DateTime.UtcNow);
+                pointsEngineService.CalculateChildAttendanceRegisterSaved(applicationUserId);
             }
 
             return result;

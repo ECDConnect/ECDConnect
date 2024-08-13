@@ -9,6 +9,7 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
+import { replaceSkillText as baseReplaceSkillText } from '@/utils/child/child-progress-report.utils';
 import { getProgressAgeGroupForChild } from '@/utils/classroom/progress/progress.utils';
 import { differenceInMonths } from 'date-fns';
 import { useMemo } from 'react';
@@ -87,18 +88,6 @@ export const useObserveProgressForChild = (childId: string) => {
     }));
   }, [skillsForAgeGroup, currentObservationsForChild]);
 
-  const replaceSkillText = (skillText: string) => {
-    let finalText = skillText;
-
-    // Child name
-    finalText = skillText.replace(
-      '[childFirstName]',
-      child?.user?.firstName || ''
-    );
-
-    return finalText;
-  };
-
   // Sets up reports, adding details for reporting period, skill names (for locale) etc
   const detailedReports = useMemo<ChildProgressDetailedReport[]>(() => {
     const details = allReports.map((report) => {
@@ -125,7 +114,10 @@ export const useObserveProgressForChild = (childId: string) => {
             const skill = allSkills.find((x) => x.id === skillToWorkOn.skillId);
             return {
               ...skillToWorkOn,
-              skillName: replaceSkillText(skill?.name || ''),
+              skillName: baseReplaceSkillText(
+                skill?.name || '',
+                child?.user?.firstName || ''
+              ),
               subCategoryId: skill?.subCategory.id || 0,
               categoryId: skill?.subCategory.category.id || 0,
             };
@@ -135,7 +127,10 @@ export const useObserveProgressForChild = (childId: string) => {
           const skill = allSkills.find((x) => x.id === skillObs.skillId);
           return {
             ...skillObs,
-            skillName: replaceSkillText(skill?.name || ''),
+            skillName: baseReplaceSkillText(
+              skill?.name || '',
+              child?.user?.firstName || ''
+            ),
             subCategoryId: skill?.subCategory.id || 0,
             categoryId: skill?.subCategory.category.id || 0,
             isPositive:
@@ -171,15 +166,14 @@ export const useObserveProgressForChild = (childId: string) => {
     return detailedReports.filter((x) => !!x.dateCompleted);
   }, [detailedReports, currentReportingPeriod]);
 
-  const addObservationForSkill = (
+  const addObservationForSkill = async (
     skillId: number,
     value: ProgressSkillValues
   ) => {
     if (!currentReportingPeriod) {
       return;
     }
-
-    appDispatch(
+    await appDispatch(
       progressTrackingActions.updateSkill({
         childId,
         reportingPeriodId: currentReportingPeriod.id,
@@ -335,6 +329,10 @@ export const useObserveProgressForChild = (childId: string) => {
 
   const syncChildProgressReports = () => {
     appDispatch(progressTrackingThunkActions.syncChildProgressReports({}));
+  };
+
+  const replaceSkillText = (skillText: string) => {
+    return baseReplaceSkillText(skillText, child?.user?.firstName || '');
   };
 
   return {
