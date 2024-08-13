@@ -152,7 +152,7 @@ export const ChildProgressLanding: React.FC = () => {
             'd MMM yyyy'
           )}`}
         />
-        {!isAllObservationsComplete && (
+        {(!isAllObservationsComplete || !isWithinReportPeriod) && (
           <Button
             onClick={handleContinueTrackingProgress}
             className="mt-4 w-full"
@@ -191,12 +191,14 @@ export const ChildProgressLanding: React.FC = () => {
           </div>
         </Card>
         {/* Outside report period */}
-        {!isWithinReportPeriod && <ProgressTabObservationsSummary />}
+        {!isWithinReportPeriod && !isAllObservationsComplete && (
+          <ProgressTabObservationsSummary />
+        )}
 
         {/* Within report period */}
         {isWithinReportPeriod && (
           <>
-            <ProgressTabReportSummary />
+            {!isAllReportsComplete && <ProgressTabReportSummary />}
             {isAllObservationsComplete &&
               !isAllReportsComplete &&
               !hasPermissionToCreateProgressReports &&

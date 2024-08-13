@@ -4,10 +4,8 @@ import {
   getChildProgressReports,
   getPractitionerProgressReportSummary,
   getProgressTrackingAgeGroups,
-  getProgressTrackingCategories,
   getProgressTrackingLevels,
-  getProgressTrackingSkills,
-  getProgressTrackingSubCategories,
+  getProgressTrackingContent,
   syncChildProgressReports,
 } from './progress-tracking.actions';
 import { ProgressTrackingState } from './progress-tracking.types';
@@ -15,10 +13,9 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 
 const initialState: ProgressTrackingState = {
+  currentLocale: 'en-za',
+  progressTrackingContentByLocale: {},
   progressTrackingAgeGroups: { data: [], dateRefreshed: undefined },
-  progressTrackingCategories: { data: [], dateRefreshed: undefined },
-  progressTrackingSubCategories: { data: [], dateRefreshed: undefined },
-  progressTrackingSkills: { data: [], dateRefreshed: undefined },
   progressTrackingLevels: undefined,
   practitionerProgressReportSummary: undefined,
 
@@ -31,11 +28,6 @@ const progressTrackingSlice = createSlice({
   reducers: {
     resetProgressTrackingState: (state) => {
       state.progressTrackingAgeGroups = initialState.progressTrackingAgeGroups;
-      state.progressTrackingCategories =
-        initialState.progressTrackingCategories;
-      state.progressTrackingSubCategories =
-        initialState.progressTrackingSubCategories;
-      state.progressTrackingSkills = initialState.progressTrackingSkills;
       state.progressTrackingLevels = initialState.progressTrackingLevels;
       state.practitionerProgressReportSummary =
         initialState?.practitionerProgressReportSummary;
@@ -475,26 +467,9 @@ const progressTrackingSlice = createSlice({
         dateRefreshed: new Date().toDateString(),
       };
     });
-    builder.addCase(
-      getProgressTrackingCategories.fulfilled,
-      (state, action) => {
-        state.progressTrackingCategories = {
-          data: action.payload,
-          dateRefreshed: new Date().toDateString(),
-        };
-      }
-    );
-    builder.addCase(
-      getProgressTrackingSubCategories.fulfilled,
-      (state, action) => {
-        state.progressTrackingSubCategories = {
-          data: action.payload,
-          dateRefreshed: new Date().toDateString(),
-        };
-      }
-    );
-    builder.addCase(getProgressTrackingSkills.fulfilled, (state, action) => {
-      state.progressTrackingSkills = {
+    builder.addCase(getProgressTrackingContent.fulfilled, (state, action) => {
+      const locale = action.meta.arg.locale;
+      state.progressTrackingContentByLocale[locale] = {
         data: action.payload,
         dateRefreshed: new Date().toDateString(),
       };

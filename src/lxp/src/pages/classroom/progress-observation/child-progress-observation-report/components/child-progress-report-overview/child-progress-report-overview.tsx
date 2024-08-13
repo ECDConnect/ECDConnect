@@ -37,7 +37,7 @@ export const ChildProgressReportOverview: React.FC<
     classroomsSelectors.getClassroomGroupByChildUserId(child?.userId!)
   );
   const categories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
   const reportingDateAsDate = reportingDate
     ? new Date(reportingDate)

@@ -69,7 +69,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
   );
 
   const allCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
   const allLevels = useSelector(
     progressTrackingSelectors.getProgressTrackingLevels

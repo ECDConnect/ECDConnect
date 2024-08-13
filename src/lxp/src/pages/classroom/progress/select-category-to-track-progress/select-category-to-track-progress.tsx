@@ -11,7 +11,7 @@ export const SelectCategoryToTrack: React.FC = () => {
   const history = useHistory();
 
   const categories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
 
   const { currentReportingPeriod, ageGroupsAvailableForTracking } =

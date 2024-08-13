@@ -42,7 +42,7 @@ export const ViewChildProgressObservationReport: React.FC = () => {
     classroomsSelectors.getClassroomGroupByChildUserId(currentChild?.userId!)
   );
   const allCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
 
   useEffect(() => {

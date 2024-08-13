@@ -15,8 +15,8 @@ export const useObserveProgressForClassAndAgeGroup = (
     progressTrackingSelectors.getProgressAgeGroups()
   );
 
-  const skillStructure = useSelector(
-    progressTrackingSelectors.getProgressCategoryStructure()
+  const categories = useSelector(
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
 
   const classroomGroup = useSelector(
@@ -41,7 +41,7 @@ export const useObserveProgressForClassAndAgeGroup = (
       .flatMap((x) => x.report.skillsToWorkOn || [])
       .map((x) => x.skillId);
 
-    const structureWithCounts = skillStructure
+    const structureWithCounts = categories
       // Filter to on categories in use
       .filter((c) =>
         c.subCategories
@@ -68,7 +68,7 @@ export const useObserveProgressForClassAndAgeGroup = (
       }));
 
     return structureWithCounts;
-  }, [childReports, skillStructure]);
+  }, [childReports, categories]);
 
   const ageGroup = useMemo(() => {
     return allAgeGroups.find((x) => x.id === ageGroupId)!;

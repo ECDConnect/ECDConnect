@@ -20,7 +20,7 @@ export const CaregiverCanHelpChildWith: React.FC<
 > = ({ childId, onSubmit }) => {
   const { currentReport } = useChildProgressObservation(childId);
   const allCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
 

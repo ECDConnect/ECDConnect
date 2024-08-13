@@ -43,15 +43,15 @@ export const useChildProgressObservation = (
     contentReportSelectors.getChildProgressObservationReports(childId)
   );
   const allCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
   const allSubCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingSubCategories
+    progressTrackingSelectors.getProgressTrackingSubCategories()
   );
   const appDispatch = useAppDispatch();
 
   const allSkills = useSelector(
-    progressTrackingSelectors.getProgressTrackingSkills
+    progressTrackingSelectors.getProgressTrackingSkills()
   );
 
   const allSummaries = useSelector(
