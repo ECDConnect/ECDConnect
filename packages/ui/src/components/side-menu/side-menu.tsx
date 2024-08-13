@@ -24,7 +24,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <Dialog
           as="div"
-          className="fixed inset-0 flex z-40"
+          className="fixed inset-0 z-40 flex"
           onClose={setSidebarOpen}
         >
           <Transition.Child
@@ -47,7 +47,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <div className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white">
+            <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white pt-5 pb-4">
               <Transition.Child
                 as={Fragment}
                 enter="ease-in-out duration-300"
@@ -60,20 +60,20 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                 <div className="absolute top-0 right-0 -mr-12 pt-2">
                   <button
                     type="button"
-                    className="cursor-pointer bg-white flex place-items-center z-10 rounded-10 h-9 w-9 p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" // TODO: fix this to be generic
+                    className="rounded-10 focus:outline-none z-10 flex h-9 w-9 cursor-pointer place-items-center bg-white p-2 focus:ring-2 focus:ring-inset focus:ring-white" // TODO: fix this to be generic
                     onClick={() => setSidebarOpen(false)}
                   >
                     <XIcon
-                      className="h-6 w-6 text-primary"
+                      className="text-primary h-6 w-6"
                       aria-hidden="true"
                     />
                   </button>
                 </div>
               </Transition.Child>
-              <div className="px-18 flex-shrink-0 flex items-center">
+              <div className="px-18 flex flex-shrink-0 items-center">
                 <img className="h-8 w-auto" src={logoUrl} />
               </div>
-              <div className="flex flex-col mt-5 flex-1 h-0 overflow-y-auto justify-between">
+              <div className="mt-5 flex h-0 flex-1 flex-col justify-between overflow-y-auto">
                 <nav className="px-18 space-y-1.5">
                   {navigation.map((item) =>
                     item.nestedChildren ? (
@@ -83,24 +83,26 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                         onNavigation={onNavigation}
                       />
                     ) : (
-                      <SideMenuItem
-                        key={item.name}
-                        item={item}
-                        onNavigation={onNavigation}
-                      />
+                      !item?.hideItem && (
+                        <SideMenuItem
+                          key={item.name}
+                          item={item}
+                          onNavigation={onNavigation}
+                        />
+                      )
                     )
                   )}
                 </nav>
               </div>
             </div>
           </Transition.Child>
-          <div className="flex-shrink-0 w-14" aria-hidden="true">
+          <div className="w-14 flex-shrink-0" aria-hidden="true">
             {/* Dummy element to force sidebar to shrink to fit close icon */}
           </div>
         </Dialog>
       </Transition.Root>
 
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-1 flex-col">
         <main>{children}</main>
       </div>
     </div>
