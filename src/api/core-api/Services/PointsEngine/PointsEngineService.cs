@@ -1,5 +1,4 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -115,51 +114,53 @@ namespace EcdLink.Api.CoreApi.Services
             var monthStart = DateTime.Now.GetStartOfMonth();
             var monthEnd = DateTime.Now.GetEndOfMonth();
 
-            var practitionerRecord = _practitionerRepo.GetByUserId(userId);
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            var isPrincipal = practitioner.IsPrincipalOrAdmin();
 
             // Phase 1
-            // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
-            if (!practitionerRecord.IsPrincipal.HasValue || (practitionerRecord.IsPrincipal.HasValue && !practitionerRecord.IsPrincipal.Value))
+            if (!isPrincipal)
             {
+                // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
                 var schoolClasses = _classroomService.GetClassroomGroupsForUser(userId);
                 if (schoolClasses.Count > 0)
                 {
                     pointsToDoItems.NotPartOfPreschool = true;
                 }
-            }
 
-            // 2.Principal only-- save 1 income or expense yet(W12)
-            if (practitionerRecord.IsPrincipal.HasValue && practitionerRecord.IsPrincipal.Value)
-            {
-                var itemsCount = _statementsRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == monthStart.Year && x.IncomeItems.Count > 0 && x.ExpenseItems.Count > 0).Count();
-                if (itemsCount > 0)
-                {
-                    pointsToDoItems.SavedIncomeOrExpense = true;
-                }
-            }
-
-            // 3.Practitioner(non - principal) only-- plan at least 1 day - ie picked all activities & story for the day (W11)
-            if (!practitionerRecord.IsPrincipal.HasValue || (practitionerRecord.IsPrincipal.HasValue && !practitionerRecord.IsPrincipal.Value))
-            {
-                var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
+                // 3.Practitioner(non - principal) only-- plan at least 1 day - ie picked all activities & story for the day (W11)
+                var schools = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
                 if (schoolClasses.Count > 0)
                 {
-                    var programmeCount = schoolClasses
-                                                .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.StartDate.Year == monthStart.Year && x.EndDate.Year == monthStart.Year)
-                                                .ToList()
-                                                .SelectMany(x => x.DailyProgrammes)
-                                                .Where(x => x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
-                                                .Count();
+                    var programmeCount = schools
+                                        .SelectMany(x => x.Programmes)
+                                        .Where(x => x.IsActive && x.StartDate.Year == monthStart.Year && x.EndDate.Year == monthStart.Year)
+                                        .ToList()
+                                        .SelectMany(x => x.DailyProgrammes)
+                                        .Where(x => x.IsActive && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
+                                        .Count();
                     if (programmeCount > 0)
                     {
                         pointsToDoItems.PlannedOneDay = true;
                     }
                 }
             }
+            else
+            {
+                // 2.Principal only-- save 1 income or expense yet(W12)
+                var itemsCount = _statementsRepo.GetAll().Where(x => x.IsActive 
+                                                                && x.UserId == userId 
+                                                                && x.Year == monthStart.Year 
+                                                                && x.Month == monthStart.Month 
+                                                                && x.IncomeItems.Count > 0 && x.ExpenseItems.Count > 0).Count();
+                if (itemsCount > 0)
+                {
+                    pointsToDoItems.SavedIncomeOrExpense = true;
+                }
 
+            }
+              
             // 4.Gone to Community section of app at least once
-            if (practitionerRecord.ClickedCommunityTab.HasValue)
+            if (practitioner.ClickedCommunityTab.HasValue)
             {
                 pointsToDoItems.ViewedCommunitySection = true;
             }
