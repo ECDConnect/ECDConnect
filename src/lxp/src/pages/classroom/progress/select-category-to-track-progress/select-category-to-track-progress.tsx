@@ -11,7 +11,7 @@ export const SelectCategoryToTrack: React.FC = () => {
   const history = useHistory();
 
   const categories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
 
   const { currentReportingPeriod, ageGroupsAvailableForTracking } =
@@ -33,7 +33,7 @@ export const SelectCategoryToTrack: React.FC = () => {
       subTitle={`Step ${step} of 2`}
       onBack={() => (step === 2 ? setStep(1) : history.goBack())}
     >
-      <div className="mt-2 flex flex-col p-4">
+      <div className="mt-2 flex h-full flex-col p-4">
         {/* Step 1 */}
         {step === 1 && (
           <>
@@ -71,6 +71,7 @@ export const SelectCategoryToTrack: React.FC = () => {
                 id: x.id,
                 label: x.name,
                 value: x.id,
+                icon: <img src={x.imageUrl} alt="category" />,
               }))}
               currentValue={selectedCategory}
               colour={'quatenary'}
@@ -92,7 +93,7 @@ export const SelectCategoryToTrack: React.FC = () => {
               });
             }
           }}
-          className="mt-4 w-full"
+          className="mt-auto w-full"
           size="small"
           color="quatenary"
           textColor="white"

@@ -1,8 +1,24 @@
-import { Alert, Button, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Alert,
+  Button,
+  DialogPosition,
+  Typography,
+} from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { ProgressTrackingAgeGroupDto } from '@ecdlink/core';
+import {
+  ContentTypeEnum,
+  LanguageDto,
+  ProgressTrackingAgeGroupDto,
+  useDialog,
+} from '@ecdlink/core';
 import LanguageSelector from '@/components/language-selector/language-selector';
+import { ContentService } from '@/services/ContentService';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { useAppDispatch } from '@/store';
+import { progressTrackingThunkActions } from '@/store/progress-tracking';
 
 export type ProgressLandingNoObservationsProps = {
   childId: string;
@@ -13,6 +29,61 @@ export const ProgressLandingNoObservations: React.FC<
   ProgressLandingNoObservationsProps
 > = ({ childId, currentAgeGroup }) => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const dialog = useDialog();
+
+  const userAuth = useSelector(authSelectors.getAuthUser);
+
+  // TODO - ADD online check and add check to see if already fetched
+  // TODO hasTranslations seems to always return true
+  const changeLanguage = async (language: LanguageDto) => {
+    const hasTranslations = await new ContentService(
+      userAuth?.auth_token ?? ''
+    ).hasContentTypeBeenTranslated(
+      ContentTypeEnum.ProgressTrackingCategory,
+      language.id ?? ''
+    );
+
+    if (hasTranslations) {
+      await appDispatch(
+        progressTrackingThunkActions.getProgressTrackingContent({
+          locale: language.locale,
+        })
+      ).unwrap();
+    } else {
+      presentUnavailableAlert();
+    }
+  };
+
+  const presentUnavailableAlert = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, close) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="No content found"
+            paragraphs={[
+              'Could not find any content for the selected language, please select another.',
+            ]}
+            icon={'InformationCircleIcon'}
+            iconColor={'infoDark'}
+            iconBorderColor={'infoBb'}
+            actionButtons={[
+              {
+                text: 'Close',
+                colour: 'primary',
+                onClick: close,
+                type: 'filled',
+                textColour: 'white',
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
 
   return (
     <>
@@ -36,7 +107,9 @@ export const ProgressLandingNoObservations: React.FC<
         labelText="Progress tracker language:"
         labelClassName="font-medium font-body text-textDark pr-2"
         currentLocale="en-za"
-        selectLanguage={(data) => {}}
+        selectLanguage={(data) => {
+          changeLanguage(data);
+        }}
       />
       <div className="mt-4">
         {currentAgeGroup.startAgeInMonths < 36 && (

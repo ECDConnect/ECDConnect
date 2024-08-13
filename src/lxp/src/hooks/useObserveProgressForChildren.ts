@@ -17,7 +17,7 @@ export const useObserveProgressForChildren = () => {
   );
 
   const allSkills = useSelector(
-    progressTrackingSelectors.getProgressTrackingSkillsWithCateogryInfo()
+    progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
   );
 
   const currentReportingPeriod = useSelector(
@@ -65,52 +65,54 @@ export const useObserveProgressForChildren = () => {
   }, [baseChildren, currentReportingPeriod]);
 
   const childReports = useMemo(() => {
-    return (children || []).map((child) => {
-      const childReport = baseReports.find(
-        (x) =>
-          x.childProgressReportPeriodId === currentReportingPeriod?.id &&
-          x.childId === child.childId
-      );
+    return (children || [])
+      .filter((x) => !!x.ageGroup)
+      .map((child) => {
+        const childReport = baseReports.find(
+          (x) =>
+            x.childProgressReportPeriodId === currentReportingPeriod?.id &&
+            x.childId === child.childId
+        );
 
-      return {
-        ...child,
-        isNotStarted: !childReport,
-        isInProgress: childReport?.skillObservations.some(
-          (x) => x.value === ProgressSkillValues.DoNotKnow
-        ),
-        report: {
-          ...childReport,
-          skillObservations: (childReport?.skillObservations || []).map(
-            (skillObs) => {
-              const skill = allSkills.find((x) => x.id === skillObs.skillId);
-              return {
-                ...skillObs,
-                skillName: replaceSkillText(
-                  skill?.name || '',
-                  child.childFirstName
-                ),
-                skillDescription: skill?.description,
-                subCategoryId: skill?.subCategory.id || 0,
-                categoryId: skill?.subCategory.category.id || 0,
-                isPositive:
-                  !!skillObs.value &&
-                  ((!skill?.isReverseScored &&
-                    skillObs.value === ProgressSkillValues.Yes) ||
-                    (!!skill?.isReverseScored &&
-                      skillObs.value === ProgressSkillValues.No)),
-                isNegative:
-                  !!skillObs.value &&
-                  ((!skill?.isReverseScored &&
-                    skillObs.value === ProgressSkillValues.No) ||
-                    (!!skill?.isReverseScored &&
-                      skillObs.value === ProgressSkillValues.Yes)),
-              };
-            }
+        return {
+          ...child,
+          isNotStarted: !childReport,
+          isInProgress: childReport?.skillObservations.some(
+            (x) => x.value === ProgressSkillValues.DoNotKnow
           ),
-        },
-        isObservationsComplete: !!childReport?.observationsCompleteDate,
-      };
-    });
+          report: {
+            ...childReport,
+            skillObservations: (childReport?.skillObservations || []).map(
+              (skillObs) => {
+                const skill = allSkills.find((x) => x.id === skillObs.skillId);
+                return {
+                  ...skillObs,
+                  skillName: replaceSkillText(
+                    skill?.name || '',
+                    child.childFirstName
+                  ),
+                  skillDescription: skill?.description,
+                  subCategoryId: skill?.subCategory.id || 0,
+                  categoryId: skill?.subCategory.category.id || 0,
+                  isPositive:
+                    !!skillObs.value &&
+                    ((!skill?.isReverseScored &&
+                      skillObs.value === ProgressSkillValues.Yes) ||
+                      (!!skill?.isReverseScored &&
+                        skillObs.value === ProgressSkillValues.No)),
+                  isNegative:
+                    !!skillObs.value &&
+                    ((!skill?.isReverseScored &&
+                      skillObs.value === ProgressSkillValues.No) ||
+                      (!!skill?.isReverseScored &&
+                        skillObs.value === ProgressSkillValues.Yes)),
+                };
+              }
+            ),
+          },
+          isObservationsComplete: !!childReport?.observationsCompleteDate,
+        };
+      });
   }, [baseChildren, baseReports, currentReportingPeriod]);
 
   const ageGroupsAvailableForTracking = useMemo(() => {
@@ -120,19 +122,19 @@ export const useObserveProgressForChildren = () => {
   }, [childReports, allAgeGroups]);
 
   const percentageReportsCompleted = useMemo(() => {
+    const validReports = childReports.filter((x) => !!x.ageGroup);
     return Math.ceil(
-      (childReports.filter((x) => !!x.ageGroup && !!x.report?.dateCompleted)
-        .length /
-        childReports.length) *
+      (validReports.filter((x) => !!x.report?.dateCompleted).length /
+        validReports.length) *
         100
     );
   }, [childReports]);
 
   const percentageObservationsCompleted = useMemo(() => {
+    const validReports = childReports.filter((x) => !!x.ageGroup);
     return Math.ceil(
-      (childReports.filter((x) => !!x.ageGroup && x.isObservationsComplete)
-        .length /
-        childReports.length) *
+      (validReports.filter((x) => x.isObservationsComplete).length /
+        validReports.length) *
         100
     );
   }, [childReports]);

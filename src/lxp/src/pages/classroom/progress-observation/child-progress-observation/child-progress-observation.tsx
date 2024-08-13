@@ -109,10 +109,10 @@ export const ChildProgressObservationPage: React.FC = () => {
     documentSelectors.getDocumentByTypeId(practitionerUser?.id, typeId)
   );
   const categories: ProgressTrackingCategoryDto[] = useSelector(
-    getProgressTrackingCategories
+    getProgressTrackingCategories()
   );
   const skills: ProgressTrackingSkillDto[] = useSelector(
-    getProgressTrackingSkills
+    getProgressTrackingSkills()
   );
 
   const reportSummaries = useSelector(
@@ -276,19 +276,7 @@ export const ChildProgressObservationPage: React.FC = () => {
 
     if (hasTranslations) {
       await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingCategories({
-          locale: language.locale,
-          overrideCache: true,
-        })
-      ).unwrap();
-      await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingSubCategories({
-          locale: language.locale,
-          overrideCache: true,
-        })
-      ).unwrap();
-      await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingSkills({
+        progressTrackingThunkActions.getProgressTrackingContent({
           locale: language.locale,
           overrideCache: true,
         })

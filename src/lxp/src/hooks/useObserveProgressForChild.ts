@@ -76,7 +76,7 @@ export const useObserveProgressForChild = (childId: string) => {
   );
 
   const allSkills = useSelector(
-    progressTrackingSelectors.getProgressTrackingSkillsWithCateogryInfo()
+    progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
   );
 
   const currentObservations = useMemo<ChildProgressSkill[]>(() => {

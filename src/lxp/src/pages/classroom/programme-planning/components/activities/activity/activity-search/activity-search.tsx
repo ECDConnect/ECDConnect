@@ -63,7 +63,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const languages = useSelector(staticDataSelectors.getLanguages);
   const allThemes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const subCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingSubCategories
+    progressTrackingSelectors.getProgressTrackingSubCategories()
   );
 
   const activitiesByType = useSelector(

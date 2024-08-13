@@ -6,6 +6,7 @@ export type NavigationItem = {
   current: boolean;
   onNavigation?: (item: NavigationItem) => void;
   params?: any;
+  hideItem?: boolean;
 };
 
 export type NavigationRouteItem = NavigationItem & {

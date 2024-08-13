@@ -27,7 +27,7 @@ export const ProgrammePlanningDevelopingChildren = () => {
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const categories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
 
   const getDataByLanguage = async (language: LanguageDto) => {
@@ -40,17 +40,7 @@ export const ProgrammePlanningDevelopingChildren = () => {
 
     if (hasTranslations) {
       await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingCategories({
-          locale: language.locale,
-        })
-      ).unwrap();
-      await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingSubCategories({
-          locale: language.locale,
-        })
-      ).unwrap();
-      await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingSkills({
+        progressTrackingThunkActions.getProgressTrackingContent({
           locale: language.locale,
         })
       ).unwrap();

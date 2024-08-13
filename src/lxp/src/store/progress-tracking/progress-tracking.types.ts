@@ -6,22 +6,13 @@ import {
   ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
-  ProgressTrackingSkillDto,
-  ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
 
 export type ProgressTrackingState = {
+  currentLocale: string;
+  progressTrackingContentByLocale: ProgressTrackingCategoriesByLocale;
   progressTrackingAgeGroups: {
     data: ProgressTrackingAgeGroupDto[];
-  } & OfflineCache;
-  progressTrackingCategories: {
-    data: ProgressTrackingCategoryDto[];
-  } & OfflineCache;
-  progressTrackingSubCategories: {
-    data: ProgressTrackingSubCategoryDto[];
-  } & OfflineCache;
-  progressTrackingSkills: {
-    data: ProgressTrackingSkillDto[];
   } & OfflineCache;
   progressTrackingLevels: ProgressTrackingLevelDto[] | undefined;
   practitionerProgressReportSummary?:
@@ -30,4 +21,10 @@ export type ProgressTrackingState = {
 
   // Not sure if this should be on a different store
   childProgressReports: (ChildProgressReport & OfflineUpdate)[];
+};
+
+export type ProgressTrackingCategoriesByLocale = {
+  [locale: string]: {
+    data: ProgressTrackingCategoryDto[];
+  } & OfflineCache;
 };

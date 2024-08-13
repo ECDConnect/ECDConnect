@@ -54,16 +54,25 @@ export default function NestedSubMenu({ item, onNavigation }) {
         </div>
       </Fragment>
       {openSubMenu &&
-        item.nestedChildren.map((nested) => (
-          <div
-            key={nested.name}
-            onClick={() => onNavigation(nested)}
-            className="flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium"
-          >
-            <div className={'mr-4 w-1/12 items-center justify-center '} />
-            <Typography type={'help'} color={'textDark'} text={nested.name} />
-          </div>
-        ))}
+        item.nestedChildren.map((nested) => {
+          if (nested?.hideItem) {
+            return null;
+          } else
+            return (
+              <div
+                key={nested.name}
+                onClick={() => onNavigation(nested)}
+                className="flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium"
+              >
+                <div className={'mr-4 w-1/12 items-center justify-center '} />
+                <Typography
+                  type={'help'}
+                  color={'textDark'}
+                  text={nested.name}
+                />
+              </div>
+            );
+        })}
     </div>
   );
 }
