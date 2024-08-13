@@ -15,7 +15,7 @@ namespace EcdLink.Api.CoreApi.Services
     {
         public async Task MonthlyTopPointsEarnerNotification()
         {
-            var adminId = _hierarchyEngine.GetAdminUserId();
+            /*var adminId = _hierarchyEngine.GetAdminUserId();
             var clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: adminId);
 
             var clubs = clubRepo.GetAll().Where(x => x.IsActive).ToList();
@@ -48,12 +48,12 @@ namespace EcdLink.Api.CoreApi.Services
                     var userToSend = await _userManager.FindByIdAsync(topEarners.First().Key);
                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.TopSmartStarterPoints, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                 }
-            }
+            }*/
         }
 
         public async Task MonthlyEarnMorePointsNotification()
         {
-            var adminId = _hierarchyEngine.GetAdminUserId();
+            /*var adminId = _hierarchyEngine.GetAdminUserId();
             var clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: adminId);
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
 
@@ -98,12 +98,12 @@ namespace EcdLink.Api.CoreApi.Services
                         await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
                     }
                 }
-            }
+            }*/
         }
 
         public async Task YearlyPointsSummaryNotification()
         {
-            var adminId = _hierarchyEngine.GetAdminUserId();
+           /* var adminId = _hierarchyEngine.GetAdminUserId();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
 
             var practitionerUsers = practitionerRepo.GetAll().Where(x => x.IsActive).Select(x => x.User).ToList();
@@ -123,7 +123,7 @@ namespace EcdLink.Api.CoreApi.Services
                 };
 
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.EndofyearPointsEarned, DateTime.Now.Date, user, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
-            }
+            }*/
         }
             
     }

@@ -33,7 +33,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitManager _visitManager;
         private VisitDataStatusManager _visitDataStatusManager;
         private ApplicationUserManager _applicationUserManager;
-        private IGrowGreatPointsCalculationsService _pointsCalculationService;
         private INotificationService _notificationService;
         private Guid? _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
@@ -49,7 +48,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager,
             ApplicationUserManager applicationUserManager,
-            [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager
             )
@@ -60,7 +58,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _infantManager = infantManager;
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
-            _pointsCalculationService = pointsCalculationService;
             _notificationService = notificationService;
             _userManager = userManager;
             _applicationUserManager = applicationUserManager;
@@ -96,9 +93,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
             }
 
-            // Call points engine for hcw
-            _pointsCalculationService.CalculatePregnantMomClientRegistration(_applicationUserId.Value);
-
              if (totalClients == 0) {
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
@@ -123,9 +117,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 entityToUpdate.UpdatedBy = _applicationUserId.ToStringOrNull();
                 entityToUpdate.ExpectedDateOfDelivery = Convert.ToDateTime(expectedDateOfDelivery, CultureInfo.InvariantCulture); ;
                 AddVisits(entityToUpdate.Id, entityToUpdate.ExpectedDateOfDelivery, entityToUpdate.InsertedDate);
-
-                // Call points engine for hcw
-                _pointsCalculationService.CalculatePregnantMomClientRegistration(_applicationUserId.Value);
 
                 return _motherRepo.Update(entityToUpdate);
             }

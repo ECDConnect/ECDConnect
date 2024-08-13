@@ -2,7 +2,6 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.AzureStorage.Blob;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -176,9 +175,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (input is null)
                 throw new QueryException("Input cannot be null.");
 
-            if (input.ProfilePicIsEmoji.HasValue && !input.ProfilePicIsEmoji.Value)
+            if (!string.IsNullOrEmpty(input.ProfileImageUrl))
             {
-                if (!string.IsNullOrEmpty(input.ProfileImageUrl))
+                if (!input.ProfilePicIsEmoji.HasValue || (input.ProfilePicIsEmoji.HasValue && !input.ProfilePicIsEmoji.Value))
                 {
                     var parts = input.ProfileImageUrl.Split(';');
                     if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
@@ -416,7 +415,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> DeleteUser(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
-          [Service] IPointsEngineService pointsEngineService,
           ApplicationUserManager userManager,
           string id)
         {
@@ -456,7 +454,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] ILogger<UserMutationExtension> _logger,
             IGenericRepositoryFactory repoFactory,
-            [Service] IPointsEngineService pointsEngineService,
             ApplicationUserManager userManager,
             List<string> ids)
         {
@@ -525,7 +522,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] ILogger<UserMutationExtension> _logger,
             IGenericRepositoryFactory repoFactory,
-            [Service] IPointsEngineService pointsEngineService,
             ApplicationUserManager userManager,
             List<Guid> userIds)
         {
