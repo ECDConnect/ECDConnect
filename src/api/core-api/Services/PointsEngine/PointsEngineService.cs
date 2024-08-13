@@ -124,7 +124,7 @@ namespace EcdLink.Api.CoreApi.Services
                 var schoolClasses = _classroomService.GetClassroomGroupsForUser(userId);
                 if (schoolClasses.Count > 0)
                 {
-                    pointsToDoItems.PhaseOne.NotPartOfPreschool = true;
+                    pointsToDoItems.NotPartOfPreschool = true;
                 }
             }
 
@@ -134,7 +134,7 @@ namespace EcdLink.Api.CoreApi.Services
                 var itemsCount = _statementsRepo.GetAll().Where(x => x.IsActive && x.UserId == userId && x.Year == monthStart.Year && x.IncomeItems.Count > 0 && x.ExpenseItems.Count > 0).Count();
                 if (itemsCount > 0)
                 {
-                    pointsToDoItems.PhaseOne.SavedIncomeOrExpense = true;
+                    pointsToDoItems.SavedIncomeOrExpense = true;
                 }
             }
 
@@ -153,15 +153,15 @@ namespace EcdLink.Api.CoreApi.Services
                                                 .Count();
                     if (programmeCount > 0)
                     {
-                        pointsToDoItems.PhaseOne.PlannedOneDay = true;
+                        pointsToDoItems.PlannedOneDay = true;
                     }
                 }
             }
 
             // 4.Gone to Community section of app at least once
-            if (!practitionerRecord.ClickedCommunityTab.HasValue)
+            if (practitionerRecord.ClickedCommunityTab.HasValue)
             {
-                pointsToDoItems.PhaseOne.ViewedCommunitySection = true;
+                pointsToDoItems.ViewedCommunitySection = true;
             }
 
 
@@ -171,9 +171,34 @@ namespace EcdLink.Api.CoreApi.Services
         public List<UserRankingPointsModel> GetRankingDataForUser(Guid userId, DateTime startDate, DateTime? endDate = null)
         {
             var practitioner = _practitionerRepo.GetByUserId(userId);
+            var isPrincipal = practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value;
+            var userPermissions = practitioner.User.UserPermissions;
+            var maxMonthlyTotal = isPrincipal ? Constants.MaxPointsTotal.PrincipalMaxMonthPoints : Constants.MaxPointsTotal.PractitionerMaxMonthPoints;
+            var maxYearlyTotal = isPrincipal ? Constants.MaxPointsTotal.PrincipalMaxYearPoints : Constants.MaxPointsTotal.PractitionerMaxYearPoints;
+
+            var takeAttendance = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.TakeAttendanceId).FirstOrDefault();
+            var planClassroomActivities = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.PlanClassroomActivitiesId).FirstOrDefault();
+            var createProgressReports = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.CreateProgressReportsId).FirstOrDefault();
+
+            if (!isPrincipal)
+            {
+                if (takeAttendance == null && planClassroomActivities == null && createProgressReports == null)
+                {
+                    maxMonthlyTotal = Constants.MaxPointsTotal.NoPermissionPractitionerMaxMonthPoints;
+                    maxYearlyTotal = Constants.MaxPointsTotal.NoPermissionPractitionerMaxYearPoints;
+                } else
+                {
+                    if (takeAttendance != null || planClassroomActivities != null || createProgressReports != null)
+                    {
+                        maxMonthlyTotal = Constants.MaxPointsTotal.PermissionPractitionerMaxMonthPoints;
+                        maxYearlyTotal = Constants.MaxPointsTotal.PermissionPractitionerMaxYearPoints;
+                    }
+                }
+            }
+
             var userIds = new List<Guid>();
 
-            if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value)
+            if (isPrincipal)
             {
                 userIds = _practitionerRepo.GetAll().Where(x => x.IsActive
                                                             && x.IsRegistered.HasValue && x.IsRegistered.Value
@@ -210,6 +235,9 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     allUserPoints[i].UserRanking = i + 1;
                 }
+
+                allUserPoints[i].MaxMonthlyTotal = maxMonthlyTotal;
+                allUserPoints[i].MaxYearlyTotal = maxYearlyTotal;
             }
 
             return allUserPoints;

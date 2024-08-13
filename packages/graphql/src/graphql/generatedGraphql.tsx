@@ -11588,9 +11588,12 @@ export type PointsLibrarySortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
-export type PointsPhase1TodoItemModel = {
-  __typename?: 'PointsPhase1TodoItemModel';
-  message?: Maybe<Scalars['String']>;
+export type PointsToDoItemModel = {
+  __typename?: 'PointsToDoItemModel';
+  notPartOfPreschool: Scalars['Boolean'];
+  plannedOneDay: Scalars['Boolean'];
+  savedIncomeOrExpense: Scalars['Boolean'];
+  viewedCommunitySection: Scalars['Boolean'];
 };
 
 export type PointsUserSummary = {
@@ -13610,10 +13613,10 @@ export type Query = {
   otherConnections?: Maybe<Array<Maybe<CommunityConnectionModel>>>;
   ownershipMetrics?: Maybe<PractitionerMetricReport>;
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
-  phase1TodoItems?: Maybe<Array<Maybe<PointsPhase1TodoItemModel>>>;
   pointActivities?: Maybe<Array<Maybe<PointsActivity>>>;
   pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
+  pointsTodoItems?: Maybe<PointsToDoItemModel>;
   practitionerById?: Maybe<PractitionerModel>;
   practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
   practitionerByIdNumberInternal?: Maybe<ApplicationUser>;
@@ -13632,6 +13635,7 @@ export type Query = {
   practitionerTimeline?: Maybe<PractitionerTimeline>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
   principalByUserId?: Maybe<Practitioner>;
+  rankingDataForUser?: Maybe<Array<Maybe<UserRankingPointsModel>>>;
   ratingsAndFeedbackTypes?: Maybe<CoachFeedbackSetupModel>;
   referrals?: Maybe<Array<Maybe<PortalReferralModel>>>;
   referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
@@ -16407,14 +16411,14 @@ export type QueryOtherConnectionsArgs = {
   userId: Scalars['UUID'];
 };
 
-export type QueryPhase1TodoItemsArgs = {
-  userId: Scalars['UUID'];
-};
-
 export type QueryPointsSummaryForUserArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   startDate: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPointsTodoItemsArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryPractitionerByIdArgs = {
@@ -16467,6 +16471,12 @@ export type QueryPractitionerVisitsArgs = {
 
 export type QueryPrincipalByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryRankingDataForUserArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  startDate: Scalars['DateTime'];
+  userId: Scalars['UUID'];
 };
 
 export type QueryReferralsArgs = {
@@ -18938,6 +18948,15 @@ export type UserPermissionSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
+};
+
+export type UserRankingPointsModel = {
+  __typename?: 'UserRankingPointsModel';
+  maxMonthlyTotal: Scalars['Int'];
+  maxYearlyTotal: Scalars['Int'];
+  pointsTotal: Scalars['Int'];
+  userId: Scalars['UUID'];
+  userRanking: Scalars['Int'];
 };
 
 export type UserTrainingCourse = {

@@ -896,12 +896,26 @@ namespace EcdLink.Api.CoreApi
             public static readonly Guid ActiveId = new Guid("9c63bce4-7864-4c32-95ea-736ec6564204");
         }
 
+        public static class MaxPointsTotal
+        {
+            public const int PrincipalMaxMonthPoints = 295;
+            public const int PrincipalMaxYearPoints = 6025;
+            public const int PractitionerMaxMonthPoints = 220;
+            public const int PractitionerMaxYearPoints = 2905;
+
+            public const int NoPermissionPractitionerMaxMonthPoints = 20;
+            public const int NoPermissionPractitionerMaxYearPoints = 380;
+            public const int PermissionPractitionerMaxMonthPoints = 130;
+            public const int PermissionPractitionerMaxYearPoints = 1420;
+
+
+        }
 
         public static class PractitionerPermissions
         {
             public static readonly Guid TakeAttendanceId = new Guid("a929377d-79af-47f0-a65c-b5a81466d033");
             public static readonly Guid CreateProgressReportsId = new Guid("5307eafe-a165-419e-a09d-9d9988c28676");
-            public static readonly Guid ManageChildren = new Guid("357350a6-cb12-49d9-8045-a69c520e1da5");
+            public static readonly Guid ManageChildrenId = new Guid("357350a6-cb12-49d9-8045-a69c520e1da5");
             public static readonly Guid PlanClassroomActivitiesId = new Guid("c39c1be5-0f4b-43ad-aa9f-f1da524efe84");
         }
 
