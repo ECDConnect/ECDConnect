@@ -32,7 +32,13 @@ export const ChildProgressLanding: React.FC = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
 
-  const { hasPermissionToManageChildren } = useUserPermissions();
+  //add coming soon
+  const isComingSoon = true;
+
+  const {
+    hasPermissionToManageChildren,
+    hasPermissionToCreateProgressReports,
+  } = useUserPermissions();
   const {
     isReportWindowSet,
     isWithinReportPeriod,
@@ -94,6 +100,11 @@ export const ChildProgressLanding: React.FC = () => {
     });
   }, [dialog]);
 
+  //add coming soon
+  if (isComingSoon) {
+    return <Typography color="textDark" text={`Coming soon`} type={'h2'} />;
+  }
+
   return (
     <>
       {/* No report periods defined and principal */}
@@ -130,32 +141,37 @@ export const ChildProgressLanding: React.FC = () => {
         )}
       {/* Observations sumamry */}
       <div className="mt-2 flex flex-col p-4">
-        <Typography
-          color="textDark"
-          text={`Report ${currentReportingPeriod?.reportNumber}`}
-          type={'h2'}
-        />
-        <Typography
-          type="h4"
-          color="textDark"
-          text={`${format(
-            new Date(currentReportingPeriod?.startDate || ''),
-            'd MMM'
-          )} and ${format(
-            new Date(currentReportingPeriod?.endDate || ''),
-            'd MMM yyyy'
-          )}`}
-        />
-        <Button
-          onClick={handleContinueTrackingProgress}
-          className="mt-4 w-full"
-          size="small"
-          color="quatenary"
-          textColor="white"
-          type="filled"
-          icon={'PresentationChartBarIcon'}
-          text={'Continue tracking progress'}
-        />
+        {currentReportingPeriod && (
+          <>
+            <Typography
+              color="textDark"
+              text={`Report ${currentReportingPeriod?.reportNumber}`}
+              type={'h2'}
+            />
+            <Typography
+              type="h4"
+              color="textDark"
+              text={`${format(
+                new Date(currentReportingPeriod?.startDate || ''),
+                'd MMM'
+              )} and ${format(
+                new Date(currentReportingPeriod?.endDate || ''),
+                'd MMM yyyy'
+              )}`}
+            />
+            <Button
+              onClick={handleContinueTrackingProgress}
+              className="mt-4 w-full"
+              size="small"
+              color="quatenary"
+              textColor="white"
+              type="filled"
+              icon={'PresentationChartBarIcon'}
+              text={'Continue tracking progress'}
+            />
+          </>
+        )}
+
         <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
           <div className="justify-center">
             <ProgressBar

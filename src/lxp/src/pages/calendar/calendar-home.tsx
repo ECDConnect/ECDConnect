@@ -45,6 +45,9 @@ export const CalendarHome: React.FC = () => {
   const calendarRef = createRef<ToastUIReactCalendar>();
   const [calendarEventsSet, setCalendarEventsSet] = useState<boolean>(false);
 
+  //add coming soon
+  const isComingSoon = true;
+
   const [selectedEventId, setSelectedEventId] = useState('');
 
   const events = useSelector(calendarSelectors.getCalendarEventObjects());
@@ -201,6 +204,28 @@ export const CalendarHome: React.FC = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calendarRef, calendarRef?.current, calendarRef?.current?.getInstance()]);
+
+  //add coming soon
+  if (isComingSoon) {
+    return (
+      <div className={styles.contentWrapper}>
+        <BannerWrapper
+          showBackground={false}
+          size="medium"
+          renderBorder={true}
+          title={'Calendar'}
+          subTitle={format(calendarDate, 'EEEE, d LLLL yyyy')}
+          color={'primary'}
+          onBack={() => {
+            backToDashboard();
+          }}
+          displayOffline={!isOnline}
+        >
+          <Typography color="textDark" text={`Coming soon`} type={'h2'} />
+        </BannerWrapper>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.contentWrapper}>
