@@ -1,4 +1,8 @@
-﻿namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
+﻿using ECDLink.DataAccessLayer.Entities.PointsEngine;
+using Microsoft.EntityFrameworkCore.Metadata;
+using System;
+
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
     public class PointsPointsTodoItemModel
     {
