@@ -1,4 +1,6 @@
+using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -20,10 +22,13 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -172,7 +177,7 @@ namespace EcdLink.Api.CoreApi.Services
         public List<UserRankingPointsModel> GetRankingDataForUser(Guid userId, DateTime startDate, DateTime? endDate = null)
         {
             var practitioner = _practitionerRepo.GetByUserId(userId);
-            var isPrincipal = practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value;
+            var isPrincipal = practitioner.IsPrincipalOrAdmin();
             var userPermissions = practitioner.User.UserPermissions;
             var maxMonthlyTotal = isPrincipal ? Constants.MaxPointsTotal.PrincipalMaxMonthPoints : Constants.MaxPointsTotal.PractitionerMaxMonthPoints;
             var maxYearlyTotal = isPrincipal ? Constants.MaxPointsTotal.PrincipalMaxYearPoints : Constants.MaxPointsTotal.PractitionerMaxYearPoints;
@@ -197,19 +202,19 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
 
-            var userIds = new List<Guid>();
+            var userIds = new List<Guid?>();
 
             if (isPrincipal)
             {
                 userIds = _practitionerRepo.GetAll().Where(x => x.IsActive
                                                             && x.IsRegistered.HasValue && x.IsRegistered.Value
-                                                            && x.IsPrincipal.HasValue && x.IsPrincipal.Value).Select(x => (Guid)x.UserId).Distinct().ToList();
+                                                            && x.IsPrincipal.HasValue && x.IsPrincipal.Value).Select(x => x.UserId).Distinct().ToList();
             }
             else
             {
                 userIds = _practitionerRepo.GetAll().Where(x => x.IsActive
                                                             && x.IsRegistered.HasValue && x.IsRegistered.Value
-                                                            && !x.IsPrincipal.HasValue || (x.IsPrincipal.HasValue && !x.IsPrincipal.Value)).Select(x => (Guid)x.UserId).Distinct().ToList();
+                                                            && !x.IsPrincipal.HasValue || (x.IsPrincipal.HasValue && !x.IsPrincipal.Value)).Select(x => x.UserId).Distinct().ToList();
             }
 
 
@@ -242,6 +247,170 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             return allUserPoints;
+        }
+
+        public PointsUserYearMonthSummary GetUserYearMonthSummary(Guid userId)
+        {
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            var today = DateTime.Now;
+            var summaryData = _pointsUserSummaryRepo.GetAll().Where(x => x.IsActive
+                                                                    && x.UserId == userId
+                                                                    && x.DateScored.Year == today.Year)
+                                                             .Select(x => new { Month = x.DateScored.Month, 
+                                                                                MonthName = x.DateScored.ToString("MMMM"),
+                                                                                Activity = x.PointsActivity.Name, 
+                                                                                PointsTotal = x.PointsTotal, 
+                                                                                TimesScored = x.TimesScored})
+                                                             .ToList()
+                                                             .OrderByDescending(x => x.Month);
+
+            var months = summaryData.Select(x => new { Month = x.Month, MonthName = x.MonthName }).Distinct().ToList();
+            var sumYear = summaryData.Sum(x => x.PointsTotal);
+            var monthlySummary = new List<MonthSummary>();
+
+            foreach (var item in months)
+            {
+                var monthTotal = summaryData.Where(x => x.Month == item.Month).Sum(x => x.PointsTotal);
+                var monthActivities = summaryData.Where(x => x.Month == item.Month)
+                    .Select(x => new { x.Activity, x.TimesScored, x.PointsTotal })
+                    .ToList()
+                    .GroupBy(x => x.Activity)
+                    .Select(x => new ActivityDetail(x.First().Activity, x.Sum(y => y.TimesScored), x.Sum(y => y.PointsTotal)))
+                    .ToList();
+                var monthSummary = summaryData.Where(x => x.Month == item.Month).Select(x => new MonthSummary(x.MonthName, monthTotal, monthActivities)).FirstOrDefault();
+                monthlySummary.Add(monthSummary);
+            }
+            return new PointsUserYearMonthSummary(sumYear, monthlySummary);
+        }
+
+        public PointsUserDateSummary GetUserPointSummaryForDateRange(Guid userId, DateTime startDate, DateTime? endDate = null)
+        {
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            var isPrincipal = practitioner.IsPrincipalOrAdmin();
+            var totalChildren = 0;
+            if (isPrincipal)
+            {
+                //principal = the number of children at the preschool;
+                totalChildren = _classroomGroupRepo.GetAll()
+                                .Where(x => x.IsActive && x.Classroom.UserId == userId && x.Classroom.IsActive)
+                                .SelectMany(x => x.Learners.Where(y => y.IsActive && y.User.IsActive))
+                                .Count();
+            } else
+            {
+                //practitioner = the number of children assigned to the user
+                totalChildren = _childRepo.GetAll()
+                                .Where(x => x.IsActive && x.Hierarchy.StartsWith(practitioner.Hierarchy)).Count();
+            }
+
+            var summaryData = _pointsUserSummaryRepo.GetAll()
+                                .Where(x => x.UserId == userId &&
+                                // After the start
+                                (x.DateScored >= startDate) &&
+                                // Before the end or no end date
+                                (!endDate.HasValue || x.DateScored <= endDate)
+                                )
+                                    .Select(x => new
+                                    {
+                                        Activity = x.PointsActivity.Name,
+                                        PointsTotal = x.PointsTotal,
+                                        TimesScored = x.TimesScored
+                                    })
+                                .GroupBy(x => x.Activity)
+                                .Select(x => new ActivityDetail(x.First().Activity, x.Sum(y => y.TimesScored), x.Sum(y => y.PointsTotal)))
+                                .ToList();
+            return new PointsUserDateSummary(summaryData.Sum(x => x.PointsTotal), totalChildren, summaryData);
+        }
+
+
+        /// <summary>
+        /// Gets the percentile standing of a user within relative to others within the group (practitioner/principal)
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public TeamStandingModel GetUserTeamStanding(Guid userId)
+            {
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            var isPrincipal = practitioner.IsPrincipalOrAdmin();
+            var teamUserIds = new List<Guid?>();
+
+            if (isPrincipal)
+            {
+                teamUserIds = _practitionerRepo.GetAll().Where(x => x.IsActive
+                                                            && x.IsRegistered.HasValue && x.IsRegistered.Value
+                                                            && x.IsPrincipal.HasValue && x.IsPrincipal.Value).Select(x => x.UserId).Distinct().ToList();
+            }
+            else
+            {
+                teamUserIds = _practitionerRepo.GetAll().Where(x => x.IsActive
+                                                            && x.IsRegistered.HasValue && x.IsRegistered.Value
+                                                            && !x.IsPrincipal.HasValue || (x.IsPrincipal.HasValue && !x.IsPrincipal.Value)).Select(x => x.UserId).Distinct().ToList();
+            }
+
+            var startDate = new DateTime(DateTime.Now.Year, 1, 1);
+
+            var usersPoints = _pointsUserSummaryRepo.GetAll()
+                .Where(x => teamUserIds.Contains(x.UserId) && x.DateScored >= startDate)
+                .GroupBy(x => x.UserId)
+                .Select(x => new { x.First().UserId, PointsSummaries = x.Select(y => new { y.DateScored.Month, y.PointsTotal }) })
+                .ToList();
+
+            var usersByMonth = usersPoints
+                .Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Where(y => y.Month == DateTime.Now.Month).Sum(z => z.PointsTotal) })
+                .OrderByDescending(x => x.PointsTotal)
+                .ToList();
+
+            var usersByYear = usersPoints
+                .Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Sum(y => y.PointsTotal) })
+                .OrderByDescending(x => x.PointsTotal)
+                .ToList();
+
+
+            var totalMembers = teamUserIds.Count();
+
+            var userMonthPoints = usersByMonth.FirstOrDefault(x => x.UserId.HasValue && x.UserId.Value == userId)?.PointsTotal ?? 0;
+            var userYearPoints = usersByYear.FirstOrDefault(x => x.UserId.HasValue && x.UserId.Value == userId)?.PointsTotal ?? 0;
+
+            var usersWithMorePointsThisMonth = usersByMonth.Where(x => x.PointsTotal > userMonthPoints && userId != x.UserId).Count();
+            var usersWithMorePointsThisYear = usersByYear.Where(x => x.PointsTotal > userYearPoints && userId != x.UserId).Count();
+
+            var percentageWithMorePointsThisMonth = (double)usersWithMorePointsThisMonth / (totalMembers - 1) * 100;
+            var percentageWithMorePointsThisYear = (double)usersWithMorePointsThisYear / (totalMembers - 1) * 100;
+
+            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints && userId != x.UserId).Count();
+            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints && userId != x.UserId).Count();
+
+            if (userMonthPoints > 0)
+            {
+                userWithFewerPointsThisMonth += teamUserIds.Where(x => x != userId && !usersByMonth.Any(y => y.UserId == x)).Count();
+            }
+
+            if (userYearPoints > 0)
+            {
+                userWithFewerPointsThisYear += teamUserIds.Where(x => x != userId && !usersByYear.Any(y => y.UserId == x)).Count();
+            }
+
+            var percentageWithFewerPointsThisMonth = (double)userWithFewerPointsThisMonth / (totalMembers - 1) * 100;
+            var percentageWithFewerPointsThisYear = (double)userWithFewerPointsThisYear / (totalMembers - 1) * 100;
+
+
+            // Offset for first place ties
+            if (percentageWithFewerPointsThisMonth == 100 && usersByMonth.Count() > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal)
+            {
+                percentageWithFewerPointsThisMonth = 99;
+            }
+
+            if (percentageWithFewerPointsThisYear == 100 && usersByYear.Count() > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal)
+            {
+                percentageWithFewerPointsThisYear = 99;
+            }
+
+            return new TeamStandingModel
+            {
+                PercentageMembersWithFewerPointsForCurrentMonth = (int)percentageWithFewerPointsThisMonth,
+                PercentageMembersWithFewerPointsForCurrentYear = (int)percentageWithFewerPointsThisYear,
+                PercentageMembersWithMorePointsForCurrentMonth = (int)percentageWithMorePointsThisMonth,
+                PercentageMembersWithMorePointsForCurrentYear = (int)percentageWithMorePointsThisYear
+            };
         }
 
         private void AddOrUpdatePoints(Guid activityId, Guid userId, int pointsTotal, int? timesScored = null, DateTime? dateScored = null)

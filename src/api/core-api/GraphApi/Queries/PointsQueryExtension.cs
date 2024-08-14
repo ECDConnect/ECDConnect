@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -57,6 +58,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             return pointsService.GetRankingDataForUser(userId, startDate, endDate);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public TeamStandingModel GetUserTeamStanding(
+            [Service] IPointsEngineService pointsService,
+            Guid userId)
+        {
+            return pointsService.GetUserTeamStanding(userId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PointsUserYearMonthSummary GetUserYearMonthSummary(
+            [Service] IPointsEngineService pointsService,
+            Guid userId)
+        {
+            return pointsService.GetUserYearMonthSummary(userId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PointsUserDateSummary GetUserPointSummaryForDateRange(
+            [Service] IPointsEngineService pointsService,
+            Guid userId,
+            DateTime startDate, 
+            DateTime? endDate = null)
+        {
+            return pointsService.GetUserPointSummaryForDateRange(userId, startDate, endDate);
+        }
+
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
