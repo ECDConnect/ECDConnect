@@ -1046,18 +1046,22 @@ export const Dashboard: React.FC = () => {
         menuItems={isCoach ? navigationForCoach : navigation}
         onNavigation={onNavigation}
         menuLogoUrl={hamburgerLogo}
-        calendarRender={() => {
-          return (
-            <IconBadge
-              onClick={() => goToCalendar()}
-              badgeColor={'errorMain'}
-              badgeTextColor={'white'}
-              icon={styles.calendarIconName}
-              iconColor={'white'}
-              badgeText={''}
-            />
-          );
-        }}
+        calendarRender={
+          (calendarEnabled && isWhiteLabel) || isOpenAccess
+            ? () => {
+                return (
+                  <IconBadge
+                    onClick={() => goToCalendar()}
+                    badgeColor={'errorMain'}
+                    badgeTextColor={'white'}
+                    icon={styles.calendarIconName}
+                    iconColor={'white'}
+                    badgeText={''}
+                  />
+                );
+              }
+            : () => {}
+        }
         notificationRender={() => {
           return (
             <IconBadge

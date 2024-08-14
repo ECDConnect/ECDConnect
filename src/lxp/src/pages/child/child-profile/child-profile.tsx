@@ -86,6 +86,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ChildrenActions } from '@/store/children/children.actions';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
+import { useTenantModules } from '@/hooks/useTenantModules';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -120,7 +121,9 @@ export const ChildProfile: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal;
   const child = useSelector(childrenSelectors.getChildById(childId));
   const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
   const appName = tenant?.tenant?.applicationName;
+  const { attendanceEnabled, progressEnabled } = useTenantModules();
 
   const practitioners = useSelector(
     practitionerSelectors.getPractitioners
@@ -265,7 +268,7 @@ export const ChildProfile: React.FC = () => {
             {
               text: 'Yes, help me!',
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               onClick: () => {
                 onSubmit();
@@ -275,8 +278,8 @@ export const ChildProfile: React.FC = () => {
             },
             {
               text: 'No, skip',
-              textColour: 'primary',
-              colour: 'primary',
+              textColour: 'quatenary',
+              colour: 'quatenary',
               type: 'outlined',
               onClick: () => {
                 setStorageItem(
@@ -767,14 +770,28 @@ export const ChildProfile: React.FC = () => {
           </div>
         )}
         <div className={styles.profileOptionsWrapper}>
-          {options.map((options, index) => (
-            <div key={`option-${index}`} id={`child_walkthrough_step_${index}`}>
-              <ListItem
-                {...options}
-                key={`child-profile-option-${options.key}`}
-              />
-            </div>
-          ))}
+          {options
+            ?.filter((item) =>
+              !attendanceEnabled && isWhiteLabel
+                ? item?.key !== 'attendance-record'
+                : item
+            )
+            ?.filter((item2) =>
+              !progressEnabled && isWhiteLabel
+                ? item2?.key !== 'progress'
+                : item2
+            )
+            .map((options, index) => (
+              <div
+                key={`option-${index}`}
+                id={`child_walkthrough_step_${index}`}
+              >
+                <ListItem
+                  {...options}
+                  key={`child-profile-option-${options.key}`}
+                />
+              </div>
+            ))}
 
           <Divider dividerType="dashed" className="-mt-1.5" />
           <ChildWrapper />
