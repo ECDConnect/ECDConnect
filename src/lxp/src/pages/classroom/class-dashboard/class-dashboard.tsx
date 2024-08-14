@@ -63,8 +63,6 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
-  const [promptPhotoReportPermission, setPromptPhotoReportPermission] =
-    useState<boolean>(false);
   const [showAttendanceWalkthrough, setShowAttendanceWalkthrough] =
     useState(false);
   const appDispatch = useAppDispatch();
@@ -105,12 +103,6 @@ export const ClassDashboard: React.FC = () => {
   const hasPermissionToEdit =
     practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
-  const hasCreatedReportForCurrentPeriod = useSelector(
-    contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
-      reportingPeriod?.reportingDate
-    )
-  );
-
   const backToDashboard = () => {
     history.push('/');
   };
@@ -124,18 +116,6 @@ export const ClassDashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (!practitioner || !user || !user.profileImageUrl) return;
-    if (!reportingPeriod || hasCreatedReportForCurrentPeriod) return;
-    const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
-    if (
-      !practitioner.usePhotoInReport ||
-      !practitioner.usePhotoInReport.startsWith(prefix)
-    ) {
-      setPromptPhotoReportPermission(true);
-    }
-  }, [practitioner]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -320,76 +300,6 @@ export const ClassDashboard: React.FC = () => {
     isToShowAttendanceTutorial,
   ]);
 
-  const updatePractitionerUsePhotoReportPermission = useCallback(
-    async (usePhotoInReport: string) => {
-      await appDispatch(
-        practitionerThunkActions.updatePractitionerUsePhotoInReport({
-          practitionerId: practitioner?.userId,
-          usePhotoInReport: usePhotoInReport,
-        })
-      );
-    },
-    [appDispatch, practitioner?.userId]
-  );
-
-  const handlePromptPhotoReportPermission = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          className="bg-white"
-          customIcon={
-            <div className="flex">
-              <img
-                src={user?.profileImageUrl}
-                alt="profile avatar"
-                className="mb-5 h-20 w-20"
-              />
-            </div>
-          }
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Would you like to include your ${appName} profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
-          detailText={'You can change this photo in your profile.'}
-          actionButtons={[
-            {
-              text: 'Yes, include photo!',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                submit();
-                updatePractitionerUsePhotoReportPermission(
-                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-yes`
-                );
-              },
-              leadingIcon: 'CheckCircleIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                submit();
-                updatePractitionerUsePhotoReportPermission(
-                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-no`
-                );
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [
-    dialog,
-    reportingPeriod?.monthName,
-    reportingPeriod?.year,
-    updatePractitionerUsePhotoReportPermission,
-    user?.profileImageUrl,
-  ]);
-
   const handleIsOnLeaveModal = useCallback(() => {
     dialog({
       blocking: true,
@@ -463,13 +373,6 @@ export const ClassDashboard: React.FC = () => {
     // INFO: render once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionerIsOnLeave, practitioner]);
-
-  useEffect(() => {
-    if (promptPhotoReportPermission) {
-      handlePromptPhotoReportPermission();
-      setPromptPhotoReportPermission(false);
-    }
-  }, [handlePromptPhotoReportPermission, promptPhotoReportPermission]);
 
   useEffect(() => {
     if (isCoach) {

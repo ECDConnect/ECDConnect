@@ -140,7 +140,10 @@ export const ChildProfile: React.FC = () => {
 
   const isTrialPeriod = useIsTrialPeriod();
 
-  const { hasPermissionToManageChildren } = useUserPermissions();
+  const {
+    hasPermissionToManageChildren,
+    hasPermissionToCreateProgressReports,
+  } = useUserPermissions();
 
   const hasPermissionToEdit =
     hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
@@ -526,7 +529,7 @@ export const ChildProfile: React.FC = () => {
                     text: 'Choose reporting dates',
                     onClick: () => {
                       onSubmit();
-                      history.push(ROUTES.CHILD_PROGRESS_REPORTING_PERIODS);
+                      history.push(ROUTES.PROGRESS_SETUP_REPORTING_PERIODS);
                     },
                     textColour: 'white',
                     type: 'filled',
@@ -759,7 +762,7 @@ export const ChildProfile: React.FC = () => {
                 key={`child-profile-notification-${notification.key}`}
               />
             ))}
-            {progressTrainingDone && (
+            {hasPermissionToCreateProgressReports && (
               <div id={`child_progress_observations`} aria-disabled={run}>
                 <ChildProgressReportAlert child={child} />
               </div>

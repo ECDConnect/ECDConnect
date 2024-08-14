@@ -30,6 +30,7 @@ export const ProgrammePlanningDevelopingChildren = () => {
     progressTrackingSelectors.getProgressTrackingCategories()
   );
 
+  // TODO - possibly improve language fetch here
   const getDataByLanguage = async (language: LanguageDto) => {
     const hasTranslations = await new ContentService(
       userAuth?.auth_token ?? ''
