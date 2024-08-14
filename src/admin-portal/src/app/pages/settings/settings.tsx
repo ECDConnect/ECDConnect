@@ -3,14 +3,14 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { useTenant } from '../../hooks/useTenant';
-import { Button, Card, Typography } from '@ecdlink/ui';
+import { Alert, Button, Card, Typography } from '@ecdlink/ui';
 import { InformationCircleIcon, SaveIcon } from '@heroicons/react/solid';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import FormField from '../../components/form-field/form-field';
 import { TenantInfoInputModelInput, UpdateTenantInfo } from '@ecdlink/graphql';
 import { useUser } from '../../hooks/useUser';
-import { Config, NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { DefaultTheme, NOTIFICATION, useNotifications } from '@ecdlink/core';
 import FormColorField from '../../components/form-color-field/form-color-field';
 import { lightenColor } from '../../utils/color-utils/color-utils';
 
@@ -223,6 +223,13 @@ export function Settings() {
               {editActive ? (
                 <>
                   <div className="space-y-0">
+                    <Alert
+                      title={
+                        'Editing the names below will change what users see in the app.'
+                      }
+                      type={'info'}
+                      className="mt-2"
+                    />
                     <div className="grid grid-cols-1 ">
                       <div className="my-4 w-6/12 sm:col-span-3">
                         <FormField
@@ -312,17 +319,16 @@ export function Settings() {
               {' '}
               Colours & Logos{' '}
             </h3>
-            <form
-              key={'formKey'}
-              className="space-y-3 divide-y divide-gray-200"
-            >
+            <form key={'formKey'} className="space-y-3">
               {editColorsActive ? (
                 <>
                   <div className="mt-12 mb-2 flex items-center gap-4">
-                    <Typography type="h1" color="textDark" text={`Colours`} />
+                    <Typography type="h3" text={`Colours`} color="textDark" />
+                  </div>
+                  <div className="mt-12 mb-2 flex items-center gap-4">
                     <Typography
-                      type="h2"
-                      color="textMid"
+                      type="h4"
+                      color="textDark"
                       text={`Add your organisation's hex colour codes`}
                     />
                   </div>
@@ -400,17 +406,47 @@ export function Settings() {
                   </Button>
                 </>
               ) : (
-                <div className="flex flex-row justify-start pt-4 text-current">
-                  <p className="px-4 text-xl">
-                    Primary: {tenant?.tenant?.organisationName}
-                  </p>
-                  <p className="px-4 text-xl">
-                    Secondary: {tenant?.tenant?.applicationName}
-                  </p>
-                  <p className="px-4 text-xl">
-                    Tertiary: {tenant?.tenant?.organisationEmail}
-                  </p>
-                </div>
+                <>
+                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-3">
+                    <p className="px-4 text-xl">Primary:</p>
+                    <p className="px-4 text-xl">Secondary:</p>
+                    <p className="px-4 text-xl">Tertiary:</p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
+                    <FormColorField
+                      setValue={adminDetailSetValue}
+                      currentColor={adminDetailGetValues()?.primaryColor ?? ''}
+                      label={''}
+                      nameProp={'primaryColor'}
+                      register={register}
+                      error={primaryColourError}
+                      isAdminPortalField={true}
+                      disabled={true}
+                    />
+                    <FormColorField
+                      setValue={adminDetailSetValue}
+                      currentColor={
+                        adminDetailGetValues()?.secondaryColor ?? ''
+                      }
+                      label={''}
+                      nameProp={'secondaryColor'}
+                      register={register}
+                      error={secondaryColourError}
+                      isAdminPortalField={true}
+                      disabled={true}
+                    />
+                    <FormColorField
+                      setValue={adminDetailSetValue}
+                      currentColor={adminDetailGetValues()?.tertiaryColor ?? ''}
+                      label={''}
+                      nameProp={'tertiaryColor'}
+                      register={register}
+                      error={tertiaryColourError}
+                      isAdminPortalField={true}
+                      disabled={true}
+                    />
+                  </div>
+                </>
               )}
             </form>
             {/* End main area */}
@@ -419,14 +455,14 @@ export function Settings() {
           <div className="flex justify-end p-4">
             <button
               onClick={() => {
-                setEditActive(!editActive);
+                setEditColorsActive(!editColorsActive);
               }}
               id="dropdownHoverButton"
               className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
               type="button"
             >
               {' '}
-              {editActive ? 'Close' : 'Edit'}
+              {editColorsActive ? 'Close' : 'Edit'}
             </button>
           </div>
         </div>
