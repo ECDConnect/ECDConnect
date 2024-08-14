@@ -28,12 +28,18 @@ import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { ContactPractitioner } from './components/contact-practitioner/contact-practitioner';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
+import { useTenant } from '@/hooks/useTenant';
+import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const CoachPractitionerClassroom: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
+  const isOpenAccess = tenant?.isOpenAccess;
+  const { attendanceEnabled } = useTenantModules();
 
   const location = useLocation<PractitionerProfileRouteState>();
 
@@ -241,12 +247,14 @@ export const CoachPractitionerClassroom: React.FC = () => {
                   />
                 </div>
               </Card>
-              <ClassroomAttendance
-                practitionerClassroomGroups={
-                  isPrincipal ? classroomGroups : practitionerClassroomGroups
-                }
-                practitionerClassroomsData={practitionerClassroomsData}
-              />
+              {((attendanceEnabled && isWhiteLabel) || isOpenAccess) && (
+                <ClassroomAttendance
+                  practitionerClassroomGroups={
+                    isPrincipal ? classroomGroups : practitionerClassroomGroups
+                  }
+                  practitionerClassroomsData={practitionerClassroomsData}
+                />
+              )}
               <div className="w-full">
                 <ChildrenPerAgeGroup
                   childrenForPractitionerList={childrenForPractitionerList}

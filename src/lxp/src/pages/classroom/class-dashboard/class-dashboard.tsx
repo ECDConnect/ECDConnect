@@ -49,6 +49,7 @@ import { ChildProgressLanding } from '../progress/progress-tab/child-progress-la
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAppContext } from '@/walkthrougContext';
 import { PractitionerListRouteState } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list.types';
+import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -77,7 +78,10 @@ export const ClassDashboard: React.FC = () => {
   const children = useSelector(childrenSelectors.getChildren);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
   const appName = tenant?.tenant?.applicationName;
+  const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
+    useTenantModules();
 
   const { setState } = useAppContext();
 
@@ -243,7 +247,7 @@ export const ClassDashboard: React.FC = () => {
             {
               text: 'Close',
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               onClick: () => {
                 submit();
@@ -413,7 +417,22 @@ export const ClassDashboard: React.FC = () => {
         <TabList
           activeTabColour="quatenary"
           className="bg-uiBg"
-          tabItems={tabItems}
+          tabItems={tabItems
+            ?.filter((item) =>
+              !attendanceEnabled && isWhiteLabel
+                ? item?.title !== NavigationNames.Classroom.Attendance
+                : item
+            )
+            ?.filter((item) =>
+              !classroomActivitiesEnabled && isWhiteLabel
+                ? item?.title !== NavigationNames.Classroom.Activities
+                : item
+            )
+            ?.filter((item) =>
+              !progressEnabled && isWhiteLabel
+                ? item?.title !== NavigationNames.Classroom.Progress
+                : item
+            )}
           setSelectedIndex={selectedTabIndex}
           tabSelected={(tab: TabItem, tabIndex: number) =>
             setTabSelected(tab, tabIndex)
