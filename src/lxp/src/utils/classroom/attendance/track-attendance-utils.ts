@@ -204,7 +204,7 @@ export const getMissedClassAttendance = (
       const classLearners = classGroups
         .flatMap((x) => x.learners)
         .filter((x) => {
-          const checkEndOfDay = new Date(missedDayDate.setHours(12, 59, 59));
+          const checkEndOfDay = new Date(missedDayDate.setHours(23, 59, 59));
           const isValidDay =
             isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
             checkEndOfDay.getTime() >= new Date(x.startedAttendance).getTime();
