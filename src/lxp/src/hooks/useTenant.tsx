@@ -2,7 +2,7 @@ import Loader from '@/components/loader/loader';
 import { TenantService } from '@/services/TenantService';
 import { useAppDispatch } from '@/store';
 import { tenantActions, tenantSelectors } from '@/store/tenant';
-import { TenantModel, TenantType } from '@ecdlink/core';
+import { TenantModel, TenantType, ThemeProvider } from '@ecdlink/core';
 import React, { useState, useContext, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -84,4 +84,25 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
 export const useTenant = () => {
   const store = useContext(TenantContext);
   return store;
+};
+
+type TenantThemeProviderProps = {
+  defaultThemeUrl: string;
+};
+
+export const TenantThemeProvider: React.FC<TenantThemeProviderProps> = (
+  props
+) => {
+  const tenant = useTenant();
+
+  const themeUrl =
+    !!tenant && !!tenant.tenant && !!tenant.tenant.themePath
+      ? tenant.tenant.themePath
+      : props.defaultThemeUrl;
+
+  return (
+    <ThemeProvider themeEndPoint={themeUrl} overRideCache={true}>
+      {props.children}
+    </ThemeProvider>
+  );
 };

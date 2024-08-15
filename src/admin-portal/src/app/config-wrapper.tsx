@@ -11,7 +11,7 @@ import App from './app';
 import { ContentLoader } from './components/content-loader/content-loader';
 import Notifications from './components/notifications/notifications';
 import { AuthProvider } from './hooks/useAuth';
-import { useTenant } from './hooks/useTenant';
+import { TenantThemeProvider, useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
 
 const history = createBrowserHistory();
@@ -37,7 +37,7 @@ const ConfigWrapper: React.FC = () => {
         <Helmet>
           <title>{getTitle()}</title>
         </Helmet>
-        <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={true}>
+        <TenantThemeProvider defaultThemeUrl={Config.themeUrl}>
           <AuthProvider>
             <Router history={history}>
               <NotificationsProvider>
@@ -46,7 +46,7 @@ const ConfigWrapper: React.FC = () => {
               </NotificationsProvider>
             </Router>
           </AuthProvider>
-        </ThemeProvider>
+        </TenantThemeProvider>
       </>
     );
   } else {
