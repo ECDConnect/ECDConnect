@@ -186,9 +186,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
       appDispatch(notesThunkActions.getNotes({})).unwrap(),
       appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap(),
-      appDispatch(
-        progressTrackingThunkActions.getChildProgressReports({})
-      ).unwrap(),
       appDispatch(userThunkActions.getUserConsents({})).unwrap(),
       appDispatch(
         calendarThunkActions.getCalendarEvents({
@@ -210,6 +207,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       );
       promises.push(
         appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
+      );
+      promises.push(
+        appDispatch(
+          progressTrackingThunkActions.getChildProgressReports({})
+        ).unwrap()
       );
       promises.push(
         appDispatch(

@@ -1,4 +1,4 @@
-import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
+import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import ROUTES from '@/routes/routes';
 import { getAvatarColor } from '@ecdlink/core';
 import {
@@ -15,7 +15,7 @@ import { useHistory } from 'react-router';
 export const ProgressTabObservationsSummary: React.FC = () => {
   const history = useHistory();
 
-  const { childReports } = useObserveProgressForChildren();
+  const { childReports } = useProgressForChildren();
 
   const incompleteObservationsList = useMemo(() => {
     return childReports
