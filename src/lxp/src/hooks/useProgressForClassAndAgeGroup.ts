@@ -3,14 +3,12 @@ import { classroomsSelectors } from '@/store/classroom';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { useObserveProgressForChildren } from './useObserveProgressForChildren';
+import { useProgressForChildren } from './useProgressForChildren';
 
-export const useObserveProgressForClassAndAgeGroup = (
+export const useProgressForClassAndAgeGroup = (
   classroomGroupId: string,
   ageGroupId: number
 ) => {
-  const appDispatch = useAppDispatch();
-
   const allAgeGroups = useSelector(
     progressTrackingSelectors.getProgressAgeGroups()
   );
@@ -24,7 +22,7 @@ export const useObserveProgressForClassAndAgeGroup = (
   );
 
   const { childReports: allChildReports, currentReportingPeriod } =
-    useObserveProgressForChildren();
+    useProgressForChildren();
 
   const childReports = useMemo(() => {
     return allChildReports.filter((report) =>

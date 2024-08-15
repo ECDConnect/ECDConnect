@@ -121,6 +121,7 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
             id: skill.id,
             name: skill.name,
             description: skill.description,
+            ageGroups: (skill.ageGroups || []).map((x) => ({ id: x.id })),
             subCategory: {
               id: subCategory?.id,
               name: subCategory?.name,
@@ -297,6 +298,14 @@ export const getProgressReportsForReportingPeriod = (
       return childProgressReports.filter(
         (x) => x.childProgressReportPeriodId === childProgressReportPeriodId
       );
+    }
+  );
+
+export const getProgressReports = () =>
+  createSelector(
+    (state: RootState) => state.progressTracking.childProgressReports,
+    (childProgressReports: ChildProgressReport[]) => {
+      return childProgressReports;
     }
   );
 

@@ -6,6 +6,9 @@ export type ProgressSkill = {
   description: string;
   subCategory: ProgressSubCategory;
   isReverseScored?: boolean;
+  ageGroups: {
+    id: number;
+  }[];
 };
 
 export type ProgressSubCategory = {

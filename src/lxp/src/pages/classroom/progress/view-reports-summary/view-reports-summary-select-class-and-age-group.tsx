@@ -4,15 +4,14 @@ import { useHistory } from 'react-router';
 import { format } from 'date-fns';
 import { useSelector } from 'react-redux';
 import ROUTES from '@/routes/routes';
-import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
+import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { classroomsSelectors } from '@/store/classroom';
 
 export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC =
   () => {
     const history = useHistory();
 
-    const { children, currentReportingPeriod } =
-      useObserveProgressForChildren();
+    const { children, currentReportingPeriod } = useProgressForChildren();
     const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
     const [step, setStep] = useState(1);

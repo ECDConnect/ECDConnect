@@ -9,8 +9,10 @@ import {
   progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
-import { replaceSkillText as baseReplaceSkillText } from '@/utils/child/child-progress-report.utils';
-import { getProgressAgeGroupForChild } from '@/utils/classroom/progress/progress.utils';
+import {
+  replaceSkillText as baseReplaceSkillText,
+  getProgressAgeGroupForChild,
+} from '@/utils/child/child-progress-report.utils';
 import { differenceInMonths } from 'date-fns';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';

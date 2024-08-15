@@ -1,4 +1,4 @@
-import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
+import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import ROUTES from '@/routes/routes';
 import { getAvatarColor } from '@ecdlink/core';
 import { Button, StackedList, Typography } from '@ecdlink/ui';
@@ -10,7 +10,7 @@ export const ProgressTabReportSummary: React.FC = () => {
 
   const [showDetails, setShowDetails] = useState(false);
 
-  const { childReports } = useObserveProgressForChildren();
+  const { childReports } = useProgressForChildren();
 
   const incompleteReportsList = useMemo(() => {
     return childReports
