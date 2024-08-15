@@ -186,9 +186,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
       appDispatch(notesThunkActions.getNotes({})).unwrap(),
       appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap(),
-      // appDispatch(
-      //   progressTrackingThunkActions.getChildProgressReports({})
-      // ).unwrap(),
       appDispatch(userThunkActions.getUserConsents({})).unwrap(),
       appDispatch(
         calendarThunkActions.getCalendarEvents({
