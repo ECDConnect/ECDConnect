@@ -307,8 +307,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
                 }
 
-                if (idOrPassport is null || passport is null ||
-                    (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
+                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
                     errors.Add("Passport is empty");
 
                 if (firstName is null || firstName.Length == 0)
@@ -322,9 +321,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (TenantExecutionContext.Tenant.Modules.CoachRoleEnabled)
                 {
-                    if (!string.IsNullOrEmpty(coachIdOrPassport) && !UserHelper.IsSAIDValid(coachIdOrPassport))
+                    if (string.IsNullOrEmpty(coachIdOrPassport))
                     {
-                        errors.Add("Coach Id is empty or invalid");
+                        errors.Add("Coach Id is empty");
                     }
                 }
                 return errors;
@@ -584,8 +583,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
                 }
 
-                if (idOrPassport is null || passport is null ||
-                    (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
+                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
                     errors.Add("Passport is empty");
 
                 if (firstName is null || firstName.Length == 0)
