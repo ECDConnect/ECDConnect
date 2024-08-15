@@ -1,11 +1,11 @@
 import { classroomsSelectors } from '@/store/classroom';
 import { BannerWrapper, Button, CoreRadioGroup, Typography } from '@ecdlink/ui';
-import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
 import { useHistory } from 'react-router';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import ROUTES from '@/routes/routes';
+import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 
 export const SelectCategoryToTrack: React.FC = () => {
   const history = useHistory();
@@ -15,7 +15,7 @@ export const SelectCategoryToTrack: React.FC = () => {
   );
 
   const { currentReportingPeriod, ageGroupsAvailableForTracking } =
-    useObserveProgressForChildren();
+    useProgressForChildren();
 
   const [step, setStep] = useState(1);
 
@@ -89,7 +89,7 @@ export const SelectCategoryToTrack: React.FC = () => {
             } else if (step === 2) {
               history.push(ROUTES.PROGRESS_OBSERVATIONS_BY_CATEGORY, {
                 categoryId: selectedCategory,
-                ageGroup: selectedAgeGroup,
+                ageGroupId: selectedAgeGroup,
               });
             }
           }}

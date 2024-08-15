@@ -126,6 +126,7 @@ class ProgressTrackingService {
         GetAllProgressTrackingSkill(locale: $locale) {
           id                
           name
+          supportImage
           level {
             id
           }
