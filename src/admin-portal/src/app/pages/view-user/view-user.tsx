@@ -39,6 +39,8 @@ import { RoleSystemNameEnum } from '@ecdlink/core';
 import { useTenant } from '../../hooks/useTenant';
 import { PractitionerSummary } from './components/practitioner-summary/practitioner-summary';
 import { PractitionerIssuesAndHighlights } from './components/practitioner-issues/practitioner-issues-and-highlights';
+import { CoachSummary } from './components/coach-summary/coach-summary';
+import { CoachIssuesAndHighlights } from './components/coach-issues-and-highlights/coach-issues-and-highlights';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -408,9 +410,10 @@ export function ViewUser(props: any) {
         refetchGetPractitionerByUserId={refetchGetPractitionerByUserId}
       />
 
-      {(isCHWRole ||
+      {(props.location.state?.component ===
+        UsersRouteRedirectTypeEnum?.practitioner ||
         props.location.state?.component ===
-          UsersRouteRedirectTypeEnum?.practitioner) &&
+          UsersRouteRedirectTypeEnum?.coach) &&
         isRegistered && (
           <DatePicker
             selectsRange
@@ -435,8 +438,17 @@ export function ViewUser(props: any) {
           summaryData={practitionerStatsData?.practitionerStats}
         />
       )}
+
+      {isCoach && isRegistered && (
+        <CoachSummary summaryData={practitionerStatsData?.practitionerStats} />
+      )}
       {isPractitioner && isRegistered && (
         <PractitionerIssuesAndHighlights
+          summaryData={practitionerStatsData?.practitionerStats}
+        />
+      )}
+      {isCoach && isRegistered && (
+        <CoachIssuesAndHighlights
           summaryData={practitionerStatsData?.practitionerStats}
         />
       )}
