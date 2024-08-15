@@ -1,16 +1,17 @@
-﻿using ECDLink.Abstractrions.Constants;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.DataAccessLayer.Managers;
+using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
@@ -18,7 +19,6 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.Security;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
@@ -30,7 +30,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitManager _visitManager;
         private VisitDataManager _visitDataManager;
         private VisitDataStatusManager _visitDataStatusManager;
-        private IGrowGreatPointsCalculationsService _pointsCalculationService;
         private INotificationService _notificationService;
         private ApplicationUserManager _applicationUserManager;
 
@@ -52,7 +51,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             VisitDataStatusManager visitDataStatusManager,
             VisitDataManager visitDataManager,
             ApplicationUserManager applicationUserManager,
-            [Service] IGrowGreatPointsCalculationsService pointsCalculationService,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager)
         {
@@ -62,7 +60,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataManager = visitDataManager;
-            _pointsCalculationService = pointsCalculationService;
             _notificationService = notificationService;
             _userManager = userManager;
             _applicationUserManager = applicationUserManager;
@@ -181,7 +178,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             if (createdInfant != null)
             {
                 AddVisits(infant.Id, infant.User.DateOfBirth);
-                _pointsCalculationService.CalculateInfantClientRegistration(_applicationUserId.Value);
             }
 
             if (totalActiveClieants == 0) {

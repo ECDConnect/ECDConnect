@@ -1,8 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.ContentManagement.Repositories;
-using ECDLink.Core.Extensions;
-using ECDLink.Core.Reporting;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -87,6 +85,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IPersonnelService _personnelService;
         private readonly ContentManagementRepository _contentRepo;
         private readonly ILocaleService<Language> _localeService;
+        private readonly IPointsEngineService _pointsEngineService;
 
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<Learner, Guid> _learnerRepo;
@@ -108,7 +107,8 @@ namespace EcdLink.Api.CoreApi.Services
             [Service] IClassroomService classroomService,
             [Service] IPersonnelService personnelService,
             [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService
+            [Service] ILocaleService<Language> localeService,
+            [Service] IPointsEngineService pointsEngineService
             )
         {
             _repoFactory = repoFactory;
@@ -119,6 +119,7 @@ namespace EcdLink.Api.CoreApi.Services
             _personnelService = personnelService;
             _contentRepo = contentRepo;
             _localeService = localeService;
+            _pointsEngineService = pointsEngineService;
 
             _contextUserId = contextAccessor.HttpContext.GetUser().Id;
             _childRepo = repoFactory.CreateRepository<Child>(userContext: _contextUserId);
@@ -154,17 +155,20 @@ namespace EcdLink.Api.CoreApi.Services
                 if (input.DateCompleted != null)
                 {
                     existingReport.DateCompleted = input.DateCompleted;
+                    
                 }
 
                 if (input.ObservationsCompleteDate != null)
                 {
                     existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
+                    _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
                 }
 
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
                 existingReport.UserId = _contextUserId;
 
                 _childProgressReportRepo.Update(existingReport);
+                
             }
             else
             {
@@ -179,6 +183,8 @@ namespace EcdLink.Api.CoreApi.Services
                 };
 
                 _childProgressReportRepo.Insert(newReport);
+                // generate points for creating a new report
+                _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
             }
         }
 

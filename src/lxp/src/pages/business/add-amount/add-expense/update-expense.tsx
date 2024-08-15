@@ -11,6 +11,8 @@ import AnnualMaintenance from './components/annual-maintenance/annual-maintenanc
 import OtherExpense from './components/other-expense/other';
 import { statementsActions } from '@/store/statements';
 import { ExpenseItemDto, ExpenseTypeIds } from '@ecdlink/core';
+import ROUTES from '@/routes/routes';
+import { BusinessTabItems } from '../../business.types';
 
 export type UpdateExpenseState = {
   statementId: string;
@@ -33,6 +35,9 @@ export const UpdateExpense: React.FC = () => {
           expenseItem: updatedExpenseItem,
         })
       );
+      history.push(ROUTES.BUSINESS, {
+        activeTabIndex: BusinessTabItems.MONEY,
+      });
     },
     [statementId]
   );

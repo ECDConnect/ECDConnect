@@ -1,16 +1,19 @@
 import { BannerWrapper, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
-import { ChildProgressObservationPageState } from '../../progress-observation/child-progress-observation/child-progress-observation.types';
 import { format } from 'date-fns';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ProgressLandingNoObservations } from './progress-landing-incomplete';
 import { ProgressLandingComplete } from './progress-landing-complete';
 
+export type ChildProgressObservationsLandingState = {
+  childId: string;
+};
+
 export const ChildProgressObservationsLanding: React.FC = () => {
   const history = useHistory();
 
   const { state: routeState } =
-    useLocation<ChildProgressObservationPageState>();
+    useLocation<ChildProgressObservationsLandingState>();
 
   const { child, currentReportingPeriod, currentAgeGroup, currentReport } =
     useObserveProgressForChild(routeState.childId);

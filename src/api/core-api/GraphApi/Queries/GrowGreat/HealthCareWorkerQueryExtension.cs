@@ -2,6 +2,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -9,6 +10,7 @@ using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -102,14 +104,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public HealthCareWorkerModel GetHealthCareWorkerByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            [Service] IPointsEngineService pointsEngineService,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).OrderBy(x => x.Id).FirstOrDefault();
-           
-            return new HealthCareWorkerModel(healthCareWorker);
+            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
+            var guidUserId = new Guid(userId);
+
+            var invitation = shortenUrlEntityRepo.GetAll()
+                .Where(x =>
+                    x.UserId.Value == guidUserId
+                    && x.MessageType == TemplateTypeConstants.Invitation
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+ 
+            return new HealthCareWorkerModel(healthCareWorker, invitation != null ? invitation.InsertedDate : null);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -305,9 +317,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] IPointsEngineService pointsService,
             Guid userId)
         {
-            var teamStanding = pointsService.GetHealthCareWorkerTeamStanding(userId);
+            // var teamStanding = pointsService.GetHealthCareWorkerTeamStanding(userId);
 
-            return teamStanding;
+            //return teamStanding;
+            return new TeamStandingModel();
         }
 
 
@@ -316,9 +329,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] IPointsEngineService pointsService,
             Guid healthCareWorkerId)
         {
-            var pointsTodoItems = pointsService.GetHealthCareWorkerPointsTodoItems(healthCareWorkerId);
+            //var pointsTodoItems = pointsService.GetHealthCareWorkerPointsTodoItems(healthCareWorkerId);
 
-            return pointsTodoItems;
+            //return pointsTodoItems;
+            return new List<PointsPointsTodoItemModel>();
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

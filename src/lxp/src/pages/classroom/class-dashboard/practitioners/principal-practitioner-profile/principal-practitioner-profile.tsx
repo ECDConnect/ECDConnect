@@ -47,6 +47,9 @@ import { staticDataSelectors } from '@/store/static-data';
 import { ReassignClassPageState } from '../reassign-class/reassign-class.types';
 import { EditPractitionerPermissions } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/components/edit-practitioner-permissions';
 import { PractitionerNotAccepted } from './practitioner-not-accepted/practitioner-not-accepted';
+import { useTenantModules } from '@/hooks/useTenantModules';
+import { useTenant } from '@/hooks/useTenant';
+import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -247,7 +250,29 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     },
   ];
 
+  const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
+
+  const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
+    useTenantModules();
+
   const permissions = useSelector(staticDataSelectors.getPermissions);
+  const premissionsFilteredByTenantModules = permissions
+    ?.filter((item) =>
+      !attendanceEnabled && isWhiteLabel
+        ? item?.name !== PermissionsNames?.take_attendance
+        : item
+    )
+    ?.filter((item2) =>
+      !progressEnabled && isWhiteLabel
+        ? item2?.name !== PermissionsNames?.create_progress_reports
+        : item2
+    )
+    ?.filter((item3) =>
+      !classroomActivitiesEnabled && isWhiteLabel
+        ? item3?.name !== PermissionsNames?.plan_classroom_actitivies
+        : item3
+    );
 
   const [allowedPermissions, setAllowedPermissions] = useState<
     string[] | undefined
@@ -260,7 +285,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     const allowed: string[] = [];
     const notAllowed: string[] = [];
 
-    permissions
+    premissionsFilteredByTenantModules
       .filter((x) => x.grouping === 'Practitioner')
       .forEach((permission) => {
         if (
@@ -277,7 +302,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
       });
     setAllowedPermissions(allowed);
     setNotAllowedPermissions(notAllowed);
-  }, [practitioner, permissions]);
+  }, [practitioner?.permissions, premissionsFilteredByTenantModules]);
 
   const [editPermissionsVisible, setEditPermissionsVisible] =
     useState<boolean>(false);

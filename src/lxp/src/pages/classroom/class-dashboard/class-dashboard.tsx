@@ -49,6 +49,7 @@ import { ChildProgressLanding } from '../progress/progress-tab/child-progress-la
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAppContext } from '@/walkthrougContext';
 import { PractitionerListRouteState } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list.types';
+import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -63,8 +64,6 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
-  const [promptPhotoReportPermission, setPromptPhotoReportPermission] =
-    useState<boolean>(false);
   const [showAttendanceWalkthrough, setShowAttendanceWalkthrough] =
     useState(false);
   const appDispatch = useAppDispatch();
@@ -79,7 +78,10 @@ export const ClassDashboard: React.FC = () => {
   const children = useSelector(childrenSelectors.getChildren);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
   const appName = tenant?.tenant?.applicationName;
+  const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
+    useTenantModules();
 
   const { setState } = useAppContext();
 
@@ -105,12 +107,6 @@ export const ClassDashboard: React.FC = () => {
   const hasPermissionToEdit =
     practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
 
-  const hasCreatedReportForCurrentPeriod = useSelector(
-    contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
-      reportingPeriod?.reportingDate
-    )
-  );
-
   const backToDashboard = () => {
     history.push('/');
   };
@@ -124,18 +120,6 @@ export const ClassDashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (!practitioner || !user || !user.profileImageUrl) return;
-    if (!reportingPeriod || hasCreatedReportForCurrentPeriod) return;
-    const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
-    if (
-      !practitioner.usePhotoInReport ||
-      !practitioner.usePhotoInReport.startsWith(prefix)
-    ) {
-      setPromptPhotoReportPermission(true);
-    }
-  }, [practitioner]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -263,7 +247,7 @@ export const ClassDashboard: React.FC = () => {
             {
               text: 'Close',
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               onClick: () => {
                 submit();
@@ -318,76 +302,6 @@ export const ClassDashboard: React.FC = () => {
     attendanceTutorialComplete,
     practitionerIsOnLeave,
     isToShowAttendanceTutorial,
-  ]);
-
-  const updatePractitionerUsePhotoReportPermission = useCallback(
-    async (usePhotoInReport: string) => {
-      await appDispatch(
-        practitionerThunkActions.updatePractitionerUsePhotoInReport({
-          practitionerId: practitioner?.userId,
-          usePhotoInReport: usePhotoInReport,
-        })
-      );
-    },
-    [appDispatch, practitioner?.userId]
-  );
-
-  const handlePromptPhotoReportPermission = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          className="bg-white"
-          customIcon={
-            <div className="flex">
-              <img
-                src={user?.profileImageUrl}
-                alt="profile avatar"
-                className="mb-5 h-20 w-20"
-              />
-            </div>
-          }
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Would you like to include your ${appName} profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
-          detailText={'You can change this photo in your profile.'}
-          actionButtons={[
-            {
-              text: 'Yes, include photo!',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                submit();
-                updatePractitionerUsePhotoReportPermission(
-                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-yes`
-                );
-              },
-              leadingIcon: 'CheckCircleIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                submit();
-                updatePractitionerUsePhotoReportPermission(
-                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-no`
-                );
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [
-    dialog,
-    reportingPeriod?.monthName,
-    reportingPeriod?.year,
-    updatePractitionerUsePhotoReportPermission,
-    user?.profileImageUrl,
   ]);
 
   const handleIsOnLeaveModal = useCallback(() => {
@@ -465,13 +379,6 @@ export const ClassDashboard: React.FC = () => {
   }, [practitionerIsOnLeave, practitioner]);
 
   useEffect(() => {
-    if (promptPhotoReportPermission) {
-      handlePromptPhotoReportPermission();
-      setPromptPhotoReportPermission(false);
-    }
-  }, [handlePromptPhotoReportPermission, promptPhotoReportPermission]);
-
-  useEffect(() => {
     if (isCoach) {
       history.push(ROUTES.COACH.ROOT);
     }
@@ -510,7 +417,22 @@ export const ClassDashboard: React.FC = () => {
         <TabList
           activeTabColour="quatenary"
           className="bg-uiBg"
-          tabItems={tabItems}
+          tabItems={tabItems
+            ?.filter((item) =>
+              !attendanceEnabled && isWhiteLabel
+                ? item?.title !== NavigationNames.Classroom.Attendance
+                : item
+            )
+            ?.filter((item) =>
+              !classroomActivitiesEnabled && isWhiteLabel
+                ? item?.title !== NavigationNames.Classroom.Activities
+                : item
+            )
+            ?.filter((item) =>
+              !progressEnabled && isWhiteLabel
+                ? item?.title !== NavigationNames.Classroom.Progress
+                : item
+            )}
           setSelectedIndex={selectedTabIndex}
           tabSelected={(tab: TabItem, tabIndex: number) =>
             setTabSelected(tab, tabIndex)

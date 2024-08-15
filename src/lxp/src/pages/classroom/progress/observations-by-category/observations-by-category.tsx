@@ -14,7 +14,7 @@ export const ObservationsByCategory: React.FC = () => {
   const { state: routeState } = useLocation<ObservationsByCategoryState>();
 
   const categories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
 
   const category = categories.find((x) => x.id === routeState.categoryId);

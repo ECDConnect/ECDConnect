@@ -28,4 +28,5 @@ export interface AlertProps extends ComponentBaseProps {
   listColor?: Colours;
   leftChip?: string;
   rightChip?: string;
+  onDismiss?: () => void;
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ReactElement, useState } from 'react';
 import { RadioGroup } from '@headlessui/react';
 import { Colours } from '../../models';
 import * as styles from './radio-group.styles';
@@ -37,7 +37,6 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
         <RadioGroup.Option
           value={option.value}
           key={'radio.group.option.' + option.id}
-          //className={`${stateValue === option.value ? `border-${colour}` : 'border-uiBg'}`}
         >
           {({ checked }) => (
             <div
@@ -51,6 +50,15 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
               <div className={styles.groupCircleStyle(checked, colour)}>
                 <div className={styles.inner}></div>
               </div>
+              {!!option.icon && (
+                <div
+                  className={
+                    'ml-2 mr-4 flex h-9 w-9 items-center justify-center rounded-full'
+                  }
+                >
+                  {option.icon}
+                </div>
+              )}
               <Typography
                 text={option.label}
                 type={'body'}

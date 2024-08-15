@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -37,12 +38,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // Check if team lead or admin
             var currentUser = userManager.FindByIdAsync(user.Id).Result;
             var isUserAdmin = userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR).Result;
+            var isSuperAdmin = userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR).Result;
 
             var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: user.Id);
             return clinicRepo.GetAll()
                 .Where(x => 
                     x.IsActive
-                    && (isUserAdmin || x.TeamLeads.Any(y => y.TeamLead.UserId == user.Id)))
+                    && (isUserAdmin || isSuperAdmin || x.TeamLeads.Any(y => y.TeamLead.UserId == user.Id)))
                 .Include(x => x.TeamLeads.Where(x => x.IsActive))
                 .Include(x => x.SiteAddress)
                 .Include(x => x.SubDistrict)
@@ -66,7 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ClinicModel GetClinicById(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IPointsEngineService pointsEngineService,
+            //[Service] IPointsEngineService pointsEngineService,
             IGenericRepositoryFactory repoFactory,
             Guid clinicId)
         {
@@ -76,13 +78,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var clinic = clinicRepo.GetAll()
                 .Where(x => x.Id == clinicId)
-                .Include(x => x.TeamLeads)
+                .Include(x => x.TeamLeads.Where(p => p.IsActive))
                 .Include(x => x.SiteAddress)
-                .Include(x => x.HealthCareWorkers)
+                .Include(x => x.HealthCareWorkers.Where(h => h.IsActive))
                 .Include(x => x.Leagues)
                 .FirstOrDefault();
 
-            var clinicPoints = pointsEngineService.GetPointsDetailsForClinic(clinicId);
+            //var clinicPoints = pointsEngineService.GetPointsDetailsForClinic(clinicId);
+            var clinicPoints = new ClinicPointsModel();
 
             return new ClinicModel(clinic, clinicPoints);
         }
@@ -105,6 +108,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var breastFeedingClubs = clinicService.GetBreastFeedingClubs(clinicId);
 
             return breastFeedingClubs.Select(x => new BreastFeedingClubModel(x)).ToList();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Clinic> GetClinicsForFilter([Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            List<Guid> provinceIds =null,
+            List<Guid> districtIds = null,
+            List<Guid> subDistrictIds = null)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var clinicRepo = repoFactory.CreateRepository<Clinic>(userContext: uId);
+            var allClinics = clinicRepo.GetAll().Where(x => x.IsActive && x.HealthCareWorkers.Count != 0).OrderBy(x => x.Name).ToList();
+
+            var filteredClinics = new List<Clinic>();
+
+            if (provinceIds != null && provinceIds.Any()) {
+                filteredClinics.AddRange(allClinics.Where(x => provinceIds.Contains(x.SubDistrict.District.ProvinceId)).ToList());
+            }
+            if (districtIds != null && districtIds.Any())
+            {
+                filteredClinics.AddRange(allClinics.Where(x => districtIds.Contains(x.SubDistrict.DistrictId)).ToList());
+            }
+            if (subDistrictIds != null && subDistrictIds.Any())
+            {
+                filteredClinics.AddRange(allClinics.Where(x => subDistrictIds.Contains((Guid)x.SubDistrictId)).ToList());
+            }
+
+            if (provinceIds.Any() || districtIds.Any() || subDistrictIds.Any())
+            {
+                return filteredClinics;
+            }
+            return allClinics;
         }
     }
 }

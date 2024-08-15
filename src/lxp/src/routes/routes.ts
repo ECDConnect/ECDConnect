@@ -158,12 +158,10 @@ const ROUTES = {
   CHILD_CAREGIVERS: '/child-caregivers',
   CHILD_ATTENDANCE_CAREGIVER: '/child-attendance-caregiver',
   CHILD_ATTENDANCE_REPORT: '/child-attendance-report',
-  CHILD_PROGRESS_ASSESSMENT: '/child-progress-assessment',
   REMOVE_CHILD: '/remove-child',
   MESSAGES: '/messages',
   PROGRESS_TRACKING_CATEGORY: '/progress-tracking-category',
-  CHILD_PROGRESS_REPORTING_PERIODS: '/child-progress-reporting-period',
-  CHILD_PROGRESS_OBSERVATION: '/child-progress-observation',
+  PROGRESS_SETUP_REPORTING_PERIODS: '/setup-progress-reporting-period',
   PROGRESS_OBSERVATIONS: '/progress-observations',
   PROGRESS_OBSERVATIONS_LANDING: '/progress-observations-landing',
   PROGRESS_OBSERVATIONS_NOTES: '/progress-observations-notes',
@@ -174,6 +172,9 @@ const ROUTES = {
   PROGRESS_CREATE_REPORT: '/progress-create-report',
   PROGRESS_SHARE_REPORT: '/progress-share-report',
   PROGRESS_VIEW_REPORT: '/progress-view-report',
+  PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP:
+    '/progress-view-reports-summary-select',
+  PROGRESS_VIEW_REPORTS_SUMMARY: '/progress-view-reports-summary',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
   CHILD_PROGRESS_OBSERVATION_REPORT: '/child-progress-observation-report',
   COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS:

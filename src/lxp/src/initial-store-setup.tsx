@@ -238,17 +238,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       })
     ).unwrap();
     await appDispatch(
-      progressTrackingThunkActions.getProgressTrackingCategories({
-        locale: 'en-za',
-      })
-    ).unwrap();
-    await appDispatch(
-      progressTrackingThunkActions.getProgressTrackingSubCategories({
-        locale: 'en-za',
-      })
-    ).unwrap();
-    await appDispatch(
-      progressTrackingThunkActions.getProgressTrackingSkills({
+      progressTrackingThunkActions.getProgressTrackingContent({
         locale: 'en-za',
       })
     ).unwrap();

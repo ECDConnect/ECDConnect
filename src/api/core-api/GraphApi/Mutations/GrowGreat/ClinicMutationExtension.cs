@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public BreastFeedingClubModel AddBreastFeedingClub(
             [Service] IClinicService clinicService,
-            [Service] IGrowGreatPointsCalculationsService pointsService,
+            //[Service] IGrowGreatPointsCalculationsService pointsService,
             AddBreastFeedingClubInputModel input)
         {
             if (input == null) 
@@ -56,7 +56,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var newBreastFeedingClub = clinicService.AddBreastFeedingClub(input.ClinicId, input.HealthCareWorkerId, input.MeetingDate, input.ClientsAttendedConfirmed, input.Clients);
 
-            pointsService.CalculateBreastFeedingClubPoints(input.ClinicId);
+            //pointsService.CalculateBreastFeedingClubPoints(input.ClinicId);
 
             return new BreastFeedingClubModel(newBreastFeedingClub);
         }

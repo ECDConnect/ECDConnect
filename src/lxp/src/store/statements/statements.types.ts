@@ -8,6 +8,8 @@ import {
 } from '@ecdlink/core';
 
 export interface StatementsState {
+  balanceMessageDismissed: boolean;
+  downloadsMessageDismissed: boolean;
   expensesTypes: ExpensesStatementsTypes[] | undefined;
   incomeTypes: IncomeStatementsTypes[] | undefined;
   payTypes: StatementsPayTypes[] | undefined;

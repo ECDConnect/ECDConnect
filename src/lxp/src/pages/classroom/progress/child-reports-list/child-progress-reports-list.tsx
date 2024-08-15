@@ -4,19 +4,21 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import { ChildCompletedObservsationReportsState } from '../../progress-observation/child-completed-observation-reports/child-completed-observation-reports.types';
 import { ReactComponent as NoProgressEmoticon } from '../../../../assets/ECD_Connect_emoji4.svg';
 import { ReactComponent as ComingSoonIcon } from '../../../../assets/icon/coming_soon.svg';
 import ROUTES from '@/routes/routes';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ProgressReportsList } from './reports-list';
 
+export type ChildProgressReportsList = {
+  childId: string;
+};
+
 export const ChildProgressReportsList: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const { state: routeState } =
-    useLocation<ChildCompletedObservsationReportsState>();
+  const { state: routeState } = useLocation<ChildProgressReportsList>();
 
   const { childId } = routeState;
   const {

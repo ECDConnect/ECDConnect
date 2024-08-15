@@ -18,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     public class EventQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<EventRecord> GetEventRecordForClient(
+        public List<EventRecord> GetEventRecordsForClient(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             Guid clientId)

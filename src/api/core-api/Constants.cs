@@ -870,29 +870,53 @@ namespace EcdLink.Api.CoreApi
 
         public static class PointsActivityConstants
         {
-            public static readonly Guid ChildFoldersOpenedActivityId = new Guid("92c06990-7428-4a8f-8cfe-e1dfca83fb3e");
-            public static readonly Guid PregnantMomFolderOpenedActivityId = new Guid("f20f0917-b497-440c-836e-aa54cf2d10f0");
-            public static readonly Guid EarlyPregnacyIdentificationActivityId = new Guid("f5a72c31-5aa6-4852-9903-c9685420ab4b");
-            public static readonly Guid PregnantMotherReferralForMaternalDistressActivityId = new Guid("868743ae-a750-420b-94df-c00945c56367");
-            public static readonly Guid PregnantMotherReferralForMaternalMalnutritionActivityId = new Guid("3e4d346d-8190-439f-b000-a54d2b19f852");
+            public static readonly Guid ChildAttendanceRegisterSavedId = new Guid("af31301f-2791-438f-8341-d605af9b4616");
+            public static readonly Guid ChildRegistrationCompleteId = new Guid("a012de24-582e-4631-9612-c847c9d166b1");
+            public static readonly Guid ChildRemovedFromPreschoolId = new Guid("ecff0efb-441d-4075-8ca4-82c0545d64e0");
+            public static readonly Guid ThemePlannedId = new Guid("b16ca985-7b54-4968-9e43-d08e301f438b");
+            public static readonly Guid NoThemePlannedId = new Guid("d0f30701-24c6-4a92-ab23-7db49edb9452");
+            public static readonly Guid AddNewPractitionerToPreschoolId = new Guid("9bf3b569-7518-47a2-9219-38d4040f2c72");
+            public static readonly Guid AddNewClassToPreschoolId = new Guid("1f0e6a37-62f8-4f1b-af82-4b3311c895c6");
+            public static readonly Guid DownloadIncomeStatementId = new Guid("8a6f8457-3cda-4b3f-b32a-0d2e3694069e");
+            public static readonly Guid AddExpenseOrIncomeToStatementId = new Guid("1be2ffb2-b119-4c9c-9991-6ec4e9686db8");
+            public static readonly Guid PreschoolFeesGreaterThan0ForEachChildId = new Guid("913871dd-0199-427e-8158-d1453bbbd568");
+            public static readonly Guid CompleteChildProgressObservationsId = new Guid("959dbdce-6264-4bef-9d47-5d75e284162c");
+            public static readonly Guid CreateChildProgressReportId = new Guid("0ae80716-6355-432f-8680-5df42c6ea677");
+            public static readonly Guid DownloadPreschoolOrClassProgressSummaryId = new Guid("a320a46f-3e00-4a8e-b7c7-f09629ed5d07");
+            public static readonly Guid CompleteOnlineTrainingCourseId = new Guid("a6090402-766c-4298-a47d-3f4329276ca1");
+            public static readonly Guid AddingShortDescriptionId = new Guid("06edbd89-60ca-409d-a65d-a8fc6283cc53");
+            public static readonly Guid CompleteCommunityProfileId = new Guid("affdd04f-85bc-4bb3-b123-e9a80bcbd56e");
+            public static readonly Guid ConnectWithAnotherUserId = new Guid("87da9e98-c977-4a72-9da0-9e3df7932c4b");
+
+            public static readonly string PreschoolFeeId = "3915acb0-db44-a323-c086-fe3376d2bfd4";
+        }
+
+        public static class WorkflowStatus
+        {
+            public static readonly Guid ActiveId = new Guid("9c63bce4-7864-4c32-95ea-736ec6564204");
+        }
+
+        public static class MaxPointsTotal
+        {
+            public const int PrincipalMaxMonthPoints = 295;
+            public const int PrincipalMaxYearPoints = 6025;
+            public const int PractitionerMaxMonthPoints = 220;
+            public const int PractitionerMaxYearPoints = 2905;
+
+            public const int NoPermissionPractitionerMaxMonthPoints = 20;
+            public const int NoPermissionPractitionerMaxYearPoints = 380;
+            public const int PermissionPractitionerMaxMonthPoints = 130;
+            public const int PermissionPractitionerMaxYearPoints = 1420;
 
 
-            public static readonly Guid ChildWeightMeasuredActivityId = new Guid("3075e510-6f2d-43f9-9171-9561a213b935");
-            public static readonly Guid ChildWeightMeasuredActionTakenOrNotRequiredActivityId = new Guid("6fe4149b-cfb6-4193-be04-c7ad6b091b8b");
-            public static readonly Guid ChildLengthMeasuredActivityId = new Guid("1a2fdde9-5644-4977-9acd-58957c9f30ac");
-            public static readonly Guid ChildLengthMeasuredActionTakenOrNotRequiredActivityId = new Guid("7ae6cfcb-85a3-4962-af8e-39901dc19848");
-            public static readonly Guid ChildMuacMeasuredActivityId = new Guid("78ed5347-3877-49f2-bf00-a6673df363a3");
-            public static readonly Guid ChildMuacMeasuredActionTakenOrNotRequiredActivityId = new Guid("1b0c8486-99e5-4670-a162-a4586d4a4c46");
+        }
 
-            public static readonly Guid MotherMaternalStressVisitsUpToDateActivityId = new Guid("05ffdb20-d420-458d-af15-8706ed8c8084");
-            public static readonly Guid MotherAlcoholAbuseVisitsUpToDateActivityId = new Guid("bd5bd8c7-0fda-464c-8f9d-2ed8f51ef69f");
-            public static readonly Guid MotherMalnutritionVisitsUpToDateActivityId = new Guid("91c0eeda-3acd-463d-90b8-808703d9b5c8");
-
-            public static readonly Guid ChildrenAllReceivingCSGActivityId = new Guid("4d57d1e6-976c-4220-a075-465042c7ddb4");
-            public static readonly Guid ChildrenDevelopmentScreeningUpToDateActivityId = new Guid("5be4e1ac-248c-41d0-9b0a-c4f820a49e83");
-            public static readonly Guid ChildrenVitaminAUpToDateActivityId = new Guid("ecbda3f8-9bd6-472d-a4c3-ec0f10c20797");
-            public static readonly Guid ChildrenDewormingUpToDateActivityId = new Guid("31b8633f-aeac-4970-99cf-e72745c963b7");
-            public static readonly Guid ChildrenImmunisationsUpToDateActivityId = new Guid("b3be1d39-c4e3-4fbc-bfb4-80099320436c");
+        public static class PractitionerPermissions
+        {
+            public static readonly Guid TakeAttendanceId = new Guid("a929377d-79af-47f0-a65c-b5a81466d033");
+            public static readonly Guid CreateProgressReportsId = new Guid("5307eafe-a165-419e-a09d-9d9988c28676");
+            public static readonly Guid ManageChildrenId = new Guid("357350a6-cb12-49d9-8045-a69c520e1da5");
+            public static readonly Guid PlanClassroomActivitiesId = new Guid("c39c1be5-0f4b-43ad-aa9f-f1da524efe84");
         }
 
         public static class ReferralTypes
