@@ -3,11 +3,12 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
+  DialogPosition,
   Typography,
 } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useObserveProgressForAgeGroupAndCategory } from '@/hooks/useObserveProgressForAgeGroupAndCategory';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ProgressSkillValues,
   ProgressSkillValuesArray,
@@ -15,6 +16,7 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
+import { useDialog } from '@ecdlink/core';
 
 export type ObservationsByCategoryState = {
   categoryId: number;
@@ -24,6 +26,7 @@ export type ObservationsByCategoryState = {
 export const ObservationsByCategory: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
 
   const { state: routeState } = useLocation<ObservationsByCategoryState>();
 
@@ -42,6 +45,31 @@ export const ObservationsByCategory: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   const currentSkill = skillsForAgeGroupAndCategory[currentStep - 1];
+
+  const handleShowSupportImage = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <div className="p-4">
+          <Typography
+            type="h3"
+            color="textDark"
+            text={currentSkill.description}
+          />
+          <img className="mt-2 mb-2" src={currentSkill.supportImage} />
+          <Button
+            onClick={cancel}
+            size="small"
+            color="quatenary"
+            textColor="quatenary"
+            type="outlined"
+            text={'Close'}
+            className="w-full"
+          />
+        </div>
+      ),
+    });
+  }, [dialog, currentSkill]);
 
   return (
     <BannerWrapper
@@ -101,13 +129,26 @@ export const ObservationsByCategory: React.FC = () => {
           </div>
         </div>
 
-        <Typography
-          type="h2"
-          color="primary"
-          text={currentSkill.description}
-          className="mb-4"
-        />
-        {/* TODO - add option to show picture if required */}
+        <div className="flex flex-row">
+          <Typography
+            type="h2"
+            color="primary"
+            text={currentSkill.description}
+            className="mb-4"
+          />
+          {!!currentSkill.supportImage && (
+            <div className="ml-auto">
+              <Button
+                onClick={() => handleShowSupportImage()}
+                size="small"
+                color="quatenary"
+                textColor="white"
+                type="filled"
+                text={'Picture'}
+              />
+            </div>
+          )}
+        </div>
 
         {childReports.map((childReport) => (
           <div key={`child-${childReport.childId}`} className="mb-4">

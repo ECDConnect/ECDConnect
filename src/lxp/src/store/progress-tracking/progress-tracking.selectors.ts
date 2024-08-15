@@ -121,6 +121,7 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
             id: skill.id,
             name: skill.name,
             description: skill.description,
+            supportImage: skill.supportImage,
             ageGroups: (skill.ageGroups || []).map((x) => ({ id: x.id })),
             subCategory: {
               id: subCategory?.id,
@@ -252,6 +253,7 @@ export const getSkillsForAgeGroup = (ageGroupId: number) =>
     getProgressTrackingSkills(),
     getProgressTrackingSkillsWithCategoryInfo(),
     (skills: ProgressTrackingSkillDto[], detailedSkills: ProgressSkill[]) => {
+      console.log('detailedSkills', detailedSkills);
       // Get all skills for age group
       const ageSkills = skills.filter((x) =>
         x.ageGroups?.some((x) => x.id === ageGroupId)

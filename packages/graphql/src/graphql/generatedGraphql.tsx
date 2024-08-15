@@ -14029,6 +14029,7 @@ export type ProgressTrackingSkill = {
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
   name?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
+  supportImage?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
   value?: Maybe<Scalars['String']>;
 };
@@ -14038,6 +14039,7 @@ export type ProgressTrackingSkillInput = {
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Scalars['String']>;
+  supportImage?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
   value?: InputMaybe<Scalars['String']>;
 };
