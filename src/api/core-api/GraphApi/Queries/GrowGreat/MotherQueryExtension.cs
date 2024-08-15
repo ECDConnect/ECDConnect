@@ -83,6 +83,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother, false);
                     mother.NextVisitDate = visitManager.GetClientsNextDueVisitDate(mother.Id, Constants.GGSettings.client_mother);
+                    var lastVisit = visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
+                    //mother.FirstVisitCompleted = lastVisit == Guid.Empty ? false : true;
                     mothers.Add(mother);
                 }
             }

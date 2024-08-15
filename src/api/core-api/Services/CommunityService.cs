@@ -34,6 +34,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly INotificationService _notificationService;
         private readonly Guid? _applicationUserId;
         private readonly ApplicationUserManager _userManager;
+        private readonly IPointsEngineService _pointsService;
 
 
         public CommunityService(
@@ -42,7 +43,8 @@ namespace EcdLink.Api.CoreApi.Services
             HierarchyEngine hierarchyEngine,
             [Service] AuthenticationDbContext dbContext,
             [Service] INotificationService notificationService,
-            [Service] ApplicationUserManager userManager
+            [Service] ApplicationUserManager userManager,
+            [Service] IPointsEngineService pointsService
             )
         {
             _applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());
@@ -59,6 +61,7 @@ namespace EcdLink.Api.CoreApi.Services
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _userManager = userManager;
+            _pointsService = pointsService;
         }
 
         public List<SupportRatingModel> GetSupportRatings()
@@ -147,6 +150,12 @@ namespace EcdLink.Api.CoreApi.Services
             
             if (communityProfile != null)
             {
+                // if the profile exists and the about short is empty, we can add 
+                if (string.IsNullOrEmpty(communityProfile.AboutShort) && !string.IsNullOrEmpty(input.AboutShort))
+                {
+                    _pointsService.CalculateAddingShortDescription(input.UserId);
+                }
+
                 communityProfile.IsActive = true;
                 communityProfile.UserId = input.UserId;
                 communityProfile.AboutShort = input.AboutShort;
@@ -181,12 +190,18 @@ namespace EcdLink.Api.CoreApi.Services
                     ShareRole = input.ShareRole,
                     ProvinceId = string.IsNullOrWhiteSpace(input.ProvinceId.ToString()) ? null : input.ProvinceId
                 });
+
+                // When communityProfile is added and there is a short description, add points
+                if (!string.IsNullOrEmpty(input.AboutShort))
+                {
+                    _pointsService.CalculateAddingShortDescription(input.UserId);
+                }
                
             }
             // Update skills if available
             UpdateProfileSkills(communityProfile.Id, input.CommunitySkillIds);
 
-            return GetCommunityProfile(input.UserId);
+            return GetCommunityProfile(input.UserId, true);
         }
 
         public void UpdateProfileSkills(Guid communityProfileId, List<Guid> communitySkillIds)
@@ -255,7 +270,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
-        public CommunityProfileModel GetCommunityProfile(Guid userId)
+        public CommunityProfileModel GetCommunityProfile(Guid userId, bool includePointCalculation = false)
         {
             var userCommunityProfile = _communityProfileRepo.GetAll()
                                         .Include(x => x.User)
@@ -345,6 +360,12 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     completenessPercColor = Constants.CSSColorClasses.Blue;
                 }
+
+                if (includePointCalculation && totalPoints == 100)
+                {
+                    _pointsService.CalculateCompleteCommunityProfile(userId);
+                }
+
                 return new CommunityProfileModel(userCommunityProfile, 
                                                  acceptedConnections,
                                                  pendingConnections,
@@ -365,11 +386,6 @@ namespace EcdLink.Api.CoreApi.Services
             var allConnections = _communityProfileConnectionRepo
                                             .GetAll()
                                             .Where(x => x.IsActive && (x.FromProfile.UserId == userId || x.ToProfile.UserId == userId));
-
-
-
-
-
             
             var connectionsToBeAccepted = allConnections
                                             .Where(x => x.IsActive && x.FromProfile.UserId == userId)
@@ -435,7 +451,9 @@ namespace EcdLink.Api.CoreApi.Services
         {
             if (input.UserIdsToAccept != null && input.UserIdsToAccept.Any())
             {
-                var accepted = _communityProfileConnectionRepo.GetAll().Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToAccept.Contains((Guid)x.FromProfile.UserId)).ToList();
+                var accepted = _communityProfileConnectionRepo.GetAll()
+                                .Where(x => x.IsActive && x.ToProfile.UserId == input.UserId && input.UserIdsToAccept.Contains((Guid)x.FromProfile.UserId))
+                                .ToList();
                 foreach (var item in accepted)
                 {
                     item.InviteAccepted = true;
@@ -443,6 +461,7 @@ namespace EcdLink.Api.CoreApi.Services
                     item.UpdatedBy = _applicationUserId.ToString();
                     _communityProfileConnectionRepo.Update(item);
                 }
+                _pointsService.CalculateConnectWithAnotherUser(input.UserId);
             }
             if (input.UserIdsToReject != null && input.UserIdsToReject.Any())
             {
@@ -491,7 +510,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             return null;
         }
-
 
         public CommunityProfileConnection CancelCommunityRequest(CommunityConnectInputModel input)
         {

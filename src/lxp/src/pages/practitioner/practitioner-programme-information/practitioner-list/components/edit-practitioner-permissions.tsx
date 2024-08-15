@@ -1,5 +1,6 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useTenant } from '@/hooks/useTenant';
+import { useTenantModules } from '@/hooks/useTenantModules';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
 import { useAppDispatch } from '@/store';
@@ -33,9 +34,29 @@ export const EditPractitionerPermissions = ({
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
   const appName = tenant?.tenant?.applicationName;
+  const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
+    useTenantModules();
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const permissions = useSelector(staticDataSelectors.getPermissions);
+
+  const premissionsFilteredByTenantModules = permissions
+    ?.filter((item) =>
+      !attendanceEnabled && isWhiteLabel
+        ? item?.name !== PermissionsNames?.take_attendance
+        : item
+    )
+    ?.filter((item2) =>
+      !progressEnabled && isWhiteLabel
+        ? item2?.name !== PermissionsNames?.create_progress_reports
+        : item2
+    )
+    ?.filter((item3) =>
+      !classroomActivitiesEnabled && isWhiteLabel
+        ? item3?.name !== PermissionsNames?.plan_classroom_actitivies
+        : item3
+    );
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -148,7 +169,7 @@ export const EditPractitionerPermissions = ({
         />
       </div>
       <div className="w-full p-4">
-        {permissions.map((item, index) => (
+        {premissionsFilteredByTenantModules?.map((item, index) => (
           <CheckboxGroup
             id={item.id}
             key={item.id}

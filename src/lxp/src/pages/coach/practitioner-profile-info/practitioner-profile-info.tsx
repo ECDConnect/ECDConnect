@@ -55,6 +55,8 @@ import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
 import { PractitionerDelicensed } from './practitioner-delicensed/practitioner-delicensed';
 import { authSelectors } from '@/store/auth';
+import { useTenantModules } from '@/hooks/useTenantModules';
+import { useTenant } from '@/hooks/useTenant';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -79,6 +81,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   );
 
   const isPrincipal = practitioner?.isPrincipal === true;
+  const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
+  const isOpenAccess = tenant?.isOpenAccess;
+  const { businessEnabled } = useTenantModules();
 
   const practitionerClassroomGroups =
     coachClassroomGroups?.filter((item) => item.userId === practitionerId) ||
@@ -412,7 +418,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     });
   }
 
-  if (isPrincipal) {
+  if (
+    (isPrincipal && isOpenAccess) ||
+    (businessEnabled && isWhiteLabel && isPrincipal)
+  ) {
     listItems?.push({
       title: 'Finances',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',

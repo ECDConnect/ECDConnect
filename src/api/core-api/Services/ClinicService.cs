@@ -47,14 +47,12 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly Guid? _applicationUserId;
 
-        private readonly IPointsEngineService _pointsEngineService;
         private readonly INotificationService _notificationService;
         private readonly ContentManagementRepository _contentRepo;
 
         public ClinicService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
-            [Service] IPointsEngineService pointsEngineService,
             [Service] INotificationService notificationService,
             [Service] ContentManagementRepository contentRepo,
             HierarchyEngine hierarchyEngine
@@ -79,7 +77,6 @@ namespace EcdLink.Api.CoreApi.Services
             _teamLeadRepo = _repositoryFactory.CreateGenericRepository<TeamLead>(userContext: _applicationUserId);
             _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _applicationUserId);
 
-            _pointsEngineService = pointsEngineService;
             _notificationService = notificationService;
             _contentRepo = contentRepo;
 
@@ -222,7 +219,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             ClinicReportModel clinicReportModel = new ClinicReportModel();
 
-            var prevYearDec = new DateTime(DateTime.Now.Year - 1, 12, 01);
+            /*var prevYearDec = new DateTime(DateTime.Now.Year - 1, 12, 01);
             var clinic = _clinicRepo.GetAll()
                 .Where(x => x.Id == clinicId)
                 .Include(x => x.TeamLeads.Where(x => x.IsActive == true))
@@ -265,7 +262,7 @@ namespace EcdLink.Api.CoreApi.Services
             clinicReportModel.ChildrenClinicLowerThan50Perc = childData.ChildrenClinicLowerThan50Perc;
             clinicReportModel.ChildrenTeamsBottomPerc = childData.ChildrenTeamsBottomPerc;
             clinicReportModel.ChildrenTeamsTopPerc = childData.ChildrenTeamsTopPerc;
-            clinicReportModel.ChildrenTopTeamPerc = childData.ChildrenTopTeamPerc;
+            clinicReportModel.ChildrenTopTeamPerc = childData.ChildrenTopTeamPerc;*/
 
             return clinicReportModel;
         }
@@ -274,7 +271,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var clinicReportModel = new ClinicReportModel();
 
-            var allClinicRankingData = _pointsEngineService.GetClinicRankingsForActivity(ActivityId, startDate, DateTime.Now.Date);
+            /*var allClinicRankingData = _pointsEngineService.GetClinicRankingsForActivity(ActivityId, startDate, DateTime.Now.Date);
             var currentClinic = allClinicRankingData.Where(x => x.ClinicId == clinicId).FirstOrDefault();
             var totalClinicsBelowClinicRank = allClinicRankingData.Where(x => x.TargetPercentage < currentClinic.TargetPercentage && x.ClinicId != currentClinic.ClinicId).Count();
             var totalClinicsAboveClinicRank = allClinicRankingData.Where(x => x.TargetPercentage >= currentClinic.TargetPercentage && x.ClinicId != currentClinic.ClinicId).Count();
@@ -292,7 +289,7 @@ namespace EcdLink.Api.CoreApi.Services
                 clinicReportModel.MomsTeamsTopPerc = Math.Round(((double)totalClinicsAboveClinicRank / (double)allClinicRankingData.Count() * 100));
                 clinicReportModel.MomsClinicLowerThan50Perc = Math.Round(100 - clinicReportModel.MomsTeamsTopPerc);
 
-            }
+            }*/
             return clinicReportModel;
         }
 
@@ -300,7 +297,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var clinicReportModel = new ClinicReportModel();
 
-            var allClinicRankingData = _pointsEngineService.GetClinicRankingsForActivity(ActivityId, startDate, DateTime.Now.Date);
+            /*var allClinicRankingData = _pointsEngineService.GetClinicRankingsForActivity(ActivityId, startDate, DateTime.Now.Date);
             var currentClinic = allClinicRankingData.Where(x => x.ClinicId == clinicId).FirstOrDefault();
             var totalClinicsBelowClinicRank = allClinicRankingData.Where(x => x.TargetPercentage < currentClinic.TargetPercentage && x.ClinicId != currentClinic.ClinicId).Count();
             var totalClinicsAboveClinicRank = allClinicRankingData.Where(x => x.TargetPercentage >= currentClinic.TargetPercentage && x.ClinicId != currentClinic.ClinicId).Count();
@@ -319,7 +316,7 @@ namespace EcdLink.Api.CoreApi.Services
                 clinicReportModel.ChildrenTeamsTopPerc = Math.Round(((double)totalClinicsAboveClinicRank / (double)allClinicRankingData.Count() * 100));
                 clinicReportModel.ChildrenClinicLowerThan50Perc = Math.Round(100 - clinicReportModel.ChildrenTeamsTopPerc);
 
-            }
+            }*/
             return clinicReportModel;
         }
 

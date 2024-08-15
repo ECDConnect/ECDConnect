@@ -349,9 +349,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         #endregion
 
-        public bool CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, string userId)
+        public void CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, Guid userId)
         {
-            return pointsEngineService.CalculateChildrenRegistrationRemoval(userId, DateTime.UtcNow);
+            pointsEngineService.CalculateChildRemovedFromPreschool(userId);
         }
 
         private bool AddConsent(AuthenticationDbContext context, AddChildUserConsentTokenModel consent, ChildTokenWrapperModel tokenModel)

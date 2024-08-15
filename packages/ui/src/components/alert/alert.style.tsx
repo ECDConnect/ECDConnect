@@ -1,3 +1,4 @@
+import { Colours } from '../../models';
 import { renderIcon } from '../../utils';
 import { AlertType, AlertVariant } from './alert.types';
 export const wrapper = `rounded-10 p-4 relative`;

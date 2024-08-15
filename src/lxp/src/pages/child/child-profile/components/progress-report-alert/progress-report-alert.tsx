@@ -1,19 +1,9 @@
 import { ChildDto } from '@ecdlink/core';
 import { ComponentBaseProps, ListItem, ListItemProps } from '@ecdlink/ui';
-import { addDays } from 'date-fns';
-import { useSelector } from 'react-redux';
+import { isBefore } from 'date-fns';
 import { useHistory } from 'react-router';
-import { childRegistrationConstants } from '@/constants/Child';
-import { DateFormats } from '@/constants/Dates';
-import { contentReportSelectors } from '@store/content/report';
-import {
-  getFollowingReportingPeriod,
-  getReportingPeriod,
-  isInFinalMonthOfReportingPeriod,
-  isMatchingReportingPeriods,
-} from '@utils/child/child-profile-utils';
-import { isChildInitialRegistrationPeriod } from '@utils/child/child-progress-report.utils';
 import ROUTES from '@routes/routes';
+import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 
 export interface ChildProgressReportAlertProps extends ComponentBaseProps {
   child: ChildDto;
@@ -44,92 +34,44 @@ export const ChildProgressReportAlert: React.FC<
 > = ({ child }) => {
   const history = useHistory();
 
-  const childInsertedDate = child.insertedDate
-    ? new Date(child.insertedDate)
-    : undefined;
-  const reportSummaries = useSelector(
-    contentReportSelectors.getChildLatestCompletedReports(child.id)
-  );
-  const [latestCompletedSummary] = reportSummaries;
-
-  const currentDate = new Date();
-
-  const requiresInitialReport =
-    !latestCompletedSummary && isChildInitialRegistrationPeriod(child);
-
-  const currentReportingPeriodReportSummary = reportSummaries.find(
-    (summary) =>
-      summary.childId === child.id &&
-      isMatchingReportingPeriods(new Date(summary.reportDate), currentDate)
-  );
-
-  const reportingPeriod = !currentReportingPeriodReportSummary
-    ? getReportingPeriod(currentDate, requiresInitialReport)
-    : getFollowingReportingPeriod(
-        new Date(
-          latestCompletedSummary?.reportDate
-            ? latestCompletedSummary?.reportDate
-            : currentReportingPeriodReportSummary.reportDate
-        )
-      );
-
-  const isCurrentlyInReportingOverduePeriod = isInFinalMonthOfReportingPeriod(
-    reportingPeriod.monthName,
-    currentDate
-  );
-
-  const reportDate = requiresInitialReport
-    ? new Date(Date.UTC(2000, 0, 1))
-    : new Date(
-        Date.UTC(
-          reportingPeriod.year,
-          reportingPeriod.monthName === 'June' ? 5 : 10,
-          1
-        )
-      );
+  const { currentReportingPeriod, currentReport, currentAgeGroup } =
+    useObserveProgressForChild(child.id!);
 
   const navigateToChildProgressObservation = () => {
-    history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
+    history.push(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
       childId: child.id,
-      firstObservation: requiresInitialReport,
-      reportingDate: reportDate,
     });
   };
-  if (!childInsertedDate)
-    return <div>Child does not have a valid inserted date...</div>;
-  const getListItemProps = (): ListItemProps => {
-    if (requiresInitialReport) {
-      return {
-        ...baseProgressReportListItem,
-        title: '<b>Start tracking progress</b>',
-        subTitle: `First observations by <b>${addDays(
-          childInsertedDate,
-          childRegistrationConstants.firstProgressReportPeriod
-        ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}</b>`,
-        onButtonClick: navigateToChildProgressObservation,
-      };
-    }
 
+  const isInPeriod =
+    !!currentReportingPeriod &&
+    isBefore(new Date(), new Date(currentReportingPeriod.startDate)) &&
+    isBefore(new Date(currentReportingPeriod.endDate), new Date());
+
+  if (!currentReportingPeriod || !!currentReport?.dateCompleted) {
+    return <></>;
+  }
+
+  const getListItemProps = (): ListItemProps => {
     if (
-      // the current date's month is either July or December and there is no summary
-      isCurrentlyInReportingOverduePeriod &&
-      !currentReportingPeriodReportSummary
+      !!currentAgeGroup &&
+      isInPeriod &&
+      !currentReport?.observationsCompleteDate
     ) {
       return {
         ...baseProgressReportListItem,
-        title: `<b>${reportingPeriod.monthName} progress report</b>`,
-        subTitle: '<b>Overdue</b>',
-        subTitleColor: 'alertMain',
-        iconName: 'ExclamationIcon',
-        iconBackgroundColor: 'alertMain',
+        title: `<b>Create progress report</b>`,
+        subTitle: `Report ${currentReport?.reportingPeriodNumber || 1}`,
+        // iconName: 'InformationIcon',
+        // iconBackgroundColor: 'infoMain',
         onButtonClick: navigateToChildProgressObservation,
       };
     }
 
     return {
       ...baseProgressReportListItem,
-      title: `<b>${reportingPeriod.monthName} progress report</b>`,
-      subTitle: `Complete by <b>30 ${reportingPeriod.monthName}</b>`,
+      title: `<b>Create progress report</b>`,
+      subTitle: `All observations are done, time to create the report!`,
       onButtonClick: navigateToChildProgressObservation,
     };
   };

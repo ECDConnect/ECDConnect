@@ -14,7 +14,6 @@ using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using EcdLink.Api.CoreApi.Services.Interfaces;
-using EcdLink.Api.CoreApi.Services.PointsEngine;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
@@ -167,9 +166,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
-            services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IPointsService, PointsEngineService>();
-            services.AddTransient<IGrowGreatPointsCalculationsService, GrowGreatPointsCalculationService>();
             services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<DocumentManager>();
@@ -183,6 +180,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ICommunityService, CommunityService>();
             services.AddTransient<IChildProgressReportService, ChildProgressReportService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
+            services.AddTransient<IPointsEngineService, PointsEngineService>();
 
             // Notification tasks (All will be run daily)
             foreach (var notificationTask in Assembly.GetExecutingAssembly().GetTypes()

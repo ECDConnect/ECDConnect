@@ -1,5 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities.Notifications;
-using System;
+﻿using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 {
@@ -19,6 +18,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
 
             if (isRegistered == false)
             {
+                ConnectUsage = Constants.PortalSettings.usage_invitation_expired;
+                ConnectUsageColor = Constants.PortalSettings.usage_red;
+
                 if (invitationDate.HasValue)
                 {
                     var expiredDate = invitationDate.Value.AddDays(30);
@@ -34,11 +36,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
                         // User has not registered yet, invite is expired - red
                         ConnectUsageColor = Constants.PortalSettings.usage_red;
                     }
-                }
-
-                ConnectUsage = Constants.PortalSettings.usage_invitation_expired;
-                ConnectUsageColor = Constants.PortalSettings.usage_red;
-                return;
+                    return;
+                } 
             }
             
             ConnectUsage = "Online: " + lastSeenDate.ToString("dd/MM/yyyy");
@@ -64,6 +63,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal
             if (lastSeenDate.Date <= twentyDays.Date)
             {
                 ConnectUsageColor = Constants.PortalSettings.usage_red;
+                return;
             }
         }
     }

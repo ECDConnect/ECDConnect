@@ -330,33 +330,14 @@ namespace ECDLink.Security.Api
                 // we use _dbContext to exclude tenantId validation
                 var userByUsername = _dbContext.Users.Where(user => user.UserName == verifyModel.Username).FirstOrDefault();
 
-                if (TenantExecutionContext.Tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabel)
+                if (userByUsername != null)
                 {
-                    // if userId, then user exists, we just need to check for unique username
-                    if (!string.IsNullOrEmpty(verifyModel.UserId))
-                    {
-                        var user = _dbContext.Users.Where(user => user.Id.ToString() == verifyModel.UserId).FirstOrDefault();
-                        if (user.IdNumber != verifyModel.Username)
-                        {
-                            return BadRequest(new FailedVerificationModel
-                            {
-                                ErrorCode = 2,
-                                Error = "Invalid Username"
-                            });
-                        }
-                    }
-                }
-                else
-                {
-                    if (userByUsername != null)
-                    {
-                        return BadRequest(new FailedVerificationModel
-                        {
-                            ErrorCode = 2,
-                            Error = "Invalid Username"
-                        });
-                    }
-                }
+                   return BadRequest(new FailedVerificationModel
+                   {
+                     ErrorCode = 2,
+                     Error = "Invalid Username"
+                   });
+                 }
             }
 
             if (!string.IsNullOrEmpty(verifyModel.PhoneNumber))

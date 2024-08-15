@@ -23,6 +23,7 @@ export const ProgressTrackingActions = {
   GET_PROGRESS_TRACKING_CATEGORIES: 'getProgressTrackingCategories',
   GET_PROGRESS_TRACKING_SUB_CATEGORIES: 'getProgressTrackingSubCategories',
   GET_PROGRESS_TRACKING_SKILLS: 'getProgressTrackingSkills',
+  GET_PROGRESS_TRACKING_STRUCTURE: 'getProgressTrackingStructure',
   SYNC_CHILD_PROGRESS_REPORTS: 'syncChildProgressReports',
   GET_CHILD_PROGRESS_REPORTS: 'getChildProgressReports',
 };
@@ -78,139 +79,47 @@ export const getProgressTrackingAgeGroups = createAsyncThunk<
   }
 );
 
-export const getProgressTrackingCategories = createAsyncThunk<
+export const getProgressTrackingContent = createAsyncThunk<
   ProgressTrackingCategoryDto[],
   { locale: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
-  ProgressTrackingActions.GET_PROGRESS_TRACKING_CATEGORIES,
-  // eslint-disable-next-line no-empty-pattern
+  ProgressTrackingActions.GET_PROGRESS_TRACKING_STRUCTURE,
   async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      progressTracking: { progressTrackingCategories },
+      progressTracking: {
+        progressTrackingContentByLocale: progressTrackingCategoriesByLocale,
+      },
       user: { userLocalePreference },
     } = getState();
 
     let thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    const currentLocaleData = progressTrackingCategoriesByLocale[locale];
+
     if (
       !!overrideCache ||
-      !progressTrackingCategories.dateRefreshed ||
-      isBefore(
-        new Date(progressTrackingCategories.dateRefreshed),
-        thirtyDaysAgo
-      ) ||
+      !currentLocaleData ||
+      !currentLocaleData.dateRefreshed ||
+      isBefore(new Date(currentLocaleData.dateRefreshed), thirtyDaysAgo) ||
       userLocalePreference !== locale
     ) {
       try {
         let categories: ProgressTrackingCategoryDto[] | undefined;
+        let subCategories: ProgressTrackingSubCategoryDto[] | undefined;
+        let skills: ProgressTrackingSkillDto[] | undefined;
 
         if (userAuth?.auth_token) {
           categories = await new ProgressTrackingService(
             userAuth?.auth_token
           ).getProgressTrackingCategories(locale);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
 
-        if (!categories) {
-          return rejectWithValue('Error getting progress tracking categories');
-        }
-
-        return categories;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return progressTrackingCategories.data;
-    }
-  }
-);
-
-export const getProgressTrackingSubCategories = createAsyncThunk<
-  ProgressTrackingSubCategoryDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string } & OverrideCache,
-  ThunkApiType<RootState>
->(
-  ProgressTrackingActions.GET_PROGRESS_TRACKING_SUB_CATEGORIES,
-  // eslint-disable-next-line no-empty-pattern
-  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      progressTracking: { progressTrackingSubCategories },
-      user: { userLocalePreference },
-    } = getState();
-
-    let thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    if (
-      !!overrideCache ||
-      !progressTrackingSubCategories.dateRefreshed ||
-      isBefore(
-        new Date(progressTrackingSubCategories.dateRefreshed),
-        thirtyDaysAgo
-      ) ||
-      userLocalePreference !== locale
-    ) {
-      try {
-        let subCategories: ProgressTrackingSubCategoryDto[] | undefined;
-
-        if (userAuth?.auth_token) {
           subCategories = await new ProgressTrackingService(
             userAuth?.auth_token
           ).getProgressTrackingSubCategories(locale);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
 
-        if (!subCategories) {
-          return rejectWithValue(
-            'Error getting progress tracking sub-categories'
-          );
-        }
-
-        return subCategories;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return progressTrackingSubCategories.data;
-    }
-  }
-);
-
-export const getProgressTrackingSkills = createAsyncThunk<
-  ProgressTrackingSkillDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string } & OverrideCache,
-  ThunkApiType<RootState>
->(
-  ProgressTrackingActions.GET_PROGRESS_TRACKING_SKILLS,
-  // eslint-disable-next-line no-empty-pattern
-  async ({ locale, overrideCache }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      progressTracking: { progressTrackingSkills },
-      user: { userLocalePreference },
-    } = getState();
-
-    let thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    if (
-      !!overrideCache ||
-      !progressTrackingSkills.dateRefreshed ||
-      isBefore(new Date(progressTrackingSkills.dateRefreshed), thirtyDaysAgo) ||
-      userLocalePreference !== locale
-    ) {
-      try {
-        let skills: ProgressTrackingSkillDto[] | undefined;
-
-        if (userAuth?.auth_token) {
           skills = await new ProgressTrackingService(
             userAuth?.auth_token
           ).getProgressTrackingSkills(locale);
@@ -218,16 +127,39 @@ export const getProgressTrackingSkills = createAsyncThunk<
           return rejectWithValue('no access token, profile check required');
         }
 
-        if (!skills) {
+        if (!skills || !categories || !subCategories) {
           return rejectWithValue('Error getting progress tracking skills');
         }
 
-        return skills;
+        // Build full structure
+        return categories.map((cat) => {
+          return {
+            ...cat,
+            subCategories: cat.subCategories
+              .filter((x) => subCategories!.some((y) => y.id === x.id))
+              .map((subCatMin) => {
+                const subCategory = subCategories!.find(
+                  (x) => x.id === subCatMin.id
+                )!;
+
+                return {
+                  ...subCategory,
+                  skills: subCategory.skills
+                    .filter((x) => skills!.some((y) => y.id === x.id))
+                    .map((skillMin) => {
+                      const skill = skills!.find((x) => x.id === skillMin.id)!;
+
+                      return skill;
+                    }),
+                };
+              }),
+          };
+        });
       } catch (err) {
         return rejectWithValue(err);
       }
     } else {
-      return progressTrackingSkills.data;
+      return currentLocaleData.data;
     }
   }
 );
