@@ -130,11 +130,6 @@ export const PractitionerAbout: React.FC = () => {
     () => getReportingPeriodForProfileUsePhotoInReport(new Date()),
     []
   );
-  const hasCreatedReportForCurrentPeriod = useSelector(
-    contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
-      reportingPeriod.reportingDate
-    )
-  );
 
   const avatar =
     userProfilePicture?.file ||

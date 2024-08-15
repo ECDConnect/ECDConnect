@@ -48,7 +48,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
 
-            List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == Guid.Parse(id) && x.IsActive.Equals(true)).ToList();
+            List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == Guid.Parse(id) && x.IsActive.Equals(true)
+            && x.MotherCaregiverId == null).ToList();
             List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == Guid.Parse(id) && x.IsActive.Equals(true)).ToList();
 
             if (visitType == Constants.GGSettings.visitType_due)
@@ -81,6 +82,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
                     child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
+                    var lastVisit = visitManager.GetLastCompletedVisitId(child.Id.ToString(), Constants.GGSettings.client_child);
+                    //child.FirstVisitCompleted = lastVisit == Guid.Empty ? false : true;
+                   // child.MissedVisits = visitManager.GetMissedVisits(child.Id, Constants.GGSettings.client_child);
                     infants.Add(child);
                 }
 
@@ -88,7 +92,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
                     child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
-                    infants.Add(child);
+                    var lastVisit = visitManager.GetLastCompletedVisitId(child.Id.ToString(), Constants.GGSettings.client_child);
+                    //child.FirstVisitCompleted = lastVisit == Guid.Empty ? false : true;
+                    //child.MissedVisits = visitManager.GetMissedVisits(child.Id, Constants.GGSettings.client_child);
+                    infants.Add(child); 
                 }
             }
             return infants;

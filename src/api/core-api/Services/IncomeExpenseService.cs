@@ -1,28 +1,25 @@
 ﻿
+using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
+using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ECDLink.Security.Extensions;
-using ECDLink.Core.Extensions;
-using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
-using HotChocolate;
-using EcdLink.Api.CoreApi.Managers;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
-using ECDLink.DataAccessLayer.Hierarchy;
 using System.Globalization;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
-using ECDLink.DataAccessLayer.Managers;
-using DinkToPdf.Contracts;
-using static iTextSharp.text.pdf.AcroFields;
-using AngleSharp.Text;
 
 namespace ECDLink.Core.Services
 {
@@ -40,12 +37,11 @@ namespace ECDLink.Core.Services
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
-        private IPointsEngineService _pointsEngineService;
-
         private ApplicationUserManager _userManager;
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
+        private IPointsEngineService _pointsService;
 
         private IConverter _pdfConverter;
 
@@ -55,7 +51,7 @@ namespace ECDLink.Core.Services
             [Service] DocumentManager documentManager,
             [Service] ApplicationUserManager userManager,
             [Service] PersonnelService personnelService,
-            IPointsEngineService pointsEngineService,
+            [Service] IPointsEngineService pointsService,
             HierarchyEngine hierarchyEngine,
             IConverter pdfConverter
             )
@@ -79,7 +75,7 @@ namespace ECDLink.Core.Services
             _userManager = userManager;
             _documentManager = documentManager;
             _personnelService = personnelService;
-            _pointsEngineService = pointsEngineService;
+            _pointsService = pointsService;
         }
 
         #region Utils
@@ -157,6 +153,8 @@ namespace ECDLink.Core.Services
                 }).ToList(),
             };
 
+            _pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+
             return _statementsRepo.Insert(newStatement);
         }
 
@@ -174,6 +172,10 @@ namespace ECDLink.Core.Services
             {
                 exisitingStatement.Downloaded = input.Downloaded;
                 _statementsRepo.Update(exisitingStatement);
+                if (input.Downloaded)
+                {
+                    _pointsService.CalculateDownloadIncomeStatement((Guid)exisitingStatement.UserId);
+                }
             }
 
             // If not downloaded, update income/expenses
@@ -329,7 +331,7 @@ namespace ECDLink.Core.Services
             }
             #endregion
 
-
+            _pointsService.CalculateAddExpenseOrIncomeToStatement((Guid)exisitingStatement.UserId);
             return exisitingStatement;
         }
 

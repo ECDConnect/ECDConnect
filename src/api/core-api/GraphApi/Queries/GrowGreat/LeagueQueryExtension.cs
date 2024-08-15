@@ -44,8 +44,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public LeagueClinicsModel GetLeagueById([Service] IPointsEngineService pointsService, Guid leagueId)
         {
-            var league = pointsService.GetLeagueWithClinicRankings(leagueId);
-            return league;
+            //var league = pointsService.GetLeagueWithClinicRankings(leagueId);
+            //return league;
+            return new LeagueClinicsModel();
         }
 
         [Permission(PermissionGroups.LEAGUE, GraphActionEnum.View)]

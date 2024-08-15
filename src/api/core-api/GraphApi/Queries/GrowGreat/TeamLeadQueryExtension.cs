@@ -47,82 +47,101 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                                                       List<string> subDistrictSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var teamLeads = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
+            var teamLeadsQuery = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
             var hcwRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
             var shortenUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
-            var hasFilters = false;
+            var sixMonthsAgo = DateTime.Now.AddMonths(-6).GetStartOfMonth().Date;
 
             if (cancellationToken.IsCancellationRequested)
                 return null;
 
             if (!string.IsNullOrWhiteSpace(search))
-                teamLeads = teamLeads 
+                teamLeadsQuery = teamLeadsQuery
                     .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
 
             // Get ids and tokens
-            var userIds = teamLeads.Select(x => (Guid)x.UserId).ToList();
-            var invitations = shortenUrlRepo.GetAll()
+            var userIds = teamLeadsQuery.Select(x => (Guid)x.UserId).ToList();
+
+            var defaultInvitations = shortenUrlRepo.GetAll()
                 .Where(x =>
                     userIds.Contains(x.UserId.Value)
                     && x.MessageType == TemplateTypeConstants.TeamLeadInvitation
                     && x.IsActive
-                    && x.Clicked == 0)
-                .Select(x => new { x.UserId, x.InsertedDate })
-                .OrderByDescending(x => x.InsertedDate)
-                .GroupBy(x => x.UserId)
-                .ToDictionary(x => x.Key, x => x.First().InsertedDate);
+                    && x.Clicked == 0).GroupBy(l => l.UserId)
+                .Select(g => g.OrderByDescending(c => c.InsertedDate).FirstOrDefault())
+                .ToList();
 
-            List<PortalUsersTLModel> records = teamLeads.Select(item => new PortalUsersTLModel
+            var invitations = defaultInvitations
+                .Select(x => new { x.UserId, x.InsertedDate })
+                .GroupBy(x => x.UserId)
+                .ToDictionary(x => x.Key, x => x.LastOrDefault().InsertedDate);
+
+            List<PortalUsersTLModel> teamLeadModels = teamLeadsQuery.Select(item => new PortalUsersTLModel
             {
                 Id = item.Id,
                 User = new PortalUserModel(item.User, item.IsRegistered, invitations.ContainsKey(item.UserId) ? invitations[item.UserId] : null),
-                ClinicIds = item.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).ToList(),
-                ClinicNames = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.Name).ToList(),
+                ClinicIds = item.Clinics.Where(x => x.IsActive).Select(x => x.ClinicId).Distinct().ToList(),
+                ClinicNames = item.Clinics.Where(x => x.IsActive).Select(x => x.Clinic.Name).Distinct().ToList(),
                 InsertedDate = item.InsertedDate,
                 IsRegistered = item.IsRegistered,
-                ProvinceIds = item.Clinics.Where(x => x.IsActive && x.Clinic.SubDistrict != null).Select(x => x.Clinic.SubDistrict.District.ProvinceId).ToList(),
-                SubDistrictIds = item.Clinics.Where(x => x.IsActive && x.Clinic.SubDistrict != null).Select(x => (Guid)x.Clinic.SubDistrictId).ToList()
+                ProvinceIds = item.Clinics.Where(x => x.IsActive && x.Clinic.SubDistrict != null).Select(x => x.Clinic.SubDistrict.District.ProvinceId).Distinct().ToList(),
+                SubDistrictIds = item.Clinics.Where(x => x.IsActive && x.Clinic.SubDistrict != null).Select(x => (Guid)x.Clinic.SubDistrictId).Distinct().ToList()
             }).ToList();
+
 
             List<PortalUsersTLModel> filteredUsers = new List<PortalUsersTLModel>();
 
-            if (connectUsageSearch != null && connectUsageSearch.Count != 0)
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
             {
-                var today = DateTime.Now;
-                var sixMonths = today.AddMonths(-6);
-                hasFilters = true;
+                filteredUsers.AddRange(teamLeadModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_expired))
+            {
+                filteredUsers.AddRange(teamLeadModels.Where(x => connectUsageSearch.Contains(x.User.ConnectUsage)).ToList());
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
+            {
+                filteredUsers.AddRange(teamLeadModels.Where(x =>
+                    x.IsRegistered
+                    && x.User.IsActive
+                    && x.User.LastSeen.Date >= sixMonthsAgo));
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
+            {
+                filteredUsers.AddRange(teamLeadModels.Where(x =>
+                    x.IsRegistered
+                    && x.User.IsActive
+                    && x.User.LastSeen.Date <= sixMonthsAgo));
+            }
+            if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+            {
+                filteredUsers.AddRange(teamLeadModels.Where(x => x.User.IsActive == false).ToList());
+            }
 
-                if (connectUsageSearch.Contains(Constants.PortalSettings.usage_removed))
+            if (provinceSearch != null && provinceSearch.Any())
+            {
+                foreach (var item in teamLeadModels)
                 {
-                    filteredUsers = records.Where(x => x.User.IsActive == false).ToList();
-                }
-
-                foreach (var item in records)
-                {
-                    if (connectUsageSearch.Contains(item.User.ConnectUsage))
+                    foreach (var province in item.ProvinceIds)
                     {
-                        filteredUsers.Add(item);
-                    }
-                    if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_past_6_months))
-                    {
-                        if (item.IsRegistered &&
-                            item.User.IsActive &&
-                            item.User.LastSeen.Date != item.User.InsertedDate &&
-                            item.User.LastSeen.Date >= sixMonths.GetStartOfMonth().Date)
+                        if (provinceSearch.Contains(province.ToString()))
                         {
                             filteredUsers.Add(item);
                         }
                     }
-                    if (connectUsageSearch.Contains(Constants.PortalSettings.usage_last_online_over_6_months))
+                }
+            }
+            if (clinicSearch != null && clinicSearch.Any())
+            {
+                foreach (var item in teamLeadModels)
+                {
+                    foreach (var name in item.ClinicNames)
                     {
-                        if (item.IsRegistered &&
-                            item.User.IsActive &&
-                            item.User.LastSeen.Date != item.User.InsertedDate &&
-                            item.User.LastSeen.Date <= sixMonths.GetStartOfMonth().Date)
+                        if (clinicSearch.Contains(name))
                         {
                             filteredUsers.Add(item);
                         }
@@ -130,186 +149,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 }
             }
 
-            if (provinceSearch != null && provinceSearch.Count != 0)
+            if (subDistrictSearch != null && subDistrictSearch.Any())
             {
-                hasFilters = true;
-                if (filteredUsers.Count > 0)
+                foreach (var item in teamLeadModels)
                 {
-                    foreach (var item in filteredUsers.ToList())
+                    foreach (var sub in item.SubDistrictIds)
                     {
-                        foreach (var province in item.ProvinceIds)
+                        if (subDistrictSearch.Contains(sub.ToString()))
                         {
-                            if (!provinceSearch.Contains(province.ToString()))
-                            {
-                                filteredUsers.Remove(item);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var item in records)
-                    {
-                        foreach (var province in item.ProvinceIds)
-                        {
-                            if (provinceSearch.Contains(province.ToString()))
-                            {
-                                filteredUsers.Add(item);
-                            }
+                            filteredUsers.Add(item);
                         }
                     }
                 }
             }
 
-            if (clinicSearch != null && clinicSearch.Count != 0)
-            {
-                hasFilters = true;
-                if (filteredUsers.Count > 0)
-                {
-                    foreach (var item in filteredUsers.ToList())
-                    {
-                        foreach (var name in item.ClinicNames)
-                        {
-                            if (!clinicSearch.Contains(name))
-                            {
-                                filteredUsers.Add(item);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var item in records)
-                    {
-                        foreach (var name in item.ClinicNames)
-                        {
-                            if (clinicSearch.Contains(name))
-                            {
-                                filteredUsers.Add(item);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (subDistrictSearch != null && subDistrictSearch.Count != 0)
-            {
-                hasFilters = true;
-                if (filteredUsers.Count > 0)
-                {
-                    foreach (var item in filteredUsers.ToList())
-                    {
-                        foreach (var sub in item.SubDistrictIds)
-                        {
-                            if (!subDistrictSearch.Contains(sub.ToString()))
-                            {
-                                filteredUsers.Remove(item);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var item in records)
-                    {
-                        foreach (var sub in item.SubDistrictIds)
-                        {
-                            if (subDistrictSearch.Contains(sub.ToString()))
-                            {
-                                filteredUsers.Add(item);
-                            }
-                        }
-                    }
-                }
-            }
-
-
-
-            if (visitSearch != null && visitSearch.Count != 0)
-            {
-                hasFilters = true;
-                var startOfMonth = DateTime.Now.GetStartOfMonth();
-                var endOfMonth = DateTime.Now.GetEndOfMonth();
-                var clinicIds = records.Select(x => x.ClinicIds).Distinct().ToList();
-                var combinedClinicIds = clinicIds.SelectMany(x => x).Distinct().ToList();
-                var hcwIds = hcwRepo.GetAll().Where(x => x.IsActive && x.ClinicId != null && combinedClinicIds.Contains((Guid)x.ClinicId)).Select(x => x.UserId).ToList();
-
-                var visits = visitRepo.GetAll().Where(x => x.Attended == true &&
-                                                           x.ActualVisitDate.HasValue &&
-                                                           (x.ActualVisitDate.Value.Date >= startOfMonth.Date && x.ActualVisitDate.Value.Date <= endOfMonth.Date) &&
-                                                           (x.Mother.IsActive && hcwIds.Contains((Guid)x.Mother.HealthCareWorker.User.Id) ||
-                                                           (x.Infant.IsActive && hcwIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.User.Id)))
-                                                           ).ToList();
-
-
-                if (filteredUsers.Count > 0)
-                {
-                    foreach (var item in filteredUsers.ToList())
-                    {
-                        var totalClientsVisits = visits.Where(x => item.ClinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) || item.ClinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId)).Count();
-
-                        if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
-                        {
-                            if (totalClientsVisits < 20)
-                            {
-                                filteredUsers.Remove(item);
-                            }
-                        }
-                        if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
-                        {
-                            if (totalClientsVisits < 10)
-                            {
-                                filteredUsers.Remove(item);
-                            }
-                        }
-                        if (visitSearch.Contains(Constants.PortalSettings.visit_low_activity))
-                        {
-                            if (totalClientsVisits != 0)
-                            {
-                                filteredUsers.Remove(item);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var item in records)
-                    {
-                        var totalClientsVisits = visits.Where(x => item.ClinicIds.Contains((Guid)x.Mother.HealthCareWorker.ClinicId) || item.ClinicIds.Contains((Guid)x.Infant.Caregiver.HealthCareWorker.ClinicId)).Count();
-
-                        if (visitSearch.Contains(Constants.PortalSettings.visit_high_activity))
-                        {
-                            if (totalClientsVisits >= 20)
-                            {
-                                filteredUsers.Add(item);
-                            }
-                        }
-                        if (visitSearch.Contains(Constants.PortalSettings.visit_medium_activity))
-                        {
-                            if (totalClientsVisits > 0 && totalClientsVisits <= 10)
-                            {
-                                filteredUsers.Add(item);
-                            }
-                        }
-                        if (visitSearch.Contains(Constants.PortalSettings.visit_low_activity))
-                        {
-                            if (totalClientsVisits == 0)
-                            {
-                                filteredUsers.Add(item);
-                            }
-                        }
-                    }
-                }
-
-
-                
-            }
-            if (hasFilters)
-            {
-                return filteredUsers;
-            }
-
-            return records;
+            return connectUsageSearch.Any() || provinceSearch.Any() || clinicSearch.Any() || subDistrictSearch.Any() 
+                ? filteredUsers.DistinctBy(x => x.Id).ToList() 
+                : teamLeadModels;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -455,9 +311,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public PortalUsersTLModel GetTeamLeadById(
             [Service] ITeamLeadService teamLeadService,
-            Guid teamLeadId)
+            Guid teamLeadUserId)
         {
-            var teamLead = teamLeadService.GetTeamLeadById(teamLeadId);
+            var teamLead = teamLeadService.GetTeamLeadById(teamLeadUserId);
 
             return teamLead;
         }

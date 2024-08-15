@@ -118,7 +118,9 @@ class ProgressTrackingService {
     locale: string
   ): Promise<ProgressTrackingSkillDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { GetAllProgressTrackingSkill: ProgressTrackingSkillDto[] };
+    }>(``, {
       query: `
       query GetAllProgressTrackingSkill($locale: String) {
         GetAllProgressTrackingSkill(locale: $locale) {
@@ -143,7 +145,10 @@ class ProgressTrackingService {
       throw new Error('Get Progress Tracking Skills - Server connection error');
     }
 
-    return response.data.data.GetAllProgressTrackingSkill;
+    return response.data.data.GetAllProgressTrackingSkill.map((x) => ({
+      ...x,
+      description: x.value, // Small remapping, I added the descriptions to the value field in the content since a description field did not exist and value was not being used
+    }));
   }
 
   async getProgressTrackingLevels(

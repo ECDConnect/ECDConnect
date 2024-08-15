@@ -2,9 +2,11 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Input;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -16,6 +18,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
@@ -137,6 +140,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
             var healthCareWorkerToUpdate = healthCareWorkerRepo.GetByUserId(userId);
+            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: applicationUserId);
 
             if (input.IsRegistered)
             {
@@ -150,7 +154,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
 
-            return new HealthCareWorkerModel(updatedHealthCareWorker);
+            var invitation = shortenUrlEntityRepo.GetAll()
+                .Where(x =>
+                    x.UserId.Value == healthCareWorkerToUpdate.UserId.Value
+                    && x.MessageType == TemplateTypeConstants.Invitation
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker, invitation != null ? invitation.InsertedDate : null);
+
         }
                 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
@@ -163,6 +177,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
             var healthCareWorkerToUpdate = healthCareWorkerRepo.GetById(new Guid(userId));
+            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: applicationUserId);
 
             if (input.ClickedVisitTab != null)
             {
@@ -195,7 +210,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
 
-            return new HealthCareWorkerModel(updatedHealthCareWorker);
+            var invitation = shortenUrlEntityRepo.GetAll()
+                .Where(x =>
+                    x.UserId.Value == healthCareWorkerToUpdate.UserId.Value
+                    && x.MessageType == TemplateTypeConstants.Invitation
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker, invitation != null ? invitation.InsertedDate : null);
+
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
@@ -209,6 +234,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
             var healthCareWorkerToUpdate = healthCareWorkerRepo.GetById(healthcareWorkerId);
+            var shortenUrlEntityRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: applicationUserId);
 
             if (healthCareWorkerToUpdate == null)
             {
@@ -221,7 +247,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             var updatedHealthCareWorker = healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
 
-            return new HealthCareWorkerModel(updatedHealthCareWorker);
+            var invitation = shortenUrlEntityRepo.GetAll()
+                .Where(x =>
+                    x.UserId.Value == healthCareWorkerToUpdate.UserId.Value
+                    && x.MessageType == TemplateTypeConstants.Invitation
+                    && x.IsActive
+                    && x.Clicked == 0)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+            return new HealthCareWorkerModel(updatedHealthCareWorker, invitation != null ? invitation.InsertedDate : null);
         }
     }
 }

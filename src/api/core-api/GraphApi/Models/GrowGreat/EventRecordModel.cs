@@ -14,6 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public InfantModel Infant { get; set; }
         public string Notes { get; set; }
         public string LinkedVisitId { get; set; }
+        public bool? status { get; set; }
     }
 
     public class EventRecordTypeModel

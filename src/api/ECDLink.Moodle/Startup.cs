@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.Services.Training;
+﻿using EcdLink.Moodle.Services;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

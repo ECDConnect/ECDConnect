@@ -6,6 +6,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -29,6 +30,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
              EventRecordModel input)
         {
             return eventRecordManager.UpdateEventRecord(id, input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public EventRecord UpdateEventRecordStatusById(
+             [Service] EventRecordManager eventRecordManager,
+             Guid eventRecordId,
+             bool isActive)
+        {
+            return eventRecordManager.UpdateEventRecordStatusById(eventRecordId, isActive);
         }
     }
 }

@@ -28,7 +28,6 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<District, Guid> _districtRepo;
         private IGenericRepository<ClinicLeague, Guid> _clinicLeagueRepo;
 
-        private IPointsEngineService _pointsEngineService;
         private readonly INotificationService _notificationService;
         private readonly ApplicationUserManager _applicationUserManager;
 
@@ -36,7 +35,6 @@ namespace EcdLink.Api.CoreApi.Services
 
         public LeagueService(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IPointsEngineService pointsEngineService,
             [Service] INotificationService notificationService,
             ApplicationUserManager applicationUserManager,
             IGenericRepositoryFactory repoFactory)
@@ -48,7 +46,6 @@ namespace EcdLink.Api.CoreApi.Services
             _districtRepo = repoFactory.CreateRepository<District>(userContext: _uId);
             _clinicLeagueRepo = repoFactory.CreateRepository<ClinicLeague>(userContext: _uId);
 
-            _pointsEngineService = pointsEngineService;
             _notificationService = notificationService;
             _applicationUserManager = applicationUserManager;
         }
@@ -246,7 +243,7 @@ namespace EcdLink.Api.CoreApi.Services
                 return null;
             }
 
-            league.Clinics = _pointsEngineService.GetLeagueRankings(leagueId, startDate, endDate);
+            //league.Clinics = _pointsEngineService.GetLeagueRankings(leagueId, startDate, endDate);
 
             return league;
         }

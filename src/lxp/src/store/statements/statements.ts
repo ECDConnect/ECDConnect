@@ -11,6 +11,8 @@ import { StatementsState } from './statements.types';
 import { newGuid } from '@/utils/common/uuid.utils';
 
 const initialState: StatementsState = {
+  balanceMessageDismissed: false,
+  downloadsMessageDismissed: false,
   expensesTypes: undefined,
   incomeTypes: undefined,
   payTypes: undefined,
@@ -29,6 +31,12 @@ const statementsSlice = createSlice({
     resetStatementsState: (state) => {
       state.incomeStatements = initialState.incomeStatements;
     },
+    dismissBalanceMessage: (state) => {
+      state.balanceMessageDismissed = true;
+    },
+    dismissDownloadsMessage: (state) => {
+      state.downloadsMessageDismissed = true;
+    },
     markStatementAsDownloaded: (
       state,
       action: PayloadAction<{ statementId: string }>
@@ -43,6 +51,9 @@ const statementsSlice = createSlice({
       if (!updatedStatement) {
         return;
       }
+
+      state.balanceMessageDismissed = false;
+      state.downloadsMessageDismissed = false;
 
       state.incomeStatements = [
         ...state.incomeStatements.filter((x) => x.id !== statementId),

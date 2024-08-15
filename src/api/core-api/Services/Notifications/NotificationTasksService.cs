@@ -8,7 +8,6 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +21,6 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly ApplicationUserManager _userManager;
         private readonly INotificationService _notificationService;
-        private readonly IPointsEngineService _pointsService;
         private ILogger<NotificationTasksService> _logger;
 
         public NotificationTasksService(
@@ -30,14 +28,12 @@ namespace EcdLink.Api.CoreApi.Services
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager,
             [Service] ILogger<NotificationTasksService> logger,
-            HierarchyEngine hierarchyEngine,
-            IPointsEngineService pointsService)
+            HierarchyEngine hierarchyEngine)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _userManager = userManager;
-            _pointsService = pointsService;
             _logger = logger;
         }
 
