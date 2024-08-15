@@ -10,6 +10,4 @@ export interface ExpensesModel {
 export const expensesSchema = Yup.object().shape({
   datePaid: Yup.date().required('Delivery date is required'),
   amount: Yup.string().strict().required('Value is required'),
-  photoProof: Yup.string(),
-  notes: Yup.string(),
 });

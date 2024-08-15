@@ -10,13 +10,19 @@ import { createSelector } from '@reduxjs/toolkit';
 
 // Statements types
 export const getExpensesTypes = (state: RootState): ExpensesStatementsTypes[] =>
-  state.statements?.expensesTypes || [];
+  state.statements.expensesTypes || [];
 
 export const getIncomeTypes = (state: RootState): IncomeStatementsTypes[] =>
-  state.statements?.incomeTypes || [];
+  state.statements.incomeTypes || [];
 
 export const getPayTypes = (state: RootState): StatementsPayTypes[] =>
-  state.statements?.payTypes || [];
+  state.statements.payTypes || [];
+
+export const getBalanceMessageDismissed = (state: RootState): boolean =>
+  state.statements.balanceMessageDismissed;
+
+export const getDownloadsMessageDismissed = (state: RootState): boolean =>
+  state.statements.downloadsMessageDismissed;
 
 export const getIncomeStatements = createSelector(
   (state: RootState) => state.statements.incomeStatements,

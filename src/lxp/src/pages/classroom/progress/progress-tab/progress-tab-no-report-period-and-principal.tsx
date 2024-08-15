@@ -24,7 +24,7 @@ export const ProgressTabNoReportPeriodAndPrincipal: React.FC = () => {
         type={'body'}
       />
       <Button
-        onClick={() => history.push(ROUTES.CHILD_PROGRESS_REPORTING_PERIODS)}
+        onClick={() => history.push(ROUTES.PROGRESS_SETUP_REPORTING_PERIODS)}
         className="mt-4 w-full"
         size="small"
         color="quatenary"

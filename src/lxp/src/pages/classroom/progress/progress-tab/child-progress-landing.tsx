@@ -2,6 +2,7 @@ import { classroomsSelectors } from '@/store/classroom';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
   ActionModal,
+  Alert,
   Button,
   Card,
   DialogPosition,
@@ -46,6 +47,8 @@ export const ChildProgressLanding: React.FC = () => {
     currentReportingPeriod,
     percentageReportsCompleted,
     percentageObservationsCompleted,
+    isAllObservationsComplete,
+    isAllReportsComplete,
   } = useObserveProgressForChildren();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -139,7 +142,7 @@ export const ChildProgressLanding: React.FC = () => {
             showOnlineOnly={showOnlineOnly}
           />
         )}
-      {/* Observations sumamry */}
+      {/* Observations summary */}
       <div className="mt-2 flex flex-col p-4">
         {currentReportingPeriod && (
           <>
@@ -198,10 +201,68 @@ export const ChildProgressLanding: React.FC = () => {
             />
           </div>
         </Card>
-        {/* Within report period */}
-        {isWithinReportPeriod && <ProgressTabReportSummary />}
         {/* Outside report period */}
-        {!isWithinReportPeriod && <ProgressTabObservationsSummary />}
+        {!isWithinReportPeriod && !isAllObservationsComplete && (
+          <ProgressTabObservationsSummary />
+        )}
+
+        {/* Within report period */}
+        {isWithinReportPeriod && (
+          <>
+            {!isAllReportsComplete && <ProgressTabReportSummary />}
+            {isAllObservationsComplete &&
+              !isAllReportsComplete &&
+              !hasPermissionToCreateProgressReports &&
+              !practitioner?.isPrincipal && (
+                <>
+                  <Alert
+                    type="success"
+                    title="Well done!"
+                    message="You can keep observing children and change your responses."
+                    className="mt-4"
+                  />
+                  <Button
+                    onClick={handleContinueTrackingProgress}
+                    className="mt-4 w-full"
+                    size="small"
+                    color="quatenary"
+                    textColor="white"
+                    type="filled"
+                    icon={'PresentationChartBarIcon'}
+                    text={'Continue tracking progress'}
+                  />
+                </>
+              )}
+            {isAllReportsComplete && (
+              <>
+                <Button
+                  onClick={() => {}}
+                  className="mt-4 w-full"
+                  size="small"
+                  color="quatenary"
+                  textColor="white"
+                  type="filled"
+                  icon={'DownloadIcon'}
+                  text={'Download all progress reports'}
+                />
+                <Button
+                  onClick={() =>
+                    history.replace(
+                      ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+                    )
+                  }
+                  className="mt-4 w-full"
+                  size="small"
+                  color="quatenary"
+                  textColor="quatenary"
+                  type="outlined"
+                  icon={'EyeIcon'}
+                  text={'See Sumamry'}
+                />
+              </>
+            )}
+          </>
+        )}
       </div>
     </>
   );

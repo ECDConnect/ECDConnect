@@ -17,10 +17,10 @@ export const ProgressViewReport: React.FC = () => {
   const history = useHistory();
 
   const categories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
   const subCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingSubCategories
+    progressTrackingSelectors.getProgressTrackingSubCategories()
   );
 
   const { state: routeState } = useLocation<ProgressViewReportState>();

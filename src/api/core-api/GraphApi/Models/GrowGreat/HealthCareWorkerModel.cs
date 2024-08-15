@@ -1,15 +1,18 @@
-﻿using ECDLink.DataAccessLayer.Entities.Users;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat.Portal;
+using ECDLink.DataAccessLayer.Entities.Users;
+using Microsoft.AspNetCore.Identity;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
-    public class HealthCareWorkerModel
+    public class HealthCareWorkerModel : ConnectUsageModel
     {
         public Guid Id { get; set; }
         public UserModel User { get; set; }
         public Guid UserId { get; set; }
         public bool? ConsentForPhoto { get; set; }
         public bool? IsRegistered { get; set; }
+        public bool? IsActive { get; set; }
         public string Language { get; set; }
         public Guid? LanguageId { get; set; }
 
@@ -25,8 +28,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string WelcomeMessage { get; set; }
         public bool ShareContactInfo { get; set; }
         public bool IsNewAtClinic { get; set; }
+        public DateTime InsertedDate { get; set; }
 
-        public HealthCareWorkerModel(HealthCareWorker entity)
+        public HealthCareWorkerModel(HealthCareWorker entity, DateTime? invitationDate) : 
+            base(entity.IsActive, entity.IsRegistered, entity.User.LastSeen, entity.User.UpdatedDate, invitationDate)
         {
             Id = entity.Id;
             User = new UserModel(entity.User);
@@ -47,6 +52,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
             WelcomeMessage = entity.WelcomeMessage;
             ShareContactInfo = entity.ShareContactInfo;
             IsNewAtClinic = entity.IsNewAtClinic;
+            InsertedDate = entity.InsertedDate;
         }
     }
 }

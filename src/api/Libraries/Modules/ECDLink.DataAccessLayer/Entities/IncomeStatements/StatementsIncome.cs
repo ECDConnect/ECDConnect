@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
@@ -22,7 +23,12 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string IncomeTypeId { get; set; }
         public double Amount { get; set; }
         public string PhotoProof { get; set; }
+
+        [ForeignKey(nameof(ChildUserId))]
+        public virtual ApplicationUser ChildUser {  get; set; }
         public Guid? ChildUserId { get; set; }
+
+
         [GraphQLIgnore]
         [ForeignKey(nameof(StatementsIncomeStatementId))]
         public virtual StatementsIncomeStatement StatementsIncomeStatement { get; set; }

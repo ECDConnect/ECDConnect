@@ -39,7 +39,6 @@ import {
 } from './add-practitioner.types';
 import { userSelectors } from '@store/user';
 import {
-  SearchIcon,
   UserAddIcon,
   ClipboardCheckIcon,
   AcademicCapIcon,
@@ -48,11 +47,11 @@ import {
 import { classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { practitionerThunkActions } from '@/store/practitioner';
-import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { useTenant } from '@/hooks/useTenant';
 import { staticDataSelectors } from '@/store/static-data';
 import { HelpForm } from '@/components/help-form/help-form';
 import PermissionsService from '@/services/PermissionsService/PermissionsService';
+import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -65,7 +64,7 @@ export const AddPractitioner = ({
   const {
     register,
     control,
-    formState: { errors, isValid },
+    formState: { errors },
     setValue,
     reset,
   } = useForm({
@@ -89,7 +88,32 @@ export const AddPractitioner = ({
   const [addNote, setAddNote] = useState();
   const [practitionerPhoneNumber, setPractitionerPhoneNumber] = useState('');
   const [error, setError] = useState('');
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
+  const isOpenAccess = tenant?.isOpenAccess;
+  const isWhiteLabel = tenant?.isWhiteLabel;
+
+  const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
+    useTenantModules();
   const permissions = useSelector(staticDataSelectors.getPermissions);
+
+  const premissionsFilteredByTenantModules = permissions
+    ?.filter((item) =>
+      !attendanceEnabled && isWhiteLabel
+        ? item?.name !== PermissionsNames?.take_attendance
+        : item
+    )
+    ?.filter((item2) =>
+      !progressEnabled && isWhiteLabel
+        ? item2?.name !== PermissionsNames?.create_progress_reports
+        : item2
+    )
+    ?.filter((item3) =>
+      !classroomActivitiesEnabled && isWhiteLabel
+        ? item3?.name !== PermissionsNames?.plan_classroom_actitivies
+        : item3
+    );
+
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
   const [isLoading, setIsloading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -99,9 +123,6 @@ export const AddPractitioner = ({
   const { preferId, idNumber, passport } = useWatch({
     control,
   });
-  const tenant = useTenant();
-  const appName = tenant?.tenant?.applicationName;
-  const isOpenAccess = tenant?.isOpenAccess;
 
   const getPractitionerDetailsByIdNumber = async () => {
     // Check if the practitioner exists
@@ -482,7 +503,7 @@ export const AddPractitioner = ({
                   />
                 </div>
               )}
-              {!addNote &&
+              {/* {!addNote &&
                 isPractitionerRegistered !== undefined &&
                 !isPrincipal && (
                   <div>
@@ -514,7 +535,7 @@ export const AddPractitioner = ({
                       }
                     />
                   </div>
-                )}
+                )} */}
               {isValidPractitioner === true && !addNote && (
                 <div>
                   <Typography
@@ -547,7 +568,7 @@ export const AddPractitioner = ({
               <div>
                 {isValidPractitioner === true &&
                   !addNote &&
-                  permissions.map((item, index) => (
+                  premissionsFilteredByTenantModules.map((item, index) => (
                     <CheckboxGroup
                       id={item.id}
                       key={item.id}

@@ -37,10 +37,10 @@ export const ProgressLandingComplete: React.FC<
 }) => {
   const history = useHistory();
   const categories = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategories
+    progressTrackingSelectors.getProgressTrackingCategories()
   );
   const subCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingSubCategories
+    progressTrackingSelectors.getProgressTrackingSubCategories()
   );
 
   const [showDetails, setShowDetails] = useState(false);

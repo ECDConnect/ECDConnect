@@ -4,9 +4,7 @@ namespace ECDLink.Core.Services.Interfaces
 {
     public interface IPointsService
     {
-        void CalculateCompleteChildProgressReports();
-        void CalculateLeaveNoOneBehind();
-        void CalculateCompleteCaregiverReportBack();
-        void CalculateClubChildAttendance();
+        void CalculateCompleteOnlineTrainingCourse(Guid userId); // called from moodle module
+        void CalculatePreschoolFeesGreaterThan0ForEachChild(); // called from monthly runner
     }
 }

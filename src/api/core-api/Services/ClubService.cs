@@ -61,7 +61,6 @@ namespace EcdLink.Api.CoreApi.Services
 
         INotificationService _notificationService;
         ApplicationUserManager _userManager;
-        IPointsEngineService _pointsEngineService;
         DocumentManager _documentManager;
 
         public ClubService(
@@ -69,7 +68,6 @@ namespace EcdLink.Api.CoreApi.Services
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager,
-            [Service] IPointsEngineService pointsEngineService,
             [Service] DocumentManager documentManager
             )
         {
@@ -97,7 +95,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             _notificationService = notificationService;
             _userManager = userManager;
-            _pointsEngineService = pointsEngineService;
             _documentManager = documentManager;
         }
 
@@ -143,10 +140,10 @@ namespace EcdLink.Api.CoreApi.Services
             _clubMeetingRegisterRepo.InsertMany(participants);
 
             // Add club points if club has league
-            if (meetingType == Constants.ClubSettings.meeting_type_club_meeting && club.LeagueId != null)
-            {
-                _pointsEngineService.CalculateMeetRegularly(input.ClubId, clubMeeting.Id);
-            }
+            //if (meetingType == Constants.ClubSettings.meeting_type_club_meeting && club.LeagueId != null)
+            //{
+             //   _pointsEngineService.CalculateMeetRegularly(input.ClubId, clubMeeting.Id);
+            //}
 
             // family day uploads and points
             if (meetingType == Constants.ClubSettings.meeting_type_play_day ||
@@ -187,10 +184,10 @@ namespace EcdLink.Api.CoreApi.Services
                 }
 
                 // Points
-                if (club.LeagueId != null)
-                {
-                    _pointsEngineService.CalculateHostFamilyDays(input.ClubId, _applicationUserId, input.MeetingDate.Date);
-                }
+               // if (club.LeagueId != null)
+                //{
+                 //   _pointsEngineService.CalculateHostFamilyDays(input.ClubId, _applicationUserId, input.MeetingDate.Date);
+                //}
             }
 
             return clubMeeting;

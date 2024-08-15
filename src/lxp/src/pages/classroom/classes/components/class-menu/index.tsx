@@ -1,5 +1,7 @@
 import { DeleteClassActionModal } from '@/components/delete-class/delete-class';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { useTenant } from '@/hooks/useTenant';
+import { useTenantModules } from '@/hooks/useTenantModules';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import {
@@ -36,9 +38,13 @@ export const ClassMenu = ({
   const history = useHistory();
 
   const { showMessage } = useSnackbar();
-
+  const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
+  const isOpenAccess = tenant?.isOpenAccess;
   const { hasPermissionToTakeAttendance } = useUserPermissions();
   const isTrialPeriod = useIsTrialPeriod();
+  const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
+    useTenantModules();
 
   const hasPermissionToEdit =
     practitioner?.isPrincipal || hasPermissionToTakeAttendance || isTrialPeriod;
@@ -69,7 +75,8 @@ export const ClassMenu = ({
           },
           textColour: 'white',
         },
-        ...(hasPermissionToEdit
+        ...((hasPermissionToEdit && attendanceEnabled && isWhiteLabel) ||
+        (isOpenAccess && hasPermissionToEdit)
           ? ([
               {
                 leadingIcon: 'ClipboardCheckIcon',
@@ -87,36 +94,48 @@ export const ClassMenu = ({
               },
             ] as ActionModalButton[])
           : []),
-        {
-          leadingIcon: 'PresentationChartBarIcon',
-          colour: 'quatenary',
-          text: 'Track child progress',
-          type: 'outlined',
-          onClick: () => {
-            // TODO: redirect to W9 when it's ready
-            showMessage({
-              message: 'This feature is not available yet (W9)',
-              type: 'info',
-            });
-          },
-          textColour: 'quatenary',
-        },
-        {
-          leadingIcon: 'AcademicCapIcon',
-          colour: 'quatenary',
-          text: `${isPrincipal ? 'Plan' : 'See'} activities`,
-          type: 'outlined',
-          onClick: () => {
-            history.push(
-              ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
-                ':classroomGroupId',
-                classroomGroupId
-              )
-            );
-            onClose();
-          },
-          textColour: 'quatenary',
-        },
+        ...((hasPermissionToEdit && progressEnabled && isWhiteLabel) ||
+        (isOpenAccess && hasPermissionToEdit)
+          ? ([
+              {
+                leadingIcon: 'PresentationChartBarIcon',
+                colour: 'quatenary',
+                text: 'Track child progress',
+                type: 'outlined',
+                onClick: () => {
+                  // TODO: redirect to W9 when it's ready
+                  showMessage({
+                    message: 'This feature is not available yet (W9)',
+                    type: 'info',
+                  });
+                },
+                textColour: 'quatenary',
+              },
+            ] as ActionModalButton[])
+          : []),
+        ...((hasPermissionToEdit &&
+          classroomActivitiesEnabled &&
+          isWhiteLabel) ||
+        (isOpenAccess && hasPermissionToEdit)
+          ? ([
+              {
+                leadingIcon: 'AcademicCapIcon',
+                colour: 'quatenary',
+                text: `${isPrincipal ? 'Plan' : 'See'} activities`,
+                type: 'outlined',
+                onClick: () => {
+                  history.push(
+                    ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
+                      ':classroomGroupId',
+                      classroomGroupId
+                    )
+                  );
+                  onClose();
+                },
+                textColour: 'quatenary',
+              },
+            ] as ActionModalButton[])
+          : []),
         ...(isPrincipal
           ? ([
               {

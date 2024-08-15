@@ -27,7 +27,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         private VisitDataStatusManager _visitDataStatusManager;
         private VisitDataStatusManager_Practitioner _visitDataStatusManager_practitioner;
-        private IGrowGreatPointsCalculationsService _pointsCalculationService;
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
@@ -48,7 +47,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner,
             UserLicenseManager userLicenseManager,
             VisitManager visitManager,
-            [Service] IGrowGreatPointsCalculationsService pointsCalculationsService,
             HierarchyEngine hierarchyEngine, 
             [Service] INotificationService notificationService)
         {
@@ -56,7 +54,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataStatusManager_practitioner = visitDataStatusManager_Practitioner;
-            _pointsCalculationService = pointsCalculationsService;
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
             _visitManager = visitManager;
@@ -76,11 +73,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var visit = AddVisitData(input);
                         
             _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
-
-            if (visit.VisitType.Name != Constants.GGSettings.CareForBaby)
-            {
-                _pointsCalculationService.CalculateInfantVisitAndReferralPoints(_applicationUserId);
-            }
 
             return true;
         }

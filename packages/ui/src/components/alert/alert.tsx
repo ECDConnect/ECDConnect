@@ -1,5 +1,7 @@
 import { Colours } from '../../models';
+import { renderIcon } from '../../utils';
 import { classNames } from '../../utils/style-class.utils';
+import Button from '../button/button';
 import StatusChip from '../status-chip/status-chip';
 import { Typography } from '../typography/typography';
 import * as styles from './alert.style';
@@ -21,6 +23,7 @@ export const Alert: React.FC<AlertProps> = ({
   button,
   leftChip,
   rightChip,
+  onDismiss,
 }) => {
   const icon = styles.alertIcon(type, variant);
 
@@ -102,6 +105,21 @@ export const Alert: React.FC<AlertProps> = ({
             textColour="white"
             text={rightChip}
           />
+        )}
+        {!!onDismiss && (
+          <div
+            className="items-top mb-2 flex pr-1"
+            style={{ marginLeft: 'auto' }}
+          >
+            <div onClick={onDismiss}>
+              {renderIcon(
+                'XIcon',
+                `h-4 w-4 text-${
+                  titleColor || styles.alertTextColor(type, variant)
+                }`
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>

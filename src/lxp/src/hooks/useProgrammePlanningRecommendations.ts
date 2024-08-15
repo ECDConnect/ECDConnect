@@ -18,7 +18,7 @@ export type RecommendedActivity = {
 export const useProgrammePlanningRecommendations = () => {
   const activities = useSelector(activitySelectors.getActivities);
   const subCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingSubCategories
+    progressTrackingSelectors.getProgressTrackingSubCategories()
   );
 
   const getCurrentProgrammeRecommendedActivitiesByThemeActivity = (
