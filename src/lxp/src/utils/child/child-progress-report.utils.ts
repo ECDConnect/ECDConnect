@@ -2,12 +2,16 @@ import {
   ChildDto,
   ChildProgressObservationReport,
   ChildProgressObservationStatus,
+  ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
 } from '@ecdlink/core';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, differenceInMonths } from 'date-fns';
 import { childRegistrationConstants } from '../../constants/Child';
-import { SeperatedCategoryResult } from '@hooks/useChildProgressObservations';
 import { saveAs } from 'file-saver';
+import { ChildProgressReport } from '@/models/progress/child-progress-report';
+import { ProgressSkill } from '@/models/progress/progress-skill';
+import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
+import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 
 export const replaceSkillText = (skillText: string, childFirstName: string) => {
   let finalText = skillText;
@@ -45,64 +49,65 @@ export const isChildInitialRegistrationPeriod = (child: ChildDto) => {
   );
 };
 
-export const getCategoryFromCurrentReport = (
-  categoryId: number,
-  report?: ChildProgressObservationReport
+export const getProgressAgeGroupForChild = (
+  currentProgressReportingPeriod: ProgressReportPeriod,
+  child: ChildDto,
+  ageGroups: ProgressTrackingAgeGroupDto[]
 ) => {
-  if (!report) return;
-
-  return report.categories.find((cat) => cat.categoryId === categoryId);
-};
-
-export const saveBase64Pdf = (buffer: string, pdfName: string) => {
-  const linkSource = `data:application/octet-stream;base64,${buffer}`;
-  const fileName = `${pdfName}.pdf`;
-  saveAs(linkSource, fileName);
-};
-
-export const seperateCategoriesByStatus = (
-  categories: ProgressTrackingCategoryDto[],
-  report?: ChildProgressObservationReport
-): SeperatedCategoryResult => {
-  if (!report || report.categories.length === 0) {
-    return {
-      notStartedCategories: categories,
-      inProgressCategories: [],
-      completedCategories: [],
-    };
+  if (!child.user?.dateOfBirth) {
+    return;
   }
 
-  const completedCategories =
-    report?.categories.filter(
-      (cat) => cat.status === ChildProgressObservationStatus.Completed
-    ) || [];
-  const inProgressCategories =
-    report?.categories.filter(
-      (cat) =>
-        cat.status === ChildProgressObservationStatus.Started &&
-        !completedCategories.some(
-          (compCat) => compCat.categoryId === cat.categoryId
-        )
-    ) || [];
-  const notStartedCategories =
-    report?.categories.filter(
-      (cat) =>
-        cat.status === undefined ||
-        (cat.status === ChildProgressObservationStatus.NotStarted &&
-          !inProgressCategories.some(
-            (compCat) => compCat.categoryId === cat.categoryId
-          ))
-    ) || [];
+  const ageInMonths = differenceInMonths(
+    new Date(currentProgressReportingPeriod.endDate),
+    new Date(child.user.dateOfBirth)
+  );
 
+  // Now get age group that matches
+  const ageGroup = ageGroups.find(
+    (x) => x.startAgeInMonths <= ageInMonths && x.endAgeInMonths >= ageInMonths
+  );
+
+  return ageGroup;
+};
+
+export const mapProgressReportDetails = (
+  childReport: ChildProgressReport | undefined,
+  allSkills: ProgressSkill[],
+  childFirstName: string
+) => {
   return {
-    notStartedCategories: categories.filter((cat) =>
-      notStartedCategories.some((repCat) => repCat.categoryId === cat.id)
+    isNotStarted: !childReport,
+    isInProgress: childReport?.skillObservations.some(
+      (x) => x.value === ProgressSkillValues.DoNotKnow
     ),
-    inProgressCategories: categories.filter((cat) =>
-      inProgressCategories.some((repCat) => repCat.categoryId === cat.id)
-    ),
-    completedCategories: categories.filter((cat) =>
-      completedCategories.some((repCat) => repCat.categoryId === cat.id)
-    ),
+    isObservationsComplete: !!childReport?.observationsCompleteDate,
+    report: {
+      ...childReport,
+      skillObservations: (childReport?.skillObservations || []).map(
+        (skillObs) => {
+          const skill = allSkills.find((x) => x.id === skillObs.skillId);
+          return {
+            ...skillObs,
+            skillName: replaceSkillText(skill?.name || '', childFirstName),
+            skillDescription: skill?.description,
+            subCategoryId: skill?.subCategory.id || 0,
+            categoryId: skill?.subCategory.category.id || 0,
+            isPositive:
+              !!skillObs.value &&
+              ((!skill?.isReverseScored &&
+                skillObs.value === ProgressSkillValues.Yes) ||
+                (!!skill?.isReverseScored &&
+                  skillObs.value === ProgressSkillValues.No)),
+            isNegative:
+              !!skillObs.value &&
+              ((!skill?.isReverseScored &&
+                skillObs.value === ProgressSkillValues.No) ||
+                (!!skill?.isReverseScored &&
+                  skillObs.value === ProgressSkillValues.Yes)),
+          };
+        }
+      ),
+    },
   };
 };

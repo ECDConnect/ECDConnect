@@ -62,25 +62,23 @@ namespace ECDLink.PostgresTenancy.Services
                 if (includeModules)
                 {
                     var modules = tenantModules.Where(x => x.TenantId == tenant.Id).Select(x => x.Module);
-                    if ((tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabel) || (tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabelTemplate))
+                    //if ((tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabel) || (tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabelTemplate))
+                    tenant.Modules = new TenantModuleModel();
+                    if (modules != null && modules.Count() > 0)
                     {
-                        tenant.Modules = new TenantModuleModel();
-                        if (modules != null && modules.Count() > 0)
+                        foreach (var item in modules)
                         {
-                            foreach (var item in modules)
+                            if (item.NormalizedName == "COACH ROLE")
                             {
-                                if (item.NormalizedName == "COACH ROLE")
-                                {
-                                    tenant.Modules.CoachRoleName = "Coach";
-                                    tenant.Modules.CoachRoleEnabled = true;
-                                }
-                                if (item.NormalizedName == "CLASSROOM ACTIVITIES") tenant.Modules.ClassroomActivitiesEnabled = true;
-                                if (item.NormalizedName == "PROGRESS") tenant.Modules.ProgressEnabled = true;
-                                if (item.NormalizedName == "ATTENDANCE") tenant.Modules.AttendanceEnabled = true;
-                                if (item.NormalizedName == "CALENDAR") tenant.Modules.CalendarEnabled = true;
-                                if (item.NormalizedName == "TRAINING") tenant.Modules.TrainingEnabled = true;
-                                if (item.NormalizedName == "BUSINESS") tenant.Modules.BusinessEnabled = true;
+                                tenant.Modules.CoachRoleName = "Coach";
+                                tenant.Modules.CoachRoleEnabled = true;
                             }
+                            if (item.NormalizedName == "CLASSROOM ACTIVITIES") tenant.Modules.ClassroomActivitiesEnabled = true;
+                            if (item.NormalizedName == "PROGRESS") tenant.Modules.ProgressEnabled = true;
+                            if (item.NormalizedName == "ATTENDANCE") tenant.Modules.AttendanceEnabled = true;
+                            if (item.NormalizedName == "CALENDAR") tenant.Modules.CalendarEnabled = true;
+                            if (item.NormalizedName == "TRAINING") tenant.Modules.TrainingEnabled = true;
+                            if (item.NormalizedName == "BUSINESS") tenant.Modules.BusinessEnabled = true;
                         }
                     }
                 }

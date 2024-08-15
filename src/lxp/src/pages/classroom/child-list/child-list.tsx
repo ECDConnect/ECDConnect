@@ -43,6 +43,8 @@ import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { ChildProfileRouteState } from '@/pages/child/child-profile/child-profile.types';
+import { useTenantModules } from '@/hooks/useTenantModules';
+import { useTenant } from '@/hooks/useTenant';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -107,6 +109,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const { hasPermissionToManageChildren } = useUserPermissions();
+  const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
+  const { attendanceEnabled } = useTenantModules();
 
   const hasPermissionToEdit =
     hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
@@ -218,7 +223,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       );
 
       const childAlert = getChildAlertModel({
-        attendance: childAttendance,
+        attendance: isWhiteLabel && !attendanceEnabled ? [] : childAttendance,
         child,
         classroomGroups,
         childExternalWorkflowStatusId,

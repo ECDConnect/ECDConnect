@@ -20,13 +20,13 @@ import { ProgressTabNoReports } from './progress-tab-no-reports';
 import { ProgressTabNoChildren } from './progress-tab-no-children';
 import { ProgressTabAllChildrenOverFive } from './progress-tab-all-children-over-five';
 import { ProgressTabReportSummary } from './progress-tab-report-summary';
-import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
 import { ProgressTabObservationsSummary } from './progress-tab-observations-summary';
 import { format } from 'date-fns';
 import { useCallback } from 'react';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
+import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 
 export const ChildProgressLanding: React.FC = () => {
   const history = useHistory();
@@ -46,7 +46,7 @@ export const ChildProgressLanding: React.FC = () => {
     percentageObservationsCompleted,
     isAllObservationsComplete,
     isAllReportsComplete,
-  } = useObserveProgressForChildren();
+  } = useProgressForChildren();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);

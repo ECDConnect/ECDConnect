@@ -51,6 +51,10 @@ import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { ChildAttendanceReportState } from '@/pages/child/child-attendance-report/child-attendance-report.types';
+import {
+  progressTrackingActions,
+  progressTrackingSelectors,
+} from '@/store/progress-tracking';
 
 export const CoachChildProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -96,8 +100,9 @@ export const CoachChildProfile: React.FC = () => {
     documentSelectors.getDocumentByTypeId(child?.user?.id, typeId)
   );
 
+  // TODO - Need to ensure data is fetched correctly for a coach
   const allCompletedReports = useSelector(
-    contentReportSelectors.getChildLatestCompletedReports(child?.id)
+    progressTrackingSelectors.getProgressReportsForChild(child!.id!)
   );
 
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
@@ -235,7 +240,7 @@ export const CoachChildProfile: React.FC = () => {
   }, [attendancePercentage]);
 
   const viewChildProgressObservationReports = () => {
-    history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
+    history.push(ROUTES.PROGRESS_REPORT_LIST, {
       childId: child?.id,
     });
   };

@@ -1,6 +1,6 @@
 import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
-import { useObserveProgressForClassAndAgeGroup } from '@/hooks/useObserveProgressForClassAndAgeGroup';
+import { useProgressForClassAndAgeGroup } from '@/hooks/useProgressForClassAndAgeGroup';
 
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
@@ -13,7 +13,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
   const { state: routeState } = useLocation<ProgressViewReportsSummaryState>();
 
   const { reportsSummary, classroomGroup, ageGroup, childReports } =
-    useObserveProgressForClassAndAgeGroup(
+    useProgressForClassAndAgeGroup(
       routeState.classroomGroupId,
       routeState.ageGroupId
     );

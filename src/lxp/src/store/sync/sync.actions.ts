@@ -5,7 +5,6 @@ import { attendanceThunkActions } from '../attendance';
 import { caregiverThunkActions } from '../caregiver';
 import { childrenThunkActions } from '../children';
 import { classroomsThunkActions } from '../classroom';
-import { contentReportThunkActions } from '../content/report';
 import { documentThunkActions } from '../document';
 import { notesThunkActions } from '../notes';
 import { programmeThunkActions } from '../programme';
@@ -16,6 +15,7 @@ import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
 import { clubActions, clubThunkActions } from '../club';
+import { progressTrackingThunkActions } from '../progress-tracking';
 
 type SyncStep = {
   title: string;
@@ -61,7 +61,7 @@ export const syncOfflineData = createAsyncThunk<
     },
     {
       title: 'Child progress reports',
-      action: contentReportThunkActions.syncChildProgressReports,
+      action: progressTrackingThunkActions.syncChildProgressReports,
     },
     {
       title: 'Attendance',
@@ -181,7 +181,7 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       },
       {
         title: 'Child progress reports',
-        action: contentReportThunkActions.syncChildProgressReports,
+        action: progressTrackingThunkActions.syncChildProgressReports,
       },
       {
         title: 'Attendance',

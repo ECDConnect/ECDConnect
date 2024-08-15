@@ -14,7 +14,7 @@ export interface TenantModel {
     classroomActivitiesEnabled: boolean;
     coachRoleEnabled: boolean;
     coachRoleName: string;
-    prgoressEnabled: boolean;
+    progressEnabled: boolean;
     trainingEnabled: boolean;
   } | null;
   googleAnalyticsTag: string;

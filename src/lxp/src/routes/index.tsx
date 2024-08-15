@@ -20,14 +20,6 @@ import ProgrammePlanningDevelopingChildren from '@programme-planning-p/programme
 import { ProgrammeRoutine } from '@programme-planning-p/programme-routine/programme-routine';
 import ProgrammeTheme from '@programme-planning-p/programme-theme/programme-theme';
 import ProgrammeTiming from '@programme-planning-p/programme-timing/programme-timing';
-import { ChildCompletedObservationReports } from '@progress-observation-p/child-completed-observation-reports/child-completed-observation-reports';
-import { DownloadChildProgressReport } from '@progress-observation-p/child-completed-observation-reports/components/download-child-progress-report/download-child-progress-report';
-import { ViewChildProgressObservationReport } from '@progress-observation-p/child-completed-observation-reports/components/view-child-progress-observation-report/view-child-progress-observation-report';
-import { ChildProgressAssessment } from '@progress-observation-p/child-progress-assessment/child-progress-assessment';
-import { ChildProgressObservationNote } from '@progress-observation-p/child-progress-observation-note/child-progress-observation-note';
-import { ChildProgressObservationReport } from '@progress-observation-p/child-progress-observation-report/child-progress-observation-report';
-import { ChildProgressObservationPage } from '@progress-observation-p/child-progress-observation/child-progress-observation';
-import ProgressObservationCategory from '@progress-observation-p/progress-observation-category/progress-tracking-category';
 import Dashboard from '@dashboard-p/dashboard';
 import { Training } from '@/pages/training/training';
 import { Messages } from '@messages-p/messages';
@@ -51,7 +43,6 @@ import { CoachProgrammeInformation } from '@/pages/coach/coach-programme-informa
 import { CoachChildProfile } from '@/pages/coach/coach-child-profile/coach-child-profile';
 import CoachAccount from '@/pages/coach/coach-account/coach-account';
 import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-list/coach-practitioner-child-list';
-
 import ROUTES from './routes';
 import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
 import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
@@ -120,7 +111,6 @@ import { AddMeeting } from '@/pages/practitioner/practitioner-community/club-tab
 import { AddAFamilyDayEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-family-day-event';
 import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-collage-event';
 import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-community/welcome';
-import { PractitionerPdfSummaryReport } from '@/pages/classroom/progress-observation/practitioner-pdf-summary-report/practitioner-pdf-summary-report';
 import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points/coach-practitioner-points';
 import { MissingMeetingRegisters } from '@/pages/community-old/clubs-tab/club/club-points/activities/meet-regularly/missing-meeting-registers';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -136,7 +126,6 @@ import { UpdateIncome } from '@/pages/business/add-amount/add-income/update-inco
 import ProgrammeDashboard from '@/pages/classroom/programme-planning/programme-dashboard/programme-dashboard';
 import { UpdateExpense } from '@/pages/business/add-amount/add-expense/update-expense';
 import { Community } from '@/pages/community/community';
-import { ChildProgressReportingPeriods } from '@/pages/classroom/progress-observation/child-progress-reporting-period/child-progress-reporting-window';
 import { CommunityProfile } from '@/pages/community/community-profile/community-profile';
 import { ConnectionProfile } from '@/pages/community/connection-profile/connection-profile';
 import MonthlyAttendanceReport from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report';
@@ -616,22 +605,6 @@ const AuthRoutes: React.FC = () => {
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
       <Route
-        path={ROUTES.CHILD_PROGRESS_REPORTING_PERIODS}
-        component={ChildProgressReportingPeriods}
-      />
-      <Route
-        path={ROUTES.PROGRESS_TRACKING_CATEGORY}
-        component={ProgressObservationCategory}
-      />
-      <Route
-        path={ROUTES.CHILD_PROGRESS_ASSESSMENT}
-        component={ChildProgressAssessment}
-      />
-      <Route
-        path={ROUTES.CHILD_PROGRESS_OBSERVATION}
-        component={ChildProgressObservationPage}
-      />
-      <Route
         path={ROUTES.PROGRESS_OBSERVATIONS}
         component={ProgressObservations}
       />
@@ -648,10 +621,6 @@ const AuthRoutes: React.FC = () => {
         component={ChildProgressObservationsLanding}
       />
       <Route
-        path={ROUTES.CHILD_PROGRESS_OBSERVATION_NOTE}
-        component={ChildProgressObservationNote}
-      />
-      <Route
         path={ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK}
         component={SelectChildToTrack}
       />
@@ -662,10 +631,6 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.PROGRESS_OBSERVATIONS_BY_CATEGORY}
         component={ObservationsByCategory}
-      />
-      <Route
-        path={ROUTES.CHILD_PROGRESS_OBSERVATION_REPORT}
-        component={ChildProgressObservationReport}
       />
       <Route
         path={ROUTES.PROGRESS_CREATE_REPORT}
@@ -688,19 +653,6 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY}
         component={ProgressViewReportsSummary}
-      />
-      <Route
-        path={ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS}
-        component={ChildCompletedObservationReports}
-      />
-
-      <Route
-        path={ROUTES.VIEW_CHILD_PROGRESS_OBSERVATION_REPORT}
-        component={ViewChildProgressObservationReport}
-      />
-      <Route
-        path={ROUTES.DOWNLOAD_CHILD_PROGRESS_OBSERVATION_REPORTS}
-        component={DownloadChildProgressReport}
       />
       <Route path={ROUTES.MESSAGES} component={Messages} />
 
@@ -779,11 +731,6 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_CLASSROOM}
         component={CoachPractitionerClassroom}
-      />
-      <Route
-        exact
-        path={ROUTES.PRACTITIONER_PROGRESS_REPORT_SUMMARY}
-        component={PractitionerPdfSummaryReport}
       />
       <Route path={ROUTES.COACH.NOTES} component={CoachNotes} />
       <Route

@@ -1,4 +1,4 @@
-import { Config, TenantModel, TenantType } from '@ecdlink/core';
+import { Config, TenantModel, TenantType, ThemeProvider } from '@ecdlink/core';
 import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { GetCurrentTenant } from '../services/auth.service';
 
@@ -85,4 +85,25 @@ export const TenantContextProvider: React.FC<{}> = ({ children }) => {
 export const useTenant = () => {
   const store = useContext(TenantContext);
   return store;
+};
+
+type TenantThemeProviderProps = {
+  defaultThemeUrl: string;
+};
+
+export const TenantThemeProvider: React.FC<TenantThemeProviderProps> = (
+  props
+) => {
+  const tenant = useTenant();
+
+  const themeUrl =
+    !!tenant && !!tenant.tenant && !!tenant.tenant.themePath
+      ? tenant.tenant.themePath
+      : props.defaultThemeUrl;
+
+  return (
+    <ThemeProvider themeEndPoint={themeUrl} overRideCache={true}>
+      {props.children}
+    </ThemeProvider>
+  );
 };

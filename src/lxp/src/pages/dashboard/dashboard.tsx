@@ -74,6 +74,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import DashboardWrapper from './dashboard-wrapper/dashboard-wrapper';
 import { useAppContext } from '@/walkthrougContext';
+import { useTenantModules } from '@/hooks/useTenantModules';
 
 const { version } = require('../../../package.json');
 
@@ -88,6 +89,16 @@ export const Dashboard: React.FC = () => {
   const isFromLogin = location?.state?.isFromLogin;
   const isFromCompleteProfile = location?.state?.isFromCompleteProfile;
   const tenant = useTenant();
+  const {
+    attendanceEnabled,
+    businessEnabled,
+    calendarEnabled,
+    classroomActivitiesEnabled,
+    coachRoleEnabled,
+    progressEnabled,
+    trainingEnabled,
+  } = useTenantModules();
+
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
@@ -618,6 +629,7 @@ export const Dashboard: React.FC = () => {
               onNavigation: onNavigation,
               params: { activeTabIndex: TabsItemForPrincipal.ATTENDANCE },
               current: false,
+              hideItem: !attendanceEnabled && isWhiteLabel,
             },
             {
               name: NavigationNames.Classroom.Progress,
@@ -625,6 +637,7 @@ export const Dashboard: React.FC = () => {
               onNavigation: onNavigation,
               params: { activeTabIndex: TabsItemForPrincipal.PROGRESS },
               current: false,
+              hideItem: !progressEnabled && isWhiteLabel,
             },
             {
               name: NavigationNames.Classroom.Activities,
@@ -632,6 +645,7 @@ export const Dashboard: React.FC = () => {
               onNavigation: onNavigation,
               params: { activeTabIndex: TabsItemForPrincipal.ACTIVITES },
               current: false,
+              hideItem: !classroomActivitiesEnabled && isWhiteLabel,
             },
             {
               name: NavigationNames.Classroom.Resources,
@@ -696,6 +710,7 @@ export const Dashboard: React.FC = () => {
                 onNavigation: onNavigation,
                 params: { activeTabIndex: BusinessTabItems.MONEY },
                 current: false,
+                hideItem: !businessEnabled && isWhiteLabel,
               },
               {
                 name: NavigationNames.Business.Resources,
@@ -740,6 +755,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.trainingIconName,
       current: false,
       showDivider: true,
+      hideItem: !trainingEnabled && isWhiteLabel,
     },
     {
       name: NavigationNames.Points,
@@ -754,6 +770,7 @@ export const Dashboard: React.FC = () => {
       icon: styles.calendarIconName,
       current: false,
       showDivider: true,
+      hideItem: !calendarEnabled && isWhiteLabel,
     },
     {
       name: NavigationNames.Logout,
@@ -872,15 +889,16 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  dashboardItems.splice(4, 0, {
-    title: NavigationNames.Training,
-    titleIcon: 'PresentationChartBarIcon',
-    titleIconClassName: styles.trainingIcon,
-    onActionClick: () => {
-      goToTraining();
-    },
-    classNames: 'bg-successBg',
-  });
+  if ((trainingEnabled && isWhiteLabel) || isOpenAccess)
+    dashboardItems.splice(4, 0, {
+      title: NavigationNames.Training,
+      titleIcon: 'PresentationChartBarIcon',
+      titleIconClassName: styles.trainingIcon,
+      onActionClick: () => {
+        goToTraining();
+      },
+      classNames: 'bg-successBg',
+    });
 
   const goToCommunity = () => {
     if (
@@ -1028,18 +1046,22 @@ export const Dashboard: React.FC = () => {
         menuItems={isCoach ? navigationForCoach : navigation}
         onNavigation={onNavigation}
         menuLogoUrl={hamburgerLogo}
-        calendarRender={() => {
-          return (
-            <IconBadge
-              onClick={() => goToCalendar()}
-              badgeColor={'errorMain'}
-              badgeTextColor={'white'}
-              icon={styles.calendarIconName}
-              iconColor={'white'}
-              badgeText={''}
-            />
-          );
-        }}
+        calendarRender={
+          (calendarEnabled && isWhiteLabel) || isOpenAccess
+            ? () => {
+                return (
+                  <IconBadge
+                    onClick={() => goToCalendar()}
+                    badgeColor={'errorMain'}
+                    badgeTextColor={'white'}
+                    icon={styles.calendarIconName}
+                    iconColor={'white'}
+                    badgeText={''}
+                  />
+                );
+              }
+            : () => {}
+        }
         notificationRender={() => {
           return (
             <IconBadge
