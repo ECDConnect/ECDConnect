@@ -374,7 +374,6 @@ namespace ECDLink.Security.Api
         [HttpPost]
         public async Task<IActionResult> VerifyOAWLAuthCodeStatus([FromBody] VerifyInvitationModel verifyModel)
         {
-            // the token is a 6 digit code
             var user = await _userManager.FindByNameAsync(verifyModel.Username);
             if (user == null)
             {
@@ -389,17 +388,12 @@ namespace ECDLink.Security.Api
             var latestMessage = _messageRepo.GetAll()
                 .Where(x => (x.To == user.PendingPhoneNumber || x.To == user.PhoneNumber) && x.MessageTemplateType == TemplateTypeConstants.OAWLAuthCode)
                 .OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-            if (latestMessage == null)
-            {
-                return BadRequest(new FailedVerificationModel
-                {
-                    ErrorCode = 2,
-                    Error = "No messages found for username"
-                });
-            } else
+            if (latestMessage != null)
             {
                 return Ok(latestMessage.IsActive);
             }
+
+            return Ok(false);
         }
 
         [Route("update-username-password")]

@@ -3,6 +3,7 @@ import { Button, Card, DialogPosition, Typography } from '@ecdlink/ui';
 import { useCallback } from 'react';
 import { useAppContext } from '@/walkthrougContext';
 import { WalkthroughModal } from '@/components/walkthrough/modal';
+import { useTenant } from '@/hooks/useTenant';
 
 interface WalkthroughProps {
   onBack: () => void;
@@ -10,6 +11,7 @@ interface WalkthroughProps {
 
 export const Walkthrough: React.FC<WalkthroughProps> = ({ onBack }) => {
   const dialog = useDialog();
+  const tenant = useTenant();
 
   const { setState } = useAppContext();
 
@@ -36,13 +38,13 @@ export const Walkthrough: React.FC<WalkthroughProps> = ({ onBack }) => {
         className={'mt-4'}
         color={'textDark'}
         type={'h2'}
-        text={'How to use income statements on Funda App'}
+        text={`How to use income statements on ${tenant.tenant?.applicationName}`}
       />
       <Typography
         className={'mt-4'}
         color={'textMid'}
         type={'body'}
-        text={'Tap the button below to see how to use this part of Funda App'}
+        text={`Tap the button below to see how to use this part of ${tenant.tenant?.applicationName}`}
       />
       <Button
         text={`Start walkthrough`}
