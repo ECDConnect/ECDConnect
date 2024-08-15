@@ -71,11 +71,7 @@ const progressTrackingSlice = createSlice({
       } else {
         // Update existing report
         state.childProgressReports = [
-          ...state.childProgressReports.filter(
-            (x) =>
-              x.childId !== childId &&
-              x.childProgressReportPeriodId !== reportingPeriodId
-          ),
+          ...state.childProgressReports.filter((x) => x.id !== report.id),
           {
             ...report,
             synced: false,
@@ -117,11 +113,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -153,11 +145,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -189,11 +177,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -225,11 +209,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -258,11 +238,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -291,11 +267,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -324,11 +296,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -357,11 +325,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -389,11 +353,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,
@@ -421,11 +381,7 @@ const progressTrackingSlice = createSlice({
       }
 
       state.childProgressReports = [
-        ...state.childProgressReports.filter(
-          (x) =>
-            x.childId !== childId &&
-            x.childProgressReportPeriodId !== reportingPeriodId
-        ),
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
         {
           ...report,
           synced: false,

@@ -1,10 +1,22 @@
-import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Button,
+  ButtonGroup,
+  ButtonGroupTypes,
+  DialogPosition,
+  Typography,
+} from '@ecdlink/ui';
 import { ChildProgressSkill } from '@/models/progress/progress-skill';
-import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
+import {
+  ChildDto,
+  ProgressTrackingAgeGroupDto,
+  useDialog,
+} from '@ecdlink/core';
 import {
   ProgressSkillValues,
   ProgressSkillValuesArray,
 } from '@/enums/ProgressSkillValues';
+import { useCallback } from 'react';
 
 export type ChildProgressObservationsSkillsProps = {
   currentStep: number;
@@ -25,6 +37,32 @@ export const ChildProgressObservationsSkills: React.FC<
   replaceSkillText,
   onSetSkillValue,
 }) => {
+  const dialog = useDialog();
+
+  const handleShowSupportImage = useCallback(
+    (skillText: string, image: string) => {
+      dialog({
+        position: DialogPosition.Middle,
+        render: (submit, cancel) => (
+          <div className="p-4">
+            <Typography type="h3" color="textDark" text={skillText} />
+            <img className="mt-2 mb-2" src={image} />
+            <Button
+              onClick={cancel}
+              size="small"
+              color="quatenary"
+              textColor="quatenary"
+              type="outlined"
+              text={'Close'}
+              className="w-full"
+            />
+          </div>
+        ),
+      });
+    },
+    [dialog]
+  );
+
   return (
     <>
       <Typography
@@ -49,11 +87,31 @@ export const ChildProgressObservationsSkills: React.FC<
       </div>
       {skills.slice((currentStep - 1) * 5, currentStep * 5).map((skill) => (
         <div key={`skill-${skill.id}`} className="mb-4">
-          <Typography
-            type="h3"
-            color="textDark"
-            text={replaceSkillText(skill.name)}
-          />
+          <div className={'flex flex-row'}>
+            <Typography
+              type="h3"
+              color="textDark"
+              text={replaceSkillText(skill.name)}
+            />
+            {!!skill.supportImage && (
+              <div className="ml-auto">
+                <Button
+                  onClick={() =>
+                    handleShowSupportImage(
+                      skill.description,
+                      skill.supportImage!
+                    )
+                  }
+                  size="small"
+                  color="quatenary"
+                  textColor="white"
+                  type="filled"
+                  text={'Picture'}
+                />
+              </div>
+            )}
+          </div>
+
           {/* TODO - add option to show picture if required */}
           <ButtonGroup<ProgressSkillValues>
             type={ButtonGroupTypes.Button}
