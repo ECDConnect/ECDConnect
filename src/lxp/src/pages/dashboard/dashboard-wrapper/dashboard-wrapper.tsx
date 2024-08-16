@@ -85,12 +85,12 @@ export default function DashboardWrapper() {
     const { action, index, lifecycle, type } = data;
 
     if (type === 'step:after' && index === 0) {
-      setState({ run: true, stepIndex: 1, enableButton: false });
+      // setState({ run: true, stepIndex: 1, enableButton: false });
     } else if (type === 'step:after' && index === 1) {
       if (action === 'next') {
-        setState({ run: true, stepIndex: 2, enableButton: false });
+        // setState({ run: true, stepIndex: 2, enableButton: false });
       } else {
-        setState({ run: true, stepIndex: 0 });
+        // setState({ run: true, stepIndex: 0 });
       }
     }
   };
