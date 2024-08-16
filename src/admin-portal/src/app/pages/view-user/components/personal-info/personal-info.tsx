@@ -493,7 +493,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               </div>
               {component === UsersRouteRedirectTypeEnum?.chw ||
               component === UsersRouteRedirectTypeEnum?.teamLeads ||
-              component === UsersRouteRedirectTypeEnum?.practitioner ? (
+              component === UsersRouteRedirectTypeEnum?.practitioner ||
+              component === UsersRouteRedirectTypeEnum?.coach ? (
                 <Button
                   className={' w-4/12 rounded-md '}
                   type="filled"
