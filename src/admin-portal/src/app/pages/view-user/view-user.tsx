@@ -95,7 +95,11 @@ export function ViewUser(props: any) {
   const [successNotification] = useState<boolean>(false);
   const tenant = useTenant();
 
-  const { isTeamLead: isTeamLeadRole, isAdministrator } = useUserRole();
+  const {
+    isTeamLead: isTeamLeadRole,
+    isAdministrator,
+    isSuperAdmin,
+  } = useUserRole();
 
   const [startDate, setStartDate] = useState(startDate1);
   const [endDate, setEndDate] = useState(endDate1);
@@ -401,7 +405,7 @@ export function ViewUser(props: any) {
         hcwId={hcwId}
         clinicId={props?.location?.state?.clinicId}
         refetchUserData={refetchUserData}
-        isAdministrator={isAdministrator}
+        isAdministrator={isAdministrator || isSuperAdmin}
         isFromAdministratorTable={isFromAdministratorTable}
         userTypeToEdit={
           userData?.userById?.roles.length && userData?.userById?.roles[0].name
@@ -477,7 +481,7 @@ export function ViewUser(props: any) {
               userData={userData?.userById}
               refetchUserData={refetchUserData}
               isTeamLead={isTeamLead}
-              isAdministrator={isAdministrator}
+              isAdministrator={isAdministrator || isSuperAdmin}
               teamLeadId={teamLeadId}
               hcwId={hcwId}
             />
@@ -489,7 +493,7 @@ export function ViewUser(props: any) {
             userData={userData?.userById}
             refetchUserData={refetchUserData}
             isTeamLead={isTeamLead}
-            isAdministrator={isAdministrator}
+            isAdministrator={isAdministrator || isSuperAdmin}
             teamLeadId={teamLeadId}
             hcwId={hcwId}
           />
