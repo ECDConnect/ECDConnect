@@ -8,12 +8,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public int Total { get; set; }
         public int TotalChildren { get; set; }
         public List<ActivityDetail> ActivityDetail { get; set; }
+        public UserRankingPointsModel UserRankingData { get; set; }
 
-        public PointsUserDateSummary(int total, int totalChildren, List<ActivityDetail> activityDetail)
+        public PointsUserDateSummary(int total, int totalChildren, List<ActivityDetail> activityDetail, UserRankingPointsModel userRankingData)
         {
             Total = total;
             TotalChildren = totalChildren;
             ActivityDetail = activityDetail;
+            UserRankingData = userRankingData;
         }
     }
 
