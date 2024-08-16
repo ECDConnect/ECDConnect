@@ -209,6 +209,13 @@ export type ActivityChildProgressDetail = {
   progressPointsColor?: Maybe<Scalars['String']>;
 };
 
+export type ActivityDetail = {
+  __typename?: 'ActivityDetail';
+  activity?: Maybe<Scalars['String']>;
+  pointsTotal: Scalars['Int'];
+  timesScored: Scalars['Int'];
+};
+
 export type ActivityHostFamilyDays = {
   __typename?: 'ActivityHostFamilyDays';
   points: Scalars['Int'];
@@ -7090,6 +7097,13 @@ export type MetricReportStatItem = {
   value?: Maybe<Scalars['String']>;
 };
 
+export type MonthSummary = {
+  __typename?: 'MonthSummary';
+  activityDetail?: Maybe<Array<Maybe<ActivityDetail>>>;
+  month?: Maybe<Scalars['String']>;
+  total: Scalars['Int'];
+};
+
 export type MonthlyAttendanceReportModel = {
   __typename?: 'MonthlyAttendanceReportModel';
   month?: Maybe<Scalars['String']>;
@@ -12377,7 +12391,16 @@ export type PointsToDoItemModel = {
   notPartOfPreschool: Scalars['Boolean'];
   plannedOneDay: Scalars['Boolean'];
   savedIncomeOrExpense: Scalars['Boolean'];
+  signedUpForApp: Scalars['Boolean'];
   viewedCommunitySection: Scalars['Boolean'];
+};
+
+export type PointsUserDateSummary = {
+  __typename?: 'PointsUserDateSummary';
+  activityDetail?: Maybe<Array<Maybe<ActivityDetail>>>;
+  total: Scalars['Int'];
+  totalChildren: Scalars['Int'];
+  userRankingData?: Maybe<UserRankingPointsModel>;
 };
 
 export type PointsUserSummary = {
@@ -12459,6 +12482,12 @@ export type PointsUserSummarySortInput = {
   user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
   year?: InputMaybe<SortEnumType>;
+};
+
+export type PointsUserYearMonthSummary = {
+  __typename?: 'PointsUserYearMonthSummary';
+  monthSummary?: Maybe<Array<Maybe<MonthSummary>>>;
+  total: Scalars['Int'];
 };
 
 export type PortalClinicInputModelInput = {
@@ -14788,7 +14817,6 @@ export type Query = {
   previousVisitInformationForInfant?: Maybe<Progress_VisitDataStatus>;
   previousVisitInformationForMother?: Maybe<Progress_VisitDataStatus>;
   principalByUserId?: Maybe<Practitioner>;
-  rankingDataForUser?: Maybe<Array<Maybe<UserRankingPointsModel>>>;
   ratingsAndFeedbackTypes?: Maybe<CoachFeedbackSetupModel>;
   referrals?: Maybe<Array<Maybe<PortalReferralModel>>>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
@@ -14805,6 +14833,7 @@ export type Query = {
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<ApplicationIdentityRole>>>;
   settings?: Maybe<SettingsType>;
+  sharedData?: Maybe<PointsUserDateSummary>;
   statementsIncomeExpensesPDFData?: Maybe<
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
@@ -14836,6 +14865,7 @@ export type Query = {
   visitDataForVisitId?: Maybe<Array<Maybe<VisitData>>>;
   visitNotesForPractitioner?: Maybe<Array<Maybe<PractitionerNotes>>>;
   visitVideos: Array<Maybe<VisitVideos>>;
+  yearPointsView?: Maybe<PointsUserYearMonthSummary>;
   yearlyClassAttendanceMetricsByUser?: Maybe<
     Array<Maybe<ClassroomMetricReport>>
   >;
@@ -17912,12 +17942,6 @@ export type QueryPrincipalByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryRankingDataForUserArgs = {
-  endDate?: InputMaybe<Scalars['DateTime']>;
-  startDate: Scalars['DateTime'];
-  userId: Scalars['UUID'];
-};
-
 export type QueryReferralsArgs = {
   clinicIds?: InputMaybe<Array<Scalars['UUID']>>;
   endDate: Scalars['DateTime'];
@@ -17974,6 +17998,11 @@ export type QueryReportDetailsForPractitionerArgs = {
 
 export type QueryRoleForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QuerySharedDataArgs = {
+  isMonthly: Scalars['Boolean'];
+  userId: Scalars['UUID'];
 };
 
 export type QueryStatementsIncomeExpensesPdfDataArgs = {
@@ -18084,6 +18113,10 @@ export type QueryVisitNotesForPractitionerArgs = {
 export type QueryVisitVideosArgs = {
   locale?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryYearPointsViewArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryYearlyClassAttendanceMetricsByUserArgs = {
@@ -20545,11 +20578,16 @@ export type UserPermissionSortInput = {
 
 export type UserRankingPointsModel = {
   __typename?: 'UserRankingPointsModel';
-  maxMonthlyTotal: Scalars['Int'];
-  maxYearlyTotal: Scalars['Int'];
+  comparativePrimaryMessage?: Maybe<Scalars['String']>;
+  comparativeSecondaryMessage?: Maybe<Scalars['String']>;
+  comparativeTargetPercentage: Scalars['Float'];
+  comparativeTargetPercentageColor?: Maybe<Scalars['String']>;
+  nonComparativePrimaryMessage?: Maybe<Scalars['String']>;
+  nonComparativeSecondaryMessage?: Maybe<Scalars['String']>;
+  nonComparativeTargetPercentage: Scalars['Float'];
+  nonComparativeTargetPercentageColor?: Maybe<Scalars['String']>;
   pointsTotal: Scalars['Int'];
   userId: Scalars['UUID'];
-  userRanking: Scalars['Int'];
 };
 
 export type UserTrainingCourse = {
