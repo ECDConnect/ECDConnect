@@ -40,8 +40,8 @@ export const useProgressForChildren = () => {
     }
 
     return (
-      isBefore(new Date(), new Date(currentReportingPeriod.startDate)) &&
-      isBefore(new Date(currentReportingPeriod.endDate), new Date())
+      isBefore(new Date(currentReportingPeriod.startDate), new Date()) &&
+      isBefore(new Date(), new Date(currentReportingPeriod.endDate))
     );
   }, [currentReportingPeriod]);
 
@@ -85,6 +85,8 @@ export const useProgressForChildren = () => {
         };
       });
   }, [baseChildren, baseReports, currentReportingPeriod]);
+
+  console.log('childReports', childReports);
 
   const ageGroupsAvailableForTracking = useMemo(() => {
     return allAgeGroups.filter((x) =>
