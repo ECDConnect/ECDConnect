@@ -537,7 +537,12 @@ export const Dashboard: React.FC = () => {
         missingProgramme) ||
       (navItem.href.includes('calendar') && isWhiteLabel && missingProgramme) ||
       (navItem.href.includes('training') && isWhiteLabel && missingProgramme) ||
-      (navItem.href.includes('community') && isWhiteLabel && missingProgramme)
+      (navItem.href.includes('community') &&
+        isWhiteLabel &&
+        missingProgramme) ||
+      (navItem.href.includes('/practitioner/programme-information') &&
+        isWhiteLabel &&
+        missingProgramme)
     ) {
       showCompleteProfileBlockingDialog();
     } else {
