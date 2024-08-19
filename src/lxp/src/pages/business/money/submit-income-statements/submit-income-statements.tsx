@@ -31,19 +31,23 @@ import {
 } from '@ecdlink/core';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import { InfoPage } from './components/info-page';
-import { CoachInfo } from '../../components/coach-info';
 import { getStorageItem } from '@/utils/common/local-storage.utils';
 import { StatementsWalkthroughStart } from './components/walkthrough-statements-wrapper/walkthrough-start';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+  const appDispatch = useAppDispatch();
 
   const [isLearnMore, setIsLearnMore] = useState(false);
 
   const history = useHistory();
   const statements = useSelector(statementsSelectors.getIncomeStatements);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  
+  const downloadsMessageDismissed = useSelector(statementsSelectors.getDownloadsMessageDismissed);
+  const balanceMessageDismissed = useSelector(statementsSelectors.getBalanceMessageDismissed);
 
   const {
     setState,
@@ -336,7 +340,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                 </tbody>
               </table>
 
-              {hasLastTwoMonthsStatements &&
+              {!balanceMessageDismissed && hasLastTwoMonthsStatements &&
                 lastMonthBalance < 0 &&
                 previousMonthBalance < 0 && (
                   <Alert
@@ -360,10 +364,13 @@ export const SubmitIncomeStatements: React.FC = () => {
                         )}
                       </div>
                     }
+                    onDismiss={() => appDispatch(
+                      statementsActions.dismissBalanceMessage()
+                    )}
                   />
                 )}
 
-              {hasLastTwoMonthsStatements &&
+              {!balanceMessageDismissed && hasLastTwoMonthsStatements &&
                 lastMonthBalance > 0 &&
                 previousMonthBalance > 0 && (
                   <Alert
@@ -394,10 +401,14 @@ export const SubmitIncomeStatements: React.FC = () => {
                         />
                       </div>
                     }
+                    
+                    onDismiss={() => appDispatch(
+                      statementsActions.dismissBalanceMessage()
+                    )}
                   />
                 )}
 
-              {totalDownloadedStatements > 0 && (
+              {!downloadsMessageDismissed && totalDownloadedStatements > 0 && (
                 <Alert
                   type="success"
                   variant="outlined"
@@ -411,7 +422,10 @@ export const SubmitIncomeStatements: React.FC = () => {
                         className="h-6 w-6"
                       />
                     </div>
-                  }
+                  }                  
+                  onDismiss={() => appDispatch(
+                    statementsActions.dismissDownloadsMessage()
+                  )}
                 />
               )}
             </div>

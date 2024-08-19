@@ -102,7 +102,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   // );
 
   useEffect(() => {
-    const endOfDay = new Date(attendanceDate.setHours(12, 59, 59));
+    const endOfDay = new Date(attendanceDate.setHours(23, 59, 59));
     if (classroomGroups?.length) {
       setSelectedClassroomGroups(selectedClassroomGroup);
 

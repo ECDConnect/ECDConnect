@@ -11,7 +11,11 @@ import {
   ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
-import { ChildProgressReportModelInput } from '@ecdlink/graphql';
+import {
+  ChildProgressReportModelInput,
+  ProgressTrackingSkill,
+} from '@ecdlink/graphql';
+import { id } from 'date-fns/locale';
 class ProgressTrackingService {
   _accessToken: string;
 
@@ -119,13 +123,15 @@ class ProgressTrackingService {
   ): Promise<ProgressTrackingSkillDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { GetAllProgressTrackingSkill: ProgressTrackingSkillDto[] };
+      data: { GetAllProgressTrackingSkill: ProgressTrackingSkill[] };
     }>(``, {
       query: `
       query GetAllProgressTrackingSkill($locale: String) {
         GetAllProgressTrackingSkill(locale: $locale) {
           id                
           name
+          supportImage
+          isReverseScored
           level {
             id
           }
@@ -146,8 +152,12 @@ class ProgressTrackingService {
     }
 
     return response.data.data.GetAllProgressTrackingSkill.map((x) => ({
-      ...x,
-      description: x.value, // Small remapping, I added the descriptions to the value field in the content since a description field did not exist and value was not being used
+      id: x.id!,
+      ageGroupIds: (x.ageGroups || []).map((y) => y!.id!),
+      name: x.name || '',
+      supportImage: x.supportImage || undefined,
+      isReverseScored: !!x.isReverseScored,
+      description: x.value || '', // Small remapping, I added the descriptions to the value field in the content since a description field did not exist and value was not being used
     }));
   }
 

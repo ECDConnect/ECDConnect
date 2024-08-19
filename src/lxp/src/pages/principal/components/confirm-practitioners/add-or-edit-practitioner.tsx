@@ -26,7 +26,6 @@ import {
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
 import {
-  UserIcon,
   ClipboardCheckIcon,
   PresentationChartLineIcon,
   AcademicCapIcon,
@@ -45,6 +44,7 @@ import { StackListItems } from './confirm-practitioners';
 import { HelpForm } from '@/components/help-form/help-form';
 import { userSelectors } from '@/store/user';
 import { classroomsSelectors } from '@/store/classroom';
+import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -67,6 +67,7 @@ export const AddOrEditPractitioner = ({
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
+  const isWhiteLabel = tenant?.isWhiteLabel;
 
   const {
     register,
@@ -92,7 +93,27 @@ export const AddOrEditPractitioner = ({
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
   const [addNote, setAddNote] = useState();
   const [isEdit, setIsEdit] = useState(false);
+
+  const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
+    useTenantModules();
   const permissions = useSelector(staticDataSelectors.getPermissions);
+  const premissionsFilteredByTenantModules = permissions
+    ?.filter((item) =>
+      !attendanceEnabled && isWhiteLabel
+        ? item?.name !== 'take_attendance'
+        : item
+    )
+    ?.filter((item2) =>
+      !progressEnabled && isWhiteLabel
+        ? item2?.name !== 'create_progress_reports'
+        : item2
+    )
+    ?.filter((item3) =>
+      !classroomActivitiesEnabled && isWhiteLabel
+        ? item3?.name !== 'plan_classroom_activities'
+        : item3
+    );
+
   const [practitionerPhoneNumber, setPractitionerPhoneNumber] = useState('');
   const [error, setError] = useState('');
   const [openHelp, setOpenHelp] = useState(false);
@@ -315,12 +336,14 @@ export const AddOrEditPractitioner = ({
     setIsLoadingSubmit(false);
     handleReset();
   }, [
+    formData?.phoneNumber,
     getPractitionerDetailsByIdNumber,
     getValues,
+    handleAddOrEditAnotherPractitionerSubmit,
+    handleReset,
     newPractitioner?.firstName,
     newPractitioner?.surname,
     newPractitioner?.username,
-    onSubmit,
     permissionsAdded,
     practitionerPhoneNumber,
     userAuth?.auth_token,
@@ -647,7 +670,7 @@ export const AddOrEditPractitioner = ({
         <div>
           {isValidPractitioner === true &&
             !addNote &&
-            permissions.map((item, index) => (
+            premissionsFilteredByTenantModules.map((item, index) => (
               <CheckboxGroup
                 id={item.id}
                 key={item.id}

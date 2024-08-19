@@ -81,7 +81,7 @@ export const MonthlyAttendanceReport = () => {
       1
     );
 
-    const firstDayOfMonth = new Date(startOfMonth(date).setHours(12, 59, 59));
+    const firstDayOfMonth = new Date(startOfMonth(date).setHours(23, 59, 59));
     const lastDayOfMonth = endOfMonth(date);
 
     return { startDate: firstDayOfMonth, endDate: lastDayOfMonth };

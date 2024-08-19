@@ -1,10 +1,4 @@
-import {
-  APIs,
-  Config,
-  DialogServiceProvider,
-  ThemeProvider,
-  useConfig,
-} from '@ecdlink/core';
+import { APIs, Config, DialogServiceProvider, useConfig } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -13,7 +7,7 @@ import Loader from './components/loader/loader';
 import { WalkthroughProvider } from './walkthrougContext';
 import { OnlineStatusProvider } from './hooks/useOnlineStatus';
 import { persistor, store } from './store';
-import { TenantContextProvider } from './hooks/useTenant';
+import { TenantContextProvider, TenantThemeProvider } from './hooks/useTenant';
 
 const ConfigWrapper: React.FC = () => {
   const { loading } = useConfig();
@@ -37,16 +31,13 @@ const ConfigWrapper: React.FC = () => {
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <TenantContextProvider>
-              <ThemeProvider
-                themeEndPoint={Config.themeUrl}
-                overRideCache={false}
-              >
+              <TenantThemeProvider defaultThemeUrl={Config.themeUrl}>
                 <DialogServiceProvider>
                   <WalkthroughProvider>
                     <App />
                   </WalkthroughProvider>
                 </DialogServiceProvider>
-              </ThemeProvider>
+              </TenantThemeProvider>
             </TenantContextProvider>
           </PersistGate>
         </Provider>

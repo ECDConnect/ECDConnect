@@ -1,12 +1,10 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -21,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using static EcdLink.Api.CoreApi.Constants;
 
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
@@ -31,10 +29,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     {
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public async Task<UserImportModel> ValidatePractitionerImportSheet(
+        public UserImportModel ValidatePractitionerImportSheet(
           [Service] IHttpContextAccessor httpContextAccessor,
-          IGenericRepositoryFactory repoFactory,
           ApplicationUserManager userManager,
+          AuthenticationDbContext dbContext,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
@@ -44,14 +42,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 throw new QueryException("Invalid input.");
             }
 
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
-            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
-            if (!userIsAdmin)
-                throw new QueryException("You do not have permission to use this function.");
-
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-            var userImportList = new List<ApplicationUser>();
-            var practitionerUsers = new Dictionary<string, Practitioner>();
             var validationErrors = new List<InputValidationError>();
 
             var bytes = Convert.FromBase64String(file);
@@ -60,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
-
+            var coachRoleName = TenantExecutionContext.Tenant.Modules.CoachRoleName;
             var idPassportDuplications = ValidateIdPassportDuplications(sheet);
 
             // Skip header row by starting at 1.
@@ -88,7 +78,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     && cellphone is null)
                     continue;
 
-                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, coachIdOrPassport);
+                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone);
 
                 if (idPassportDuplications.Any())
                 {
@@ -100,99 +90,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                 }
 
-                // Collect all row errors.
-                // Could be on a row with no errors, but previous rows had errors.
                 if (rowErrors.Any() || validationErrors.Any())
                 {
-                    // Dont add null rows
                     if (rowErrors.Any())
                     {
                         validationErrors.Add(new InputValidationError(row, rowErrors, $"Errors on row {row}."));
                     }
-
-                    // Do not continue processing if errors.
-                    continue;
                 }
 
-                var coachHierarchy = Guid.Empty;
-                var insertedDate = DateTime.UtcNow;
-                var userId = Guid.NewGuid();
-                var user = new ApplicationUser()
+                if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.CoachRoleEnabled && !string.IsNullOrEmpty(coachIdOrPassport))
                 {
-                    Id = userId,
-                    IdNumber = id,
-                    UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
-                    FirstName = firstName,
-                    Surname = surname,
-                    FullName = $"{firstName} {surname}",
-                    WhatsAppNumber = UserHelper.NormalizePhoneNumber(cellphone),
-                    PhoneNumber = UserHelper.NormalizePhoneNumber(cellphone),
-                    PhoneNumberConfirmed = true,
-                    PendingPhoneNumber = null,
-                    ContactPreference = MessageTypeConstants.SMS,
-                    TenantId = tenantId,
-                    InsertedDate = insertedDate,
-                    IsActive = true,
-                };
-                userImportList.Add(user);
+                    var coachUser = dbContext.Users.Where(user => user.IdNumber == coachIdOrPassport && user.TenantId == TenantExecutionContext.Tenant.Id).FirstOrDefault();
 
-                if (!string.IsNullOrEmpty(coachIdOrPassport))
-                {
-                    var coachUser = userManager.FindByNameAsync(coachIdOrPassport).Result;
-
-                    if (coachUser != null)
-                    {
-                        coachHierarchy = coachUser.Id;
-                    }
-                    else
-                    {
+                    if (coachUser == null)
                         validationErrors.Add(
-                            new InputValidationError(row, new List<string> { }, $"Coach does not exist for id/passport {coachIdOrPassport}")
+                            new InputValidationError(row, new List<string> { }, $"{coachRoleName} does not exist for id/passport {coachIdOrPassport}")
                         );
-                    }
                 }
-                practitionerUsers.Add(user.UserName,
-                    new Practitioner()
-                    {
-                        Id = user.Id,
-                        User = user,
-                        IsRegistered = false,
-                        InsertedDate = insertedDate,
-                        TenantId = tenantId,
-                        IsActive = true,
-                        CoachHierarchy = coachHierarchy == Guid.Empty ? null : coachHierarchy
-                    });
-            }
-
-            if (validationErrors.Any())
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: currentUserId);
-
-            var rowNum = 0;
-            foreach (var user in userImportList)
-            {
-                rowNum++;
-                var userExists = await userManager.FindByNameAsync(user.UserName);
-
-                if (userExists is not null)
+                var userName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport;
+                var userExists = dbContext.Users.Where(x => x.UserName == userName).FirstOrDefault();
+                if (userExists != null)
                 {
                     validationErrors.Add(
-                        new InputValidationError(rowNum, new List<string> { }, $"User already exists: {user.UserName}")
-                        );
-                    continue;
+                       new InputValidationError(row, new List<string> { }, $"User already exists: {userName}")
+                       );
                 }
             }
 
-            return new UserImportModel()
-            {
-                ValidationErrors = validationErrors
-            };
-
-            
             // Local function
             static List<string> GetPractitionerValidationErrors(
                 string idOrPassport,
@@ -200,8 +124,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 string passport,
                 string firstName,
                 string surname,
-                string cellphone,
-                string coachIdOrPassport)
+                string cellphone)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -223,8 +146,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                 }
 
-                if (idOrPassport is null || passport is null ||
-                    (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
+                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null ||passport.Length == 0))
                     errors.Add("Passport is empty");
 
                 if (firstName is null || firstName.Length == 0)
@@ -236,22 +158,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
 
-                if (TenantExecutionContext.Tenant.Modules.CoachRoleEnabled)
-                {
-                    if (!string.IsNullOrEmpty(coachIdOrPassport) && !UserHelper.IsSAIDValid(coachIdOrPassport))
-                    {
-                        errors.Add("Coach Id is empty or invalid");
-                    }
-                }
                 return errors;
             }
+
+            return new UserImportModel()
+            {
+                ValidationErrors = validationErrors
+            };
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public async Task<UserImportModel> ValidateCoachImportSheet(
+        public UserImportModel ValidateCoachImportSheet(
           [Service] IHttpContextAccessor httpContextAccessor,
-          IGenericRepositoryFactory repoFactory,
-          ApplicationUserManager userManager,
+          AuthenticationDbContext dbContext,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
@@ -260,13 +179,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             {
                 throw new QueryException("Invalid input.");
             }
-
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
-            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
-            if (!userIsAdmin)
-                throw new QueryException("You do not have permission to use this function.");
-
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var userImportList = new List<ApplicationUser>();
             var validationErrors = new List<InputValidationError>();
@@ -316,68 +228,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                 }
 
-                // Collect all row errors.
-                // Could be on a row with no errors, but previous rows had errors.
                 if (rowErrors.Any() || validationErrors.Any())
                 {
-                    // Dont add null rows
                     if (rowErrors.Any())
                     {
                         validationErrors.Add(new InputValidationError(row, rowErrors, $"Errors on row {row}."));
                     }
 
-                    // Do not continue processing if errors.
-                    continue;
                 }
-                var insertedDate = DateTime.UtcNow;
-                var userId = Guid.NewGuid();
-                var user = new ApplicationUser()
-                {
-                    Id = userId,
-                    IdNumber = id,
-                    UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
-                    FirstName = firstName,
-                    Surname = surname,
-                    FullName = $"{firstName} {surname}",
-                    WhatsAppNumber = UserHelper.NormalizePhoneNumber(cellphone),
-                    PhoneNumber = UserHelper.NormalizePhoneNumber(cellphone),
-                    PhoneNumberConfirmed = true,
-                    PendingPhoneNumber = null,
-                    ContactPreference = MessageTypeConstants.SMS,
-                    TenantId = tenantId,
-                    InsertedDate = insertedDate,
-                    IsActive = true,
-                };
-                userImportList.Add(user);
-            }
-
-            if (validationErrors.Any())
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-
-            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: currentUserId);
-
-            var rowNum = 0;
-            foreach (var user in userImportList)
-            {
-                rowNum++;
-                var userExists = await userManager.FindByNameAsync(user.UserName);
-
-                if (userExists is not null)
+                var userName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport;
+                var userExists = dbContext.Users.Where(x => x.UserName == userName).FirstOrDefault();
+                if (userExists != null)
                 {
                     validationErrors.Add(
-                        new InputValidationError(rowNum, new List<string> { }, $"User already exists: {user.UserName}")
-                        );
-                    continue;
+                       new InputValidationError(row, new List<string> { }, $"User already exists: {userName}")
+                       );
                 }
             }
-
-            return new UserImportModel()
-            {
-                ValidationErrors = validationErrors
-            };
 
             // Local function
             static List<string> GetCoachValidationErrors(
@@ -409,8 +276,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                 }
 
-                if (idOrPassport is null || passport is null ||
-                    (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
+                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
                     errors.Add("Passport is empty");
 
                 if (firstName is null || firstName.Length == 0)
@@ -423,6 +289,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     errors.Add("Cellphone is empty.");
                 return errors;
             }
+
+            return new UserImportModel()
+            {
+                ValidationErrors = validationErrors
+            };
         }
 
         private List<InputValidationError> ValidateIdPassportDuplications(ISheet sheet)

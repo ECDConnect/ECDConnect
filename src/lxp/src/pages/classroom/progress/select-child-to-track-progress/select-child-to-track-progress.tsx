@@ -9,7 +9,7 @@ import {
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { getAvatarColor } from '@ecdlink/core';
-import { useObserveProgressForChildren } from '@/hooks/useObserveProgressForChildren';
+import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { useMemo, useState } from 'react';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -17,8 +17,7 @@ import ROUTES from '@/routes/routes';
 export const SelectChildToTrack: React.FC = () => {
   const history = useHistory();
 
-  const { currentReportingPeriod, childReports } =
-    useObserveProgressForChildren();
+  const { currentReportingPeriod, childReports } = useProgressForChildren();
 
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 

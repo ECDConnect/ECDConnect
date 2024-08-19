@@ -264,7 +264,26 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 adminUser.Email = adminEmail;
                 await _userManager.UpdateNormalizedEmailAsync(adminUser);
             }
-
         }
+
+        public async Task SendWelcomeEmailToNewSuperAdminAsync(Guid adminUserId, string firstName, string email)
+        {
+            var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
+            var adminEmail = adminUser.Email;
+
+            adminUser.Email = email;
+            await _userManager.UpdateNormalizedEmailAsync(adminUser);
+
+            var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.WelcomeEmailToNewSuperAdmin)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .SendMessageAsync();
+
+            // revert email address to previous
+            adminUser.Email = adminEmail;
+            await _userManager.UpdateNormalizedEmailAsync(adminUser);
+        }
+
     }
 }
