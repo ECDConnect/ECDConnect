@@ -91,7 +91,11 @@ module.exports = {
         tertiaryAccent2: '#FBC7D8',
         tertiaryAccent3: '#FFD3E6',
         secondaryMain: '#FF2180',
-      },      
+      },
+            backgroundImage: (theme) => ({
+        logo: "url('./assets/logo.svg')",
+        bannerx2: "url('./assets/bannerx2.png')",
+      }),      
       animation: {
         spinner: 'spin 1.5s linear infinite',
       },
