@@ -1,7 +1,13 @@
 import { Button, Typography } from '@ecdlink/ui';
 import { ReactComponent as Emoji4Icon } from '@/assets/ECD_Connect_emoji4.svg';
 
-export const ProgressTabNoReports: React.FC = () => {
+export type ProgressTabNoReports = {
+  trackProgress: () => void;
+};
+
+export const ProgressTabNoReports: React.FC<ProgressTabNoReports> = ({
+  trackProgress,
+}) => {
   return (
     <div className="mt-2 flex flex-col justify-center p-8">
       <div className="flex w-full justify-center">
@@ -20,7 +26,7 @@ export const ProgressTabNoReports: React.FC = () => {
         type={'body'}
       />
       <Button
-        onClick={() => {}} // TODO
+        onClick={trackProgress}
         className="mt-4 w-full"
         size="small"
         color="quatenary"
