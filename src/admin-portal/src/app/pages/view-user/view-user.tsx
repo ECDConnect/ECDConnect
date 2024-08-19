@@ -480,10 +480,7 @@ export function ViewUser(props: any) {
             <DeactivateUser
               userData={userData?.userById}
               refetchUserData={refetchUserData}
-              isTeamLead={isTeamLead}
               isAdministrator={isAdministrator || isSuperAdmin}
-              teamLeadId={teamLeadId}
-              hcwId={hcwId}
             />
           </div>
         )}
