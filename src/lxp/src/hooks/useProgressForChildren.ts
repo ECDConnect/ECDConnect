@@ -47,8 +47,8 @@ export const useProgressForChildren = () => {
 
   const children = useMemo(() => {
     return (baseChildren || []).map((child) => ({
-      childId: child.id,
-      childUserId: child.userId,
+      childId: child.id || '',
+      childUserId: child.userId || '',
       childFirstName: child.user?.firstName || '',
       childProfileImageUrl: child.user?.profileImageUrl,
       childFullName: `${child.user?.firstName} ${child.user?.surname}`,
@@ -85,8 +85,6 @@ export const useProgressForChildren = () => {
         };
       });
   }, [baseChildren, baseReports, currentReportingPeriod]);
-
-  console.log('childReports', childReports);
 
   const ageGroupsAvailableForTracking = useMemo(() => {
     return allAgeGroups.filter((x) =>

@@ -64,3 +64,25 @@ export type ChildProgressDetailedSkillToWorkOn = {
   subCategoryId: number;
   categoryId: number;
 };
+
+export type ProgressReportsCategorySummary = {
+  id: number;
+  imageUrl: string;
+  color: string;
+  name: string;
+  subTitle: string;
+  description: string;
+  subCategories: {
+    id: number;
+    imageUrl: string;
+    name: string;
+    title?: string;
+    description: string;
+    skills: {
+      childrenWorkingOnSkillCount: number;
+      id: number;
+      description: string;
+      name: string;
+    }[];
+  }[];
+};
