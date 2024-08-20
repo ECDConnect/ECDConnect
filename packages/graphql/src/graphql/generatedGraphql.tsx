@@ -8184,6 +8184,7 @@ export type MutationAddPractitionerToPrincipalArgs = {
   firstName?: InputMaybe<Scalars['String']>;
   idNumber?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
+  preschoolCode?: InputMaybe<Scalars['String']>;
   programmeTypeId?: InputMaybe<Scalars['UUID']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -13993,6 +13994,7 @@ export type ProgressTrackingAgeGroup = {
   description?: Maybe<Scalars['String']>;
   endAgeInMonths?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  isReverseScored?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   startAgeInMonths?: Maybe<Scalars['String']>;
 };
@@ -14001,6 +14003,7 @@ export type ProgressTrackingAgeGroupInput = {
   color?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   endAgeInMonths?: InputMaybe<Scalars['String']>;
+  isReverseScored?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   startAgeInMonths?: InputMaybe<Scalars['String']>;
 };
@@ -14055,6 +14058,7 @@ export type ProgressTrackingSkill = {
   __typename?: 'ProgressTrackingSkill';
   ageGroups?: Maybe<Array<Maybe<ProgressTrackingAgeGroup>>>;
   id?: Maybe<Scalars['Int']>;
+  isReverseScored?: Maybe<Scalars['String']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
   name?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
@@ -14065,6 +14069,7 @@ export type ProgressTrackingSkill = {
 
 export type ProgressTrackingSkillInput = {
   ageGroups?: InputMaybe<Scalars['String']>;
+  isReverseScored?: InputMaybe<Scalars['String']>;
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Scalars['String']>;
@@ -20582,6 +20587,7 @@ export type UserRankingPointsModel = {
   comparativeSecondaryMessage?: Maybe<Scalars['String']>;
   comparativeTargetPercentage: Scalars['Float'];
   comparativeTargetPercentageColor?: Maybe<Scalars['String']>;
+  messageNr: Scalars['Int'];
   nonComparativePrimaryMessage?: Maybe<Scalars['String']>;
   nonComparativeSecondaryMessage?: Maybe<Scalars['String']>;
   nonComparativeTargetPercentage: Scalars['Float'];
