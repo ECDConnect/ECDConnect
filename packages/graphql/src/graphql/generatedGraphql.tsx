@@ -8184,6 +8184,7 @@ export type MutationAddPractitionerToPrincipalArgs = {
   firstName?: InputMaybe<Scalars['String']>;
   idNumber?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
+  preschoolCode?: InputMaybe<Scalars['String']>;
   programmeTypeId?: InputMaybe<Scalars['UUID']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -20586,6 +20587,7 @@ export type UserRankingPointsModel = {
   comparativeSecondaryMessage?: Maybe<Scalars['String']>;
   comparativeTargetPercentage: Scalars['Float'];
   comparativeTargetPercentageColor?: Maybe<Scalars['String']>;
+  messageNr: Scalars['Int'];
   nonComparativePrimaryMessage?: Maybe<Scalars['String']>;
   nonComparativeSecondaryMessage?: Maybe<Scalars['String']>;
   nonComparativeTargetPercentage: Scalars['Float'];
