@@ -21,13 +21,8 @@ export const ChildProgressReportsList: React.FC = () => {
   const { state: routeState } = useLocation<ChildProgressReportsList>();
 
   const { childId } = routeState;
-  const {
-    child,
-    currentAgeGroup,
-    currentReportingPeriod,
-    currentReport,
-    completedReports,
-  } = useObserveProgressForChild(childId);
+  const { child, currentAgeGroup, currentReportingPeriod, detailedReports } =
+    useObserveProgressForChild(childId);
 
   useEffect(() => {
     if (!isOnline) {
@@ -59,7 +54,7 @@ export const ChildProgressReportsList: React.FC = () => {
         {/* No reports and no age group for child */}
         {!currentAgeGroup &&
           !!currentReportingPeriod &&
-          (!completedReports || completedReports.length === 0) && (
+          (!detailedReports || detailedReports.length === 0) && (
             <div className="mt-2 flex flex-col justify-center p-8">
               <div>
                 <Typography
@@ -85,8 +80,7 @@ export const ChildProgressReportsList: React.FC = () => {
         {/* NO REPORTS */}
         {!!currentReportingPeriod &&
           !!currentAgeGroup &&
-          !currentReport &&
-          (!completedReports || completedReports.length === 0) && (
+          (!detailedReports || detailedReports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography
                 className={'mt-4'}
@@ -129,8 +123,7 @@ export const ChildProgressReportsList: React.FC = () => {
           )}
 
         {/* REPORTS LIST */}
-        {(!!currentReport ||
-          (!!completedReports && !!completedReports.length)) && (
+        {!!detailedReports && !!detailedReports.length && (
           <div className="flex h-full w-full flex-col">
             <Typography
               className={'mt-4 mb-4'}
@@ -138,12 +131,8 @@ export const ChildProgressReportsList: React.FC = () => {
               color={'textDark'}
               text={`${child?.user?.firstName}'s reports`}
             />
-            <ProgressReportsList
-              childId={childId}
-              currentReport={currentReport}
-              pastReports={completedReports}
-            />
-            {!!completedReports && !!completedReports.length && (
+            <ProgressReportsList childId={childId} reports={detailedReports} />
+            {!!detailedReports && !!detailedReports.length && (
               <Button
                 onClick={() =>
                   history.push(ROUTES.PROGRESS_SHARE_REPORT, {
@@ -159,19 +148,19 @@ export const ChildProgressReportsList: React.FC = () => {
                 text="Share a report"
               />
             )}
-            {!!currentReport && (
+            {!!detailedReports && (
               <Button
                 onClick={() => trackProgress()}
                 className="mt-4 w-full"
                 size="small"
                 color="quatenary"
                 type={
-                  !!completedReports && !!completedReports.length
+                  !!detailedReports && !!detailedReports.length
                     ? 'outlined'
                     : 'filled'
                 }
                 textColor={
-                  !!completedReports && !!completedReports.length
+                  !!detailedReports && !!detailedReports.length
                     ? 'quatenary'
                     : 'white'
                 }

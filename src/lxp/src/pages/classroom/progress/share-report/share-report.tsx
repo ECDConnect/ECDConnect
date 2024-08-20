@@ -16,7 +16,7 @@ export const ProgressShareReport: React.FC = () => {
 
   const { state: routeState } = useLocation<ProgressShareReportState>();
 
-  const { child, completedReports } = useObserveProgressForChild(
+  const { child, detailedReports } = useObserveProgressForChild(
     routeState.childId
   );
 
@@ -61,7 +61,7 @@ export const ProgressShareReport: React.FC = () => {
           textColor="textMid"
           placeholder={'Tap to choose report'}
           labelColor="textDark"
-          list={completedReports.map((x) => ({
+          list={detailedReports.map((x) => ({
             label: `Report ${x.reportingPeriodNumber} - ${new Date(
               x.reportingPeriodEndDate
             ).getFullYear()}`,

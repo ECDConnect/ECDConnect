@@ -143,6 +143,7 @@ import { ProgressShareReport } from '@/pages/classroom/progress/share-report/sha
 import { ProgressViewReport } from '@/pages/classroom/progress/view-report/view-report';
 import { ProgressViewReportsSummary } from '@/pages/classroom/progress/view-reports-summary/view-reports-summary';
 import { ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup } from '@/pages/classroom/progress/view-reports-summary/view-reports-summary-select-class-and-age-group';
+import { ProgressReportingPeriods } from '@/pages/classroom/progress/reporting-periods/progress-reporting-periods';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -604,6 +605,11 @@ const AuthRoutes: React.FC = () => {
         component={ChildAttendanceReportPage}
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
+
+      <Route
+        path={ROUTES.PROGRESS_SETUP_REPORTING_PERIODS}
+        component={ProgressReportingPeriods}
+      />
       <Route
         path={ROUTES.PROGRESS_OBSERVATIONS}
         component={ProgressObservations}
