@@ -177,9 +177,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (!string.IsNullOrEmpty(input.ProfileImageUrl))
             {
-                if (!input.ProfilePicIsEmoji.HasValue || (input.ProfilePicIsEmoji.HasValue && !input.ProfilePicIsEmoji.Value))
+                var parts = input.ProfileImageUrl.Split(';');
+                if (parts.Length > 1)
                 {
-                    var parts = input.ProfileImageUrl.Split(';');
                     if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
                     if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
                     if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
