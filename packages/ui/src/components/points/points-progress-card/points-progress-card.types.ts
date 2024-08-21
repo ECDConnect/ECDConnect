@@ -6,8 +6,10 @@ export interface PointsProgressCardProps extends ComponentBaseProps {
   icon?: RoundIconProps['icon'];
   imageUrl?: RoundIconProps['imageUrl'];
   currentPoints: number;
-  maxPoints: number;
+  maxPoints?: number;
   description: string;
   badgeImage: JSX.Element;
   barColour?: ProgressBarProps['primaryColour'];
+  isYearView?: boolean;
+  hideProgressBar?: boolean;
 }
