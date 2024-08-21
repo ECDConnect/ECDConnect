@@ -28,6 +28,14 @@ export type DefaultThemeType = {
   infoMain: string;
   infoDark: string;
   infoBb: string;
+  quatenary: string;
+  quatenaryMain: string;
+  adminPortalBg: string;
+  darkBlue: string;
+  pointsCardBg: string;
+  pointsCardBarBg: string;
+  quatenaryBg: string;
+  adminBackground: string;
   logoUrl: string;
   graphicOverlayUrl: string;
   faviconUrl: string;
@@ -88,6 +96,14 @@ export const WhiteLabelTheme: DefaultThemeType = {
   fontUrl: 'Quicksand, sans-serif',
   mainHeadingOverrideFontUrl: 'Inter, sans-serif',
   darkBackground: '#27385A',
+  quatenary: '#1DBADF',
+  quatenaryMain: '#1DBADF',
+  adminPortalBg: '#EFF6FA',
+  darkBlue: '#27385A',
+  pointsCardBg: '#FEEED7',
+  pointsCardBarBg: '#FCCF8C',
+  quatenaryBg: '#D2F1F9',
+  adminBackground: '#EFF6FA',
 };
 
 export const DefaultTheme: DefaultThemeType = {
@@ -128,6 +144,14 @@ export const DefaultTheme: DefaultThemeType = {
   fontUrl: 'Quicksand, sans-serif',
   mainHeadingOverrideFontUrl: 'Inter, sans-serif',
   darkBackground: '#27385A',
+  quatenary: '#1DBADF',
+  quatenaryMain: '#1DBADF',
+  adminPortalBg: '#EFF6FA',
+  darkBlue: '#27385A',
+  pointsCardBg: '#FEEED7',
+  pointsCardBarBg: '#FCCF8C',
+  quatenaryBg: '#D2F1F9',
+  adminBackground: '#EFF6FA',
 };
 
 export const DefaultAvatarColors = [
