@@ -455,23 +455,23 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   )}
 
                   <div>
-                    {component === UsersRouteRedirectTypeEnum?.practitioner &&
-                      practitioner?.isPrincipal && (
-                        <Dropdown
-                          placeholder={'Click to select a coach'}
-                          className={'justify-between'}
-                          label={'Coach *'}
-                          list={coaches || []}
-                          onChange={(item) => {
-                            setHasCoachChange(true);
-                            setCoach(item);
-                          }}
-                          fullWidth
-                          labelColor="textMid"
-                          fillColor="adminPortalBg"
-                          selectedValue={coach || practitionerCoach}
-                        />
-                      )}
+                    {component === UsersRouteRedirectTypeEnum?.principal && (
+                      <Dropdown
+                        placeholder={'Click to select a coach'}
+                        className={'mb-4 justify-between'}
+                        label={'Coach'}
+                        isAdminPortalInput={true}
+                        list={coaches || []}
+                        onChange={(item) => {
+                          setHasCoachChange(true);
+                          setCoach(item);
+                        }}
+                        fullWidth
+                        labelColor="textMid"
+                        fillColor="adminPortalBg"
+                        selectedValue={coach || practitionerCoach}
+                      />
+                    )}
                     {/* {!isTeamLead &&
                       !hcwId &&
                       !isFromAdministratorTable &&
@@ -494,6 +494,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               {component === UsersRouteRedirectTypeEnum?.chw ||
               component === UsersRouteRedirectTypeEnum?.teamLeads ||
               component === UsersRouteRedirectTypeEnum?.practitioner ||
+              component === UsersRouteRedirectTypeEnum?.principal ||
               component === UsersRouteRedirectTypeEnum?.coach ? (
                 <Button
                   className={' w-4/12 rounded-md '}
