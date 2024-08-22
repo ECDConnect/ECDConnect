@@ -79,7 +79,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const [practitionerDetailsHasChanged, setPractitionerDetailsHasChanged] =
     useState(false);
   const [idType, setIdType] = useState<string>('');
-  console.log({ practitioner });
+
   const { isTeamLead: isTeamLeadRole } = useUserRole();
 
   const chwSchemaIdNr = yup.object().shape({
