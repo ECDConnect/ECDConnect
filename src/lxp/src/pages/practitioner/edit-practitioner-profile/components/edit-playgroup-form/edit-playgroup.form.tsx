@@ -87,13 +87,6 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   >([]);
 
   useEffect(() => {
-    if (practitionersList) {
-      setPlaygroupFormValue('name', title);
-      setPlaygroupFormValue('groupName', title);
-    }
-  }, [setPlaygroupFormValue, title, practitionersList]);
-
-  useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
         if (p?.user?.fullName || p?.user?.userName) {
@@ -374,7 +367,11 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
               // isPlaygroup
               //   ? getPlaygroupFormValues()
               //   :
-              { ...getPlaygroupFormValues(), isFullDay: undefined }
+              {
+                ...getPlaygroupFormValues(),
+                isFullDay: undefined,
+                name: !name ? title : name,
+              }
             );
           }}
           disabled={!isFormValid()}
