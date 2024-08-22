@@ -14,3 +14,37 @@ export const pointsActivitiesIds = {
   MonthlyPreschoolFeesAdded: '1aea269b-db0b-4cc6-b052-c4eaa5d89b05',
   MonthlyPreschoolFeeUpdated: 'f7307227-2ff7-4b85-8851-27c2af79be28',
 };
+
+interface pointActivitiesDto {
+  activity: string;
+  missingActivityText: string;
+  icon: string;
+}
+
+export const pointActivitiesItems: pointActivitiesDto[] = [
+  {
+    activity: 'Income/expenses added',
+    missingActivityText: 'Add income & expenses',
+    icon: 'CashIcon',
+  },
+  {
+    activity: 'Attendance registers saved',
+    missingActivityText: 'Save your attendance registers',
+    icon: 'ClipboardListIcon',
+  },
+  {
+    activity: 'Children’s progress observations complete',
+    missingActivityText: 'Add child progress observations',
+    icon: 'PresentationChartBarIcon',
+  },
+  {
+    activity: 'New connections in community',
+    missingActivityText: 'Connect with your community',
+    icon: 'ShareIcon',
+  },
+  {
+    activity: 'Training courses completed',
+    missingActivityText: 'Complete an online training',
+    icon: 'AcademicCapIcon',
+  },
+];
