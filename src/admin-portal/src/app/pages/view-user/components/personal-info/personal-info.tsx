@@ -40,6 +40,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUserRole } from '../../../../hooks/useUserRole';
 import { cloneDeep } from '@apollo/client/utilities';
+import { useTenant } from '../../../../hooks/useTenant';
 
 export interface PersonalInfoProps {
   userData: UserDto;
@@ -77,6 +78,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const [practitionerDetailsHasChanged, setPractitionerDetailsHasChanged] =
     useState(false);
   const [idType, setIdType] = useState<string>('');
+  const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
 
   const { isTeamLead: isTeamLeadRole } = useUserRole();
 
@@ -498,46 +501,49 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
                   <div>
                     {(component === UsersRouteRedirectTypeEnum?.principal ||
-                      component ===
-                        UsersRouteRedirectTypeEnum?.practitioner) && (
-                      <Dropdown
-                        placeholder={'Click to select a coach'}
-                        className={`mb-4 justify-between ${
-                          component === UsersRouteRedirectTypeEnum?.practitioner
-                            ? 'opacity-50'
-                            : ''
-                        }`}
-                        label={'Coach'}
-                        isAdminPortalInput={true}
-                        list={coaches || []}
-                        onChange={(item) => {
-                          setHasCoachChange(true);
-                          setCoach(item);
-                        }}
-                        fullWidth
-                        labelColor="textMid"
-                        fillColor="adminPortalBg"
-                        selectedValue={coach || practitionerCoach}
-                        disabled={
-                          component === UsersRouteRedirectTypeEnum?.practitioner
-                        }
-                      />
-                    )}
-                    {component === UsersRouteRedirectTypeEnum?.practitioner && (
-                      <Alert
-                        className={'mt-5 mb-3 rounded-xl'}
-                        title={`All practitioners at a preschool must have the same coach as the principal. To update the coach for ${
-                          userData?.firstName
-                        }'s preschool, please go to the principal's profile: ${
-                          practitionerPrincipal?.user?.firstName
-                            ? practitionerPrincipal?.user?.firstName
-                            : ''
-                        } (ID: ${
-                          practitionerPrincipal?.user?.idNumber || ''
-                        }).`}
-                        type={'info'}
-                      />
-                    )}
+                      component === UsersRouteRedirectTypeEnum?.practitioner) &&
+                      isWhiteLabel && (
+                        <Dropdown
+                          placeholder={'Click to select a coach'}
+                          className={`mb-4 justify-between ${
+                            component ===
+                            UsersRouteRedirectTypeEnum?.practitioner
+                              ? 'opacity-50'
+                              : ''
+                          }`}
+                          label={'Coach'}
+                          isAdminPortalInput={true}
+                          list={coaches || []}
+                          onChange={(item) => {
+                            setHasCoachChange(true);
+                            setCoach(item);
+                          }}
+                          fullWidth
+                          labelColor="textMid"
+                          fillColor="adminPortalBg"
+                          selectedValue={coach || practitionerCoach}
+                          disabled={
+                            component ===
+                            UsersRouteRedirectTypeEnum?.practitioner
+                          }
+                        />
+                      )}
+                    {component === UsersRouteRedirectTypeEnum?.practitioner &&
+                      isWhiteLabel && (
+                        <Alert
+                          className={'mt-5 mb-3 rounded-xl'}
+                          title={`All practitioners at a preschool must have the same coach as the principal. To update the coach for ${
+                            userData?.firstName
+                          }'s preschool, please go to the principal's profile: ${
+                            practitionerPrincipal?.user?.firstName
+                              ? practitionerPrincipal?.user?.firstName
+                              : ''
+                          } (ID: ${
+                            practitionerPrincipal?.user?.idNumber || ''
+                          }).`}
+                          type={'info'}
+                        />
+                      )}
                     {/* {!isTeamLead &&
                       !hcwId &&
                       !isFromAdministratorTable &&
