@@ -27,6 +27,9 @@ namespace ECDLink.Abstractrions.Constants
         public const string PreSchoolInvitation = "pre-school-invitation";
         public const string PrincipalInvitation = "principal-invitation";
         public const string MultipleProgrammeInvitation = "multiple-programme-invitation";
+        public const string PractitionerJoinedWithPreschoolCode = "practitioner-joined-with-preschool-code";
+        public const string Statements60DaysNotification = "statements-60-days-notification";
+        public const string Statements30DaysNotification = "statements-30-days-notification";
 
         // Tenant Setup Info
         public const string NewTenantSetupInfoReceived = "new-tenant-setup-info-received";

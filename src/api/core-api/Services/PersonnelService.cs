@@ -415,19 +415,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.PRACTITIONER, userToDemote.Id, _applicationUserId);
 
                 //send notification to new Principal/FAA
-                List<TagsReplacements> principalreplacements = new List<TagsReplacements>();
-                principalreplacements.Add(new TagsReplacements()
+                List<TagsReplacements> principalreplacements = new List<TagsReplacements>
                 {
-                    FindValue = "PrincipalOrFAA",
-                    ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
-                });
-                principalreplacements.Add(new TagsReplacements()
-                {
-                    FindValue = "ProgrammeName",
-                    ReplacementValue = classroomName
-                });
+                    new TagsReplacements()
+                    {
+                        FindValue = "ProgrammeName",
+                        ReplacementValue = classroomName
+                    }
+                };
 
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, userToPromote, "", MessageStatusConstants.Amber, principalreplacements, DateTime.Now.AddDays(7), false, true);
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, userToPromote, "", MessageStatusConstants.Green, principalreplacements, DateTime.Now.AddDays(7), false, true);
 
 
                 result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
@@ -453,19 +450,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 if (sendComm)
                 {
-                    List<TagsReplacements> replacements = new List<TagsReplacements>();
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "PrincipalOrFAA",
-                        ReplacementValue = "Principal"
-                    });
-                    //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
                     var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId.Value);
-                    replacements.Add(new TagsReplacements()
+                    List<TagsReplacements> replacements = new List<TagsReplacements>
                     {
-                        FindValue = "ProgrammeName",
-                        ReplacementValue = classroom.Name
-                    });
+                        new TagsReplacements()
+                        {
+                            FindValue = "ProgrammeName",
+                            ReplacementValue = classroom.Name
+                        }
+                    };
                     _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7), false, true);
                 }
 
@@ -817,9 +810,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 user.LockoutEnabled = true;
                 user.LockoutEnd = DateTime.MaxValue;
                 var userResult = await _userManager.UpdateAsync(user);
-
-                // Archive club member/leader/support
-                _clubService.ArchiveClubUser(practitioner.Id);
 
                 // Remove any roles
                 var roles = _userManager.GetRolesAsync(user).Result;

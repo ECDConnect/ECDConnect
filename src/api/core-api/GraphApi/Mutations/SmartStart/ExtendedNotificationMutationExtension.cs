@@ -97,20 +97,16 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
         {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
+            List<TagsReplacements> replacements = new List<TagsReplacements>
             {
-                FindValue = "PrincipalOrFAA",
-                ReplacementValue = principalOrFAA
-            });
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "ProgrammeName",
-                ReplacementValue = programmeName
-            });
-
+                new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = programmeName
+                }
+            };
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7), false, true);
         }
 
 
@@ -265,7 +261,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             });
 
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendPractitionerRemovedFromProgrammeNotification(

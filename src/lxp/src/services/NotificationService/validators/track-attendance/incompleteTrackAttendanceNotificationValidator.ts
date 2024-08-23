@@ -1,5 +1,5 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { getHours, getWeek, getYear, isFriday } from 'date-fns';
+import { getHours, getWeek, getYear } from 'date-fns';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import { getMissedClassAttendance } from '@utils/classroom/attendance/track-attendance-utils';
@@ -9,6 +9,7 @@ import {
   NotificationValidator,
 } from '../../NotificationService.types';
 import { RoleSystemNameEnum } from '@ecdlink/core';
+import { useTenant } from '@/hooks/useTenant';
 
 export class IncompleteTrackAttendanceNotificationValidator
   implements NotificationValidator
@@ -39,13 +40,27 @@ export class IncompleteTrackAttendanceNotificationValidator
     );
 
     if (isCoach) return [];
-
     if (!classroomState) return [];
 
     const hours = getHours(this.currentDate);
+    const lastFridayOfMonth = new Date(
+      this.currentDate.getFullYear(),
+      this.currentDate.getMonth() + 1,
+      0
+    );
+    if (lastFridayOfMonth.getDay() < 5) {
+      lastFridayOfMonth.setDate(lastFridayOfMonth.getDate() - 7);
+    }
+    lastFridayOfMonth.setDate(
+      lastFridayOfMonth.getDate() - (lastFridayOfMonth.getDay() - 5)
+    );
+    lastFridayOfMonth.setHours(0, 0, 0, 0);
 
-    // 12pm
-    if (hours < 12) return [];
+    if (this.currentDate.getDate() <= lastFridayOfMonth.getDate()) {
+      return [];
+    }
+    // 4pm
+    if (hours < 16) return [];
 
     const classroomGroups =
       classroomState.classroomGroupData.classroomGroups.filter(
@@ -53,8 +68,6 @@ export class IncompleteTrackAttendanceNotificationValidator
       ) || [];
 
     if (!classroomGroups) return [];
-
-    const isOnStipend = practitionerState?.practitioner?.isOnStipend;
 
     const missedAttendance = getMissedClassAttendance(
       classroomGroups || [],
@@ -67,22 +80,21 @@ export class IncompleteTrackAttendanceNotificationValidator
 
     if (!missedAttendance.length) return [];
 
+    const tenant = useTenant();
     return [
       {
         reference: `attendance-${getWeek(this.currentDate)}-${getYear(
           this.currentDate
         )}`,
-        title: "Today's attendance register is incomplete",
-        message: `You have not submitted today's attendance register. Submit attendance registers daily ${
-          isOnStipend ? 'to receive your stipend' : ''
-        } and get SmartStart points.`,
+        title: 'Save your attendance registers!',
+        message: `More and more practitioners are saving their attendance registers on ${tenant.tenant?.applicationName} - join them and save yours!`,
         dateCreated: this.currentDate.toISOString(),
         priority: NotificationPriority.highest,
         viewOnDashboard: true,
         area: 'tracking-attendance',
         icon: 'ExclamationCircleIcon',
         color: 'alertMain',
-        actionText: 'See register',
+        actionText: 'See registers',
         viewType: 'Both',
         routeConfig: {
           route: '/classroom',
