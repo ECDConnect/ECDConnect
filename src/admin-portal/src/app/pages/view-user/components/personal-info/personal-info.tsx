@@ -1,5 +1,6 @@
 import {
   ActionModal,
+  Alert,
   Button,
   Dialog,
   DialogPosition,
@@ -14,10 +15,11 @@ import FormField from '../../../../components/form-field/form-field';
 import { UsersRouteRedirectTypeEnum, idTypeEnum } from '../../view-user.types';
 import { SaveIcon } from '@heroicons/react/solid';
 import { useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
   GetAllPortalClinics,
   GetAllPortalCoaches,
+  GetAllPortalPractitioners,
   PractitionerInput,
   ResetUserPassword,
   UpdatePractitioner,
@@ -43,8 +45,6 @@ export interface PersonalInfoProps {
   userData: UserDto;
   isRegistered: boolean;
   component: string;
-  isTeamLead: boolean;
-  hcwId: string;
   clinicId: string;
   refetchUserData: () => void;
   isAdministrator?: boolean;
@@ -58,8 +58,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   userData,
   isRegistered,
   component,
-  isTeamLead,
-  hcwId,
   clinicId,
   practitioner,
   refetchUserData,
@@ -139,6 +137,50 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const practitionerCoach = coachData?.allPortalCoaches?.find(
     (item) => item?.id === practitioner?.coachHierarchy
   )?.id;
+
+  const queryVariables = useMemo(
+    () => ({
+      search: '',
+      provinceSearch: [],
+      connectUsageSearch: [],
+      practitionerTypeSearch: [],
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
+      order: [
+        {
+          insertedDate: 'DESC',
+        },
+      ],
+    }),
+    []
+  );
+
+  const [fetchPractitionersData, { data: practitionersData }] = useLazyQuery(
+    GetAllPortalPractitioners,
+    {
+      variables: queryVariables,
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  useEffect(() => {
+    if (component === UsersRouteRedirectTypeEnum?.practitioner) {
+      fetchPractitionersData();
+    }
+  }, [component, fetchPractitionersData]);
+
+  const practitionerPrincipal = useMemo(
+    () =>
+      practitionersData?.allPortalPractitioners?.find(
+        (item) => item?.userId === practitioner?.principalHierarchy
+      ),
+    [
+      practitioner?.principalHierarchy,
+      practitionersData?.allPortalPractitioners,
+    ]
+  );
 
   useEffect(() => {
     if (coachData?.allPortalCoaches?.length > 0) {
@@ -455,10 +497,16 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   )}
 
                   <div>
-                    {component === UsersRouteRedirectTypeEnum?.principal && (
+                    {(component === UsersRouteRedirectTypeEnum?.principal ||
+                      component ===
+                        UsersRouteRedirectTypeEnum?.practitioner) && (
                       <Dropdown
                         placeholder={'Click to select a coach'}
-                        className={'mb-4 justify-between'}
+                        className={`mb-4 justify-between ${
+                          component === UsersRouteRedirectTypeEnum?.practitioner
+                            ? 'opacity-50'
+                            : ''
+                        }`}
                         label={'Coach'}
                         isAdminPortalInput={true}
                         list={coaches || []}
@@ -470,6 +518,24 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                         labelColor="textMid"
                         fillColor="adminPortalBg"
                         selectedValue={coach || practitionerCoach}
+                        disabled={
+                          component === UsersRouteRedirectTypeEnum?.practitioner
+                        }
+                      />
+                    )}
+                    {component === UsersRouteRedirectTypeEnum?.practitioner && (
+                      <Alert
+                        className={'mt-5 mb-3 rounded-xl'}
+                        title={`All practitioners at a preschool must have the same coach as the principal. To update the coach for ${
+                          userData?.firstName
+                        }'s preschool, please go to the principal's profile: ${
+                          practitionerPrincipal?.user?.firstName
+                            ? practitionerPrincipal?.user?.firstName
+                            : ''
+                        } (ID: ${
+                          practitionerPrincipal?.user?.idNumber || ''
+                        }).`}
+                        type={'info'}
                       />
                     )}
                     {/* {!isTeamLead &&
