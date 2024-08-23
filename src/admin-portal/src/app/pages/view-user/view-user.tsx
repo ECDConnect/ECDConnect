@@ -470,6 +470,7 @@ export function ViewUser(props: any) {
               <SendInvite
                 userData={userData?.userById}
                 refetchUserData={refetchUserData}
+                isFromAdministratorTable={isFromAdministratorTable}
               />
             )}
             {/* {isRegistered && isAdministrator && (
