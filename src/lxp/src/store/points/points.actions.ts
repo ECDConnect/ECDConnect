@@ -3,6 +3,7 @@ import { RootState, ThunkApiType } from '../types';
 import {
   PointsLibrary,
   PointsUserSummary,
+  PointsUserYearMonthSummary,
   UserClubStandingModel,
 } from '@ecdlink/graphql';
 import { PointsService } from '@/services/PointsService';
@@ -148,6 +149,37 @@ export const getUserClubStanding = createAsyncThunk<
       } else {
         return rejectWithValue('no access token, profile check required');
       }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const yearPointsView = createAsyncThunk<
+  PointsUserYearMonthSummary,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  'yearPointsView',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let yearPoints: PointsUserYearMonthSummary | undefined;
+
+      if (userAuth?.auth_token) {
+        yearPoints = await new PointsService(
+          userAuth?.auth_token
+        ).yearPointsView(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return yearPoints;
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -3,26 +3,28 @@ import {
   Alert,
   BannerWrapper,
   Button,
-  Divider,
+  Dialog,
+  DialogPosition,
   ProfileAvatar,
-  renderIcon,
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { PhoneIcon } from '@heroicons/react/solid';
 import { useSelector } from 'react-redux';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { coachSelectors } from '@/store/coach';
 import * as styles from './coach-contact-details.styles';
 import { useTheme } from '@ecdlink/core';
+import { CoachFeedback } from '@/pages/community/community-tabs/components/community-dashboard/components/community-coach-profile/components/coach-feedback/coach-feedback';
+import { useState } from 'react';
 
 export const CoachContactDetails: React.FC = () => {
   const history = useHistory();
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
   const coach = useSelector(coachSelectors.getCoach);
+  const [openCoachFeedback, setOpenCoachFeedback] = useState(false);
 
   const call = () => {
     window.open(`tel:${coach?.user?.phoneNumber}`);
@@ -82,7 +84,7 @@ export const CoachContactDetails: React.FC = () => {
           />
           <div className={styles.contactButtons}>
             <Button
-              color={'primary'}
+              color={'secondary'}
               type={'outlined'}
               size={'small'}
               onClick={whatsapp}
@@ -90,10 +92,10 @@ export const CoachContactDetails: React.FC = () => {
               <img
                 src={getLogo(LogoSvgs.whatsapp)}
                 alt="whatsapp"
-                className="text-primary mr-1 h-5 w-5"
+                className="text-secondary mr-1 h-5 w-5"
               />
               <Typography
-                color={'primary'}
+                color={'secondary'}
                 type={'small'}
                 text={`WhatsApp coach`}
                 className={'font-semibold'}
@@ -102,8 +104,8 @@ export const CoachContactDetails: React.FC = () => {
             <Button
               text={'Call coach'}
               icon={'PhoneIcon'}
-              color={'primary'}
-              textColor={'primary'}
+              color={'secondary'}
+              textColor={'secondary'}
               type={'outlined'}
               size={'small'}
               onClick={call}
@@ -114,7 +116,27 @@ export const CoachContactDetails: React.FC = () => {
             className="items-left justify-left mt-4 flex"
             title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
           />
+          <div className="fixed bottom-0 left-0 right-0 max-h-20 w-full p-4">
+            <Button
+              className="w-full rounded-2xl px-2"
+              type="filled"
+              color="quatenary"
+              textColor="white"
+              text="Give feedback about your coach"
+              icon="SpeakerphoneIcon"
+              iconPosition="start"
+              onClick={() => setOpenCoachFeedback(true)}
+            />
+          </div>
         </div>
+        <Dialog
+          visible={openCoachFeedback}
+          position={DialogPosition.Full}
+          className="w-full"
+          stretch
+        >
+          <CoachFeedback closeAction={setOpenCoachFeedback} />
+        </Dialog>
       </BannerWrapper>
     </div>
   );

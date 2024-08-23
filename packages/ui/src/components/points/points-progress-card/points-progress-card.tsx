@@ -12,27 +12,42 @@ export const PointsProgressCard: React.FC<PointsProgressCardProps> = ({
   icon = 'PencilIcon',
   imageUrl,
   barColour = 'primary',
+  isYearView,
+  hideProgressBar,
 }) => {
-  const percentageScore = (currentPoints / maxPoints) * 100;
+  const percentageScore = maxPoints ? (currentPoints / maxPoints) * 100 : 0;
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.content}>
-        <RoundIcon
-          hexBackgroundColor="tertiary"
-          iconColor="white"
-          backgroundColor="tertiary"
-          icon={icon}
-          imageUrl={imageUrl}
-          size={{ w: '12', h: '12' }}
+        {isYearView ? (
+          <Typography
+            type="unspecified"
+            text={String(currentPoints)}
+            className="ml-2 pt-2 text-4xl font-semibold"
+            fontSize="72"
+          />
+        ) : (
+          <RoundIcon
+            hexBackgroundColor="tertiary"
+            iconColor="white"
+            backgroundColor="tertiary"
+            icon={icon}
+            imageUrl={imageUrl}
+            size={{ w: '12', h: '12' }}
+          />
+        )}
+        <Typography
+          type="h3"
+          text={description}
+          className="text-wrap ml-5 w-8/12 pt-2"
         />
-        <Typography type="h3" text={description} className="ml-5 pt-2" />
         <div className="ml-auto">
           <div
             className="h-14 w-14 p-2"
             style={{
               position: 'relative',
-              overflow: 'hidden',
+              // overflow: 'hidden',
             }}
           >
             {badgeImage}
@@ -47,16 +62,18 @@ export const PointsProgressCard: React.FC<PointsProgressCardProps> = ({
           </div>
         </div>
       </div>
-      <div className="h-4 w-full">
-        <ProgressBar
-          className="h-2"
-          label=""
-          subLabel=""
-          value={percentageScore}
-          primaryColour={barColour}
-          secondaryColour={'uiLight'}
-        />
-      </div>
+      {!hideProgressBar && (
+        <div className="h-4 w-full">
+          <ProgressBar
+            className="h-2"
+            label=""
+            subLabel=""
+            value={percentageScore}
+            primaryColour={barColour}
+            secondaryColour={'white'}
+          />
+        </div>
+      )}
     </div>
   );
 };

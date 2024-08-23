@@ -1,4 +1,8 @@
-import { pointsActivitiesIds, pointsConstants } from '@/constants/points';
+import {
+  pointActivitiesItems,
+  pointsActivitiesIds,
+  pointsConstants,
+} from '@/constants/points';
 import { pointsSelectors } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
@@ -15,41 +19,84 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
-import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
+import { ReactComponent as EmojiOrangeSmile } from '../../../assets/mehFace.svg';
 import { format } from 'date-fns';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PointsSummaryDto, captureAndDownloadComponent } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
 import { PointsShare } from '../points-share/points-share';
 import { PointsInfoPage } from '../info/points-info-page';
-import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { childrenSelectors } from '@/store/children';
+import { PointsService } from '@/services/PointsService';
+import { authSelectors } from '@/store/auth';
+import { PointsTodoItem } from './components/points-todo-item/points-todo-item';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
-
+  const { isOnline } = useOnlineStatus();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const children = useSelector(childrenSelectors.getChildren);
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
-
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const [showInfo, setShowInfo] = useState(false);
 
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
   );
+  const monthPoints = useSelector(pointsSelectors.getMonthPointsSummary);
+
   const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
   const pointsTotalForYear = useSelector(
     pointsSelectors.getPointsTotalForYear()
   );
-  const filteredPointsSummaries = pointsSummaryDataWithLibrary.filter(
+  const filteredPointsSummaries = pointsSummaryDataWithLibrary?.filter(
     (x) => x.pointsTotal > 0
   );
+  const [pointsShareData, setPointsShareData] = useState<any>();
+
+  const getPointsToDoItems = useCallback(async () => {
+    const response = await new PointsService(
+      userAuth?.auth_token!
+    ).pointsTodoItems(practitioner?.userId!);
+    return response;
+  }, [practitioner?.userId, userAuth?.auth_token]);
+
+  const getshareData = useCallback(async () => {
+    const response = await new PointsService(userAuth?.auth_token!).sharedData(
+      practitioner?.userId!,
+      true
+    );
+    setPointsShareData(response);
+    return response;
+  }, [practitioner?.userId, userAuth?.auth_token]);
+
+  const getYearPoints = useCallback(async () => {
+    const response = await new PointsService(
+      userAuth?.auth_token!
+    ).yearPointsView(practitioner?.userId!);
+    return response;
+  }, [practitioner?.userId, userAuth?.auth_token]);
+
+  const todoItems = pointActivitiesItems?.filter((item) => {
+    return pointsShareData?.activityDetail?.includes(item?.activity);
+  });
+
+  const todoListFiltered = pointActivitiesItems.filter((el) => {
+    return pointsShareData?.activityDetail.some((f: any) => {
+      return f.activity !== el.activity;
+    });
+  });
+
+  useEffect(() => {
+    getPointsToDoItems();
+    getshareData();
+    getYearPoints();
+  }, []);
 
   const pointsTodoList = useMemo(() => {
     const pointsList: PointsSummaryDto[] = [];
 
-    pointsSummaryDataWithLibrary.forEach((pointsActivity) => {
+    pointsSummaryDataWithLibrary?.forEach((pointsActivity) => {
       // Regular non-maxed monthly activities
       if (
         (pointsActivity.pointsLibraryId ===
@@ -80,7 +127,7 @@ export const PointsSummary: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
-  const pointsTotal = pointsSummaryDataWithLibrary.reduce(
+  const pointsTotal = pointsSummaryDataWithLibrary?.reduce(
     (total, current) => (total += current.pointsTotal),
     0
   );
@@ -89,7 +136,46 @@ export const PointsSummary: React.FC = () => {
       ? pointsConstants.principalOrAdminMonthlyMax
       : pointsConstants.practitionerMonthlyMax;
 
-  const percentageScore = (pointsTotal / pointsMax) * 100;
+  const percentageScore = (monthPoints / pointsMax) * 100;
+
+  const getTitleColor = (color: string) => {
+    switch (color) {
+      case 'alertMain':
+        return 'alertDark';
+      case 'successMain':
+        return 'successMain';
+      case 'infoMain':
+        return 'quatenary';
+      default:
+        return 'alertDark';
+    }
+  };
+
+  const getBgColor = (color: string) => {
+    switch (color) {
+      case 'alertMain':
+        return 'alertBg';
+      case 'successMain':
+        return 'successBg';
+      case 'infoMain':
+        return 'quatenaryBg';
+      default:
+        return 'alertBg';
+    }
+  };
+
+  const getEmoji = (color: string) => {
+    switch (color) {
+      case 'alertMain':
+        return <EmojiOrangeSmile className="mr-2 h-28 w-28" />;
+      case 'successMain':
+        return <EmojiGreenSmile className="mr-2 h-28 w-28" />;
+      case 'infoMain':
+        return <EmojiBlueSmile className="mr-2 h-28 w-28" />;
+      default:
+        return <EmojiOrangeSmile className="mr-2 h-20 w-20" />;
+    }
+  };
 
   // without this rule the progress bar goes beyond the component
   if (pointsTotal > pointsMax) {
@@ -98,9 +184,7 @@ export const PointsSummary: React.FC = () => {
 
   const celebrationCard = useMemo(() => {
     if (!!userStanding) {
-      if (
-        userStanding.percentageMembersWithFewerPointsForCurrentMonth === 100
-      ) {
+      if (monthPoints === 100) {
         return (
           <CelebrationCard
             image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -112,7 +196,7 @@ export const PointsSummary: React.FC = () => {
           />
         );
       }
-      if (userStanding.percentageMembersWithFewerPointsForCurrentMonth > 75) {
+      if (monthPoints > 75) {
         return (
           <CelebrationCard
             image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -124,7 +208,7 @@ export const PointsSummary: React.FC = () => {
           />
         );
       }
-      if (userStanding.percentageMembersWithFewerPointsForCurrentMonth >= 50) {
+      if (monthPoints >= 50) {
         return (
           <CelebrationCard
             image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
@@ -136,7 +220,7 @@ export const PointsSummary: React.FC = () => {
           />
         );
       }
-      if (userStanding.percentageMembersWithMorePointsForCurrentMonth > 50) {
+      if (monthPoints > 50) {
         return (
           <CelebrationCard
             image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
@@ -153,7 +237,7 @@ export const PointsSummary: React.FC = () => {
     if (percentageScore < 60) {
       return (
         <CelebrationCard
-          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+          image={<EmojiOrangeSmile className="mr-2 h-20 w-20" />}
           primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
           primaryTextColour="alertMain"
           backgroundColour="alertBg"
@@ -185,6 +269,7 @@ export const PointsSummary: React.FC = () => {
       );
     }
   }, [
+    monthPoints,
     percentageScore,
     pointsTotalForYear,
     practitioner?.user?.firstName,
@@ -205,6 +290,7 @@ export const PointsSummary: React.FC = () => {
         backgroundColour="white"
         displayHelp={true}
         onHelp={() => setShowInfo(true)}
+        displayOffline={!isOnline}
       >
         <div className="mt-5 flex-col justify-center p-4">
           <Typography
@@ -213,26 +299,55 @@ export const PointsSummary: React.FC = () => {
             text={format(new Date(), 'MMM yyyy')}
           />
           <ScoreCard
-            className="mt-5"
-            mainText={`${pointsTotal} points`}
-            currentPoints={pointsTotal}
+            className="mt-5 py-6"
+            mainText={`${monthPoints} points`}
+            currentPoints={monthPoints}
             maxPoints={pointsMax}
-            barBgColour="uiLight"
+            barBgColour="white"
             barColour={
               percentageScore < 60
-                ? 'errorMain'
+                ? 'alertMain'
                 : percentageScore < 80
-                ? 'infoMain'
+                ? 'quatenary'
                 : 'successMain'
             }
-            bgColour="uiBg"
+            bgColour={
+              percentageScore < 60
+                ? 'alertBg'
+                : percentageScore < 80
+                ? 'quatenaryBg'
+                : 'successBg'
+            }
             textColour="black"
           />
-          {celebrationCard}
-          {!!pointsTodoList && !!pointsTodoList.length && (
+          {!isOnline && !pointsShareData && celebrationCard}
+          {isOnline && (
+            <CelebrationCard
+              image={getEmoji(
+                pointsShareData?.userRankingData
+                  ?.comparativeTargetPercentageColor
+              )}
+              primaryMessage={
+                pointsShareData?.userRankingData?.comparativePrimaryMessage
+              }
+              secondaryMessage={
+                pointsShareData?.userRankingData?.comparativeSecondaryMessage
+              }
+              primaryTextColour={getTitleColor(
+                pointsShareData?.userRankingData
+                  ?.comparativeTargetPercentageColor
+              )}
+              secondaryTextColour="black"
+              backgroundColour={getBgColor(
+                pointsShareData?.userRankingData
+                  ?.comparativeTargetPercentageColor
+              )}
+            />
+          )}
+          {!!todoListFiltered && !!todoListFiltered.length && (
             <Typography
-              className="mt-10"
-              type={'h1'}
+              className="mt-8 mb-4"
+              type={'h3'}
               color="black"
               text={`How you can earn more points in ${format(
                 new Date(),
@@ -240,7 +355,7 @@ export const PointsSummary: React.FC = () => {
               )}:`}
             />
           )}
-          {!!pointsTodoList &&
+          {/* {!!pointsTodoList &&
             pointsTodoList.map((pointsLibraryScore, index) => {
               return (
                 <PointsProgressCard
@@ -264,39 +379,79 @@ export const PointsSummary: React.FC = () => {
                   }
                 />
               );
+            })} */}
+          {!!todoListFiltered &&
+            todoListFiltered?.slice(0, 3)?.map((item) => {
+              return (
+                <PointsTodoItem
+                  text={item?.missingActivityText}
+                  icon={item?.icon}
+                />
+              );
             })}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
-          <Button
-            size="normal"
-            className="mb-4 w-full"
-            type="filled"
-            color="primary"
-            text="Share"
-            textColor="white"
-            icon="ShareIcon"
-            onClick={() => {
-              setShowPrintData(true);
-              setTimeout(() => {
-                if (shareRef.current) {
-                  captureAndDownloadComponent(
-                    shareRef.current,
-                    'points-month-summary.jpg'
-                  );
-                  setShowPrintData(false);
-                }
-              }, 100);
-            }}
-          />
+          {monthPoints > 0 && (
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="filled"
+              color="quatenary"
+              text="Share"
+              textColor="white"
+              icon="ShareIcon"
+              onClick={() => {
+                setShowPrintData(true);
+                setTimeout(() => {
+                  if (shareRef.current) {
+                    captureAndDownloadComponent(
+                      shareRef.current,
+                      'points-month-summary.jpg'
+                    );
+                    setShowPrintData(false);
+                  }
+                }, 100);
+              }}
+            />
+          )}
+          {monthPoints === 0 && !practitioner?.coachHierarchy && (
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="filled"
+              color="quatenary"
+              text="Find out how you can earn points"
+              textColor="white"
+              icon="LightBulbIcon"
+              onClick={() => setShowInfo(true)}
+            />
+          )}
+          {monthPoints === 0 && practitioner?.coachHierarchy && (
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="outlined"
+              color="quatenary"
+              text="Ask your coach for help"
+              textColor="white"
+              icon="ChatIcon"
+              onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
+            />
+          )}
           <Button
             size="normal"
             className="mb-4 w-full"
             type="outlined"
-            color="primary"
+            color="quatenary"
             text="See detailed report"
-            textColor="primary"
+            textColor="quatenary"
             icon="EyeIcon"
-            onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.YEAR)}
+            disabled={!isOnline}
+            onClick={() =>
+              history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
+                userRankingData: pointsShareData?.userRankingData,
+              })
+            }
           />
         </div>
       </BannerWrapper>
@@ -310,9 +465,14 @@ export const PointsSummary: React.FC = () => {
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Month"
-          pointsSummaries={filteredPointsSummaries}
-          userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
-          childCount={children?.length || 0}
+          pointsTotal={pointsShareData?.total}
+          pointsSummaries={pointsShareData?.activityDetail}
+          userFullName={
+            practitioner?.user?.surname
+              ? `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`
+              : `${practitioner?.user?.firstName}`
+          }
+          childCount={pointsShareData?.totalChildren || 0}
           clubStanding={
             userStanding?.percentageMembersWithFewerPointsForCurrentMonth || 0
           }

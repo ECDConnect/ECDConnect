@@ -24,4 +24,6 @@ export interface ScoreCardProps extends ComponentBaseProps {
   statusChip?: StatusChipProps;
   onClick?: () => void;
   onClickClassName?: string;
+  isHiddenSubLabel?: boolean;
+  isBigTitle?: boolean;
 }

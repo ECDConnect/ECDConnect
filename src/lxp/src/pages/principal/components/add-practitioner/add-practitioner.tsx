@@ -498,7 +498,10 @@ export const AddPractitioner = ({
                       isPractitionerRegistered
                         ? []
                         : [
-                            'Encourage Thandi to register for the app as soon as possible!',
+                            `Encourage ${
+                              newPractitioner?.firstName ||
+                              newPractitioner?.username
+                            } to register for the app as soon as possible!`,
                           ]
                     }
                   />

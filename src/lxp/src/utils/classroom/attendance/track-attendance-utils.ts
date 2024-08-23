@@ -196,7 +196,7 @@ export const getMissedClassAttendance = (
   if (last30DaysProgrammes)
     for (const day of last30DaysProgrammes) {
       const programme = day.programme!;
-      const missedDayDate = day.date;
+      const missedDayDate = new Date(day.date.setHours(0, 0, 0, 0));
 
       const classGroups = classroomGroups.filter((x) => {
         return x.id === programme?.classroomGroupId;
@@ -204,7 +204,7 @@ export const getMissedClassAttendance = (
       const classLearners = classGroups
         .flatMap((x) => x.learners)
         .filter((x) => {
-          const checkEndOfDay = new Date(missedDayDate.setHours(23, 59, 59));
+          const checkEndOfDay = new Date(day.date.setHours(23, 59, 59));
           const isValidDay =
             isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
             checkEndOfDay.getTime() >= new Date(x.startedAttendance).getTime();
@@ -217,11 +217,7 @@ export const getMissedClassAttendance = (
             (att) =>
               att.attendanceDate &&
               att.classroomProgrammeId === programme.id &&
-              new Date(att.attendanceDate).getFullYear() ===
-                missedDayDate.getFullYear() &&
-              new Date(att.attendanceDate).getMonth() ===
-                missedDayDate.getMonth() &&
-              new Date(att.attendanceDate).getDay() === missedDayDate.getDay()
+              missedDayDate.getTime() === new Date(att.attendanceDate).getTime()
           )
         ) {
           returnProgrammes.push({ ...programme, missedDate: missedDayDate });

@@ -35,12 +35,12 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
         </p>
       )}
       <div
-        className={`${hideActivityCount ? '' : 'ml-8'} ${
+        className={`${hideActivityCount ? '' : 'ml-6'} ${
           isShare ? 'mb-5' : ''
         }`}
       >
         <Typography
-          type={size === 'large' ? 'h1' : 'h4'}
+          type={size === 'large' ? 'h2' : 'h4'}
           text={title}
           color={textColour}
         />
