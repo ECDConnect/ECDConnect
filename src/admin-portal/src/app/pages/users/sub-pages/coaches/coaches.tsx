@@ -662,7 +662,7 @@ export default function Coaches() {
         </div>
       </div>
       <Dialog
-        className="absolute left-56 bottom-96 w-6/12"
+        className="absolute left-56 bottom-96 h-96 w-6/12"
         stretch
         visible={handleAddUser}
         position={DialogPosition.Middle}
