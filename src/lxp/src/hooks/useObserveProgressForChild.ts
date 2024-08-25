@@ -164,10 +164,6 @@ export const useObserveProgressForChild = (childId: string) => {
     );
   }, [detailedReports, currentReportingPeriod]);
 
-  const completedReports = useMemo(() => {
-    return detailedReports.filter((x) => !!x.dateCompleted);
-  }, [detailedReports, currentReportingPeriod]);
-
   const addObservationForSkill = async (
     skillId: number,
     value: ProgressSkillValues
@@ -344,7 +340,7 @@ export const useObserveProgressForChild = (childId: string) => {
     skillsForAgeGroup,
     currentObservations,
     currentReport,
-    completedReports,
+    detailedReports,
     currentReportingPeriod,
     replaceSkillText,
     addObservationForSkill,

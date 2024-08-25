@@ -2,36 +2,23 @@ import { Button, DialogPosition } from '@ecdlink/ui';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import {
   NOTIFICATION,
-  RoleDefaultNameEnum,
   UserDto,
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
 import { useMutation } from '@apollo/client';
-import {
-  DeactivateHealthCareWorker,
-  DeactivateTeamLead,
-  DeleteUser,
-} from '@ecdlink/graphql';
+import { DeleteUser } from '@ecdlink/graphql';
 import { useCallback } from 'react';
-import { useHistory } from 'react-router';
 
 interface DeactivateUserProps {
   userData: UserDto;
   refetchUserData?: () => void;
-  isTeamLead?: boolean;
   isAdministrator?: boolean;
-  teamLeadId?: string;
-  hcwId?: string;
 }
 
 export const DeactivateUser: React.FC<DeactivateUserProps> = ({
   userData,
   refetchUserData,
-  isTeamLead,
-  teamLeadId,
-  hcwId,
-  isAdministrator,
 }) => {
   const dialog = useDialog();
   const { setNotification } = useNotifications();
@@ -63,15 +50,9 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title={`Deactivate ${
-            isAdministrator
-              ? RoleDefaultNameEnum.Administrator
-              : isTeamLead
-              ? RoleDefaultNameEnum.TeamLead
-              : RoleDefaultNameEnum.CHW
-          }`}
-          message={`You are about to deactivate ${userData?.fullName}`}
-          btnText={['Yes, deactivate', 'No, Cancel']}
+          title={`Are you sure you want to deactivate ${userData?.firstName}?`}
+          message={`${userData?.firstName} will lose their access to the app immediately. Make sure you have communicated with them before deactivating them.`}
+          btnText={['Yes, deactivate user', 'No, Cancel']}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();

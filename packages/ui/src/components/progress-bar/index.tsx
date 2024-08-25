@@ -24,6 +24,7 @@ export type ProgressBarProps = {
   size?: 'small' | 'medium' | 'large';
   statusChip?: StatusChipProps;
   style?: React.CSSProperties;
+  isBigTitle?: boolean;
 };
 export const ProgressBar = ({
   className,
@@ -42,6 +43,7 @@ export const ProgressBar = ({
   statusChip,
   style: customStyle,
   isHiddenBar,
+  isBigTitle,
 }: ProgressBarProps) => {
   const [statusChipWidth, setStatusChipWidth] = useState<number>();
 
@@ -99,9 +101,9 @@ export const ProgressBar = ({
             hintClassName,
             `${!hint && 'mb-2'} ${
               textPosition === 'left' && 'mb-2'
-            } text-center text-4xl font-semibold text-${
-              textColour || primaryColour
-            }`
+            } text-center ${
+              isBigTitle ? 'text-6xl' : 'text-4xl'
+            } font-semibold text-${textColour || primaryColour}`
           )}
         >
           {label}

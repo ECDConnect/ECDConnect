@@ -1,5 +1,5 @@
 import { pointsConstants } from '@/constants/points';
-import { pointsSelectors } from '@/store/points';
+import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
   BannerWrapper,
@@ -7,28 +7,44 @@ import {
   CelebrationCard,
   Dialog,
   DialogPosition,
+  Divider,
+  PointsProgressCard,
   ScoreCard,
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
-import { ReactComponent as Balloons } from '@ecdlink/ui/src/assets/emoji/balloons.svg';
+import { ReactComponent as EmojiYellowHappy } from '../../../assets/ECD_Connect_emoji3.svg';
+import happyOverlay from '../../../assets/happy_overlay.svg';
 import { format } from 'date-fns';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PointsMonthSummary } from './components/points-month-summary';
-import ROUTES from '@/routes/routes';
 import { PointsShare } from '../points-share/points-share';
 import { captureAndDownloadComponent } from '@ecdlink/core';
 import { PointsInfoPage } from '../info/points-info-page';
 import { childrenSelectors } from '@/store/children';
+import { useAppDispatch } from '@/store';
+import { PointsUserYearMonthSummary } from '@ecdlink/graphql';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import { PointsService } from '@/services/PointsService';
+import { authSelectors } from '@/store/auth';
+
+export interface PointsYearViewRouteState {
+  userRankingData?: any;
+}
 
 export const PointsYearView: React.FC = () => {
   const history = useHistory();
+  const { state } = useLocation<PointsYearViewRouteState>();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const dispatch = useAppDispatch();
   const currentMonth = new Date().getMonth();
-
+  const messageNr = state?.userRankingData?.messageNr;
+  const comparativeTargetPercentage =
+    state?.userRankingData?.comparativeTargetPercentage;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const children = useSelector(childrenSelectors.getChildren);
   const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
@@ -44,23 +60,53 @@ export const PointsYearView: React.FC = () => {
   );
 
   const yearSummaries = useSelector(pointsSelectors.getPointsSummaryForYear());
+  const [pointsShareData, setPointsShareData] = useState<any>();
 
   const pointsTotalForYear = useSelector(
     pointsSelectors.getPointsTotalForYear()
   );
+  const [monthsIndex, setMonthsIndex] = useState(1);
+  const [pointsYearSummary, setPointsYearSummary] =
+    useState<PointsUserYearMonthSummary>();
+
+  const getYearPoints = useCallback(async () => {
+    const response = await dispatch(
+      pointsThunkActions.yearPointsView({
+        userId: practitioner?.userId!,
+      })
+    );
+    setPointsYearSummary(response?.payload as PointsUserYearMonthSummary);
+  }, []);
+
+  useEffect(() => {
+    getYearPoints();
+  }, []);
 
   const pointsMax =
     isPrincipal || isFundaAppAdmin
       ? pointsConstants.principalOrAdminYearlyMax
       : pointsConstants.practitionerYearlyMax;
 
-  const percentageScore = (pointsTotalForYear / pointsMax) * 100;
+  const percentageScore = (pointsYearSummary?.total! / pointsMax) * 100;
 
   const loadNextMonth = useCallback(() => {
     const nextMonthToLoad = Math.min(...monthsLoaded) - 1;
     setMonthsLoaded([...monthsLoaded, nextMonthToLoad]);
     setLoadNextMonthDisabled(nextMonthToLoad === 0);
   }, [monthsLoaded, setMonthsLoaded, setLoadNextMonthDisabled]);
+
+  const getYearShareData = useCallback(async () => {
+    const response = await new PointsService(userAuth?.auth_token!).sharedData(
+      practitioner?.userId!,
+      false
+    );
+    setPointsShareData(response);
+    return response;
+  }, [practitioner?.userId, userAuth?.auth_token]);
+
+  useEffect(() => {
+    getYearShareData();
+  }, []);
 
   const celebrationCard = useMemo(() => {
     if (!!userStanding && !!practitioner?.clubId) {
@@ -107,14 +153,14 @@ export const PointsYearView: React.FC = () => {
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
             primaryTextColour="alertMain"
             backgroundColour="alertBg"
-            secondaryMessage={`Most of the SmartStarters in your club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
+            secondaryMessage={`Most of the SmartStarters in your club have more than ${pointsYearSummary?.total} points this year! Earn more points to join them.`}
             secondaryTextColour="black"
           />
         );
       }
     }
 
-    if (pointsTotalForYear === 0) {
+    if (pointsYearSummary?.total === 0) {
       return (
         <CelebrationCard
           image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
@@ -165,9 +211,10 @@ export const PointsYearView: React.FC = () => {
     );
   }, [
     userStanding,
-    pointsTotalForYear,
-    percentageScore,
+    practitioner?.clubId,
     practitioner?.user?.firstName,
+    pointsYearSummary?.total,
+    percentageScore,
   ]);
 
   // SHARE LOGIC
@@ -184,67 +231,130 @@ export const PointsYearView: React.FC = () => {
       displayHelp={true}
       onHelp={() => setShowInfo(true)}
     >
-      <div className="mt-5 flex-col justify-center p-4">
+      <div className="mt-5 flex-col justify-center">
         <Typography
           type={'h1'}
           color="black"
-          text={format(new Date(), 'MMM yyyy')}
+          text={`Points ${format(new Date(), 'yyyy')}`}
+          className="px-4"
         />
-        <ScoreCard
-          className="mt-5"
-          mainText={`${pointsTotalForYear}`}
-          secondaryText="points"
-          currentPoints={pointsTotalForYear}
-          maxPoints={pointsMax}
-          image={
-            percentageScore > 80 ? (
-              <Balloons className="mr-2 h-16 w-16" />
-            ) : undefined
-          }
-          barBgColour="uiLight"
-          barColour={
-            percentageScore < 60
-              ? 'errorMain'
-              : percentageScore < 80
-              ? 'infoMain'
-              : 'successMain'
-          }
-          bgColour="uiBg"
-          textColour="black"
-        />
-        {celebrationCard}
-        {pointsTotalForYear > 0 && (
+        <div className="px-4">
+          <ScoreCard
+            className="mt-5"
+            hint="Points"
+            isHiddenSubLabel={true}
+            isBigTitle={true}
+            mainText={
+              pointsYearSummary?.total ? `${pointsYearSummary?.total}` : '0'
+            }
+            secondaryText="points"
+            currentPoints={pointsYearSummary?.total || 0}
+            maxPoints={pointsMax}
+            image={
+              percentageScore >= 80 ? (
+                <EmojiYellowHappy className="mr-2 mb-12 h-16 w-16" />
+              ) : undefined
+            }
+            barBgColour="white"
+            barColour={
+              percentageScore < 60
+                ? 'alertMain'
+                : percentageScore < 80
+                ? 'quatenary'
+                : 'successMain'
+            }
+            bgColour={
+              percentageScore < 60
+                ? 'alertBg'
+                : percentageScore < 80
+                ? 'quatenaryBg'
+                : 'successBg'
+            }
+            textColour="black"
+          />
+        </div>
+        {percentageScore > 80 && (
+          <img src={happyOverlay} alt="happy overlay" className="my-4 w-full" />
+        )}
+        {pointsYearSummary && pointsYearSummary?.total > 0 && (
           <>
             <Typography
-              className="mt-10"
-              type={'h1'}
+              className="mt-10 px-4"
+              type={'h3'}
               color="black"
               text={'What you earned points for:'}
             />
-            {monthsLoaded.map((month) => {
-              return <PointsMonthSummary month={month} />;
-            })}
           </>
         )}
       </div>
-      {pointsTotalForYear > 0 && (
+      {pointsYearSummary && (
+        <div className="px-4">
+          {pointsYearSummary?.monthSummary
+            ?.slice(0, monthsIndex)
+            ?.map((item) => {
+              return (
+                <div>
+                  <Divider dividerType="dashed" className="mt-3 mb-3" />
+                  <Typography
+                    type={'h4'}
+                    color="black"
+                    text={String(item?.month)}
+                  />
+                  <Typography
+                    type={'body'}
+                    color="textMid"
+                    text={`${item?.total} points`}
+                  />
+                  {item?.activityDetail?.map((activity, index) => (
+                    <PointsProgressCard
+                      key={'points_' + index}
+                      hideProgressBar={true}
+                      isYearView={true}
+                      currentPoints={activity?.timesScored!}
+                      description={activity?.activity || 'Unknown'}
+                      badgeImage={
+                        <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
+                          <Badge
+                            className="absolute z-0 h-12 w-12"
+                            fill="var(--secondary)"
+                          />
+                          <Typography
+                            className="relative z-10"
+                            color="white"
+                            type="h3"
+                            text={String(activity?.pointsTotal)}
+                          />
+                        </div>
+                      }
+                    />
+                  ))}
+                </div>
+              );
+            })}
+        </div>
+      )}
+      {pointsYearSummary && pointsYearSummary?.total > 0 && (
         <div className="flex-column mt-10 justify-end p-4">
           <Button
             size="normal"
             className="mb-4 w-full"
             type="outlined"
-            color="primary"
+            color="quatenary"
             text="See more months"
-            textColor="primary"
+            textColor="quatenary"
             icon="EyeIcon"
-            disabled={loadNextMonthDisabled}
-            onClick={loadNextMonth}
+            disabled={monthsIndex === pointsYearSummary?.monthSummary?.length!}
+            onClick={() =>
+              monthsIndex < pointsYearSummary?.monthSummary?.length!
+                ? setMonthsIndex(monthsIndex + 1)
+                : {}
+            }
           />
           <Button
             size="normal"
             className="mb-4 w-full"
             type="filled"
-            color="primary"
+            color="quatenary"
             text="Share"
             textColor="white"
             icon="ShareIcon"
@@ -263,39 +373,19 @@ export const PointsYearView: React.FC = () => {
           />
         </div>
       )}
-      {pointsTotalForYear === 0 && (
-        <div className="flex-column mt-10 justify-end p-4">
-          <Button
-            size="normal"
-            className="mb-4 w-full"
-            type="filled"
-            color="primary"
-            text="Find out how you can earn points"
-            textColor="white"
-            icon="LightBulbIcon"
-            onClick={() => setShowInfo(true)}
-          />
-          <Button
-            size="normal"
-            className="mb-4 w-full"
-            type="outlined"
-            color="primary"
-            text="Ask your coach for help"
-            textColor="primary"
-            icon="ChatIcon"
-            onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
-          />
-        </div>
-      )}
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Year"
-          pointsSummaries={yearSummaries}
-          userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
-          childCount={children?.length || 0}
-          clubStanding={
-            userStanding?.percentageMembersWithFewerPointsForCurrentYear || 0
+          messageNr={messageNr}
+          pointsSummaries={pointsShareData?.activityDetail}
+          pointsTotal={String(pointsYearSummary?.total)}
+          userFullName={
+            practitioner?.user?.surname
+              ? `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`
+              : `${practitioner?.user?.firstName}`
           }
+          childCount={pointsShareData?.totalChildren || 0}
+          clubStanding={comparativeTargetPercentage || 0}
           clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>

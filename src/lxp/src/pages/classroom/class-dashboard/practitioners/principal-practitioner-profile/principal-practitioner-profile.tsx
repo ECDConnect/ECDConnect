@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -257,22 +257,32 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     useTenantModules();
 
   const permissions = useSelector(staticDataSelectors.getPermissions);
-  const premissionsFilteredByTenantModules = permissions
-    ?.filter((item) =>
-      !attendanceEnabled && isWhiteLabel
-        ? item?.name !== PermissionsNames?.take_attendance
-        : item
-    )
-    ?.filter((item2) =>
-      !progressEnabled && isWhiteLabel
-        ? item2?.name !== PermissionsNames?.create_progress_reports
-        : item2
-    )
-    ?.filter((item3) =>
-      !classroomActivitiesEnabled && isWhiteLabel
-        ? item3?.name !== PermissionsNames?.plan_classroom_actitivies
-        : item3
-    );
+  const premissionsFilteredByTenantModules = useMemo(
+    () =>
+      permissions
+        ?.filter((item) =>
+          !attendanceEnabled && isWhiteLabel
+            ? item?.name !== PermissionsNames?.take_attendance
+            : item
+        )
+        ?.filter((item2) =>
+          !progressEnabled && isWhiteLabel
+            ? item2?.name !== PermissionsNames?.create_progress_reports
+            : item2
+        )
+        ?.filter((item3) =>
+          !classroomActivitiesEnabled && isWhiteLabel
+            ? item3?.name !== PermissionsNames?.plan_classroom_actitivies
+            : item3
+        ),
+    [
+      attendanceEnabled,
+      classroomActivitiesEnabled,
+      isWhiteLabel,
+      permissions,
+      progressEnabled,
+    ]
+  );
 
   const [allowedPermissions, setAllowedPermissions] = useState<
     string[] | undefined

@@ -1,8 +1,9 @@
-import { Config } from '@ecdlink/core';
+import { Config, PointsTodoItemDto } from '@ecdlink/core';
 import { api } from '../axios.helper';
 import {
   PointsLibrary,
   PointsUserSummary,
+  PointsUserYearMonthSummary,
   UserClubStandingModel,
 } from '@ecdlink/graphql';
 
@@ -32,6 +33,7 @@ class PointsService {
             month
             year
             userId
+            dateScored
             pointsActivity {
               id
               name
@@ -136,6 +138,108 @@ class PointsService {
     }
 
     return true;
+  }
+
+  async pointsTodoItems(userId: string): Promise<PointsTodoItemDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { pointsTodoItems: PointsTodoItemDto };
+      errors?: {};
+    }>(``, {
+      query: `query GetPointsTodoItems($userId: UUID!) {
+    pointsTodoItems(userId: $userId) {
+        signedUpForApp
+        notPartOfPreschool
+        savedIncomeOrExpense
+        plannedOneDay
+        viewedCommunitySection
+    }
+}`,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get points to do Failed - Server connection error');
+    }
+
+    return response.data.data.pointsTodoItems;
+  }
+
+  async sharedData(userId: string, isMonthly: boolean): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { sharedData: any };
+      errors?: {};
+    }>(``, {
+      query: `query GetSharedData($userId: UUID!, $isMonthly: Boolean!) {
+    sharedData(userId: $userId, isMonthly: $isMonthly) {
+        total
+        totalChildren
+        activityDetail {
+            activity
+            timesScored
+            pointsTotal
+        }
+        userRankingData {
+            pointsTotal
+            comparativeTargetPercentage
+            comparativeTargetPercentageColor
+            comparativePrimaryMessage
+            comparativeSecondaryMessage
+            nonComparativeTargetPercentage
+            nonComparativeTargetPercentageColor
+            nonComparativePrimaryMessage
+            nonComparativeSecondaryMessage
+            messageNr
+        }
+    }
+}`,
+      variables: {
+        userId,
+        isMonthly,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Share data for user Failed - Server connection error');
+    }
+
+    return response.data.data.sharedData;
+  }
+
+  async yearPointsView(userId: string): Promise<PointsUserYearMonthSummary> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { yearPointsView: PointsUserYearMonthSummary };
+      errors?: {};
+    }>(``, {
+      query: `query GetYearPointsView($userId: UUID!) {
+    yearPointsView(userId: $userId) {
+        total
+        monthSummary {
+            month
+            total
+            activityDetail {
+                activity
+                timesScored
+                pointsTotal
+            }
+        }
+        
+    }
+}`,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get year points view Failed - Server connection error');
+    }
+
+    return response.data.data.yearPointsView;
   }
 }
 

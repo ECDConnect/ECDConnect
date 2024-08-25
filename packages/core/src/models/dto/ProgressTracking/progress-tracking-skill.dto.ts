@@ -5,9 +5,7 @@ export interface ProgressTrackingSkillDto {
   id: number;
   description: string;
   name: string;
-  level: ProgressTrackingLevelDto[];
-  ageGroups: ProgressTrackingAgeGroupDto[] | null;
-  value: string;
-  reverseScore?: boolean;
-  supportImage: string;
+  ageGroupIds: number[];
+  isReverseScored?: boolean;
+  supportImage?: string;
 }

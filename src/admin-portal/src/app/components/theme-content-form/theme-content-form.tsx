@@ -5,6 +5,7 @@ import {
   camelCaseToSentanceCase,
 } from '@ecdlink/core';
 import {
+  Alert,
   CheckboxGroup,
   Dropdown,
   SearchDropDownOption,
@@ -15,6 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
 import { DropDownFillType } from '../dropdown/models/DropDownOption';
+import { Colours } from '@ecdlink/ui';
 
 export interface DynamicSelectorProps {
   contentValue?: ContentValueDto;
@@ -25,6 +27,7 @@ export interface DynamicSelectorProps {
   setSelectedItems?: (value: string) => void;
   isSkillType?: boolean;
   setFilteredThemeDays?: (item: any[]) => void;
+  setHasUnsharedContent: (value: boolean) => void;
 }
 
 const smallLargeActivitiesQuery = gql`
@@ -90,6 +93,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   setSelectedItems,
   isSkillType,
   setFilteredThemeDays,
+  setHasUnsharedContent,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -261,6 +265,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     let tempArray = [...themeDaysArr];
 
     let item = { ...tempArray[idx] };
+
     const activity =
       storyType === ThemeStoryTypes?.smallGroup
         ? item?.smallGroupActivity?.[0]
@@ -277,9 +282,35 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
       activity?.shareContent === '' ||
       activity?.shareContent === 'false'
     ) {
+      setHasUnsharedContent(true);
       return 'outlined' as DropDownFillType;
     }
     return 'filled' as DropDownFillType;
+  };
+
+  const getFillColor = (idx, storyType) => {
+    let tempArray = [...themeDaysArr];
+
+    let item = { ...tempArray[idx] };
+    const activity =
+      storyType === ThemeStoryTypes?.smallGroup
+        ? item?.smallGroupActivity?.[0]
+        : storyType === ThemeStoryTypes?.largeGroup
+        ? item?.largeGroupActivity?.[0]
+        : storyType === ThemeStoryTypes?.storyActivity
+        ? item?.storyActivity?.[0]
+        : storyType === ThemeStoryTypes?.storyBook
+        ? item?.storyBook?.[0]
+        : null;
+
+    if (
+      activity?.shareContent === null ||
+      activity?.shareContent === '' ||
+      activity?.shareContent === 'false'
+    ) {
+      return 'alertMain' as Colours;
+    }
+    return 'adminPortalBg' as Colours;
   };
 
   const handleGroupChange = (e, idx, storyType) => {
@@ -324,10 +355,14 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   }, [currentThemeDaysArr]);
 
   useEffect(() => {
-    if (themeDaysArr?.length > 0) {
+    if (
+      themeDaysArr?.length > 0 &&
+      smallGroupOptions?.length > 0 &&
+      largeGroupOptions?.length > 0
+    ) {
       setLoading(false);
     }
-  }, [themeDaysArr]);
+  }, [themeDaysArr, smallGroupOptions, largeGroupOptions]);
 
   if (tempData && displayFields) {
     if (isSkillType) {
@@ -432,18 +467,20 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                       text={`Day ${idx + 1}`}
                       weight="normal"
                       color={'textDark'}
-                      className={`${idx === 0 ? 'mt-8' : ''} w-1/12`}
+                      className={`${idx === 0 ? 'mt-8' : 'mt-2'} w-1/12`}
                     />
                     <div className="grid w-8/12 grid-cols-4 gap-2">
                       <div>
-                        {idx === 0 && (
+                        {idx === 0 ? (
                           <Typography
                             type={'h4'}
                             text={'Small group activity'}
                             weight="normal"
                             color={'textDark'}
-                            className="my-2"
+                            className="my-1"
                           />
+                        ) : (
+                          <div className="mt-1"></div>
                         )}
                         <Dropdown<any>
                           placeholder={'Type to search...'}
@@ -452,7 +489,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                             idx,
                             ThemeStoryTypes?.smallGroup
                           )}
-                          fillColor={'adminPortalBg'}
+                          fillColor={getFillColor(
+                            idx,
+                            ThemeStoryTypes?.smallGroup
+                          )}
                           textColor="textLight"
                           fullWidth
                           className={`textDark w-58 h-full px-0`}
@@ -488,7 +528,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         />
                       </div>
                       <div>
-                        {idx === 0 && (
+                        {idx === 0 ? (
                           <Typography
                             type={'h4'}
                             text={'Large group activity'}
@@ -496,6 +536,8 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                             color={'textDark'}
                             className="my-2"
                           />
+                        ) : (
+                          <div className="mt-1"></div>
                         )}
                         <Dropdown<any>
                           placeholder={'Type to search...'}
@@ -504,7 +546,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                             idx,
                             ThemeStoryTypes?.largeGroup
                           )}
-                          fillColor={'adminPortalBg'}
+                          fillColor={getFillColor(
+                            idx,
+                            ThemeStoryTypes?.largeGroup
+                          )}
                           textColor="textDark"
                           fullWidth
                           className="text-textDark w-58 h-full"
@@ -540,7 +585,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         />
                       </div>
                       <div>
-                        {idx === 0 && (
+                        {idx === 0 ? (
                           <Typography
                             type={'h4'}
                             text={'Story'}
@@ -548,6 +593,8 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                             color={'textDark'}
                             className="my-2"
                           />
+                        ) : (
+                          <div className="mt-1"></div>
                         )}
                         <Dropdown<any>
                           placeholder={'Type to search...'}
@@ -556,7 +603,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                             idx,
                             ThemeStoryTypes?.storyBook
                           )}
-                          fillColor={'adminPortalBg'}
+                          fillColor={getFillColor(
+                            idx,
+                            ThemeStoryTypes?.storyBook
+                          )}
                           textColor="textDark"
                           fullWidth
                           className="text-textDark w-58 h-full"
@@ -591,7 +641,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                         />
                       </div>
                       <div>
-                        {idx === 0 && (
+                        {idx === 0 ? (
                           <Typography
                             type={'h4'}
                             text={'Story activity'}
@@ -599,6 +649,8 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                             color={'textDark'}
                             className="my-2"
                           />
+                        ) : (
+                          <div className="mt-1"></div>
                         )}
                         <Dropdown<any>
                           placeholder={'Type to search...'}
@@ -607,7 +659,10 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                             idx,
                             ThemeStoryTypes?.storyActivity
                           )}
-                          fillColor={'adminPortalBg'}
+                          fillColor={getFillColor(
+                            idx,
+                            ThemeStoryTypes?.storyActivity
+                          )}
                           textColor="textDark"
                           fullWidth
                           className="text-textDark w-58 h-full"

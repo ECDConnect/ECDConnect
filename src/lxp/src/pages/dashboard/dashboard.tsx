@@ -51,7 +51,7 @@ import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
-import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
+import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
@@ -69,7 +69,7 @@ import { BusinessTabItems } from '../business/business.types';
 import { useTenant } from '@/hooks/useTenant';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, getMonth, getYear } from 'date-fns';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import DashboardWrapper from './dashboard-wrapper/dashboard-wrapper';
@@ -198,11 +198,12 @@ export const Dashboard: React.FC = () => {
     if (isCoach) {
       return;
     }
-
-    const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
+    const currentMonth = new Date().getMonth(); // +1 for 0 index
     const currentYear = new Date().getFullYear();
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
-      if (current.month === currentMonth && current.year === currentYear) {
+      const dataMonth = getMonth(new Date(current?.dateScored));
+      const dataYear = getYear(new Date(current?.dateScored));
+      if (dataMonth === currentMonth && dataYear === currentYear) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -226,8 +227,8 @@ export const Dashboard: React.FC = () => {
         hint: 'points',
         barBgColour: 'white',
         textPosition: 'left',
-        barColour: 'errorMain',
-        bgColour: 'errorBg',
+        barColour: 'alertMain',
+        bgColour: 'alertBg',
         currentPoints: pointsTotal,
         maxPoints: pointsMax,
         textColour: 'textDark',
@@ -537,7 +538,12 @@ export const Dashboard: React.FC = () => {
         missingProgramme) ||
       (navItem.href.includes('calendar') && isWhiteLabel && missingProgramme) ||
       (navItem.href.includes('training') && isWhiteLabel && missingProgramme) ||
-      (navItem.href.includes('community') && isWhiteLabel && missingProgramme)
+      (navItem.href.includes('community') &&
+        isWhiteLabel &&
+        missingProgramme) ||
+      (navItem.href.includes('/practitioner/programme-information') &&
+        isWhiteLabel &&
+        missingProgramme)
     ) {
       showCompleteProfileBlockingDialog();
     } else {
