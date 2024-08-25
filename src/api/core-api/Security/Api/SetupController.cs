@@ -76,23 +76,28 @@ namespace ECDLink.Security.Api
         {
             var tenantOrgDetail = JsonConvert.DeserializeObject<TenantOrgDetailModel>(setupInfo);
 
-            var setupRecord = _tenantSetupInfoRepo.Insert(
-                new TenantSetupInfo()
-                {
-                    Id = Guid.NewGuid(),
-                    InsertedDate = DateTime.Now,
-                    UpdatedDate = DateTime.Now,
-                    UpdatedBy = _applicationUserId.ToString(),
-                    IsActive = true,
-                    OrganisationName = tenantOrgDetail.OrganisationName,
-                    SetupJsonData = setupInfo
-                });
+            var setupRecord = _tenantSetupInfoRepo.Insert(new TenantSetupInfo()
+            {
+                Id = Guid.NewGuid(),
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _applicationUserId.ToString(),
+                IsActive = true,
+                OrganisationName = tenantOrgDetail.OrganisationName,
+                SetupJsonData = setupInfo
+            });
 
             // Send email to tenant organisation email to inform of new record.
             await _notificationManager.SendNewTenantSetupToAdministratorAsync((Guid)_applicationUserId, tenantOrgDetail);
+            // Send email to new super admin 1
+            await _notificationManager.SendWelcomeEmailToNewSuperAdminAsync((Guid)_applicationUserId, tenantOrgDetail.SuperAdmin1FirstName, tenantOrgDetail.SuperAdmin1Email);
+            // Send email to new super admin 2
+            await _notificationManager.SendWelcomeEmailToNewSuperAdminAsync((Guid)_applicationUserId, tenantOrgDetail.SuperAdmin2FirstName, tenantOrgDetail.SuperAdmin2Email);
 
             return setupRecord;
         }
+
+
 
 
     }

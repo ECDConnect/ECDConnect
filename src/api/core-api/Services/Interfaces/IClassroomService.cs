@@ -1,5 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Classroom;
+﻿using ECDLink.DataAccessLayer.Entities.Classroom;
 using System;
 using System.Collections.Generic;
 

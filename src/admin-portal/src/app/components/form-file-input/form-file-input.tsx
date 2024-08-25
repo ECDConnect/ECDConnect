@@ -311,7 +311,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         className="font-lg block pb-1 text-sm font-bold text-gray-900"
       >
         {label}
-        {acceptedFormats && !isThemeFormFile && (
+        {acceptedFormats && !isThemeFormFile && !hideAcceptedFormats && (
           <span className="font-bold"> ({acceptedFormats?.join(', ')})</span>
         )}
       </label>
@@ -446,38 +446,34 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                         )}
                       />
                     )}
-                    <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
-                      <DesktopComputerIcon className="mr-4 h-5 w-5" />
-                      {file || contentUrl ? (
-                        <Typography
-                          type={'h4'}
-                          color={'white'}
-                          text={
-                            isVideoInput
-                              ? 'Change video'
-                              : isFileInput
-                              ? 'Change file'
-                              : 'Change image'
-                          }
-                        />
-                      ) : (
-                        <Typography
-                          type={'h4'}
-                          color={'white'}
-                          text={'Browse my computer'}
-                        />
-                      )}
-                    </div>
-                    {file || contentUrl ? (
+                    {!disabled && (
+                      <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
+                        <DesktopComputerIcon className="mr-4 h-5 w-5" />
+                        {file || contentUrl ? (
+                          <Typography
+                            type={'h4'}
+                            color={'white'}
+                            text={
+                              isVideoInput
+                                ? 'Change video'
+                                : isFileInput
+                                ? 'Change file'
+                                : 'Change image'
+                            }
+                          />
+                        ) : (
+                          <Typography
+                            type={'h4'}
+                            color={'white'}
+                            text={'Browse my computer'}
+                          />
+                        )}
+                      </div>
+                    )}
+                    {!disabled && (
                       <Typography
                         type={'h4'}
-                        color={'white'}
-                        text={'or drag file here'}
-                      />
-                    ) : (
-                      <Typography
-                        type={'h4'}
-                        color={'textMid'}
+                        color={file || contentUrl ? 'white' : 'textMid'}
                         text={'or drag file here'}
                       />
                     )}

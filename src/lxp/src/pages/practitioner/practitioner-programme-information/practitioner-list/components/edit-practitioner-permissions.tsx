@@ -60,16 +60,19 @@ export const EditPractitionerPermissions = ({
   const [permissionsAdded, setPermissionsAdded] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  function updateArray(checkbox: any, id: string) {
-    if (checkbox.checked) {
-      setPermissionsAdded([...permissionsAdded, id]);
-    } else {
-      const filteredPermissions = permissionsAdded?.filter(
-        (item) => item !== id
-      );
-      setPermissionsAdded(filteredPermissions);
-    }
-  }
+  const updateArray = useCallback(
+    (checkbox: any, id: string) => {
+      if (checkbox.checked) {
+        setPermissionsAdded([...permissionsAdded, id]);
+      } else {
+        const filteredPermissions = permissionsAdded?.filter(
+          (item) => item !== id
+        );
+        setPermissionsAdded(filteredPermissions);
+      }
+    },
+    [permissionsAdded]
+  );
 
   const handleUpdatePermissions = useCallback(async () => {
     setIsLoading(true);

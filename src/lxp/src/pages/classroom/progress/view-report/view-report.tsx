@@ -26,9 +26,9 @@ export const ProgressViewReport: React.FC = () => {
   const { state: routeState } = useLocation<ProgressViewReportState>();
 
   const { childId } = routeState;
-  const { child, completedReports } = useObserveProgressForChild(childId);
+  const { child, detailedReports } = useObserveProgressForChild(childId);
 
-  const report = completedReports.find((x) => x.id === routeState.reportId);
+  const report = detailedReports.find((x) => x.id === routeState.reportId);
 
   const doNotKnowSkillsByCategory = useMemo(() => {
     const doNotKnowSkills =

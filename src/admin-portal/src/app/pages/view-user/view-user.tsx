@@ -39,6 +39,8 @@ import { RoleSystemNameEnum } from '@ecdlink/core';
 import { useTenant } from '../../hooks/useTenant';
 import { PractitionerSummary } from './components/practitioner-summary/practitioner-summary';
 import { PractitionerIssuesAndHighlights } from './components/practitioner-issues/practitioner-issues-and-highlights';
+import { CoachSummary } from './components/coach-summary/coach-summary';
+import { CoachIssuesAndHighlights } from './components/coach-issues-and-highlights/coach-issues-and-highlights';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -93,7 +95,11 @@ export function ViewUser(props: any) {
   const [successNotification] = useState<boolean>(false);
   const tenant = useTenant();
 
-  const { isTeamLead: isTeamLeadRole, isAdministrator } = useUserRole();
+  const {
+    isTeamLead: isTeamLeadRole,
+    isAdministrator,
+    isSuperAdmin,
+  } = useUserRole();
 
   const [startDate, setStartDate] = useState(startDate1);
   const [endDate, setEndDate] = useState(endDate1);
@@ -395,11 +401,9 @@ export function ViewUser(props: any) {
         userData={userData?.userById}
         isRegistered={isRegistered}
         component={props?.location?.state?.component}
-        isTeamLead={isTeamLead}
-        hcwId={hcwId}
         clinicId={props?.location?.state?.clinicId}
         refetchUserData={refetchUserData}
-        isAdministrator={isAdministrator}
+        isAdministrator={isAdministrator || isSuperAdmin}
         isFromAdministratorTable={isFromAdministratorTable}
         userTypeToEdit={
           userData?.userById?.roles.length && userData?.userById?.roles[0].name
@@ -408,9 +412,10 @@ export function ViewUser(props: any) {
         refetchGetPractitionerByUserId={refetchGetPractitionerByUserId}
       />
 
-      {(isCHWRole ||
+      {(props.location.state?.component ===
+        UsersRouteRedirectTypeEnum?.practitioner ||
         props.location.state?.component ===
-          UsersRouteRedirectTypeEnum?.practitioner) &&
+          UsersRouteRedirectTypeEnum?.coach) &&
         isRegistered && (
           <DatePicker
             selectsRange
@@ -435,8 +440,17 @@ export function ViewUser(props: any) {
           summaryData={practitionerStatsData?.practitionerStats}
         />
       )}
+
+      {isCoach && isRegistered && (
+        <CoachSummary summaryData={practitionerStatsData?.practitionerStats} />
+      )}
       {isPractitioner && isRegistered && (
         <PractitionerIssuesAndHighlights
+          summaryData={practitionerStatsData?.practitionerStats}
+        />
+      )}
+      {isCoach && isRegistered && (
+        <CoachIssuesAndHighlights
           summaryData={practitionerStatsData?.practitionerStats}
         />
       )}
@@ -456,6 +470,7 @@ export function ViewUser(props: any) {
               <SendInvite
                 userData={userData?.userById}
                 refetchUserData={refetchUserData}
+                isFromAdministratorTable={isFromAdministratorTable}
               />
             )}
             {/* {isRegistered && isAdministrator && (
@@ -464,10 +479,7 @@ export function ViewUser(props: any) {
             <DeactivateUser
               userData={userData?.userById}
               refetchUserData={refetchUserData}
-              isTeamLead={isTeamLead}
-              isAdministrator={isAdministrator}
-              teamLeadId={teamLeadId}
-              hcwId={hcwId}
+              isAdministrator={isAdministrator || isSuperAdmin}
             />
           </div>
         )}
@@ -477,7 +489,7 @@ export function ViewUser(props: any) {
             userData={userData?.userById}
             refetchUserData={refetchUserData}
             isTeamLead={isTeamLead}
-            isAdministrator={isAdministrator}
+            isAdministrator={isAdministrator || isSuperAdmin}
             teamLeadId={teamLeadId}
             hcwId={hcwId}
           />

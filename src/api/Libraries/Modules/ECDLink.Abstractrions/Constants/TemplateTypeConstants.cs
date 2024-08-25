@@ -30,6 +30,7 @@ namespace ECDLink.Abstractrions.Constants
 
         // Tenant Setup Info
         public const string NewTenantSetupInfoReceived = "new-tenant-setup-info-received";
+        public const string WelcomeEmailToNewSuperAdmin = "welcome-email-to-new-super-admin";
 
         //app notifications
         public const string StartTraineeJourney = "start-trainee-journey";

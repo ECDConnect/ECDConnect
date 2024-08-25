@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
@@ -42,6 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
           ApplicationUserManager userManager,
+          AuthenticationDbContext dbContext,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
@@ -61,7 +63,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var userImportList = new List<ApplicationUser>();
             var practitionerUsers = new Dictionary<string, Practitioner>();
             var createdUsers = new List<string>();
-
+            var coachRoleName = TenantExecutionContext.Tenant.Modules != null ? TenantExecutionContext.Tenant.Modules.CoachRoleName : "Coach";
             var validationErrors = new List<InputValidationError>();
 
             var bytes = Convert.FromBase64String(file);
@@ -98,7 +100,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && cellphone is null)
                     continue;
 
-                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, coachIdOrPassport);
+                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone);
 
                 if (idPassportDuplications.Any())
                 {
@@ -148,7 +150,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!string.IsNullOrEmpty(coachIdOrPassport))
                 {
-                    var coachUser = userManager.FindByNameAsync(coachIdOrPassport).Result;
+                    var coachUser = dbContext.Users.Where(user => user.IdNumber == coachIdOrPassport && user.TenantId == tenantId).FirstOrDefault();
 
                     if (coachUser != null)
                     {
@@ -157,7 +159,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     else
                     {
                         validationErrors.Add(
-                            new InputValidationError(row, new List<string> { }, $"Coach does not exist for id/passport {coachIdOrPassport}")
+                            new InputValidationError(row, new List<string> { }, $"{coachRoleName} does not exist for id/passport {coachIdOrPassport}")
                         );
                     }
                 }
@@ -186,7 +188,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
-                var userExists = await userManager.FindByNameAsync(user.UserName);
+                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName).FirstOrDefault();
 
                 if (userExists is not null)
                 {
@@ -283,8 +285,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 string passport,
                 string firstName,
                 string surname,
-                string cellphone,
-                string coachIdOrPassport)
+                string cellphone)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -318,14 +319,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
-
-                if (TenantExecutionContext.Tenant.Modules.CoachRoleEnabled)
-                {
-                    if (string.IsNullOrEmpty(coachIdOrPassport))
-                    {
-                        errors.Add("Coach Id is empty");
-                    }
-                }
+                
                 return errors;
             }
         }
@@ -338,6 +332,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
           ApplicationUserManager userManager,
+          AuthenticationDbContext dbContext,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
@@ -463,7 +458,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
-                var userExists = await userManager.FindByNameAsync(user.UserName);
+                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName).FirstOrDefault();
 
                 if (userExists is not null)
                 {

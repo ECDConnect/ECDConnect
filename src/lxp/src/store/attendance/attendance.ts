@@ -36,10 +36,11 @@ const attendanceSlice = createSlice({
 
       if (!state.attendance) state.attendance = [];
 
+      const attendanceDate = new Date(action.payload.attendanceDate);
+
       if (action.payload.attendees) {
-        const attendaceDate = new Date(action.payload.attendanceDate);
-        const week = getWeek(attendaceDate);
-        const year = getYear(attendaceDate);
+        const week = getWeek(attendanceDate);
+        const year = getYear(attendanceDate);
 
         for (const attendee of action.payload.attendees) {
           const existingIndex = state.attendance?.findIndex(
@@ -52,7 +53,7 @@ const attendanceSlice = createSlice({
 
           const input = {
             classroomProgrammeId: action.payload.classroomProgrammeId,
-            attendanceDate: action.payload.attendanceDate,
+            attendanceDate: new Date(attendanceDate.setHours(0, 0, 0, 0)),
             attended: attendee.attended,
             userId: attendee.userId,
             weekOfYear: week,

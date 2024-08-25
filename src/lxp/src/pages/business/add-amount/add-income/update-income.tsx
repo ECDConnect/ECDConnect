@@ -8,6 +8,8 @@ import { statementsActions } from '@/store/statements';
 import { IncomeItemDto, IncomeTypeIds } from '@ecdlink/core';
 import DbeSubsidy from './components/dbe-subsidy/dbe-subsidy';
 import EditPreschoolFees from './components/preschool-fees/edit-preschool-fees';
+import ROUTES from '@/routes/routes';
+import { BusinessTabItems } from '../../business.types';
 
 export type UpdateIncomeState = {
   statementId: string;
@@ -29,6 +31,9 @@ export const UpdateIncome: React.FC = () => {
         incomeItems: [updatedItem],
       })
     );
+    history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.MONEY,
+    });
   }, []);
 
   return (

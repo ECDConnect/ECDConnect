@@ -56,7 +56,7 @@ function ThemeProvider({
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [themeEndPoint]);
 
   useEffect(() => {
     if (data && data.colors) {
@@ -92,6 +92,14 @@ function ThemeProvider({
         DefaultTheme.infoBb = data.colors.infoBb;
         DefaultTheme.infoBb = data.colors.infoBb;
         DefaultTheme.darkBackground = data.colors.darkBackground;
+        DefaultTheme.quatenary = data.colors.quatenary;
+        DefaultTheme.quatenaryMain = data.colors.quatenaryMain;
+        DefaultTheme.adminPortalBg = data.colors.adminPortalBg;
+        DefaultTheme.darkBlue = data.colors.darkBlue;
+        DefaultTheme.pointsCardBg = data.colors.pointsCardBg;
+        DefaultTheme.pointsCardBarBg = data.colors.pointsCardBarBg;
+        DefaultTheme.quatenaryBg = data.colors.quatenaryBg;
+        DefaultTheme.adminBackground = data.colors.adminBackground;
       }
 
       if (data.images) {
@@ -147,6 +155,15 @@ function ThemeProvider({
     DefaultTheme.fontUrl = WhiteLabelTheme.fontUrl;
     DefaultTheme.mainHeadingOverrideFontUrl =
       WhiteLabelTheme.mainHeadingOverrideFontUrl;
+    DefaultTheme.darkBackground = WhiteLabelTheme.darkBackground;
+    DefaultTheme.quatenary = WhiteLabelTheme.quatenary;
+    DefaultTheme.quatenaryMain = WhiteLabelTheme.quatenaryMain;
+    DefaultTheme.adminPortalBg = WhiteLabelTheme.adminPortalBg;
+    DefaultTheme.darkBlue = WhiteLabelTheme.darkBlue;
+    DefaultTheme.pointsCardBg = WhiteLabelTheme.pointsCardBg;
+    DefaultTheme.pointsCardBarBg = WhiteLabelTheme.pointsCardBarBg;
+    DefaultTheme.quatenaryBg = WhiteLabelTheme.quatenaryBg;
+    DefaultTheme.adminBackground = WhiteLabelTheme.adminBackground;
   }
 
   function overRideTheme(theme: ThemeModel) {

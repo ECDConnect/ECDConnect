@@ -4,6 +4,7 @@ import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useProgressForChildren } from './useProgressForChildren';
+import { ProgressReportsCategorySummary } from '@/models/progress/child-progress-report';
 
 export const useProgressForClassAndAgeGroup = (
   classroomGroupId: string,
@@ -34,7 +35,7 @@ export const useProgressForClassAndAgeGroup = (
     );
   }, [allChildReports, classroomGroup, ageGroupId]);
 
-  const reportsSummary = useMemo(() => {
+  const reportsSummary: ProgressReportsCategorySummary[] = useMemo(() => {
     const skillsToWorkOn = childReports
       .flatMap((x) => x.report.skillsToWorkOn || [])
       .map((x) => x.skillId);
