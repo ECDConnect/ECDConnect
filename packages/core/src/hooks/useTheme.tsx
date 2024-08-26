@@ -103,7 +103,7 @@ function ThemeProvider({
       }
 
       if (data.images) {
-        DefaultTheme.logoUrl = data.images.logoUrl;
+        DefaultTheme.logoUrl = `url(${data.images.logoUrl})`;
         DefaultTheme.graphicOverlayUrl = data.images.graphicOverlayUrl;
         DefaultTheme.faviconUrl = data.images.faviconUrl;
         DefaultTheme.portalLoginLogoUrl = data.images.portalLoginLogoUrl;
