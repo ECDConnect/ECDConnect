@@ -12,14 +12,18 @@ import { SendInviteToApplication } from '@ecdlink/graphql';
 interface SendInviteProps {
   userData: UserDto;
   refetchUserData?: () => void;
+  isFromAdministratorTable?: boolean;
 }
 
 export const SendInvite: React.FC<SendInviteProps> = ({
   userData,
   refetchUserData,
+  isFromAdministratorTable,
 }) => {
   const dialog = useDialog();
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  const [sendInviteToApplication, { loading }] = useMutation(
+    SendInviteToApplication
+  );
   const { setNotification } = useNotifications();
 
   const isAdminUser = userData?.roles?.some(
@@ -109,13 +113,36 @@ export const SendInvite: React.FC<SendInviteProps> = ({
     });
   };
 
+  const handleSendAdminInvite = () => {
+    sendInviteToApplication({
+      variables: {
+        userId: userData?.id,
+        inviteToPortal: false,
+      },
+    }).then(() => {
+      setNotification({
+        title: 'Successfully Sent User Invite!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+    });
+  };
+
+  const handleSendNotificationByRole = () => {
+    if (isFromAdministratorTable) {
+      handleSendAdminInvite();
+    } else {
+      sendInvite();
+    }
+  };
+
   return (
     <Button
       className={'w-full rounded-2xl lg:w-52'}
       type="filled"
-      // isLoading={isLoading}
+      isLoading={isFromAdministratorTable ? loading : false}
+      disabled={isFromAdministratorTable ? loading : false}
       color="secondary"
-      onClick={sendInvite}
+      onClick={handleSendNotificationByRole}
       icon="PaperAirplaneIcon"
       text="Resend Invitation"
       textColor="white"

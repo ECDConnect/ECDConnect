@@ -401,8 +401,6 @@ export function ViewUser(props: any) {
         userData={userData?.userById}
         isRegistered={isRegistered}
         component={props?.location?.state?.component}
-        isTeamLead={isTeamLead}
-        hcwId={hcwId}
         clinicId={props?.location?.state?.clinicId}
         refetchUserData={refetchUserData}
         isAdministrator={isAdministrator || isSuperAdmin}
@@ -472,6 +470,7 @@ export function ViewUser(props: any) {
               <SendInvite
                 userData={userData?.userById}
                 refetchUserData={refetchUserData}
+                isFromAdministratorTable={isFromAdministratorTable}
               />
             )}
             {/* {isRegistered && isAdministrator && (
