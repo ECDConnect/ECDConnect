@@ -75,7 +75,7 @@ export const useObserveProgressForAgeGroupAndCategory = (
   ) => {
     if (!!activeReportingPeriod && !activeReportComplete) {
       return getProgressAgeGroupForChild(
-        activeReportingPeriod,
+        activeReportingPeriod.endDate,
         child!,
         allAgeGroups
       );
@@ -83,7 +83,7 @@ export const useObserveProgressForAgeGroupAndCategory = (
 
     if (activeReportComplete && nextReportingPeriod) {
       return getProgressAgeGroupForChild(
-        nextReportingPeriod,
+        nextReportingPeriod.endDate,
         child!,
         allAgeGroups
       );

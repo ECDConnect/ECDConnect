@@ -240,6 +240,10 @@ export const syncChildProgressReports = createAsyncThunk<
               childEnjoys: report.childEnjoys,
               goodProgressWith: report.goodProgressWith,
               howCanCaregiverSupport: report.howCanCaregiverSupport,
+              classroomName: report.classroomName,
+              practitionerName: report.practitionerName,
+              principalName: report.principalName,
+              principalPhoneNumber: report.principalPhoneNumber,
             };
 
             return await new ProgressTrackingService(

@@ -260,6 +260,10 @@ class ProgressTrackingService {
           childEnjoys
           goodProgressWith
           howCanCaregiverSupport
+          classroomName
+          practitionerName
+          principalName
+          principalPhoneNumber
           skillObservations {
             skillId,
             value

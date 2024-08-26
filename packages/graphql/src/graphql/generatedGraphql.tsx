@@ -1569,6 +1569,7 @@ export type ChildProgressReportModel = {
   childEnjoys?: Maybe<Scalars['String']>;
   childId: Scalars['UUID'];
   childProgressReportPeriodId: Scalars['UUID'];
+  classroomName?: Maybe<Scalars['String']>;
   dateCompleted?: Maybe<Scalars['DateTime']>;
   dateCreated: Scalars['DateTime'];
   goodProgressWith?: Maybe<Scalars['String']>;
@@ -1577,6 +1578,9 @@ export type ChildProgressReportModel = {
   id: Scalars['UUID'];
   notes?: Maybe<Scalars['String']>;
   observationsCompleteDate?: Maybe<Scalars['DateTime']>;
+  practitionerName?: Maybe<Scalars['String']>;
+  principalName?: Maybe<Scalars['String']>;
+  principalPhoneNumber?: Maybe<Scalars['String']>;
   skillObservations?: Maybe<Array<Maybe<SkillObservation>>>;
   skillsToWorkOn?: Maybe<Array<Maybe<SkillToWorkOn>>>;
 };
@@ -1585,6 +1589,7 @@ export type ChildProgressReportModelInput = {
   childEnjoys?: InputMaybe<Scalars['String']>;
   childId: Scalars['UUID'];
   childProgressReportPeriodId: Scalars['UUID'];
+  classroomName?: InputMaybe<Scalars['String']>;
   dateCompleted?: InputMaybe<Scalars['DateTime']>;
   dateCreated: Scalars['DateTime'];
   goodProgressWith?: InputMaybe<Scalars['String']>;
@@ -1593,6 +1598,9 @@ export type ChildProgressReportModelInput = {
   id: Scalars['UUID'];
   notes?: InputMaybe<Scalars['String']>;
   observationsCompleteDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerName?: InputMaybe<Scalars['String']>;
+  principalName?: InputMaybe<Scalars['String']>;
+  principalPhoneNumber?: InputMaybe<Scalars['String']>;
   skillObservations?: InputMaybe<Array<InputMaybe<SkillObservationInput>>>;
   skillsToWorkOn?: InputMaybe<Array<InputMaybe<SkillToWorkOnInput>>>;
 };
@@ -8184,7 +8192,6 @@ export type MutationAddPractitionerToPrincipalArgs = {
   firstName?: InputMaybe<Scalars['String']>;
   idNumber?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
-  preschoolCode?: InputMaybe<Scalars['String']>;
   programmeTypeId?: InputMaybe<Scalars['UUID']>;
   userId?: InputMaybe<Scalars['String']>;
 };

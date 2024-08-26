@@ -50,7 +50,7 @@ export const isChildInitialRegistrationPeriod = (child: ChildDto) => {
 };
 
 export const getProgressAgeGroupForChild = (
-  currentProgressReportingPeriod: ProgressReportPeriod,
+  reportPeriodEndDate: string,
   child: ChildDto,
   ageGroups: ProgressTrackingAgeGroupDto[]
 ) => {
@@ -59,7 +59,7 @@ export const getProgressAgeGroupForChild = (
   }
 
   const ageInMonths = differenceInMonths(
-    new Date(currentProgressReportingPeriod.endDate),
+    new Date(reportPeriodEndDate),
     new Date(child.user.dateOfBirth)
   );
 

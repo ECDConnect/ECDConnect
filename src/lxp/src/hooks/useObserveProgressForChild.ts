@@ -22,6 +22,11 @@ export const useObserveProgressForChild = (childId: string) => {
 
   const child = useSelector(childrenSelectors.getChildById(childId));
 
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+  const practitionerForChild = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child!.userId!)
+  );
+
   const allAgeGroups = useSelector(
     progressTrackingSelectors.getProgressAgeGroups()
   );
@@ -66,7 +71,11 @@ export const useObserveProgressForChild = (childId: string) => {
   }, [allReports, activeReportingPeriod, allReportingPeriods]);
 
   const currentAgeGroup = !!currentReportingPeriod
-    ? getProgressAgeGroupForChild(currentReportingPeriod, child!, allAgeGroups)
+    ? getProgressAgeGroupForChild(
+        currentReportingPeriod.endDate,
+        child!,
+        allAgeGroups
+      )
     : undefined;
 
   const currentAge = !!child?.user?.dateOfBirth
@@ -120,6 +129,7 @@ export const useObserveProgressForChild = (childId: string) => {
                 skill?.name || '',
                 child?.user?.firstName || ''
               ),
+              skillDescription: skill?.description || '',
               subCategoryId: skill?.subCategory.id || 0,
               categoryId: skill?.subCategory.category.id || 0,
             };
@@ -133,6 +143,7 @@ export const useObserveProgressForChild = (childId: string) => {
               skill?.name || '',
               child?.user?.firstName || ''
             ),
+            skillDescription: skill?.description || '',
             subCategoryId: skill?.subCategory.id || 0,
             categoryId: skill?.subCategory.category.id || 0,
             isPositive:
@@ -152,6 +163,12 @@ export const useObserveProgressForChild = (childId: string) => {
         reportingPeriodStartDate: new Date(reportingPeriod!.startDate),
         reportingPeriodEndDate: new Date(reportingPeriod!.endDate),
         reportingPeriodNumber: reportingPeriod!.reportNumber,
+        ageInMonthsAtReport: !!child?.user?.dateOfBirth
+          ? differenceInMonths(
+              new Date(reportingPeriod!.endDate),
+              new Date(child.user.dateOfBirth)
+            )
+          : undefined,
       };
     });
 
@@ -321,6 +338,14 @@ export const useObserveProgressForChild = (childId: string) => {
       progressTrackingActions.completeReport({
         childId,
         reportingPeriodId: currentReportingPeriod.id,
+        classroomName: classroom!.name,
+        practitionerName: `${
+          practitionerForChild?.practitioner?.user?.firstName
+        } ${practitionerForChild?.practitioner?.user?.surname || ''}`,
+        principalName: `${classroom?.principal.firstName} ${
+          classroom?.principal.surname || ''
+        }`,
+        principalPhoneNumber: classroom!.principal.phoneNumber,
       })
     );
   };

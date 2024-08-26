@@ -57,7 +57,7 @@ export const useProgressForChildren = () => {
         : undefined,
       ageGroup: !!currentReportingPeriod
         ? getProgressAgeGroupForChild(
-            currentReportingPeriod,
+            currentReportingPeriod.endDate,
             child!,
             allAgeGroups
           )
