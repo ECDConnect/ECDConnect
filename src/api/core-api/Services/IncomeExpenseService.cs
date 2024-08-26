@@ -116,20 +116,15 @@ namespace ECDLink.Core.Services
             var statementsQuery = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId == userId &&
-                    (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
+                .Where(x => x.UserId == userId && x.Year == startDate.Year);
 
-            if (endDate.HasValue)
-            {
-                statementsQuery = statementsQuery.Where(x => x.Year < endDate.Value.Year || (x.Year == endDate.Value.Year && x.Month <= endDate.Value.Month));
-            }
-
+            // Handle notifications if applicable
             var practitioner = _practitionerRepo.GetByUserId(userId);
+            var totalDaysOnApp = (DateTime.Now.Date - practitioner.StartDate.Value.Date).Days;
             if (!statementsQuery.Any())
             {
                 if (practitioner.IsRegistered.HasValue && practitioner.IsRegistered.Value && practitioner.IsPrincipalOrAdmin())
                 {
-                    var totalDaysOnApp = (DateTime.Now.Date - practitioner.StartDate.Value.Date).Days;
                     if (totalDaysOnApp > 59)
                     {
                         _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements60DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, DateTime.Now.Date.AddDays(7),
@@ -137,8 +132,25 @@ namespace ECDLink.Core.Services
                     }
                 }
             } 
-            
+            else
+            {
+                var thirtyDaysBack = startDate.AddDays(-30);
+                var lastThirtyDaysData = statementsQuery.Where(x => (x.Year > thirtyDaysBack.Year || (x.Year == thirtyDaysBack.Year && x.Month >= thirtyDaysBack.Month)));
+                // 8th of month is deadline
+                if (!lastThirtyDaysData.Any() && totalDaysOnApp > 119 && DateTime.Now.Day > 8)
+                {
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, null,
+                                                                                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
+                }
+            }
 
+            // Apply start date
+            statementsQuery = statementsQuery.Where(x => (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
+            // Apply end date 
+            if (endDate.HasValue)
+            {
+                statementsQuery = statementsQuery.Where(x => x.Year < endDate.Value.Year || (x.Year == endDate.Value.Year && x.Month <= endDate.Value.Month));
+            }
             return statementsQuery.ToList();
         }
 
@@ -180,6 +192,7 @@ namespace ECDLink.Core.Services
             if (newStatement.IncomeItems.Count > 0 || newStatement.ExpenseItems.Count > 0)
             {
                 _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
+                _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
             }
 
             return _statementsRepo.Insert(newStatement);
@@ -362,6 +375,7 @@ namespace ECDLink.Core.Services
             if (newItems.Count > 0 || newExpenses.Count > 0)
             {
                 _notificationService.ExpireNotificationsTypesForUser(exisitingStatement.UserId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
+                _notificationService.ExpireNotificationsTypesForUser(exisitingStatement.UserId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
             }
             return exisitingStatement;
         }
@@ -815,7 +829,6 @@ namespace ECDLink.Core.Services
             }
             return results;
         }
-
 
         private List<IncomeExpensePDFDataModel> MapIncomeToPdfData(IEnumerable<StatementsIncome> incomeRows, IDictionary<string, string> childNamesById, List<StatementsIncomeType> incomeTypes, List<StatementsPayType> payTypes)
         {

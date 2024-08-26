@@ -41,3 +41,15 @@ INSERT INTO public."MessageTemplate"
 "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
 VALUES('4546269c-8e67-4756-b59f-e5e0ddb92d30'::uuid, true, current_date, current_date, NULL, 'hub', 'statements-60-days-notification', 
 'Did you know you can track your income and expenses in the app?', NULL, 'Track your income & expenses', '[[StartNow]]', 'Start now', NULL, 'blue', 0, '{"url":"/business","state":{"activeTabIndex":"1"}}');
+
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", 
+"Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('0b7c9ad2-6145-4373-a108-356d4f39e76f'::uuid, true, current_date, current_date, NULL, 'push', 'statements-30-days-notification', 
+'Other principals are using [[ApplicationName]] to track their income and expenses! Join them and start tracking yours.', NULL, 'Keep track of your finances', '[[StartTracking]]', 'Start tracking', NULL, 'blue', 0, '{"url":"/business","state":{"activeTabIndex":"1"}}');
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", 
+"Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('773e002c-7f32-4c99-859e-b54052cd2886'::uuid, true, current_date, current_date, NULL, 'hub', 'statements-30-days-notification', 
+'Other principals are using [[ApplicationName]] to track their income and expenses! Join them and start tracking yours.', NULL, 'Keep track of your finances', '[[StartTracking]]', 'Start tracking', NULL, 'blue', 0, '{"url":"/business","state":{"activeTabIndex":"1"}}');
+
