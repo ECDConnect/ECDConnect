@@ -1038,15 +1038,21 @@ export const Dashboard: React.FC = () => {
         avatar={
           profilePc ? (
             <div id="wantToConnectWithPrincipal">
-              <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
+              <div id="wantToConnectWithPrincipal2">
+                <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
+              </div>
             </div>
           ) : (
-            <UserAvatar
-              size="sm-md"
-              color="secondary"
-              displayBorder
-              borderColour="secondary"
-            />
+            <div id="wantToConnectWithPrincipal">
+              <div id="wantToConnectWithPrincipal2">
+                <UserAvatar
+                  size="sm-md"
+                  color="secondary"
+                  displayBorder
+                  borderColour="secondary"
+                />
+              </div>
+            </div>
           )
         }
         menuItems={isCoach ? navigationForCoach : navigation}
