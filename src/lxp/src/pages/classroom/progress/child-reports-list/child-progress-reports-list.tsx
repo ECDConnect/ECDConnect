@@ -7,7 +7,7 @@ import { analyticsActions } from '@store/analytics';
 import { ReactComponent as NoProgressEmoticon } from '../../../../assets/ECD_Connect_emoji4.svg';
 import { ReactComponent as ComingSoonIcon } from '../../../../assets/icon/coming_soon.svg';
 import ROUTES from '@/routes/routes';
-import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
+import { useProgressForChild } from '@/hooks/useProgressForChild';
 import { ProgressReportsList } from './reports-list';
 
 export type ChildProgressReportsList = {
@@ -22,7 +22,7 @@ export const ChildProgressReportsList: React.FC = () => {
 
   const { childId } = routeState;
   const { child, currentAgeGroup, currentReportingPeriod, detailedReports } =
-    useObserveProgressForChild(childId);
+    useProgressForChild(childId);
 
   useEffect(() => {
     if (!isOnline) {

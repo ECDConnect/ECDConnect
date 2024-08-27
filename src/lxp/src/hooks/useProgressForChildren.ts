@@ -80,7 +80,8 @@ export const useProgressForChildren = () => {
           ...mapProgressReportDetails(
             childReport,
             allSkills,
-            child.childFirstName
+            child.childFirstName,
+            child.ageGroup?.id || 0
           ),
         };
       });

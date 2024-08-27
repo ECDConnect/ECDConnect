@@ -26,6 +26,15 @@ export const SelectCategoryToTrack: React.FC = () => {
     number | undefined
   >();
 
+  // Get filtered categories based on age group
+  const skills = useSelector(
+    progressTrackingSelectors.getSkillsForAgeGroup(selectedAgeGroup || 0)
+  );
+
+  const filteredCategories = categories.filter((cat) =>
+    skills.some((skill) => skill.subCategory.category.id === cat.id)
+  );
+
   return (
     <BannerWrapper
       size={'small'}
@@ -67,7 +76,7 @@ export const SelectCategoryToTrack: React.FC = () => {
               className="mb-4"
             />
             <CoreRadioGroup
-              options={categories.map((x) => ({
+              options={filteredCategories.map((x) => ({
                 id: x.id,
                 label: x.name,
                 value: x.id,

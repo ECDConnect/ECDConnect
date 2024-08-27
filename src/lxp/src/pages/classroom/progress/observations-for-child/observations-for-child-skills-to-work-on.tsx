@@ -6,7 +6,7 @@ import {
 } from '@/models/progress/child-progress-report';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 
-export type ChildProgressObservationsSkillsToWorkOnProps = {
+export type ObservationsForChildSkillsToWorkOnProps = {
   child: ChildDto;
   negativeSkills: ChildProgressDetailedSkillObservation[];
   addSkillToWorkOn: (skillId: number) => void;
@@ -17,8 +17,8 @@ export type ChildProgressObservationsSkillsToWorkOnProps = {
   skillsToWorkOn: ChildProgressSkillToWorkOn[];
 };
 
-export const ChildProgressObservationsSkillsToWorkOn: React.FC<
-  ChildProgressObservationsSkillsToWorkOnProps
+export const ObservationsForChildSkillsToWorkOn: React.FC<
+  ObservationsForChildSkillsToWorkOnProps
 > = ({
   child,
   negativeSkills,

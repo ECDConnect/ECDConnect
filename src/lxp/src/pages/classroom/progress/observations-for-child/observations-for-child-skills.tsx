@@ -1,5 +1,4 @@
 import {
-  ActionModal,
   Button,
   ButtonGroup,
   ButtonGroupTypes,
@@ -18,7 +17,7 @@ import {
 } from '@/enums/ProgressSkillValues';
 import { useCallback } from 'react';
 
-export type ChildProgressObservationsSkillsProps = {
+export type ObservationsForChildSkillsProps = {
   currentStep: number;
   skills: ChildProgressSkill[];
   child: ChildDto;
@@ -27,8 +26,8 @@ export type ChildProgressObservationsSkillsProps = {
   onSetSkillValue: (skillId: number, value: ProgressSkillValues) => void;
 };
 
-export const ChildProgressObservationsSkills: React.FC<
-  ChildProgressObservationsSkillsProps
+export const ObservationsForChildSkills: React.FC<
+  ObservationsForChildSkillsProps
 > = ({
   currentStep,
   skills,
@@ -111,8 +110,6 @@ export const ChildProgressObservationsSkills: React.FC<
               </div>
             )}
           </div>
-
-          {/* TODO - add option to show picture if required */}
           <ButtonGroup<ProgressSkillValues>
             type={ButtonGroupTypes.Button}
             options={ProgressSkillValuesArray.map((x) => ({

@@ -1,11 +1,11 @@
 import { BannerWrapper, Button, Card, Dropdown, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useRef, useState } from 'react';
-import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
 import { useProgressGenerateSummaryPdfReport as usePdfFromHtml } from '@/hooks/useProgressGenerateSummaryPdfReport';
+import { useProgressForChild } from '@/hooks/useProgressForChild';
 
 export type ProgressShareReportState = {
   childId: string;
@@ -18,9 +18,7 @@ export const ProgressShareReport: React.FC = () => {
 
   const { state: routeState } = useLocation<ProgressShareReportState>();
 
-  const { child, detailedReports } = useObserveProgressForChild(
-    routeState.childId
-  );
+  const { child, detailedReports } = useProgressForChild(routeState.childId);
 
   const { generateReport } = usePdfFromHtml();
 

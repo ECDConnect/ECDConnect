@@ -10,6 +10,7 @@ import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { ProgressCaregiverReportWorkingOnNonePage } from './caregiver-report-pdf-3-working-on-none';
 import { ProgressCaregiverReportBuildingNonePage } from './caregiver-report-pdf-4-building-none';
 import { getProgressAgeGroupForChild } from '@/utils/child/child-progress-report.utils';
+import { useProgressForChild } from '@/hooks/useProgressForChild';
 
 export type ProgressCaregiverReportPdfProps = {
   childId: string;
@@ -19,7 +20,7 @@ export type ProgressCaregiverReportPdfProps = {
 export const ProgressCaregiverReportPdf: React.FC<
   ProgressCaregiverReportPdfProps
 > = ({ childId, reportId }) => {
-  const { child, detailedReports } = useObserveProgressForChild(childId);
+  const { child, detailedReports } = useProgressForChild(childId);
 
   const report = detailedReports.find((x) => x.id === reportId)!;
 

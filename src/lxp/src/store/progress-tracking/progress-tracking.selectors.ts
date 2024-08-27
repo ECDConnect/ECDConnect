@@ -1,20 +1,16 @@
 import {
   ActivityDto,
-  ChildDto,
   PractitionerProgressReportSummaryDto,
   ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
-  ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
-import { ProgressTrackingState } from '.';
-import { ChildProgressSubCategoryAssessment } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import { RootState } from '../types';
 import { ProgressSkill } from '@/models/progress/progress-skill';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
-import { getCurrentProgressReportPeriod as getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
+import { getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { ProgressTrackingCategoriesByLocale } from './progress-tracking.types';
 
@@ -170,26 +166,6 @@ export const getSkillsForAgeGroup = (ageGroupId: number) =>
       );
 
       return detailedSkills.filter((x) => ageSkills.some((y) => y.id === x.id));
-    }
-  );
-
-export const getCurrentObservationsForChild = (childId: string) =>
-  createSelector(
-    getCurrentProgressReportPeriod(),
-    (state: RootState) => state.progressTracking.childProgressReports,
-    (
-      currentReportPeriod: ProgressReportPeriod | undefined,
-      childProgressReports: ChildProgressReport[]
-    ) => {
-      if (!currentReportPeriod) {
-        return undefined;
-      }
-
-      return childProgressReports.find(
-        (x) =>
-          x.childId === childId &&
-          x.childProgressReportPeriodId === currentReportPeriod.id
-      );
     }
   );
 
