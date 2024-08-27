@@ -76,6 +76,7 @@ export const OtherPractitionerProfile: React.FC<
         {classroomGroups &&
           classroomGroups?.map((item: any) => (
             <StatusChip
+              key={item}
               backgroundColour="tertiary"
               borderColour="tertiary"
               text={`${item}`}

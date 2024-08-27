@@ -132,24 +132,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 //get principal details
                 var principalToSend = userManager.FindByIdAsync(classRoomGroup.Classroom.UserId.Value.ToString()).Result;
                 var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                replacements.Add(new TagsReplacements()
+                List<TagsReplacements> replacements = new List<TagsReplacements>
                 {
-                    FindValue = "ClassName",
-                    ReplacementValue = input.Name
-                });
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "PrincipalName",
-                    ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
-                });
+                    new TagsReplacements()
+                    {
+                        FindValue = "ClassName",
+                        ReplacementValue = input.Name
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "PrincipalName",
+                        ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
+                    }
+                };
                 //if this was a new assignment to a new practitioner trigger message to notify them
                 if (previousUser != input.UserId)
                 {
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(input.UserId.Value, "ApplicationUser") });
                     //message the old user they were removed
                     var oldUserToSend = userManager.FindByIdAsync(previousUser.ToString()).Result;
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(previousUser.Value, "ApplicationUser") });
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(previousUser.Value, "ApplicationUser") });
                 }
                 else
                 {
@@ -160,6 +162,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var learnersReassigned = UpdateLearners(repoFactory, uId.ToString(), id, hierarchy);
                 UpdateChildren(repoFactory, uId.ToString(), hierarchy, learnersReassigned, input.UserId.ToString());
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
+
+                // remove unassigned notification for classroom
+                var messages = notificationService.GetMessages(TemplateTypeConstants.UnassignedClasses, input.ClassroomId);
+                if (messages.Any())
+                {
+                    foreach (var item in messages)
+                    {
+                        notificationService.DisableNotification(item.Id.ToString());
+                    }
+                }
 
                 return classRoomGroup;
             }

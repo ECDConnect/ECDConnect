@@ -251,6 +251,7 @@ export const SetupPrincipal: React.FC = () => {
               idNumber: principalPractitioner.idNumber,
               firstName: principalPractitioner.firstName,
               lastName: principalPractitioner.surname,
+              preschoolCode: '',
             };
             await new PractitionerService(
               userAuth?.auth_token
