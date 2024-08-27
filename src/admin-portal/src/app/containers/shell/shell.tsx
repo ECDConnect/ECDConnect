@@ -120,7 +120,7 @@ export default function Shell() {
         NavbarTypes.TLMeetings,
         NavbarTypes.Documents,
         NavbarTypes.CMS,
-        [NavbarTypes.Reporting],
+        // [NavbarTypes.Reporting],
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
         isSuperAdmin && [NavbarTypes.Settings],
