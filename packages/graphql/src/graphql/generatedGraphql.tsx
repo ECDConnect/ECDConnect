@@ -4154,16 +4154,16 @@ export type ConnectInput = {
 
 export type ConnectItem = {
   __typename?: 'ConnectItem';
-  buttonText?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   link?: Maybe<Scalars['String']>;
-  linkedConnect?: Maybe<Array<Maybe<Connect>>>;
+  title?: Maybe<Scalars['String']>;
 };
 
 export type ConnectItemInput = {
-  buttonText?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
   link?: InputMaybe<Scalars['String']>;
-  linkedConnect?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type Consent = {
