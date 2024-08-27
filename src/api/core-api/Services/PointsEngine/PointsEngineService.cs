@@ -22,6 +22,7 @@ using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
@@ -41,6 +42,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly IGenericRepository<Child, Guid> _childRepo;
         private readonly IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private readonly IGenericRepository<CommunityProfile, Guid> _communityProfileRepo;
         private readonly IGenericRepository<CommunityProfileConnection, Guid> _communityProfileConnectionRepo;
         private readonly IGenericRepository<UserTrainingCourse, Guid> _userTrainingCourseRepo;
         private readonly IGenericRepository<Classroom, Guid> _classRepo;
@@ -85,6 +87,7 @@ namespace EcdLink.Api.CoreApi.Services
             _childProgressReportRepo = _repositoryFactory.CreateGenericRepository<ChildProgressReport>(userContext: _uId);
 
             _communityProfileConnectionRepo = _repositoryFactory.CreateGenericRepository<CommunityProfileConnection>(userContext: _uId);
+            _communityProfileRepo = _repositoryFactory.CreateGenericRepository<CommunityProfile>(userContext: _uId);
             _userTrainingCourseRepo = _repositoryFactory.CreateGenericRepository<UserTrainingCourse>(userContext: _uId);
             _integrationAuditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
             _userPermissionRepo = _repositoryFactory.CreateGenericRepository<UserPermission>(userContext: _uId);
@@ -126,13 +129,11 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
                 var schoolClasses = _classroomService.GetClassroomGroupsForUser(userId);
-                if (schoolClasses.Count > 0)
-                {
-                    pointsToDoItems.NotPartOfPreschool = true;
-                }
+                pointsToDoItems.NotPartOfPreschool = schoolClasses.Count > 0 ? true : false;
 
                 // 3.Practitioner(non - principal) only-- plan at least 1 day - ie picked all activities & story for the day (W11)
                 var schools = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
+                pointsToDoItems.PlannedOneDay = false;
                 if (schoolClasses.Count > 0)
                 {
                     var programmeCount = schools
@@ -142,10 +143,7 @@ namespace EcdLink.Api.CoreApi.Services
                                         .SelectMany(x => x.DailyProgrammes)
                                         .Where(x => x.IsActive && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
                                         .Count();
-                    if (programmeCount > 0)
-                    {
-                        pointsToDoItems.PlannedOneDay = true;
-                    }
+                    pointsToDoItems.PlannedOneDay = programmeCount > 0 ? true : false;
                 }
             }
             else
@@ -156,19 +154,13 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 && x.Year == monthStart.Year 
                                                                 && x.Month == monthStart.Month 
                                                                 && x.IncomeItems.Count > 0 && x.ExpenseItems.Count > 0).Count();
-                if (itemsCount > 0)
-                {
-                    pointsToDoItems.SavedIncomeOrExpense = true;
-                }
 
+                pointsToDoItems.SavedIncomeOrExpense = itemsCount > 0 ? true : false;
             }
               
             // 4.Gone to Community section of app at least once
-            if (practitioner.ClickedCommunityTab.HasValue)
-            {
-                pointsToDoItems.ViewedCommunitySection = true;
-            }
-
+            var communityProfile = _communityProfileRepo.GetByUserId(userId);
+            pointsToDoItems.ViewedCommunitySection = communityProfile == null ? false: true;
 
             return pointsToDoItems;
         }
