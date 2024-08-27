@@ -1,6 +1,10 @@
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
-import { PointsLibrary, PointsUserSummary } from '@ecdlink/graphql';
+import {
+  PointsLibrary,
+  PointsToDoItemModel,
+  PointsUserSummary,
+} from '@ecdlink/graphql';
 import {
   PointsSummaryDto,
   PractitionerDto,
@@ -263,3 +267,7 @@ export const getCurrentClubStanding = () =>
       return userClubStanding?.standing;
     }
   );
+
+export const getPointsToDo = (
+  state: RootState
+): PointsToDoItemModel | undefined => state.points.pointsToDo;

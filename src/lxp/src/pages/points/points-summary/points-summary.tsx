@@ -3,7 +3,7 @@ import {
   pointsActivitiesIds,
   pointsConstants,
 } from '@/constants/points';
-import { pointsSelectors } from '@/store/points';
+import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
   BannerWrapper,
@@ -11,12 +11,16 @@ import {
   CelebrationCard,
   Dialog,
   DialogPosition,
-  PointsProgressCard,
+  Divider,
+  MenuListDataItem,
+  NoPointsScoreCard,
   ScoreCard,
+  StackedList,
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
+import { ReactComponent as EmojiHappyYellow } from '../../../assets/ECD_Connect_emoji3.svg';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../../assets/mehFace.svg';
@@ -30,15 +34,29 @@ import { PointsService } from '@/services/PointsService';
 import { authSelectors } from '@/store/auth';
 import { PointsTodoItem } from './components/points-todo-item/points-todo-item';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useAppDispatch } from '@/store';
+import {
+  CalendarIcon,
+  ClipboardCheckIcon,
+  FireIcon,
+} from '@heroicons/react/solid';
+import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
+import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
+import { useTenant } from '@/hooks/useTenant';
+import { pointsTodoItems } from '@/store/points/points.actions';
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
+  const dispatch = useAppDispatch();
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
   const { isOnline } = useOnlineStatus();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [showInfo, setShowInfo] = useState(false);
+  const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
 
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
@@ -49,17 +67,18 @@ export const PointsSummary: React.FC = () => {
   const pointsTotalForYear = useSelector(
     pointsSelectors.getPointsTotalForYear()
   );
+
   const filteredPointsSummaries = pointsSummaryDataWithLibrary?.filter(
     (x) => x.pointsTotal > 0
   );
   const [pointsShareData, setPointsShareData] = useState<any>();
 
   const getPointsToDoItems = useCallback(async () => {
-    const response = await new PointsService(
-      userAuth?.auth_token!
-    ).pointsTodoItems(practitioner?.userId!);
+    const response = dispatch(
+      pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
+    );
     return response;
-  }, [practitioner?.userId, userAuth?.auth_token]);
+  }, [dispatch, practitioner?.userId]);
 
   const getshareData = useCallback(async () => {
     const response = await new PointsService(userAuth?.auth_token!).sharedData(
@@ -86,6 +105,470 @@ export const PointsSummary: React.FC = () => {
       return f.activity !== el.activity;
     });
   });
+
+  const getCurrentPointsToDo = useMemo(() => {
+    if (pointsToDo) {
+      let newPointsToDo = { ...pointsToDo };
+      if (practitioner?.isPrincipal) {
+        removeMandatoryProperty(
+          newPointsToDo,
+          'plannedOneDay',
+          (value) => practitioner?.isPrincipal === true
+        );
+      } else {
+        removeMandatoryProperty(
+          newPointsToDo,
+          'savedIncomeOrExpense',
+          (value) => !practitioner?.isPrincipal
+        );
+      }
+
+      const pointsToDoValues = Object.values(newPointsToDo!)?.filter(
+        (item) => item === true
+      );
+      return pointsToDoValues?.length;
+    } else {
+      return 0;
+    }
+  }, [pointsToDo, practitioner?.isPrincipal]);
+
+  const renderTodoText = useMemo(() => {
+    if (pointsToDo?.viewedCommunitySection) {
+      return 'Influencer';
+    }
+
+    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
+      return 'Boss';
+    }
+
+    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+      return 'Cwepheshe';
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'Tichere';
+    }
+    if (pointsToDo?.signedUpForApp) {
+      return 'Umtsha';
+    }
+
+    return 'Umtsha';
+  }, [
+    pointsToDo?.isPartOfPreschool,
+    pointsToDo?.plannedOneDay,
+    pointsToDo?.savedIncomeOrExpense,
+    pointsToDo?.signedUpForApp,
+    pointsToDo?.viewedCommunitySection,
+    practitioner?.isPrincipal,
+  ]);
+
+  const renderPointsToDoScoreCardBgColor = useMemo(() => {
+    if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return 'quatenaryBg';
+      }
+      return 'successBg';
+    }
+
+    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
+      return 'quatenaryBg';
+    }
+
+    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+      return 'quatenaryBg';
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'secondaryAccent2';
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return 'alertBg';
+    }
+
+    return 'alertBg';
+  }, [
+    getCurrentPointsToDo,
+    pointsToDo?.isPartOfPreschool,
+    pointsToDo?.plannedOneDay,
+    pointsToDo?.savedIncomeOrExpense,
+    pointsToDo?.signedUpForApp,
+    pointsToDo?.viewedCommunitySection,
+    practitioner?.isPrincipal,
+  ]);
+
+  const renderPointsToDoEmoji = useMemo(() => {
+    if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return (
+          <div className="bg-quatenary mr-4 rounded-full p-3">
+            <FireIcon className="font-white h-8 w-8" />
+          </div>
+        );
+      }
+      return (
+        <div className="bg-successDark mr-4 rounded-full p-3">
+          <FireIcon className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
+      return (
+        <div className="bg-quatenary mr-4 rounded-full p-3">
+          <Crown className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+      return (
+        <div className="bg-quatenary mr-4 rounded-full p-3">
+          <CalendarIcon className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return (
+        <div className="bg-secondary mr-4 rounded-full p-3">
+          <Kindgarden className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+    if (pointsToDo?.signedUpForApp) {
+      return (
+        <div className="bg-alertMain mr-4 rounded-full p-2">
+          <ClipboardCheckIcon className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-alertMain mr-4 rounded-full p-2">
+        <ClipboardCheckIcon className="font-white h-8 w-8" />
+      </div>
+    );
+  }, [
+    getCurrentPointsToDo,
+    pointsToDo?.isPartOfPreschool,
+    pointsToDo?.plannedOneDay,
+    pointsToDo?.savedIncomeOrExpense,
+    pointsToDo?.signedUpForApp,
+    pointsToDo?.viewedCommunitySection,
+    practitioner?.isPrincipal,
+  ]);
+
+  const renderPointsToDoProgressBarColor = useMemo(() => {
+    if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return 'quatenary';
+      }
+      return 'successMain';
+    }
+
+    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
+      return 'quatenary';
+    }
+
+    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+      return 'quatenary';
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'secondary';
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return 'alertMain';
+    }
+
+    return 'alertMain';
+  }, [
+    getCurrentPointsToDo,
+    pointsToDo?.isPartOfPreschool,
+    pointsToDo?.plannedOneDay,
+    pointsToDo?.savedIncomeOrExpense,
+    pointsToDo?.signedUpForApp,
+    pointsToDo?.viewedCommunitySection,
+    practitioner?.isPrincipal,
+  ]);
+
+  function removeMandatoryProperty<T, K extends keyof T>(
+    obj: T,
+    prop: K,
+    condition: (value: T[K]) => boolean
+  ): void {
+    if (condition(obj[prop])) {
+      delete (obj as any)[prop]; // Use type assertion to bypass TypeScript checks
+    }
+  }
+
+  const getStackedMenuList = (): MenuListDataItem[] => {
+    const titleStyle = 'text-textDark font-semibold text-base leading-snug';
+    const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
+
+    const stackedMenuList: MenuListDataItem[] = [
+      {
+        title: `Umtsha`,
+        titleStyle: pointsToDo?.signedUpForApp
+          ? 'text-successDark'
+          : 'text-white',
+        subTitle: `Sign up for ${appName}`,
+        subTitleStyle: pointsToDo?.signedUpForApp
+          ? 'text-successDark'
+          : 'text-white',
+        className: !pointsToDo?.signedUpForApp ? '' : 'px-2',
+        menuIcon: pointsToDo?.signedUpForApp
+          ? 'CheckIcon'
+          : 'ClipboardCheckIcon',
+        iconBackgroundColor: 'quatenary',
+        iconColor: 'white',
+        menuIconClassName: 'bg-successMain rounded-full h-12 w-12 p-2.5',
+        backgroundColor: 'successBg',
+        showIcon: true,
+        onActionClick: () => {},
+        hideRightIcon: true,
+      },
+      {
+        title: 'Tichere',
+        titleStyle: pointsToDo?.isPartOfPreschool
+          ? 'text-successDark'
+          : titleStyle,
+        subTitle: 'Set up or join your preschool',
+        subTitleStyle: pointsToDo?.isPartOfPreschool
+          ? 'text-successDark'
+          : subTitleStyle,
+        className:
+          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool
+            ? ''
+            : 'px-2',
+        menuIcon: pointsToDo?.isPartOfPreschool ? 'CheckIcon' : '',
+        customIcon:
+          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool ? (
+            <Kindgarden
+              className={`${
+                pointsToDo?.isPartOfPreschool
+                  ? `bg-successMain text-white`
+                  : 'text-quatenary bg-quatenary'
+              } z-50 mr-4 h-12 w-12 rounded-full p-2`}
+            />
+          ) : undefined,
+        iconBackgroundColor: pointsToDo?.isPartOfPreschool
+          ? 'successMain'
+          : 'quatenary',
+        showIcon: true,
+        iconColor: 'white',
+        hideRightIcon: true,
+        backgroundColor: pointsToDo?.isPartOfPreschool
+          ? 'successBg'
+          : pointsToDo?.signedUpForApp
+          ? 'quatenaryBg'
+          : 'adminPortalBg',
+      },
+      {
+        title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
+        titleStyle,
+        subTitle: practitioner?.isPrincipal
+          ? 'Add income/expense'
+          : 'Plan your daily routine',
+        subTitleStyle,
+        className:
+          pointsToDo?.isPartOfPreschool &&
+          !pointsToDo?.savedIncomeOrExpense &&
+          !pointsToDo?.savedIncomeOrExpense
+            ? ''
+            : 'px-2',
+        menuIcon:
+          (practitioner?.isPrincipal && pointsToDo?.savedIncomeOrExpense) ||
+          (!practitioner?.isPrincipal && pointsToDo?.plannedOneDay)
+            ? 'CheckIcon'
+            : !practitioner?.isPrincipal && !pointsToDo?.plannedOneDay
+            ? 'CalendarIcon'
+            : '',
+        customIcon:
+          pointsToDo?.signedUpForApp && practitioner?.isPrincipal ? (
+            <Crown
+              className={`${
+                !pointsToDo?.isPartOfPreschool
+                  ? `bg-uiLight text-white`
+                  : 'text-quatenary bg-quatenary'
+              } z-50 mr-4 h-12 w-12 rounded-full p-2`}
+            />
+          ) : undefined,
+        iconBackgroundColor:
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
+            ? 'successBg'
+            : !pointsToDo?.isPartOfPreschool
+            ? 'uiLight'
+            : 'quatenary',
+        showIcon: true,
+        iconColor: 'white',
+        hideRightIcon: true,
+        backgroundColor:
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
+            ? 'successBg'
+            : pointsToDo?.isPartOfPreschool
+            ? 'quatenaryBg'
+            : 'adminPortalBg',
+      },
+      {
+        title: `Influencer`,
+        titleStyle,
+        subTitle: `Explore the community`,
+        subTitleStyle,
+        menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
+        iconBackgroundColor: 'quatenary',
+        iconColor: 'white',
+        menuIconClassName: `${
+          pointsToDo?.viewedCommunitySection ? 'bg-successMain' : 'bg-uiLight'
+        } rounded-full h-12 w-12 p-2.5`,
+        showIcon: true,
+        onActionClick: () => {},
+        hideRightIcon: true,
+        backgroundColor: pointsToDo?.viewedCommunitySection
+          ? 'successBg'
+          : pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
+          ? 'quatenaryBg'
+          : 'adminPortalBg',
+      },
+    ];
+
+    return stackedMenuList;
+  };
+
+  const getSecondaryStackedMenuList = (): MenuListDataItem[] => {
+    const titleStyle = 'text-textDark font-semibold text-base leading-snug';
+    const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
+
+    const stackedMenuList: MenuListDataItem[] = [
+      {
+        title: `Umtsha`,
+        titleStyle: pointsToDo?.signedUpForApp
+          ? 'text-successDark'
+          : 'text-white',
+        subTitle: `Sign up for ${appName}`,
+        subTitleStyle: pointsToDo?.signedUpForApp
+          ? 'text-successDark'
+          : 'text-white',
+        className: !pointsToDo?.signedUpForApp ? '' : 'px-2',
+        menuIcon: pointsToDo?.signedUpForApp
+          ? 'CheckIcon'
+          : 'ClipboardCheckIcon',
+        iconBackgroundColor: 'quatenary',
+        iconColor: 'white',
+        menuIconClassName: 'bg-successMain rounded-full h-12 w-12 p-2.5',
+        backgroundColor: 'successBg',
+        showIcon: true,
+        onActionClick: () => {},
+        hideRightIcon: true,
+      },
+      {
+        title: 'Tichere',
+        titleStyle: pointsToDo?.isPartOfPreschool
+          ? 'text-successDark'
+          : 'text-white',
+        subTitle: 'Set up or join your preschool',
+        subTitleStyle: pointsToDo?.isPartOfPreschool
+          ? 'text-successDark'
+          : 'text-white',
+        className:
+          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool
+            ? ''
+            : 'px-2',
+        menuIcon: pointsToDo?.isPartOfPreschool ? 'CheckIcon' : '',
+        customIcon:
+          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool ? (
+            <Kindgarden
+              className={`${
+                pointsToDo?.isPartOfPreschool
+                  ? `bg-successMain text-white`
+                  : 'text-quatenary bg-white'
+              } z-50 mr-4 h-12 w-12 rounded-full p-2`}
+            />
+          ) : undefined,
+        iconBackgroundColor: pointsToDo?.isPartOfPreschool
+          ? 'successMain'
+          : 'quatenary',
+        showIcon: true,
+        iconColor: 'white',
+        hideRightIcon: true,
+        backgroundColor: pointsToDo?.isPartOfPreschool
+          ? 'successBg'
+          : 'adminPortalBg',
+      },
+      {
+        title: `Influencer`,
+        titleStyle: pointsToDo?.viewedCommunitySection
+          ? 'text-successDark'
+          : 'text-white',
+        subTitle: `Explore the community`,
+        subTitleStyle: pointsToDo?.viewedCommunitySection
+          ? 'text-successDark'
+          : 'text-white',
+        menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
+        iconBackgroundColor: 'quatenary',
+        iconColor: 'white',
+        menuIconClassName: `${
+          pointsToDo?.viewedCommunitySection ? 'bg-successMain' : 'bg-uiLight'
+        } rounded-full h-12 w-12 p-2.5`,
+        showIcon: true,
+        onActionClick: () => {},
+        hideRightIcon: true,
+        backgroundColor: pointsToDo?.viewedCommunitySection
+          ? 'successBg'
+          : pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
+          ? 'quatenaryBg'
+          : 'adminPortalBg',
+      },
+      {
+        title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
+        titleStyle,
+        subTitle: practitioner?.isPrincipal
+          ? 'Add income/expense'
+          : 'Plan your daily routine',
+        subTitleStyle,
+        className:
+          pointsToDo?.isPartOfPreschool &&
+          !pointsToDo?.savedIncomeOrExpense &&
+          !pointsToDo?.savedIncomeOrExpense
+            ? ''
+            : 'px-2',
+        menuIcon:
+          (practitioner?.isPrincipal && pointsToDo?.savedIncomeOrExpense) ||
+          (!practitioner?.isPrincipal && pointsToDo?.plannedOneDay)
+            ? 'CheckIcon'
+            : !practitioner?.isPrincipal && !pointsToDo?.plannedOneDay
+            ? 'CalendarIcon'
+            : '',
+        customIcon:
+          pointsToDo?.signedUpForApp && practitioner?.isPrincipal ? (
+            <Crown
+              className={`${
+                !pointsToDo?.isPartOfPreschool
+                  ? `bg-uiLight text-white`
+                  : 'text-quatenary bg-quatenary'
+              } z-50 mr-4 h-12 w-12 rounded-full p-2`}
+              style={{ color: 'black' }}
+            />
+          ) : undefined,
+        iconBackgroundColor: pointsToDo?.isPartOfPreschool
+          ? 'successBg'
+          : 'quatenary',
+        showIcon: true,
+        iconColor: 'white',
+        hideRightIcon: true,
+        backgroundColor:
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
+            ? 'successBg'
+            : pointsToDo?.isPartOfPreschool
+            ? 'quatenaryBg'
+            : 'adminPortalBg',
+      },
+    ];
+
+    return stackedMenuList;
+  };
 
   useEffect(() => {
     getPointsToDoItems();
@@ -298,30 +781,63 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMM yyyy')}
           />
-          <ScoreCard
-            className="mt-5 py-6"
-            mainText={`${monthPoints} points`}
-            currentPoints={monthPoints}
-            maxPoints={pointsMax}
-            barBgColour="white"
-            barColour={
-              percentageScore < 60
-                ? 'alertMain'
-                : percentageScore < 80
-                ? 'quatenary'
-                : 'successMain'
-            }
-            bgColour={
-              percentageScore < 60
-                ? 'alertBg'
-                : percentageScore < 80
-                ? 'quatenaryBg'
-                : 'successBg'
-            }
-            textColour="black"
-          />
-          {!isOnline && !pointsShareData && celebrationCard}
-          {isOnline && (
+          {!pointsTotalForYear && (
+            <NoPointsScoreCard
+              image={renderPointsToDoEmoji}
+              className="mt-5 py-6"
+              mainText={renderTodoText}
+              currentPoints={getCurrentPointsToDo}
+              maxPoints={4}
+              barBgColour="white"
+              barColour={renderPointsToDoProgressBarColor}
+              bgColour={renderPointsToDoScoreCardBgColor}
+              textColour="black"
+              isBigTitle={false}
+            />
+          )}
+          {!pointsTotalForYear &&
+            pointsToDo?.viewedCommunitySection &&
+            getCurrentPointsToDo === 4 && (
+              <CelebrationCard
+                image={<EmojiHappyYellow className="mr-2 h-20 w-20" />}
+                primaryMessage={`Wow, great job!`}
+                secondaryMessage={`Take a bow, ${appName} pro!`}
+                primaryTextColour="white"
+                secondaryTextColour="white"
+                backgroundColour="successMain"
+                className="mt-4"
+              />
+            )}
+          {pointsTotalForYear && (
+            <ScoreCard
+              className="mt-5 py-6"
+              mainText={`${monthPoints} points`}
+              currentPoints={monthPoints}
+              maxPoints={pointsMax}
+              barBgColour="white"
+              barColour={
+                percentageScore < 60
+                  ? 'alertMain'
+                  : percentageScore < 80
+                  ? 'quatenary'
+                  : 'successMain'
+              }
+              bgColour={
+                percentageScore < 60
+                  ? 'alertBg'
+                  : percentageScore < 80
+                  ? 'quatenaryBg'
+                  : 'successBg'
+              }
+              textColour="black"
+            />
+          )}
+          {!isOnline &&
+            monthPoints &&
+            !pointsShareData &&
+            getCurrentPointsToDo === 4 &&
+            celebrationCard}
+          {isOnline && monthPoints && getCurrentPointsToDo === 4 && (
             <CelebrationCard
               image={getEmoji(
                 pointsShareData?.userRankingData
@@ -344,17 +860,42 @@ export const PointsSummary: React.FC = () => {
               )}
             />
           )}
-          {!!todoListFiltered && !!todoListFiltered.length && (
-            <Typography
-              className="mt-8 mb-4"
-              type={'h3'}
-              color="black"
-              text={`How you can earn more points in ${format(
-                new Date(),
-                'MMMM'
-              )}:`}
-            />
+          {!pointsTotalForYear && (
+            <div>
+              <Divider dividerType="dashed" />
+              <Typography
+                className="mt-4 mb-4"
+                type={'h3'}
+                color="black"
+                text={`Get to the next level!`}
+              />
+              <div>
+                <StackedList
+                  listItems={
+                    getCurrentPointsToDo === 3 &&
+                    pointsToDo?.viewedCommunitySection
+                      ? getSecondaryStackedMenuList()
+                      : getStackedMenuList()
+                  }
+                  type={'MenuList'}
+                  className={'-mt-0.5 flex flex-col gap-1.5'}
+                ></StackedList>
+              </div>
+            </div>
           )}
+          {!!todoListFiltered &&
+            !!todoListFiltered.length &&
+            pointsTotalForYear && (
+              <Typography
+                className="mt-8 mb-4"
+                type={'h3'}
+                color="black"
+                text={`How you can earn more points in ${format(
+                  new Date(),
+                  'MMMM'
+                )}:`}
+              />
+            )}
           {/* {!!pointsTodoList &&
             pointsTodoList.map((pointsLibraryScore, index) => {
               return (
@@ -381,6 +922,7 @@ export const PointsSummary: React.FC = () => {
               );
             })} */}
           {!!todoListFiltered &&
+            pointsTotalForYear &&
             todoListFiltered?.slice(0, 3)?.map((item) => {
               return (
                 <PointsTodoItem
@@ -391,7 +933,7 @@ export const PointsSummary: React.FC = () => {
             })}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
-          {monthPoints > 0 && (
+          {pointsTotalForYear && monthPoints > 0 && (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -414,45 +956,51 @@ export const PointsSummary: React.FC = () => {
               }}
             />
           )}
-          {monthPoints === 0 && !practitioner?.coachHierarchy && (
-            <Button
-              size="normal"
-              className="mb-4 w-full"
-              type="filled"
-              color="quatenary"
-              text="Find out how you can earn points"
-              textColor="white"
-              icon="LightBulbIcon"
-              onClick={() => setShowInfo(true)}
-            />
-          )}
-          {monthPoints === 0 && practitioner?.coachHierarchy && (
+          {pointsTotalForYear &&
+            monthPoints === 0 &&
+            !practitioner?.coachHierarchy && (
+              <Button
+                size="normal"
+                className="mb-4 w-full"
+                type="filled"
+                color="quatenary"
+                text="Find out how you can earn points"
+                textColor="white"
+                icon="LightBulbIcon"
+                onClick={() => setShowInfo(true)}
+              />
+            )}
+          {pointsTotalForYear &&
+            monthPoints === 0 &&
+            practitioner?.coachHierarchy && (
+              <Button
+                size="normal"
+                className="mb-4 w-full"
+                type="outlined"
+                color="quatenary"
+                text="Ask your coach for help"
+                textColor="white"
+                icon="ChatIcon"
+                onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
+              />
+            )}
+          {pointsTotalForYear && (
             <Button
               size="normal"
               className="mb-4 w-full"
               type="outlined"
               color="quatenary"
-              text="Ask your coach for help"
-              textColor="white"
-              icon="ChatIcon"
-              onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
+              text="See detailed report"
+              textColor="quatenary"
+              icon="EyeIcon"
+              disabled={!isOnline}
+              onClick={() =>
+                history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
+                  userRankingData: pointsShareData?.userRankingData,
+                })
+              }
             />
           )}
-          <Button
-            size="normal"
-            className="mb-4 w-full"
-            type="outlined"
-            color="quatenary"
-            text="See detailed report"
-            textColor="quatenary"
-            icon="EyeIcon"
-            disabled={!isOnline}
-            onClick={() =>
-              history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
-                userRankingData: pointsShareData?.userRankingData,
-              })
-            }
-          />
         </div>
       </BannerWrapper>
       <Dialog
