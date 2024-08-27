@@ -24,6 +24,9 @@ export const LinksShared = ({
   const getAllCall = `GetAll${contentType.name}`;
   const subGetAllCall = `GetAll${subContentType.name}`;
 
+  console.log('getAllCall', getAllCall);
+  console.log('subGetAllCall', subGetAllCall);
+
   const fields =
     contentType.fields?.map((field) => {
       return field.fieldName;
@@ -119,29 +122,21 @@ export const LinksShared = ({
         currentSection?.[contentType.fields?.[0]?.fieldName ?? ''] ?? '';
       sectionData.contentId = currentSection?.id ?? -1;
 
-      const links = sectionsLinksData?.[subGetAllCall]?.filter(
-        (item: ConnectItem) =>
-          item?.linkedConnect?.[0]?.id === currentSection?.id
-      ) as ConnectItem[];
+      // const links = sectionsLinksData?.[subGetAllCall]?.filter(
+      //   (item: ConnectItem) =>
+      //     item?.linkedConnect?.[0]?.id === currentSection?.id
+      // ) as ConnectItem[];
 
-      sectionData?.links?.forEach((link, index) => {
-        link.text = links?.[index]?.buttonText ?? '';
-        link.link = links?.[index]?.link ?? '';
-        link.linkedConnect = currentSection?.id ?? -1;
-        link.contentId = links?.[index]?.id ?? -1;
-      });
+      // sectionData?.links?.forEach((link, index) => {
+      //   link.text = links?.[index]?.buttonText ?? '';
+      //   link.link = links?.[index]?.link ?? '';
+      //   link.linkedConnect = currentSection?.id ?? -1;
+      //   link.contentId = links?.[index]?.id ?? -1;
+      // });
     });
 
     setLinksPerSectionData(linksPerSectionData);
-  }, [
-    hint,
-    sectionsData,
-    contentType.fields,
-    getAllCall,
-    sectionsQuantity,
-    sectionsLinksData,
-    subGetAllCall,
-  ]);
+  }, [hint, sectionsData, contentType.fields, getAllCall, sectionsQuantity]);
 
   const onChangeSectionTitle =
     (sectionIndex: number) =>

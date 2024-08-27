@@ -84,22 +84,22 @@ export function ContentManagement() {
     return [
       {
         name: 'Consent',
-        // href: '/content-management',
+        href: '/content-management',
         id: 0,
       },
+      // {
+      //   name: 'Info pages',
+      //   href: 'MoreInformation',
+      //   id: 1,
+      // },
+      // {
+      //   name: ContentManagementTabs.PROGRAMMES.name,
+      //   // href: '/',
+      //   id: ContentManagementTabs.PROGRAMMES.id,
+      // },
       {
-        name: 'Info pages',
-        href: 'MoreInformation',
-        id: 1,
-      },
-      {
-        name: ContentManagementTabs.PROGRAMMES.name,
-        // href: '/',
-        id: ContentManagementTabs.PROGRAMMES.id,
-      },
-      {
-        name: ContentManagementTabs.COMMUNITY.name,
-        id: ContentManagementTabs.COMMUNITY.id,
+        name: ContentManagementTabs.RESOURCES.name,
+        id: ContentManagementTabs.RESOURCES.id,
       },
     ];
   };
@@ -162,69 +162,80 @@ export function ContentManagement() {
   }, 500);
 
   const handleSubTabs = useCallback(() => {
-    if (specialType === ContentManagementTabs.COMMUNITY.name) {
-      if (!tenant.isCHWConnect) {
-        return setSubTabs([
-          {
-            title: 'Coaching circle topics',
-            description: 'Add, edit, delete topics for coaches',
-            titleIcon: 'DuplicateIcon',
-            titleIconClassName: 'bg-secondary text-white',
-            onActionClick: () => {
-              setSpecialType('');
-              const selectedTypeObject = dataTypes?.contentTypes.find(
-                (type: ContentTypeDto) =>
-                  type.name === ContentTypes.COACHING_CIRCLE_TOPICS
-              );
-              showGroupContentTypes(selectedTypeObject);
-            },
-            classNames: 'bg-white',
-          },
-          {
-            title: 'Connect tab',
-            description:
-              'Add or edit the links shared with practitioners and coaches',
-            titleIcon: 'PuzzleIcon',
-            titleIconClassName: 'bg-secondary text-white',
-            onActionClick: () => {
-              setSpecialType('');
-              const selectedTypeObject = dataTypes?.contentTypes.find(
-                (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
-              );
+    if (specialType === ContentManagementTabs.RESOURCES.name) {
+      return setSubTabs([
+        // {
+        //   title: 'Classroom resources',
+        //   description: 'Add or edit resources in the classroom section of the app',
+        //   titleIcon: 'PuzzleIcon',
+        //   titleIconClassName: 'bg-secondary text-white',
+        //   onActionClick: () => {
+        //     setSpecialType('');
+        //     const selectedTypeObject = dataTypes?.contentTypes.find(
+        //       (type: ContentTypeDto) =>
+        //         type.name === ContentTypes.COACHING_CIRCLE_TOPICS
+        //     );
+        //     showGroupContentTypes(selectedTypeObject);
+        //   },
+        //   classNames: 'bg-white',
+        // },
+        // {
+        //   title: 'Business resources',
+        //   description: 'Add or edit resources in the business section of the app',
+        //   titleIcon: 'OfficeBuildingIcon',
+        //   titleIconClassName: 'bg-secondary text-white',
+        //   onActionClick: () => {
+        //     setSpecialType('');
+        //     const selectedTypeObject = dataTypes?.contentTypes.find(
+        //       (type: ContentTypeDto) =>
+        //         type.name === ContentTypes.COACHING_CIRCLE_TOPICS
+        //     );
+        //     showGroupContentTypes(selectedTypeObject);
+        //   },
+        //   classNames: 'bg-white',
+        // },
+        {
+          title: 'Community links',
+          description:
+            'Add or edit the links shared with practitioners and coaches',
+          titleIcon: 'LinkIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT_ITEM
+            );
+            showGroupContentTypes(selectedTypeObject);
 
-              const selectedSubTypeObject = dataTypes?.contentTypes.find(
-                (type: ContentTypeDto) =>
-                  type.name === ContentTypes.CONNECT_ITEM
-              );
-              showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
-            },
-            classNames: 'bg-white',
+            // const selectedSubTypeObject = dataTypes?.contentTypes.find(
+            //   (type: ContentTypeDto) =>
+            //     type.name === ContentTypes.CONNECT_ITEM
+            // );
+            //showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
           },
-        ]);
-      } else {
-        return setSubTabs([
-          {
-            title: 'Connect tab',
-            description:
-              'Add or edit the links shared with practitioners and coaches',
-            titleIcon: 'PuzzleIcon',
-            titleIconClassName: 'bg-secondary text-white',
-            onActionClick: () => {
-              setSpecialType('');
-              const selectedTypeObject = dataTypes?.contentTypes.find(
-                (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
-              );
+          classNames: 'bg-white',
+        },
+        // {
+        //   title: 'Child progress report links for caregivers',
+        //   description:
+        //     'Change the links to be added to the child progress reports for caregivers',
+        //   titleIcon: 'DocumentReportIcon',
+        //   titleIconClassName: 'bg-secondary text-white',
+        //   onActionClick: () => {
+        //     setSpecialType('');
+        //     const selectedTypeObject = dataTypes?.contentTypes.find(
+        //       (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
+        //     );
 
-              const selectedSubTypeObject = dataTypes?.contentTypes.find(
-                (type: ContentTypeDto) =>
-                  type.name === ContentTypes.CONNECT_ITEM
-              );
-              showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
-            },
-            classNames: 'bg-white',
-          },
-        ]);
-      }
+        //     const selectedSubTypeObject = dataTypes?.contentTypes.find(
+        //       (type: ContentTypeDto) =>
+        //         type.name === ContentTypes.CONNECT_ITEM
+        //     );
+        //     showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
+        //   },
+        //   classNames: 'bg-white',
+        // },
+      ]);
     }
 
     if (specialType === ContentManagementTabs.PROGRAMMES.name) {
@@ -453,7 +464,7 @@ export function ContentManagement() {
                       ></ProgressToolsContentList>
                     )}
                   {/* TODO: Replace it with dynamic validation (example: selectedType.type === 'linkGroup') */}
-                  {selectedType?.name === ContentTypes.CONNECT &&
+                  {selectedType?.name === ContentTypes.CONNECT_ITEM &&
                     !specialType && (
                       <LinksShared
                         contentType={selectedType}
