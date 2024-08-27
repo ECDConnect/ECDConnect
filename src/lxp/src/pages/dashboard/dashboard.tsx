@@ -15,7 +15,7 @@ import {
   NoPointsScoreCard,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -160,7 +160,19 @@ export const Dashboard: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
-  console.log({ pointsSummaryData });
+
+  const getPointsToDoItems = useCallback(async () => {
+    const response = appDispatch(
+      pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
+    );
+    return response;
+  }, [appDispatch, practitioner?.userId]);
+
+  useEffect(() => {
+    if (!coach && isOnline && practitioner) {
+      getPointsToDoItems();
+    }
+  }, []);
 
   const offlineCommunity = () => {
     if (!isOnline) {
@@ -1039,14 +1051,33 @@ export const Dashboard: React.FC = () => {
     userData?.profileImageUrl ||
     userProfilePicture?.reference;
 
-  const renderTodoText = useMemo(() => {
-    if (pointsToDo?.signedUpForApp) {
-      return 'Umtsha';
-    }
+  const getCurrentPointsToDo = useMemo(() => {
+    if (pointsToDo) {
+      let newPointsToDo = { ...pointsToDo };
+      if (practitioner?.isPrincipal) {
+        removeMandatoryProperty(
+          newPointsToDo,
+          'plannedOneDay',
+          (value) => practitioner?.isPrincipal === true
+        );
+      } else {
+        removeMandatoryProperty(
+          newPointsToDo,
+          'savedIncomeOrExpense',
+          (value) => !practitioner?.isPrincipal
+        );
+      }
 
-    if (pointsToDo?.isPartOfPreschool) {
-      return 'Tichere';
+      const pointsToDoValues = Object.values(newPointsToDo!)?.filter(
+        (item) => item === true
+      );
+      return pointsToDoValues?.length;
+    } else {
+      return 0;
     }
+  }, [pointsToDo, practitioner?.isPrincipal]);
+
+  const renderTodoText = useMemo(() => {
     if (pointsToDo?.viewedCommunitySection) {
       return 'Influencer';
     }
@@ -1057,6 +1088,13 @@ export const Dashboard: React.FC = () => {
 
     if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
       return 'Cwepheshe';
+    }
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'Tichere';
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return 'Umtsha';
     }
 
     return 'Umtsha';
@@ -1070,14 +1108,10 @@ export const Dashboard: React.FC = () => {
   ]);
 
   const renderPointsToDoScoreCardBgColor = useMemo(() => {
-    if (pointsToDo?.signedUpForApp) {
-      return 'alertBg';
-    }
-
-    if (pointsToDo?.isPartOfPreschool) {
-      return 'secondaryAccent2';
-    }
     if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return 'quatenaryBg';
+      }
       return 'successBg';
     }
 
@@ -1087,6 +1121,14 @@ export const Dashboard: React.FC = () => {
 
     if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
       return 'quatenaryBg';
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'secondaryAccent2';
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return 'alertBg';
     }
 
     return 'alertBg';
@@ -1100,22 +1142,14 @@ export const Dashboard: React.FC = () => {
   ]);
 
   const renderPointsToDoEmoji = useMemo(() => {
-    if (pointsToDo?.signedUpForApp) {
-      return (
-        <div className="bg-alertMain mr-4 rounded-full p-2">
-          <ClipboardCheckIcon className="font-white h-8 w-8" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.isPartOfPreschool) {
-      return (
-        <div className="bg-secondary mr-4 rounded-full p-3">
-          <Kindgarden className="font-white h-8 w-8" />
-        </div>
-      );
-    }
     if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return (
+          <div className="bg-quatenary mr-4 rounded-full p-3">
+            <FireIcon className="font-white h-8 w-8" />
+          </div>
+        );
+      }
       return (
         <div className="bg-successMain mr-4 rounded-full p-3">
           <FireIcon className="font-white h-8 w-8" />
@@ -1139,6 +1173,22 @@ export const Dashboard: React.FC = () => {
       );
     }
 
+    if (pointsToDo?.isPartOfPreschool) {
+      return (
+        <div className="bg-secondary mr-4 rounded-full p-3">
+          <Kindgarden className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return (
+        <div className="bg-alertMain mr-4 rounded-full p-2">
+          <ClipboardCheckIcon className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
     return (
       <div className="bg-alertMain mr-4 rounded-full p-2">
         <ClipboardCheckIcon className="font-white h-8 w-8" />
@@ -1154,14 +1204,10 @@ export const Dashboard: React.FC = () => {
   ]);
 
   const renderPointsToDoProgressBarColor = useMemo(() => {
-    if (pointsToDo?.signedUpForApp) {
-      return 'alertMain';
-    }
-
-    if (pointsToDo?.isPartOfPreschool) {
-      return 'secondary';
-    }
     if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return 'quatenary';
+      }
       return 'successMain';
     }
 
@@ -1171,6 +1217,14 @@ export const Dashboard: React.FC = () => {
 
     if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
       return 'quatenary';
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'secondary';
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return 'alertMain';
     }
 
     return 'alertMain';
@@ -1192,33 +1246,6 @@ export const Dashboard: React.FC = () => {
       delete (obj as any)[prop]; // Use type assertion to bypass TypeScript checks
     }
   }
-
-  const getCurrentPointsToDo = useMemo(() => {
-    if (pointsToDo) {
-      let newPointsToDo = { ...pointsToDo };
-      if (practitioner?.isPrincipal) {
-        removeMandatoryProperty(
-          newPointsToDo,
-          'plannedOneDay',
-          (value) => practitioner?.isPrincipal === true
-        );
-      } else {
-        removeMandatoryProperty(
-          newPointsToDo,
-          'savedIncomeOrExpense',
-          (value) => !practitioner?.isPrincipal
-        );
-      }
-
-      console.log({ newPointsToDo });
-      const pointsToDoValues = Object.values(newPointsToDo!)?.filter(
-        (item) => item === true
-      );
-      return pointsToDoValues?.length;
-    } else {
-      return 0;
-    }
-  }, [pointsToDo, practitioner?.isPrincipal]);
 
   return (
     <>
@@ -1299,24 +1326,27 @@ export const Dashboard: React.FC = () => {
             listItems={dashboardItems}
             notification={dashboardNotification}
           />
-          {pointsSummaryData?.length > 0 && !!pointsScoreProps && !isCoach && (
-            <ScoreCard
-              className="mt-5 mb-1 h-20"
-              progressBarClassName="flex pt-2"
-              mainText={pointsScoreProps.mainText}
-              hint={pointsScoreProps?.hint}
-              currentPoints={pointsScoreProps.currentPoints}
-              maxPoints={pointsScoreProps.maxPoints}
-              onClick={pointsScoreProps.onClick}
-              barBgColour={pointsScoreProps.barBgColour}
-              barColour={pointsScoreProps.barColour}
-              bgColour={pointsScoreProps.bgColour}
-              image={pointsScoreProps.image}
-              textColour={pointsScoreProps.textColour}
-              textPosition={pointsScoreProps.textPosition}
-            />
-          )}
-          {pointsSummaryData?.length === 0 && (
+          {pointsSummaryData?.length > 0 &&
+            !!pointsScoreProps &&
+            !isCoach &&
+            getCurrentPointsToDo === 4 && (
+              <ScoreCard
+                className="mt-5 mb-1 h-20"
+                progressBarClassName="flex pt-2"
+                mainText={pointsScoreProps.mainText}
+                hint={pointsScoreProps?.hint}
+                currentPoints={pointsScoreProps.currentPoints}
+                maxPoints={pointsScoreProps.maxPoints}
+                onClick={pointsScoreProps.onClick}
+                barBgColour={pointsScoreProps.barBgColour}
+                barColour={pointsScoreProps.barColour}
+                bgColour={pointsScoreProps.bgColour}
+                image={pointsScoreProps.image}
+                textColour={pointsScoreProps.textColour}
+                textPosition={pointsScoreProps.textPosition}
+              />
+            )}
+          {getCurrentPointsToDo < 4 && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 py-6"
