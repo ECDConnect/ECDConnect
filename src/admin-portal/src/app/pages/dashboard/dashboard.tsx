@@ -7,7 +7,7 @@ export default function Dashboard() {
   const getNavigationItems = () => {
     return [
       {
-        title: 'Analytics',
+        title: 'General',
         initActive: true,
         child: <GADashboard />,
       },
