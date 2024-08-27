@@ -1044,7 +1044,7 @@ export const Dashboard: React.FC = () => {
       return 'Umtsha';
     }
 
-    if (pointsToDo?.notPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool) {
       return 'Tichere';
     }
     if (pointsToDo?.viewedCommunitySection) {
@@ -1061,7 +1061,7 @@ export const Dashboard: React.FC = () => {
 
     return 'Umtsha';
   }, [
-    pointsToDo?.notPartOfPreschool,
+    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
@@ -1074,7 +1074,7 @@ export const Dashboard: React.FC = () => {
       return 'alertBg';
     }
 
-    if (pointsToDo?.notPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool) {
       return 'secondaryAccent2';
     }
     if (pointsToDo?.viewedCommunitySection) {
@@ -1091,7 +1091,7 @@ export const Dashboard: React.FC = () => {
 
     return 'alertBg';
   }, [
-    pointsToDo?.notPartOfPreschool,
+    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
@@ -1108,7 +1108,7 @@ export const Dashboard: React.FC = () => {
       );
     }
 
-    if (pointsToDo?.notPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
           <Kindgarden className="font-white h-8 w-8" />
@@ -1145,7 +1145,7 @@ export const Dashboard: React.FC = () => {
       </div>
     );
   }, [
-    pointsToDo?.notPartOfPreschool,
+    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
@@ -1158,7 +1158,7 @@ export const Dashboard: React.FC = () => {
       return 'alertMain';
     }
 
-    if (pointsToDo?.notPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool) {
       return 'secondary';
     }
     if (pointsToDo?.viewedCommunitySection) {
@@ -1175,7 +1175,7 @@ export const Dashboard: React.FC = () => {
 
     return 'alertMain';
   }, [
-    pointsToDo?.notPartOfPreschool,
+    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,

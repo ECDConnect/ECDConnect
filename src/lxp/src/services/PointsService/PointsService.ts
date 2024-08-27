@@ -147,13 +147,13 @@ class PointsService {
       data: { pointsTodoItems: PointsToDoItemModel };
       errors?: {};
     }>(``, {
-      query: `query GetPointsTodoItems($userId: UUID!) {
-    pointsTodoItems(userId: $userId) {
-        signedUpForApp
-        notPartOfPreschool
-        savedIncomeOrExpense
-        plannedOneDay
-        viewedCommunitySection
+      query: `query GetPointsTodoItems($userId: UUID!) {    
+    pointsTodoItems(userId: $userId) {        
+        signedUpForApp        
+        isPartOfPreschool        
+        savedIncomeOrExpense        
+        plannedOneDay        
+        viewedCommunitySection    
     }
 }`,
       variables: {

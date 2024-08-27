@@ -210,7 +210,6 @@ export const pointsTodoItems = createAsyncThunk<
       } else {
         return rejectWithValue('no access token, profile check required');
       }
-      console.log({ todoPoints });
       return todoPoints;
     } catch (err) {
       return rejectWithValue(err);

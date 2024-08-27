@@ -110,7 +110,7 @@ export const PointsSummary: React.FC = () => {
       return 'Umtsha';
     }
 
-    if (pointsToDo?.notPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool) {
       return 'Tichere';
     }
     if (pointsToDo?.viewedCommunitySection) {
@@ -127,7 +127,7 @@ export const PointsSummary: React.FC = () => {
 
     return 'Umtsha';
   }, [
-    pointsToDo?.notPartOfPreschool,
+    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
@@ -140,7 +140,7 @@ export const PointsSummary: React.FC = () => {
       return 'alertBg';
     }
 
-    if (pointsToDo?.notPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool) {
       return 'secondaryAccent2';
     }
     if (pointsToDo?.viewedCommunitySection) {
@@ -157,7 +157,7 @@ export const PointsSummary: React.FC = () => {
 
     return 'alertBg';
   }, [
-    pointsToDo?.notPartOfPreschool,
+    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
@@ -174,7 +174,7 @@ export const PointsSummary: React.FC = () => {
       );
     }
 
-    if (pointsToDo?.notPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
           <Kindgarden className="font-white h-8 w-8" />
@@ -211,7 +211,7 @@ export const PointsSummary: React.FC = () => {
       </div>
     );
   }, [
-    pointsToDo?.notPartOfPreschool,
+    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
@@ -224,7 +224,7 @@ export const PointsSummary: React.FC = () => {
       return 'alertMain';
     }
 
-    if (pointsToDo?.notPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool) {
       return 'secondary';
     }
     if (pointsToDo?.viewedCommunitySection) {
@@ -241,7 +241,7 @@ export const PointsSummary: React.FC = () => {
 
     return 'alertMain';
   }, [
-    pointsToDo?.notPartOfPreschool,
+    pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
@@ -285,7 +285,7 @@ export const PointsSummary: React.FC = () => {
       return 0;
     }
   }, [pointsToDo, practitioner?.isPrincipal]);
-  console.log(pointsToDo?.notPartOfPreschool);
+  console.log(pointsToDo?.isPartOfPreschool);
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
@@ -312,18 +312,18 @@ export const PointsSummary: React.FC = () => {
         titleStyle,
         subTitle: 'Set up or join your preschool',
         subTitleStyle,
-        menuIcon: pointsToDo?.notPartOfPreschool ? 'CheckIcon' : '',
+        menuIcon: pointsToDo?.isPartOfPreschool ? 'CheckIcon' : '',
         customIcon:
-          pointsToDo?.signedUpForApp && !pointsToDo?.notPartOfPreschool ? (
+          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool ? (
             <Kindgarden
               className={`${
-                pointsToDo?.notPartOfPreschool
+                pointsToDo?.isPartOfPreschool
                   ? `bg-successMain text-white`
                   : 'text-quatenary bg-white'
               } z-50 mr-4 h-12 w-12 rounded-full p-2`}
             />
           ) : undefined,
-        iconBackgroundColor: pointsToDo?.notPartOfPreschool
+        iconBackgroundColor: pointsToDo?.isPartOfPreschool
           ? 'successBg'
           : 'quatenary',
         showIcon: true,
@@ -348,13 +348,13 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.signedUpForApp && practitioner?.isPrincipal ? (
             <Crown
               className={`${
-                !pointsToDo?.notPartOfPreschool
+                !pointsToDo?.isPartOfPreschool
                   ? `bg-uiLight text-white`
                   : 'text-quatenary bg-white'
               } z-50 mr-4 h-12 w-12 rounded-full p-2`}
             />
           ) : undefined,
-        iconBackgroundColor: pointsToDo?.notPartOfPreschool
+        iconBackgroundColor: pointsToDo?.isPartOfPreschool
           ? 'successBg'
           : 'quatenary',
         showIcon: true,
