@@ -11,7 +11,7 @@ export interface MenuListDataItem<T = {}> extends Omit<ListItem, 'subTitle'> {
   iconBackgroundColor?: Colours;
   iconColor?: Colours;
   menuIconUrl?: string;
-  customIcon?: ReactElement;
+  customIcon?: ReactElement | undefined;
   subItem?: string;
   childList?: boolean;
   backgroundColor?: Colours;
@@ -20,4 +20,5 @@ export interface MenuListDataItem<T = {}> extends Omit<ListItem, 'subTitle'> {
   rightIconClassName?: string;
   extraData?: T;
   subTitle?: string | ReactElement;
+  hideRightIcon?: boolean;
 }

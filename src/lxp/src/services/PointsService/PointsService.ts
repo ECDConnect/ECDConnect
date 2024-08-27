@@ -2,6 +2,7 @@ import { Config, PointsTodoItemDto } from '@ecdlink/core';
 import { api } from '../axios.helper';
 import {
   PointsLibrary,
+  PointsToDoItemModel,
   PointsUserSummary,
   PointsUserYearMonthSummary,
   UserClubStandingModel,
@@ -140,10 +141,10 @@ class PointsService {
     return true;
   }
 
-  async pointsTodoItems(userId: string): Promise<PointsTodoItemDto> {
+  async pointsTodoItems(userId: string): Promise<PointsToDoItemModel> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { pointsTodoItems: PointsTodoItemDto };
+      data: { pointsTodoItems: PointsToDoItemModel };
       errors?: {};
     }>(``, {
       query: `query GetPointsTodoItems($userId: UUID!) {

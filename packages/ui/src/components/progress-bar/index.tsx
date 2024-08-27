@@ -25,6 +25,7 @@ export type ProgressBarProps = {
   statusChip?: StatusChipProps;
   style?: React.CSSProperties;
   isBigTitle?: boolean;
+  isDashboardItem?: boolean;
 };
 export const ProgressBar = ({
   className,
@@ -44,6 +45,7 @@ export const ProgressBar = ({
   style: customStyle,
   isHiddenBar,
   isBigTitle,
+  isDashboardItem,
 }: ProgressBarProps) => {
   const [statusChipWidth, setStatusChipWidth] = useState<number>();
 
