@@ -106,7 +106,8 @@ export default function Shell() {
 
   useEffect(() => {
     setAvatarColor(getAvatarColor());
-  }, []);
+    history.push(ROUTES.USERS.ALL_ROLES);
+  }, [history]);
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
@@ -122,7 +123,7 @@ export default function Shell() {
         [NavbarTypes.Reporting],
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
-        [NavbarTypes.Settings],
+        isSuperAdmin && [NavbarTypes.Settings],
         NavbarTypes.Notifications,
         NavbarTypes.CHWsOptedOut,
       ];

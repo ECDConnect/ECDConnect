@@ -73,4 +73,5 @@ ion-content {
 
 .bg-logo {
   background-repeat: no-repeat !important;
+  background-size: contain !important;
 }

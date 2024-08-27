@@ -18,6 +18,8 @@ import { format } from 'date-fns';
 import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { ProgressReportingPeriodsTimings } from './progress-reporting-periods-timings';
+import ROUTES from '@/routes/routes';
+import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 
 export const ProgressReportingPeriods: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -98,7 +100,9 @@ export const ProgressReportingPeriods: React.FC = () => {
     showMessage({
       message: 'Reporting dates added!',
     });
-    history.goBack();
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItems.PROGRESS,
+    });
   };
 
   const confirmDialog = useCallback(() => {

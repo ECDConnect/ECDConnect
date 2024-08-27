@@ -74,6 +74,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return communityService.GetOtherConnections(userId, provinceIds, communitySkillIds);
         }
 
-
     }
 }
