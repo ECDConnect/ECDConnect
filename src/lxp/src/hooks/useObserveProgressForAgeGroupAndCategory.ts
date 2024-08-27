@@ -132,7 +132,8 @@ export const useObserveProgressForAgeGroupAndCategory = (
           ...mapProgressReportDetails(
             childReport,
             allSkills,
-            child.childFirstName
+            child.childFirstName,
+            child.ageGroup?.id || 0
           ),
         };
       });

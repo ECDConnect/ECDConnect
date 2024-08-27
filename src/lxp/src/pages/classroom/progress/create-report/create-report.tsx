@@ -12,7 +12,7 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
-import { ProgressCreateReportSkillsToWorkOnSumamry } from './create-report-skills-to-work-on-summary';
+import { ProgressCreateReportSkillsToWorkOnSummary } from './create-report-skills-to-work-on-summary';
 import { useDialog } from '@ecdlink/core';
 
 export type ProgressCreateReportState = {
@@ -29,8 +29,8 @@ export const ProgressCreateReport: React.FC = () => {
   const { childId } = routeState;
   const {
     child,
-    currentReportingPeriod,
-    currentReport,
+    currentObservationPeriod,
+    detailedObservations,
     updateChildEnjoys,
     updateGoodProgressWith,
     updateHowCanCaregiverSupport,
@@ -61,7 +61,7 @@ export const ProgressCreateReport: React.FC = () => {
                 syncChildProgressReports();
                 history.push(ROUTES.PROGRESS_SHARE_REPORT, {
                   childId: routeState.childId,
-                  reportId: currentReport?.id,
+                  reportId: detailedObservations?.id,
                 });
                 submit();
               },
@@ -83,14 +83,43 @@ export const ProgressCreateReport: React.FC = () => {
     });
   }, [dialog]);
 
+  const [howCanCaregiverSupport, setHowCanCaregiverSupport] = useState(
+    detailedObservations?.howCanCaregiverSupport
+  );
+  const [goodProgressWith, setGoodProgressWith] = useState(
+    detailedObservations?.goodProgressWith
+  );
+  const [childEnjoys, setChildEnjoys] = useState(
+    detailedObservations?.childEnjoys
+  );
+
+  const saveAndExit = () => {
+    if (!!goodProgressWith) updateGoodProgressWith(goodProgressWith);
+    if (!!childEnjoys) updateChildEnjoys(childEnjoys);
+    if (!!howCanCaregiverSupport)
+      updateHowCanCaregiverSupport(howCanCaregiverSupport);
+
+    if (isOnline) {
+      syncChildProgressReports();
+    }
+    history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
+      childId: routeState.childId,
+    });
+  };
+
   return (
     <BannerWrapper
       size={'small'}
-      title={`${child?.user?.firstName}'s report ${currentReportingPeriod?.reportNumber}`}
+      title={`${child?.user?.firstName}'s report ${currentObservationPeriod?.reportNumber}`}
       subTitle={`Step ${currentStep} of 3`}
-      onBack={() =>
-        history.replace(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
-      }
+      onBack={() => {
+        if (currentStep > 1) {
+          setCurrentStep(currentStep - 1);
+        } else {
+          history.goBack();
+        }
+      }}
+      onClose={() => saveAndExit()}
     >
       <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>
         <Typography
@@ -107,8 +136,8 @@ export const ProgressCreateReport: React.FC = () => {
               'E.g. Playing with balls. Soccer is his favourite. He is active. He likes playing with other children.'
             }
             className="mt-6 mb-4"
-            onChange={(event) => updateChildEnjoys(event.target.value)}
-            value={currentReport?.childEnjoys}
+            onChange={(event) => setChildEnjoys(event.target.value)}
+            value={childEnjoys}
           />
         )}
         {/* STEP 2 */}
@@ -121,10 +150,10 @@ export const ProgressCreateReport: React.FC = () => {
                 'E.g. Sharing his emotions. He can talk about how he is feeling.'
               }
               className="mt-6 mb-4"
-              onChange={(event) => updateGoodProgressWith(event.target.value)}
-              value={currentReport?.goodProgressWith}
+              onChange={(event) => setGoodProgressWith(event.target.value)}
+              value={goodProgressWith}
             />
-            {!!currentReport?.notes && (
+            {!!detailedObservations?.notes && (
               <>
                 <Divider dividerType="dashed" />
                 <Typography
@@ -135,7 +164,7 @@ export const ProgressCreateReport: React.FC = () => {
                 <Typography
                   type="body"
                   color="textMid"
-                  text={currentReport?.notes}
+                  text={detailedObservations?.notes}
                 />
               </>
             )}
@@ -150,10 +179,8 @@ export const ProgressCreateReport: React.FC = () => {
               'E.g. Asking him how he is feeling every morning and asking him to name items in and around the house.'
             }
             className="mt-6 mb-4"
-            onChange={(event) =>
-              updateHowCanCaregiverSupport(event.target.value)
-            }
-            value={currentReport?.howCanCaregiverSupport}
+            onChange={(event) => setHowCanCaregiverSupport(event.target.value)}
+            value={detailedObservations?.howCanCaregiverSupport}
           />
         )}
         <Button
@@ -173,20 +200,13 @@ export const ProgressCreateReport: React.FC = () => {
           textColor="white"
         />
         {currentStep === 3 && (
-          <ProgressCreateReportSkillsToWorkOnSumamry
+          <ProgressCreateReportSkillsToWorkOnSummary
             childFirstname={child?.user?.firstName || ''}
-            skillsToWorkOn={currentReport?.skillsToWorkOn || []}
+            skillsToWorkOn={detailedObservations?.skillsToWorkOn || []}
           />
         )}
         <Button
-          onClick={() => {
-            if (isOnline) {
-              syncChildProgressReports();
-            }
-            history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
-              childId: routeState.childId,
-            });
-          }}
+          onClick={() => saveAndExit()}
           className="mb-4 w-full"
           size="normal"
           color="quatenary"

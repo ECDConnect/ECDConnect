@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 
-export type ProgressLandingCompleteProps = {
+export type ObservationsForChildLandingCompleteProps = {
   childId: string;
   child: ChildDto;
   currentReportingPeriod: ProgressReportPeriod;
@@ -26,8 +26,8 @@ export type ProgressLandingCompleteProps = {
   currentAgeGroup: ProgressTrackingAgeGroupDto | undefined;
 };
 
-export const ProgressLandingComplete: React.FC<
-  ProgressLandingCompleteProps
+export const ObservationsForChildLandingComplete: React.FC<
+  ObservationsForChildLandingCompleteProps
 > = ({
   childId,
   child,

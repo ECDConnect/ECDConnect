@@ -4,7 +4,7 @@ import { ChildProgressDetailedSkillToWorkOn } from '@/models/progress/child-prog
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { differenceInMonths } from 'date-fns';
 
-export type ChildProgressObservationsSupportLearningOnProps = {
+export type ObservationsForChildSupportLearningProps = {
   child: ChildDto;
   howToSupport?: string;
   skillsToWorkOn: ChildProgressDetailedSkillToWorkOn[];
@@ -13,8 +13,8 @@ export type ChildProgressObservationsSupportLearningOnProps = {
   updateHowToSupport: (value: string) => void;
 };
 
-export const ChildProgressObservationsSupportLearning: React.FC<
-  ChildProgressObservationsSupportLearningOnProps
+export const ObservationsForChildSupportLearning: React.FC<
+  ObservationsForChildSupportLearningProps
 > = ({
   child,
   howToSupport,
