@@ -12397,11 +12397,11 @@ export type PointsPointsTodoItemModel = {
 
 export type PointsToDoItemModel = {
   __typename?: 'PointsToDoItemModel';
-  notPartOfPreschool: Scalars['Boolean'];
-  plannedOneDay: Scalars['Boolean'];
-  savedIncomeOrExpense: Scalars['Boolean'];
-  signedUpForApp: Scalars['Boolean'];
-  viewedCommunitySection: Scalars['Boolean'];
+  isPartOfPreschool?: Maybe<Scalars['Boolean']>;
+  plannedOneDay?: Maybe<Scalars['Boolean']>;
+  savedIncomeOrExpense?: Maybe<Scalars['Boolean']>;
+  signedUpForApp?: Maybe<Scalars['Boolean']>;
+  viewedCommunitySection?: Maybe<Scalars['Boolean']>;
 };
 
 export type PointsUserDateSummary = {
