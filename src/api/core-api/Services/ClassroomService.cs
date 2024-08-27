@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.Services.Interfaces;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -115,6 +116,21 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     && x.UserId.Value == userId
                     && x.Classroom.IsActive)
                 .ToList();
+        }
+
+        public List<PrincipalClassroomModel> GetPrincipalUserIdsForClassesWithoutPractitioners()
+        {
+            return _classroomGroupRepo.GetAll()
+                    .Include(x => x.Classroom)
+                    .Where(x =>
+                        x.IsActive
+                        && !x.UserId.HasValue
+                        && x.Classroom.IsActive
+                        && !x.Classroom.IsDummySchool.Value 
+                        && x.Classroom.UserId.HasValue)
+                    .Select(x => new PrincipalClassroomModel(x.Id, x.Name, x.Classroom.User))
+                    .Distinct()
+                    .ToList();
         }
     }
 }

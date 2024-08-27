@@ -1,4 +1,6 @@
-﻿using ECDLink.DataAccessLayer.Entities.Classroom;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using System;
 using System.Collections.Generic;
 
@@ -8,5 +10,6 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
     {
         Classroom GetClassroomForUser(Guid userId);
         List<ClassroomGroup> GetClassroomGroupsForUser(Guid userId);
+        List<PrincipalClassroomModel> GetPrincipalUserIdsForClassesWithoutPractitioners();
     }
 }

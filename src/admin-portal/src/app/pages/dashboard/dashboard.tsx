@@ -1,25 +1,13 @@
 import { classNames, TabItem } from '@ecdlink/ui';
 import { useState } from 'react';
 import GADashboard from './components/dashboard-qa/dashboard-qa';
-import PractitionerDashboard from './components/dashboard-practitioner/dashboard-practitioner';
-import ChildrenDashboard from './components/dashboard-children/dashboard-children';
 
 // TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 export default function Dashboard() {
   const getNavigationItems = () => {
     return [
       {
-        title: 'Practitioners',
-        initActive: false,
-        child: <PractitionerDashboard />,
-      },
-      {
-        title: 'Children',
-        initActive: false,
-        child: <ChildrenDashboard />,
-      },
-      {
-        title: 'Analytics',
+        title: 'General',
         initActive: true,
         child: <GADashboard />,
       },

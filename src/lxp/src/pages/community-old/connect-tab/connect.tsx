@@ -53,14 +53,14 @@ export const Connect: React.FC = () => {
     function getChildren(name: string) {
       let children: any = [];
 
-      connectItemData?.forEach((element: ConnectItem) => {
-        if (
-          element?.linkedConnect &&
-          element?.linkedConnect[0]?.name === name
-        ) {
-          children.push({ buttonText: element.buttonText, link: element.link });
-        }
-      });
+      // connectItemData?.forEach((element: ConnectItem) => {
+      //   if (
+      //     element?.linkedConnect &&
+      //     element?.linkedConnect[0]?.name === name
+      //   ) {
+      //     children.push({ buttonText: element.buttonText, link: element.link });
+      //   }
+      // });
 
       return children;
     }
@@ -118,7 +118,7 @@ export const Connect: React.FC = () => {
               >
                 <tbody>
                   <tr>
-                    <td width={`90%`}>{child?.buttonText}</td>
+                    {/* <td width={`90%`}>{child?.buttonText}</td> */}
                     <td width={`10%`}>
                       <a
                         href={child?.link || ''}
