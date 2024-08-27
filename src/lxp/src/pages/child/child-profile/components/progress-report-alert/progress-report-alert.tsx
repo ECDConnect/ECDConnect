@@ -34,8 +34,11 @@ export const ChildProgressReportAlert: React.FC<
 > = ({ child }) => {
   const history = useHistory();
 
-  const { currentReportingPeriod, currentReport, currentAgeGroup } =
-    useObserveProgressForChild(child.id!);
+  const {
+    currentObservationPeriod,
+    detailedObservations,
+    observationsAgeGroup,
+  } = useObserveProgressForChild(child.id!);
 
   const navigateToChildProgressObservation = () => {
     history.push(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
@@ -44,24 +47,24 @@ export const ChildProgressReportAlert: React.FC<
   };
 
   const isInPeriod =
-    !!currentReportingPeriod &&
-    isBefore(new Date(), new Date(currentReportingPeriod.startDate)) &&
-    isBefore(new Date(currentReportingPeriod.endDate), new Date());
+    !!currentObservationPeriod &&
+    isBefore(new Date(), new Date(currentObservationPeriod.startDate)) &&
+    isBefore(new Date(currentObservationPeriod.endDate), new Date());
 
-  if (!currentReportingPeriod || !!currentReport?.dateCompleted) {
+  if (!currentObservationPeriod || !!detailedObservations?.dateCompleted) {
     return <></>;
   }
 
   const getListItemProps = (): ListItemProps => {
     if (
-      !!currentAgeGroup &&
+      !!observationsAgeGroup &&
       isInPeriod &&
-      !currentReport?.observationsCompleteDate
+      !detailedObservations?.observationsCompleteDate
     ) {
       return {
         ...baseProgressReportListItem,
         title: `<b>Create progress report</b>`,
-        subTitle: `Report ${currentReport?.reportingPeriodNumber || 1}`,
+        subTitle: `Report ${detailedObservations?.reportingPeriodNumber || 1}`,
         // iconName: 'InformationIcon',
         // iconBackgroundColor: 'infoMain',
         onButtonClick: navigateToChildProgressObservation,

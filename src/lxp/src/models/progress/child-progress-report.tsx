@@ -15,6 +15,11 @@ export type ChildProgressReport = {
   childEnjoys?: string;
   goodProgressWith?: string;
   howCanCaregiverSupport?: string;
+
+  classroomName?: string;
+  practitionerName?: string;
+  principalName?: string;
+  principalPhoneNumber?: string;
 };
 
 export type ChildProgressSkillObservation = {
@@ -46,11 +51,18 @@ export type ChildProgressDetailedReport = {
   childEnjoys?: string;
   goodProgressWith?: string;
   howCanCaregiverSupport?: string;
+  ageInMonthsAtReport: number | undefined;
+
+  classroomName?: string;
+  practitionerName?: string;
+  principalName?: string;
+  principalPhoneNumber?: string;
 };
 
 export type ChildProgressDetailedSkillObservation =
   ChildProgressSkillObservation & {
     skillName: string;
+    skillDescription: string;
     subCategoryId: number;
     categoryId: number;
     isPositive: boolean;
@@ -61,6 +73,29 @@ export type ChildProgressDetailedSkillToWorkOn = {
   skillId: number;
   howToSupport: string;
   skillName: string;
+  skillDescription: string;
   subCategoryId: number;
   categoryId: number;
+};
+
+export type ProgressReportsCategorySummary = {
+  id: number;
+  imageUrl: string;
+  color: string;
+  name: string;
+  subTitle: string;
+  description: string;
+  subCategories: {
+    id: number;
+    imageUrl: string;
+    name: string;
+    title?: string;
+    description: string;
+    skills: {
+      childrenWorkingOnSkillCount: number;
+      id: number;
+      description: string;
+      name: string;
+    }[];
+  }[];
 };

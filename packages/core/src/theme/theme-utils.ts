@@ -48,6 +48,14 @@ export const mapTheme = (variables: ITheme): IMappedTheme => {
     '--logo': variables.logoUrl || '',
     '--banner': variables.graphicOverlayUrl || '',
     '--darkBackground': variables.darkBackground || '',
+    '--quatenary': variables.quatenary || '',
+    '--quatenaryMain': variables.quatenaryMain || '',
+    '--adminPortalBg': variables.adminPortalBg || '',
+    '--darkBlue': variables.darkBlue || '',
+    '--pointsCardBg': variables.pointsCardBg || '',
+    '--pointsCardBarBg': variables.pointsCardBarBg || '',
+    '--quatenaryBg': variables.quatenaryBg || '',
+    '--adminBackground': variables.adminBackground || '',
   };
 };
 

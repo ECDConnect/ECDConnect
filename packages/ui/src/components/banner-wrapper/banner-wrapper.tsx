@@ -41,6 +41,7 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   onHelp?: () => void;
   version?: string;
   helpId?: string;
+  hasDecoratedBackButton?: boolean;
 }
 
 export const BannerWrapper: React.FC<BannerWrapperProps> = ({
@@ -73,6 +74,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
   id,
   helpId,
   style,
+  hasDecoratedBackButton,
 }) => {
   const showMenu = (menuItems?.length || 0) > 0;
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -95,13 +97,23 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
 
       <div className={styles.header(showBackground, color, size, renderBorder)}>
         <div className={styles.iconWrapperLeft}>
-          {onBack && (
+          {onBack && !hasDecoratedBackButton && (
             <ArrowLeftIcon
               className={styles.icons}
               width={25}
               height={30}
               onClick={onBack}
             />
+          )}
+          {onBack && hasDecoratedBackButton && (
+            <div className="bg-secondary flex h-12 w-12 items-center justify-center rounded-full">
+              <ArrowLeftIcon
+                className={styles.icons}
+                width={25}
+                height={30}
+                onClick={onBack}
+              />
+            </div>
           )}
           {showMenu && (
             <MenuAlt2Icon

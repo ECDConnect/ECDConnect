@@ -22,19 +22,20 @@ export const useObserveProgressForChild = (childId: string) => {
 
   const child = useSelector(childrenSelectors.getChildById(childId));
 
-  const allAgeGroups = useSelector(
-    progressTrackingSelectors.getProgressAgeGroups()
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+  const practitionerForChild = useSelector(
+    classroomsSelectors.getClassroomGroupByChildUserId(child!.userId!)
   );
 
-  const currentObservationsForChild = useSelector(
-    progressTrackingSelectors.getCurrentObservationsForChild(childId)
+  const allAgeGroups = useSelector(
+    progressTrackingSelectors.getProgressAgeGroups()
   );
 
   const allReports = useSelector(
     progressTrackingSelectors.getProgressReportsForChild(childId)
   );
 
-  const activeReportingPeriod = useSelector(
+  const currentReportingPeriod = useSelector(
     classroomsSelectors.getCurrentProgressReportPeriod()
   );
 
@@ -42,8 +43,8 @@ export const useObserveProgressForChild = (childId: string) => {
     classroomsSelectors.getAllProgressReportPeriods()
   );
 
-  const currentReportingPeriod = useMemo(() => {
-    if (!activeReportingPeriod) {
+  const currentObservationPeriod = useMemo(() => {
+    if (!currentReportingPeriod) {
       return undefined;
     }
 
@@ -51,7 +52,7 @@ export const useObserveProgressForChild = (childId: string) => {
       allReports.some(
         (x) =>
           !!x.dateCompleted &&
-          x.childProgressReportPeriodId === activeReportingPeriod.id
+          x.childProgressReportPeriodId === currentReportingPeriod.id
       )
     ) {
       // Report already completed for active report period, so just use the next available
@@ -59,14 +60,20 @@ export const useObserveProgressForChild = (childId: string) => {
         .filter(
           (x) => new Date(x.endDate).getFullYear() === new Date().getFullYear()
         )
-        .find((x) => x.reportNumber === activeReportingPeriod.reportNumber + 1);
+        .find(
+          (x) => x.reportNumber === currentReportingPeriod.reportNumber + 1
+        );
     }
 
-    return activeReportingPeriod;
-  }, [allReports, activeReportingPeriod, allReportingPeriods]);
+    return currentReportingPeriod;
+  }, [allReports, currentReportingPeriod, allReportingPeriods]);
 
-  const currentAgeGroup = !!currentReportingPeriod
-    ? getProgressAgeGroupForChild(currentReportingPeriod, child!, allAgeGroups)
+  const observationsAgeGroup = !!currentObservationPeriod
+    ? getProgressAgeGroupForChild(
+        currentObservationPeriod.endDate,
+        child!,
+        allAgeGroups
+      )
     : undefined;
 
   const currentAge = !!child?.user?.dateOfBirth
@@ -74,257 +81,304 @@ export const useObserveProgressForChild = (childId: string) => {
     : undefined;
 
   const skillsForAgeGroup = useSelector(
-    progressTrackingSelectors.getSkillsForAgeGroup(currentAgeGroup?.id || 0)
+    progressTrackingSelectors.getSkillsForAgeGroup(
+      observationsAgeGroup?.id || 0
+    )
   );
 
   const allSkills = useSelector(
     progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
   );
 
+  const currentReport = allReports.find(
+    (x) => x.childProgressReportPeriodId === currentObservationPeriod?.id
+  );
+
   const currentObservations = useMemo<ChildProgressSkill[]>(() => {
     return skillsForAgeGroup.map((x) => ({
       ...x,
-      value: currentObservationsForChild?.skillObservations.find(
-        (o) => o.skillId === x.id
-      )?.value,
+      value: currentReport?.skillObservations.find((o) => o.skillId === x.id)
+        ?.value,
     }));
-  }, [skillsForAgeGroup, currentObservationsForChild]);
+  }, [skillsForAgeGroup, currentReport]);
 
   // Sets up reports, adding details for reporting period, skill names (for locale) etc
-  const detailedReports = useMemo<ChildProgressDetailedReport[]>(() => {
-    const details = allReports.map((report) => {
-      const reportingPeriod = allReportingPeriods.find(
-        (x) => x.id === report.childProgressReportPeriodId
-      );
+  const detailedObservations = useMemo<
+    ChildProgressDetailedReport | undefined
+  >(() => {
+    if (!currentReport) {
+      return undefined;
+    }
 
-      const missedSkillCount =
-        skillsForAgeGroup.length - report.skillObservations.length;
-      const doNotKnowSkillCount = report.skillObservations.filter(
-        (x) => x.value === ProgressSkillValues.DoNotKnow
-      ).length;
-      const doNotKnowPercentage =
-        ((missedSkillCount + doNotKnowSkillCount) /
-          report.skillObservations.length) *
-        100;
+    const missedSkillCount =
+      skillsForAgeGroup.length - currentReport.skillObservations.length;
+    const doNotKnowSkillCount = currentReport.skillObservations.filter(
+      (x) => x.value === ProgressSkillValues.DoNotKnow
+    ).length;
+    const doNotKnowPercentage =
+      ((missedSkillCount + doNotKnowSkillCount) /
+        currentReport.skillObservations.length) *
+      100;
 
-      return {
-        ...report,
-        unknownPercentage: doNotKnowPercentage,
-        unknownCount: missedSkillCount + doNotKnowSkillCount,
-        skillsToWorkOn: report.skillsToWorkOn
-          .map((skillToWorkOn) => {
-            const skill = allSkills.find((x) => x.id === skillToWorkOn.skillId);
-            return {
-              ...skillToWorkOn,
-              skillName: baseReplaceSkillText(
-                skill?.name || '',
-                child?.user?.firstName || ''
-              ),
-              subCategoryId: skill?.subCategory.id || 0,
-              categoryId: skill?.subCategory.category.id || 0,
-            };
-          })
-          .sort((a, b) => a.skillId - b.skillId),
-        skillObservations: report.skillObservations.map((skillObs) => {
-          const skill = allSkills.find((x) => x.id === skillObs.skillId);
+    return {
+      ...currentReport,
+      unknownPercentage: doNotKnowPercentage,
+      unknownCount: missedSkillCount + doNotKnowSkillCount,
+      skillsToWorkOn: currentReport.skillsToWorkOn
+        .map((skillToWorkOn) => {
+          const skill = allSkills.find((x) => x.id === skillToWorkOn.skillId);
           return {
-            ...skillObs,
+            ...skillToWorkOn,
             skillName: baseReplaceSkillText(
               skill?.name || '',
               child?.user?.firstName || ''
             ),
+            skillDescription: skill?.description || '',
             subCategoryId: skill?.subCategory.id || 0,
             categoryId: skill?.subCategory.category.id || 0,
-            isPositive:
-              !!skillObs.value &&
-              ((!skill?.isReverseScored &&
-                skillObs.value === ProgressSkillValues.Yes) ||
-                (!!skill?.isReverseScored &&
-                  skillObs.value === ProgressSkillValues.No)),
-            isNegative:
-              !!skillObs.value &&
-              ((!skill?.isReverseScored &&
-                skillObs.value === ProgressSkillValues.No) ||
-                (!!skill?.isReverseScored &&
-                  skillObs.value === ProgressSkillValues.Yes)),
           };
-        }),
-        reportingPeriodStartDate: new Date(reportingPeriod!.startDate),
-        reportingPeriodEndDate: new Date(reportingPeriod!.endDate),
-        reportingPeriodNumber: reportingPeriod!.reportNumber,
-      };
+        })
+        .sort((a, b) => a.skillId - b.skillId),
+      skillObservations: currentReport.skillObservations.map((skillObs) => {
+        const skill = allSkills.find((x) => x.id === skillObs.skillId);
+        return {
+          ...skillObs,
+          skillName: baseReplaceSkillText(
+            skill?.name || '',
+            child?.user?.firstName || ''
+          ),
+          skillDescription: skill?.description || '',
+          subCategoryId: skill?.subCategory.id || 0,
+          categoryId: skill?.subCategory.category.id || 0,
+          isPositive:
+            !!skillObs.value &&
+            ((!skill?.isReverseScored &&
+              skillObs.value === ProgressSkillValues.Yes) ||
+              (!!skill?.isReverseScored &&
+                skillObs.value === ProgressSkillValues.No)),
+          isNegative:
+            !!skillObs.value &&
+            ((!skill?.isReverseScored &&
+              skillObs.value === ProgressSkillValues.No) ||
+              (!!skill?.isReverseScored &&
+                skillObs.value === ProgressSkillValues.Yes)),
+        };
+      }),
+      reportingPeriodStartDate: new Date(currentObservationPeriod!.startDate),
+      reportingPeriodEndDate: new Date(currentObservationPeriod!.endDate),
+      reportingPeriodNumber: currentObservationPeriod!.reportNumber,
+      ageInMonthsAtReport: !!child?.user?.dateOfBirth
+        ? differenceInMonths(
+            new Date(currentObservationPeriod!.endDate),
+            new Date(child.user.dateOfBirth)
+          )
+        : undefined,
+    };
+  }, [currentReport]);
+
+  const areObservationsComplete = (updatedSkillId?: number) => {
+    // Check if we have added all observations
+    const allObsMade = skillsForAgeGroup.every((x) => {
+      return (
+        updatedSkillId === x.id ||
+        (detailedObservations?.skillObservations || []).findIndex(
+          (y) => y.skillId === x.id
+        ) >= 0
+      );
     });
 
-    return details;
-  }, [allReports, allReportingPeriods]);
-
-  const currentReport = useMemo(() => {
-    return detailedReports.find(
-      (x) => x.childProgressReportPeriodId === currentReportingPeriod?.id
+    const noDonNotKnow = !detailedObservations?.skillObservations.some(
+      (x) => x.value === ProgressSkillValues.DoNotKnow
     );
-  }, [detailedReports, currentReportingPeriod]);
 
-  const completedReports = useMemo(() => {
-    return detailedReports.filter((x) => !!x.dateCompleted);
-  }, [detailedReports, currentReportingPeriod]);
+    const skillsToWorkOnSelected =
+      detailedObservations?.skillsToWorkOn.length === 4 ||
+      detailedObservations?.skillsToWorkOn.length ===
+        detailedObservations?.skillObservations.reduce(
+          (count, x) => (x.isNegative ? count + 1 : count),
+          0
+        );
+
+    return allObsMade && noDonNotKnow && skillsToWorkOnSelected;
+  };
 
   const addObservationForSkill = async (
     skillId: number,
     value: ProgressSkillValues
   ) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
     await appDispatch(
       progressTrackingActions.updateSkill({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         skillId,
         value,
       })
     );
 
     // Check if we have added all observations
-    const allObsMade = skillsForAgeGroup.every((x) => {
-      return (
-        skillId === x.id ||
-        (currentObservationsForChild?.skillObservations || []).findIndex(
-          (y) => y.skillId === x.id
-        ) >= 0
-      );
-    });
-    if (allObsMade) {
+    if (areObservationsComplete(skillId)) {
       appDispatch(
         progressTrackingActions.markAllSkillsObserved({
           childId,
-          reportingPeriodId: currentReportingPeriod.id,
+          reportingPeriodId: currentObservationPeriod.id,
         })
       );
     }
   };
 
   const addSkillToWorkOn = (skillId: number) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.addSkillToWorkOn({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         skillId,
       })
     );
   };
 
   const removeSkillToWorkOn = (skillId: number) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.removeSkillToWorkOn({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         skillId,
       })
     );
+
+    // Check if we have added all observations
+    if (areObservationsComplete(skillId)) {
+      appDispatch(
+        progressTrackingActions.markAllSkillsObserved({
+          childId,
+          reportingPeriodId: currentObservationPeriod.id,
+        })
+      );
+    }
   };
 
   const updateSkillToWorkOn = (skillId: number, value: string) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.updateSkillToWorkOn({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         skillId,
         value,
       })
     );
+
+    // Check if we have added all observations
+    if (areObservationsComplete(skillId)) {
+      appDispatch(
+        progressTrackingActions.markAllSkillsObserved({
+          childId,
+          reportingPeriodId: currentObservationPeriod.id,
+        })
+      );
+    }
   };
 
   const updateHowToSupport = (value: string) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.updateHowToSupport({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         value,
       })
     );
   };
 
   const updateNotes = (value: string) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.updateNotes({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         value,
       })
     );
   };
 
   const updateChildEnjoys = (value: string) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.updateChildEnjoys({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         value,
       })
     );
   };
 
   const updateGoodProgressWith = (value: string) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.updateGoodProgressWith({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         value,
       })
     );
   };
 
   const updateHowCanCaregiverSupport = (value: string) => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.updateHowCanCaregiverSupport({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
         value,
       })
     );
   };
 
   const completeReport = () => {
-    if (!currentReportingPeriod) {
+    if (!currentObservationPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.completeReport({
         childId,
-        reportingPeriodId: currentReportingPeriod.id,
+        reportingPeriodId: currentObservationPeriod.id,
+        classroomName: classroom!.name,
+        practitionerName: `${
+          practitionerForChild?.practitioner?.user?.firstName
+        } ${practitionerForChild?.practitioner?.user?.surname || ''}`,
+        principalName: `${classroom?.principal.firstName} ${
+          classroom?.principal.surname || ''
+        }`,
+        principalPhoneNumber: classroom!.principal.phoneNumber,
       })
     );
   };
@@ -340,12 +394,11 @@ export const useObserveProgressForChild = (childId: string) => {
   return {
     child,
     currentAge,
-    currentAgeGroup,
+    observationsAgeGroup,
     skillsForAgeGroup,
+    detailedObservations,
+    currentObservationPeriod,
     currentObservations,
-    currentReport,
-    completedReports,
-    currentReportingPeriod,
     replaceSkillText,
     addObservationForSkill,
     addSkillToWorkOn,

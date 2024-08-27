@@ -85,6 +85,14 @@ export const ObservationsByCategory: React.FC = () => {
           });
         }
       }}
+      onClose={() => {
+        if (isOnline) {
+          syncChildProgressReports();
+        }
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItems.PROGRESS,
+        });
+      }}
     >
       <div className="mt-2 flex flex-col p-4">
         <div className="mt-4 mb-4 flex flex-row">

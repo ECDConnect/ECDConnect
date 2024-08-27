@@ -28,6 +28,8 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
   barDivides,
   hideProgressBar,
   id,
+  isHiddenSubLabel,
+  isBigTitle,
 }) => {
   const percentageScore = (currentPoints / maxPoints) * 100;
 
@@ -58,6 +60,8 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
             divides={barDivides}
             statusChip={barStatusChip}
             isHiddenBar={hideProgressBar}
+            isHiddenSubLabel={isHiddenSubLabel}
+            isBigTitle={isBigTitle}
           />
           {statusChip && (
             <div className="absolute right-4" style={{ top: 1.5 }}>

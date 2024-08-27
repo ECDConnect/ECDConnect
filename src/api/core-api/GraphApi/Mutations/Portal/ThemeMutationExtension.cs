@@ -31,11 +31,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
             fileStream.Dispose();
 
             // Update themePath on tenant if not available
-            if (TenantExecutionContext.Tenant.ThemePath == null)
-            {
-                var themePath = TenantExecutionContext.Tenant.BlobStorageAddress + "/theme/" + fileName;
-                tenantService.UpdateTenantThemePath(TenantExecutionContext.Tenant.Id, themePath);
-            }
+            var themePath = TenantExecutionContext.Tenant.BlobStorageAddress + "/theme/" + fileName;
+            tenantService.UpdateTenantThemePath(TenantExecutionContext.Tenant.Id, themePath);
+
             return fileName;
         }
 

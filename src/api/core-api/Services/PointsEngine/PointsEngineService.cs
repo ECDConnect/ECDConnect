@@ -1,12 +1,9 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Community;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
@@ -25,7 +22,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
@@ -235,23 +231,28 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
             }
+
             if (userPointRecord.ComparativeTargetPercentage == 100)
             {
+                userPointRecord.MessageNr = 1;
                 userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                 userPointRecord.ComparativeSecondaryMessage = "You are the top points earner so far this month. Keep it up!";
             }
             if (userPointRecord.ComparativeTargetPercentage >= 75)
             {
+                userPointRecord.MessageNr = 2;
                 userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are one of the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                 userPointRecord.ComparativeSecondaryMessage = "You are one of the top points earner so far this month. Keep it up!";
             }
             if (userPointRecord.ComparativeTargetPercentage >= 50)
             {
+                userPointRecord.MessageNr = 3;
                 userPointRecord.ComparativePrimaryMessage = $"Wow, great job {firstName}!";
                 userPointRecord.ComparativeSecondaryMessage = $"You have more points than most other {TenantExecutionContext.Tenant.ApplicationName} {roleName}s!";
             }
             if (userPointRecord.ComparativeTargetPercentage < 50)
             {
+                userPointRecord.MessageNr = 4;
                 userPointRecord.ComparativePrimaryMessage = $"Keep going {firstName}!";
                 userPointRecord.ComparativeSecondaryMessage = $"Most of the practitioners on {TenantExecutionContext.Tenant.ApplicationName} have earned more than {userPointRecord.PointsTotal} points! Earn more points to join them.";
             }

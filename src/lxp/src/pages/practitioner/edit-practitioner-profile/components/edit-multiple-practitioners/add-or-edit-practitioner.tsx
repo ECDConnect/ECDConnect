@@ -44,7 +44,7 @@ export const AddOrEditPractitioner = ({
   const [isPractitionerRegistered, setIsPractitionerRegistered] =
     useState<boolean>();
   const [addNote, setAddNote] = useState();
-  const { preferId, idNumber, passport } = useWatch({
+  const { preferId, idNumber, passport, firstName } = useWatch({
     control,
   });
 
@@ -274,7 +274,7 @@ export const AddOrEditPractitioner = ({
                 isPractitionerRegistered
                   ? []
                   : [
-                      'Encourage Thandi to register for the app as soon as possible!',
+                      `Encourage ${firstName} to register for the app as soon as possible!`,
                     ]
               }
             />

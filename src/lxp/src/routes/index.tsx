@@ -131,10 +131,7 @@ import { ConnectionProfile } from '@/pages/community/connection-profile/connecti
 import MonthlyAttendanceReport from '@/pages/classroom/attendance/components/attendance-report/components/attendance-monthly-report/attendance-report';
 import { ECDHeroes } from '@/pages/community/community-tabs/components/community-dashboard/components/ecd-heroes/ecd-heroes';
 import { CommunityConnections } from '@/pages/community/community-tabs/components/community-dashboard/components/received-requests/community-connections';
-import { ProgressObservations } from '@/pages/classroom/progress/observations/child-progress-observations';
-import { ChildProgressObservationsLanding } from '@/pages/classroom/progress/landing/child-progress-observations-landing';
 import { ChildProgressReportsList } from '@/pages/classroom/progress/child-reports-list/child-progress-reports-list';
-import { ChildProgressObservationsNotes } from '@/pages/classroom/progress/landing/child-progress-observations-notes';
 import { SelectChildToTrack } from '@/pages/classroom/progress/select-child-to-track-progress/select-child-to-track-progress';
 import { SelectCategoryToTrack } from '@/pages/classroom/progress/select-category-to-track-progress/select-category-to-track-progress';
 import { ObservationsByCategory } from '@/pages/classroom/progress/observations-by-category/observations-by-category';
@@ -143,6 +140,10 @@ import { ProgressShareReport } from '@/pages/classroom/progress/share-report/sha
 import { ProgressViewReport } from '@/pages/classroom/progress/view-report/view-report';
 import { ProgressViewReportsSummary } from '@/pages/classroom/progress/view-reports-summary/view-reports-summary';
 import { ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup } from '@/pages/classroom/progress/view-reports-summary/view-reports-summary-select-class-and-age-group';
+import { ProgressReportingPeriods } from '@/pages/classroom/progress/reporting-periods/progress-reporting-periods';
+import { ObservationsForChild } from '@/pages/classroom/progress/observations-for-child/observations-for-child';
+import { ObservationsForChildNotes } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing-notes';
+import { ObservationsForChildLanding } from '@/pages/classroom/progress/observations-for-child-landing/observations-for-child-landing';
 
 const PublicRoutes: React.FC = () => {
   const tenant = useTenant();
@@ -604,13 +605,18 @@ const AuthRoutes: React.FC = () => {
         component={ChildAttendanceReportPage}
       />
       <Route path={ROUTES.REMOVE_CHILD} component={RemoveChild} />
+
+      <Route
+        path={ROUTES.PROGRESS_SETUP_REPORTING_PERIODS}
+        component={ProgressReportingPeriods}
+      />
       <Route
         path={ROUTES.PROGRESS_OBSERVATIONS}
-        component={ProgressObservations}
+        component={ObservationsForChild}
       />
       <Route
         path={ROUTES.PROGRESS_OBSERVATIONS_NOTES}
-        component={ChildProgressObservationsNotes}
+        component={ObservationsForChildNotes}
       />
       <Route
         path={ROUTES.PROGRESS_REPORT_LIST}
@@ -618,7 +624,7 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         path={ROUTES.PROGRESS_OBSERVATIONS_LANDING}
-        component={ChildProgressObservationsLanding}
+        component={ObservationsForChildLanding}
       />
       <Route
         path={ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK}

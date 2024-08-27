@@ -106,7 +106,8 @@ export default function Shell() {
 
   useEffect(() => {
     setAvatarColor(getAvatarColor());
-  }, []);
+    history.push(ROUTES.USERS.ALL_ROLES);
+  }, [history]);
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {

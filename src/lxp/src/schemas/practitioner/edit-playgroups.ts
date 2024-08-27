@@ -25,8 +25,7 @@ export const editPlaygroupSchema = Yup.object().shape({
     .matches(/^(?!(unsure)$).+$/gi, {
       excludeEmptyString: true,
       message: 'You cannot use Unsure as a playgroup name',
-    })
-    .required('This field is required'),
+    }),
   meetingDays: Yup.array().when('meetEveryday', {
     is: true,
     then: Yup.array().ensure().compact().of(Yup.number().required()).required(),

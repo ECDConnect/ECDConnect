@@ -366,9 +366,20 @@ const progressTrackingSlice = createSlice({
       action: PayloadAction<{
         childId: string;
         reportingPeriodId: string;
+        classroomName: string;
+        practitionerName: string;
+        principalName: string;
+        principalPhoneNumber: string;
       }>
     ) => {
-      const { childId, reportingPeriodId } = action.payload;
+      const {
+        childId,
+        reportingPeriodId,
+        classroomName,
+        practitionerName,
+        principalName,
+        principalPhoneNumber,
+      } = action.payload;
 
       const report = state.childProgressReports.find(
         (x) =>
@@ -386,6 +397,10 @@ const progressTrackingSlice = createSlice({
           ...report,
           synced: false,
           dateCompleted: new Date().toISOString(),
+          classroomName: classroomName,
+          practitionerName: practitionerName,
+          principalName: principalName,
+          principalPhoneNumber: principalPhoneNumber,
         },
       ];
     },

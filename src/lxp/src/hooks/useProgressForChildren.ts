@@ -40,15 +40,15 @@ export const useProgressForChildren = () => {
     }
 
     return (
-      isBefore(new Date(), new Date(currentReportingPeriod.startDate)) &&
-      isBefore(new Date(currentReportingPeriod.endDate), new Date())
+      isBefore(new Date(currentReportingPeriod.startDate), new Date()) &&
+      isBefore(new Date(), new Date(currentReportingPeriod.endDate))
     );
   }, [currentReportingPeriod]);
 
   const children = useMemo(() => {
     return (baseChildren || []).map((child) => ({
-      childId: child.id,
-      childUserId: child.userId,
+      childId: child.id || '',
+      childUserId: child.userId || '',
       childFirstName: child.user?.firstName || '',
       childProfileImageUrl: child.user?.profileImageUrl,
       childFullName: `${child.user?.firstName} ${child.user?.surname}`,
@@ -57,7 +57,7 @@ export const useProgressForChildren = () => {
         : undefined,
       ageGroup: !!currentReportingPeriod
         ? getProgressAgeGroupForChild(
-            currentReportingPeriod,
+            currentReportingPeriod.endDate,
             child!,
             allAgeGroups
           )
@@ -80,7 +80,8 @@ export const useProgressForChildren = () => {
           ...mapProgressReportDetails(
             childReport,
             allSkills,
-            child.childFirstName
+            child.childFirstName,
+            child.ageGroup?.id || 0
           ),
         };
       });
