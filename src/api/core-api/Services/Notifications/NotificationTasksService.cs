@@ -1,10 +1,13 @@
 ﻿using ECDLink.Abstractrions.Constants;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -89,11 +92,6 @@ namespace EcdLink.Api.CoreApi.Services
             _logger.LogInformation("DailyUserOfflineNotification stopped at " + DateTime.Now);
         }
 
-        public async Task MonthlyPointsgReminderAsync()
-        {
-            var adminId = _hierarchyEngine.GetAdminUserId();
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now.Date, null, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }
+        
     }
 }

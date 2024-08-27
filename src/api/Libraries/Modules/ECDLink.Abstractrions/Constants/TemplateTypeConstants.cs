@@ -27,6 +27,12 @@ namespace ECDLink.Abstractrions.Constants
         public const string PreSchoolInvitation = "pre-school-invitation";
         public const string PrincipalInvitation = "principal-invitation";
         public const string MultipleProgrammeInvitation = "multiple-programme-invitation";
+        public const string PractitionerJoinedWithPreschoolCode = "practitioner-joined-with-preschool-code";
+        public const string Statements60DaysNotification = "statements-60-days-notification";
+        public const string Statements30DaysNotification = "statements-30-days-notification";
+        public const string CalendarInvitation = "calendar-invitation";
+        public const string OpenCommunityConnections = "open-community-connections";
+        public const string FeedbackNotification = "feedback-notification";
 
         // Tenant Setup Info
         public const string NewTenantSetupInfoReceived = "new-tenant-setup-info-received";
@@ -85,6 +91,7 @@ namespace ECDLink.Abstractrions.Constants
         //coach notifications
         public const string CoachVisitsOverdue = "coach-visits-overdue";
         public const string CoachRemoveTrainee = "coach-remove-trainee";
+        public const string CoachRemovePractitioner = "coach-remove-practitioner";
         public const string Trainee2WeekOnboardingWarning = "trainee-two-week-onboarding-warning";
         public const string NewClubleader = "new-clubleader";
         public const string CoachNewTrainees = "coach-new-trainees";
