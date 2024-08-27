@@ -461,7 +461,6 @@ namespace EcdLink.Api.CoreApi.Services
                     _communityProfileConnectionRepo.Update(item);
                 }
                 _pointsService.CalculateConnectWithAnotherUser(input.UserId);
-                _notificationService.ExpireNotificationsTypesForUser(input.UserId.ToString(), TemplateTypeConstants.OpenCommunityConnections);
             }
             if (input.UserIdsToReject != null && input.UserIdsToReject.Any())
             {
@@ -474,8 +473,8 @@ namespace EcdLink.Api.CoreApi.Services
                     item.UpdatedBy = _applicationUserId.ToString();
                     _communityProfileConnectionRepo.Update(item);
                 }
-                _notificationService.ExpireNotificationsTypesForUser(input.UserId.ToString(), TemplateTypeConstants.OpenCommunityConnections);
             }
+            _notificationService.ExpireNotificationsTypesForUser(input.UserId.ToString(), TemplateTypeConstants.OpenCommunityConnections);
             return GetCommunityProfile(input.UserId);
         }
 

@@ -1,22 +1,13 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.Community;
 using EcdLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Community;
-using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
-using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
