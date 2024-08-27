@@ -114,7 +114,7 @@ module.exports = {
         adminBackground: '#EFF6FA'
       },
       backgroundImage: (theme) => ({
-        logo: "url('./assets/logo.svg')",
+        logo: "var(--logo)",
         bannerx2: "url('./assets/bannerx2.png')",
       }),
       animation: {

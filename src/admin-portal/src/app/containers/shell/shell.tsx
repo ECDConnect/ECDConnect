@@ -123,7 +123,7 @@ export default function Shell() {
         [NavbarTypes.Reporting],
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
-        [NavbarTypes.Settings],
+        isSuperAdmin && [NavbarTypes.Settings],
         NavbarTypes.Notifications,
         NavbarTypes.CHWsOptedOut,
       ];
