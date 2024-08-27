@@ -124,13 +124,13 @@ namespace EcdLink.Api.CoreApi.Services
             var practitioner = _practitionerRepo.GetByUserId(userId);
             var isPrincipal = practitioner.IsPrincipalOrAdmin();
 
+            // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
+            var schoolClasses = _classroomService.GetClassroomGroupsForUser(userId);
+            pointsToDoItems.IsPartOfPreschool = schoolClasses.Count > 0 ? true : false;
+
             // Phase 1
             if (!isPrincipal)
             {
-                // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
-                var schoolClasses = _classroomService.GetClassroomGroupsForUser(userId);
-                pointsToDoItems.NotPartOfPreschool = schoolClasses.Count > 0 ? true : false;
-
                 // 3.Practitioner(non - principal) only-- plan at least 1 day - ie picked all activities & story for the day (W11)
                 var schools = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
                 pointsToDoItems.PlannedOneDay = false;
@@ -157,7 +157,9 @@ namespace EcdLink.Api.CoreApi.Services
 
                 pointsToDoItems.SavedIncomeOrExpense = itemsCount > 0 ? true : false;
             }
-              
+
+            
+
             // 4.Gone to Community section of app at least once
             var communityProfile = _communityProfileRepo.GetByUserId(userId);
             pointsToDoItems.ViewedCommunitySection = communityProfile == null ? false: true;

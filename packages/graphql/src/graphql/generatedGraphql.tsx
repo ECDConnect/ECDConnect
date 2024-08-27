@@ -4146,16 +4146,16 @@ export type ConnectInput = {
 
 export type ConnectItem = {
   __typename?: 'ConnectItem';
-  buttonText?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   link?: Maybe<Scalars['String']>;
-  linkedConnect?: Maybe<Array<Maybe<Connect>>>;
+  title?: Maybe<Scalars['String']>;
 };
 
 export type ConnectItemInput = {
-  buttonText?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
   link?: InputMaybe<Scalars['String']>;
-  linkedConnect?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type Consent = {
@@ -12388,11 +12388,11 @@ export type PointsPointsTodoItemModel = {
 
 export type PointsToDoItemModel = {
   __typename?: 'PointsToDoItemModel';
-  notPartOfPreschool: Scalars['Boolean'];
-  plannedOneDay: Scalars['Boolean'];
-  savedIncomeOrExpense: Scalars['Boolean'];
-  signedUpForApp: Scalars['Boolean'];
-  viewedCommunitySection: Scalars['Boolean'];
+  isPartOfPreschool?: Maybe<Scalars['Boolean']>;
+  plannedOneDay?: Maybe<Scalars['Boolean']>;
+  savedIncomeOrExpense?: Maybe<Scalars['Boolean']>;
+  signedUpForApp?: Maybe<Scalars['Boolean']>;
+  viewedCommunitySection?: Maybe<Scalars['Boolean']>;
 };
 
 export type PointsUserDateSummary = {
@@ -13993,6 +13993,7 @@ export type ProgressTrackingAgeGroup = {
   description?: Maybe<Scalars['String']>;
   endAgeInMonths?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  isReverseScored?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   startAgeInMonths?: Maybe<Scalars['String']>;
 };
@@ -14001,6 +14002,7 @@ export type ProgressTrackingAgeGroupInput = {
   color?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   endAgeInMonths?: InputMaybe<Scalars['String']>;
+  isReverseScored?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   startAgeInMonths?: InputMaybe<Scalars['String']>;
 };
@@ -14055,6 +14057,7 @@ export type ProgressTrackingSkill = {
   __typename?: 'ProgressTrackingSkill';
   ageGroups?: Maybe<Array<Maybe<ProgressTrackingAgeGroup>>>;
   id?: Maybe<Scalars['Int']>;
+  isReverseScored?: Maybe<Scalars['String']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
   name?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
@@ -14065,6 +14068,7 @@ export type ProgressTrackingSkill = {
 
 export type ProgressTrackingSkillInput = {
   ageGroups?: InputMaybe<Scalars['String']>;
+  isReverseScored?: InputMaybe<Scalars['String']>;
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Scalars['String']>;
