@@ -53,3 +53,36 @@ INSERT INTO public."MessageTemplate"
 VALUES('773e002c-7f32-4c99-859e-b54052cd2886'::uuid, true, current_date, current_date, NULL, 'hub', 'statements-30-days-notification', 
 'Other principals are using [[ApplicationName]] to track their income and expenses! Join them and start tracking yours.', NULL, 'Keep track of your finances', '[[StartTracking]]', 'Start tracking', NULL, 'blue', 0, '{"url":"/business","state":{"activeTabIndex":"1"}}');
 
+
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", 
+"Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('aa41b695-3aaa-4f83-8f1a-54c63fc6d301'::uuid, true, current_date, current_date, NULL, 'push', 'calendar-invitation', 
+'Go to calendar to see more detail.', NULL, '[[FirstName]] has invited you to an event!', '[[SeeEvent]]', 'See event', NULL, 'green', 0, '{"url":"/calendar","state":{"calendarEventId":"[[CalendarEventId]]"}}');
+
+update "MessageTemplate" set "Message" = 'You were assigned to [[ClassName]]. Reach out to [[PrincipalName]] if you have any questions.', "Subject" = 'You have been assigned to a new class: [[ClassName]]', "CTA" = '[[SeeClasses]]', "CTAText"='See classes', "Action"='{"url":"/classroom","state":{"activeTabIndex:":"0"}}' where "TemplateType" = 'reassigned-to-new-class';
+
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", 
+"Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('e057b643-67cf-469f-a5cc-a71f3b1d604a'::uuid, true, current_date, current_date, NULL, 'push', 'open-community-connections', 
+'See the ECD Heroes waiting to connect with you.', NULL, '[[TotalConnections]] new requests to connect!', '[[SeeRequests]]', 'See requests', NULL, 'green', 0, '{"url":"/community/welcome"}');
+
+
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", 
+"Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('e9e846bf-da3a-452a-90a2-70ec9919808f'::uuid, true, current_date, current_date, NULL, 'push', 'feedback-notification', 
+'Have you found any issues with the app? Let us know how we can improve!', NULL, 'We want to hear from you', '[[ShareFeedback]]', 'Share feedback', NULL, 'blue', 0, '{"url":"/help"}');
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", 
+"Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('108976c4-8077-495b-83b9-c56a154415b1'::uuid, true, current_date, current_date, NULL, 'hub', 'feedback-notification', 
+'Have you found any issues with the app? Let us know how we can improve!', NULL, 'We want to hear from you', '[[ShareFeedback]]', 'Share feedback', NULL, 'blue', 0, '{"url":"/help"}');
+
+
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", 
+"Message", "TenantId")
+VALUES('eaeffe53-f579-4866-8a53-dba5164fc11f'::uuid, true, current_date, current_date, NULL, 'sms', 'coach-remove-practitioner', 
+'You have been removed from [[ApplicationName]]. If you are still an ECD practitioner, you can check out this app: [OASignup]', null);

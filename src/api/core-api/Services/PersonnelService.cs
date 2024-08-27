@@ -29,6 +29,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.SmartStart.Services.Interfaces;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -66,6 +67,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private AuthenticationDbContext _dbContext;
         private IGenericRepository<CalendarEventParticipant, Guid> _calendarEventParticipantRepo;
         private IGenericRepository<StatementsStartupSupport, Guid> _statementStartupSupportRepo;
+
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -818,6 +820,24 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.DeActivatePractitionerAsync]", role, user.Id, _applicationUserId);
                     var result = _userManager.RemoveFromRoleAsync(user, role).Result;
                 }
+
+                // Use dbContext to get signup
+                var oaSiteAddress = _dbContext.Tenants.Where(x => x.TenantTypeId == ECDLink.Tenancy.Enums.TenantType.OpenAccess).Select(x => x.SiteAddress).FirstOrDefault();
+                // Send notification to practitioner
+                var replacements = new List<TagsReplacements>
+                 {
+                     new TagsReplacements()
+                     {
+                         FindValue = "ApplicationName",
+                         ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                     },
+                     new TagsReplacements()
+                     {
+                         FindValue = "OASignup",
+                         ReplacementValue = "https://" + oaSiteAddress +"/oa-sign-up-or-login"
+                     }
+                 };
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemovePractitioner, DateTime.Now.Date, user, "", "", replacements, null, false, false, null);
 
                 return userResult?.Succeeded ?? false;
             }

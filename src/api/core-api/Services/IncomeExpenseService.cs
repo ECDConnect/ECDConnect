@@ -14,13 +14,11 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
-using NPOI.SS.UserModel;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -136,10 +134,17 @@ namespace ECDLink.Core.Services
             {
                 var thirtyDaysBack = startDate.AddDays(-30);
                 var lastThirtyDaysData = statementsQuery.Where(x => (x.Year > thirtyDaysBack.Year || (x.Year == thirtyDaysBack.Year && x.Month >= thirtyDaysBack.Month)));
-                // 8th of month is deadline
-                if (!lastThirtyDaysData.Any() && totalDaysOnApp > 119 && DateTime.Now.Day > 8)
+                if (!lastThirtyDaysData.Any() && totalDaysOnApp > 119)
                 {
-                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, null,
+                    var replacements = new List<TagsReplacements>
+                {
+                    new TagsReplacements()
+                    {
+                        FindValue = "ApplicationName",
+                        ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                    }
+                };
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, null,
                                                                                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
                 }
             }

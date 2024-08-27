@@ -266,12 +266,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
 
-        public async Task<bool> RemovePractitioner([Service] IHttpContextAccessor contextAccessor,
+        public async Task<bool> RemovePractitioner(
+            [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
             [Service] PersonnelService personnelService,
             ApplicationUserManager userManager,
-            string practitionerUserId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
+            string practitionerUserId, 
+            string reasonForPractitionerLeavingId, 
+            string reasonDetails, 
+            string newPrincipalId, 
+            List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -290,7 +295,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     reassignmentService.AddReassignmentForPractitioner(practitioner.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId.ToString(), reassignment.ClassroomGroupId, true);
                 }               
             }
-
+           
             return await personnelService.DeActivatePractitionerAsync(practitionerUserId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
