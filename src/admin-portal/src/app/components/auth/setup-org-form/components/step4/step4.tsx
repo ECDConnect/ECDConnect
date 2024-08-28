@@ -148,7 +148,7 @@ export const Step4: React.FC<StepProps> = ({
             isAdminPortalField={true}
           />
         </div>
-        <div>
+        <div className="mb-72">
           <Typography type="help" color="textMid" text={`Tertiary`} />
           <FormColorField
             setValue={setValue}
@@ -161,7 +161,7 @@ export const Step4: React.FC<StepProps> = ({
           />
         </div>
       </div>
-      <Typography
+      {/* <Typography
         type="h4"
         color="textMid"
         text={`Here's an example of what these colours will look like in the app:`}
@@ -169,7 +169,7 @@ export const Step4: React.FC<StepProps> = ({
       />
       <div className="bg-adminPortalBg my-4 flex w-full items-center justify-center rounded-2xl">
         <img src={AppExample} alt="app example" className="h-2/12 w-48" />
-      </div>
+      </div> */}
     </div>
   );
 };
