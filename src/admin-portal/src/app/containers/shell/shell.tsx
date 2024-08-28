@@ -76,8 +76,6 @@ export default function Shell() {
   const [activeNavigation, setActiveNavigation] = useState<INavigation>();
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
-  const isGrowGreatTenant = tenant.isCHWConnect;
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
