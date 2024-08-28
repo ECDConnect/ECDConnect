@@ -160,12 +160,16 @@ export const Dashboard: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
+  const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
 
   const getPointsToDoItems = useCallback(async () => {
-    const response = appDispatch(
+    appDispatch(
       pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
     );
-    return response;
+
+    appDispatch(
+      pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
+    );
   }, [appDispatch, practitioner?.userId]);
 
   useEffect(() => {
@@ -220,12 +224,15 @@ export const Dashboard: React.FC = () => {
     if (isCoach) {
       return;
     }
+
     const currentMonth = new Date().getMonth(); // +1 for 0 index
+
     const currentYear = new Date().getFullYear();
+
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
       const dataMonth = getMonth(new Date(current?.dateScored));
       const dataYear = getYear(new Date(current?.dateScored));
-      if (dataMonth === currentMonth && dataYear === currentYear) {
+      if (dataMonth + 1 === currentMonth && dataYear === currentYear) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -1326,7 +1333,8 @@ export const Dashboard: React.FC = () => {
             listItems={dashboardItems}
             notification={dashboardNotification}
           />
-          {pointsSummaryData?.length > 0 &&
+          {totalYearPoints &&
+            totalYearPoints > 10 &&
             !!pointsScoreProps &&
             !isCoach &&
             getCurrentPointsToDo === 4 && (
@@ -1346,7 +1354,7 @@ export const Dashboard: React.FC = () => {
                 textPosition={pointsScoreProps.textPosition}
               />
             )}
-          {getCurrentPointsToDo < 4 && (
+          {(!totalYearPoints || (totalYearPoints && totalYearPoints <= 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 py-6"

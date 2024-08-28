@@ -6,6 +6,7 @@ import {
   getPointsSummaryForUser,
   getUserClubStanding,
   pointsTodoItems,
+  yearPointsView,
 } from './points.actions';
 
 const initialState: PointsState = {
@@ -13,6 +14,7 @@ const initialState: PointsState = {
   pointsLibrary: [],
   userClubStanding: undefined,
   pointsToDo: undefined,
+  yearPoints: undefined,
 };
 
 const pointsState = createSlice({
@@ -24,6 +26,7 @@ const pointsState = createSlice({
       state.pointsLibrary = [];
       state.userClubStanding = undefined;
       state.pointsToDo = undefined;
+      state.yearPoints = undefined;
     },
   },
   extraReducers: (builder) => {
@@ -41,6 +44,9 @@ const pointsState = createSlice({
     });
     builder.addCase(pointsTodoItems.fulfilled, (state, action) => {
       state.pointsToDo = action.payload;
+    });
+    builder.addCase(yearPointsView.fulfilled, (state, action) => {
+      state.yearPoints = action.payload;
     });
   },
 });

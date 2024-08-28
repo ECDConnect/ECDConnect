@@ -2,6 +2,7 @@ import {
   PointsLibrary,
   PointsToDoItemModel,
   PointsUserSummary,
+  PointsUserYearMonthSummary,
   UserClubStandingModel,
 } from '@ecdlink/graphql';
 
@@ -16,4 +17,5 @@ export interface PointsState {
       }
     | undefined;
   pointsToDo: PointsToDoItemModel | undefined;
+  yearPoints: PointsUserYearMonthSummary | undefined;
 }

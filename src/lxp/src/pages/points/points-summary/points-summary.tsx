@@ -24,7 +24,7 @@ import { ReactComponent as EmojiHappyYellow } from '../../../assets/ECD_Connect_
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../../assets/mehFace.svg';
-import { format } from 'date-fns';
+import { format, getMonth, getYear } from 'date-fns';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PointsSummaryDto, captureAndDownloadComponent } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
@@ -61,16 +61,15 @@ export const PointsSummary: React.FC = () => {
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
   );
+  const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const monthPoints = useSelector(pointsSelectors.getMonthPointsSummary);
 
   const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
-  const pointsTotalForYear = useSelector(
-    pointsSelectors.getPointsTotalForYear()
-  );
+  // const pointsTotalForYear = useSelector(
+  //   pointsSelectors.getPointsTotalForYear()
+  // );
+  const pointsTotalForYear = useSelector(pointsSelectors.getTotalYearPoints);
 
-  const filteredPointsSummaries = pointsSummaryDataWithLibrary?.filter(
-    (x) => x.pointsTotal > 0
-  );
   const [pointsShareData, setPointsShareData] = useState<any>();
 
   const getPointsToDoItems = useCallback(async () => {
@@ -368,11 +367,17 @@ export const PointsSummary: React.FC = () => {
       },
       {
         title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
-        titleStyle,
+        titleStyle:
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+            ? 'text-successDark'
+            : titleStyle,
         subTitle: practitioner?.isPrincipal
           ? 'Add income/expense'
           : 'Plan your daily routine',
-        subTitleStyle,
+        subTitleStyle:
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+            ? 'text-successDark'
+            : subTitleStyle,
         className:
           pointsToDo?.isPartOfPreschool &&
           !pointsToDo?.savedIncomeOrExpense &&
@@ -387,18 +392,23 @@ export const PointsSummary: React.FC = () => {
             ? 'CalendarIcon'
             : '',
         customIcon:
-          pointsToDo?.signedUpForApp && practitioner?.isPrincipal ? (
+          pointsToDo?.signedUpForApp &&
+          practitioner?.isPrincipal &&
+          !pointsToDo?.savedIncomeOrExpense &&
+          !pointsToDo?.plannedOneDay ? (
             <Crown
               className={`${
-                !pointsToDo?.isPartOfPreschool
+                pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+                  ? 'bg-successMain'
+                  : !pointsToDo?.isPartOfPreschool
                   ? `bg-uiLight text-white`
                   : 'text-quatenary bg-quatenary'
               } z-50 mr-4 h-12 w-12 rounded-full p-2`}
             />
           ) : undefined,
         iconBackgroundColor:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
-            ? 'successBg'
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+            ? 'successMain'
             : !pointsToDo?.isPartOfPreschool
             ? 'uiLight'
             : 'quatenary',
@@ -406,7 +416,7 @@ export const PointsSummary: React.FC = () => {
         iconColor: 'white',
         hideRightIcon: true,
         backgroundColor:
-          pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
             ? 'successBg'
             : pointsToDo?.isPartOfPreschool
             ? 'quatenaryBg'
@@ -414,14 +424,23 @@ export const PointsSummary: React.FC = () => {
       },
       {
         title: `Influencer`,
-        titleStyle,
+        titleStyle: pointsToDo?.viewedCommunitySection
+          ? 'text-successDark'
+          : titleStyle,
         subTitle: `Explore the community`,
-        subTitleStyle,
+        subTitleStyle: pointsToDo?.viewedCommunitySection
+          ? 'text-successDark'
+          : subTitleStyle,
         menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
         menuIconClassName: `${
-          pointsToDo?.viewedCommunitySection ? 'bg-successMain' : 'bg-uiLight'
+          pointsToDo?.viewedCommunitySection
+            ? 'bg-successMain'
+            : pointsToDo?.savedIncomeOrExpense ||
+              pointsToDo?.savedIncomeOrExpense
+            ? 'quatenary'
+            : 'bg-uiLight'
         } rounded-full h-12 w-12 p-2.5`,
         showIcon: true,
         onActionClick: () => {},
@@ -446,11 +465,11 @@ export const PointsSummary: React.FC = () => {
         title: `Umtsha`,
         titleStyle: pointsToDo?.signedUpForApp
           ? 'text-successDark'
-          : 'text-white',
+          : titleStyle,
         subTitle: `Sign up for ${appName}`,
         subTitleStyle: pointsToDo?.signedUpForApp
           ? 'text-successDark'
-          : 'text-white',
+          : subTitleStyle,
         className: !pointsToDo?.signedUpForApp ? '' : 'px-2',
         menuIcon: pointsToDo?.signedUpForApp
           ? 'CheckIcon'
@@ -467,11 +486,11 @@ export const PointsSummary: React.FC = () => {
         title: 'Tichere',
         titleStyle: pointsToDo?.isPartOfPreschool
           ? 'text-successDark'
-          : 'text-white',
+          : titleStyle,
         subTitle: 'Set up or join your preschool',
         subTitleStyle: pointsToDo?.isPartOfPreschool
           ? 'text-successDark'
-          : 'text-white',
+          : subTitleStyle,
         className:
           pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool
             ? ''
@@ -501,11 +520,11 @@ export const PointsSummary: React.FC = () => {
         title: `Influencer`,
         titleStyle: pointsToDo?.viewedCommunitySection
           ? 'text-successDark'
-          : 'text-white',
+          : titleStyle,
         subTitle: `Explore the community`,
         subTitleStyle: pointsToDo?.viewedCommunitySection
           ? 'text-successDark'
-          : 'text-white',
+          : subTitleStyle,
         menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
@@ -523,11 +542,17 @@ export const PointsSummary: React.FC = () => {
       },
       {
         title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
-        titleStyle,
+        titleStyle:
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+            ? 'text-successDark'
+            : titleStyle,
         subTitle: practitioner?.isPrincipal
           ? 'Add income/expense'
           : 'Plan your daily routine',
-        subTitleStyle,
+        subTitleStyle:
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+            ? 'text-successDark'
+            : subTitleStyle,
         className:
           pointsToDo?.isPartOfPreschool &&
           !pointsToDo?.savedIncomeOrExpense &&
@@ -547,14 +572,18 @@ export const PointsSummary: React.FC = () => {
               className={`${
                 !pointsToDo?.isPartOfPreschool
                   ? `bg-uiLight text-white`
+                  : pointsToDo?.savedIncomeOrExpense
+                  ? 'text-quatenary bg-successMain'
                   : 'text-quatenary bg-quatenary'
               } z-50 mr-4 h-12 w-12 rounded-full p-2`}
-              style={{ color: 'black' }}
             />
           ) : undefined,
-        iconBackgroundColor: pointsToDo?.isPartOfPreschool
-          ? 'successBg'
-          : 'quatenary',
+        iconBackgroundColor:
+          pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
+            ? 'successBg'
+            : !pointsToDo?.isPartOfPreschool
+            ? 'uiLight'
+            : 'quatenary',
         showIcon: true,
         iconColor: 'white',
         hideRightIcon: true,
@@ -610,10 +639,17 @@ export const PointsSummary: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
-  const pointsTotal = pointsSummaryDataWithLibrary?.reduce(
-    (total, current) => (total += current.pointsTotal),
-    0
-  );
+  const currentMonth = new Date().getMonth(); // +1 for 0 index
+
+  const currentYear = new Date().getFullYear();
+  const pointsTotal = pointsSummaryData.reduce((total, current) => {
+    const dataMonth = getMonth(new Date(current?.dateScored));
+    const dataYear = getYear(new Date(current?.dateScored));
+    if (dataMonth + 1 === currentMonth && dataYear === currentYear) {
+      return (total += current.pointsTotal);
+    }
+    return total;
+  }, 0);
   let pointsMax =
     isPrincipal || isFundaAppAdmin
       ? pointsConstants.principalOrAdminMonthlyMax
@@ -781,7 +817,8 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMM yyyy')}
           />
-          {!pointsTotalForYear && (
+          {(!pointsTotalForYear ||
+            (pointsTotalForYear && pointsTotalForYear <= 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 py-6"
@@ -795,7 +832,8 @@ export const PointsSummary: React.FC = () => {
               isBigTitle={false}
             />
           )}
-          {!pointsTotalForYear &&
+          {(!pointsTotalForYear ||
+            (pointsTotalForYear && pointsTotalForYear <= 10)) &&
             pointsToDo?.viewedCommunitySection &&
             getCurrentPointsToDo === 4 && (
               <CelebrationCard
@@ -808,7 +846,7 @@ export const PointsSummary: React.FC = () => {
                 className="mt-4"
               />
             )}
-          {pointsTotalForYear && (
+          {pointsTotalForYear && pointsTotalForYear > 10 && (
             <ScoreCard
               className="mt-5 py-6"
               mainText={`${monthPoints} points`}
@@ -835,32 +873,38 @@ export const PointsSummary: React.FC = () => {
           {!isOnline &&
             monthPoints &&
             !pointsShareData &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
             getCurrentPointsToDo === 4 &&
             celebrationCard}
-          {isOnline && monthPoints && getCurrentPointsToDo === 4 && (
-            <CelebrationCard
-              image={getEmoji(
-                pointsShareData?.userRankingData
-                  ?.comparativeTargetPercentageColor
-              )}
-              primaryMessage={
-                pointsShareData?.userRankingData?.comparativePrimaryMessage
-              }
-              secondaryMessage={
-                pointsShareData?.userRankingData?.comparativeSecondaryMessage
-              }
-              primaryTextColour={getTitleColor(
-                pointsShareData?.userRankingData
-                  ?.comparativeTargetPercentageColor
-              )}
-              secondaryTextColour="black"
-              backgroundColour={getBgColor(
-                pointsShareData?.userRankingData
-                  ?.comparativeTargetPercentageColor
-              )}
-            />
-          )}
-          {!pointsTotalForYear && (
+          {isOnline &&
+            monthPoints &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
+            getCurrentPointsToDo === 4 && (
+              <CelebrationCard
+                image={getEmoji(
+                  pointsShareData?.userRankingData
+                    ?.comparativeTargetPercentageColor
+                )}
+                primaryMessage={
+                  pointsShareData?.userRankingData?.comparativePrimaryMessage
+                }
+                secondaryMessage={
+                  pointsShareData?.userRankingData?.comparativeSecondaryMessage
+                }
+                primaryTextColour={getTitleColor(
+                  pointsShareData?.userRankingData
+                    ?.comparativeTargetPercentageColor
+                )}
+                secondaryTextColour="black"
+                backgroundColour={getBgColor(
+                  pointsShareData?.userRankingData
+                    ?.comparativeTargetPercentageColor
+                )}
+              />
+            )}
+          {(!pointsTotalForYear || pointsTotalForYear <= 10) && (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -885,7 +929,8 @@ export const PointsSummary: React.FC = () => {
           )}
           {!!todoListFiltered &&
             !!todoListFiltered.length &&
-            pointsTotalForYear && (
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 && (
               <Typography
                 className="mt-8 mb-4"
                 type={'h3'}
@@ -923,6 +968,7 @@ export const PointsSummary: React.FC = () => {
             })} */}
           {!!todoListFiltered &&
             pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
             todoListFiltered?.slice(0, 3)?.map((item) => {
               return (
                 <PointsTodoItem
@@ -933,7 +979,7 @@ export const PointsSummary: React.FC = () => {
             })}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
-          {pointsTotalForYear && monthPoints > 0 && (
+          {pointsTotalForYear && pointsTotalForYear > 10 && monthPoints > 0 && (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -957,6 +1003,7 @@ export const PointsSummary: React.FC = () => {
             />
           )}
           {pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
             monthPoints === 0 &&
             !practitioner?.coachHierarchy && (
               <Button
@@ -971,6 +1018,7 @@ export const PointsSummary: React.FC = () => {
               />
             )}
           {pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
             monthPoints === 0 &&
             practitioner?.coachHierarchy && (
               <Button
@@ -984,7 +1032,7 @@ export const PointsSummary: React.FC = () => {
                 onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
               />
             )}
-          {pointsTotalForYear && (
+          {pointsTotalForYear && pointsTotalForYear > 10 && (
             <Button
               size="normal"
               className="mb-4 w-full"
