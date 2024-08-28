@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import debounce from 'lodash.debounce';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
@@ -25,6 +25,7 @@ import {
 import { LinksShared } from './components/links-shared/links-shared';
 import ProgressToolsContentList from './sub-pages/content-list/components/progress-tools-content-list/progress-tools-content-list';
 import { useTenant } from '../../hooks/useTenant';
+import { LinksSharedResource } from './components/links-shared/links-shared-resource';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -52,8 +53,6 @@ export function ContentManagement() {
       search: '',
       searchInContent: null,
       isVisiblePortal: true,
-      // contentTypeIdFilter: '',
-      // contentTypeNameFilter: ''
     },
     fetchPolicy: 'cache-first',
   });
@@ -87,16 +86,16 @@ export function ContentManagement() {
         href: '/content-management',
         id: 0,
       },
-      // {
-      //   name: 'Info pages',
-      //   href: 'MoreInformation',
-      //   id: 1,
-      // },
-      // {
-      //   name: ContentManagementTabs.PROGRAMMES.name,
-      //   // href: '/',
-      //   id: ContentManagementTabs.PROGRAMMES.id,
-      // },
+      {
+        name: 'Info pages',
+        href: 'MoreInformation',
+        id: 1,
+      },
+      {
+        name: ContentManagementTabs.PROGRAMMES.name,
+        // href: '/',
+        id: ContentManagementTabs.PROGRAMMES.id,
+      },
       {
         name: ContentManagementTabs.RESOURCES.name,
         id: ContentManagementTabs.RESOURCES.id,
@@ -194,47 +193,36 @@ export function ContentManagement() {
         //   },
         //   classNames: 'bg-white',
         // },
-        {
-          title: 'Community links',
-          description:
-            'Add or edit the links shared with practitioners and coaches',
-          titleIcon: 'LinkIcon',
-          titleIconClassName: 'bg-secondary text-white',
-          onActionClick: () => {
-            setSpecialType('');
-            const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT_ITEM
-            );
-            showGroupContentTypes(selectedTypeObject);
-
-            // const selectedSubTypeObject = dataTypes?.contentTypes.find(
-            //   (type: ContentTypeDto) =>
-            //     type.name === ContentTypes.CONNECT_ITEM
-            // );
-            //showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
-          },
-          classNames: 'bg-white',
-        },
         // {
-        //   title: 'Child progress report links for caregivers',
+        //   title: 'Community links',
         //   description:
-        //     'Change the links to be added to the child progress reports for caregivers',
-        //   titleIcon: 'DocumentReportIcon',
+        //     'Add or edit the links shared with practitioners and coaches',
+        //   titleIcon: 'LinkIcon',
         //   titleIconClassName: 'bg-secondary text-white',
         //   onActionClick: () => {
         //     setSpecialType('');
         //     const selectedTypeObject = dataTypes?.contentTypes.find(
-        //       (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
+        //       (type: ContentTypeDto) => type.name === ContentTypes.RESOURCE_LINK
         //     );
-
-        //     const selectedSubTypeObject = dataTypes?.contentTypes.find(
-        //       (type: ContentTypeDto) =>
-        //         type.name === ContentTypes.CONNECT_ITEM
-        //     );
-        //     showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
+        //     showGroupContentTypes(selectedTypeObject);
         //   },
         //   classNames: 'bg-white',
         // },
+        {
+          title: 'Child progress report links for caregivers',
+          description:
+            'Change the links to be added to the child progress reports for caregivers',
+          titleIcon: 'DocumentReportIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === ContentTypes.RESOURCE_LINK
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
       ]);
     }
 
@@ -342,6 +330,15 @@ export function ContentManagement() {
     setSearchValue('');
   };
 
+  const breadCrumbName = useCallback((item: ContentTypeDto) => {
+    if (item.name === ContentTypes.RESOURCE_LINK) {
+      return ' Edit child progress report links';
+    } else if (item.name === ContentTypes.CONNECT_ITEM) {
+      return ' Edit community links';
+    }
+    return item.description;
+  }, []);
+
   return (
     <div className="">
       {dataTypes && !isLoadingSelectedRow ? (
@@ -400,8 +397,6 @@ export function ContentManagement() {
                   <div className="justify-self col-end-3 pb-2">
                     <button
                       onClick={() => {
-                        if (selectedType?.name === ContentTypes.CONNECT) return;
-
                         setSelectedType(null);
                         setSpecialType(
                           navigation?.find((tab) => tab.id === selectedTab).name
@@ -410,13 +405,12 @@ export function ContentManagement() {
                       type="button"
                       className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
                     >
-                      {selectedType?.name !== ContentTypes.CONNECT && (
-                        <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
-                      )}
+                      <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
+                      {/* BreadCrumbs */}
                       {navigation?.find((tab) => tab.id === selectedTab).name}
                       <span className="px-1 text-gray-400">
                         {' '}
-                        / {selectedType?.description}
+                        / {breadCrumbName(selectedType)}
                       </span>
                     </button>
                   </div>
@@ -426,8 +420,10 @@ export function ContentManagement() {
                   style={{ minHeight: '36rem' }}
                 >
                   {selectedType &&
-                    selectedType.name !== ContentTypes.CONNECT &&
-                    selectedType.name !== 'ProgressTrackingSkill' &&
+                    selectedType.name !== ContentTypes.RESOURCE_LINK &&
+                    selectedType.name !== ContentTypes.CONNECT_ITEM &&
+                    selectedType.name !==
+                      ContentTypes.PROGRESS_TRACKING_SKILL &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ContentList
@@ -447,8 +443,9 @@ export function ContentManagement() {
                     )}
 
                   {selectedType &&
-                    selectedType.name !== ContentTypes.CONNECT &&
-                    selectedType.name === 'ProgressTrackingSkill' &&
+                    selectedType.name !== ContentTypes.RESOURCE_LINK &&
+                    selectedType.name ===
+                      ContentTypes.PROGRESS_TRACKING_SKILL &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ProgressToolsContentList
@@ -463,12 +460,23 @@ export function ContentManagement() {
                         choosedSectionTitle={choosedSectionTitle}
                       ></ProgressToolsContentList>
                     )}
-                  {/* TODO: Replace it with dynamic validation (example: selectedType.type === 'linkGroup') */}
+                  {selectedType?.name === ContentTypes.RESOURCE_LINK &&
+                    !specialType && (
+                      <LinksSharedResource
+                        contentType={selectedType}
+                        onClose={() => {
+                          setSelectedType(null);
+                          setSpecialType(
+                            navigation?.find((tab) => tab.id === selectedTab)
+                              .name
+                          );
+                        }}
+                      />
+                    )}
                   {selectedType?.name === ContentTypes.CONNECT_ITEM &&
                     !specialType && (
                       <LinksShared
                         contentType={selectedType}
-                        subContentType={selectedSubType}
                         onClose={() => {
                           setSelectedType(null);
                           setSpecialType(
