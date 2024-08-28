@@ -147,11 +147,9 @@ export const useObserveProgressForAgeGroupAndCategory = (
     return categories.find((x) => x.id === categoryId)!;
   }, [categoryId, categories]);
 
-  const skillsForAgeGroup = useMemo(() => {
-    return allSkills.filter((skill) =>
-      skill.ageGroupIds.some((x) => x === ageGroupId)
-    );
-  }, [ageGroupId, categories]);
+  const skillsForAgeGroup = useSelector(
+    progressTrackingSelectors.getSkillsForAgeGroup(ageGroupId || 0)
+  );
 
   const skillsForAgeGroupAndCategory = useMemo(() => {
     return skillsForAgeGroup.filter(

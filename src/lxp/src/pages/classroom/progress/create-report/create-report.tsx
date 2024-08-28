@@ -30,7 +30,7 @@ export const ProgressCreateReport: React.FC = () => {
   const {
     child,
     currentObservationPeriod,
-    detailedObservations,
+    currentReport,
     updateChildEnjoys,
     updateGoodProgressWith,
     updateHowCanCaregiverSupport,
@@ -61,7 +61,7 @@ export const ProgressCreateReport: React.FC = () => {
                 syncChildProgressReports();
                 history.push(ROUTES.PROGRESS_SHARE_REPORT, {
                   childId: routeState.childId,
-                  reportId: detailedObservations?.id,
+                  reportId: currentReport?.id,
                 });
                 submit();
               },
@@ -84,14 +84,12 @@ export const ProgressCreateReport: React.FC = () => {
   }, [dialog]);
 
   const [howCanCaregiverSupport, setHowCanCaregiverSupport] = useState(
-    detailedObservations?.howCanCaregiverSupport
+    currentReport?.howCanCaregiverSupport
   );
   const [goodProgressWith, setGoodProgressWith] = useState(
-    detailedObservations?.goodProgressWith
+    currentReport?.goodProgressWith
   );
-  const [childEnjoys, setChildEnjoys] = useState(
-    detailedObservations?.childEnjoys
-  );
+  const [childEnjoys, setChildEnjoys] = useState(currentReport?.childEnjoys);
 
   const saveAndExit = () => {
     if (!!goodProgressWith) updateGoodProgressWith(goodProgressWith);
@@ -153,7 +151,7 @@ export const ProgressCreateReport: React.FC = () => {
               onChange={(event) => setGoodProgressWith(event.target.value)}
               value={goodProgressWith}
             />
-            {!!detailedObservations?.notes && (
+            {!!currentReport?.notes && (
               <>
                 <Divider dividerType="dashed" />
                 <Typography
@@ -164,7 +162,7 @@ export const ProgressCreateReport: React.FC = () => {
                 <Typography
                   type="body"
                   color="textMid"
-                  text={detailedObservations?.notes}
+                  text={currentReport?.notes}
                 />
               </>
             )}
@@ -180,7 +178,7 @@ export const ProgressCreateReport: React.FC = () => {
             }
             className="mt-6 mb-4"
             onChange={(event) => setHowCanCaregiverSupport(event.target.value)}
-            value={detailedObservations?.howCanCaregiverSupport}
+            value={currentReport?.howCanCaregiverSupport}
           />
         )}
         <Button
@@ -202,7 +200,7 @@ export const ProgressCreateReport: React.FC = () => {
         {currentStep === 3 && (
           <ProgressCreateReportSkillsToWorkOnSummary
             childFirstname={child?.user?.firstName || ''}
-            skillsToWorkOn={detailedObservations?.skillsToWorkOn || []}
+            skillsToWorkOn={currentReport?.skillsToWorkOn || []}
           />
         )}
         <Button

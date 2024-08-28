@@ -18,7 +18,7 @@ export const ObservationsForChildLanding: React.FC = () => {
     child,
     currentObservationPeriod,
     observationsAgeGroup,
-    detailedObservations,
+    currentReport,
   } = useObserveProgressForChild(routeState.childId);
 
   return (
@@ -47,23 +47,22 @@ export const ObservationsForChildLanding: React.FC = () => {
           )}`}
         />
         {/* Current observations still in progress */}
-        {!detailedObservations?.observationsCompleteDate && (
+        {!currentReport?.observationsCompleteDate && (
           <ObservationsForChildLandingIncomplete
             childId={routeState.childId}
             currentAgeGroup={observationsAgeGroup!}
           />
         )}
         {/* All observations completed for current report period, but we are still outside the window */}
-        {!!detailedObservations?.observationsCompleteDate &&
-          detailedObservations && (
-            <ObservationsForChildLandingComplete
-              childId={routeState.childId}
-              child={child!}
-              currentReportingPeriod={currentObservationPeriod!}
-              currentReport={detailedObservations}
-              currentAgeGroup={observationsAgeGroup}
-            />
-          )}
+        {!!currentReport?.observationsCompleteDate && currentReport && (
+          <ObservationsForChildLandingComplete
+            childId={routeState.childId}
+            child={child!}
+            currentReportingPeriod={currentObservationPeriod!}
+            currentReport={currentReport}
+            currentAgeGroup={observationsAgeGroup}
+          />
+        )}
       </div>
     </BannerWrapper>
   );

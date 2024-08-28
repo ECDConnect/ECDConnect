@@ -48,6 +48,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<UserPermission, Guid> _userPermissionRepo;
         private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private readonly IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
+        private readonly IGenericRepository<Programme, Guid> _programmeRepo;
 
 
         private MonthlyAttendanceReport _monthlyAttendanceReportService;
@@ -79,6 +80,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             _classRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
             _classroomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
+            _programmeRepo = _repositoryFactory.CreateGenericRepository<Programme>(userContext: _uId);
 
             _childProgressReportRepo = _repositoryFactory.CreateGenericRepository<ChildProgressReport>(userContext: _uId);
 
@@ -128,17 +130,20 @@ namespace EcdLink.Api.CoreApi.Services
             if (!isPrincipal)
             {
                 // 3.Practitioner(non - principal) only-- plan at least 1 day - ie picked all activities & story for the day (W11)
-                var schools = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
                 pointsToDoItems.PlannedOneDay = false;
                 if (schoolClasses.Count > 0)
                 {
-                    var programmeCount = schools
-                                        .SelectMany(x => x.Programmes)
-                                        .Where(x => x.IsActive && x.StartDate.Year == monthStart.Year && x.EndDate.Year == monthStart.Year)
-                                        .ToList()
+                    var programmeCount = _programmeRepo
+                                        .GetAll()
+                                        .Where(p => p.IsActive
+                                            && p.ClassroomGroupId != null
+                                            && p.ClassroomGroup.UserId == userId
+                                            && p.StartDate.Year == monthStart.Year && p.EndDate.Year == monthStart.Year)
+                                        .Include(c => c.DailyProgrammes)
                                         .SelectMany(x => x.DailyProgrammes)
                                         .Where(x => x.IsActive && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
                                         .Count();
+
                     pointsToDoItems.PlannedOneDay = programmeCount > 0 ? true : false;
                 }
             }
