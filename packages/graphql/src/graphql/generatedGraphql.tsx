@@ -957,26 +957,17 @@ export type BulkInvitationResult = {
   success?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
-export type CmsConnectItemModelInput = {
-  buttonText?: InputMaybe<Scalars['String']>;
-  contentId: Scalars['Int'];
-  contentTypeId: Scalars['Int'];
-  link?: InputMaybe<Scalars['String']>;
-  linkedConnect: Scalars['Int'];
-};
-
-export type CmsConnectModelInput = {
-  contentId: Scalars['Int'];
-  contentTypeId: Scalars['Int'];
-  hint?: InputMaybe<Scalars['String']>;
-  links?: InputMaybe<Array<InputMaybe<CmsConnectItemModelInput>>>;
-  name?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-};
-
 export type CmsQuestionInput = {
   answer?: InputMaybe<Scalars['String']>;
   question?: InputMaybe<Scalars['String']>;
+};
+
+export type CmsResourceLinkModelInput = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  description?: InputMaybe<Scalars['String']>;
+  link?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type CmsVisitDataInput = {
@@ -4154,16 +4145,16 @@ export type ConnectInput = {
 
 export type ConnectItem = {
   __typename?: 'ConnectItem';
-  description?: Maybe<Scalars['String']>;
+  buttonText?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   link?: Maybe<Scalars['String']>;
-  title?: Maybe<Scalars['String']>;
+  linkedConnect?: Maybe<Array<Maybe<Connect>>>;
 };
 
 export type ConnectItemInput = {
-  description?: InputMaybe<Scalars['String']>;
+  buttonText?: InputMaybe<Scalars['String']>;
   link?: InputMaybe<Scalars['String']>;
-  title?: InputMaybe<Scalars['String']>;
+  linkedConnect?: InputMaybe<Scalars['String']>;
 };
 
 export type Consent = {
@@ -7497,6 +7488,7 @@ export type Mutation = {
   createReasonForPractitionerLeavingProgramme?: Maybe<ReasonForPractitionerLeavingProgramme>;
   createReferralType?: Maybe<ReferralType>;
   createRelation?: Maybe<Relation>;
+  createResourceLink?: Maybe<Scalars['String']>;
   createShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   createSiteAddress?: Maybe<SiteAddress>;
   createSmartSpaceVisit?: Maybe<SmartSpaceVisit>;
@@ -7660,6 +7652,7 @@ export type Mutation = {
   deleteReasonForPractitionerLeavingProgramme?: Maybe<Scalars['Boolean']>;
   deleteReferralType?: Maybe<Scalars['Boolean']>;
   deleteRelation?: Maybe<Scalars['Boolean']>;
+  deleteResourceLink?: Maybe<Scalars['Boolean']>;
   deleteRole: Scalars['Boolean'];
   deleteShortenUrlEntity?: Maybe<Scalars['Boolean']>;
   deleteSiteAddress?: Maybe<Scalars['Boolean']>;
@@ -7879,7 +7872,6 @@ export type Mutation = {
   updateCommunitySupport?: Maybe<Trainee>;
   updateConnect?: Maybe<Connect>;
   updateConnectItem?: Maybe<ConnectItem>;
-  updateConnectSection: Scalars['Boolean'];
   updateConsent?: Maybe<Consent>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
   updateDangerSign?: Maybe<DangerSign>;
@@ -7978,6 +7970,7 @@ export type Mutation = {
   updateReferralType?: Maybe<ReferralType>;
   updateRelation?: Maybe<Relation>;
   updateRemovalFromProgramme: Scalars['Boolean'];
+  updateResourceLink: Scalars['Boolean'];
   updateRole?: Maybe<ApplicationIdentityRole>;
   updateShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   updateSiteAddress?: Maybe<SiteAddress>;
@@ -8866,6 +8859,12 @@ export type MutationCreateRelationArgs = {
   input?: InputMaybe<RelationInput>;
 };
 
+export type MutationCreateResourceLinkArgs = {
+  input: ResourceLinkInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationCreateShortenUrlEntityArgs = {
   input?: InputMaybe<ShortenUrlEntityInput>;
 };
@@ -9589,6 +9588,12 @@ export type MutationDeleteReferralTypeArgs = {
 
 export type MutationDeleteRelationArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteResourceLinkArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeleteRoleArgs = {
@@ -10671,11 +10676,6 @@ export type MutationUpdateConnectItemArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationUpdateConnectSectionArgs = {
-  input?: InputMaybe<Array<InputMaybe<CmsConnectModelInput>>>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationUpdateConsentArgs = {
   id: Scalars['String'];
   input: ConsentInput;
@@ -11211,6 +11211,13 @@ export type MutationUpdateRemovalFromProgrammeArgs = {
   reasonDetails?: InputMaybe<Scalars['String']>;
   reasonForPractitionerLeavingProgrammeId?: InputMaybe<Scalars['String']>;
   removalId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateResourceLinkArgs = {
+  id: Scalars['String'];
+  input?: InputMaybe<Array<InputMaybe<CmsResourceLinkModelInput>>>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateRoleArgs = {
@@ -14313,6 +14320,7 @@ export type Query = {
   >;
   GetAllReferralType?: Maybe<Array<Maybe<ReferralType>>>;
   GetAllRelation?: Maybe<Array<Maybe<Relation>>>;
+  GetAllResourceLink: Array<Maybe<ResourceLink>>;
   GetAllShortenUrlEntity?: Maybe<Array<Maybe<ShortenUrlEntity>>>;
   GetAllSiteAddress?: Maybe<Array<Maybe<SiteAddress>>>;
   GetAllSmartSpaceVisit?: Maybe<Array<Maybe<SmartSpaceVisit>>>;
@@ -14474,6 +14482,7 @@ export type Query = {
   GetReasonForPractitionerLeavingProgrammeById?: Maybe<ReasonForPractitionerLeavingProgramme>;
   GetReferralTypeById?: Maybe<ReferralType>;
   GetRelationById?: Maybe<Relation>;
+  GetResourceLinkById: Array<Maybe<ResourceLink>>;
   GetShortenUrlEntityById?: Maybe<ShortenUrlEntity>;
   GetSiteAddressById?: Maybe<SiteAddress>;
   GetSmartSpaceVisitById?: Maybe<SmartSpaceVisit>;
@@ -15560,6 +15569,11 @@ export type QueryGetAllRelationArgs = {
   where?: InputMaybe<RelationFilterInput>;
 };
 
+export type QueryGetAllResourceLinkArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryGetAllShortenUrlEntityArgs = {
   order?: InputMaybe<Array<ShortenUrlEntitySortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -16380,6 +16394,12 @@ export type QueryGetReferralTypeByIdArgs = {
 export type QueryGetRelationByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<RelationFilterInput>;
+};
+
+export type QueryGetResourceLinkByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetShortenUrlEntityByIdArgs = {
@@ -18384,6 +18404,20 @@ export type RelationSortInput = {
   isActive?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type ResourceLink = {
+  __typename?: 'ResourceLink';
+  description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['Int']>;
+  link?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+};
+
+export type ResourceLinkInput = {
+  description?: InputMaybe<Scalars['String']>;
+  link?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type SsChecklistVisitModelInput = {

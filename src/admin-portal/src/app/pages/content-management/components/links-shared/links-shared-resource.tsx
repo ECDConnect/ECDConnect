@@ -6,18 +6,18 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { ConnectLink, LinksSharedProps } from './links-shared.types';
+import { ResourceLink, LinksSharedProps } from './links-shared.types';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { LanguageId } from '../../../../constants/language';
 import ContentLoader from '../../../../components/content-loader/content-loader';
 import { useDialog } from '@ecdlink/core';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 
-export const LinksShared = ({
+export const LinksSharedResource = ({
   contentType,
   onClose: cancelEdit,
 }: LinksSharedProps) => {
-  const [resourcesLinks, setResourcesLinks] = useState<ConnectLink[]>([]);
+  const [resourcesLinks, setResourcesLinks] = useState<ResourceLink[]>([]);
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
   const dialog = useDialog();
   const getAllCall = `GetAll${contentType.name}`;
@@ -40,11 +40,11 @@ export const LinksShared = ({
   `;
 
   const createMutation = gql`
-    mutation UpdateResourceConnectItem(
-      $input: [CMSResourceItemModelInput]
+    mutation UpdateResourceLink(
+      $input: [CMSResourceLinkModelInput]
       $localeId: String
     ) {
-      updateResourceConnectItem(input: $input, localeId: $localeId)
+      updateResourceLink(input: $input, localeId: $localeId)
     }
   `;
 
@@ -69,13 +69,12 @@ export const LinksShared = ({
       description: '',
       contentTypeId: 28,
       contentId: -1,
-      type: 'ChildProgressReportLink',
-    })) as ConnectLink[];
+    })) as ResourceLink[];
 
     const currentLinks = linksData?.[getAllCall] ?? [];
 
     connectLinks?.forEach((link, index) => {
-      link.title = currentLinks?.[index]?.buttonText ?? '';
+      link.title = currentLinks?.[index]?.title ?? '';
       link.link = currentLinks?.[index]?.link ?? '';
       link.description = currentLinks?.[index]?.description ?? '';
       link.contentId = currentLinks?.[index]?.id ?? -1;

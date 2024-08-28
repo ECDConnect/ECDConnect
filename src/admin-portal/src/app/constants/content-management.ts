@@ -9,6 +9,7 @@ export const ContentTypes = {
   COACHING_CIRCLE_TOPICS: 'CoachingCircleTopics',
   CONNECT: 'Connect',
   CONNECT_ITEM: 'ConnectItem',
+  RESOURCE_LINK: 'ResourceLink',
   PROGRESS_TRACKING_SKILL: 'ProgressTrackingSkill',
   CONSENT: 'Consent',
   MORE_INFORMATION: 'MoreInformation',
