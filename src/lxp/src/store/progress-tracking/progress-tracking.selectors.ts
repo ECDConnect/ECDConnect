@@ -10,8 +10,6 @@ import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import { ProgressSkill } from '@/models/progress/progress-skill';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
-import { getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
-import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { ProgressTrackingCategoriesByLocale } from './progress-tracking.types';
 
 // CATEGORIES
@@ -119,7 +117,6 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
             description: skill.description,
             supportImage: skill.supportImage,
             isReverseScored: skill.isReverseScored,
-            ageGroupIds: skill.ageGroupIds,
             subCategory: {
               id: subCategory?.id,
               name: subCategory?.name,
@@ -157,15 +154,24 @@ export const getPractitionerProgressReportSummary = (
 
 export const getSkillsForAgeGroup = (ageGroupId: number) =>
   createSelector(
-    getProgressTrackingSkills(),
     getProgressTrackingSkillsWithCategoryInfo(),
-    (skills: ProgressTrackingSkillDto[], detailedSkills: ProgressSkill[]) => {
-      // Get all skills for age group
-      const ageSkills = skills.filter((x) =>
-        x.ageGroupIds?.some((x) => x === ageGroupId)
-      );
+    (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
+    (
+      detailedSkills: ProgressSkill[],
+      ageGroups: ProgressTrackingAgeGroupDto[]
+    ): ProgressSkill[] => {
+      const ageGroup = ageGroups.find((x) => x.id === ageGroupId);
 
-      return detailedSkills.filter((x) => ageSkills.some((y) => y.id === x.id));
+      if (!ageGroup) {
+        return [];
+      }
+
+      return ageGroup.skills.map((ageGroupSkill) => {
+        const skill = detailedSkills.find(
+          (skill) => skill.id === ageGroupSkill
+        );
+        return skill!;
+      });
     }
   );
 

@@ -34,11 +34,8 @@ export const ChildProgressReportAlert: React.FC<
 > = ({ child }) => {
   const history = useHistory();
 
-  const {
-    currentObservationPeriod,
-    detailedObservations,
-    observationsAgeGroup,
-  } = useObserveProgressForChild(child.id!);
+  const { currentObservationPeriod, currentReport, observationsAgeGroup } =
+    useObserveProgressForChild(child.id!);
 
   const navigateToChildProgressObservation = () => {
     history.push(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
@@ -51,7 +48,7 @@ export const ChildProgressReportAlert: React.FC<
     isBefore(new Date(), new Date(currentObservationPeriod.startDate)) &&
     isBefore(new Date(currentObservationPeriod.endDate), new Date());
 
-  if (!currentObservationPeriod || !!detailedObservations?.dateCompleted) {
+  if (!currentObservationPeriod || !!currentReport?.dateCompleted) {
     return <></>;
   }
 
@@ -59,12 +56,12 @@ export const ChildProgressReportAlert: React.FC<
     if (
       !!observationsAgeGroup &&
       isInPeriod &&
-      !detailedObservations?.observationsCompleteDate
+      !currentReport?.observationsCompleteDate
     ) {
       return {
         ...baseProgressReportListItem,
         title: `<b>Create progress report</b>`,
-        subTitle: `Report ${detailedObservations?.reportingPeriodNumber || 1}`,
+        subTitle: `Report ${currentReport?.reportingPeriodNumber || 1}`,
         // iconName: 'InformationIcon',
         // iconBackgroundColor: 'infoMain',
         onButtonClick: navigateToChildProgressObservation,

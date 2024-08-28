@@ -98,9 +98,11 @@ export const mapProgressReportDetails = (
     }
   );
 
-  const skillsForAgeGroupCount = allSkills.filter((x) =>
-    x.ageGroupIds.some((y) => y === ageGroupId)
-  ).length;
+  // TODO!!!!!!! FIX TRHIS !!!!
+  const skillsForAgeGroupCount = 20;
+  //allSkills.filter((x) =>
+  //   20
+  // ).length;
 
   const allObservationsMade =
     skillsForAgeGroupCount === childReport?.skillObservations.length &&

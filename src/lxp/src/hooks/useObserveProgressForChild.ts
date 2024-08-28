@@ -90,41 +90,38 @@ export const useObserveProgressForChild = (childId: string) => {
     progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
   );
 
-  const currentReport = allReports.find(
+  const report = allReports.find(
     (x) => x.childProgressReportPeriodId === currentObservationPeriod?.id
   );
 
   const currentObservations = useMemo<ChildProgressSkill[]>(() => {
     return skillsForAgeGroup.map((x) => ({
       ...x,
-      value: currentReport?.skillObservations.find((o) => o.skillId === x.id)
-        ?.value,
+      value: report?.skillObservations.find((o) => o.skillId === x.id)?.value,
     }));
-  }, [skillsForAgeGroup, currentReport]);
+  }, [skillsForAgeGroup, report]);
 
   // Sets up reports, adding details for reporting period, skill names (for locale) etc
-  const detailedObservations = useMemo<
-    ChildProgressDetailedReport | undefined
-  >(() => {
-    if (!currentReport) {
+  const currentReport = useMemo<ChildProgressDetailedReport | undefined>(() => {
+    if (!report) {
       return undefined;
     }
 
     const missedSkillCount =
-      skillsForAgeGroup.length - currentReport.skillObservations.length;
-    const doNotKnowSkillCount = currentReport.skillObservations.filter(
+      skillsForAgeGroup.length - report.skillObservations.length;
+    const doNotKnowSkillCount = report.skillObservations.filter(
       (x) => x.value === ProgressSkillValues.DoNotKnow
     ).length;
     const doNotKnowPercentage =
       ((missedSkillCount + doNotKnowSkillCount) /
-        currentReport.skillObservations.length) *
+        report.skillObservations.length) *
       100;
 
     return {
-      ...currentReport,
+      ...report,
       unknownPercentage: doNotKnowPercentage,
       unknownCount: missedSkillCount + doNotKnowSkillCount,
-      skillsToWorkOn: currentReport.skillsToWorkOn
+      skillsToWorkOn: report.skillsToWorkOn
         .map((skillToWorkOn) => {
           const skill = allSkills.find((x) => x.id === skillToWorkOn.skillId);
           return {
@@ -139,7 +136,7 @@ export const useObserveProgressForChild = (childId: string) => {
           };
         })
         .sort((a, b) => a.skillId - b.skillId),
-      skillObservations: currentReport.skillObservations.map((skillObs) => {
+      skillObservations: report.skillObservations.map((skillObs) => {
         const skill = allSkills.find((x) => x.id === skillObs.skillId);
         return {
           ...skillObs,
@@ -174,27 +171,27 @@ export const useObserveProgressForChild = (childId: string) => {
           )
         : undefined,
     };
-  }, [currentReport]);
+  }, [report]);
 
   const areObservationsComplete = (updatedSkillId?: number) => {
     // Check if we have added all observations
     const allObsMade = skillsForAgeGroup.every((x) => {
       return (
         updatedSkillId === x.id ||
-        (detailedObservations?.skillObservations || []).findIndex(
+        (currentReport?.skillObservations || []).findIndex(
           (y) => y.skillId === x.id
         ) >= 0
       );
     });
 
-    const noDonNotKnow = !detailedObservations?.skillObservations.some(
+    const noDonNotKnow = !currentReport?.skillObservations.some(
       (x) => x.value === ProgressSkillValues.DoNotKnow
     );
 
     const skillsToWorkOnSelected =
-      detailedObservations?.skillsToWorkOn.length === 4 ||
-      detailedObservations?.skillsToWorkOn.length ===
-        detailedObservations?.skillObservations.reduce(
+      currentReport?.skillsToWorkOn.length === 4 ||
+      currentReport?.skillsToWorkOn.length ===
+        currentReport?.skillObservations.reduce(
           (count, x) => (x.isNegative ? count + 1 : count),
           0
         );
@@ -396,7 +393,7 @@ export const useObserveProgressForChild = (childId: string) => {
     currentAge,
     observationsAgeGroup,
     skillsForAgeGroup,
-    detailedObservations,
+    currentReport,
     currentObservationPeriod,
     currentObservations,
     replaceSkillText,

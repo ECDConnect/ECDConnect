@@ -35,7 +35,7 @@ export const CoachChildProgressReportAlert: React.FC<
     ? new Date(child.insertedDate)
     : undefined;
 
-  const { detailedObservations } = useObserveProgressForChild(child.id!);
+  const { currentReport } = useObserveProgressForChild(child.id!);
 
   const navigateToChildProgressObservation = () => {
     history.push(ROUTES.PROGRESS_REPORT_LIST, {
@@ -46,7 +46,7 @@ export const CoachChildProgressReportAlert: React.FC<
   if (!childInsertedDate)
     return <div>Child does not have a valid inserted date...</div>;
   const getListItemProps = (): ListItemProps => {
-    if (!!detailedObservations && !detailedObservations.dateCompleted) {
+    if (!!currentReport && !currentReport.dateCompleted) {
       return {
         ...baseProgressReportListItem,
         title: 'Create Report',

@@ -14004,6 +14004,7 @@ export type ProgressTrackingAgeGroup = {
   id?: Maybe<Scalars['Int']>;
   isReverseScored?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  skills?: Maybe<Scalars['String']>;
   startAgeInMonths?: Maybe<Scalars['String']>;
 };
 
@@ -14013,6 +14014,7 @@ export type ProgressTrackingAgeGroupInput = {
   endAgeInMonths?: InputMaybe<Scalars['String']>;
   isReverseScored?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  skills?: InputMaybe<Scalars['String']>;
   startAgeInMonths?: InputMaybe<Scalars['String']>;
 };
 
@@ -14064,7 +14066,6 @@ export type ProgressTrackingLevelInput = {
 
 export type ProgressTrackingSkill = {
   __typename?: 'ProgressTrackingSkill';
-  ageGroups?: Maybe<Array<Maybe<ProgressTrackingAgeGroup>>>;
   id?: Maybe<Scalars['Int']>;
   isReverseScored?: Maybe<Scalars['String']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
@@ -14076,7 +14077,6 @@ export type ProgressTrackingSkill = {
 };
 
 export type ProgressTrackingSkillInput = {
-  ageGroups?: InputMaybe<Scalars['String']>;
   isReverseScored?: InputMaybe<Scalars['String']>;
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;

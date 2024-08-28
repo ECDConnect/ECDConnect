@@ -13,10 +13,11 @@ export const ObservationsForChildNotes: React.FC = () => {
 
   const { state: routeState } = useLocation<ObservationsForChildNotesState>();
 
-  const { child, detailedObservations, updateNotes } =
-    useObserveProgressForChild(routeState.childId);
+  const { child, currentReport, updateNotes } = useObserveProgressForChild(
+    routeState.childId
+  );
 
-  const [notes, setNotes] = useState<string>(detailedObservations?.notes || '');
+  const [notes, setNotes] = useState<string>(currentReport?.notes || '');
 
   return (
     <BannerWrapper
@@ -51,7 +52,7 @@ export const ObservationsForChildNotes: React.FC = () => {
           icon="SaveIcon"
           text="Save"
           textColor="white"
-          disabled={!detailedObservations?.notes}
+          disabled={!currentReport?.notes}
         />
       </div>
     </BannerWrapper>
