@@ -81,7 +81,7 @@ export const useProgressForChildren = () => {
             childReport,
             allSkills,
             child.childFirstName,
-            child.ageGroup?.id || 0
+            child.ageGroup?.skills.length || 0
           ),
         };
       });
