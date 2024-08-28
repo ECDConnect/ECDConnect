@@ -82,6 +82,7 @@ export const initialThemeColours: ThemeColours = {
   pointsCardBarBg: '#FCCF8C',
   quatenaryBg: '#D2F1F9',
   adminBackground: '#EFF6FA',
+  quinary: '#FFD525',
 };
 
 export const themeColoursScheme = Yup.object().shape({

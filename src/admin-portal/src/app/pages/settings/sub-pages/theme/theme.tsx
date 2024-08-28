@@ -229,6 +229,7 @@ export function Theme() {
           pointsCardBarBg: colors.pointsCardBarBg,
           quatenaryBg: colors.quatenaryBg,
           adminBackground: colors.adminBackground,
+          quinary: colors.quinary,
         },
         fonts: {
           fontUrl: fontUrls.fontUrl ? fontUrls.fontUrl : DefaultTheme.fontUrl,

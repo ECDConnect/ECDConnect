@@ -101,6 +101,7 @@ export function Settings() {
         pointsCardBarBg: WhiteLabelTheme.pointsCardBarBg,
         quatenaryBg: WhiteLabelTheme.quatenaryBg,
         adminBackground: WhiteLabelTheme.adminBackground,
+        quinary: WhiteLabelTheme.quinary,
       },
       fonts: {
         fontUrl: DefaultTheme.fontUrl,
