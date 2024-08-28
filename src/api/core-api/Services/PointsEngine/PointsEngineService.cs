@@ -149,7 +149,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 && x.UserId == userId 
                                                                 && x.Year == monthStart.Year 
                                                                 && x.Month == monthStart.Month 
-                                                                && x.IncomeItems.Count > 0 && x.ExpenseItems.Count > 0).Count();
+                                                                && (x.IncomeItems.Count > 0 || x.ExpenseItems.Count > 0)).Count();
 
                 pointsToDoItems.SavedIncomeOrExpense = itemsCount > 0 ? true : false;
             }
