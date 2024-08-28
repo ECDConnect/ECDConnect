@@ -1357,7 +1357,7 @@ export const Dashboard: React.FC = () => {
           {(!totalYearPoints || (totalYearPoints && totalYearPoints <= 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
-              className="mt-5 py-6"
+              className="mt-5 w-full py-6"
               mainText={''}
               currentPoints={getCurrentPointsToDo}
               maxPoints={4}
