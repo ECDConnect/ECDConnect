@@ -962,7 +962,7 @@ export type CmsQuestionInput = {
   question?: InputMaybe<Scalars['String']>;
 };
 
-export type CmsResourceItemModelInput = {
+export type CmsResourceLinkModelInput = {
   contentId: Scalars['Int'];
   contentTypeId: Scalars['Int'];
   description?: InputMaybe<Scalars['String']>;
@@ -7970,8 +7970,7 @@ export type Mutation = {
   updateReferralType?: Maybe<ReferralType>;
   updateRelation?: Maybe<Relation>;
   updateRemovalFromProgramme: Scalars['Boolean'];
-  updateResourceConnectItem: Scalars['Boolean'];
-  updateResourceLink?: Maybe<ResourceLink>;
+  updateResourceLink: Scalars['Boolean'];
   updateRole?: Maybe<ApplicationIdentityRole>;
   updateShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   updateSiteAddress?: Maybe<SiteAddress>;
@@ -11214,14 +11213,9 @@ export type MutationUpdateRemovalFromProgrammeArgs = {
   removalId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationUpdateResourceConnectItemArgs = {
-  input?: InputMaybe<Array<InputMaybe<CmsResourceItemModelInput>>>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationUpdateResourceLinkArgs = {
   id: Scalars['String'];
-  input: ResourceLinkInput;
+  input?: InputMaybe<Array<InputMaybe<CmsResourceLinkModelInput>>>;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };

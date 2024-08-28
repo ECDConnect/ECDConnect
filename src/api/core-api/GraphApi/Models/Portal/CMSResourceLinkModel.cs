@@ -1,7 +1,7 @@
 ﻿
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
 {
-    public class CMSResourceItemModel
+    public class CMSResourceLinkModel
     {
         public int ContentTypeId { get; set; }
         public int ContentId { get; set; }

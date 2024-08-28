@@ -13,13 +13,13 @@ using System.Collections.Generic;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
-    public class ConnectMutationExtension
+    public class ResourcesMutationExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
-        public bool UpdateResourceConnectItem(
+        public bool UpdateResourceLink(
             [Service] ContentManagementRepository contentRepo,
             [Service] ILocaleService<Language> localeService,
-            List<CMSResourceItemModel> input,
+            List<CMSResourceLinkModel> input,
             string localeId)
         {
             Guid languageId;
