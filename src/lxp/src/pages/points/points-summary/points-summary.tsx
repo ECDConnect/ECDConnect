@@ -364,6 +364,9 @@ export const PointsSummary: React.FC = () => {
           : pointsToDo?.signedUpForApp
           ? 'quatenaryBg'
           : 'adminPortalBg',
+        onActionClick: practitioner?.isPrincipal
+          ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+          : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT),
       },
       {
         title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
@@ -421,6 +424,18 @@ export const PointsSummary: React.FC = () => {
             : pointsToDo?.isPartOfPreschool
             ? 'quatenaryBg'
             : 'adminPortalBg',
+        onActionClick:
+          pointsToDo?.isPartOfPreschool &&
+          !pointsToDo?.savedIncomeOrExpense &&
+          !pointsToDo?.savedIncomeOrExpense &&
+          practitioner?.isPrincipal
+            ? () => history.push(ROUTES.BUSINESS)
+            : pointsToDo?.isPartOfPreschool &&
+              !pointsToDo?.savedIncomeOrExpense &&
+              !pointsToDo?.savedIncomeOrExpense &&
+              !practitioner?.isPrincipal
+            ? () => history.push(ROUTES.CLASSROOM.ACTIVITIES.ROOT)
+            : () => {},
       },
       {
         title: `Influencer`,
@@ -443,7 +458,12 @@ export const PointsSummary: React.FC = () => {
             : 'bg-uiLight'
         } rounded-full h-12 w-12 p-2.5`,
         showIcon: true,
-        onActionClick: () => {},
+        onActionClick:
+          (pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.savedIncomeOrExpense) &&
+          !pointsToDo?.viewedCommunitySection
+            ? () => history.push(ROUTES.COMMUNITY.WELCOME)
+            : () => {},
         hideRightIcon: true,
         backgroundColor: pointsToDo?.viewedCommunitySection
           ? 'successBg'
@@ -515,6 +535,9 @@ export const PointsSummary: React.FC = () => {
         backgroundColor: pointsToDo?.isPartOfPreschool
           ? 'successBg'
           : 'adminPortalBg',
+        onActionClick: practitioner?.isPrincipal
+          ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+          : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT),
       },
       {
         title: `Influencer`,
@@ -817,7 +840,8 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMMM yyyy')}
           />
-          {(!pointsTotalForYear ||
+          {(getCurrentPointsToDo < 4 ||
+            !pointsTotalForYear ||
             (pointsTotalForYear && pointsTotalForYear <= 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
@@ -846,30 +870,32 @@ export const PointsSummary: React.FC = () => {
                 className="mt-4"
               />
             )}
-          {pointsTotalForYear && pointsTotalForYear > 10 && (
-            <ScoreCard
-              className="mt-5 py-6"
-              mainText={`${monthPoints} points`}
-              currentPoints={monthPoints}
-              maxPoints={pointsMax}
-              barBgColour="white"
-              barColour={
-                percentageScore < 60
-                  ? 'alertMain'
-                  : percentageScore < 80
-                  ? 'quatenary'
-                  : 'successMain'
-              }
-              bgColour={
-                percentageScore < 60
-                  ? 'alertBg'
-                  : percentageScore < 80
-                  ? 'quatenaryBg'
-                  : 'successBg'
-              }
-              textColour="black"
-            />
-          )}
+          {getCurrentPointsToDo === 4 &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 && (
+              <ScoreCard
+                className="mt-5 py-6"
+                mainText={`${monthPoints} points`}
+                currentPoints={monthPoints}
+                maxPoints={pointsMax}
+                barBgColour="white"
+                barColour={
+                  percentageScore < 60
+                    ? 'alertMain'
+                    : percentageScore < 80
+                    ? 'quatenary'
+                    : 'successMain'
+                }
+                bgColour={
+                  percentageScore < 60
+                    ? 'alertBg'
+                    : percentageScore < 80
+                    ? 'quatenaryBg'
+                    : 'successBg'
+                }
+                textColour="black"
+              />
+            )}
           {!isOnline &&
             monthPoints &&
             !pointsShareData &&
@@ -904,7 +930,9 @@ export const PointsSummary: React.FC = () => {
                 )}
               />
             )}
-          {(!pointsTotalForYear || pointsTotalForYear <= 10) && (
+          {(!pointsTotalForYear ||
+            pointsTotalForYear <= 10 ||
+            getCurrentPointsToDo < 4) && (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -930,7 +958,8 @@ export const PointsSummary: React.FC = () => {
           {!!todoListFiltered &&
             !!todoListFiltered.length &&
             pointsTotalForYear &&
-            pointsTotalForYear > 10 && (
+            pointsTotalForYear > 10 &&
+            getCurrentPointsToDo === 4 && (
               <Typography
                 className="mt-8 mb-4"
                 type={'h3'}
@@ -969,6 +998,7 @@ export const PointsSummary: React.FC = () => {
           {!!todoListFiltered &&
             pointsTotalForYear &&
             pointsTotalForYear > 10 &&
+            getCurrentPointsToDo === 4 &&
             todoListFiltered?.slice(0, 3)?.map((item) => {
               return (
                 <PointsTodoItem
@@ -979,30 +1009,34 @@ export const PointsSummary: React.FC = () => {
             })}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
-          {pointsTotalForYear && pointsTotalForYear > 10 && monthPoints > 0 && (
-            <Button
-              size="normal"
-              className="mb-4 w-full"
-              type="filled"
-              color="quatenary"
-              text="Share"
-              textColor="white"
-              icon="ShareIcon"
-              onClick={() => {
-                setShowPrintData(true);
-                setTimeout(() => {
-                  if (shareRef.current) {
-                    captureAndDownloadComponent(
-                      shareRef.current,
-                      'points-month-summary.jpg'
-                    );
-                    setShowPrintData(false);
-                  }
-                }, 100);
-              }}
-            />
-          )}
-          {pointsTotalForYear &&
+          {getCurrentPointsToDo === 4 &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
+            monthPoints > 0 && (
+              <Button
+                size="normal"
+                className="mb-4 w-full"
+                type="filled"
+                color="quatenary"
+                text="Share"
+                textColor="white"
+                icon="ShareIcon"
+                onClick={() => {
+                  setShowPrintData(true);
+                  setTimeout(() => {
+                    if (shareRef.current) {
+                      captureAndDownloadComponent(
+                        shareRef.current,
+                        'points-month-summary.jpg'
+                      );
+                      setShowPrintData(false);
+                    }
+                  }, 100);
+                }}
+              />
+            )}
+          {getCurrentPointsToDo === 4 &&
+            pointsTotalForYear &&
             pointsTotalForYear > 10 &&
             monthPoints === 0 &&
             !practitioner?.coachHierarchy && (
@@ -1017,7 +1051,8 @@ export const PointsSummary: React.FC = () => {
                 onClick={() => setShowInfo(true)}
               />
             )}
-          {pointsTotalForYear &&
+          {getCurrentPointsToDo === 4 &&
+            pointsTotalForYear &&
             pointsTotalForYear > 10 &&
             monthPoints === 0 &&
             practitioner?.coachHierarchy && (
@@ -1032,23 +1067,25 @@ export const PointsSummary: React.FC = () => {
                 onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
               />
             )}
-          {pointsTotalForYear && pointsTotalForYear > 10 && (
-            <Button
-              size="normal"
-              className="mb-4 w-full"
-              type="outlined"
-              color="quatenary"
-              text="See detailed report"
-              textColor="quatenary"
-              icon="EyeIcon"
-              disabled={!isOnline}
-              onClick={() =>
-                history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
-                  userRankingData: pointsShareData?.userRankingData,
-                })
-              }
-            />
-          )}
+          {getCurrentPointsToDo === 4 &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 && (
+              <Button
+                size="normal"
+                className="mb-4 w-full"
+                type="outlined"
+                color="quatenary"
+                text="See detailed report"
+                textColor="quatenary"
+                icon="EyeIcon"
+                disabled={!isOnline}
+                onClick={() =>
+                  history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
+                    userRankingData: pointsShareData?.userRankingData,
+                  })
+                }
+              />
+            )}
         </div>
       </BannerWrapper>
       <Dialog
