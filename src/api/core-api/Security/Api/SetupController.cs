@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Managers;
+using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Model;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
@@ -72,7 +73,7 @@ namespace ECDLink.Security.Api
         [Route("add-tenant-setup-info")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<TenantSetupInfo> AddTenantSetupInfo([FromBody] string setupInfo)
+        public async Task<IActionResult> AddTenantSetupInfo([FromBody] string setupInfo)
         {
             var tenantOrgDetail = JsonConvert.DeserializeObject<TenantOrgDetailModel>(setupInfo);
 
@@ -94,7 +95,7 @@ namespace ECDLink.Security.Api
             // Send email to new super admin 2
             await _notificationManager.SendWelcomeEmailToNewSuperAdminAsync((Guid)_applicationUserId, tenantOrgDetail.SuperAdmin2FirstName, tenantOrgDetail.SuperAdmin2Email);
 
-            return setupRecord;
+            return Ok(setupRecord);
         }
 
 
