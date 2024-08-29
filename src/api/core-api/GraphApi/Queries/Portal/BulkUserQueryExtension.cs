@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using static EcdLink.Api.CoreApi.Constants;
 
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
@@ -130,12 +129,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var errors = new List<string>();
                 if (idOrPassport is null)
                     errors.Add("Type of identification is empty");
+                    
 
                 var valid = new string[] { "id", "passport" };
                 if (!valid.Contains(idOrPassport))
                     errors.Add($"Type of identification must be {string.Join(", ", valid)}");
 
-                if (idOrPassport?.ToLowerInvariant() == "id"
+                if (idOrPassport != null && idOrPassport?.ToLowerInvariant() == "id"
                     && !UserHelper.IsSAIDValid(id))
                 {
                     if (string.IsNullOrEmpty(id))
@@ -147,7 +147,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                 }
 
-                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null ||passport.Length == 0))
+                if (idOrPassport != null && idOrPassport.ToLowerInvariant() == "passport" && (passport is null ||passport.Length == 0))
                     errors.Add("Passport is empty");
 
                 if (firstName is null || firstName.Length == 0)
@@ -267,7 +267,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 if (!valid.Contains(idOrPassport))
                     errors.Add($"Type of identification must be {string.Join(", ", valid)}");
 
-                if (idOrPassport?.ToLowerInvariant() == "id"
+                if (idOrPassport != null && idOrPassport?.ToLowerInvariant() == "id"
                     && !UserHelper.IsSAIDValid(id))
                 {
                     if (string.IsNullOrEmpty(id))
@@ -280,7 +280,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
                 }
 
-                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
+                if (idOrPassport != null && idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
                     errors.Add("Passport is empty");
 
                 if (firstName is null || firstName.Length == 0)
