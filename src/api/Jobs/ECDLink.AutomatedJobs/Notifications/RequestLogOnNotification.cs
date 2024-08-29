@@ -1,7 +1,5 @@
 ﻿using ECDLink.Abstractrions.Enums;
-using ECDLink.AutomatedJobs.Anonymise;
 using ECDLink.AutomatedJobs.Cron;
-using ECDLink.AutomatedJobs.Util;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Jobs;
 using Microsoft.EntityFrameworkCore;
@@ -28,9 +26,13 @@ namespace ECDLink.AutomatedJobs.Notifications
             var twoOne = DateTime.UtcNow.AddDays(-21).Date;
             var threeZero = DateTime.UtcNow.AddDays(-30).Date;
 
-            var users = dbContext.Users.Where(x => x.IsActive)
-                                        .Where(x => x.LastSeen.Date == twoOne || x.LastSeen.Date == threeZero)
-                                        .ToList();
+
+            var users = dbContext.Practitioners
+                        .Include(x => x.User)
+                        .Where(x => x.User.LastSeen.Date == twoOne || x.User.LastSeen.Date == threeZero)
+                        .Select(x => x.User)
+                        .OrderByDescending(x => x.LastSeen)
+                        .ToList();
 
             var existingNotifications = dbContext.JobNotifications
                                             .Where(x => x.TemplateType == TemplateTypeEnum.ThreeWeekNotLoggedOn
@@ -45,7 +47,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                     continue;
                 }
 
-                //do larger age first so taht user does not get too many messages
+                //do larger age first so that user does not get too many messages
                 if (user.LastSeen.Date <= threeZero)
                 {
                     dbContext.JobNotifications.Add(new JobNotification
@@ -61,7 +63,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                     continue;
                 }
 
-                //make sure user doesnt get notification fopr 30 and 21
+                //make sure user doesn't get notification for 30 and 21
                 if (existingNotifications.Any(x => x.UserId == user.Id))
                 {
                     continue;
@@ -80,7 +82,6 @@ namespace ECDLink.AutomatedJobs.Notifications
 
                     continue;
                 }
-
             }
 
             dbContext.SaveChanges();

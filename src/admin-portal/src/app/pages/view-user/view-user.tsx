@@ -149,10 +149,10 @@ export function ViewUser(props: any) {
   });
 
   useEffect(() => {
-    if (isPractitioner) {
+    if (isPractitioner || isPrincipal) {
       getPractitionerByUserId();
     }
-  }, [getPractitionerByUserId, isPractitioner]);
+  }, [getPractitionerByUserId, isPractitioner, isPrincipal]);
 
   const [getPractitionerStats, { data: practitionerStatsData }] = useLazyQuery(
     GetPractitionerStats,

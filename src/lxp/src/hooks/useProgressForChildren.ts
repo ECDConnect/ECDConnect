@@ -57,7 +57,7 @@ export const useProgressForChildren = () => {
         : undefined,
       ageGroup: !!currentReportingPeriod
         ? getProgressAgeGroupForChild(
-            currentReportingPeriod,
+            currentReportingPeriod.endDate,
             child!,
             allAgeGroups
           )
@@ -80,7 +80,8 @@ export const useProgressForChildren = () => {
           ...mapProgressReportDetails(
             childReport,
             allSkills,
-            child.childFirstName
+            child.childFirstName,
+            child.ageGroup?.skills.length || 0
           ),
         };
       });

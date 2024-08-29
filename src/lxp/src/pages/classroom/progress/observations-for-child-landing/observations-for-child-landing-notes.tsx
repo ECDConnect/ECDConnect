@@ -2,20 +2,22 @@ import { BannerWrapper, Button, FormInput, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import ROUTES from '@/routes/routes';
+import { useState } from 'react';
 
-export type ChildProgressObservationsNotesState = {
+export type ObservationsForChildNotesState = {
   childId: string;
 };
 
-export const ChildProgressObservationsNotes: React.FC = () => {
+export const ObservationsForChildNotes: React.FC = () => {
   const history = useHistory();
 
-  const { state: routeState } =
-    useLocation<ChildProgressObservationsNotesState>();
+  const { state: routeState } = useLocation<ObservationsForChildNotesState>();
 
   const { child, currentReport, updateNotes } = useObserveProgressForChild(
     routeState.childId
   );
+
+  const [notes, setNotes] = useState<string>(currentReport?.notes || '');
 
   return (
     <BannerWrapper
@@ -33,15 +35,16 @@ export const ChildProgressObservationsNotes: React.FC = () => {
             'E.g. Group to share ball, take turns to kick ball, score goals, catch, throw'
           }
           className="mt-2"
-          onChange={(event) => updateNotes(event.target.value)}
-          value={currentReport?.notes}
+          onChange={(event) => setNotes(event.target.value)}
+          value={notes}
         />
         <Button
-          onClick={() =>
+          onClick={() => {
+            updateNotes(notes);
             history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
               childId: routeState.childId,
-            })
-          }
+            });
+          }}
           className="mt-auto mb-4 w-full"
           size="normal"
           color="quatenary"

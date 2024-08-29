@@ -103,11 +103,10 @@ export const ClassMenu = ({
                 text: 'Track child progress',
                 type: 'outlined',
                 onClick: () => {
-                  // TODO: redirect to W9 when it's ready
-                  showMessage({
-                    message: 'This feature is not available yet (W9)',
-                    type: 'info',
+                  history.push(ROUTES.CLASSROOM.ROOT, {
+                    activeTabIndex: TabsItems.PROGRESS,
                   });
+                  onClose();
                 },
                 textColour: 'quatenary',
               },

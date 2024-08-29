@@ -1,12 +1,12 @@
 import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
 import { useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router';
-import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { format } from 'date-fns';
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import ROUTES from '@/routes/routes';
+import { useProgressForChild } from '@/hooks/useProgressForChild';
 
 export type ProgressViewReportState = {
   childId: string;
@@ -26,7 +26,7 @@ export const ProgressViewReport: React.FC = () => {
   const { state: routeState } = useLocation<ProgressViewReportState>();
 
   const { childId } = routeState;
-  const { child, detailedReports } = useObserveProgressForChild(childId);
+  const { child, detailedReports } = useProgressForChild(childId);
 
   const report = detailedReports.find((x) => x.id === routeState.reportId);
 

@@ -149,8 +149,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
           </div>
         ))}
         {/* Hidden PDF content */}
-        {/* <div hidden={true}> */}
-        <div>
+        <div hidden={true}>
           <div ref={shareRef} style={{ letterSpacing: '0.01px' }}>
             <ProgresseportsSummaryPdf
               ageGroup={ageGroup}

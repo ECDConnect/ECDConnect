@@ -13,6 +13,7 @@ import {
 } from '@ecdlink/core';
 import {
   ChildProgressReportModelInput,
+  ProgressTrackingAgeGroup,
   ProgressTrackingSkill,
 } from '@ecdlink/graphql';
 import { id } from 'date-fns/locale';
@@ -93,7 +94,9 @@ class ProgressTrackingService {
     locale: string
   ): Promise<ProgressTrackingAgeGroupDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { GetAllProgressTrackingAgeGroup: ProgressTrackingAgeGroup[] };
+    }>(``, {
       query: `query GetAllProgressTrackingAgeGroup($locale: String) {
           GetAllProgressTrackingAgeGroup(locale: $locale) {
             id
@@ -102,6 +105,7 @@ class ProgressTrackingService {
             endAgeInMonths     
             color
             description
+            skills
           }
         }`,
       variables: {
@@ -115,7 +119,18 @@ class ProgressTrackingService {
       );
     }
 
-    return response.data.data.GetAllProgressTrackingAgeGroup;
+    const mappedResponse =
+      response.data.data.GetAllProgressTrackingAgeGroup.map((x) => ({
+        id: x.id!,
+        name: x.name!,
+        startAgeInMonths: Number(x.startAgeInMonths!),
+        endAgeInMonths: Number(x.endAgeInMonths!),
+        color: x.color!,
+        description: x.description!,
+        skills: x.skills!.split(',').map((y) => Number(y)),
+      }));
+
+    return mappedResponse;
   }
 
   async getProgressTrackingSkills(
@@ -132,12 +147,6 @@ class ProgressTrackingService {
           name
           supportImage
           isReverseScored
-          level {
-            id
-          }
-          ageGroups {
-            id
-          }
           value
         }
       }         
@@ -153,7 +162,6 @@ class ProgressTrackingService {
 
     return response.data.data.GetAllProgressTrackingSkill.map((x) => ({
       id: x.id!,
-      ageGroupIds: (x.ageGroups || []).map((y) => y!.id!),
       name: x.name || '',
       supportImage: x.supportImage || undefined,
       isReverseScored: !!x.isReverseScored,
@@ -260,6 +268,10 @@ class ProgressTrackingService {
           childEnjoys
           goodProgressWith
           howCanCaregiverSupport
+          classroomName
+          practitionerName
+          principalName
+          principalPhoneNumber
           skillObservations {
             skillId,
             value

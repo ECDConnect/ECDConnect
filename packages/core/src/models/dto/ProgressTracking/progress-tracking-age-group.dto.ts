@@ -5,4 +5,5 @@ export interface ProgressTrackingAgeGroupDto {
   endAgeInMonths: number;
   color: string;
   description: string;
+  skills: number[];
 }

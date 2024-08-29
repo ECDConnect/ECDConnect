@@ -1,10 +1,18 @@
 import { ContentTypeDto } from '@ecdlink/core';
 
-interface Link {
-  text: string;
+export interface ConnectLink {
+  title: string;
   link: string;
+  description: string;
   contentTypeId: number;
-  linkedConnect: number;
+  contentId: number;
+}
+
+export interface ResourceLink {
+  title: string;
+  link: string;
+  description: string;
+  contentTypeId: number;
   contentId: number;
 }
 
@@ -13,11 +21,10 @@ export interface LinkPerSection {
   hint: string;
   contentTypeId: number;
   contentId: number;
-  links: Link[];
+  links: ConnectLink[];
 }
 
 export interface LinksSharedProps {
   contentType: ContentTypeDto;
-  subContentType: ContentTypeDto;
   onClose: () => void;
 }

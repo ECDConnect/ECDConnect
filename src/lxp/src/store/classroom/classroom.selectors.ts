@@ -1,4 +1,4 @@
-import { ChildDto } from '@ecdlink/core';
+import { ChildDto, PractitionerDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import {
@@ -67,11 +67,48 @@ export const getClassroomGroupsForUser = (userId: string) =>
     }
   );
 
-export const getClassroomGroupByChildUserId = (childUserId: string) =>
+export const getClassroomGroupsWithPractitioner = () =>
   createSelector(
     (state: RootState) =>
       state.classroomData.classroomGroupData.classroomGroups,
-    (classroomGroups: SimpleClassroomGroupDto[] | undefined) => {
+    (state: RootState) => state.practitioner.practitioner,
+    (state: RootState) => state.practitioner.practitioners,
+    (
+      classroomGroups: ClassroomGroupDto[] | undefined,
+      practitioner: PractitionerDto | undefined,
+      practitioners: PractitionerDto[] | undefined
+    ): (ClassroomGroupDto & {
+      practitioner: PractitionerDto | undefined;
+    })[] => {
+      return (classroomGroups || []).map((cls) => {
+        let linkedPractitioner = undefined;
+
+        if (cls.userId === practitioner?.userId) {
+          linkedPractitioner = practitioner;
+        }
+
+        if (!linkedPractitioner && practitioners) {
+          linkedPractitioner = practitioners.find(
+            (practitioner) => practitioner.userId === cls.userId
+          );
+        }
+
+        return {
+          ...cls,
+          practitioner: linkedPractitioner,
+        };
+      });
+    }
+  );
+
+export const getClassroomGroupByChildUserId = (childUserId: string) =>
+  createSelector(
+    getClassroomGroupsWithPractitioner(),
+    (
+      classroomGroups: (ClassroomGroupDto & {
+        practitioner: PractitionerDto | undefined;
+      })[]
+    ) => {
       if (!classroomGroups || !childUserId) return;
 
       return classroomGroups.find((group) =>

@@ -34,7 +34,7 @@ export const ChildProgressReportAlert: React.FC<
 > = ({ child }) => {
   const history = useHistory();
 
-  const { currentReportingPeriod, currentReport, currentAgeGroup } =
+  const { currentObservationPeriod, currentReport, observationsAgeGroup } =
     useObserveProgressForChild(child.id!);
 
   const navigateToChildProgressObservation = () => {
@@ -44,17 +44,17 @@ export const ChildProgressReportAlert: React.FC<
   };
 
   const isInPeriod =
-    !!currentReportingPeriod &&
-    isBefore(new Date(), new Date(currentReportingPeriod.startDate)) &&
-    isBefore(new Date(currentReportingPeriod.endDate), new Date());
+    !!currentObservationPeriod &&
+    isBefore(new Date(), new Date(currentObservationPeriod.startDate)) &&
+    isBefore(new Date(currentObservationPeriod.endDate), new Date());
 
-  if (!currentReportingPeriod || !!currentReport?.dateCompleted) {
+  if (!currentObservationPeriod || !!currentReport?.dateCompleted) {
     return <></>;
   }
 
   const getListItemProps = (): ListItemProps => {
     if (
-      !!currentAgeGroup &&
+      !!observationsAgeGroup &&
       isInPeriod &&
       !currentReport?.observationsCompleteDate
     ) {

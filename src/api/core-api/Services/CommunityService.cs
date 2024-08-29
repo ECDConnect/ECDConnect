@@ -36,7 +36,6 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly ApplicationUserManager _userManager;
         private readonly IPointsEngineService _pointsService;
 
-
         public CommunityService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -475,6 +474,7 @@ namespace EcdLink.Api.CoreApi.Services
                     _communityProfileConnectionRepo.Update(item);
                 }
             }
+            _notificationService.ExpireNotificationsTypesForUser(input.UserId.ToString(), TemplateTypeConstants.OpenCommunityConnections);
             return GetCommunityProfile(input.UserId);
         }
 

@@ -957,26 +957,17 @@ export type BulkInvitationResult = {
   success?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
-export type CmsConnectItemModelInput = {
-  buttonText?: InputMaybe<Scalars['String']>;
-  contentId: Scalars['Int'];
-  contentTypeId: Scalars['Int'];
-  link?: InputMaybe<Scalars['String']>;
-  linkedConnect: Scalars['Int'];
-};
-
-export type CmsConnectModelInput = {
-  contentId: Scalars['Int'];
-  contentTypeId: Scalars['Int'];
-  hint?: InputMaybe<Scalars['String']>;
-  links?: InputMaybe<Array<InputMaybe<CmsConnectItemModelInput>>>;
-  name?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-};
-
 export type CmsQuestionInput = {
   answer?: InputMaybe<Scalars['String']>;
   question?: InputMaybe<Scalars['String']>;
+};
+
+export type CmsResourceLinkModelInput = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  description?: InputMaybe<Scalars['String']>;
+  link?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type CmsVisitDataInput = {
@@ -1569,6 +1560,7 @@ export type ChildProgressReportModel = {
   childEnjoys?: Maybe<Scalars['String']>;
   childId: Scalars['UUID'];
   childProgressReportPeriodId: Scalars['UUID'];
+  classroomName?: Maybe<Scalars['String']>;
   dateCompleted?: Maybe<Scalars['DateTime']>;
   dateCreated: Scalars['DateTime'];
   goodProgressWith?: Maybe<Scalars['String']>;
@@ -1577,6 +1569,9 @@ export type ChildProgressReportModel = {
   id: Scalars['UUID'];
   notes?: Maybe<Scalars['String']>;
   observationsCompleteDate?: Maybe<Scalars['DateTime']>;
+  practitionerName?: Maybe<Scalars['String']>;
+  principalName?: Maybe<Scalars['String']>;
+  principalPhoneNumber?: Maybe<Scalars['String']>;
   skillObservations?: Maybe<Array<Maybe<SkillObservation>>>;
   skillsToWorkOn?: Maybe<Array<Maybe<SkillToWorkOn>>>;
 };
@@ -1585,6 +1580,7 @@ export type ChildProgressReportModelInput = {
   childEnjoys?: InputMaybe<Scalars['String']>;
   childId: Scalars['UUID'];
   childProgressReportPeriodId: Scalars['UUID'];
+  classroomName?: InputMaybe<Scalars['String']>;
   dateCompleted?: InputMaybe<Scalars['DateTime']>;
   dateCreated: Scalars['DateTime'];
   goodProgressWith?: InputMaybe<Scalars['String']>;
@@ -1593,6 +1589,9 @@ export type ChildProgressReportModelInput = {
   id: Scalars['UUID'];
   notes?: InputMaybe<Scalars['String']>;
   observationsCompleteDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerName?: InputMaybe<Scalars['String']>;
+  principalName?: InputMaybe<Scalars['String']>;
+  principalPhoneNumber?: InputMaybe<Scalars['String']>;
   skillObservations?: InputMaybe<Array<InputMaybe<SkillObservationInput>>>;
   skillsToWorkOn?: InputMaybe<Array<InputMaybe<SkillToWorkOnInput>>>;
 };
@@ -7489,6 +7488,7 @@ export type Mutation = {
   createReasonForPractitionerLeavingProgramme?: Maybe<ReasonForPractitionerLeavingProgramme>;
   createReferralType?: Maybe<ReferralType>;
   createRelation?: Maybe<Relation>;
+  createResourceLink?: Maybe<Scalars['String']>;
   createShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   createSiteAddress?: Maybe<SiteAddress>;
   createSmartSpaceVisit?: Maybe<SmartSpaceVisit>;
@@ -7652,6 +7652,7 @@ export type Mutation = {
   deleteReasonForPractitionerLeavingProgramme?: Maybe<Scalars['Boolean']>;
   deleteReferralType?: Maybe<Scalars['Boolean']>;
   deleteRelation?: Maybe<Scalars['Boolean']>;
+  deleteResourceLink?: Maybe<Scalars['Boolean']>;
   deleteRole: Scalars['Boolean'];
   deleteShortenUrlEntity?: Maybe<Scalars['Boolean']>;
   deleteSiteAddress?: Maybe<Scalars['Boolean']>;
@@ -7871,7 +7872,6 @@ export type Mutation = {
   updateCommunitySupport?: Maybe<Trainee>;
   updateConnect?: Maybe<Connect>;
   updateConnectItem?: Maybe<ConnectItem>;
-  updateConnectSection: Scalars['Boolean'];
   updateConsent?: Maybe<Consent>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
   updateDangerSign?: Maybe<DangerSign>;
@@ -7970,6 +7970,7 @@ export type Mutation = {
   updateReferralType?: Maybe<ReferralType>;
   updateRelation?: Maybe<Relation>;
   updateRemovalFromProgramme: Scalars['Boolean'];
+  updateResourceLink: Scalars['Boolean'];
   updateRole?: Maybe<ApplicationIdentityRole>;
   updateShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   updateSiteAddress?: Maybe<SiteAddress>;
@@ -8858,6 +8859,12 @@ export type MutationCreateRelationArgs = {
   input?: InputMaybe<RelationInput>;
 };
 
+export type MutationCreateResourceLinkArgs = {
+  input: ResourceLinkInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationCreateShortenUrlEntityArgs = {
   input?: InputMaybe<ShortenUrlEntityInput>;
 };
@@ -9581,6 +9588,12 @@ export type MutationDeleteReferralTypeArgs = {
 
 export type MutationDeleteRelationArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteResourceLinkArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeleteRoleArgs = {
@@ -10663,11 +10676,6 @@ export type MutationUpdateConnectItemArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationUpdateConnectSectionArgs = {
-  input?: InputMaybe<Array<InputMaybe<CmsConnectModelInput>>>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationUpdateConsentArgs = {
   id: Scalars['String'];
   input: ConsentInput;
@@ -11203,6 +11211,13 @@ export type MutationUpdateRemovalFromProgrammeArgs = {
   reasonDetails?: InputMaybe<Scalars['String']>;
   reasonForPractitionerLeavingProgrammeId?: InputMaybe<Scalars['String']>;
   removalId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateResourceLinkArgs = {
+  id: Scalars['String'];
+  input?: InputMaybe<Array<InputMaybe<CmsResourceLinkModelInput>>>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateRoleArgs = {
@@ -12389,11 +12404,11 @@ export type PointsPointsTodoItemModel = {
 
 export type PointsToDoItemModel = {
   __typename?: 'PointsToDoItemModel';
-  notPartOfPreschool: Scalars['Boolean'];
-  plannedOneDay: Scalars['Boolean'];
-  savedIncomeOrExpense: Scalars['Boolean'];
-  signedUpForApp: Scalars['Boolean'];
-  viewedCommunitySection: Scalars['Boolean'];
+  isPartOfPreschool?: Maybe<Scalars['Boolean']>;
+  plannedOneDay?: Maybe<Scalars['Boolean']>;
+  savedIncomeOrExpense?: Maybe<Scalars['Boolean']>;
+  signedUpForApp?: Maybe<Scalars['Boolean']>;
+  viewedCommunitySection?: Maybe<Scalars['Boolean']>;
 };
 
 export type PointsUserDateSummary = {
@@ -13996,6 +14011,7 @@ export type ProgressTrackingAgeGroup = {
   id?: Maybe<Scalars['Int']>;
   isReverseScored?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  skills?: Maybe<Scalars['String']>;
   startAgeInMonths?: Maybe<Scalars['String']>;
 };
 
@@ -14005,6 +14021,7 @@ export type ProgressTrackingAgeGroupInput = {
   endAgeInMonths?: InputMaybe<Scalars['String']>;
   isReverseScored?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  skills?: InputMaybe<Scalars['String']>;
   startAgeInMonths?: InputMaybe<Scalars['String']>;
 };
 
@@ -14056,7 +14073,6 @@ export type ProgressTrackingLevelInput = {
 
 export type ProgressTrackingSkill = {
   __typename?: 'ProgressTrackingSkill';
-  ageGroups?: Maybe<Array<Maybe<ProgressTrackingAgeGroup>>>;
   id?: Maybe<Scalars['Int']>;
   isReverseScored?: Maybe<Scalars['String']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
@@ -14068,7 +14084,6 @@ export type ProgressTrackingSkill = {
 };
 
 export type ProgressTrackingSkillInput = {
-  ageGroups?: InputMaybe<Scalars['String']>;
   isReverseScored?: InputMaybe<Scalars['String']>;
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
@@ -14305,6 +14320,7 @@ export type Query = {
   >;
   GetAllReferralType?: Maybe<Array<Maybe<ReferralType>>>;
   GetAllRelation?: Maybe<Array<Maybe<Relation>>>;
+  GetAllResourceLink: Array<Maybe<ResourceLink>>;
   GetAllShortenUrlEntity?: Maybe<Array<Maybe<ShortenUrlEntity>>>;
   GetAllSiteAddress?: Maybe<Array<Maybe<SiteAddress>>>;
   GetAllSmartSpaceVisit?: Maybe<Array<Maybe<SmartSpaceVisit>>>;
@@ -14466,6 +14482,7 @@ export type Query = {
   GetReasonForPractitionerLeavingProgrammeById?: Maybe<ReasonForPractitionerLeavingProgramme>;
   GetReferralTypeById?: Maybe<ReferralType>;
   GetRelationById?: Maybe<Relation>;
+  GetResourceLinkById: Array<Maybe<ResourceLink>>;
   GetShortenUrlEntityById?: Maybe<ShortenUrlEntity>;
   GetSiteAddressById?: Maybe<SiteAddress>;
   GetSmartSpaceVisitById?: Maybe<SmartSpaceVisit>;
@@ -15552,6 +15569,11 @@ export type QueryGetAllRelationArgs = {
   where?: InputMaybe<RelationFilterInput>;
 };
 
+export type QueryGetAllResourceLinkArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryGetAllShortenUrlEntityArgs = {
   order?: InputMaybe<Array<ShortenUrlEntitySortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -16372,6 +16394,12 @@ export type QueryGetReferralTypeByIdArgs = {
 export type QueryGetRelationByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<RelationFilterInput>;
+};
+
+export type QueryGetResourceLinkByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetShortenUrlEntityByIdArgs = {
@@ -18376,6 +18404,20 @@ export type RelationSortInput = {
   isActive?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type ResourceLink = {
+  __typename?: 'ResourceLink';
+  description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['Int']>;
+  link?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+};
+
+export type ResourceLinkInput = {
+  description?: InputMaybe<Scalars['String']>;
+  link?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type SsChecklistVisitModelInput = {

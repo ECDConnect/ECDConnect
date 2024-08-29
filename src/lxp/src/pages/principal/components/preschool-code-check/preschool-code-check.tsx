@@ -73,6 +73,7 @@ export const PreschoolCodeCheck: React.FC<{
       userId: classroomPrincipal,
       idNumber: user?.idNumber || user?.userName,
       firstName: user?.firstName,
+      preschoolCode: preschoolCode,
     };
 
     await new PractitionerService(

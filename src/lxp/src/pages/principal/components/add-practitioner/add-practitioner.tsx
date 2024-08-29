@@ -248,6 +248,7 @@ export const AddPractitioner = ({
       idNumber: idNumber || passport,
       firstName: newPractitioner?.firstName,
       lastName: newPractitioner?.surname,
+      preschoolCode: '',
     };
 
     const updatePermissionInput: UpdateUserPermissionInputModelInput = {

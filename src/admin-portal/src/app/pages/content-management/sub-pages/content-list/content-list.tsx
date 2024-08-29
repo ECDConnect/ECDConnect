@@ -581,7 +581,7 @@ export default function ContentList({
             : filteredData
         }
         component={
-          selectedTab === ContentManagementTabs.COMMUNITY.id
+          selectedTab === ContentManagementTabs.RESOURCES.id
             ? ContentTypes.COACHING_CIRCLE_TOPICS
             : 'cms'
         }
