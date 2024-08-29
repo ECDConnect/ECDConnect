@@ -18467,6 +18467,11 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
+export type Setting_Grafana = {
+  __typename?: 'Setting_Grafana';
+  GeneralDashboard: Scalars['String'];
+};
+
 export type Setting_IncomeStatementSubmitEnd = {
   __typename?: 'Setting_IncomeStatementSubmitEnd';
   IncomeStatementSubmitEnd: Scalars['String'];
@@ -18590,6 +18595,7 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
+  Grafana: Setting_Grafana;
   IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
   IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
   IntegrationDelay: Setting_IntegrationDelay;
