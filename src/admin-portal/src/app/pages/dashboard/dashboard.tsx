@@ -1,6 +1,6 @@
 import { classNames, TabItem } from '@ecdlink/ui';
 import { useState } from 'react';
-import GADashboard from './components/dashboard-qa/dashboard-qa';
+import GeneralDashboard from './components/dashboard-general/dashboard-general';
 
 // TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 export default function Dashboard() {
@@ -9,13 +9,12 @@ export default function Dashboard() {
       {
         title: 'General',
         initActive: true,
-        child: <GADashboard />,
+        child: <GeneralDashboard />,
       },
     ];
   };
 
   const tabItems = getNavigationItems();
-
   const [currentTab, setCurrentTab] = useState<TabItem>(tabItems[0]);
 
   return (
