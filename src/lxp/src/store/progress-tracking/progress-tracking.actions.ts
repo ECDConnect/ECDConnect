@@ -141,7 +141,7 @@ export const getProgressTrackingContent = createAsyncThunk<
                 return {
                   ...subCategory,
                   skills: subCategory.skills
-                    .filter((x) => skills!.some((y) => y.id === x.id))
+                    ?.filter((x) => skills!.some((y) => y.id === x.id))
                     .map((skillMin) => {
                       const skill = skills!.find((x) => x.id === skillMin.id)!;
 

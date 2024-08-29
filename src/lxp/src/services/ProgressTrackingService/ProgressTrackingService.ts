@@ -127,7 +127,10 @@ class ProgressTrackingService {
         endAgeInMonths: Number(x.endAgeInMonths!),
         color: x.color!,
         description: x.description!,
-        skills: x.skills!.split(',').map((y) => Number(y)),
+        skills:
+          x.skills! && x.skills.length > 0
+            ? x.skills!.split(',').map((y) => Number(y))
+            : [],
       }));
 
     return mappedResponse;
