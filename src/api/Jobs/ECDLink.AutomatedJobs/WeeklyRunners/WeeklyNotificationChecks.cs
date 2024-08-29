@@ -1,9 +1,7 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
-using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,7 +18,7 @@ public class WeeklyNotificationChecks : CronJobService
     {
         var service = Scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
-            //run weekly attendance reminder
+        //run weekly attendance reminder
         //await service.WeeklyAttendancesReminderAsync();
     }
 }

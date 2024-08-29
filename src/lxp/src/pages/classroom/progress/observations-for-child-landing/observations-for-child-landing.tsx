@@ -2,27 +2,30 @@ import { BannerWrapper, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { format } from 'date-fns';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
-import { ProgressLandingNoObservations } from './progress-landing-incomplete';
-import { ProgressLandingComplete } from './progress-landing-complete';
+import { ObservationsForChildLandingIncomplete } from './observations-for-child-landing-incomplete';
+import { ObservationsForChildLandingComplete } from './observations-for-child-landing-complete';
 
-export type ChildProgressObservationsLandingState = {
+export type ObservationsForChildLandingState = {
   childId: string;
 };
 
-export const ChildProgressObservationsLanding: React.FC = () => {
+export const ObservationsForChildLanding: React.FC = () => {
   const history = useHistory();
 
-  const { state: routeState } =
-    useLocation<ChildProgressObservationsLandingState>();
+  const { state: routeState } = useLocation<ObservationsForChildLandingState>();
 
-  const { child, currentReportingPeriod, currentAgeGroup, currentReport } =
-    useObserveProgressForChild(routeState.childId);
+  const {
+    child,
+    currentObservationPeriod,
+    observationsAgeGroup,
+    currentReport,
+  } = useObserveProgressForChild(routeState.childId);
 
   return (
     <BannerWrapper
       size={'small'}
       onBack={() => history.goBack()}
-      title={`Report ${currentReportingPeriod?.reportNumber}`}
+      title={`Report ${currentObservationPeriod?.reportNumber}`}
       subTitle={`${child?.user?.firstName} ${child?.user?.surname}`}
       renderOverflow
     >
@@ -30,34 +33,34 @@ export const ChildProgressObservationsLanding: React.FC = () => {
         <Typography
           type="h2"
           color="primary"
-          text={`Report ${currentReportingPeriod?.reportNumber}`}
+          text={`Report ${currentObservationPeriod?.reportNumber}`}
         />
         <Typography
           type="h4"
           color="textMid"
           text={`${format(
-            new Date(currentReportingPeriod?.startDate || ''),
+            new Date(currentObservationPeriod?.startDate || ''),
             'd MMM'
           )} and ${format(
-            new Date(currentReportingPeriod?.endDate || ''),
+            new Date(currentObservationPeriod?.endDate || ''),
             'd MMM yyyy'
           )}`}
         />
         {/* Current observations still in progress */}
         {!currentReport?.observationsCompleteDate && (
-          <ProgressLandingNoObservations
+          <ObservationsForChildLandingIncomplete
             childId={routeState.childId}
-            currentAgeGroup={currentAgeGroup!}
+            currentAgeGroup={observationsAgeGroup!}
           />
         )}
         {/* All observations completed for current report period, but we are still outside the window */}
         {!!currentReport?.observationsCompleteDate && currentReport && (
-          <ProgressLandingComplete
+          <ObservationsForChildLandingComplete
             childId={routeState.childId}
             child={child!}
-            currentReportingPeriod={currentReportingPeriod!}
+            currentReportingPeriod={currentObservationPeriod!}
             currentReport={currentReport}
-            currentAgeGroup={currentAgeGroup}
+            currentAgeGroup={observationsAgeGroup}
           />
         )}
       </div>

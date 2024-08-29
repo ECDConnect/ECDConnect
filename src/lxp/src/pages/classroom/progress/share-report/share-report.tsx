@@ -1,9 +1,11 @@
 import { BannerWrapper, Button, Card, Dropdown, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
-import { useState } from 'react';
-import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
+import { useRef, useState } from 'react';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
+import { useProgressGenerateSummaryPdfReport as usePdfFromHtml } from '@/hooks/useProgressGenerateSummaryPdfReport';
+import { useProgressForChild } from '@/hooks/useProgressForChild';
 
 export type ProgressShareReportState = {
   childId: string;
@@ -16,13 +18,15 @@ export const ProgressShareReport: React.FC = () => {
 
   const { state: routeState } = useLocation<ProgressShareReportState>();
 
-  const { child, detailedReports } = useObserveProgressForChild(
-    routeState.childId
-  );
+  const { child, detailedReports } = useProgressForChild(routeState.childId);
+
+  const { generateReport } = usePdfFromHtml();
 
   const [selectedReport, setSelectedReport] = useState<string | undefined>(
     routeState.reportId
   );
+
+  const shareRef = useRef<HTMLDivElement>(null);
 
   return (
     <BannerWrapper
@@ -104,7 +108,12 @@ export const ProgressShareReport: React.FC = () => {
           </ul>
         </div>
         <Button
-          onClick={() => {}}
+          onClick={() => {
+            generateReport(
+              shareRef.current!,
+              shareRef.current?.offsetWidth || 750
+            );
+          }}
           className="mt-4 w-full"
           size="small"
           color="quatenary"
@@ -112,9 +121,19 @@ export const ProgressShareReport: React.FC = () => {
           type="filled"
           icon={'ShareIcon'}
           text={'Share report'}
-          disabled={true}
+          disabled={!selectedReport}
         />
       </div>
+      {!!selectedReport && (
+        <div hidden={true}>
+          <div ref={shareRef} style={{ letterSpacing: '0.01px' }}>
+            <ProgressCaregiverReportPdf
+              childId={routeState.childId}
+              reportId={selectedReport}
+            />
+          </div>
+        </div>
+      )}
     </BannerWrapper>
   );
 };

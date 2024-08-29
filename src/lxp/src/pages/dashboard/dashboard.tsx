@@ -12,9 +12,10 @@ import {
   Typography,
   UserAvatar,
   ScoreCard,
+  NoPointsScoreCard,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -75,6 +76,13 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import DashboardWrapper from './dashboard-wrapper/dashboard-wrapper';
 import { useAppContext } from '@/walkthrougContext';
 import { useTenantModules } from '@/hooks/useTenantModules';
+import {
+  CalendarIcon,
+  ClipboardCheckIcon,
+  FireIcon,
+} from '@heroicons/react/solid';
+import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
+import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 
 const { version } = require('../../../package.json');
 
@@ -151,6 +159,24 @@ export const Dashboard: React.FC = () => {
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
+  const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
+  const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
+
+  const getPointsToDoItems = useCallback(async () => {
+    appDispatch(
+      pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
+    );
+
+    appDispatch(
+      pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
+    );
+  }, [appDispatch, practitioner?.userId]);
+
+  useEffect(() => {
+    if (!coach && isOnline && practitioner) {
+      getPointsToDoItems();
+    }
+  }, []);
 
   const offlineCommunity = () => {
     if (!isOnline) {
@@ -198,12 +224,15 @@ export const Dashboard: React.FC = () => {
     if (isCoach) {
       return;
     }
+
     const currentMonth = new Date().getMonth(); // +1 for 0 index
+
     const currentYear = new Date().getFullYear();
+
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
       const dataMonth = getMonth(new Date(current?.dateScored));
       const dataYear = getYear(new Date(current?.dateScored));
-      if (dataMonth === currentMonth && dataYear === currentYear) {
+      if (dataMonth + 1 === currentMonth && dataYear === currentYear) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -1029,6 +1058,202 @@ export const Dashboard: React.FC = () => {
     userData?.profileImageUrl ||
     userProfilePicture?.reference;
 
+  const getCurrentPointsToDo = useMemo(() => {
+    if (pointsToDo) {
+      let newPointsToDo = { ...pointsToDo };
+      if (practitioner?.isPrincipal) {
+        removeMandatoryProperty(
+          newPointsToDo,
+          'plannedOneDay',
+          (value) => practitioner?.isPrincipal === true
+        );
+      } else {
+        removeMandatoryProperty(
+          newPointsToDo,
+          'savedIncomeOrExpense',
+          (value) => !practitioner?.isPrincipal
+        );
+      }
+
+      const pointsToDoValues = Object.values(newPointsToDo!)?.filter(
+        (item) => item === true
+      );
+      return pointsToDoValues?.length;
+    } else {
+      return 0;
+    }
+  }, [pointsToDo, practitioner?.isPrincipal]);
+
+  const renderTodoText = useMemo(() => {
+    if (pointsToDo?.viewedCommunitySection) {
+      return 'Influencer';
+    }
+
+    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
+      return 'Boss';
+    }
+
+    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+      return 'Cwepheshe';
+    }
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'Tichere';
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return 'Umtsha';
+    }
+
+    return 'Umtsha';
+  }, [
+    pointsToDo?.isPartOfPreschool,
+    pointsToDo?.plannedOneDay,
+    pointsToDo?.savedIncomeOrExpense,
+    pointsToDo?.signedUpForApp,
+    pointsToDo?.viewedCommunitySection,
+    practitioner?.isPrincipal,
+  ]);
+
+  const renderPointsToDoScoreCardBgColor = useMemo(() => {
+    if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return 'quatenaryBg';
+      }
+      return 'successBg';
+    }
+
+    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
+      return 'quatenaryBg';
+    }
+
+    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+      return 'quatenaryBg';
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'secondaryAccent2';
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return 'alertBg';
+    }
+
+    return 'alertBg';
+  }, [
+    pointsToDo?.isPartOfPreschool,
+    pointsToDo?.plannedOneDay,
+    pointsToDo?.savedIncomeOrExpense,
+    pointsToDo?.signedUpForApp,
+    pointsToDo?.viewedCommunitySection,
+    practitioner?.isPrincipal,
+  ]);
+
+  const renderPointsToDoEmoji = useMemo(() => {
+    if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return (
+          <div className="bg-quatenary mr-4 rounded-full p-3">
+            <FireIcon className="font-white h-8 w-8" />
+          </div>
+        );
+      }
+      return (
+        <div className="bg-successMain mr-4 rounded-full p-3">
+          <FireIcon className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
+      return (
+        <div className="bg-quatenary mr-4 rounded-full p-3">
+          <Crown className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+      return (
+        <div className="bg-quatenary mr-4 rounded-full p-3">
+          <CalendarIcon className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return (
+        <div className="bg-secondary mr-4 rounded-full p-3">
+          <Kindgarden className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return (
+        <div className="bg-alertMain mr-4 rounded-full p-2">
+          <ClipboardCheckIcon className="font-white h-8 w-8" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-alertMain mr-4 rounded-full p-2">
+        <ClipboardCheckIcon className="font-white h-8 w-8" />
+      </div>
+    );
+  }, [
+    pointsToDo?.isPartOfPreschool,
+    pointsToDo?.plannedOneDay,
+    pointsToDo?.savedIncomeOrExpense,
+    pointsToDo?.signedUpForApp,
+    pointsToDo?.viewedCommunitySection,
+    practitioner?.isPrincipal,
+  ]);
+
+  const renderPointsToDoProgressBarColor = useMemo(() => {
+    if (pointsToDo?.viewedCommunitySection) {
+      if (getCurrentPointsToDo === 3) {
+        return 'quatenary';
+      }
+      return 'successMain';
+    }
+
+    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
+      return 'quatenary';
+    }
+
+    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+      return 'quatenary';
+    }
+
+    if (pointsToDo?.isPartOfPreschool) {
+      return 'secondary';
+    }
+
+    if (pointsToDo?.signedUpForApp) {
+      return 'alertMain';
+    }
+
+    return 'alertMain';
+  }, [
+    pointsToDo?.isPartOfPreschool,
+    pointsToDo?.plannedOneDay,
+    pointsToDo?.savedIncomeOrExpense,
+    pointsToDo?.signedUpForApp,
+    pointsToDo?.viewedCommunitySection,
+    practitioner?.isPrincipal,
+  ]);
+
+  function removeMandatoryProperty<T, K extends keyof T>(
+    obj: T,
+    prop: K,
+    condition: (value: T[K]) => boolean
+  ): void {
+    if (condition(obj[prop])) {
+      delete (obj as any)[prop]; // Use type assertion to bypass TypeScript checks
+    }
+  }
+
   return (
     <>
       <DashboardWrapper />
@@ -1038,15 +1263,21 @@ export const Dashboard: React.FC = () => {
         avatar={
           profilePc ? (
             <div id="wantToConnectWithPrincipal">
-              <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
+              <div id="wantToConnectWithPrincipal2">
+                <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
+              </div>
             </div>
           ) : (
-            <UserAvatar
-              size="sm-md"
-              color="secondary"
-              displayBorder
-              borderColour="secondary"
-            />
+            <div id="wantToConnectWithPrincipal">
+              <div id="wantToConnectWithPrincipal2">
+                <UserAvatar
+                  size="sm-md"
+                  color="secondary"
+                  displayBorder
+                  borderColour="secondary"
+                />
+              </div>
+            </div>
           )
         }
         menuItems={isCoach ? navigationForCoach : navigation}
@@ -1102,21 +1333,42 @@ export const Dashboard: React.FC = () => {
             listItems={dashboardItems}
             notification={dashboardNotification}
           />
-          {!!pointsScoreProps && !isCoach && (
-            <ScoreCard
-              className="mt-5 mb-1 h-20"
-              progressBarClassName="flex pt-2"
-              mainText={pointsScoreProps.mainText}
-              hint={pointsScoreProps?.hint}
-              currentPoints={pointsScoreProps.currentPoints}
-              maxPoints={pointsScoreProps.maxPoints}
-              onClick={pointsScoreProps.onClick}
-              barBgColour={pointsScoreProps.barBgColour}
-              barColour={pointsScoreProps.barColour}
-              bgColour={pointsScoreProps.bgColour}
-              image={pointsScoreProps.image}
-              textColour={pointsScoreProps.textColour}
-              textPosition={pointsScoreProps.textPosition}
+          {totalYearPoints &&
+            totalYearPoints > 10 &&
+            !!pointsScoreProps &&
+            !isCoach &&
+            getCurrentPointsToDo === 4 && (
+              <ScoreCard
+                className="mt-5 mb-1 h-20"
+                progressBarClassName="flex pt-2"
+                mainText={pointsScoreProps.mainText}
+                hint={pointsScoreProps?.hint}
+                currentPoints={pointsScoreProps.currentPoints}
+                maxPoints={pointsScoreProps.maxPoints}
+                onClick={pointsScoreProps.onClick}
+                barBgColour={pointsScoreProps.barBgColour}
+                barColour={pointsScoreProps.barColour}
+                bgColour={pointsScoreProps.bgColour}
+                image={pointsScoreProps.image}
+                textColour={pointsScoreProps.textColour}
+                textPosition={pointsScoreProps.textPosition}
+              />
+            )}
+          {(!totalYearPoints || (totalYearPoints && totalYearPoints <= 10)) && (
+            <NoPointsScoreCard
+              image={renderPointsToDoEmoji}
+              className="mt-5 w-full py-6"
+              mainText={''}
+              currentPoints={getCurrentPointsToDo}
+              maxPoints={4}
+              barBgColour="white"
+              barColour={renderPointsToDoProgressBarColor}
+              bgColour={renderPointsToDoScoreCardBgColor}
+              textColour="black"
+              onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY)}
+              isBigTitle={false}
+              hint={renderTodoText}
+              textPosition="left"
             />
           )}
           {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (

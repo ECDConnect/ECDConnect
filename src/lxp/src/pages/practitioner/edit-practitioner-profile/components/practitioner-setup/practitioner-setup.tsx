@@ -87,6 +87,10 @@ export const PractitionerSetup = ({
       classroomsThunkActions.getClassroom({ overrideCache: true })
     ).unwrap();
 
+    if (practitionerToProgramme === false) {
+      await appDispatch(classroomsActions.resetClassroomState());
+    }
+
     appDispatch(notificationActions.resetNotificationState());
   };
 
@@ -111,7 +115,7 @@ export const PractitionerSetup = ({
       await appDispatch(classroomsActions.resetClassroomState());
     }
   };
-
+  console.log({ practitioner });
   return (
     <>
       <div className="wrapper-with-sticky-button mt-4">

@@ -20,13 +20,13 @@ import { authSelectors } from '@/store/auth';
 import { useAppDispatch } from '@/store';
 import { progressTrackingThunkActions } from '@/store/progress-tracking';
 
-export type ProgressLandingNoObservationsProps = {
+export type ObservationsForChildLandingIncompleteProps = {
   childId: string;
   currentAgeGroup: ProgressTrackingAgeGroupDto;
 };
 
-export const ProgressLandingNoObservations: React.FC<
-  ProgressLandingNoObservationsProps
+export const ObservationsForChildLandingIncomplete: React.FC<
+  ObservationsForChildLandingIncompleteProps
 > = ({ childId, currentAgeGroup }) => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
@@ -102,7 +102,6 @@ export const ProgressLandingNoObservations: React.FC<
           className="text-center"
         />
       </div>
-      {/* TODO - handle switching language, including fetching and storing extra language */}
       <LanguageSelector
         labelText="Progress tracker language:"
         labelClassName="font-medium font-body text-textDark pr-2"

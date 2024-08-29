@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
@@ -13,13 +13,13 @@ using System.Collections.Generic;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
-    public class ConnectMutationExtension
+    public class ResourcesMutationExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
-        public bool UpdateConnectSection(
+        public bool UpdateResourceLink(
             [Service] ContentManagementRepository contentRepo,
             [Service] ILocaleService<Language> localeService,
-            List<CMSConnectModel> input,
+            List<CMSResourceLinkModel> input,
             string localeId)
         {
             Guid languageId;
@@ -37,9 +37,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 Dictionary<string, object> connectDict = new Dictionary<string, object>
                 {
-                    { "name", item.Name },
-                    { "type", item.Type },
-                    { "hint", item.Hint }
+                    { "title", item.Title },
+                    { "link", item.Link },
+                    { "description", item.Description },
                 };
 
                 if (item.ContentId != -1)
@@ -50,27 +50,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     //insert
                     item.ContentId = contentRepo.Create(item.ContentTypeId, languageId, connectDict);
-                }
-
-                foreach (var link in item.Links)
-                {
-                    Dictionary<string, object> connectItemDict = new Dictionary<string, object>
-                    {
-                        { "buttonText", link.ButtonText },
-                        { "link", link.Link },
-                        { "linkedConnect", item.ContentId },
-                    };
-
-                    if (link.ContentId != -1)
-                    {
-                        //update
-                        contentRepo.Update(link.ContentId, languageId, connectItemDict);
-                    }
-                    else
-                    {
-                        //insert
-                        contentRepo.Create(link.ContentTypeId, languageId, connectItemDict);
-                    }
                 }
             }
 

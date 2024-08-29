@@ -16,7 +16,7 @@ export const ProgressTabNoReports: React.FC<ProgressTabNoReports> = ({
       <Typography
         className="mt-4 text-center"
         color="textDark"
-        text="You don't have any progress onservations yet!"
+        text="You don't have any progress observations yet!"
         type={'h3'}
       />
       <Typography

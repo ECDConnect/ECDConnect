@@ -7,6 +7,7 @@ import {
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
+import { useTenant } from '@/hooks/useTenant';
 
 export class UserLastLoginNotificationValidator
   implements NotificationValidator
@@ -38,6 +39,7 @@ export class UserLastLoginNotificationValidator
 
     if (daysPassed < 7) return [];
 
+    const tenant = useTenant();
     let defaultNotification: Message = {
       reference: `${getWeek(this.currentDate)}-${getYear(
         this.currentDate
@@ -71,7 +73,10 @@ export class UserLastLoginNotificationValidator
           )}-sync-${
             daysPassed > 21 && daysPassed % 2 > 0 ? daysPassed.toString() : '21'
           }`,
-          title: 'Go online again to keep using Funda App!',
+          title:
+            'Go online again to keep using ' +
+            tenant.tenant?.applicationName +
+            '!',
           message: `You haven't been online for more than 3 weeks. Turn on your wifi or data in the next week or you might lose some of your information!`,
         },
       ];
@@ -83,8 +88,11 @@ export class UserLastLoginNotificationValidator
           reference: `${getWeek(this.currentDate)}-${getYear(
             this.currentDate
           )}-sync-14`,
-          title: 'Go online again to keep using Funda App!',
-          message: `You haven't been online for 14 days. Make sure you turn on your wifi or data soon.`,
+          title:
+            'Go online again to keep using ' +
+            tenant.tenant?.applicationName +
+            '!',
+          message: `You haven't been online for more than 2 weeks. Make sure you turn on your wifi or data soon.`,
         },
       ];
 

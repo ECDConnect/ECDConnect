@@ -1,21 +1,15 @@
 import {
   ActivityDto,
-  ChildDto,
   PractitionerProgressReportSummaryDto,
   ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
-  ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
-import { ProgressTrackingState } from '.';
-import { ChildProgressSubCategoryAssessment } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import { RootState } from '../types';
 import { ProgressSkill } from '@/models/progress/progress-skill';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
-import { getCurrentProgressReportPeriod as getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
-import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { ProgressTrackingCategoriesByLocale } from './progress-tracking.types';
 
 // CATEGORIES
@@ -123,7 +117,6 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
             description: skill.description,
             supportImage: skill.supportImage,
             isReverseScored: skill.isReverseScored,
-            ageGroupIds: skill.ageGroupIds,
             subCategory: {
               id: subCategory?.id,
               name: subCategory?.name,
@@ -161,35 +154,24 @@ export const getPractitionerProgressReportSummary = (
 
 export const getSkillsForAgeGroup = (ageGroupId: number) =>
   createSelector(
-    getProgressTrackingSkills(),
     getProgressTrackingSkillsWithCategoryInfo(),
-    (skills: ProgressTrackingSkillDto[], detailedSkills: ProgressSkill[]) => {
-      // Get all skills for age group
-      const ageSkills = skills.filter((x) =>
-        x.ageGroupIds?.some((x) => x === ageGroupId)
-      );
-
-      return detailedSkills.filter((x) => ageSkills.some((y) => y.id === x.id));
-    }
-  );
-
-export const getCurrentObservationsForChild = (childId: string) =>
-  createSelector(
-    getCurrentProgressReportPeriod(),
-    (state: RootState) => state.progressTracking.childProgressReports,
+    (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
     (
-      currentReportPeriod: ProgressReportPeriod | undefined,
-      childProgressReports: ChildProgressReport[]
-    ) => {
-      if (!currentReportPeriod) {
-        return undefined;
+      detailedSkills: ProgressSkill[],
+      ageGroups: ProgressTrackingAgeGroupDto[]
+    ): ProgressSkill[] => {
+      const ageGroup = ageGroups.find((x) => x.id === ageGroupId);
+
+      if (!ageGroup) {
+        return [];
       }
 
-      return childProgressReports.find(
-        (x) =>
-          x.childId === childId &&
-          x.childProgressReportPeriodId === currentReportPeriod.id
-      );
+      return ageGroup.skills.map((ageGroupSkill) => {
+        const skill = detailedSkills.find(
+          (skill) => skill.id === ageGroupSkill
+        );
+        return skill!;
+      });
     }
   );
 

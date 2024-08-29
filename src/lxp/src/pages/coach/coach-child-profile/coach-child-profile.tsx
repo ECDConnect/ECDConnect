@@ -389,9 +389,9 @@ export const CoachChildProfile: React.FC = () => {
             className="m-4"
             title={`${
               child?.user?.firstName || 'This child'
-            } does not have a class`}
+            } is not assigned to a class.`}
             list={[
-              `Add ${child?.user?.firstName || 'this child'} to a class now`,
+              `Assign ${child?.user?.firstName || 'this child'} to a class`,
             ]}
             type="error"
             button={

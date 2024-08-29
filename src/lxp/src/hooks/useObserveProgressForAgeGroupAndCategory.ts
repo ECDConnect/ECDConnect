@@ -75,7 +75,7 @@ export const useObserveProgressForAgeGroupAndCategory = (
   ) => {
     if (!!activeReportingPeriod && !activeReportComplete) {
       return getProgressAgeGroupForChild(
-        activeReportingPeriod,
+        activeReportingPeriod.endDate,
         child!,
         allAgeGroups
       );
@@ -83,7 +83,7 @@ export const useObserveProgressForAgeGroupAndCategory = (
 
     if (activeReportComplete && nextReportingPeriod) {
       return getProgressAgeGroupForChild(
-        nextReportingPeriod,
+        nextReportingPeriod.endDate,
         child!,
         allAgeGroups
       );
@@ -132,7 +132,8 @@ export const useObserveProgressForAgeGroupAndCategory = (
           ...mapProgressReportDetails(
             childReport,
             allSkills,
-            child.childFirstName
+            child.childFirstName,
+            child.ageGroup?.skills.length || 0
           ),
         };
       });
@@ -146,11 +147,9 @@ export const useObserveProgressForAgeGroupAndCategory = (
     return categories.find((x) => x.id === categoryId)!;
   }, [categoryId, categories]);
 
-  const skillsForAgeGroup = useMemo(() => {
-    return allSkills.filter((skill) =>
-      skill.ageGroupIds.some((x) => x === ageGroupId)
-    );
-  }, [ageGroupId, categories]);
+  const skillsForAgeGroup = useSelector(
+    progressTrackingSelectors.getSkillsForAgeGroup(ageGroupId || 0)
+  );
 
   const skillsForAgeGroupAndCategory = useMemo(() => {
     return skillsForAgeGroup.filter(

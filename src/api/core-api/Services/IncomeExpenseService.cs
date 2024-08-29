@@ -3,15 +3,18 @@ using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +45,7 @@ namespace ECDLink.Core.Services
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
         private IPointsEngineService _pointsService;
+        private INotificationService _notificationService;
 
         private IConverter _pdfConverter;
 
@@ -52,6 +56,7 @@ namespace ECDLink.Core.Services
             [Service] ApplicationUserManager userManager,
             [Service] PersonnelService personnelService,
             [Service] IPointsEngineService pointsService,
+            [Service] INotificationService notificationService,
             HierarchyEngine hierarchyEngine,
             IConverter pdfConverter
             )
@@ -76,6 +81,7 @@ namespace ECDLink.Core.Services
             _documentManager = documentManager;
             _personnelService = personnelService;
             _pointsService = pointsService;
+            _notificationService = notificationService;
         }
 
         #region Utils
@@ -108,14 +114,48 @@ namespace ECDLink.Core.Services
             var statementsQuery = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId == userId &&
-                    (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
+                .Where(x => x.UserId == userId && x.Year == startDate.Year);
 
+            // Handle notifications if applicable
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            var totalDaysOnApp = (DateTime.Now.Date - practitioner.StartDate.Value.Date).Days;
+            if (!statementsQuery.Any())
+            {
+                if (practitioner.IsRegistered.HasValue && practitioner.IsRegistered.Value && practitioner.IsPrincipalOrAdmin())
+                {
+                    if (totalDaysOnApp > 59)
+                    {
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements60DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, DateTime.Now.Date.AddDays(7),
+                                                                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
+                    }
+                }
+            } 
+            else
+            {
+                var thirtyDaysBack = startDate.AddDays(-30);
+                var lastThirtyDaysData = statementsQuery.Where(x => (x.Year > thirtyDaysBack.Year || (x.Year == thirtyDaysBack.Year && x.Month >= thirtyDaysBack.Month)));
+                if (!lastThirtyDaysData.Any() && totalDaysOnApp > 119)
+                {
+                    var replacements = new List<TagsReplacements>
+                {
+                    new TagsReplacements()
+                    {
+                        FindValue = "ApplicationName",
+                        ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                    }
+                };
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, null,
+                                                                                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
+                }
+            }
+
+            // Apply start date
+            statementsQuery = statementsQuery.Where(x => (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
+            // Apply end date 
             if (endDate.HasValue)
             {
                 statementsQuery = statementsQuery.Where(x => x.Year < endDate.Value.Year || (x.Year == endDate.Value.Year && x.Month <= endDate.Value.Month));
             }
-
             return statementsQuery.ToList();
         }
 
@@ -154,6 +194,11 @@ namespace ECDLink.Core.Services
             };
 
             _pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+            if (newStatement.IncomeItems.Count > 0 || newStatement.ExpenseItems.Count > 0)
+            {
+                _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
+                _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
+            }
 
             return _statementsRepo.Insert(newStatement);
         }
@@ -332,6 +377,11 @@ namespace ECDLink.Core.Services
             #endregion
 
             _pointsService.CalculateAddExpenseOrIncomeToStatement((Guid)exisitingStatement.UserId);
+            if (newItems.Count > 0 || newExpenses.Count > 0)
+            {
+                _notificationService.ExpireNotificationsTypesForUser(exisitingStatement.UserId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
+                _notificationService.ExpireNotificationsTypesForUser(exisitingStatement.UserId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
+            }
             return exisitingStatement;
         }
 
@@ -784,7 +834,6 @@ namespace ECDLink.Core.Services
             }
             return results;
         }
-
 
         private List<IncomeExpensePDFDataModel> MapIncomeToPdfData(IEnumerable<StatementsIncome> incomeRows, IDictionary<string, string> childNamesById, List<StatementsIncomeType> incomeTypes, List<StatementsPayType> payTypes)
         {

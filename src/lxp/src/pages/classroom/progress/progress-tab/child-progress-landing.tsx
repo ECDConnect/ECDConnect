@@ -27,6 +27,7 @@ import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
+import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 
 export const ChildProgressLanding: React.FC = () => {
   const history = useHistory();
@@ -142,6 +143,7 @@ export const ChildProgressLanding: React.FC = () => {
       {/* Observations summary */}
       {isReportWindowSet &&
         !!children.length &&
+        childReports.some((x) => !x.isNotStarted) &&
         children.some((x) => !x.ageInMonths || x.ageInMonths < 60) && (
           <div className="mt-2 flex flex-col p-4">
             <Typography
@@ -174,6 +176,14 @@ export const ChildProgressLanding: React.FC = () => {
             )}
             <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
               <div className="justify-center">
+                {((isWithinReportPeriod &&
+                  percentageReportsCompleted === 100) ||
+                  (!isWithinReportPeriod &&
+                    percentageObservationsCompleted === 100)) && (
+                  <div className="mt-6 flex w-full justify-center">
+                    <EmojiYellowSmile className="h-20 w-20" />
+                  </div>
+                )}
                 <ProgressBar
                   label={`${
                     isWithinReportPeriod
@@ -192,7 +202,14 @@ export const ChildProgressLanding: React.FC = () => {
                       ? percentageReportsCompleted
                       : percentageObservationsCompleted
                   }
-                  primaryColour="alertMain"
+                  primaryColour={
+                    (isWithinReportPeriod &&
+                      percentageReportsCompleted === 100) ||
+                    (!isWithinReportPeriod &&
+                      percentageObservationsCompleted === 100)
+                      ? 'successMain'
+                      : 'alertMain'
+                  }
                   secondaryColour="textLight"
                   textColour="textDark"
                 />
@@ -234,7 +251,7 @@ export const ChildProgressLanding: React.FC = () => {
                   <>
                     <Button
                       onClick={() => {}}
-                      className="mt-4 w-full"
+                      className="mt-auto w-full"
                       size="small"
                       color="quatenary"
                       textColor="white"
@@ -254,7 +271,7 @@ export const ChildProgressLanding: React.FC = () => {
                       textColor="quatenary"
                       type="outlined"
                       icon={'EyeIcon'}
-                      text={'See Sumamry'}
+                      text={'See Summary'}
                     />
                   </>
                 )}

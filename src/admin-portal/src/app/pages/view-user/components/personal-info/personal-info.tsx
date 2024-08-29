@@ -68,7 +68,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   refetchGetPractitionerByUserId,
 }) => {
   const [updateUser, { loading }] = useMutation(UpdateUser);
-  const [updatePractitioner] = useMutation(UpdatePractitioner);
+  const [updatePractitioner, { loading: loadingUpdatePractitioner }] =
+    useMutation(UpdatePractitioner);
   const [resetUserPassword] = useMutation(ResetUserPassword);
   const { setNotification } = useNotifications();
   const [editActive, setEditActive] = useState<boolean>(false);
@@ -571,9 +572,11 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                 <Button
                   className={' w-4/12 rounded-md '}
                   type="filled"
-                  isLoading={loading}
+                  isLoading={loading || loadingUpdatePractitioner}
                   color="secondary"
-                  disabled={!isChwDetailValid}
+                  disabled={
+                    !isChwDetailValid || loadingUpdatePractitioner || loading
+                  }
                   onClick={
                     isDirty
                       ? () => setPractitionerDetailsHasChanged(true)
