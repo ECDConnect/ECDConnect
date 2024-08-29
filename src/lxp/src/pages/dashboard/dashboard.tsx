@@ -33,7 +33,10 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { staticDataThunkActions } from '@store/static-data';
@@ -231,8 +234,9 @@ export const Dashboard: React.FC = () => {
 
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
       const dataMonth = getMonth(new Date(current?.dateScored));
+
       const dataYear = getYear(new Date(current?.dateScored));
-      if (dataMonth + 1 === currentMonth && dataYear === currentYear) {
+      if (dataMonth === currentMonth && dataYear === currentYear) {
         return (total += current.pointsTotal);
       }
       return total;

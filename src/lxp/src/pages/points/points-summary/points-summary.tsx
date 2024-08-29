@@ -645,7 +645,7 @@ export const PointsSummary: React.FC = () => {
   const pointsTotal = pointsSummaryData.reduce((total, current) => {
     const dataMonth = getMonth(new Date(current?.dateScored));
     const dataYear = getYear(new Date(current?.dateScored));
-    if (dataMonth + 1 === currentMonth && dataYear === currentYear) {
+    if (dataMonth === currentMonth && dataYear === currentYear) {
       return (total += current.pointsTotal);
     }
     return total;
@@ -815,7 +815,7 @@ export const PointsSummary: React.FC = () => {
           <Typography
             type={'h1'}
             color="black"
-            text={format(new Date(), 'MMM yyyy')}
+            text={format(new Date(), 'MMMM yyyy')}
           />
           {(!pointsTotalForYear ||
             (pointsTotalForYear && pointsTotalForYear <= 10)) && (
