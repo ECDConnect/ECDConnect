@@ -1,8 +1,10 @@
 import { useQuery } from '@apollo/client';
 import { settingGrafanaReport } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
+import { useTenant } from '../../../../hooks/useTenant';
 
 export default function GeneralDashboard() {
+  const tenant = useTenant();
   const [generalURL, setGeneratlURL] = useState('');
   const { data } = useQuery(settingGrafanaReport, {
     fetchPolicy: 'cache-and-network',
@@ -11,10 +13,12 @@ export default function GeneralDashboard() {
   useEffect(() => {
     if (data) {
       var url =
-        data.settings.Grafana.GeneralDashboard + '?from=now-6M&to=now&orgId=1';
+        data.settings.Grafana.GeneralDashboard +
+        '?from=now-6M&to=now&orgId=1&var-TenantId=' +
+        tenant.tenant.id;
       setGeneratlURL(url);
     }
-  }, [data]);
+  }, [data, tenant.tenant.id]);
 
   return (
     <div className="h-full">
