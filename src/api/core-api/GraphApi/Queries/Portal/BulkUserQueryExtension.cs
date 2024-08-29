@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static EcdLink.Api.CoreApi.Constants;
 
 
@@ -157,6 +158,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
+                
+                if (cellphone.Length > 0 && (cellphone.Length != 9 || Regex.Matches(cellphone, "[^0-9]").Count > 0))
+                    errors.Add("Cellphone is invalid.");
 
                 return errors;
             }
@@ -287,6 +291,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
+
+                if (cellphone.Length > 0 && (cellphone.Length != 9 || Regex.Matches(cellphone, "[^0-9]").Count > 0))
+                    errors.Add("Cellphone is invalid.");
+
                 return errors;
             }
 
@@ -348,5 +356,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             return validationErrors;
         }
+       
     }
+    
 }
