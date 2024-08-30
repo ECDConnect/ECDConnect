@@ -1031,10 +1031,17 @@ export const PointsSummary: React.FC = () => {
             getCurrentPointsToDo === 4 &&
             todoListFiltered?.slice(0, 3)?.map((item) => {
               return (
-                <PointsTodoItem
-                  text={item?.missingActivityText}
-                  icon={item?.icon}
-                />
+                <div
+                  key={item?.activity}
+                  onClick={() =>
+                    history.push(item?.href, { activeTabIndex: item?.tabIndex })
+                  }
+                >
+                  <PointsTodoItem
+                    text={item?.missingActivityText}
+                    icon={item?.icon}
+                  />
+                </div>
               );
             })}
         </div>
