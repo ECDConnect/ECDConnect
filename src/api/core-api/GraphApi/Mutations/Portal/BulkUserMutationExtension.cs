@@ -187,7 +187,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
-                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName).FirstOrDefault();
+                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName || (x.IdNumber == user.IdNumber && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
 
                 if (userExists is not null)
                 {
@@ -413,7 +413,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
-                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName).FirstOrDefault();
+                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName || (x.IdNumber == user.IdNumber && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
 
                 if (userExists is not null)
                 {

@@ -107,12 +107,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                             new InputValidationError(row, new List<string> { }, $"{coachRoleName} does not exist for id/passport {coachIdOrPassport}")
                         );
                 }
-                var userName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport;
-                var userExists = dbContext.Users.Where(x => x.UserName == userName).FirstOrDefault();
+                var userIdNumberPassport = idOrPassport?.ToLowerInvariant() == "id" ? id : passport;
+                var userExists = dbContext.Users.Where(x => x.UserName == userIdNumberPassport || (x.IdNumber == userIdNumberPassport && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
                 if (userExists != null)
                 {
                     validationErrors.Add(
-                       new InputValidationError(row, new List<string> { }, $"User already exists: {userName}")
+                       new InputValidationError(row, new List<string> { }, $"User already exists: {userIdNumberPassport}")
                        );
                 }
             }
@@ -192,12 +192,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     }
 
                 }
-                var userName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport;
-                var userExists = dbContext.Users.Where(x => x.UserName == userName).FirstOrDefault();
+                var userIdNumberPassport = idOrPassport?.ToLowerInvariant() == "id" ? id : passport;
+                // check for username (accross tenants) and idnumber (tenant specific)
+                var userExists = dbContext.Users.Where(x => x.UserName == userIdNumberPassport || (x.IdNumber == userIdNumberPassport && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
                 if (userExists != null)
                 {
                     validationErrors.Add(
-                       new InputValidationError(row, new List<string> { }, $"User already exists: {userName}")
+                       new InputValidationError(row, new List<string> { }, $"User already exists: {userIdNumberPassport}")
                        );
                 }
             }
