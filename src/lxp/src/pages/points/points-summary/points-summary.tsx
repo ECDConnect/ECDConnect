@@ -201,13 +201,13 @@ export const PointsSummary: React.FC = () => {
       if (getCurrentPointsToDo === 3) {
         return (
           <div className="bg-quatenary mr-4 rounded-full p-3">
-            <FireIcon className="font-white h-8 w-8" />
+            <FireIcon className="font-white h-8  w-8 text-white" />
           </div>
         );
       }
       return (
         <div className="bg-successDark mr-4 rounded-full p-3">
-          <FireIcon className="font-white h-8 w-8" />
+          <FireIcon className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
@@ -215,7 +215,7 @@ export const PointsSummary: React.FC = () => {
     if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
       return (
         <div className="bg-quatenary mr-4 rounded-full p-3">
-          <Crown className="font-white h-8 w-8" />
+          <Crown className="font-white h-8  w-8  text-white text-white" />
         </div>
       );
     }
@@ -223,7 +223,7 @@ export const PointsSummary: React.FC = () => {
     if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
       return (
         <div className="bg-quatenary mr-4 rounded-full p-3">
-          <CalendarIcon className="font-white h-8 w-8" />
+          <CalendarIcon className="font-white h-8  w-8  text-white text-white" />
         </div>
       );
     }
@@ -231,21 +231,21 @@ export const PointsSummary: React.FC = () => {
     if (pointsToDo?.isPartOfPreschool) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
-          <Kindgarden className="font-white h-8 w-8" />
+          <Kindgarden className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
     if (pointsToDo?.signedUpForApp) {
       return (
         <div className="bg-alertMain mr-4 rounded-full p-2">
-          <ClipboardCheckIcon className="font-white h-8 w-8" />
+          <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
 
     return (
       <div className="bg-alertMain mr-4 rounded-full p-2">
-        <ClipboardCheckIcon className="font-white h-8 w-8" />
+        <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
       </div>
     );
   }, [
