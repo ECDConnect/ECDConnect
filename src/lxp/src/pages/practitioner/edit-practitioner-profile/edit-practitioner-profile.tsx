@@ -194,6 +194,13 @@ export const EditPractitionerProfile: React.FC = () => {
               text: 'Exit',
               onClick: () => {
                 onSubmit();
+                if (
+                  activeStep === EditPractitionerSteps.SETUP_PRACTITIONER ||
+                  activeStep === EditPractitionerSteps.WELCOME
+                ) {
+                  history.push(ROUTES.DASHBOARD);
+                  return;
+                }
                 history.goBack();
               },
               textColour: 'white',
@@ -227,7 +234,7 @@ export const EditPractitionerProfile: React.FC = () => {
         return setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER);
     }
   };
-
+  console.log({ activeStep });
   return (
     <>
       <IonContent scrollY={true}>

@@ -414,7 +414,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 new List<string> {"Passport", "Text, (required if type of identification is 'passport')"},
                 new List<string> {"First name", "Text, (required)"},
                 new List<string> {"Surname", "Text, (required)"},
-                new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
+                new List<string> {"Cellphone number", "Number, (required, 9 or 10 digits)"},
             };
 
             var templateHeaderSheet = $"{TenantExecutionContext.Tenant.Modules.CoachRoleName} Template";

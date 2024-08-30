@@ -56,6 +56,7 @@ export const mapTheme = (variables: ITheme): IMappedTheme => {
     '--pointsCardBarBg': variables.pointsCardBarBg || '#FCCF8C',
     '--quatenaryBg': variables.quatenaryBg || '#D2F1F9',
     '--adminBackground': variables.adminBackground || '#EFF6FA',
+    '--quinary': variables.quinary || '#FFD525',
   };
 };
 

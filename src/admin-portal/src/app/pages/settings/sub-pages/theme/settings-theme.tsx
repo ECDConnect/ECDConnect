@@ -236,6 +236,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
           pointsCardBarBg: colors.pointsCardBarBg,
           quatenaryBg: colors.quatenaryBg,
           adminBackground: colors.adminBackground,
+          quinary: colors.quinary,
         },
         fonts: {
           fontUrl: fontUrls.fontUrl ? fontUrls.fontUrl : DefaultTheme.fontUrl,
@@ -290,6 +291,15 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
         DefaultTheme.infoMain = colors.infoMain;
         DefaultTheme.infoDark = colors.infoDark;
         DefaultTheme.infoBb = colors.infoBb;
+        DefaultTheme.quatenary = colors.quatenary;
+        DefaultTheme.quatenaryMain = colors.quatenaryMain;
+        DefaultTheme.adminPortalBg = colors.adminPortalBg;
+        DefaultTheme.darkBlue = colors.darkBlue;
+        DefaultTheme.pointsCardBg = colors.pointsCardBg;
+        DefaultTheme.pointsCardBarBg = colors.pointsCardBarBg;
+        DefaultTheme.quatenaryBg = colors.quatenaryBg;
+        DefaultTheme.adminBackground = colors.adminBackground;
+        DefaultTheme.quinary = colors.quinary;
         DefaultTheme.logoUrl = themeInputModel.images.logoUrl;
         DefaultTheme.graphicOverlayUrl =
           themeInputModel.images.graphicOverlayUrl;

@@ -123,15 +123,15 @@ namespace EcdLink.Api.CoreApi.Services
             var isPrincipal = practitioner.IsPrincipalOrAdmin();
 
             // 1.Completing profile(ie they are not part of a preschool yet)(see W3)
-            var schoolClasses = _classroomService.GetClassroomGroupsForUser(userId);
-            pointsToDoItems.IsPartOfPreschool = schoolClasses.Count > 0 ? true : false;
+            var preschool = _classroomService.GetClassroomForUser(userId);
+            pointsToDoItems.IsPartOfPreschool = (preschool != null) ? true : false;
 
             // Phase 1
             if (!isPrincipal)
             {
                 // 3.Practitioner(non - principal) only-- plan at least 1 day - ie picked all activities & story for the day (W11)
                 pointsToDoItems.PlannedOneDay = false;
-                if (schoolClasses.Count > 0)
+                if (preschool != null)
                 {
                     var programmeCount = _programmeRepo
                                         .GetAll()

@@ -1,8 +1,8 @@
 export const pointsConstants = {
-  practitionerMonthlyMax: 100,
-  principalOrAdminMonthlyMax: 150,
+  practitionerMonthlyMax: 220,
+  principalOrAdminMonthlyMax: 295,
   practitionerYearlyMax: 1200,
-  principalOrAdminYearlyMax: 1925,
+  principalOrAdminYearlyMax: 1200,
 };
 
 export const pointsActivitiesIds = {
