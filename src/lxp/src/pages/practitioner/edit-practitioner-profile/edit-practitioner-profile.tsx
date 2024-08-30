@@ -234,7 +234,7 @@ export const EditPractitionerProfile: React.FC = () => {
         return setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER);
     }
   };
-  console.log({ activeStep });
+
   return (
     <>
       <IonContent scrollY={true}>

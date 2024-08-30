@@ -13,7 +13,11 @@ import { attendanceActions, attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
 import { caregiverActions, caregiverThunkActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
-import { classroomsActions, classroomsThunkActions } from './store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from './store/classroom';
 import { activityActions } from './store/content/activity';
 import {
   contentConsentActions,
@@ -63,8 +67,9 @@ import { getClubForUser } from './store/club/club.actions';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
-import { RoleSystemNameEnum } from '@ecdlink/core';
+import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 import { communityThunkActions } from './store/community';
+import { ClassroomService } from './services/ClassroomService';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -92,6 +97,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const classroomForUser = useSelector(classroomsSelectors.getClassroom);
   const isPrincipal = practitioner?.isPrincipal;
 
   const traineeTimeline = useSelector(
@@ -450,6 +456,27 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDispatch, userData, isCoach]);
+
+  const handleNoClassroomForInvitedUser = useCallback(async () => {
+    const classroom = await new ClassroomService(
+      userAuth?.auth_token!
+    ).getClassroomForUser(practitioner?.principalHierarchy!);
+    if (classroom) {
+      localStorage.setItem(
+        LocalStorageKeys.classroomForInvitedUser,
+        classroom?.name
+      );
+    }
+  }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
+
+  useEffect(() => {
+    if (practitioner?.principalHierarchy && !classroomForUser)
+      handleNoClassroomForInvitedUser();
+  }, [
+    classroomForUser,
+    handleNoClassroomForInvitedUser,
+    practitioner?.principalHierarchy,
+  ]);
 
   return (
     <IntialStoreSetupContext.Provider value={values}>
