@@ -1,10 +1,10 @@
 import { ContentTypeDto } from '@ecdlink/core';
 
-export interface ConnectLink {
-  title: string;
+export interface ConnectItem {
+  text: string;
   link: string;
-  description: string;
   contentTypeId: number;
+  linkedConnect: number;
   contentId: number;
 }
 
@@ -21,7 +21,7 @@ export interface LinkPerSection {
   hint: string;
   contentTypeId: number;
   contentId: number;
-  links: ConnectLink[];
+  links: ConnectItem[];
 }
 
 export interface LinksSharedProps {
