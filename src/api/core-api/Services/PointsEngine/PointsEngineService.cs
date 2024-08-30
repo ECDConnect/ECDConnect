@@ -19,7 +19,6 @@ using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -209,10 +208,23 @@ namespace EcdLink.Api.CoreApi.Services
                             .OrderByDescending(x => x.PointsTotal)
                             .ToList();
 
-            var totalUsers = userPoints.Count();
+            userPoints[0].RankingNr = 1;
+            for (int i = 1; i < userPoints.Count; i++)
+            {
+                if (userPoints[i].PointsTotal == userPoints[i - 1].PointsTotal)
+                {
+                    userPoints[i].RankingNr = userPoints[i - 1].RankingNr;
+                }
+                else
+                {
+                    userPoints[i].RankingNr = i + 1;
+                }
+            }
+
+            var totalUsers = userPoints.Count()+1;
             for (int i = 0; i < userPoints.Count; i++)
             {
-                userPoints[i].ComparativeTargetPercentage = (totalUsers == 0 ? 0 : Math.Round((double)userPoints[i].PointsTotal / (double)(maxTotal * totalUsers) * 100));
+                userPoints[i].ComparativeTargetPercentage = (totalUsers == 0 ? 0 : Math.Round((double)(totalUsers -  userPoints[i].RankingNr) / (double)(totalUsers) * 100));
                 userPoints[i].NonComparativeTargetPercentage = maxTotal == 0 ? 0 : Math.Round((double)userPoints[i].PointsTotal / (double)(maxTotal) * 100);
             }
 
@@ -249,7 +261,7 @@ namespace EcdLink.Api.CoreApi.Services
                 userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are one of the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                 userPointRecord.ComparativeSecondaryMessage = "You are one of the top points earner so far this month. Keep it up!";
             }
-            if (userPointRecord.ComparativeTargetPercentage >= 50)
+            if (userPointRecord.ComparativeTargetPercentage >= 50 && userPointRecord.ComparativeTargetPercentage < 75)
             {
                 userPointRecord.MessageNr = 3;
                 userPointRecord.ComparativePrimaryMessage = $"Wow, great job {firstName}!";

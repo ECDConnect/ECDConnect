@@ -7,6 +7,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public Guid UserId { get; set; }
         public int PointsTotal { get; set; }
         public int MessageNr { get; set; }
+        public int RankingNr { get; set; }
         public string ComparativePrimaryMessage { get; set; }
         public string ComparativeSecondaryMessage { get; set; }
         public double ComparativeTargetPercentage { get; set; }
