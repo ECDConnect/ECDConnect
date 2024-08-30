@@ -44,6 +44,7 @@ import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 import { useTenant } from '@/hooks/useTenant';
 import { pointsTodoItems } from '@/store/points/points.actions';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
@@ -364,9 +365,16 @@ export const PointsSummary: React.FC = () => {
           : pointsToDo?.signedUpForApp
           ? 'quatenaryBg'
           : 'adminPortalBg',
-        onActionClick: practitioner?.isPrincipal
-          ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-          : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT),
+        onActionClick:
+          pointsToDo?.signedUpForApp &&
+          !pointsToDo?.isPartOfPreschool &&
+          practitioner?.isPrincipal
+            ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+            : pointsToDo?.signedUpForApp &&
+              !pointsToDo?.isPartOfPreschool &&
+              !practitioner?.isPrincipal
+            ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+            : () => {},
       },
       {
         title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
@@ -434,7 +442,10 @@ export const PointsSummary: React.FC = () => {
               !pointsToDo?.savedIncomeOrExpense &&
               !pointsToDo?.savedIncomeOrExpense &&
               !practitioner?.isPrincipal
-            ? () => history.push(ROUTES.CLASSROOM.ACTIVITIES.ROOT)
+            ? () =>
+                history.push(ROUTES.CLASSROOM.ROOT, {
+                  activeTabIndex: TabsItems.ACTIVITES,
+                })
             : () => {},
       },
       {
@@ -446,6 +457,12 @@ export const PointsSummary: React.FC = () => {
         subTitleStyle: pointsToDo?.viewedCommunitySection
           ? 'text-successDark'
           : subTitleStyle,
+        className:
+          (pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.savedIncomeOrExpense) &&
+          !pointsToDo?.viewedCommunitySection
+            ? ''
+            : 'px-2',
         menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
@@ -535,9 +552,16 @@ export const PointsSummary: React.FC = () => {
         backgroundColor: pointsToDo?.isPartOfPreschool
           ? 'successBg'
           : 'adminPortalBg',
-        onActionClick: practitioner?.isPrincipal
-          ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-          : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT),
+        onActionClick:
+          pointsToDo?.signedUpForApp &&
+          !pointsToDo?.isPartOfPreschool &&
+          practitioner?.isPrincipal
+            ? pointsToDo?.signedUpForApp &&
+              !pointsToDo?.isPartOfPreschool &&
+              !practitioner?.isPrincipal
+              ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+              : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+            : () => {},
       },
       {
         title: `Influencer`,
@@ -548,6 +572,12 @@ export const PointsSummary: React.FC = () => {
         subTitleStyle: pointsToDo?.viewedCommunitySection
           ? 'text-successDark'
           : subTitleStyle,
+        className:
+          (pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.savedIncomeOrExpense) &&
+          !pointsToDo?.viewedCommunitySection
+            ? ''
+            : 'px-2',
         menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
