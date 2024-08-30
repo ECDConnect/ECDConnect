@@ -115,7 +115,7 @@ export const PractitionerSetup = ({
       await appDispatch(classroomsActions.resetClassroomState());
     }
   };
-  console.log({ practitioner });
+
   return (
     <>
       <div className="wrapper-with-sticky-button mt-4">
