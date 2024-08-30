@@ -6,7 +6,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { ConnectLink, LinksSharedProps } from './links-shared.types';
+import { ConnectItem, LinksSharedProps } from './links-shared.types';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { LanguageId } from '../../../../constants/language';
 import ContentLoader from '../../../../components/content-loader/content-loader';
@@ -17,34 +17,31 @@ export const LinksShared = ({
   contentType,
   onClose: cancelEdit,
 }: LinksSharedProps) => {
-  const [resourcesLinks, setResourcesLinks] = useState<ConnectLink[]>([]);
+  const [connectItems, setResourcesLinks] = useState<ConnectItem[]>([]);
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
   const dialog = useDialog();
-  const getAllCall = `GetAll${contentType.name}`;
-  const fields =
-    contentType.fields?.map((field) => {
-      return field.fieldName;
-    }) ?? [];
+  const urlRegex =
+    /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
 
-  const hint = contentType?.content?.[0]?.contentValues?.find(
-    (item) => item?.contentTypeField?.fieldName === 'hint'
-  )?.value;
+  const getAllCall = `GetAll${contentType.name}`;
 
   const query = gql` 
     query ${getAllCall} ($localeId: String) {
       ${getAllCall} (localeId: $localeId) {
         id
-        ${fields.join('\n')}
+        link
+        buttonText
+        __typename
         }
       }
   `;
 
   const createMutation = gql`
-    mutation UpdateResourceConnectItem(
-      $input: [CMSResourceItemModelInput]
+    mutation UpdateConnectItem(
+      $input: [CMSConnectItemModelInput]
       $localeId: String
     ) {
-      updateResourceConnectItem(input: $input, localeId: $localeId)
+      updateConnectItem(input: $input, localeId: $localeId)
     }
   `;
 
@@ -61,23 +58,21 @@ export const LinksShared = ({
 
   const [createContent, { loading }] = useMutation(createMutation);
 
-  const linksQuantity = 5;
+  const connectQuantitiy = 10;
   const setInitialState = useCallback(() => {
-    const connectLinks = new Array(linksQuantity).fill(0).map(() => ({
-      title: '',
+    const connectLinks = new Array(connectQuantitiy).fill(0).map(() => ({
+      text: '',
       link: '',
-      description: '',
       contentTypeId: 28,
       contentId: -1,
-      type: 'ChildProgressReportLink',
-    })) as ConnectLink[];
+      linkedConnect: 0,
+    })) as ConnectItem[];
 
     const currentLinks = linksData?.[getAllCall] ?? [];
 
     connectLinks?.forEach((link, index) => {
-      link.title = currentLinks?.[index]?.buttonText ?? '';
+      link.text = currentLinks?.[index]?.buttonText ?? '';
       link.link = currentLinks?.[index]?.link ?? '';
-      link.description = currentLinks?.[index]?.description ?? '';
       link.contentId = currentLinks?.[index]?.id ?? -1;
     });
 
@@ -89,45 +84,44 @@ export const LinksShared = ({
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = event.target;
       const [fieldName, index] = name.split('_');
-      const selectedResource = resourcesLinks?.[resourceIndex];
-      const newResourceLinkData = [...resourcesLinks];
+      const selectedResource = connectItems?.[resourceIndex];
+      const newConnectItemData = [...connectItems];
 
-      if (fieldName === 'resourceTitle') {
-        newResourceLinkData[index].title = value;
-      } else if (fieldName === 'resourceLink') {
-        newResourceLinkData[index].link = value;
-      } else if (fieldName === 'resourceDescription') {
-        newResourceLinkData[index].description = value;
+      if (fieldName === 'buttonText') {
+        newConnectItemData[index].text = value;
+      } else if (fieldName === 'linkText') {
+        newConnectItemData[index].link = value;
       }
-      newResourceLinkData[index].linkedConnect =
+      newConnectItemData[index].linkedConnect =
         selectedResource?.contentId ?? -1;
-      setResourcesLinks(newResourceLinkData);
+      setResourcesLinks(newConnectItemData);
     };
 
   const onCheckLinkError = (
     isToCheck: boolean,
     index: number,
-    fieldType: 'title' | 'link' | 'description'
+    fieldType: 'text' | 'link'
   ) => {
     if (!isToCheck) return false;
 
-    const hasEmptyField =
-      !resourcesLinks[index]?.[fieldType] &&
-      (index < 2 || !!resourcesLinks[index]?.[fieldType]);
+    let hasEmptyField =
+      !connectItems[index]?.[fieldType] &&
+      (index === 0 ||
+        !!connectItems[index]?.[fieldType === 'text' ? 'link' : 'text']);
+
+    if (fieldType === 'link' && connectItems[index].link !== '') {
+      hasEmptyField = !urlRegex.test(connectItems[index].link);
+    }
 
     return hasEmptyField;
   };
 
   const onFormatPayload = () => {
-    const payload = resourcesLinks
-      ?.filter(
-        (link) =>
-          (link.title && link.link && link.description) || link.contentId !== -1
-      )
+    const payload = connectItems
+      ?.filter((link) => (link.text && link.link) || link.contentId !== -1)
       .map((link) => ({
-        title: link.title,
+        text: link.text,
         link: link.link,
-        description: link.description,
         contentTypeId: link.contentTypeId,
         contentId: link.contentId,
       }));
@@ -138,8 +132,10 @@ export const LinksShared = ({
     event?.preventDefault();
 
     setIsSubmitButtonClicked(true);
-    const hasEmptyField = resourcesLinks.some((link, index) =>
-      index < 2 ? !link.title || !link.link || !link.description : ''
+    const hasEmptyField = connectItems.some((link, index) =>
+      index === 0
+        ? !link.text || !link.link || !urlRegex.test(link.link)
+        : !link.text !== !link.link || (link.link && !urlRegex.test(link.link))
     );
 
     if (hasEmptyField) return;
@@ -176,21 +172,36 @@ export const LinksShared = ({
     setInitialState();
   }, [setInitialState]);
 
+  const errorLinkMessage = (index) => {
+    var connectItem = connectItems[index];
+
+    if (index === 0) {
+      if (connectItem.link === '') {
+        return 'This field is required.';
+      } else if (!urlRegex.test(connectItem.link)) {
+        return 'Please add a valid link.';
+      }
+    } else {
+      if (connectItem.link === '') {
+        return 'You must add a link for the filled button text.';
+      } else if (!urlRegex.test(connectItem.link)) {
+        return 'Please add a valid link.';
+      }
+    }
+    return '';
+  };
+
   if (loadingLinks) return <ContentLoader />;
 
   return (
     <form onSubmit={onSubmit}>
-      <div className="flex justify-between">
+      <div className="flex w-full justify-between">
         <div>
-          <Typography
-            type="h1"
-            color="textDark"
-            text="Child progress report links for caregivers"
-          />
+          <Typography type="h1" color="textDark" text="Community links" />
           <Typography
             type="h3"
             color="textDark"
-            text="These links will be added to the child progress report PDF"
+            text="Social media links for practitioners & coaches"
           />
         </div>
         <Button
@@ -204,83 +215,41 @@ export const LinksShared = ({
           iconPosition="end"
         />
       </div>
-      <Alert
-        className={'mt-5 mb-3'}
-        message={
-          'Some practitioners might print out the progress report for caregivers, so make sure that the links are easy for caregivers to type on their phones.'
-        }
-        type={'info'}
-      />
-      <Typography type="h4" color="textMid" text={hint} className="mb-11" />
-      {new Array(linksQuantity).fill(0).map((_, linkIndex) => (
-        <div key={linkIndex} className="bg mb-11">
-          <Typography
-            type="h2"
-            color="textDark"
-            text={`Resource link ${linkIndex + 1}`}
-          />
-          <Typography
-            type="help"
-            color="textMid"
-            text={linkIndex < 2 ? `You must add at least 2 links` : `Optional`}
-            className="mb-5"
-          />
+      {new Array(connectQuantitiy).fill(0).map((_, linkIndex) => (
+        <div
+          key={linkIndex}
+          className="flex w-full flex-row gap-4 overflow-auto whitespace-nowrap rounded-md bg-white"
+        >
           <FormInput
-            name={`resourceTitle_` + linkIndex}
-            label={linkIndex < 2 ? `Title *` : `Title`}
-            placeholder="Add a title..."
-            subLabel="Must be no more than 30 characters."
-            className="mb-4"
-            maxCharacters={30}
-            maxLength={30}
-            value={resourcesLinks[linkIndex]?.title}
+            name={`buttonText_` + linkIndex}
+            label={linkIndex === 0 ? `Button text *` : `Button text`}
+            placeholder="Add text"
+            value={connectItems[linkIndex]?.text}
+            className="w-full"
+            maxCharacters={40}
+            maxLength={40}
             onChange={onChangeLink(linkIndex)}
-            {...(onCheckLinkError(
-              isSubmitButtonClicked,
-              linkIndex,
-              'title'
-            ) && {
+            {...(onCheckLinkError(isSubmitButtonClicked, linkIndex, 'text') && {
               error: {
                 type: 'required',
-                message: linkIndex < 2 ? 'This field is required.' : '',
+                message:
+                  linkIndex === 0
+                    ? 'This field is required.'
+                    : 'You must add a text for the filled link.',
               },
             })}
           />
           <FormInput
-            name={`resourceLink_` + linkIndex}
-            label={linkIndex < 2 ? `Link *` : `Link`}
-            placeholder="Add a link..."
-            subLabel="Must be no more than 60 characters."
-            className="mb-4"
-            maxCharacters={60}
-            maxLength={60}
-            value={resourcesLinks[linkIndex]?.link}
+            name={`linkText_` + linkIndex}
+            label={linkIndex === 0 ? `Link *` : `Link`}
+            placeholder="Add link..."
+            value={connectItems[linkIndex]?.link}
+            className="w-full"
             onChange={onChangeLink(linkIndex)}
             {...(onCheckLinkError(isSubmitButtonClicked, linkIndex, 'link') && {
               error: {
                 type: 'required',
-                message: linkIndex < 2 ? 'This field is required.' : '',
-              },
-            })}
-          />
-          <FormInput
-            name={`resourceDescription_` + linkIndex}
-            label={linkIndex < 2 ? `Short description *` : `Short description`}
-            placeholder="Add a short description..."
-            subLabel="Must be no more than 60 characters."
-            className="mb-4"
-            maxCharacters={60}
-            maxLength={60}
-            value={resourcesLinks[linkIndex]?.description}
-            onChange={onChangeLink(linkIndex)}
-            {...(onCheckLinkError(
-              isSubmitButtonClicked,
-              linkIndex,
-              'description'
-            ) && {
-              error: {
-                type: 'required',
-                message: linkIndex < 2 ? 'This field is required.' : '',
+                message: errorLinkMessage(linkIndex),
               },
             })}
           />

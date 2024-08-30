@@ -193,21 +193,21 @@ export function ContentManagement() {
         //   },
         //   classNames: 'bg-white',
         // },
-        // {
-        //   title: 'Community links',
-        //   description:
-        //     'Add or edit the links shared with practitioners and coaches',
-        //   titleIcon: 'LinkIcon',
-        //   titleIconClassName: 'bg-secondary text-white',
-        //   onActionClick: () => {
-        //     setSpecialType('');
-        //     const selectedTypeObject = dataTypes?.contentTypes.find(
-        //       (type: ContentTypeDto) => type.name === ContentTypes.RESOURCE_LINK
-        //     );
-        //     showGroupContentTypes(selectedTypeObject);
-        //   },
-        //   classNames: 'bg-white',
-        // },
+        {
+          title: 'Community links',
+          description:
+            'Add or edit the links shared with practitioners and coaches',
+          titleIcon: 'LinkIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT_ITEM
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
         {
           title: 'Child progress report links for caregivers',
           description:
