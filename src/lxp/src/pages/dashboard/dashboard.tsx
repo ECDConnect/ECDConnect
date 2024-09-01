@@ -1,5 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
+import {
+  PermissionEnum,
+  RoleSystemNameEnum,
+  useDialog,
+  useTheme,
+} from '@ecdlink/core';
 import {
   ActionModal,
   Avatar,
@@ -86,6 +91,7 @@ import {
 } from '@heroicons/react/solid';
 import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
+import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
 
 const { version } = require('../../../package.json');
 
@@ -174,9 +180,9 @@ export const Dashboard: React.FC = () => {
       pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
     );
   }, [appDispatch, practitioner?.userId]);
-
+  console.log(isOnline && practitioner);
   useEffect(() => {
-    if (!coach && isOnline && practitioner) {
+    if (isOnline && practitioner) {
       getPointsToDoItems();
     }
   }, []);
@@ -1089,6 +1095,11 @@ export const Dashboard: React.FC = () => {
   }, [pointsToDo, practitioner?.isPrincipal]);
 
   const renderTodoText = useMemo(() => {
+    const plnaActivitiesPermission = practitioner?.permissions?.find(
+      (item) =>
+        item?.permissionName === PermissionsNames.plan_classroom_actitivies
+    );
+    console.log({ plnaActivitiesPermission });
     if (pointsToDo?.viewedCommunitySection) {
       return 'Influencer';
     }
@@ -1097,7 +1108,12 @@ export const Dashboard: React.FC = () => {
       return 'Boss';
     }
 
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+    if (
+      (pointsToDo?.plannedOneDay && practitioner?.isPrincipal) ||
+      (pointsToDo?.plannedOneDay &&
+        !practitioner?.isPrincipal &&
+        plnaActivitiesPermission?.isActive === true)
+    ) {
       return 'Cwepheshe';
     }
     if (pointsToDo?.isPartOfPreschool) {
