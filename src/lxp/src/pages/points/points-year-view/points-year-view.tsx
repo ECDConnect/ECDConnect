@@ -21,7 +21,6 @@ import { ReactComponent as EmojiYellowHappy } from '../../../assets/ECD_Connect_
 import happyOverlay from '../../../assets/happy_overlay.svg';
 import { format } from 'date-fns';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PointsMonthSummary } from './components/points-month-summary';
 import { PointsShare } from '../points-share/points-share';
 import { captureAndDownloadComponent } from '@ecdlink/core';
 import { PointsInfoPage } from '../info/points-info-page';
