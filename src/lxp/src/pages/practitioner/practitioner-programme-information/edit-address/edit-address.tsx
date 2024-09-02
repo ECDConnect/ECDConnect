@@ -95,10 +95,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
       name: address.name || '',
       postalCode: address.postalCode || '',
       province: null,
-      provinceId:
-        ((classroom?.siteAddress?.province || '') !== address.province
-          ? null
-          : classroom?.siteAddress?.provinceId) || null,
+      provinceId: !!address.provinceId ? address.provinceId : null,
       ward: address.ward || '',
     };
 
@@ -165,9 +162,8 @@ export const EditAddress: React.FC<EditAdressProps> = ({
           onClose={handleCloseMap}
           onSubmit={(updatedAddress) => {
             if (JSON.stringify(updatedAddress) != JSON.stringify(address)) {
-              setAddress(address);
+              setAddress(updatedAddress);
               setAddressChanged(true);
-              saveAddressChanges();
             }
           }}
         />

@@ -7,8 +7,8 @@ export interface SiteAddressDto extends EntityBase {
   addressLine1?: string | null;
   addressLine2?: string | null;
   addressLine3?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
+  latitude?: string | null;
+  longitude?: string | null;
   municipality?: string | null;
   postalCode?: string | null;
   provinceId?: string | null;

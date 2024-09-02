@@ -42,10 +42,7 @@ export const Step6Map: React.FC<Step6MapProps> = ({ onClose, onSubmit }) => {
 
   return (
     <div>
-      <CustomGoogleMap
-        height={window.screen.height - COMPONENT_HEIGHT}
-        onChange={getAddress}
-      />
+      <CustomGoogleMap height={window.screen.height - COMPONENT_HEIGHT} />
       <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">
         <Typography
           type="h2"

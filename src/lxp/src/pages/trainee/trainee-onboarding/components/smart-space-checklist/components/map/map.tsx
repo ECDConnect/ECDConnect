@@ -47,10 +47,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
 
   return (
     <div>
-      <CustomGoogleMap
-        height={window.screen.height - COMPONENT_HEIGHT}
-        onChange={setAddress}
-      />
+      <CustomGoogleMap height={window.screen.height - COMPONENT_HEIGHT} />
       <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">
         <Typography
           type="h2"

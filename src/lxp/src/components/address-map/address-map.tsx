@@ -1,7 +1,6 @@
 import {
   Button,
   Typography,
-  CustomGoogleMap,
   Colours,
   GoogleMapGeoCodeResponse,
   GoogleMapGeoCodeAddressComponentType,
@@ -10,6 +9,7 @@ import { useCallback, useState } from 'react';
 import { SiteAddressDto } from '@ecdlink/core';
 import { staticDataSelectors } from '@/store/static-data';
 import { useSelector } from 'react-redux';
+import { CustomGoogleMap } from '../google-map';
 
 interface AddressMapProps {
   componentHeight: number;
@@ -34,17 +34,19 @@ export const formatAddress = (address: SiteAddressDto) => {
 const getAddressComponent = (
   result: GoogleMapGeoCodeResponse,
   type: GoogleMapGeoCodeAddressComponentType
-): string => {
+) => {
   const address_components = result.results[0].address_components;
-  const short_name = address_components.find((item) =>
-    item.types.find((currentType) => currentType.includes(type))
-  )?.short_name;
-  return short_name || '';
+  const component = address_components.find((item) =>
+    item.types.find((currentType) => currentType === type)
+  );
+  return component;
 };
 
 export const AddressMap: React.FC<AddressMapProps> = (props) => {
   const [address, setAddress] = useState<SiteAddressDto>({ ...props.address });
-  const [formattedAddress, setFormattedAddress] = useState<string>('');
+  const [formattedAddress, setFormattedAddress] = useState<string>(
+    formatAddress(props.address)
+  );
 
   const provinces = useSelector(staticDataSelectors.getProvinces);
 
@@ -62,35 +64,37 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
       const province = getAddressComponent(
         mapData,
         'administrative_area_level_1'
-      );
-      const provinceId =
-        (!!province
-          ? provinces.find(
-              (p) => p.description.toLowerCase() === province.toLowerCase()
-            )?.id
-          : null) || null;
+      )?.long_name;
+      const matchedProvince = !!province
+        ? provinces.find(
+            (p) => p.description.toLowerCase() === province.toLowerCase()
+          )
+        : null;
 
       const updatedAddress: SiteAddressDto = {
         ...address,
-        addressLine1: `${getAddressComponent(
-          mapData,
-          'street_number'
-        )} ${getAddressComponent(mapData, 'route')}`,
-        addressLine2: getAddressComponent(mapData, 'sublocality'),
-        addressLine3: getAddressComponent(mapData, 'locality'),
-        municipality: getAddressComponent(
-          mapData,
-          'administrative_area_level_2'
-        ),
-        provinceId: provinceId,
-        province: !provinceId
+        addressLine1: `${
+          getAddressComponent(mapData, 'street_number')?.short_name || ''
+        } ${getAddressComponent(mapData, 'route')?.short_name || ''}`,
+        addressLine2:
+          getAddressComponent(mapData, 'sublocality')?.short_name || '',
+        addressLine3:
+          getAddressComponent(mapData, 'locality')?.short_name || '',
+        municipality:
+          getAddressComponent(mapData, 'administrative_area_level_2')
+            ?.short_name || '',
+        provinceId: !!matchedProvince ? matchedProvince.id : null,
+        province: !matchedProvince
           ? null
           : {
-              id: provinceId,
-              enumId: provinceId,
-              description: province,
+              id: matchedProvince.id || '',
+              enumId: matchedProvince.id || '',
+              description: matchedProvince.description || '',
             },
-        postalCode: getAddressComponent(mapData, 'postal_code'),
+        postalCode:
+          getAddressComponent(mapData, 'postal_code')?.short_name || '',
+        latitude: mapData.results[0].geometry.location.lat.toString(),
+        longitude: mapData.results[0].geometry.location.lng.toString(),
       };
       if (JSON.stringify(address) !== JSON.stringify(updatedAddress)) {
         setAddress(updatedAddress);
@@ -103,6 +107,10 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
     <div>
       <CustomGoogleMap
         height={window.screen.height - props.componentHeight}
+        longitude={
+          !address.longitude ? undefined : parseFloat(address.longitude)
+        }
+        latitude={!address.latitude ? undefined : parseFloat(address.latitude)}
         onChangeMapData={onChangeMapData}
       />
       <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">

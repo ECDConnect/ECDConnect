@@ -1,7 +1,11 @@
+import { CustomGoogleMap } from '@ecdlink/ui';
+export { CustomGoogleMap };
+/*
 import { GoogleMap } from '@capacitor/google-maps';
 import {
   useRef,
   useLayoutEffect,
+  MutableRefObject,
   useCallback,
   memo,
   useState,
@@ -9,13 +13,17 @@ import {
   ReactNode,
   FC,
 } from 'react';
-import { GoogleMapGeoCodeResponse } from './google-map.types';
-import { ComponentBaseProps } from '../../models/ComponentBaseProps';
+//import { ComponentBaseProps } from '../../models';
+import {
+  GoogleMapGeoCodeAddressType,
+  GoogleMapGeoCodeResponse,
+} from './google-map.types';
+import { ComponentBaseProps } from '@ecdlink/ui';
 
 const DEFAULT_LONGITUDE = -29.1199066;
-const DEFAULT_LATITUDE = 26.058415;
+const DEFAULT_LATITUDE =  26.058415;
 
-export type CustomGoogleMapComponentProps = ComponentBaseProps & {
+export type CustomGoogleMapComponentProps =  ComponentBaseProps & {
   children?: ReactNode;
   height?: number;
   longitude?: number | null;
@@ -23,7 +31,7 @@ export type CustomGoogleMapComponentProps = ComponentBaseProps & {
   onChangeMapData?: (mapData?: GoogleMapGeoCodeResponse) => void;
 };
 
-const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
+const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = props => {
   const mapRef = useRef();
   const [map, setMap] = useState<GoogleMap | null>(null);
   const [inititialCoordsSet, setInitialCoordsSet] = useState<boolean>(false);
@@ -47,18 +55,20 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
       .then((response) => response.json())
       .then((data: GoogleMapGeoCodeResponse) => {
         if (data.results.length) {
-          const valid = data.results.find((result) =>
-            result.address_components.find((address) =>
-              address.types.find(
-                (type) =>
-                  type.includes('street_number') || type.includes('route')
+            const valid = data.results.find((result) =>
+              result.address_components.find((address) =>
+                address.types.find(
+                  (type) =>
+                    type.includes('street_number') || type.includes('route')
+                )
               )
-            )
-          );
-          if (!!valid) setMapData(data);
+            );
+            if (!!valid) setMapData(data);
+          }
         }
-      });
+      );
   }, []);
+
 
   const initMaps = async () => {
     if (!!map) return;
@@ -82,17 +92,17 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
     await newMap.setOnMarkerDragEndListener((event) => {
       setLongitude(event?.longitude);
       setLatitude(event?.latitude);
-      console.log('setOnMarkerDragEndListener');
+      console.log("setOnMarkerDragEndListener");
       getCoordData(event?.latitude, event?.longitude);
     });
 
     await newMap.addMarker({
       coordinate: {
         lat: latitude,
-        lng: longitude,
+        lng: longitude
       },
-      draggable: true,
-    });
+      draggable: true
+    })
   };
 
   useEffect(() => {
@@ -107,13 +117,15 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
         if (!!coords?.longitude && !!coords?.latitude) {
           setLongitude(coords.longitude);
           setLatitude(coords.latitude);
-        } else {
+        }
+        else {
           setLongitude(props.longitude || DEFAULT_LONGITUDE);
           setLatitude(props.latitude || DEFAULT_LATITUDE);
         }
         setInitialCoordsSet(true);
       });
-    } else {
+    }
+    else {
       setLongitude(props.longitude || DEFAULT_LONGITUDE);
       setLatitude(props.latitude || DEFAULT_LATITUDE);
       setInitialCoordsSet(true);
@@ -125,7 +137,7 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
     (async () => {
       await initMaps();
     })();
-  }, [inititialCoordsSet, mapRef]);
+  }, [inititialCoordsSet, mapRef])
 
   return (
     <>
@@ -142,6 +154,7 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
       {props.children}
     </>
   );
-};
+}
 
 export const CustomGoogleMap = memo(CustomGoogleMapComponent);
+*/
