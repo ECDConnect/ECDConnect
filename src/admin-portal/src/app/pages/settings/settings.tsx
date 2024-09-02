@@ -300,7 +300,7 @@ export function Settings() {
           </div>
         </div>
         <SettingsTheme
-          theme={theme}
+          tenant={tenant}
           overRideTheme={overRideTheme}
           defaultTheme={DefaultTheme}
         />
