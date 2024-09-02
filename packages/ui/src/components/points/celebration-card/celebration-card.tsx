@@ -34,7 +34,7 @@ export const CelebrationCard: React.FC<CelebrationCardProps> = ({
             className="pt-2"
           />
           <Typography
-            type="h3"
+            type="body"
             color={secondaryTextColour || 'black'}
             text={secondaryMessage}
             className="pt-2"

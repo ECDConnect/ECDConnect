@@ -969,6 +969,14 @@ export type BulkInvitationResult = {
   success?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
+export type CmsConnectItemModelInput = {
+  buttonText?: InputMaybe<Scalars['String']>;
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  link?: InputMaybe<Scalars['String']>;
+  linkedConnect: Scalars['Int'];
+};
+
 export type CmsQuestionInput = {
   answer?: InputMaybe<Scalars['String']>;
   question?: InputMaybe<Scalars['String']>;
@@ -1979,6 +1987,34 @@ export type Classroom = {
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['UUID']>;
+};
+
+export type ClassroomBusinessResource = {
+  __typename?: 'ClassroomBusinessResource';
+  availableLanguages?: Maybe<Array<Maybe<Language>>>;
+  dataFree?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['Int']>;
+  link?: Maybe<Scalars['String']>;
+  longDescription?: Maybe<Scalars['String']>;
+  numberLikes?: Maybe<Scalars['String']>;
+  resourceType?: Maybe<Scalars['String']>;
+  sectionType?: Maybe<Scalars['String']>;
+  shortDescription?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['String']>;
+};
+
+export type ClassroomBusinessResourceInput = {
+  availableLanguages?: InputMaybe<Scalars['String']>;
+  dataFree?: InputMaybe<Scalars['String']>;
+  link?: InputMaybe<Scalars['String']>;
+  longDescription?: InputMaybe<Scalars['String']>;
+  numberLikes?: InputMaybe<Scalars['String']>;
+  resourceType?: InputMaybe<Scalars['String']>;
+  sectionType?: InputMaybe<Scalars['String']>;
+  shortDescription?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  updatedDate?: InputMaybe<Scalars['String']>;
 };
 
 export type ClassroomFilterInput = {
@@ -7398,6 +7434,7 @@ export type Mutation = {
   createClassProgramme?: Maybe<ClassProgramme>;
   createClassReassignmentHistory?: Maybe<ClassReassignmentHistory>;
   createClassroom?: Maybe<Classroom>;
+  createClassroomBusinessResource?: Maybe<Scalars['String']>;
   createClassroomGroup?: Maybe<ClassroomGroup>;
   createClinic?: Maybe<Clinic>;
   createClinicLeague?: Maybe<ClinicLeague>;
@@ -7559,6 +7596,7 @@ export type Mutation = {
   deleteClassProgramme?: Maybe<Scalars['Boolean']>;
   deleteClassReassignmentHistory?: Maybe<Scalars['Boolean']>;
   deleteClassroom?: Maybe<Scalars['Boolean']>;
+  deleteClassroomBusinessResource?: Maybe<Scalars['Boolean']>;
   deleteClassroomGroup?: Maybe<Scalars['Boolean']>;
   deleteClinic?: Maybe<Scalars['Boolean']>;
   deleteClinicById?: Maybe<Clinic>;
@@ -7850,6 +7888,7 @@ export type Mutation = {
   updateClassProgramme?: Maybe<ClassProgramme>;
   updateClassReassignmentHistory?: Maybe<ClassReassignmentHistory>;
   updateClassroom?: Maybe<Classroom>;
+  updateClassroomBusinessResource?: Maybe<ClassroomBusinessResource>;
   updateClassroomGroup?: Maybe<ClassroomGroup>;
   updateClassroomSiteAddress?: Maybe<Classroom>;
   updateClickedECDHeros: Scalars['Boolean'];
@@ -7883,7 +7922,7 @@ export type Mutation = {
   updateCommunitySkill?: Maybe<CommunitySkill>;
   updateCommunitySupport?: Maybe<Trainee>;
   updateConnect?: Maybe<Connect>;
-  updateConnectItem?: Maybe<ConnectItem>;
+  updateConnectItem: Scalars['Boolean'];
   updateConsent?: Maybe<Consent>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
   updateDangerSign?: Maybe<DangerSign>;
@@ -8415,6 +8454,12 @@ export type MutationCreateClassReassignmentHistoryArgs = {
 
 export type MutationCreateClassroomArgs = {
   input?: InputMaybe<ClassroomInput>;
+};
+
+export type MutationCreateClassroomBusinessResourceArgs = {
+  input: ClassroomBusinessResourceInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCreateClassroomGroupArgs = {
@@ -9128,6 +9173,12 @@ export type MutationDeleteClassReassignmentHistoryArgs = {
 
 export type MutationDeleteClassroomArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteClassroomBusinessResourceArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeleteClassroomGroupArgs = {
@@ -10516,6 +10567,13 @@ export type MutationUpdateClassroomArgs = {
   input?: InputMaybe<ClassroomInput>;
 };
 
+export type MutationUpdateClassroomBusinessResourceArgs = {
+  id: Scalars['String'];
+  input: ClassroomBusinessResourceInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationUpdateClassroomGroupArgs = {
   id: Scalars['UUID'];
   input?: InputMaybe<ClassroomGroupInput>;
@@ -10683,7 +10741,7 @@ export type MutationUpdateConnectArgs = {
 
 export type MutationUpdateConnectItemArgs = {
   id: Scalars['String'];
-  input: ConnectItemInput;
+  input?: InputMaybe<Array<InputMaybe<CmsConnectItemModelInput>>>;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -14214,6 +14272,7 @@ export type Query = {
     Array<Maybe<ClassReassignmentHistory>>
   >;
   GetAllClassroom?: Maybe<Array<Maybe<Classroom>>>;
+  GetAllClassroomBusinessResource: Array<Maybe<ClassroomBusinessResource>>;
   GetAllClassroomGroup?: Maybe<Array<Maybe<ClassroomGroup>>>;
   GetAllClinic?: Maybe<Array<Maybe<Clinic>>>;
   GetAllClinicLeague?: Maybe<Array<Maybe<ClinicLeague>>>;
@@ -14393,6 +14452,7 @@ export type Query = {
   GetChildProgressReportPeriodById?: Maybe<ChildProgressReportPeriod>;
   GetClassProgrammeById?: Maybe<ClassProgramme>;
   GetClassReassignmentHistoryById?: Maybe<ClassReassignmentHistory>;
+  GetClassroomBusinessResourceById: Array<Maybe<ClassroomBusinessResource>>;
   GetClassroomById?: Maybe<Classroom>;
   GetClassroomGroupById?: Maybe<ClassroomGroup>;
   GetClinicById?: Maybe<Clinic>;
@@ -15002,6 +15062,11 @@ export type QueryGetAllClassroomArgs = {
   order?: InputMaybe<Array<ClassroomSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassroomFilterInput>;
+};
+
+export type QueryGetAllClassroomBusinessResourceArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetAllClassroomGroupArgs = {
@@ -15878,6 +15943,12 @@ export type QueryGetClassProgrammeByIdArgs = {
 export type QueryGetClassReassignmentHistoryByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<ClassReassignmentHistoryFilterInput>;
+};
+
+export type QueryGetClassroomBusinessResourceByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetClassroomByIdArgs = {
@@ -18479,6 +18550,11 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
+export type Setting_Grafana = {
+  __typename?: 'Setting_Grafana';
+  GeneralDashboard: Scalars['String'];
+};
+
 export type Setting_IncomeStatementSubmitEnd = {
   __typename?: 'Setting_IncomeStatementSubmitEnd';
   IncomeStatementSubmitEnd: Scalars['String'];
@@ -18602,6 +18678,7 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
+  Grafana: Setting_Grafana;
   IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
   IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
   IntegrationDelay: Setting_IntegrationDelay;
@@ -20647,6 +20724,7 @@ export type UserRankingPointsModel = {
   nonComparativeTargetPercentage: Scalars['Float'];
   nonComparativeTargetPercentageColor?: Maybe<Scalars['String']>;
   pointsTotal: Scalars['Int'];
+  rankingNr: Scalars['Int'];
   userId: Scalars['UUID'];
 };
 

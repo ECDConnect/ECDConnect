@@ -44,6 +44,7 @@ export type DefaultThemeType = {
   fontUrl: string;
   mainHeadingOverrideFontUrl: string;
   darkBackground: string;
+  quinary: string;
 };
 
 export type DefaultThemeColors = Omit<
@@ -104,6 +105,7 @@ export const WhiteLabelTheme: DefaultThemeType = {
   pointsCardBarBg: '#FCCF8C',
   quatenaryBg: '#D2F1F9',
   adminBackground: '#EFF6FA',
+  quinary: '#FFD525',
 };
 
 export const DefaultTheme: DefaultThemeType = {
@@ -152,6 +154,7 @@ export const DefaultTheme: DefaultThemeType = {
   pointsCardBarBg: '#FCCF8C',
   quatenaryBg: '#D2F1F9',
   adminBackground: '#EFF6FA',
+  quinary: '#FFD525',
 };
 
 export const DefaultAvatarColors = [

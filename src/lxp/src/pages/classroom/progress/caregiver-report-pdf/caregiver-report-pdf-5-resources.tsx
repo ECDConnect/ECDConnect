@@ -18,7 +18,7 @@ export const ProgressCaregiverResourcesPage: React.FC<
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
-      style={{ height: '1400px' }}
+      style={{ height: '1100px' }}
     >
       <div className="mb-4 flex flex-row">
         <img src={lightbulbEmoji} className="mr-4 h-20 w-20" />

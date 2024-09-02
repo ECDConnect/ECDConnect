@@ -20,7 +20,6 @@ using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
 using System;
@@ -100,7 +99,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && cellphone is null)
                     continue;
 
-                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone);
+                var rowErrors = new List<string>();
 
                 if (idPassportDuplications.Any())
                 {
@@ -188,7 +187,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
-                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName).FirstOrDefault();
+                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName || (x.IdNumber == user.IdNumber && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
 
                 if (userExists is not null)
                 {
@@ -277,51 +276,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 CreatedUsers = createdUsers,
                 ValidationErrors = validationErrors
             };
-
-            // Local function
-            static List<string> GetPractitionerValidationErrors(
-                string idOrPassport,
-                string id,
-                string passport,
-                string firstName,
-                string surname,
-                string cellphone)
-            {
-                var errors = new List<string>();
-                if (idOrPassport is null)
-                    errors.Add("Type of identification is empty");
-
-                var valid = new string[] { "id", "passport" };
-                if (!valid.Contains(idOrPassport))
-                    errors.Add($"Type of identification must be {string.Join(", ", valid)}");
-
-                if (idOrPassport?.ToLowerInvariant() == "id"
-                    && !UserHelper.IsSAIDValid(id))
-                {
-                    if (string.IsNullOrEmpty(id))
-                    {
-                        errors.Add("Id is empty");
-                    }
-                    else
-                    {
-                        errors.Add("Id invalid " + id);
-                    }
-                }
-
-                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
-                    errors.Add("Passport is empty");
-
-                if (firstName is null || firstName.Length == 0)
-                    errors.Add("First Name is empty.");
-
-                if (surname is null || surname.Length == 0)
-                    errors.Add("Surname is empty.");
-
-                if (cellphone is null || cellphone.Length == 0)
-                    errors.Add("Cellphone is empty.");
-                
-                return errors;
-            }
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
@@ -385,10 +339,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && passport is null
                     && firstName is null
                     && surname is null
-                    && cellphone is null)
+                && cellphone is null)
                     continue;
 
-                var rowErrors = GetCoachValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone);
+
+                var rowErrors = new List<string>();
 
                 if (idPassportDuplications.Any())
                 {
@@ -458,7 +413,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
-                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName).FirstOrDefault();
+                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName || (x.IdNumber == user.IdNumber && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
 
                 if (userExists is not null)
                 {
@@ -548,49 +503,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ValidationErrors = validationErrors
             };
 
-            // Local function
-            static List<string> GetCoachValidationErrors(
-                string idOrPassport,
-                string id,
-                string passport,
-                string firstName,
-                string surname,
-                string cellphone)
-            {
-                var errors = new List<string>();
-                if (idOrPassport is null)
-                    errors.Add("Type of identification is empty");
-
-                var valid = new string[] { "id", "passport" };
-                if (!valid.Contains(idOrPassport))
-                    errors.Add($"Type of identification must be {string.Join(", ", valid)}");
-
-                if (idOrPassport?.ToLowerInvariant() == "id"
-                    && !UserHelper.IsSAIDValid(id))
-                {
-                    if (string.IsNullOrEmpty(id))
-                    {
-                        errors.Add("Id is empty");
-                    }
-                    else
-                    {
-                        errors.Add("Id invalid " + id);
-                    }
-                }
-
-                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
-                    errors.Add("Passport is empty");
-
-                if (firstName is null || firstName.Length == 0)
-                    errors.Add("First Name is empty.");
-
-                if (surname is null || surname.Length == 0)
-                    errors.Add("Surname is empty.");
-
-                if (cellphone is null || cellphone.Length == 0)
-                    errors.Add("Cellphone is empty.");
-                return errors;
-            }
         }
 
         private List<InputValidationError> ValidateIdPassportDuplications(ISheet sheet)

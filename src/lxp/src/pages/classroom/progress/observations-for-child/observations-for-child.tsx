@@ -74,13 +74,13 @@ export const ObservationsForChild: React.FC = () => {
 
     // For skills pages, all in that current page must be answered
     if (currentStep <= totalSkillsSteps) {
-      return (currentReport?.skillObservations || [])
+      return currentObservations
         .slice((currentStep - 1) * 5, currentStep * 5)
         .every((x) => !!x.value);
     }
 
     return false;
-  }, [currentStep, currentReport]);
+  }, [currentStep, currentReport, currentObservations]);
 
   return (
     <BannerWrapper

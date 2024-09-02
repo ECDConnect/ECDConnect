@@ -299,6 +299,7 @@ export const ChildProfile: React.FC = () => {
     });
   };
 
+  // TODO - This useEffect needs to be fixed, causing infinite re-renders!!!
   useEffect(() => {
     if (!attendanceData || !child) return;
 
@@ -765,11 +766,16 @@ export const ChildProfile: React.FC = () => {
                 key={`child-profile-notification-${notification.key}`}
               />
             ))}
-            {hasPermissionToCreateProgressReports && (
-              <div id={`child_progress_observations`} aria-disabled={run}>
-                <ChildProgressReportAlert child={child} />
-              </div>
-            )}
+          </div>
+        )}
+        {(practitioner?.isPrincipal ||
+          hasPermissionToCreateProgressReports) && (
+          <div
+            id={`child_progress_observations`}
+            aria-disabled={run}
+            className='"-mt-0.5 rounded-2xl" flex w-full flex-col gap-1'
+          >
+            <ChildProgressReportAlert child={child!} />
           </div>
         )}
         <div className={styles.profileOptionsWrapper}>

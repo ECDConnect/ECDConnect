@@ -92,6 +92,7 @@ module.exports = {
         tertiaryAccent2: 'var(--tertiaryAccent2)',
         tertiaryAccent3: 'var(--tertiaryAccent3)',
         secondaryMain: 'var(--secondaryMain)',
+        quinary: 'var(--quinary)',
       },
             backgroundImage: (theme) => ({
         logo: "url('./assets/logo.svg')",
