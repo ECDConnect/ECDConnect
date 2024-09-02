@@ -702,21 +702,21 @@ export default function ContentList({
                   </span>
                 </div>
               )}
-              {hasPermission(PermissionEnum.create_static) &&
-                contentType?.name !== ContentTypes.CONSENT &&
-                contentType?.name !== ContentTypes.MORE_INFORMATION && (
-                  <button
-                    onClick={() => {
-                      hasPermission(PermissionEnum.update_static) &&
-                        viewSelectedRow();
-                    }}
-                    type="button"
-                    className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
-                  >
-                    <PlusIcon width="22px" className="pl-1" />
-                    Add {camelCaseToSentanceCase(buttonText)}
-                  </button>
-                )}
+              {hasPermission(PermissionEnum.create_static) && ( //&&
+                // contentType?.name !== ContentTypes.CONSENT &&
+                // contentType?.name !== ContentTypes.MORE_INFORMATION
+                <button
+                  onClick={() => {
+                    hasPermission(PermissionEnum.update_static) &&
+                      viewSelectedRow();
+                  }}
+                  type="button"
+                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
+                >
+                  <PlusIcon width="22px" className="pl-1" />
+                  Add {camelCaseToSentanceCase(buttonText)}
+                </button>
+              )}
             </div>
           </div>
           <div className="pb-5 sm:flex sm:items-center sm:justify-between"></div>
