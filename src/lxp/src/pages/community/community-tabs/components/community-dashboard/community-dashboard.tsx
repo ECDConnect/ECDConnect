@@ -254,7 +254,7 @@ export const CommunityDashboard = () => {
         />
         <div>{renderYourCommunityList}</div>
       </div>
-      <div className="mb-28 mt-6 flex w-full flex-col justify-center gap-3">
+      <div className="mb-36 mt-6 flex w-full flex-col justify-center gap-3">
         <Button
           className="w-full rounded-2xl px-2"
           type="filled"
