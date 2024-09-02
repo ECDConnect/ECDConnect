@@ -285,7 +285,7 @@ export const PointsSummary: React.FC = () => {
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
   ]);
-  console.log(getCurrentPointsToDo === 3 && practitioner?.isPrincipal);
+
   const renderPointsToDoProgressBarColor = useMemo(() => {
     if (pointsToDo?.viewedCommunitySection) {
       if (

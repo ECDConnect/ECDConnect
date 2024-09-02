@@ -154,6 +154,8 @@ export const Dashboard: React.FC = () => {
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
     !isPrincipal;
+  const wlNotAcceptThePrincipalInvite =
+    !classroom && practitioner?.principalHierarchy;
   const isTrialPeriod = useIsTrialPeriod();
 
   const dashboardNotification = useSelector(
@@ -180,7 +182,7 @@ export const Dashboard: React.FC = () => {
       pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
     );
   }, [appDispatch, practitioner?.userId]);
-  console.log(isOnline && practitioner);
+
   useEffect(() => {
     if (isOnline && practitioner) {
       getPointsToDoItems();
@@ -573,16 +575,19 @@ export const Dashboard: React.FC = () => {
       history.push(navItem.href, navItem.params);
     } else if (
       (navItem.href.includes('classroom') &&
-        isWhiteLabel &&
-        missingProgramme) ||
-      (navItem.href.includes('calendar') && isWhiteLabel && missingProgramme) ||
-      (navItem.href.includes('training') && isWhiteLabel && missingProgramme) ||
+        ((isWhiteLabel && missingProgramme) ||
+          wlNotAcceptThePrincipalInvite)) ||
+      (navItem.href.includes('calendar') &&
+        ((isWhiteLabel && missingProgramme) ||
+          wlNotAcceptThePrincipalInvite)) ||
+      (navItem.href.includes('training') &&
+        ((isWhiteLabel && missingProgramme) ||
+          wlNotAcceptThePrincipalInvite)) ||
       (navItem.href.includes('community') &&
-        isWhiteLabel &&
-        missingProgramme) ||
+        ((isWhiteLabel && missingProgramme) ||
+          wlNotAcceptThePrincipalInvite)) ||
       (navItem.href.includes('/practitioner/programme-information') &&
-        isWhiteLabel &&
-        missingProgramme)
+        ((isWhiteLabel && missingProgramme) || wlNotAcceptThePrincipalInvite))
     ) {
       showCompleteProfileBlockingDialog();
     } else {
@@ -958,7 +963,10 @@ export const Dashboard: React.FC = () => {
       isTrialPeriod
     ) {
       history?.push(ROUTES.COMMUNITY.WELCOME);
-    } else if (missingProgramme && isWhiteLabel) {
+    } else if (
+      (missingProgramme && isWhiteLabel) ||
+      wlNotAcceptThePrincipalInvite
+    ) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -1017,7 +1025,10 @@ export const Dashboard: React.FC = () => {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.CLASSES,
       });
-    } else if (missingProgramme && isWhiteLabel) {
+    } else if (
+      (missingProgramme && isWhiteLabel) ||
+      wlNotAcceptThePrincipalInvite
+    ) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -1034,7 +1045,10 @@ export const Dashboard: React.FC = () => {
       isTrialPeriod
     ) {
       history.push(ROUTES.CALENDAR);
-    } else if (missingProgramme && isWhiteLabel) {
+    } else if (
+      (missingProgramme && isWhiteLabel) ||
+      wlNotAcceptThePrincipalInvite
+    ) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -1058,7 +1072,10 @@ export const Dashboard: React.FC = () => {
       isTrialPeriod
     ) {
       history.push(ROUTES.TRAINING);
-    } else if (missingProgramme && isWhiteLabel) {
+    } else if (
+      (missingProgramme && isWhiteLabel) ||
+      wlNotAcceptThePrincipalInvite
+    ) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -1099,7 +1116,7 @@ export const Dashboard: React.FC = () => {
       (item) =>
         item?.permissionName === PermissionsNames.plan_classroom_actitivies
     );
-    console.log({ plnaActivitiesPermission });
+
     if (pointsToDo?.viewedCommunitySection) {
       return 'Influencer';
     }
