@@ -111,10 +111,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const quarterStartDate = startOfQuarter(new Date());
   const quarterLastDay = lastDayOfQuarter(new Date());
 
-  const { sync, analytics, settings, notifications, ...state } = useAppSelector(
-    (state) => state
-  );
-
   const resetAuth = async () => {
     appDispatch(authActions.resetAuthState());
   };
