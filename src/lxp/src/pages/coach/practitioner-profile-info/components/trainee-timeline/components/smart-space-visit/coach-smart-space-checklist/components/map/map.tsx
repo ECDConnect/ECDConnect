@@ -1,4 +1,9 @@
-import { Button, Typography, CustomGoogleMap, Address } from '@ecdlink/ui';
+import {
+  Button,
+  Typography,
+  CustomGoogleMap,
+  GoogleMapGeoCodeAddressType,
+} from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
 
 interface Step6MapProps {
@@ -7,7 +12,10 @@ interface Step6MapProps {
 }
 const COMPONENT_HEIGHT = 280;
 
-const getInfo = (address: Address[] | undefined, type: string) =>
+const getInfo = (
+  address: GoogleMapGeoCodeAddressType[] | undefined,
+  type: string
+) =>
   address?.find((item) =>
     item?.types.find((currentType) => currentType.includes(type))
   )?.short_name;
@@ -20,7 +28,7 @@ export const Step6Map: React.FC<Step6MapProps> = ({ onClose, onSubmit }) => {
     onClose();
   };
 
-  const getAddress = useCallback((address?: Address[]) => {
+  const getAddress = useCallback((address?: GoogleMapGeoCodeAddressType[]) => {
     const number = getInfo(address, 'street_number');
     const street = getInfo(address, 'route');
     const city = getInfo(address, 'administrative_area_level_2');

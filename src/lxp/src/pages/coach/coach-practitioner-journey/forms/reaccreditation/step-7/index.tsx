@@ -71,7 +71,7 @@ export const Step7ReAccreditation = ({
       smartStarter?.siteAddress?.addressLine1,
       smartStarter?.siteAddress?.addressLine2,
       smartStarter?.siteAddress?.addressLine3,
-      smartStarter?.siteAddress?.province?.description,
+      //smartStarter?.siteAddress?.province?.description,
     ];
 
     if (questions[1].answer) {

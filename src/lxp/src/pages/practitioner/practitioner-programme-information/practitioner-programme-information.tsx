@@ -360,7 +360,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     ) {
       stackedActionList.push({
         title: 'Location',
-        subTitle: classroom?.siteAddress?.addressLine1,
+        subTitle: classroom?.siteAddress?.addressLine1 || '',
         switchTextStyles: true,
         actionName: isPrincipal
           ? classroom?.siteAddress

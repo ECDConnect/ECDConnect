@@ -1,3 +1,4 @@
+/*
 import { ComponentBaseProps } from '@ecdlink/ui';
 import { GoogleMap } from '@capacitor/google-maps';
 import {
@@ -163,3 +164,4 @@ function CustomGoogleMapComponent(
 }
 
 export const CustomGoogleMap = memo(CustomGoogleMapComponent);
+*/

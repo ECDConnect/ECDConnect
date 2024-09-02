@@ -9,33 +9,39 @@ import {
   useEffect,
 } from 'react';
 import { ComponentBaseProps } from '../../models';
+import {
+  GoogleMapGeoCodeAddressType,
+  GoogleMapGeoCodeResponse,
+} from './google-map.types';
 
-export interface Address {
-  long_name: string;
-  short_name: string;
-  types: string[];
-}
-
-interface GoogleApiResponse {
-  results: [
-    {
-      address_components: Address[];
-      types: string[];
-    }
-  ];
-}
-
-function useGoogleMap(ref: MutableRefObject<HTMLElement> | any) {
-  const [longitude, setLongitude] = useState(0);
-  const [latitude, setLatitude] = useState(0);
-  const [address, setAddress] = useState<Address[] | undefined>();
+function useGoogleMap(
+  ref: MutableRefObject<HTMLElement> | any,
+  defaultLongitude?: number | null,
+  defaultLatitude?: number
+) {
+  const [longitude, setLongitude] = useState(
+    defaultLongitude === undefined || defaultLongitude === null
+      ? -29.1199066
+      : defaultLongitude
+  );
+  const [latitude, setLatitude] = useState(
+    defaultLatitude === undefined || defaultLongitude === null
+      ? 26.058415
+      : defaultLatitude
+  );
+  const [address, setAddress] = useState<
+    GoogleMapGeoCodeAddressType[] | undefined
+  >();
+  const [mapData, setMapData] = useState<
+    GoogleMapGeoCodeResponse | undefined
+  >();
   const [markerChanged, setMarkerChanged] = useState(false);
 
   const getAddress = useCallback(() => {
     fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=
         ${latitude},${longitude}&key=${process.env.REACT_APP_MAP_API_KEY}`)
       .then((response) => response.json())
-      .then((data: GoogleApiResponse) => {
+      .then((data: GoogleMapGeoCodeResponse) => {
         if (data.results.length) {
           setAddress(
             data.results.find((result) =>
@@ -47,6 +53,7 @@ function useGoogleMap(ref: MutableRefObject<HTMLElement> | any) {
               )
             )?.address_components
           );
+          setMapData(data);
         }
       });
   }, [latitude, longitude]);
@@ -125,6 +132,7 @@ function useGoogleMap(ref: MutableRefObject<HTMLElement> | any) {
     },
     setLatitude,
     setLongitude,
+    mapData,
   };
 }
 
@@ -132,18 +140,31 @@ function CustomGoogleMapComponent(
   props: ComponentBaseProps & {
     children?: React.ReactNode;
     height?: number;
-    onChange?: (address?: Address[]) => void;
+    longitude?: number | null;
+    latitude?: number | null;
+    onChange?: (address?: GoogleMapGeoCodeAddressType[]) => void;
+    onChangeMapData?: (mapData?: GoogleMapGeoCodeResponse) => void;
   }
 ) {
   const mapRef = useRef();
 
-  const { address } = useGoogleMap(mapRef);
+  const { address, mapData } = useGoogleMap(
+    mapRef,
+    props.longitude,
+    props.latitude
+  );
 
   useEffect(() => {
     if (props.onChange) {
       props.onChange(address);
     }
   }, [address, props]);
+
+  useEffect(() => {
+    if (props.onChangeMapData) {
+      props.onChangeMapData(mapData);
+    }
+  }, [mapData, props]);
 
   return (
     <>
