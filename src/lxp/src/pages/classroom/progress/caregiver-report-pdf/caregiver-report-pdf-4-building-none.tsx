@@ -24,7 +24,7 @@ export const ProgressCaregiverReportBuildingNonePage: React.FC<
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
-      style={{ height: '1400px', position: 'relative' }}
+      style={{ height: '1100px', position: 'relative' }}
     >
       <div className="mb-4 flex flex-row">
         <img src={blueFaceImg} className="mr-4 h-20 w-20" />

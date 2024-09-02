@@ -101,7 +101,7 @@ export const ProgressCaregiverReportPdf: React.FC<
         totalPages={totalPages}
       />
 
-      <div className="mt-40">
+      <div className="mt-12">
         <ProgressCaregiverReportSkillsPage
           childFirstName={child?.user?.firstName || ''}
           reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
@@ -113,7 +113,7 @@ export const ProgressCaregiverReportPdf: React.FC<
         />
       </div>
       {splitSkillsPage && (
-        <div className="mt-40">
+        <div className="mt-12">
           <ProgressCaregiverReportSkillsPage
             childFirstName={child?.user?.firstName || ''}
             reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
@@ -124,8 +124,8 @@ export const ProgressCaregiverReportPdf: React.FC<
         </div>
       )}
 
-      <div className="mt-40">
-        {!!report.skillsToWorkOn.length && (
+      {!!report.skillsToWorkOn.length && (
+        <div className="mt-12">
           <ProgressCaregiverReportWorkingOnPage
             childFirstName={child?.user?.firstName || ''}
             reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
@@ -133,8 +133,10 @@ export const ProgressCaregiverReportPdf: React.FC<
             totalPages={totalPages}
             skillsByCategory={skillsToWorkOnByCategory}
           />
-        )}
-        {!report.skillsToWorkOn.length && (
+        </div>
+      )}
+      {!report.skillsToWorkOn.length && (
+        <div className="mt-12">
           <ProgressCaregiverReportWorkingOnNonePage
             childFirstName={child?.user?.firstName || ''}
             reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
@@ -143,12 +145,12 @@ export const ProgressCaregiverReportPdf: React.FC<
             ageGroupName={ageGroup!.name}
             howToSupport={report.howToSupport || ''}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {!!report.skillsToWorkOn.length && (
         <>
-          <div className="mt-40">
+          <div className="mt-12">
             <ProgressCaregiverReportBuildingPage
               childFirstName={child?.user?.firstName || ''}
               reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
@@ -162,7 +164,7 @@ export const ProgressCaregiverReportPdf: React.FC<
             />
           </div>
           {splitWorkingOnPage && (
-            <div className="mt-40">
+            <div className="mt-12">
               <ProgressCaregiverReportBuildingPage
                 childFirstName={child?.user?.firstName || ''}
                 reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
@@ -175,7 +177,7 @@ export const ProgressCaregiverReportPdf: React.FC<
         </>
       )}
       {!report.skillsToWorkOn.length && (
-        <div className="mt-40">
+        <div className="mt-12">
           <ProgressCaregiverReportBuildingNonePage
             childFirstName={child?.user?.firstName || ''}
             reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
@@ -187,7 +189,7 @@ export const ProgressCaregiverReportPdf: React.FC<
       )}
 
       {/* Where to get links??? */}
-      <div className="mt-40">
+      <div className="mt-12">
         <ProgressCaregiverResourcesPage
           childFirstName={child?.user?.firstName || ''}
           reportingPeriodEndDate={new Date(report.reportingPeriodEndDate)}
