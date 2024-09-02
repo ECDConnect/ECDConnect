@@ -28,7 +28,7 @@ export const ChildNotes: React.FC = () => {
   const [viewNoteVisible, setViewNoteVisible] = useState<boolean>(false);
   const [noteToView, setNoteToView] = useState<NoteDto>();
 
-  const childId = location.state.childId;
+  const childId = location?.state?.childId;
   const child = useSelector(childrenSelectors.getChildById(childId));
 
   const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));

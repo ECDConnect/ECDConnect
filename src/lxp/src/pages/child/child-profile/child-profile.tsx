@@ -208,13 +208,21 @@ export const ChildProfile: React.FC = () => {
     ChildrenActions.UPDATE_CHILD
   );
 
-  const childBirthDate = child?.user?.dateOfBirth
-    ? new Date(child?.user?.dateOfBirth)
-    : currentDate;
+  const childBirthDate = useMemo(
+    () =>
+      child?.user?.dateOfBirth
+        ? new Date(child?.user?.dateOfBirth)
+        : currentDate,
+    [child?.user?.dateOfBirth, currentDate]
+  );
 
   const ageOfChild = getAge(childBirthDate);
 
-  setChildAge(ageOfChild);
+  useEffect(() => {
+    if (ageOfChild) {
+      setChildAge(ageOfChild);
+    }
+  }, []);
 
   const avatar = profilePicture?.file || child?.user?.profileImageUrl || '';
 
