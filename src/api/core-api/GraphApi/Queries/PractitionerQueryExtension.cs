@@ -256,7 +256,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                                 practiType = "Practitioner";
                             }
                             //get any classroomnames from user and append them
-                            var classes = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(practitioner.UserId.ToString()));
+                            var classes = classGroupRepo.GetAll().Where(x => x.IsActive && x.UserId.ToString().Contains(practitioner.UserId.ToString()));
                             if (classes.Any())
                             {
                                 var classNames = classes.Where(x => x.Name != "").Select(f => f.Name);
