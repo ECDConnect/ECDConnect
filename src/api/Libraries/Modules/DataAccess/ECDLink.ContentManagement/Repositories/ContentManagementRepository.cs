@@ -404,6 +404,11 @@ namespace ECDLink.ContentManagement.Repositories
                     //update with fulllist
                     contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                 }
+                if (contentType == "Consent" && contentFieldValuePairs.ContainsKey("description"))
+                {
+                    contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
+                }
+
 
                 if (contentFieldValuePairs?.Any() ?? false)
                 {
