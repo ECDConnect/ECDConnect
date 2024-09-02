@@ -97,7 +97,7 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
             .map((skill) => (
               <p
                 className="font-small text-textDark"
-                style={{ fontSize: '14px' }}
+                style={{ fontSize: '12px' }}
               >
                 <span>&#8226;</span> {skill.skillDescription}
               </p>

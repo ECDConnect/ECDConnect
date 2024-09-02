@@ -6,6 +6,8 @@ import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
 import { useProgressGenerateSummaryPdfReport as usePdfFromHtml } from '@/hooks/useProgressGenerateSummaryPdfReport';
 import { useProgressForChild } from '@/hooks/useProgressForChild';
+import ROUTES from '@/routes/routes';
+import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 
 export type ProgressShareReportState = {
   childId: string;
@@ -32,7 +34,11 @@ export const ProgressShareReport: React.FC = () => {
     <BannerWrapper
       size={'small'}
       title={'Share caregiver report'}
-      onBack={() => history.goBack()}
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItems.PROGRESS,
+        })
+      }
     >
       <div className="mt-2 flex flex-col p-4">
         <Typography
