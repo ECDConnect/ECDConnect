@@ -32,15 +32,17 @@ import {
 import FormColorField from '../../../../components/form-color-field/form-color-field';
 import { SaveIcon } from '@heroicons/react/solid';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
+import { Storage } from '@capacitor/storage';
+import { TenantContextType } from '../../../../hooks/useTenant';
 
 interface SettingsThemeProps {
-  theme?: ThemeModel;
+  tenant: TenantContextType;
   overRideTheme: (theme: ThemeModel) => void;
   defaultTheme: DefaultThemeType;
 }
 
 export const SettingsTheme: React.FC<SettingsThemeProps> = ({
-  theme,
+  tenant,
   overRideTheme,
   defaultTheme,
 }) => {
@@ -48,6 +50,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
   const { setNotification } = useNotifications();
   const [updateTheme] = useMutation(UpdateTheme);
   const [fileUpload] = useMutation(FileUpload);
+  const [data, setData] = useState({} as any);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [editColorsActive, setEditColorsActive] = useState<boolean>(false);
@@ -89,48 +92,62 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
     mode: 'onBlur',
   });
 
-  useEffect(() => {
-    if (theme) {
-      colorSetValue('primary', theme.colors.primary);
-      colorSetValue('secondary', theme.colors.secondary);
-      colorSetValue('tertiary', theme.colors.tertiary);
-      colorSetValue('primaryAccent1', theme.colors.primaryAccent1);
-      colorSetValue('primaryAccent2', theme.colors.primaryAccent2);
-      colorSetValue('secondaryAccent1', theme.colors.secondaryAccent1);
-      colorSetValue('secondaryAccent2', theme.colors.secondaryAccent2);
-      colorSetValue('tertiaryAccent1', theme.colors.tertiaryAccent1);
-      colorSetValue('textDark', theme.colors.textDark);
-      colorSetValue('textMid', theme.colors.textMid);
-      colorSetValue('textLight', theme.colors.textLight);
-      colorSetValue('uiMidDark', theme.colors.uiMidDark);
-      colorSetValue('uiMid', theme.colors.uiMid);
-      colorSetValue('uiLight', theme.colors.uiLight);
-      colorSetValue('uiBg', theme.colors.uiBg);
-      colorSetValue('modalBg', theme.colors.modalBg);
-      colorSetValue('errorMain', theme.colors.errorMain);
-      colorSetValue('errorDark', theme.colors.errorDark);
-      colorSetValue('errorBg', theme.colors.errorBg);
-      colorSetValue('alertMain', theme.colors.alertMain);
-      colorSetValue('alertDark', theme.colors.alertDark);
-      colorSetValue('alertBg', theme.colors.alertBg);
-      colorSetValue('successMain', theme.colors.successMain);
-      colorSetValue('successDark', theme.colors.successDark);
-      colorSetValue('successBg', theme.colors.successBg);
-      colorSetValue('infoMain', theme.colors.infoMain);
-      colorSetValue('infoDark', theme.colors.infoDark);
-      colorSetValue('infoBb', theme.colors.infoBb);
+  const getData = async () => {
+    fetch(tenant.tenant.themePath)
+      .then(function (res) {
+        return res.json();
+      })
+      .then(async function (data) {
+        setData(data);
+      });
+  };
 
-      colorSetValue('quatenary', theme.colors.quatenary);
-      colorSetValue('quatenaryMain', theme.colors.quatenaryMain);
-      colorSetValue('adminPortalBg', theme.colors.adminPortalBg);
-      colorSetValue('darkBlue', theme.colors.darkBlue);
-      colorSetValue('pointsCardBg', theme.colors.pointsCardBg);
-      colorSetValue('pointsCardBarBg', theme.colors.pointsCardBarBg);
-      colorSetValue('quatenaryBg', theme.colors.quatenaryBg);
-      colorSetValue('adminBackground', theme.colors.adminBackground);
+  useEffect(() => {
+    getData();
+  }, [tenant.tenant.themePath]);
+
+  useEffect(() => {
+    if (data && data.colors) {
+      colorSetValue('primary', data.colors.primary);
+      colorSetValue('secondary', data.colors.secondary);
+      colorSetValue('tertiary', data.colors.tertiary);
+      colorSetValue('primaryAccent1', data.colors.primaryAccent1);
+      colorSetValue('primaryAccent2', data.colors.primaryAccent2);
+      colorSetValue('secondaryAccent1', data.colors.secondaryAccent1);
+      colorSetValue('secondaryAccent2', data.colors.secondaryAccent2);
+      colorSetValue('tertiaryAccent1', data.colors.tertiaryAccent1);
+      colorSetValue('textDark', data.colors.textDark);
+      colorSetValue('textMid', data.colors.textMid);
+      colorSetValue('textLight', data.colors.textLight);
+      colorSetValue('uiMidDark', data.colors.uiMidDark);
+      colorSetValue('uiMid', data.colors.uiMid);
+      colorSetValue('uiLight', data.colors.uiLight);
+      colorSetValue('uiBg', data.colors.uiBg);
+      colorSetValue('modalBg', data.colors.modalBg);
+      colorSetValue('errorMain', data.colors.errorMain);
+      colorSetValue('errorDark', data.colors.errorDark);
+      colorSetValue('errorBg', data.colors.errorBg);
+      colorSetValue('alertMain', data.colors.alertMain);
+      colorSetValue('alertDark', data.colors.alertDark);
+      colorSetValue('alertBg', data.colors.alertBg);
+      colorSetValue('successMain', data.colors.successMain);
+      colorSetValue('successDark', data.colors.successDark);
+      colorSetValue('successBg', data.colors.successBg);
+      colorSetValue('infoMain', data.colors.infoMain);
+      colorSetValue('infoDark', data.colors.infoDark);
+      colorSetValue('infoBb', data.colors.infoBb);
+
+      colorSetValue('quatenary', data.colors.quatenary);
+      colorSetValue('quatenaryMain', data.colors.quatenaryMain);
+      colorSetValue('adminPortalBg', data.colors.adminPortalBg);
+      colorSetValue('darkBlue', data.colors.darkBlue);
+      colorSetValue('pointsCardBg', data.colors.pointsCardBg);
+      colorSetValue('pointsCardBarBg', data.colors.pointsCardBarBg);
+      colorSetValue('quatenaryBg', data.colors.quatenaryBg);
+      colorSetValue('adminBackground', data.colors.adminBackground);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]);
+  }, [data]);
 
   useEffect(() => {
     if (fontsRegister) {
@@ -195,7 +212,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
         });
       }
 
-      const themeVersion = theme && theme.version ? theme.version + 1 : 1;
+      const themeVersion = data && data.version ? data.version + 1 : 1;
       const themeInputModel: ThemeModel = {
         version: themeVersion,
         colors: {
@@ -416,7 +433,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                     />
                     <FormFileInput
                       acceptedFormats={acceptedFormats}
-                      contentUrl={theme?.images.graphicOverlayUrl}
+                      contentUrl={data?.images?.graphicOverlayUrl}
                       nameProp="graphicOverlayUrl"
                       setValue={imagesSetValue}
                       label={''}
@@ -448,7 +465,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                     />
                     <FormFileInput
                       acceptedFormats={acceptedFormats}
-                      contentUrl={theme?.images.logoUrl}
+                      contentUrl={data?.images?.logoUrl}
                       label={''}
                       nameProp="logoUrl"
                       setValue={imagesSetValue}
@@ -480,7 +497,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                     />
                     <FormFileInput
                       acceptedFormats={['ico']}
-                      contentUrl={theme?.images.faviconUrl}
+                      contentUrl={data?.images?.faviconUrl}
                       label={''}
                       nameProp="faviconUrl"
                       setValue={imagesSetValue}
@@ -523,7 +540,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormColorField
                     setValue={colorSetValue}
-                    currentColor={theme?.colors?.primary}
+                    currentColor={data?.colors?.primary}
                     label={''}
                     nameProp={'primary'}
                     register={colorRegister}
@@ -533,7 +550,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormColorField
                     setValue={colorSetValue}
-                    currentColor={theme?.colors?.secondary}
+                    currentColor={data?.colors?.secondary}
                     label={''}
                     nameProp={'secondary'}
                     register={colorRegister}
@@ -543,7 +560,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormColorField
                     setValue={colorSetValue}
-                    currentColor={theme?.colors?.tertiary}
+                    currentColor={data?.colors?.tertiary}
                     label={''}
                     nameProp={'tertiary'}
                     register={colorRegister}
@@ -560,7 +577,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormFileInput
                     acceptedFormats={acceptedFormats}
-                    contentUrl={theme?.images.graphicOverlayUrl}
+                    contentUrl={data?.images?.graphicOverlayUrl}
                     label={''}
                     nameProp="graphicOverlayUrl"
                     setValue={imagesSetValue}
@@ -574,7 +591,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormFileInput
                     acceptedFormats={acceptedFormats}
-                    contentUrl={theme?.images.logoUrl}
+                    contentUrl={data?.images?.logoUrl}
                     label={''}
                     nameProp="logoUrl"
                     setValue={imagesSetValue}
@@ -588,7 +605,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormFileInput
                     acceptedFormats={['ico']}
-                    contentUrl={theme?.images.faviconUrl}
+                    contentUrl={data?.images?.faviconUrl}
                     label={''}
                     nameProp="faviconUrl"
                     setValue={imagesSetValue}
