@@ -113,8 +113,8 @@ export const useProgressForChild = (childId: string) => {
                   skillObs.value === ProgressSkillValues.Yes)),
           };
         }),
-        reportingPeriodStartDate: new Date(reportingPeriod!.startDate),
-        reportingPeriodEndDate: new Date(reportingPeriod!.endDate),
+        reportingPeriodStartDate: reportingPeriod!.startDate,
+        reportingPeriodEndDate: reportingPeriod!.endDate,
         reportingPeriodNumber: reportingPeriod!.reportNumber,
         ageInMonthsAtReport: !!child?.user?.dateOfBirth
           ? differenceInMonths(
@@ -128,10 +128,15 @@ export const useProgressForChild = (childId: string) => {
     return details;
   }, [allReports, allReportingPeriods]);
 
+  const currentReport = detailedReports.find(
+    (x) => x.childProgressReportPeriodId === currentReportingPeriod?.id
+  );
+
   return {
     child,
     detailedReports,
     currentReportingPeriod,
     currentAgeGroup,
+    currentReport,
   };
 };

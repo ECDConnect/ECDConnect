@@ -208,9 +208,17 @@ export const getCurrentProgressReportPeriod = () =>
         return undefined;
       }
 
+      const startDate = new Date(currentYearsReportingPeriods[index].startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(currentYearsReportingPeriods[index].endDate);
+      endDate.setHours(23, 59, 59, 0);
+
       return {
         reportNumber: index + 1,
-        ...currentYearsReportingPeriods[index],
+        id: currentYearsReportingPeriods[index].id,
+        startDate: startDate,
+        endDate: endDate,
       } as ProgressReportPeriod;
     }
   );
@@ -235,12 +243,20 @@ export const getAllProgressReportPeriods = () =>
               new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
           );
 
-        reportingPeriodsForYear?.forEach((value, index) =>
+        reportingPeriodsForYear?.forEach((value, index) => {
+          const startDate = new Date(value.startDate);
+          startDate.setHours(0, 0, 0, 0);
+
+          const endDate = new Date(value.endDate);
+          endDate.setHours(23, 59, 59, 0);
+
           sortedReportingPeriods.push({
-            ...value,
+            id: value.id,
+            startDate: startDate,
+            endDate: endDate,
             reportNumber: index + 1,
-          })
-        );
+          });
+        });
       });
 
       return sortedReportingPeriods;

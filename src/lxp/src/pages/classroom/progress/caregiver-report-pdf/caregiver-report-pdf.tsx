@@ -77,7 +77,7 @@ export const ProgressCaregiverReportPdf: React.FC<
     5 + (splitSkillsPage ? 1 : 0) + (splitWorkingOnPage ? 1 : 0);
 
   const ageGroup = getProgressAgeGroupForChild(
-    report.reportingPeriodEndDate.toDateString(),
+    report.reportingPeriodEndDate,
     child!,
     ageGroups
   );
