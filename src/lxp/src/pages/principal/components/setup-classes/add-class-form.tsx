@@ -66,7 +66,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
 
-  const { name, meetEveryday, userId } = useWatch({
+  const { name, meetEveryday, practitionerId } = useWatch({
     control: classFormControl,
   });
 
@@ -124,7 +124,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
   const isFormValid = () => {
     const meetingDays = getClassFormValues().meetingDays;
-    return meetingDays && meetingDays?.length > 1 && userId;
+    return meetingDays && meetingDays?.length > 1 && practitionerId;
   };
 
   const saveClassData = async () => {
