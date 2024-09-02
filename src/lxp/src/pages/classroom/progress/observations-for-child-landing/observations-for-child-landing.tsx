@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ObservationsForChildLandingIncomplete } from './observations-for-child-landing-incomplete';
 import { ObservationsForChildLandingComplete } from './observations-for-child-landing-complete';
+import ROUTES from '@/routes/routes';
 
 export type ObservationsForChildLandingState = {
   childId: string;
@@ -24,7 +25,9 @@ export const ObservationsForChildLanding: React.FC = () => {
   return (
     <BannerWrapper
       size={'small'}
-      onBack={() => history.goBack()}
+      onBack={() =>
+        history.replace(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
+      }
       title={`Report ${currentObservationPeriod?.reportNumber}`}
       subTitle={`${child?.user?.firstName} ${child?.user?.surname}`}
       renderOverflow
@@ -54,7 +57,7 @@ export const ObservationsForChildLanding: React.FC = () => {
           />
         )}
         {/* All observations completed for current report period, but we are still outside the window */}
-        {!!currentReport?.observationsCompleteDate && currentReport && (
+        {!!currentReport && !!currentReport.observationsCompleteDate && (
           <ObservationsForChildLandingComplete
             childId={routeState.childId}
             child={child!}
