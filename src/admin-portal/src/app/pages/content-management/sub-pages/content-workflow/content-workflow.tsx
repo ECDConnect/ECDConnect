@@ -18,6 +18,8 @@ import CreateStory from '../content-list/components/create-story/create-story';
 import CreateTheme from './components/create-theme/create-theme';
 import EditCategory from './components/edit-category/edit-category';
 import EditSkills from './components/edit-skills/edit-skills';
+import { ContentTypes } from '../../../../constants/content-management';
+import CreateResource from './components/create-resource/create-resource';
 
 export interface ContentWorkflowProps {
   contentView: ContentManagementView;
@@ -120,7 +122,7 @@ export default function ContentWorkflow({
             </div>
           </>
         );
-      case 'Theme':
+      case ContentTypes.THEME:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -140,6 +142,36 @@ export default function ContentWorkflow({
                         savedContent={savedContent}
                         defaultLanguageId={selectedLanguageId}
                         cancelCompare={() => setIsCompareMode(!isEdit)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case ContentTypes.CLASSROOMBUSINESSRESOURCE:
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateResource
+                        key={choosedSectionTitle}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        cancelEdit={() => goBack()}
+                        savedContent={savedContent}
+                        defaultLanguageId={selectedLanguageId}
+                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        choosedSectionTitle={choosedSectionTitle}
                       />
                     </div>
                   </div>
@@ -242,6 +274,7 @@ export default function ContentWorkflow({
             contentType?.name === ContentName.StoryBook ||
             contentType?.name === ContentName.Theme ||
             contentType?.name === ContentName.ProgressTrackingCategory ||
+            contentType?.name === ContentName.ClassroomBusinessResource ||
             contentType?.name === ContentName.ProgressTrackingSkill ? (
               handleNoDynamicForms(contentType?.name)
             ) : (
