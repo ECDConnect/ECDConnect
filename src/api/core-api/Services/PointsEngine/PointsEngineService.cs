@@ -152,13 +152,10 @@ namespace EcdLink.Api.CoreApi.Services
                 var itemsCount = _statementsRepo.GetAll().Where(x => x.IsActive 
                                                                 && x.UserId == userId 
                                                                 && x.Year == monthStart.Year 
-                                                                && x.Month == monthStart.Month 
                                                                 && (x.IncomeItems.Count > 0 || x.ExpenseItems.Count > 0)).Count();
 
                 pointsToDoItems.SavedIncomeOrExpense = itemsCount > 0 ? true : false;
             }
-
-            
 
             // 4.Gone to Community section of app at least once
             var communityProfile = _communityProfileRepo.GetByUserId(userId);
