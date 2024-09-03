@@ -53,14 +53,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (inviteToPortal)
             {
                 var userIsAdmin = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR);
-                var userIsTL = await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
                 if (userIsAdmin)
                 {
                     await notificationManager.SendAdminInvitationAsync(userToInvite, token);
                 } 
-                else if (userIsTL)
+                else 
                 {
-                    await notificationManager.SendTeamLeadInvitationAsync(userToInvite, token);
+                    await notificationManager.SendInvitationAsync(userToInvite, token);
                 }
             } else
             {
@@ -84,49 +83,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 try
                 {
                     var userToInvite = await userManager.FindByIdAsync(userId);
+
+                    var userIsAdmin = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR);
+
                     if (userToInvite == null)
                     {
                         result.Failed.Add($"{userId} : user not found for id");
                         continue;
                     }
-                    if (userToInvite != null && string.IsNullOrWhiteSpace(userToInvite.PhoneNumber))
+                    if (userToInvite != null && string.IsNullOrWhiteSpace(userToInvite.PhoneNumber) && !userIsAdmin)
                     {
                         result.Failed.Add($"{userId} : phone number not found for id");
                         continue;
                     }
-
+                    if (userToInvite != null && string.IsNullOrWhiteSpace(userToInvite.Email) && userIsAdmin)
+                    {
+                        result.Failed.Add($"{userId} : email not found for id");
+                        continue;
+                    }
                     var token = await invitationManager.GenerateTokenAsync(userToInvite);
                     if (string.IsNullOrWhiteSpace(token))
                     {
                         result.Failed.Add($"{userToInvite.Id} : token failure");
                         continue;
                     }
-
-                    var userIsAdmin = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR);
-                    var userIsTL = await userManager.IsInRoleAsync(userToInvite, RolesGG.TEAM_LEAD);
-                    var userIsHCW = await userManager.IsInRoleAsync(userToInvite, RolesGG.HEALTH_CARE_WORKER);
+                    
                     if (userIsAdmin)
                     {
                         await notificationManager.SendAdminInvitationAsync(userToInvite, token);
                     }
-                    else if (userIsTL)
-                    {
-                        await notificationManager.SendTeamLeadInvitationAsync(userToInvite, token);
-                    }
-                    else if (userIsHCW)
+                    else 
                     {
                         await notificationManager.SendInvitationAsync(userToInvite, token);
                     }
-                    else
-                    {
-                        await notificationManager.SendInvitationAsync(userToInvite, token);
-                    }
+                    
                     await Task.Delay(1000);
                     result.Success.Add(userToInvite.Id.ToString());
                 }
                 catch
                 {
-                    result.Failed.Add($"{userId} : failure on sending sms");
+                    result.Failed.Add($"{userId} : failure on sending invitation");
                 }
             }
 
