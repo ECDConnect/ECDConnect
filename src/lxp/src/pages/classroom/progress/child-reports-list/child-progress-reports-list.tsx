@@ -1,4 +1,4 @@
-import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
+import { Alert, BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -21,8 +21,13 @@ export const ChildProgressReportsList: React.FC = () => {
   const { state: routeState } = useLocation<ChildProgressReportsList>();
 
   const { childId } = routeState;
-  const { child, currentAgeGroup, currentReportingPeriod, detailedReports } =
-    useProgressForChild(childId);
+  const {
+    child,
+    currentAgeGroup,
+    currentReportingPeriod,
+    detailedReports,
+    ageInMonths,
+  } = useProgressForChild(childId);
 
   useEffect(() => {
     if (!isOnline) {
@@ -78,8 +83,8 @@ export const ChildProgressReportsList: React.FC = () => {
             </div>
           )}
         {/* NO REPORTS */}
-        {!!currentReportingPeriod &&
-          !!currentAgeGroup &&
+        {!!ageInMonths &&
+          ageInMonths <= 60 &&
           (!detailedReports || detailedReports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography
@@ -109,16 +114,26 @@ export const ChildProgressReportsList: React.FC = () => {
                   />
                 </div>
               </div>
-              <Button
-                onClick={() => trackProgress()}
-                className="mt-auto w-full"
-                size="small"
-                color="quatenary"
-                type="filled"
-                icon="PencilIcon"
-                text="Start tracking progress"
-                textColor="white"
-              />
+              <div className="mt-auto">
+                {!currentReportingPeriod && (
+                  <Alert
+                    type="info"
+                    title="All reporting periods for the year are closed. You can keep tracking progress next year."
+                  />
+                )}
+                {!!currentReportingPeriod && (
+                  <Button
+                    onClick={() => trackProgress()}
+                    className="w-full"
+                    size="small"
+                    color="quatenary"
+                    type="filled"
+                    icon="PencilIcon"
+                    text="Start tracking progress"
+                    textColor="white"
+                  />
+                )}
+              </div>
             </div>
           )}
 
@@ -132,42 +147,51 @@ export const ChildProgressReportsList: React.FC = () => {
               text={`${child?.user?.firstName}'s reports`}
             />
             <ProgressReportsList childId={childId} reports={detailedReports} />
-            {!!detailedReports && !!detailedReports.length && (
-              <Button
-                onClick={() =>
-                  history.push(ROUTES.PROGRESS_SHARE_REPORT, {
-                    childId: routeState.childId,
-                  })
-                }
-                className="mt-auto w-full"
-                size="small"
-                color="quatenary"
-                type={'filled'}
-                textColor={'white'}
-                icon="ShareIcon"
-                text="Share a report"
-              />
-            )}
-            {!!detailedReports && (
-              <Button
-                onClick={() => trackProgress()}
-                className="mt-4 w-full"
-                size="small"
-                color="quatenary"
-                type={
-                  !!detailedReports && !!detailedReports.length
-                    ? 'outlined'
-                    : 'filled'
-                }
-                textColor={
-                  !!detailedReports && !!detailedReports.length
-                    ? 'quatenary'
-                    : 'white'
-                }
-                icon="ArrowCircleRightIcon"
-                text="Track progress"
-              />
-            )}
+
+            <div className="mt-auto">
+              {!currentReportingPeriod && (
+                <Alert
+                  type="info"
+                  title="All reporting periods for the year are closed. You can keep tracking progress next year."
+                />
+              )}
+              {!!detailedReports && !!detailedReports.length && (
+                <Button
+                  onClick={() =>
+                    history.push(ROUTES.PROGRESS_SHARE_REPORT, {
+                      childId: routeState.childId,
+                    })
+                  }
+                  className="mt-auto w-full"
+                  size="small"
+                  color="quatenary"
+                  type={'filled'}
+                  textColor={'white'}
+                  icon="ShareIcon"
+                  text="Share a report"
+                />
+              )}
+              {!!currentReportingPeriod && (
+                <Button
+                  onClick={() => trackProgress()}
+                  className="w-full"
+                  size="small"
+                  color="quatenary"
+                  type={
+                    !!detailedReports && !!detailedReports.length
+                      ? 'outlined'
+                      : 'filled'
+                  }
+                  textColor={
+                    !!detailedReports && !!detailedReports.length
+                      ? 'quatenary'
+                      : 'white'
+                  }
+                  icon="ArrowCircleRightIcon"
+                  text="Track progress"
+                />
+              )}
+            </div>
           </div>
         )}
       </div>
