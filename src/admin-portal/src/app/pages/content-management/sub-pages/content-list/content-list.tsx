@@ -344,7 +344,6 @@ export default function ContentList({
         ...item,
       }));
 
-      console.log('moreInforItems', moreInforItems);
       if (selectedTab === 1) {
         setTableData(moreInforItems);
       } else if (selectedTab === 2) {
