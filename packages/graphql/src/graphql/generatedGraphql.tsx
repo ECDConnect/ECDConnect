@@ -770,14 +770,26 @@ export type BasePractitionerModel = {
   userId: Scalars['UUID'];
 };
 
+export type BaseProvinceModel = {
+  __typename?: 'BaseProvinceModel';
+  description?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+};
+
 export type BaseSiteAddressModel = {
   __typename?: 'BaseSiteAddressModel';
   addressLine1?: Maybe<Scalars['String']>;
   addressLine2?: Maybe<Scalars['String']>;
   addressLine3?: Maybe<Scalars['String']>;
+  area?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  latitude?: Maybe<Scalars['String']>;
+  longitude?: Maybe<Scalars['String']>;
+  municipality?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   postalCode?: Maybe<Scalars['String']>;
+  province?: Maybe<BaseProvinceModel>;
+  provinceId?: Maybe<Scalars['UUID']>;
   ward?: Maybe<Scalars['String']>;
 };
 

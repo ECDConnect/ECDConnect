@@ -55,6 +55,7 @@ import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { useTenant } from '@/hooks/useTenant';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
+import { formatAddress } from '@/components/address-map/address-map';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -360,7 +361,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     ) {
       stackedActionList.push({
         title: 'Location',
-        subTitle: classroom?.siteAddress?.addressLine1,
+        subTitle: !!classroom?.siteAddress
+          ? formatAddress(classroom.siteAddress as any)
+          : '',
         switchTextStyles: true,
         actionName: isPrincipal
           ? classroom?.siteAddress

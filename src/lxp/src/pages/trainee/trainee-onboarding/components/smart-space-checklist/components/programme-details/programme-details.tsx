@@ -233,8 +233,14 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
       addressLine1: editedAddress || '',
       addressLine2: '',
       addressLine3: '',
+      area: '',
+      latitude: null,
+      longitude: null,
+      municipality: '',
       name: '',
       postalCode: '',
+      provinceId: '',
+      province: null,
       ward: '',
     };
 
