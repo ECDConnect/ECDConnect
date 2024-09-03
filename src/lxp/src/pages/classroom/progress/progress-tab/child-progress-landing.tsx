@@ -66,40 +66,65 @@ export const ChildProgressLanding: React.FC = () => {
     hasPermissionToManageChildren || !!practitioner?.isPrincipal;
 
   const handleContinueTrackingProgress = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          customIcon={<RobotIcon className="mb-6" />}
-          importantText="How would you like to track progress today?"
-          detailText="Would you prefer to track progress for a specific child, or by developmental category?"
-          actionButtons={[
-            {
-              text: 'Individual child',
-              textColour: 'white',
-              colour: 'quatenary',
-              type: 'filled',
-              onClick: () => {
-                history.push(ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK);
-                submit();
+    if (!currentReportingPeriod) {
+      dialog({
+        position: DialogPosition.Middle,
+        render: (submit, cancel) => (
+          <ActionModal
+            customIcon={<RobotIcon className="mb-6" />}
+            importantText="There are no reports coming up!"
+            detailText="Looks like all your progress reports are done for the year"
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  cancel();
+                },
+                leadingIcon: 'XIcon',
               },
-              leadingIcon: 'UserIcon',
-            },
-            {
-              text: 'Category',
-              textColour: 'quatenary',
-              colour: 'quatenary',
-              type: 'outlined',
-              onClick: () => {
-                submit();
-                history.push(ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK);
+            ]}
+          />
+        ),
+      });
+    } else {
+      dialog({
+        position: DialogPosition.Middle,
+        render: (submit, cancel) => (
+          <ActionModal
+            customIcon={<RobotIcon className="mb-6" />}
+            importantText="How would you like to track progress today?"
+            detailText="Would you prefer to track progress for a specific child, or by developmental category?"
+            actionButtons={[
+              {
+                text: 'Individual child',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  history.push(ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK);
+                  submit();
+                },
+                leadingIcon: 'UserIcon',
               },
-              leadingIcon: 'ClipboardListIcon',
-            },
-          ]}
-        />
-      ),
-    });
+              {
+                text: 'Category',
+                textColour: 'quatenary',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => {
+                  submit();
+                  history.push(ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK);
+                },
+                leadingIcon: 'ClipboardListIcon',
+              },
+            ]}
+          />
+        ),
+      });
+    }
   }, [dialog]);
 
   return (
