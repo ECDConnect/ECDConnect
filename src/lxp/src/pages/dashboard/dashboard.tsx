@@ -38,10 +38,7 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 import { staticDataThunkActions } from '@store/static-data';
@@ -56,7 +53,6 @@ import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
-import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
@@ -480,7 +476,11 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (isOnline) {
       initStaticStoreSetup();
-      if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
+      if (
+        dashboardNotification?.isNew &&
+        practitioner?.progress! >= 2 &&
+        isFromCompleteProfile
+      ) {
         appDispatch(notificationActions.resetFrontendNotificationState());
       }
     }
