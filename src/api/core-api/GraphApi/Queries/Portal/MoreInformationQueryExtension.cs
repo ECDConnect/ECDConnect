@@ -6,7 +6,7 @@ using HotChocolate.Types;
 using System;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class MoreInformationQueryExtension
