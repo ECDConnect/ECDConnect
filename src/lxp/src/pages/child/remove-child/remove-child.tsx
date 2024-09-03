@@ -114,11 +114,6 @@ export const RemoveChild: React.FC = () => {
         child: updatedChild,
         id: String(updatedChild.id),
       })
-    ).then(() =>
-      // TODO: Migrate this action to be fully handled by the backend
-      appDispatch(
-        childrenThunkActions.calculateChildrenRegistrationRemoval(true)
-      )
     );
 
     showMessage({
