@@ -17,6 +17,16 @@ export enum ContentConsentTypeEnum {
   PersonalInformation = 'Personal Information',
 }
 
+export enum MoreInformationTypeEnum {
+  Points = 'Points',
+  IncomeStatements = 'Income statements',
+  TakingChildAttendance = 'Taking Child Attendance',
+  IdeasForMakingAProfit = 'Ideas for making a profit',
+  LearningThroughPlay = 'Learning through play',
+  TheDailyRoutine = 'The daily routine',
+  DevelopingChildrenHolistically = 'Developing children holistically',
+}
+
 export enum ContentTypeEnum {
   ProgrammeRoutine = 1,
   ProgrammeRoutineItem = 2,
