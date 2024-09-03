@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public DateTime? Date { get; set; }
         public string Description { get; set; }
         public double Amount { get; set; }
-        public int InvoiceNr { get; set; }
+        public string InvoiceNr { get; set; }
         public string PhotoProof { get; set; }
         public string Type { get; set; }
 
@@ -35,6 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
     {
         public string Name { get; set; }
         public string PhotoProof { get; set; }
+        public string InvoiceNr { get; set; }
     }
 
     public class StatementReport
