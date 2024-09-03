@@ -27,6 +27,7 @@ import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.pn
 import {
   IncomeStatementDto,
   LocalStorageKeys,
+  MoreInformationTypeEnum,
   getPreviousMonth,
 } from '@ecdlink/core';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
@@ -45,9 +46,13 @@ export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
   const statements = useSelector(statementsSelectors.getIncomeStatements);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  
-  const downloadsMessageDismissed = useSelector(statementsSelectors.getDownloadsMessageDismissed);
-  const balanceMessageDismissed = useSelector(statementsSelectors.getBalanceMessageDismissed);
+
+  const downloadsMessageDismissed = useSelector(
+    statementsSelectors.getDownloadsMessageDismissed
+  );
+  const balanceMessageDismissed = useSelector(
+    statementsSelectors.getBalanceMessageDismissed
+  );
 
   const {
     setState,
@@ -340,7 +345,8 @@ export const SubmitIncomeStatements: React.FC = () => {
                 </tbody>
               </table>
 
-              {!balanceMessageDismissed && hasLastTwoMonthsStatements &&
+              {!balanceMessageDismissed &&
+                hasLastTwoMonthsStatements &&
                 lastMonthBalance < 0 &&
                 previousMonthBalance < 0 && (
                   <Alert
@@ -364,13 +370,14 @@ export const SubmitIncomeStatements: React.FC = () => {
                         )}
                       </div>
                     }
-                    onDismiss={() => appDispatch(
-                      statementsActions.dismissBalanceMessage()
-                    )}
+                    onDismiss={() =>
+                      appDispatch(statementsActions.dismissBalanceMessage())
+                    }
                   />
                 )}
 
-              {!balanceMessageDismissed && hasLastTwoMonthsStatements &&
+              {!balanceMessageDismissed &&
+                hasLastTwoMonthsStatements &&
                 lastMonthBalance > 0 &&
                 previousMonthBalance > 0 && (
                   <Alert
@@ -401,10 +408,9 @@ export const SubmitIncomeStatements: React.FC = () => {
                         />
                       </div>
                     }
-                    
-                    onDismiss={() => appDispatch(
-                      statementsActions.dismissBalanceMessage()
-                    )}
+                    onDismiss={() =>
+                      appDispatch(statementsActions.dismissBalanceMessage())
+                    }
                   />
                 )}
 
@@ -422,10 +428,10 @@ export const SubmitIncomeStatements: React.FC = () => {
                         className="h-6 w-6"
                       />
                     </div>
-                  }                  
-                  onDismiss={() => appDispatch(
-                    statementsActions.dismissDownloadsMessage()
-                  )}
+                  }
+                  onDismiss={() =>
+                    appDispatch(statementsActions.dismissDownloadsMessage())
+                  }
                 />
               )}
             </div>
@@ -468,7 +474,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       <Dialog fullScreen visible={isLearnMore} position={DialogPosition.Full}>
         <InfoPage
           title="Ideas for making a profit"
-          section="Business - Money tab, Learn more"
+          section={MoreInformationTypeEnum.IdeasForMakingAProfit}
           childrenPosition="bottom"
           onClose={() => setIsLearnMore(false)}
         />

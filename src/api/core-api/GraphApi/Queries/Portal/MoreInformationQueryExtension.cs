@@ -28,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 languageId = localeService.GetLocale(locale)?.Id ?? Guid.Empty;
             }
 
-            return contentRepo.GetByValueKey("MoreInformation", "section", section, languageId);
+            return contentRepo.GetByValueKey("MoreInformation", "type", section, languageId);
         }
     }
 }

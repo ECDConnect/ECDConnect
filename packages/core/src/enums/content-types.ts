@@ -1,15 +1,30 @@
+// the fieldname to retrieve consent is 'name'
 export enum ContentConsentTypeEnum {
-  TermsAndConditions = 'Terms and Conditions',
-  DataPermissionsAgreement = 'Data Permissions Agreement',
   PersonalInformationAgreement = 'Personal Information Agreement',
   ConsentAgreement = 'Consent Agreement',
   CommitmentAgreement = 'Commitment Agreement',
   IndemnityAgreement = 'Indemnity Agreement',
-  PhotoPermissions = 'Photo Permissions',
   LearningThroughPlay = 'Learning Through Play',
-  PermissionToShare = 'Permission to Share Information',
   FranchiseeAgreement = 'Franchisee Agreement',
   ChildProtection = 'SmartStarter Information Sheet on Child Protection',
+  IndividualTermsAndConditions = 'Individual Ts & Cs',
+  OrganisationalTermsAndConditions = 'Organisational Ts & Cs',
+  AdminTermsAndConditions = 'Admin terms and conditions',
+  DataPermissionsAgreement = 'Data Permissions Agreement',
+  TermsAndConditions = 'Terms & Conditions',
+  PermissionToShare = 'Permission to Share Information',
+  PhotoPermissions = 'Photo Permissions',
+  PersonalInformation = 'Personal Information',
+}
+
+export enum MoreInformationTypeEnum {
+  Points = 'Points',
+  IncomeStatements = 'Income statements',
+  TakingChildAttendance = 'Taking Child Attendance',
+  IdeasForMakingAProfit = 'Ideas for making a profit',
+  LearningThroughPlay = 'Learning through play',
+  TheDailyRoutine = 'The daily routine',
+  DevelopingChildrenHolistically = 'Developing children holistically',
 }
 
 export enum ContentTypeEnum {
@@ -29,10 +44,5 @@ export enum ContentTypeEnum {
   Consent = 14,
   Connect = 27,
   ConnectItem = 28,
-  Natal = 29,
-  NatalInfo = 30,
-  NatalVideo = 31,
-  NatalGraphic = 32,
-  NatalHealth = 33,
-  DangerSign = 35,
+  MoreInformation = 15,
 }
