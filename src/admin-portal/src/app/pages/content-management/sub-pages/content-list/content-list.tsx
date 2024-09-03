@@ -343,12 +343,9 @@ export default function ContentList({
       const moreInforItems = contentData[getAllCall].map((item: any) => ({
         ...item,
       }));
+
       if (selectedTab === 1) {
-        setTableData(
-          moreInforItems?.filter(
-            (item) => item?.type === 'Points' || item?.type === 'Info page'
-          )
-        );
+        setTableData(moreInforItems);
       } else if (selectedTab === 2) {
         setTableData(moreInforItems);
       } else if (selectedTab === 3) {
