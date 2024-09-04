@@ -5536,7 +5536,7 @@ export type IncomeExpensePdfDataModel = {
   child?: Maybe<Scalars['String']>;
   date?: Maybe<Scalars['DateTime']>;
   description?: Maybe<Scalars['String']>;
-  invoiceNr: Scalars['Int'];
+  invoiceNr?: Maybe<Scalars['String']>;
   photoProof?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
 };

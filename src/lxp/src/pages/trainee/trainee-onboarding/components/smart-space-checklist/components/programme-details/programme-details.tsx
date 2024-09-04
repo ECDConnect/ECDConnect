@@ -481,12 +481,12 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
               color={'secondary'}
               className={'my-3'}
               underline={true}
-              onClick={() => {
-                displayArticle(
-                  ContentConsentTypeEnum.ChildProtection,
-                  'Child Protection'
-                );
-              }}
+              // onClick={() => {
+              //   displayArticle(
+              //     ContentConsentTypeEnum.ChildProtection,
+              //     'Child Protection'
+              //   );
+              // }}
             />
           </div>
         </div>

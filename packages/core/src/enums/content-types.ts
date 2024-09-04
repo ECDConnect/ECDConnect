@@ -1,12 +1,6 @@
 // the fieldname to retrieve consent is 'name'
 export enum ContentConsentTypeEnum {
   PersonalInformationAgreement = 'Personal Information Agreement',
-  ConsentAgreement = 'Consent Agreement',
-  CommitmentAgreement = 'Commitment Agreement',
-  IndemnityAgreement = 'Indemnity Agreement',
-  LearningThroughPlay = 'Learning Through Play',
-  FranchiseeAgreement = 'Franchisee Agreement',
-  ChildProtection = 'SmartStarter Information Sheet on Child Protection',
   IndividualTermsAndConditions = 'Individual Ts & Cs',
   OrganisationalTermsAndConditions = 'Organisational Ts & Cs',
   AdminTermsAndConditions = 'Admin terms and conditions',
@@ -14,7 +8,12 @@ export enum ContentConsentTypeEnum {
   TermsAndConditions = 'Terms & Conditions',
   PermissionToShare = 'Permission to Share Information',
   PhotoPermissions = 'Photo Permissions',
-  PersonalInformation = 'Personal Information',
+  // ConsentAgreement = 'Consent Agreement',
+  // CommitmentAgreement = 'Commitment Agreement',
+  // IndemnityAgreement = 'Indemnity Agreement',
+  // LearningThroughPlay = 'Learning Through Play',
+  // FranchiseeAgreement = 'Franchisee Agreement',
+  // ChildProtection = 'SmartStarter Information Sheet on Child Protection',
 }
 
 export enum MoreInformationTypeEnum {

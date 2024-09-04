@@ -24,4 +24,6 @@ export const APIs = {
   verifyPrincipalToken: 'api/invitation/verify-principal-token',
   addTenantSetupInfo: 'api/setup/add-tenant-setup-info',
   validateNewTenant: 'api/setup/validate-new-tenant',
+  fetchAllLanguages: 'api/setup/fetch-available-languages',
+  getConsentForPortal: 'api/setup/get-consent-for-portal',
 };

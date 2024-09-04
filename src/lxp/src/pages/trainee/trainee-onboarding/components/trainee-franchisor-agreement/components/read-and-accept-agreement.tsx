@@ -128,13 +128,13 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
           />
         </div>
       </div>
-      <Article
+      {/* <Article
         visible={viewPermissionToShare}
         consentEnumType={ContentConsentTypeEnum.FranchiseeAgreement}
         onClose={function (): void {
           setViewPermissionToShare(false);
         }}
-      />
+      /> */}
     </>
   );
 };
