@@ -1372,29 +1372,29 @@ export const Dashboard: React.FC = () => {
             notification={dashboardNotification}
           />
           {totalYearPoints &&
-            totalYearPoints > 10 &&
-            !!pointsScoreProps &&
-            !isCoach &&
-            getCurrentPointsToDo === 4 && (
-              <ScoreCard
-                className="mt-5 mb-1 h-20"
-                progressBarClassName="flex pt-2"
-                mainText={pointsScoreProps.mainText}
-                hint={pointsScoreProps?.hint}
-                currentPoints={pointsScoreProps.currentPoints}
-                maxPoints={pointsScoreProps.maxPoints}
-                onClick={pointsScoreProps.onClick}
-                barBgColour={pointsScoreProps.barBgColour}
-                barColour={pointsScoreProps.barColour}
-                bgColour={pointsScoreProps.bgColour}
-                image={pointsScoreProps.image}
-                textColour={pointsScoreProps.textColour}
-                textPosition={pointsScoreProps.textPosition}
-              />
-            )}
-          {(getCurrentPointsToDo < 4 ||
-            !totalYearPoints ||
-            (totalYearPoints && totalYearPoints <= 10)) && (
+          totalYearPoints > 10 &&
+          !!pointsScoreProps &&
+          !isCoach &&
+          getCurrentPointsToDo === 4 ? (
+            <ScoreCard
+              className="mt-5 mb-1 h-20"
+              progressBarClassName="flex pt-2"
+              mainText={pointsScoreProps.mainText}
+              hint={pointsScoreProps?.hint}
+              currentPoints={pointsScoreProps.currentPoints}
+              maxPoints={pointsScoreProps.maxPoints}
+              onClick={pointsScoreProps.onClick}
+              barBgColour={pointsScoreProps.barBgColour}
+              barColour={pointsScoreProps.barColour}
+              bgColour={pointsScoreProps.bgColour}
+              image={pointsScoreProps.image}
+              textColour={pointsScoreProps.textColour}
+              textPosition={pointsScoreProps.textPosition}
+            />
+          ) : null}
+          {getCurrentPointsToDo < 4 ||
+          !totalYearPoints ||
+          (totalYearPoints && totalYearPoints <= 10) ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 w-full py-6"
@@ -1410,7 +1410,7 @@ export const Dashboard: React.FC = () => {
               hint={renderTodoText}
               textPosition="left"
             />
-          )}
+          ) : null}
           {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
