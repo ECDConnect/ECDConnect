@@ -8,6 +8,7 @@ import { WalkthroughModalProps } from './types';
 import { useTranslation } from 'react-i18next';
 import { LanguageDto } from '@ecdlink/core';
 import { LanguageCode } from '@/i18n/types';
+import { useAppContext } from '@/walkthrougContext';
 
 export const WalkthroughModal = ({
   onStart,
@@ -16,6 +17,7 @@ export const WalkthroughModal = ({
   const [locale, setLocale] = useState<string>('en-za');
 
   const { i18n } = useTranslation();
+  const { setState } = useAppContext();
 
   const languages = useSelector(staticDataSelectors.getLanguages);
 
@@ -30,6 +32,7 @@ export const WalkthroughModal = ({
   );
 
   const onChange = (item: string) => {
+    setState({ language: item });
     setLocale(item);
     i18n.changeLanguage(item);
   };

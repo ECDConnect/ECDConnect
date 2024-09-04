@@ -205,7 +205,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 StipendType = practitioner.StipendType,
                 Permissions = practitioner.User.UserPermissions.Select(x => new UserPermissionModel(x)).ToList(),
                 ClickedCommunityTab = practitioner.ClickedCommunityTab,
-                CommunitySectionViewDate = practitioner.CommunitySectionViewDate
+                CommunitySectionViewDate = practitioner.CommunitySectionViewDate,
+                ProgressWalkthroughComplete = practitioner.ProgressWalkthroughComplete
             };
 
             practitionerRecord.Absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString());
@@ -854,6 +855,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return true;
         }
 
+        public void UpdatePractitioneProgressWalkthrough(string userId)
+        {
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
+            practitioner.ProgressWalkthroughComplete = true;
+            _practiGenericRepo.Update(practitioner);
+        }
 
         #endregion
 

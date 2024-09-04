@@ -22,6 +22,7 @@ namespace ECDLink.SmartStart.Services.Interfaces
         public PractitionerTimeline GetPractitionerTimeline(string userId);
         public Task<bool> DeActivatePractitionerAsync(string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails);
         public bool UpdatePractitionerBusinessWalkthrough(string userId);
+        void UpdatePractitioneProgressWalkthrough(string userId);
         #endregion
 
         #region Trainees

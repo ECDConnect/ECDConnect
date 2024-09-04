@@ -1,14 +1,8 @@
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 import { ChildProgressDetailedReport } from '@/models/progress/child-progress-report';
-import { ChildProgressSkill } from '@/models/progress/progress-skill';
-import { useAppDispatch } from '@/store';
 import { childrenSelectors } from '@/store/children';
 import { classroomsSelectors } from '@/store/classroom';
-import {
-  progressTrackingActions,
-  progressTrackingSelectors,
-  progressTrackingThunkActions,
-} from '@/store/progress-tracking';
+import { progressTrackingSelectors } from '@/store/progress-tracking';
 import {
   replaceSkillText as baseReplaceSkillText,
   getProgressAgeGroupForChild,

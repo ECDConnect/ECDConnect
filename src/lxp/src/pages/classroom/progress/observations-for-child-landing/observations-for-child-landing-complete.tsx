@@ -17,10 +17,12 @@ import { ChildProgressDetailedReport } from '@/models/progress/child-progress-re
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
+import { useAppContext } from '@/walkthrougContext';
 
 export type ObservationsForChildLandingCompleteProps = {
   childId: string;
-  child: ChildDto;
+  childFirstName: string;
+  ageInMonths: number;
   currentReportingPeriod: ProgressReportPeriod;
   currentReport: ChildProgressDetailedReport;
   currentAgeGroup: ProgressTrackingAgeGroupDto | undefined;
@@ -30,12 +32,17 @@ export const ObservationsForChildLandingComplete: React.FC<
   ObservationsForChildLandingCompleteProps
 > = ({
   childId,
-  child,
+  childFirstName,
+  ageInMonths,
   currentAgeGroup,
   currentReportingPeriod,
   currentReport,
 }) => {
   const history = useHistory();
+  const {
+    state: { run: isWalkthrough },
+  } = useAppContext();
+
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories()
   );
@@ -104,11 +111,6 @@ export const ObservationsForChildLandingComplete: React.FC<
       });
   }, [categories, subCategories, currentReport]);
 
-  const ageInMonths =
-    !!child.user && !!child.user.dateOfBirth
-      ? differenceInMonths(new Date(), new Date(child.user!.dateOfBirth!))
-      : 0;
-
   const currentObservationsAllPositive = currentReport.skillObservations.every(
     (x) => x.isPositive
   );
@@ -121,7 +123,7 @@ export const ObservationsForChildLandingComplete: React.FC<
           type="h3"
           weight="bold"
           color="white"
-          text={`You have completed ${child.user?.firstName}'s progress observations!`}
+          text={`You have completed ${childFirstName}'s progress observations!`}
         />
       </Card>
       {isBeforePeriod && (
@@ -133,7 +135,7 @@ export const ObservationsForChildLandingComplete: React.FC<
             'd MMMM'
           )}`}
           list={[
-            `Keep observing ${child.user?.firstName} & tap "See completed sections" to edit you observations.`,
+            `Keep observing ${childFirstName} & tap "See completed sections" to edit you observations.`,
           ]}
         />
       )}
@@ -169,56 +171,64 @@ export const ObservationsForChildLandingComplete: React.FC<
           }
         />
       )}
-      {(isBeforePeriod || currentReport.unknownPercentage >= 25) && (
+      {!isWalkthrough &&
+        (isBeforePeriod || currentReport.unknownPercentage >= 25) && (
+          <Button
+            onClick={() =>
+              history.push(ROUTES.PROGRESS_OBSERVATIONS, {
+                childId: childId,
+              })
+            }
+            className="mt-auto mb-4 w-full"
+            size="normal"
+            color="quatenary"
+            type="filled"
+            icon="ArrowCircleRightIcon"
+            text="Keep tracking progress"
+            textColor="white"
+          />
+        )}
+      <div id="reportButtons">
+        {(isWalkthrough ||
+          (!isBeforePeriod && currentReport.unknownPercentage < 25)) && (
+          <Button
+            onClick={() => {
+              if (!isWalkthrough) {
+                history.push(ROUTES.PROGRESS_CREATE_REPORT, {
+                  childId: childId,
+                });
+              }
+            }}
+            className="mt-auto mb-4 w-full"
+            size="normal"
+            color="quatenary"
+            type="filled"
+            icon="DocumentReportIcon"
+            text="Create caregiver report"
+            textColor="white"
+          />
+        )}
         <Button
-          onClick={() =>
-            history.push(ROUTES.PROGRESS_OBSERVATIONS, {
-              childId: childId,
-            })
-          }
-          className="mt-auto mb-4 w-full"
+          onClick={() => {
+            if (!isWalkthrough) setShowDetails(!showDetails);
+          }}
+          className="mb-4 w-full"
           size="normal"
           color="quatenary"
-          type="filled"
-          icon="ArrowCircleRightIcon"
-          text="Keep tracking progress"
-          textColor="white"
+          type="outlined"
+          icon={showDetails ? 'EyeOffIcon' : 'EyeIcon'}
+          text={showDetails ? 'Hide details' : 'Show details'}
+          textColor="quatenary"
         />
-      )}
-      {!isBeforePeriod && currentReport.unknownPercentage < 25 && (
-        <Button
-          onClick={() =>
-            history.push(ROUTES.PROGRESS_CREATE_REPORT, {
-              childId: childId,
-            })
-          }
-          className="mt-auto mb-4 w-full"
-          size="normal"
-          color="quatenary"
-          type="filled"
-          icon="DocumentReportIcon"
-          text="Create caregiver report"
-          textColor="white"
-        />
-      )}
-      <Button
-        onClick={() => setShowDetails(!showDetails)}
-        className="mb-4 w-full"
-        size="normal"
-        color="quatenary"
-        type="outlined"
-        icon={showDetails ? 'EyeOffIcon' : 'EyeIcon'}
-        text={showDetails ? 'Hide details' : 'Show details'}
-        textColor="quatenary"
-      />
-      {showDetails && (
+      </div>
+      {!isWalkthrough && showDetails && (
         <div className="pb-4">
           <Divider dividerType="dashed" className="mb-4" />
           <Typography
             type="h3"
             color="textDark"
             className="mb-4"
-            text={`What you are working on with ${child.user?.firstName}`}
+            text={`What you are working on with ${childFirstName}`}
           />
 
           {/* All positive answers, green success card */}
@@ -229,14 +239,14 @@ export const ObservationsForChildLandingComplete: React.FC<
                 <Typography
                   type="h3"
                   color="tertiary"
-                  text={`Wonderful! ${child.user?.firstName} is ${ageInMonths} months old and can do everything in the ${currentAgeGroup?.description} progress tracker!`}
+                  text={`Wonderful! ${childFirstName} is ${ageInMonths} months old and can do everything in the ${currentAgeGroup?.description} progress tracker!`}
                 />
               </div>
               <Divider dividerType="dashed" className="mt-2 mb-2" />
               <Typography
                 type="body"
                 color="textDark"
-                text={`Keep observing ${child.user?.firstName} and supporting their learning.`}
+                text={`Keep observing ${childFirstName} and supporting their learning.`}
               />
               <Typography
                 type="body"
@@ -456,7 +466,7 @@ export const ObservationsForChildLandingComplete: React.FC<
             <Alert
               type={'info'}
               messageColor="textDark"
-              title={`Keep observing ${child.user?.firstName} and take note of which of these things ${child.user?.firstName} can or does do!`}
+              title={`Keep observing ${childFirstName} and take note of which of these things ${childFirstName} can or does do!`}
             />
           )}
           <Button

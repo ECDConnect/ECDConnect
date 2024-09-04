@@ -87,6 +87,7 @@ import { ChildrenActions } from '@/store/children/children.actions';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
+import { ProgressWalkthroughStart } from '@/pages/classroom/progress/walkthrough/progress-walkthrough-start';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -573,6 +574,9 @@ export const ChildProfile: React.FC = () => {
     });
   };
 
+  const [showProgressWalkthroughStart, setShowProgressWalkthroughStart] =
+    useState<boolean>(false);
+
   const options = useMemo((): ListItemProps[] => {
     const attendancePercentage = attendanceReport?.attendancePercentage;
 
@@ -625,7 +629,10 @@ export const ChildProfile: React.FC = () => {
         dividerType: 'dashed',
         withPaddingY: true,
         onButtonClick: () => {
-          if (!isReportWindowSet) {
+          if (!practitioner?.progressWalkthroughComplete) {
+            // Show dialog to initialise walkthrough
+            setShowProgressWalkthroughStart(true);
+          } else if (!isReportWindowSet) {
             showNoReportingPeriodsDialog();
           } else {
             history.push(ROUTES.PROGRESS_REPORT_LIST, {
@@ -863,6 +870,12 @@ export const ChildProfile: React.FC = () => {
         </div>
       </Dialog>
       <div id="lastStep"></div>
+      {showProgressWalkthroughStart && (
+        <ProgressWalkthroughStart
+          childId={childId}
+          onClose={() => setShowProgressWalkthroughStart(false)}
+        />
+      )}
     </div>
   );
 };
