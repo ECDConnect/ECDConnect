@@ -540,7 +540,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <p className="px-4 text-xl">Light version (svg, png, jpeg):</p>
                 <p className="px-4 text-xl">Favicon (ico):</p>
               </div>
-              <div className="mt-2 grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
+              <div className="pointer-events-none mt-2 grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
                 <div>
                   <FormFileInput
                     acceptedFormats={acceptedFormats}
