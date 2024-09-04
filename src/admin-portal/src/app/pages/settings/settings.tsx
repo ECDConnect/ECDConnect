@@ -299,11 +299,7 @@ export function Settings() {
             </Button>
           </div>
         </div>
-        <SettingsTheme
-          tenant={tenant}
-          overRideTheme={overRideTheme}
-          defaultTheme={DefaultTheme}
-        />
+        <SettingsTheme tenant={tenant} defaultTheme={DefaultTheme} />
       </div>
       <Dialog
         className="absolute w-6/12"

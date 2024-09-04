@@ -1,14 +1,10 @@
 import { useMutation } from '@apollo/client';
 import {
-  applyTheme,
   DefaultTheme,
   DefaultThemeType,
-  NOTIFICATION,
-  PermissionEnum,
   ThemeModel,
   useNotifications,
-  useTheme,
-  WhiteLabelTheme,
+  NOTIFICATION,
 } from '@ecdlink/core';
 import { FileTypeEnum, FileUpload, UpdateTheme } from '@ecdlink/graphql';
 import { Typography, Button } from '@ecdlink/ui';
@@ -16,7 +12,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import ContentLoader from '../../../../components/content-loader/content-loader';
-import { useUser } from '../../../../hooks/useUser';
 import {
   initialThemeColours,
   themeColoursScheme,
@@ -32,26 +27,21 @@ import {
 import FormColorField from '../../../../components/form-color-field/form-color-field';
 import { SaveIcon } from '@heroicons/react/solid';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
-import { Storage } from '@capacitor/storage';
 import { TenantContextType } from '../../../../hooks/useTenant';
 
 interface SettingsThemeProps {
   tenant: TenantContextType;
-  overRideTheme: (theme: ThemeModel) => void;
   defaultTheme: DefaultThemeType;
 }
 
 export const SettingsTheme: React.FC<SettingsThemeProps> = ({
   tenant,
-  overRideTheme,
   defaultTheme,
 }) => {
-  const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
   const [updateTheme] = useMutation(UpdateTheme);
   const [fileUpload] = useMutation(FileUpload);
   const [data, setData] = useState({} as any);
-
+  const { setNotification } = useNotifications();
   const [loading, setLoading] = useState<boolean>(false);
   const [editColorsActive, setEditColorsActive] = useState<boolean>(false);
   const acceptedFormats = ['svg', 'png', 'PNG'];
@@ -93,18 +83,20 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
   });
 
   const getData = async () => {
-    fetch(tenant.tenant.themePath)
-      .then(function (res) {
-        return res.json();
-      })
-      .then(async function (data) {
-        setData(data);
-      });
+    if (tenant && tenant.tenant && tenant.tenant.themePath) {
+      fetch(tenant.tenant.themePath)
+        .then(function (res) {
+          return res.json();
+        })
+        .then(async function (data) {
+          setData(data);
+        });
+    }
   };
 
   useEffect(() => {
     getData();
-  }, [tenant.tenant.themePath]);
+  }, [tenant?.tenant?.themePath]);
 
   useEffect(() => {
     if (data && data.colors) {
@@ -150,6 +142,14 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
   }, [data]);
 
   useEffect(() => {
+    if (data && data.images) {
+      imagesSetValue('logoUrl', data.images.logoUrl);
+      imagesSetValue('graphicOverlayUrl', data.images.graphicOverlayUrl);
+      imagesSetValue('faviconUrl', data.images.faviconUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+  useEffect(() => {
     if (fontsRegister) {
       fontsSetValue('fontUrl', defaultTheme.fontUrl);
       fontsSetValue(
@@ -168,7 +168,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
 
     if (colorValid) {
       let logoUrl = '';
-      if (images.logoUrl) {
+      if (images.logoUrl && images.logoUrl.file && images.logoUrl.fileName) {
         await fileUpload({
           variables: {
             file: images.logoUrl.file,
@@ -183,7 +183,11 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
       }
 
       let graphicOverlayUrl = '';
-      if (images.graphicOverlayUrl) {
+      if (
+        images.graphicOverlayUrl &&
+        images.graphicOverlayUrl.file &&
+        images.graphicOverlayUrl.fileName
+      ) {
         await fileUpload({
           variables: {
             file: images.graphicOverlayUrl.file,
@@ -198,7 +202,11 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
       }
 
       let faviconUrl = '';
-      if (images.faviconUrl) {
+      if (
+        images.faviconUrl &&
+        images.faviconUrl.file &&
+        images.faviconUrl.fileName
+      ) {
         await fileUpload({
           variables: {
             file: images.faviconUrl.file,
@@ -278,61 +286,20 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
         variables: {
           input: themeString,
         },
-      }).then(() => {
-        DefaultTheme.primary = colors.primary;
-        DefaultTheme.primaryAccent1 = colors.primaryAccent1;
-        DefaultTheme.primaryAccent2 = colors.primaryAccent2;
-        DefaultTheme.secondary = colors.secondary;
-        DefaultTheme.secondaryAccent1 = colors.secondaryAccent1;
-        DefaultTheme.secondaryAccent2 = colors.secondaryAccent2;
-        DefaultTheme.tertiary = colors.tertiary;
-        DefaultTheme.tertiaryAccent1 = colors.tertiaryAccent1;
-        DefaultTheme.tertiaryAccent2 = colors.tertiaryAccent2;
-        DefaultTheme.textDark = colors.textDark;
-        DefaultTheme.textMid = colors.textMid;
-        DefaultTheme.textLight = colors.textLight;
-        DefaultTheme.uiMidDark = colors.uiMidDark;
-        DefaultTheme.uiMid = colors.uiMid;
-        DefaultTheme.uiLight = colors.uiLight;
-        DefaultTheme.uiBg = colors.uiBg;
-        DefaultTheme.modalBg = colors.modalBg;
-        DefaultTheme.errorMain = colors.errorMain;
-        DefaultTheme.errorDark = colors.errorDark;
-        DefaultTheme.errorBg = colors.errorBg;
-        DefaultTheme.alertMain = colors.alertMain;
-        DefaultTheme.alertDark = colors.alertDark;
-        DefaultTheme.alertBg = colors.alertBg;
-        DefaultTheme.successMain = colors.successMain;
-        DefaultTheme.successDark = colors.successDark;
-        DefaultTheme.successBg = colors.successBg;
-        DefaultTheme.infoMain = colors.infoMain;
-        DefaultTheme.infoDark = colors.infoDark;
-        DefaultTheme.infoBb = colors.infoBb;
-        DefaultTheme.quatenary = colors.quatenary;
-        DefaultTheme.quatenaryMain = colors.quatenaryMain;
-        DefaultTheme.adminPortalBg = colors.adminPortalBg;
-        DefaultTheme.darkBlue = colors.darkBlue;
-        DefaultTheme.pointsCardBg = colors.pointsCardBg;
-        DefaultTheme.pointsCardBarBg = colors.pointsCardBarBg;
-        DefaultTheme.quatenaryBg = colors.quatenaryBg;
-        DefaultTheme.adminBackground = colors.adminBackground;
-        DefaultTheme.quinary = colors.quinary;
-        DefaultTheme.logoUrl = themeInputModel.images.logoUrl;
-        DefaultTheme.graphicOverlayUrl =
-          themeInputModel.images.graphicOverlayUrl;
-        DefaultTheme.faviconUrl = themeInputModel.images.faviconUrl;
-        DefaultTheme.fontUrl = themeInputModel.fonts.fontUrl;
-        DefaultTheme.mainHeadingOverrideFontUrl =
-          themeInputModel.fonts.mainHeadingOverrideFontUrl;
-
-        setNotification({
-          title: 'Successfully Updated Theme!',
-          variant: NOTIFICATION.SUCCESS,
+      })
+        .then(() => {
+          setNotification({
+            title: 'Successfully Updated Tenant!',
+            variant: NOTIFICATION.SUCCESS,
+          });
+          tenant.refresh();
+        })
+        .catch((err) => {
+          setNotification({
+            title: 'Failed to update Tenant',
+            variant: NOTIFICATION.ERROR,
+          });
         });
-
-        applyTheme();
-        overRideTheme(themeInputModel);
-      });
     }
     setEditColorsActive(!editColorsActive);
     setLoading(false);
@@ -433,8 +400,8 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                     />
                     <FormFileInput
                       acceptedFormats={acceptedFormats}
-                      contentUrl={data?.images?.graphicOverlayUrl}
-                      nameProp="graphicOverlayUrl"
+                      contentUrl={data?.images?.logoUrl}
+                      nameProp="logoUrl"
                       setValue={imagesSetValue}
                       label={''}
                       isWizardComponent={true}
@@ -465,9 +432,9 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                     />
                     <FormFileInput
                       acceptedFormats={acceptedFormats}
-                      contentUrl={data?.images?.logoUrl}
+                      contentUrl={data?.images?.graphicOverlayUrl}
                       label={''}
-                      nameProp="logoUrl"
+                      nameProp="graphicOverlayUrl"
                       setValue={imagesSetValue}
                       isWizardComponent={true}
                       hideFileName={true}
@@ -577,9 +544,9 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormFileInput
                     acceptedFormats={acceptedFormats}
-                    contentUrl={data?.images?.graphicOverlayUrl}
+                    contentUrl={data?.images?.logoUrl}
                     label={''}
-                    nameProp="graphicOverlayUrl"
+                    nameProp="logoUrl"
                     setValue={imagesSetValue}
                     disabled={true}
                     isWizardComponent={true}
@@ -591,9 +558,9 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormFileInput
                     acceptedFormats={acceptedFormats}
-                    contentUrl={data?.images?.logoUrl}
+                    contentUrl={data?.images?.graphicOverlayUrl}
                     label={''}
-                    nameProp="logoUrl"
+                    nameProp="graphicOverlayUrl"
                     setValue={imagesSetValue}
                     disabled={true}
                     isWizardComponent={true}
