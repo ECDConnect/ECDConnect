@@ -105,7 +105,7 @@ function ThemeProvider({
 
       if (data.images) {
         DefaultTheme.logoUrl = `url(${data.images.logoUrl})`;
-        DefaultTheme.graphicOverlayUrl = data.images.graphicOverlayUrl;
+        DefaultTheme.graphicOverlayUrl = `url(${data.images.graphicOverlayUrl})`;
         DefaultTheme.faviconUrl = data.images.faviconUrl;
         DefaultTheme.portalLoginLogoUrl = data.images.portalLoginLogoUrl;
         DefaultTheme.portalLoginBackgroundUrl =

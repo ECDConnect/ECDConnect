@@ -68,10 +68,10 @@ export const CheckboxGroup = <T extends FieldValues = {}>({
         checked
           ? `${
               isAdminPortalInput
-                ? 'bg-quaternary border-secondary border-2'
+                ? 'bg-adminPortalBg border-secondary border-2'
                 : 'bg-quatenaryBg border-quatenary border-2'
             }`
-          : `${isAdminPortalInput ? 'bg-adminPortalBg' : 'bg-uiBg'}`
+          : `${isAdminPortalInput ? 'border-secondary border-2' : 'bg-uiBg'}`
       }`}
     >
       {nameProp && register && (

@@ -218,7 +218,7 @@ export const OaLogin: React.FC = () => {
         </Dialog>
         <form>
           <div>
-            <div>
+            {/* <div>
               <Button
                 className={'mt-3 w-full rounded-xl'}
                 type="filled"
@@ -248,7 +248,7 @@ export const OaLogin: React.FC = () => {
                 color={'textMid'}
               />
               <Divider className="absolute w-6/12" />
-            </div>
+            </div> */}
             <FormInput<OaLoginModel>
               label={'Username or email'}
               visible={true}

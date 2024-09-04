@@ -459,6 +459,7 @@ namespace EcdLink.Api.CoreApi.Services
                     item.UpdatedDate = DateTime.Now;
                     item.UpdatedBy = _applicationUserId.ToString();
                     _communityProfileConnectionRepo.Update(item);
+                    _pointsService.CalculateConnectWithAnotherUser((Guid)item.ToProfile.UserId);
                 }
                 _pointsService.CalculateConnectWithAnotherUser(input.UserId);
             }

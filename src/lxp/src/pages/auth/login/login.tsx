@@ -194,7 +194,7 @@ export const Login: React.FC = () => {
   return (
     <BannerWrapper
       showBackground={true}
-      backgroundUrl={theme?.images.graphicOverlayUrl}
+      backgroundUrl={theme?.images?.graphicOverlayUrl}
       backgroundImageColour={'primary'}
       color="primary"
       size="sub-normal"

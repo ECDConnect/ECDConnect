@@ -91,12 +91,15 @@ export const ProgressCreateReport: React.FC = () => {
   );
   const [childEnjoys, setChildEnjoys] = useState(currentReport?.childEnjoys);
 
-  const saveAndExit = () => {
+  const save = () => {
     if (!!goodProgressWith) updateGoodProgressWith(goodProgressWith);
     if (!!childEnjoys) updateChildEnjoys(childEnjoys);
     if (!!howCanCaregiverSupport)
       updateHowCanCaregiverSupport(howCanCaregiverSupport);
+  };
 
+  const saveAndExit = () => {
+    save();
     if (isOnline) {
       syncChildProgressReports();
     }
@@ -186,6 +189,7 @@ export const ProgressCreateReport: React.FC = () => {
             if (currentStep < 3) {
               setCurrentStep(currentStep + 1);
             } else {
+              save();
               confirmCreateReport();
             }
           }}

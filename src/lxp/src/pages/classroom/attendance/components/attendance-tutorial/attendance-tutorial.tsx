@@ -1,4 +1,4 @@
-import { getAvatarColor } from '@ecdlink/core';
+import { getAvatarColor, MoreInformationTypeEnum } from '@ecdlink/core';
 import {
   AttendanceListDataItem,
   AttendanceStatus,
@@ -35,9 +35,6 @@ export const AttendanceTutorial = ({
   const { setState } = useAppContext();
 
   const { tenant } = useTenant();
-
-  // Todo: get the section from the portal
-  const section = 'todo';
 
   const handleClickStart = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
@@ -76,7 +73,7 @@ export const AttendanceTutorial = ({
   return (
     <InfoPage
       title="Taking child attendance"
-      section={section}
+      section={MoreInformationTypeEnum.TakingChildAttendance}
       closeText="Start taking attendance"
       closeIcon=""
       onClose={onClose}

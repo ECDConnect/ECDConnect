@@ -27,7 +27,7 @@ export const ProgressCaregiverReportWorkingOnNonePage: React.FC<
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
-      style={{ height: '1400px', position: 'relative', overflow: 'hidden' }}
+      style={{ height: '1100px', position: 'relative', overflow: 'hidden' }}
     >
       <div className="mb-4 flex flex-row">
         <img src={pinkFaceImg} className="mr-4 h-20 w-20" />

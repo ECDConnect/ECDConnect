@@ -202,24 +202,29 @@ export const ChildProfile: React.FC = () => {
   const [attendanceReport, setAttendanceReport] =
     useState<ChildAttendanceReportModel>();
 
+  const [isLoadingAttendance, setIsLoadingAttendance] = useState<boolean>(true);
   const { isLoading } = useThunkFetchCall(
     'children',
     ChildrenActions.UPDATE_CHILD
   );
 
-  const avatar = profilePicture?.file || child?.user?.profileImageUrl || '';
+  const childBirthDate = useMemo(
+    () =>
+      child?.user?.dateOfBirth
+        ? new Date(child?.user?.dateOfBirth)
+        : currentDate,
+    [child?.user?.dateOfBirth, currentDate]
+  );
+
+  const ageOfChild = getAge(childBirthDate);
 
   useEffect(() => {
-    if (!isOnline) {
-      appDispatch(
-        analyticsActions.createViewTracking({
-          pageView: window.location.pathname,
-          title: 'Child Profile',
-        })
-      );
+    if (ageOfChild) {
+      setChildAge(ageOfChild);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline]);
+  }, []);
+
+  const avatar = profilePicture?.file || child?.user?.profileImageUrl || '';
 
   const {
     setState,
@@ -239,7 +244,7 @@ export const ChildProfile: React.FC = () => {
       goToChildProfileWalkthrough();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [childTutorialTaken, run]);
 
   const showOnlineOnly = useCallback(() => {
     dialog({
@@ -299,31 +304,33 @@ export const ChildProfile: React.FC = () => {
     });
   };
 
+  // TODO - This useEffect needs to be fixed, causing infinite re-renders!!!
+  useEffect(() => {
+    async function getAttendance() {
+      if (!attendanceData || !child) return;
+
+      setIsLoadingAttendance(true);
+
+      await new AttendanceService(authUser?.auth_token ?? '')
+        .getChildAttendanceRecords(
+          child?.userId ?? child?.user?.id ?? '',
+          classroomGroup?.id ?? '',
+          startOfISOWeekYear(new Date()),
+          currentDate
+        )
+        .then((data) => {
+          setAttendanceReport(data);
+        });
+
+      setIsLoadingAttendance(false);
+    }
+    getAttendance().catch(console.error);
+  }, [child, classroomGroup?.id, attendanceData]);
+
   useEffect(() => {
     if (!attendanceData || !child) return;
 
-    const childBirthDate = child?.user?.dateOfBirth
-      ? new Date(child?.user?.dateOfBirth)
-      : currentDate;
-
-    const ageOfChild = getAge(childBirthDate);
-
-    setChildAge(ageOfChild);
-
     if (classroomGroup) {
-      if (isOnline) {
-        new AttendanceService(authUser?.auth_token ?? '')
-          .getChildAttendanceRecords(
-            child.userId ?? '',
-            classroomGroup?.id ?? '',
-            startOfISOWeekYear(new Date()),
-            currentDate
-          )
-          .then((data) => {
-            setAttendanceReport(data);
-          });
-      }
-
       const applicableNotifications: ListItemProps[] = [];
 
       const attendanceNotification = getAttendanceNotification(
@@ -338,8 +345,7 @@ export const ChildProfile: React.FC = () => {
 
       setNotifications([...applicableNotifications]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendanceData, child, classroomGroup]);
+  }, [attendanceData, child, classroomGroup?.id]);
 
   const getNoteProfileOption = useCallback(() => {
     let baseNotesOptions: ListItemProps = {
@@ -729,6 +735,7 @@ export const ChildProfile: React.FC = () => {
         displayOffline={!isOnline}
         onHelp={() => goToChildProfileWalkthrough()}
         displayHelp={true}
+        isLoading={isLoadingAttendance}
       >
         <div className={styles.avatarWrapper}>
           <ProfileAvatar
@@ -765,11 +772,16 @@ export const ChildProfile: React.FC = () => {
                 key={`child-profile-notification-${notification.key}`}
               />
             ))}
-            {hasPermissionToCreateProgressReports && (
-              <div id={`child_progress_observations`} aria-disabled={run}>
-                <ChildProgressReportAlert child={child} />
-              </div>
-            )}
+          </div>
+        )}
+        {(practitioner?.isPrincipal ||
+          hasPermissionToCreateProgressReports) && (
+          <div
+            id={`child_progress_observations`}
+            aria-disabled={run}
+            className='"-mt-0.5 rounded-2xl" flex w-full flex-col gap-1'
+          >
+            <ChildProgressReportAlert child={child!} />
           </div>
         )}
         <div className={styles.profileOptionsWrapper}>

@@ -46,7 +46,7 @@ export const isChildInitialRegistrationPeriod = (child: ChildDto) => {
 };
 
 export const getProgressAgeGroupForChild = (
-  reportPeriodEndDate: string,
+  reportPeriodEndDate: Date,
   child: ChildDto,
   ageGroups: ProgressTrackingAgeGroupDto[]
 ) => {
@@ -55,7 +55,7 @@ export const getProgressAgeGroupForChild = (
   }
 
   const ageInMonths = differenceInMonths(
-    new Date(reportPeriodEndDate),
+    reportPeriodEndDate,
     new Date(child.user.dateOfBirth)
   );
 
@@ -71,7 +71,7 @@ export const mapProgressReportDetails = (
   childReport: ChildProgressReport | undefined,
   allSkills: ProgressSkill[],
   childFirstName: string,
-  ageGroupId: number
+  skillsForAgeGroupCount: number
 ) => {
   const mappedSkills = (childReport?.skillObservations || []).map(
     (skillObs) => {
@@ -97,12 +97,6 @@ export const mapProgressReportDetails = (
       };
     }
   );
-
-  // TODO!!!!!!! FIX TRHIS !!!!
-  const skillsForAgeGroupCount = 20;
-  //allSkills.filter((x) =>
-  //   20
-  // ).length;
 
   const allObservationsMade =
     skillsForAgeGroupCount === childReport?.skillObservations.length &&

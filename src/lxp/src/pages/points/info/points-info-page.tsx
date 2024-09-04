@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformation } from '@ecdlink/graphql';
 import InfoService from '@/services/InfoService/InfoService';
+import { MoreInformationTypeEnum } from '@ecdlink/core';
 
 interface PointsInfoPageProps {
   onClose: () => void;
@@ -18,7 +19,7 @@ export const PointsInfoPage: React.FC<PointsInfoPageProps> = ({ onClose }) => {
 
   useEffect(() => {
     new InfoService()
-      .getMoreInformation('Individual points', selectedLanguage)
+      .getMoreInformation(MoreInformationTypeEnum.Points, selectedLanguage)
       .then((info) => setData(info));
   }, [selectedLanguage, userAuth?.auth_token]);
 

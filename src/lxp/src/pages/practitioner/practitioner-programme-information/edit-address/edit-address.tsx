@@ -1,5 +1,10 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { ClassroomDto, PractitionerDto } from '@ecdlink/core';
+import {
+  ClassroomDto,
+  PractitionerDto,
+  SiteAddressDto,
+  ProvinceDto,
+} from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -8,8 +13,7 @@ import {
   FormInput,
   Typography,
 } from '@ecdlink/ui';
-import { AddressMap } from './map/map';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
   classroomsActions,
@@ -18,7 +22,11 @@ import {
 } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@utils/common/uuid.utils';
-import { SiteAddressDto } from '@/models/classroom/site-address.dto';
+//import { SiteAddressDto } from '@/models/classroom/site-address.dto';
+import {
+  AddressMap,
+  formatAddress,
+} from '@/components/address-map/address-map';
 
 interface EditAdressProps {
   setShowEditAddress: (item: boolean) => void;
@@ -32,25 +40,68 @@ export const EditAddress: React.FC<EditAdressProps> = ({
   const { isOnline } = useOnlineStatus();
   const [showMap, setShowMap] = useState(false);
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const [editedAddress, setEditedAddress] = useState(
-    classroom?.siteAddress?.addressLine1 || ''
-  );
+  const [addressChanged, setAddressChanged] = useState<boolean>(false);
+  const [address, setAddress] = useState<SiteAddressDto>({
+    id: '',
+    area: '',
+    addressLine1: '',
+    addressLine2: '',
+    addressLine3: '',
+    latitude: null,
+    longitude: null,
+    municipality: '',
+    name: '',
+    postalCode: '',
+    province: null,
+    provinceId: null,
+    ward: '',
+  });
   const appDispatch = useAppDispatch();
 
-  const changeSmartSpaceCheckAddress = async () => {
-    const siteAddressId = classroom?.siteAddress?.id || newGuid();
+  useEffect(() => {
+    const currentAddress = classroom?.siteAddress;
+    if (!!currentAddress) {
+      const siteAddress: SiteAddressDto = {
+        id: currentAddress.id || '',
+        area: currentAddress.area || '',
+        addressLine1: currentAddress.addressLine1 || '',
+        addressLine2: currentAddress.addressLine2 || '',
+        addressLine3: currentAddress.addressLine3 || '',
+        latitude: currentAddress.latitude,
+        longitude: currentAddress.longitude,
+        municipality: currentAddress.municipality,
+        name: currentAddress.name || '',
+        postalCode: currentAddress.postalCode || '',
+        province: currentAddress.province as unknown as ProvinceDto,
+        provinceId: currentAddress.provinceId,
+        ward: address.ward || '',
+      };
+      setAddress(siteAddress);
+    }
+  }, [classroom?.siteAddress]);
+
+  const saveAddressChanges = async () => {
+    if (!addressChanged) return;
 
     const siteAddress: SiteAddressDto = {
-      id: siteAddressId,
-      addressLine1: editedAddress || '',
-      addressLine2: classroom?.siteAddress?.addressLine2 || '',
-      addressLine3: classroom?.siteAddress?.addressLine3 || '',
-      name: classroom?.siteAddress?.name || '',
-      postalCode: classroom?.siteAddress?.postalCode || '',
-      ward: classroom?.siteAddress?.ward || '',
+      id: address.id || newGuid(),
+      area: address.area || '',
+      addressLine1: address.addressLine1 || '',
+      addressLine2: address.addressLine2 || '',
+      addressLine3: address.addressLine3 || '',
+      latitude: address.latitude,
+      longitude: address.longitude,
+      municipality: address.municipality,
+      name: address.name || '',
+      postalCode: address.postalCode || '',
+      province: null,
+      provinceId: !!address.provinceId ? address.provinceId : null,
+      ward: address.ward || '',
     };
 
-    appDispatch(classroomsActions.updateClassroomSiteAddress(siteAddress));
+    appDispatch(
+      classroomsActions.updateClassroomSiteAddress(siteAddress as any)
+    );
     await appDispatch(classroomsThunkActions.upsertClassroom({}));
   };
 
@@ -80,7 +131,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
             placeholder={'Tap to add address'}
             type={'text'}
             onChange={(e) => {}}
-            value={editedAddress}
+            value={formatAddress(address)}
             disabled={showMap}
             suffixIcon={'LocationMarkerIcon'}
             sufficIconColor="primary"
@@ -99,17 +150,21 @@ export const EditAddress: React.FC<EditAdressProps> = ({
           icon="SaveIcon"
           // disabled={!editedAddress}
           onClick={() => {
-            changeSmartSpaceCheckAddress();
+            saveAddressChanges();
             setShowEditAddress(false);
           }}
         />
       </div>
       <Dialog visible={showMap} position={DialogPosition.Bottom} stretch>
         <AddressMap
+          address={address}
+          componentHeight={62}
           onClose={handleCloseMap}
-          onSubmit={(address) => {
-            setEditedAddress(address);
-            changeSmartSpaceCheckAddress();
+          onSubmit={(updatedAddress) => {
+            if (JSON.stringify(updatedAddress) != JSON.stringify(address)) {
+              setAddress(updatedAddress);
+              setAddressChanged(true);
+            }
           }}
         />
       </Dialog>

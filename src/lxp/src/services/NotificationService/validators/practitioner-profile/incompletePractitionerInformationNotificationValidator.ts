@@ -9,8 +9,8 @@ import {
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { differenceInDays, format } from 'date-fns';
-import { RoleSystemNameEnum } from '@ecdlink/core';
+import { differenceInDays } from 'date-fns';
+import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -31,8 +31,12 @@ export class IncompletePractitionerInformationNotificationValidator
       classroomData: classroomState,
       practitioner: practitionerState,
       trainee: traineeState,
+      auth: authState,
     } = this.store.getState();
 
+    const principalClassroom = localStorage?.getItem(
+      LocalStorageKeys?.classroomForInvitedUser
+    );
     if (!classroomState || !userState) return [];
     const isOnStipend = practitionerState?.practitioner?.isOnStipend;
 
@@ -165,7 +169,9 @@ export class IncompletePractitionerInformationNotificationValidator
               practitionerState?.practitioner?.progress === 1.0
                 ? 'Join your preschool team!'
                 : practitionerState?.practitioner?.principalHierarchy
-                ? `You have been added to ${classroomState?.classroom?.name}`
+                ? `You have been added to ${
+                    classroomState?.classroom?.name || principalClassroom
+                  }`
                 : 'Join or add a preschool!',
             message:
               practitionerState?.practitioner?.progress === 1.0

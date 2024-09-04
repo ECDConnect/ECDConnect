@@ -25,7 +25,7 @@ export function WalkthroughProvider(props: any) {
       state,
       setState,
     }),
-    [setState, state]
+    []
   );
 
   return <AppContext.Provider value={value} {...props} />;

@@ -536,6 +536,7 @@ namespace ECDLink.Core.Services
                                 ExpenseReceipt expenseReceipt = new ExpenseReceipt();
                                 expenseReceipt.Name = _data.Description;
                                 expenseReceipt.PhotoProof = _data.PhotoProof;
+                                expenseReceipt.InvoiceNr = _data.InvoiceNr;
                                 receipts.Add(expenseReceipt);
                             }
                             expenseText += "<tr>";
@@ -609,7 +610,7 @@ namespace ECDLink.Core.Services
                 var count = 1;
                 foreach (var item in receipts)
                 {
-                    receiptsText += "<div><h2>" + item.Name + "</h2><img style='max-width: 400px;' src='" + item.PhotoProof + "'/></div>";
+                    receiptsText += $"<div><h2>{item.InvoiceNr}: {item.Name}</h2><img style='max-width: 400px;' src='" + item.PhotoProof + "'/></div>";
 
                     if (count < receipts.Count && count % 2 == 0)
                     {
@@ -657,6 +658,7 @@ namespace ECDLink.Core.Services
             //
             //  EXPENSES
             //
+            var invoiceNr = 1;
             foreach (StatementsExpenseType type in expenseTypes)
             {
                 var expenses = statement.ExpenseItems.Where(x => x.ExpenseTypeId == type.Id.ToString());
@@ -666,14 +668,33 @@ namespace ECDLink.Core.Services
                     continue;
                 }
 
-                tables.Add(new IncomeExpensePDFTableModel
+                var expenseTable = new IncomeExpensePDFTableModel
                 {
                     TableName = type.Description,
                     Type = IncomeExpensePDF.EXPENSES,
                     Headers = getExpensePDFHeader(),
-                    Data = MapExpenseToPdfData(expenses),
+                    Data = new List<IncomeExpensePDFDataModel>(),
                     Total = expenses.Select(x => x.Amount).Sum(),
-                });
+                };
+
+                foreach (var expense in expenses)
+                {
+                    expenseTable.Data.Add(new IncomeExpensePDFDataModel
+                    {
+                        Description = expense.Notes,
+                        Date = expense.DatePaid,
+                        Amount = expense.Amount,
+                        PhotoProof = expense.PhotoProof,
+                        InvoiceNr = expense.PhotoProof != null ? invoiceNr.ToString() : "None",
+                    });
+
+                    if (expense.PhotoProof != null)
+                    {
+                        invoiceNr++;
+                    }
+                }                
+
+                tables.Add(expenseTable);
             }
 
             //
@@ -814,25 +835,6 @@ namespace ECDLink.Core.Services
                 headers.Add(header);
             }
             return headers;
-        }
-
-        private List<IncomeExpensePDFDataModel> MapExpenseToPdfData(IEnumerable<StatementsExpenses> expenseRows)
-        {
-            var results = new List<IncomeExpensePDFDataModel>();
-            var invoiceNr = 1;
-            foreach (var expense in expenseRows)
-            {
-                results.Add(new IncomeExpensePDFDataModel
-                {
-                    Description = expense.Notes,
-                    Date = expense.DatePaid,
-                    Amount = expense.Amount,
-                    PhotoProof = expense.PhotoProof,
-                    InvoiceNr = invoiceNr,
-                });
-                invoiceNr++;
-            }
-            return results;
         }
 
         private List<IncomeExpensePDFDataModel> MapIncomeToPdfData(IEnumerable<StatementsIncome> incomeRows, IDictionary<string, string> childNamesById, List<StatementsIncomeType> incomeTypes, List<StatementsPayType> payTypes)

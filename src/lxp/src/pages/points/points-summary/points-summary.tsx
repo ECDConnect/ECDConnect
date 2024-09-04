@@ -44,6 +44,8 @@ import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 import { useTenant } from '@/hooks/useTenant';
 import { pointsTodoItems } from '@/store/points/points.actions';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
@@ -57,6 +59,10 @@ export const PointsSummary: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [showInfo, setShowInfo] = useState(false);
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
+  const planActivitiesPermission = practitioner?.permissions?.find(
+    (item) =>
+      item?.permissionName === PermissionsNames.plan_classroom_actitivies
+  );
 
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
@@ -94,10 +100,6 @@ export const PointsSummary: React.FC = () => {
     ).yearPointsView(practitioner?.userId!);
     return response;
   }, [practitioner?.userId, userAuth?.auth_token]);
-
-  const todoItems = pointActivitiesItems?.filter((item) => {
-    return pointsShareData?.activityDetail?.includes(item?.activity);
-  });
 
   const todoListFiltered = pointActivitiesItems.filter((el) => {
     return pointsShareData?.activityDetail.some((f: any) => {
@@ -140,7 +142,12 @@ export const PointsSummary: React.FC = () => {
       return 'Boss';
     }
 
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+    if (
+      (pointsToDo?.plannedOneDay && practitioner?.isPrincipal) ||
+      (pointsToDo?.plannedOneDay &&
+        !practitioner?.isPrincipal &&
+        planActivitiesPermission?.isActive === true)
+    ) {
       return 'Cwepheshe';
     }
 
@@ -153,6 +160,7 @@ export const PointsSummary: React.FC = () => {
 
     return 'Umtsha';
   }, [
+    planActivitiesPermission?.isActive,
     pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
@@ -163,7 +171,12 @@ export const PointsSummary: React.FC = () => {
 
   const renderPointsToDoScoreCardBgColor = useMemo(() => {
     if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
+      if (
+        (getCurrentPointsToDo === 3 && practitioner?.isPrincipal) ||
+        (!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true &&
+          getCurrentPointsToDo === 3)
+      ) {
         return 'quatenaryBg';
       }
       return 'successBg';
@@ -173,7 +186,11 @@ export const PointsSummary: React.FC = () => {
       return 'quatenaryBg';
     }
 
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+    if (
+      pointsToDo?.plannedOneDay &&
+      !practitioner?.isPrincipal &&
+      planActivitiesPermission?.isActive === true
+    ) {
       return 'quatenaryBg';
     }
 
@@ -188,6 +205,7 @@ export const PointsSummary: React.FC = () => {
     return 'alertBg';
   }, [
     getCurrentPointsToDo,
+    planActivitiesPermission?.isActive,
     pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
@@ -198,16 +216,21 @@ export const PointsSummary: React.FC = () => {
 
   const renderPointsToDoEmoji = useMemo(() => {
     if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
+      if (
+        (getCurrentPointsToDo === 3 && practitioner?.isPrincipal) ||
+        (!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true &&
+          getCurrentPointsToDo === 3)
+      ) {
         return (
           <div className="bg-quatenary mr-4 rounded-full p-3">
-            <FireIcon className="font-white h-8 w-8" />
+            <FireIcon className="font-white h-8  w-8 text-white" />
           </div>
         );
       }
       return (
         <div className="bg-successDark mr-4 rounded-full p-3">
-          <FireIcon className="font-white h-8 w-8" />
+          <FireIcon className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
@@ -215,15 +238,19 @@ export const PointsSummary: React.FC = () => {
     if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
       return (
         <div className="bg-quatenary mr-4 rounded-full p-3">
-          <Crown className="font-white h-8 w-8" />
+          <Crown className="font-white h-8  w-8  text-white text-white" />
         </div>
       );
     }
 
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+    if (
+      pointsToDo?.plannedOneDay &&
+      !practitioner?.isPrincipal &&
+      planActivitiesPermission?.isActive === true
+    ) {
       return (
         <div className="bg-quatenary mr-4 rounded-full p-3">
-          <CalendarIcon className="font-white h-8 w-8" />
+          <CalendarIcon className="font-white h-8  w-8  text-white text-white" />
         </div>
       );
     }
@@ -231,25 +258,26 @@ export const PointsSummary: React.FC = () => {
     if (pointsToDo?.isPartOfPreschool) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
-          <Kindgarden className="font-white h-8 w-8" />
+          <Kindgarden className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
     if (pointsToDo?.signedUpForApp) {
       return (
         <div className="bg-alertMain mr-4 rounded-full p-2">
-          <ClipboardCheckIcon className="font-white h-8 w-8" />
+          <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
 
     return (
       <div className="bg-alertMain mr-4 rounded-full p-2">
-        <ClipboardCheckIcon className="font-white h-8 w-8" />
+        <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
       </div>
     );
   }, [
     getCurrentPointsToDo,
+    planActivitiesPermission?.isActive,
     pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
@@ -260,7 +288,12 @@ export const PointsSummary: React.FC = () => {
 
   const renderPointsToDoProgressBarColor = useMemo(() => {
     if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
+      if (
+        (getCurrentPointsToDo === 3 && practitioner?.isPrincipal) ||
+        (!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true &&
+          getCurrentPointsToDo === 3)
+      ) {
         return 'quatenary';
       }
       return 'successMain';
@@ -270,7 +303,11 @@ export const PointsSummary: React.FC = () => {
       return 'quatenary';
     }
 
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+    if (
+      pointsToDo?.plannedOneDay &&
+      !practitioner?.isPrincipal &&
+      planActivitiesPermission?.isActive === true
+    ) {
       return 'quatenary';
     }
 
@@ -285,6 +322,7 @@ export const PointsSummary: React.FC = () => {
     return 'alertMain';
   }, [
     getCurrentPointsToDo,
+    planActivitiesPermission?.isActive,
     pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
@@ -309,6 +347,7 @@ export const PointsSummary: React.FC = () => {
 
     const stackedMenuList: MenuListDataItem[] = [
       {
+        id: '1',
         title: `Umtsha`,
         titleStyle: pointsToDo?.signedUpForApp
           ? 'text-successDark'
@@ -330,6 +369,7 @@ export const PointsSummary: React.FC = () => {
         hideRightIcon: true,
       },
       {
+        id: '2',
         title: 'Tichere',
         titleStyle: pointsToDo?.isPartOfPreschool
           ? 'text-successDark'
@@ -364,11 +404,19 @@ export const PointsSummary: React.FC = () => {
           : pointsToDo?.signedUpForApp
           ? 'quatenaryBg'
           : 'adminPortalBg',
-        onActionClick: practitioner?.isPrincipal
-          ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-          : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT),
+        onActionClick:
+          pointsToDo?.signedUpForApp &&
+          !pointsToDo?.isPartOfPreschool &&
+          practitioner?.isPrincipal
+            ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+            : pointsToDo?.signedUpForApp &&
+              !pointsToDo?.isPartOfPreschool &&
+              !practitioner?.isPrincipal
+            ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+            : () => {},
       },
       {
+        id: '3',
         title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
         titleStyle:
           pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
@@ -434,10 +482,14 @@ export const PointsSummary: React.FC = () => {
               !pointsToDo?.savedIncomeOrExpense &&
               !pointsToDo?.savedIncomeOrExpense &&
               !practitioner?.isPrincipal
-            ? () => history.push(ROUTES.CLASSROOM.ACTIVITIES.ROOT)
+            ? () =>
+                history.push(ROUTES.CLASSROOM.ROOT, {
+                  activeTabIndex: TabsItems.ACTIVITES,
+                })
             : () => {},
       },
       {
+        id: '4',
         title: `Influencer`,
         titleStyle: pointsToDo?.viewedCommunitySection
           ? 'text-successDark'
@@ -446,6 +498,15 @@ export const PointsSummary: React.FC = () => {
         subTitleStyle: pointsToDo?.viewedCommunitySection
           ? 'text-successDark'
           : subTitleStyle,
+        className:
+          (pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.savedIncomeOrExpense ||
+            (!practitioner?.isPrincipal &&
+              planActivitiesPermission?.isActive === false &&
+              pointsToDo?.isPartOfPreschool)) &&
+          !pointsToDo?.viewedCommunitySection
+            ? ''
+            : 'px-2',
         menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
@@ -453,21 +514,30 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.viewedCommunitySection
             ? 'bg-successMain'
             : pointsToDo?.savedIncomeOrExpense ||
-              pointsToDo?.savedIncomeOrExpense
+              pointsToDo?.savedIncomeOrExpense ||
+              (!practitioner?.isPrincipal &&
+                planActivitiesPermission?.isActive === false &&
+                pointsToDo?.isPartOfPreschool)
             ? 'quatenary'
             : 'bg-uiLight'
         } rounded-full h-12 w-12 p-2.5`,
         showIcon: true,
         onActionClick:
-          (pointsToDo?.savedIncomeOrExpense ||
-            pointsToDo?.savedIncomeOrExpense) &&
-          !pointsToDo?.viewedCommunitySection
+          pointsToDo?.savedIncomeOrExpense ||
+          pointsToDo?.savedIncomeOrExpense ||
+          (!practitioner?.isPrincipal &&
+            planActivitiesPermission?.isActive === false &&
+            !pointsToDo?.viewedCommunitySection)
             ? () => history.push(ROUTES.COMMUNITY.WELCOME)
             : () => {},
         hideRightIcon: true,
         backgroundColor: pointsToDo?.viewedCommunitySection
           ? 'successBg'
-          : pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
+          : pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.savedIncomeOrExpense ||
+            (!practitioner?.isPrincipal &&
+              planActivitiesPermission?.isActive === false &&
+              pointsToDo?.isPartOfPreschool)
           ? 'quatenaryBg'
           : 'adminPortalBg',
       },
@@ -482,6 +552,7 @@ export const PointsSummary: React.FC = () => {
 
     const stackedMenuList: MenuListDataItem[] = [
       {
+        id: '1',
         title: `Umtsha`,
         titleStyle: pointsToDo?.signedUpForApp
           ? 'text-successDark'
@@ -503,6 +574,7 @@ export const PointsSummary: React.FC = () => {
         hideRightIcon: true,
       },
       {
+        id: '2',
         title: 'Tichere',
         titleStyle: pointsToDo?.isPartOfPreschool
           ? 'text-successDark'
@@ -535,11 +607,19 @@ export const PointsSummary: React.FC = () => {
         backgroundColor: pointsToDo?.isPartOfPreschool
           ? 'successBg'
           : 'adminPortalBg',
-        onActionClick: practitioner?.isPrincipal
-          ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-          : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT),
+        onActionClick:
+          pointsToDo?.signedUpForApp &&
+          !pointsToDo?.isPartOfPreschool &&
+          practitioner?.isPrincipal
+            ? pointsToDo?.signedUpForApp &&
+              !pointsToDo?.isPartOfPreschool &&
+              !practitioner?.isPrincipal
+              ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+              : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+            : () => {},
       },
       {
+        id: '4',
         title: `Influencer`,
         titleStyle: pointsToDo?.viewedCommunitySection
           ? 'text-successDark'
@@ -548,6 +628,12 @@ export const PointsSummary: React.FC = () => {
         subTitleStyle: pointsToDo?.viewedCommunitySection
           ? 'text-successDark'
           : subTitleStyle,
+        className:
+          (pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.savedIncomeOrExpense) &&
+          !pointsToDo?.viewedCommunitySection
+            ? ''
+            : 'px-2',
         menuIcon: pointsToDo?.viewedCommunitySection ? 'CheckIcon' : 'FireIcon',
         iconBackgroundColor: 'quatenary',
         iconColor: 'white',
@@ -559,11 +645,16 @@ export const PointsSummary: React.FC = () => {
         hideRightIcon: true,
         backgroundColor: pointsToDo?.viewedCommunitySection
           ? 'successBg'
-          : pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
+          : pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.plannedOneDay ||
+            (!practitioner?.isPrincipal &&
+              planActivitiesPermission?.isActive === false &&
+              pointsToDo?.isPartOfPreschool)
           ? 'quatenaryBg'
           : 'adminPortalBg',
       },
       {
+        id: '3',
         title: practitioner?.isPrincipal ? 'Boss' : 'Cwepheshe',
         titleStyle:
           pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
@@ -616,6 +707,21 @@ export const PointsSummary: React.FC = () => {
             : pointsToDo?.isPartOfPreschool
             ? 'quatenaryBg'
             : 'adminPortalBg',
+        onActionClick:
+          pointsToDo?.isPartOfPreschool &&
+          !pointsToDo?.savedIncomeOrExpense &&
+          !pointsToDo?.savedIncomeOrExpense &&
+          practitioner?.isPrincipal
+            ? () => history.push(ROUTES.BUSINESS)
+            : pointsToDo?.isPartOfPreschool &&
+              !pointsToDo?.savedIncomeOrExpense &&
+              !pointsToDo?.savedIncomeOrExpense &&
+              !practitioner?.isPrincipal
+            ? () =>
+                history.push(ROUTES.CLASSROOM.ROOT, {
+                  activeTabIndex: TabsItems.ACTIVITES,
+                })
+            : () => {},
       },
     ];
 
@@ -946,8 +1052,18 @@ export const PointsSummary: React.FC = () => {
                   listItems={
                     getCurrentPointsToDo === 3 &&
                     pointsToDo?.viewedCommunitySection
-                      ? getSecondaryStackedMenuList()
-                      : getStackedMenuList()
+                      ? practitioner?.isPrincipal ||
+                        (!practitioner?.isPrincipal &&
+                          planActivitiesPermission?.isActive === true)
+                        ? getSecondaryStackedMenuList()
+                        : getSecondaryStackedMenuList()?.filter(
+                            (item) => item?.id !== '3'
+                          )
+                      : practitioner?.isPrincipal ||
+                        (!practitioner?.isPrincipal &&
+                          planActivitiesPermission?.isActive === true)
+                      ? getStackedMenuList()
+                      : getStackedMenuList()?.filter((item) => item?.id !== '3')
                   }
                   type={'MenuList'}
                   className={'-mt-0.5 flex flex-col gap-1.5'}
@@ -1001,10 +1117,17 @@ export const PointsSummary: React.FC = () => {
             getCurrentPointsToDo === 4 &&
             todoListFiltered?.slice(0, 3)?.map((item) => {
               return (
-                <PointsTodoItem
-                  text={item?.missingActivityText}
-                  icon={item?.icon}
-                />
+                <div
+                  key={item?.activity}
+                  onClick={() =>
+                    history.push(item?.href, { activeTabIndex: item?.tabIndex })
+                  }
+                >
+                  <PointsTodoItem
+                    text={item?.missingActivityText}
+                    icon={item?.icon}
+                  />
+                </div>
               );
             })}
         </div>

@@ -1,5 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
+import {
+  PermissionEnum,
+  RoleSystemNameEnum,
+  useDialog,
+  useTheme,
+} from '@ecdlink/core';
 import {
   ActionModal,
   Avatar,
@@ -32,6 +37,7 @@ import { settingSelectors, settingThunkActions } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
+import TransparentLayer from '../../assets/TransparentLayer.png';
 
 import {
   practitionerSelectors,
@@ -86,6 +92,7 @@ import {
 } from '@heroicons/react/solid';
 import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
+import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
 
 const { version } = require('../../../package.json');
 
@@ -148,6 +155,8 @@ export const Dashboard: React.FC = () => {
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
     !isPrincipal;
+  const wlNotAcceptThePrincipalInvite =
+    !classroom && practitioner?.principalHierarchy;
   const isTrialPeriod = useIsTrialPeriod();
 
   const dashboardNotification = useSelector(
@@ -176,7 +185,7 @@ export const Dashboard: React.FC = () => {
   }, [appDispatch, practitioner?.userId]);
 
   useEffect(() => {
-    if (!coach && isOnline && practitioner) {
+    if (isOnline && practitioner) {
       getPointsToDoItems();
     }
   }, []);
@@ -567,16 +576,19 @@ export const Dashboard: React.FC = () => {
       history.push(navItem.href, navItem.params);
     } else if (
       (navItem.href.includes('classroom') &&
-        isWhiteLabel &&
-        missingProgramme) ||
-      (navItem.href.includes('calendar') && isWhiteLabel && missingProgramme) ||
-      (navItem.href.includes('training') && isWhiteLabel && missingProgramme) ||
+        ((isWhiteLabel && missingProgramme) ||
+          wlNotAcceptThePrincipalInvite)) ||
+      (navItem.href.includes('calendar') &&
+        ((isWhiteLabel && missingProgramme) ||
+          wlNotAcceptThePrincipalInvite)) ||
+      (navItem.href.includes('training') &&
+        ((isWhiteLabel && missingProgramme) ||
+          wlNotAcceptThePrincipalInvite)) ||
       (navItem.href.includes('community') &&
-        isWhiteLabel &&
-        missingProgramme) ||
+        ((isWhiteLabel && missingProgramme) ||
+          wlNotAcceptThePrincipalInvite)) ||
       (navItem.href.includes('/practitioner/programme-information') &&
-        isWhiteLabel &&
-        missingProgramme)
+        ((isWhiteLabel && missingProgramme) || wlNotAcceptThePrincipalInvite))
     ) {
       showCompleteProfileBlockingDialog();
     } else {
@@ -952,7 +964,10 @@ export const Dashboard: React.FC = () => {
       isTrialPeriod
     ) {
       history?.push(ROUTES.COMMUNITY.WELCOME);
-    } else if (missingProgramme && isWhiteLabel) {
+    } else if (
+      (missingProgramme && isWhiteLabel) ||
+      wlNotAcceptThePrincipalInvite
+    ) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -1011,7 +1026,10 @@ export const Dashboard: React.FC = () => {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.CLASSES,
       });
-    } else if (missingProgramme && isWhiteLabel) {
+    } else if (
+      (missingProgramme && isWhiteLabel) ||
+      wlNotAcceptThePrincipalInvite
+    ) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -1028,7 +1046,10 @@ export const Dashboard: React.FC = () => {
       isTrialPeriod
     ) {
       history.push(ROUTES.CALENDAR);
-    } else if (missingProgramme && isWhiteLabel) {
+    } else if (
+      (missingProgramme && isWhiteLabel) ||
+      wlNotAcceptThePrincipalInvite
+    ) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -1052,7 +1073,10 @@ export const Dashboard: React.FC = () => {
       isTrialPeriod
     ) {
       history.push(ROUTES.TRAINING);
-    } else if (missingProgramme && isWhiteLabel) {
+    } else if (
+      (missingProgramme && isWhiteLabel) ||
+      wlNotAcceptThePrincipalInvite
+    ) {
       showCompleteProfileBlockingDialog();
     }
   };
@@ -1089,6 +1113,11 @@ export const Dashboard: React.FC = () => {
   }, [pointsToDo, practitioner?.isPrincipal]);
 
   const renderTodoText = useMemo(() => {
+    const plnaActivitiesPermission = practitioner?.permissions?.find(
+      (item) =>
+        item?.permissionName === PermissionsNames.plan_classroom_actitivies
+    );
+
     if (pointsToDo?.viewedCommunitySection) {
       return 'Influencer';
     }
@@ -1097,7 +1126,12 @@ export const Dashboard: React.FC = () => {
       return 'Boss';
     }
 
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
+    if (
+      (pointsToDo?.plannedOneDay && practitioner?.isPrincipal) ||
+      (pointsToDo?.plannedOneDay &&
+        !practitioner?.isPrincipal &&
+        plnaActivitiesPermission?.isActive === true)
+    ) {
       return 'Cwepheshe';
     }
     if (pointsToDo?.isPartOfPreschool) {
@@ -1157,13 +1191,13 @@ export const Dashboard: React.FC = () => {
       if (getCurrentPointsToDo === 3) {
         return (
           <div className="bg-quatenary mr-4 rounded-full p-3">
-            <FireIcon className="font-white h-8 w-8" />
+            <FireIcon className="font-white h-8 w-8 text-white" />
           </div>
         );
       }
       return (
         <div className="bg-successMain mr-4 rounded-full p-3">
-          <FireIcon className="font-white h-8 w-8" />
+          <FireIcon className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
@@ -1171,7 +1205,7 @@ export const Dashboard: React.FC = () => {
     if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
       return (
         <div className="bg-quatenary mr-4 rounded-full p-3">
-          <Crown className="font-white h-8 w-8" />
+          <Crown className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
@@ -1179,7 +1213,7 @@ export const Dashboard: React.FC = () => {
     if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
       return (
         <div className="bg-quatenary mr-4 rounded-full p-3">
-          <CalendarIcon className="font-white h-8 w-8" />
+          <CalendarIcon className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
@@ -1187,7 +1221,7 @@ export const Dashboard: React.FC = () => {
     if (pointsToDo?.isPartOfPreschool) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
-          <Kindgarden className="font-white h-8 w-8" />
+          <Kindgarden className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
@@ -1195,14 +1229,14 @@ export const Dashboard: React.FC = () => {
     if (pointsToDo?.signedUpForApp) {
       return (
         <div className="bg-alertMain mr-4 rounded-full p-2">
-          <ClipboardCheckIcon className="font-white h-8 w-8" />
+          <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
         </div>
       );
     }
 
     return (
       <div className="bg-alertMain mr-4 rounded-full p-2">
-        <ClipboardCheckIcon className="font-white h-8 w-8" />
+        <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
       </div>
     );
   }, [
@@ -1286,7 +1320,7 @@ export const Dashboard: React.FC = () => {
         }
         menuItems={isCoach ? navigationForCoach : navigation}
         onNavigation={onNavigation}
-        menuLogoUrl={hamburgerLogo}
+        menuLogoUrl={theme?.images?.logoUrl || hamburgerLogo}
         calendarRender={
           (calendarEnabled && isWhiteLabel) || isOpenAccess
             ? () => {
@@ -1319,7 +1353,7 @@ export const Dashboard: React.FC = () => {
         showBackground
         size="large"
         renderBorder={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         className={styles.bannerContent}
         displayOffline={!isOnline}
         version={`v ${version}`}
