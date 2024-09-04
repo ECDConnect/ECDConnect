@@ -37,6 +37,7 @@ import { settingSelectors, settingThunkActions } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
+import TransparentLayer from '../../assets/TransparentLayer.png';
 
 import {
   practitionerSelectors,
@@ -1319,7 +1320,7 @@ export const Dashboard: React.FC = () => {
         }
         menuItems={isCoach ? navigationForCoach : navigation}
         onNavigation={onNavigation}
-        menuLogoUrl={hamburgerLogo}
+        menuLogoUrl={theme?.images?.logoUrl || hamburgerLogo}
         calendarRender={
           (calendarEnabled && isWhiteLabel) || isOpenAccess
             ? () => {
@@ -1352,7 +1353,7 @@ export const Dashboard: React.FC = () => {
         showBackground
         size="large"
         renderBorder={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         className={styles.bannerContent}
         displayOffline={!isOnline}
         version={`v ${version}`}
