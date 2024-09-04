@@ -336,11 +336,37 @@ namespace ECDLink.Security.Api
 
                 if (userByUsername != null)
                 {
-                   return BadRequest(new FailedVerificationModel
-                   {
-                     ErrorCode = 2,
-                     Error = "Invalid Username"
-                   });
+                    if (TenantExecutionContext.Tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabel)
+                    {
+                        if (!string.IsNullOrEmpty(verifyModel.UserId))
+                        {
+                            var user = _dbContext.Users.Where(user => user.Id.ToString() == verifyModel.UserId).FirstOrDefault();
+                            if (user.IdNumber != verifyModel.Username)
+                            {
+                                return BadRequest(new FailedVerificationModel
+                                {
+                                    ErrorCode = 2,
+                                    Error = "Invalid Username"
+                                });
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest(new FailedVerificationModel
+                            {
+                                ErrorCode = 2,
+                                Error = "Invalid Username"
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(new FailedVerificationModel
+                        {
+                            ErrorCode = 2,
+                            Error = "Invalid Username"
+                        });
+                    }
                  }
             }
 
