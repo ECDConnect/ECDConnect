@@ -2,6 +2,7 @@ import {
   DialogServiceProvider,
   SnackbarProvider,
   useDialog,
+  useTheme,
 } from '@ecdlink/core';
 import { DialogPosition } from '@ecdlink/ui';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
@@ -36,6 +37,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const App: React.FC = () => {
   const tenant = useTenant();
+  const { theme } = useTheme();
   const dialog = useDialog();
   const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
@@ -111,6 +113,24 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant]);
+
+  useEffect(() => {
+    if (theme && theme.images) {
+      try {
+        let favicons = document.querySelectorAll('link[rel~="icon"]');
+        favicons.forEach(function (favicon) {
+          favicon?.parentNode?.removeChild(favicon);
+        });
+        var favicon_link_html = document.createElement('link');
+        favicon_link_html.rel = 'icon';
+        favicon_link_html.href = theme.images.faviconUrl;
+        favicon_link_html.type = 'image/x-icon';
+
+        const head = document.getElementsByTagName('head')[0];
+        head.insertBefore(favicon_link_html, head.firstChild);
+      } catch (e) {}
+    }
+  }, [theme?.images]);
 
   useEffect(() => {
     if (userExpired) {

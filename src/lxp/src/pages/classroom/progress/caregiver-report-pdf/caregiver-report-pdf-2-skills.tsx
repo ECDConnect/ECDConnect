@@ -42,7 +42,7 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
-      style={{ height: '1400px' }}
+      style={{ height: '1100px' }}
     >
       <div className="mb-4 flex flex-row">
         <img src={greenFaceImg} className="mr-4 h-20 w-20" />
@@ -95,7 +95,10 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
           {category.skills
             .filter((x) => x.isPositive)
             .map((skill) => (
-              <p className="font-body text-textDark">
+              <p
+                className="font-small text-textDark"
+                style={{ fontSize: '12px' }}
+              >
                 <span>&#8226;</span> {skill.skillDescription}
               </p>
             ))}

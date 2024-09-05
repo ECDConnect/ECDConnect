@@ -2,12 +2,16 @@ import { EntityBase } from '../entity-base';
 import { ProvinceDto } from '../StaticData/province.dto';
 
 export interface SiteAddressDto extends EntityBase {
-  name?: string;
-  addressLine1: string;
-  addressLine2?: string;
-  addressLine3?: string;
-  postalCode?: string;
-  ward?: string;
-  provinceId?: string;
-  province?: ProvinceDto;
+  area?: string | null;
+  name?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  addressLine3?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
+  municipality?: string | null;
+  postalCode?: string | null;
+  provinceId?: string | null;
+  province?: ProvinceDto | null;
+  ward?: string | null;
 }

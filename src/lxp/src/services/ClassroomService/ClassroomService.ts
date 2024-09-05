@@ -30,11 +30,20 @@ class ClassroomService {
             preschoolCode
             siteAddress {
               id
+              area
               name
               addressLine1
               addressLine2
               addressLine3
+              latitude
+              longitude
+              municipality
               postalCode
+              province {
+                id
+                description
+              }
+              provinceId
               ward
             }
             principal {

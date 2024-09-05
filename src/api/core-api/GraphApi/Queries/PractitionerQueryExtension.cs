@@ -256,7 +256,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                                 practiType = "Practitioner";
                             }
                             //get any classroomnames from user and append them
-                            var classes = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(practitioner.UserId.ToString()));
+                            var classes = classGroupRepo.GetAll().Where(x => x.IsActive && x.UserId.ToString().Contains(practitioner.UserId.ToString()));
                             if (classes.Any())
                             {
                                 var classNames = classes.Where(x => x.Name != "").Select(f => f.Name);
@@ -499,7 +499,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 new List<string> {"Passport", "Text, (required if type of identification is 'passport')"},
                 new List<string> {"First name", "Text, (required)"},
                 new List<string> {"Surname", "Text, (required)"},
-                new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
+                new List<string> {"Cellphone number", "Number, (required, 9 or 10 digits)"},
             };
 
             var templateHeaderSheet = $"Practitioner Template";

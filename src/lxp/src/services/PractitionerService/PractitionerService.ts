@@ -370,6 +370,7 @@ class PractitionerService {
             isCompletedBusinessWalkThrough
             clickedCommunityTab
             communitySectionViewDate
+            progressWalkthroughComplete
             absentees {
               absentDate
               absentDateEnd
@@ -404,7 +405,10 @@ class PractitionerService {
         'Get Practitioner by user id Failed - Server connection error'
       );
     }
-
+    console.log(
+      'response.data.data.practitionerByUserId',
+      response.data.data.practitionerByUserId
+    );
     return response.data.data.practitionerByUserId;
   }
 
@@ -1538,6 +1542,32 @@ class PractitionerService {
     }
 
     return response.data.data.updatePractitionerBusinessWalkthrough;
+  }
+
+  async UpdatePractitionerProgressWalkthrough(
+    userId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation UpdatePractitionerProgressWalkthrough($userId: String) {
+        updatePractitionerProgressWalkthrough(userId: $userId) {
+          
+        }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update practitioner progress walk through Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerProgressWalkthrough;
   }
 
   async practitionerInvitePrincipal(

@@ -42,3 +42,8 @@ export interface UpdateUsernameModel {
   token?: string;
   shareInfo?: boolean;
 }
+
+export interface PortalConsentModel {
+  locale: string;
+  type: string;
+}

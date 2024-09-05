@@ -52,7 +52,7 @@ export const ObservationsForChildNotes: React.FC = () => {
           icon="SaveIcon"
           text="Save"
           textColor="white"
-          disabled={!currentReport?.notes}
+          disabled={!notes}
         />
       </div>
     </BannerWrapper>

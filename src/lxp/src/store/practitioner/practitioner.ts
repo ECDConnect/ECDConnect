@@ -15,6 +15,7 @@ import {
   getPractitionerDisplayMetrics,
   updatePractitionerPermissions,
   updatePractitionerCommunityTabStatus,
+  updatePractitionerProgressWalkthrough,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -132,6 +133,15 @@ const practitionerSlice = createSlice({
         state.practitioner = {
           ...state.practitioner,
           isCompletedBusinessWalkThrough: action.payload,
+        };
+      }
+    );
+    builder.addCase(
+      updatePractitionerProgressWalkthrough.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          progressWalkthroughComplete: action.payload,
         };
       }
     );

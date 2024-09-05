@@ -636,7 +636,7 @@ export const AddOrEditPractitioner = ({
                 isPractitionerRegistered
                   ? []
                   : [
-                      'Encourage Thandi to register for the app as soon as possible!',
+                      `Encourage ${newPractitioner?.firstName} to register for the app as soon as possible!`,
                     ]
               }
             />

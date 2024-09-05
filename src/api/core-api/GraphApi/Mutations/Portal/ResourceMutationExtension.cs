@@ -32,7 +32,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 languageId = localeService.GetLocale(localeId)?.Id ?? Guid.Empty;
             }
 
-            // First add add the connect sections, before adding the links
             foreach (var item in input)
             {
                 Dictionary<string, object> connectDict = new Dictionary<string, object>
@@ -56,6 +55,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        public bool UpdateConnectItem(
+            [Service] ContentManagementRepository contentRepo,
+            [Service] ILocaleService<Language> localeService,
+            List<CMSConnectItemModel> input,
+            string localeId)
+        {
+            Guid languageId;
+            if (Guid.TryParse(localeId, out languageId))
+            {
+                languageId = localeService.GetLocaleById(languageId)?.Id ?? Guid.Empty;
+            }
+            else
+            {
+                languageId = localeService.GetLocale(localeId)?.Id ?? Guid.Empty;
+            }
+
+            foreach (var item in input)
+            {
+                Dictionary<string, object> connectDict = new Dictionary<string, object>
+                {
+                    { "buttonText", item.ButtonText },
+                    { "link", item.Link },
+                };
+
+                if (item.ContentId != -1)
+                {
+                    //update
+                    contentRepo.Update(item.ContentId, languageId, connectDict);
+                }
+                else
+                {
+                    //insert
+                    item.ContentId = contentRepo.Create(item.ContentTypeId, languageId, connectDict);
+                }
+            }
+
+            return true;
+        }
+
+
     }
 }

@@ -50,7 +50,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
           className={'text-sm font-normal'}
           color={'textDark'}
         />
-        <div>
+        {/* <div>
           <Button
             className={'mt-10 w-full rounded-xl'}
             type="filled"
@@ -80,7 +80,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
             color={'textMid'}
           />
           <Divider className="absolute w-6/12" />
-        </div>
+        </div> */}
         <Button
           className={'mt-2 w-full rounded-xl'}
           type="filled"

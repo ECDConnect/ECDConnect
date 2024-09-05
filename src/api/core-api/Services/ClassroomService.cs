@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
 using Microsoft.AspNetCore.Http;
@@ -49,8 +50,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 throw new QueryException("Practitioner not found.");
             }
+
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabelTemplate
+                && !practitioner.IsPrincipalOrAdmin()
+                && practitioner.DateAccepted == null)
+            {
+                return null;
+            }
           
-            if (!practitioner.IsPrincipalOrAdmin() && (practitioner.PrincipalHierarchy == null || practitioner.Progress < 2))
+            if (!practitioner.IsPrincipalOrAdmin() &&  (practitioner.PrincipalHierarchy == null || practitioner.Progress < 2))
             {
                 return _classroomRepo.GetAll()
                     .Where(x =>

@@ -18,11 +18,11 @@ import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import ROUTES from '@/routes/routes';
 import { PractitionerDto, useDialog, useSnackbar } from '@ecdlink/core';
-import { TabsItemForPrincipal } from '../../../class-dashboard.types';
 import { useTenant } from '@/hooks/useTenant';
 import { useEffect, useState } from 'react';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { HelpForm } from '@/components/help-form/help-form';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export interface PractitionerNotRegisterProps {
   practitioner: PractitionerDto;
@@ -51,8 +51,8 @@ export const PractitionerNotRegistered: React.FC<
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
-    history.push(ROUTES.CLASSROOM.ROOT, {
-      activeTabIndex: TabsItemForPrincipal.CLASSES,
+    history.push(ROUTES.BUSINESS, {
+      activeTabIndex: BusinessTabItems.STAFF,
     });
     showMessage({
       message: `${practitioner?.user?.firstName} removed`,

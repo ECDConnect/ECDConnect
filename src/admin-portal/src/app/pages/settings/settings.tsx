@@ -101,6 +101,7 @@ export function Settings() {
         pointsCardBarBg: WhiteLabelTheme.pointsCardBarBg,
         quatenaryBg: WhiteLabelTheme.quatenaryBg,
         adminBackground: WhiteLabelTheme.adminBackground,
+        quinary: WhiteLabelTheme.quinary,
       },
       fonts: {
         fontUrl: DefaultTheme.fontUrl,
@@ -298,11 +299,7 @@ export function Settings() {
             </Button>
           </div>
         </div>
-        <SettingsTheme
-          theme={theme}
-          overRideTheme={overRideTheme}
-          defaultTheme={DefaultTheme}
-        />
+        <SettingsTheme tenant={tenant} defaultTheme={DefaultTheme} />
       </div>
       <Dialog
         className="absolute w-6/12"

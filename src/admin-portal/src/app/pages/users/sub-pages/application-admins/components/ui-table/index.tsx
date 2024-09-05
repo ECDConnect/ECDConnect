@@ -26,6 +26,7 @@ import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import { ContentTypes } from '../../../../../../constants/content-management';
 import { UiTableProps } from './type';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
+import { useUserRole } from '../../../../../../hooks/useUserRole';
 
 export default function UiTable({
   columns = [],
@@ -43,6 +44,7 @@ export default function UiTable({
 }: UiTableProps) {
   const [inviteRows, setInviteRows] = useState<boolean>(false);
   const { setNotification } = useNotifications();
+  const { isAdministrator, isSuperAdmin } = useUserRole();
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
@@ -507,24 +509,25 @@ export default function UiTable({
           <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
           <Typography type="help" color="white" text="Resend Invitations" />
         </Button>
-
-        <Button
-          className="rounded-xl px-6 py-0"
-          type="outlined"
-          isLoading={deactivating}
-          disabled={deactivating}
-          color="tertiary"
-          onClick={handleBulkDelete}
-        >
-          <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
-            {' '}
-          </TrashIcon>
-          <Typography
-            type="help"
+        {isSuperAdmin && (
+          <Button
+            className="rounded-xl px-6 py-0"
+            type="outlined"
+            isLoading={deactivating}
+            disabled={deactivating}
             color="tertiary"
-            text={'Deactivate User'}
-          ></Typography>
-        </Button>
+            onClick={handleBulkDelete}
+          >
+            <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
+              {' '}
+            </TrashIcon>
+            <Typography
+              type="help"
+              color="tertiary"
+              text={'Deactivate User'}
+            ></Typography>
+          </Button>
+        )}
       </>
     );
   }, [

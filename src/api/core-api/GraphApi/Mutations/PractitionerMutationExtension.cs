@@ -450,6 +450,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return personnelService.UpdatePractitionerBusinessWalkthrough(userId);
         }
 
+        public bool UpdatePractitionerProgressWalkthrough([Service] PersonnelService personnelService, string userId)
+        {
+            personnelService.UpdatePractitioneProgressWalkthrough(userId);
+            return true;
+        }
+
         public Practitioner UpdatePractitionerCommunityTabStatus(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

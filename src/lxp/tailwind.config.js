@@ -115,7 +115,7 @@ module.exports = {
       },
       backgroundImage: (theme) => ({
         logo: "var(--logo)",
-        bannerx2: "url('./assets/bannerx2.png')",
+        bannerx2: "var(--banner)",
       }),
       animation: {
         spinner: 'spin 1.5s linear infinite',

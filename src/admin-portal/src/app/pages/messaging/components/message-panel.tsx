@@ -92,6 +92,7 @@ export default function MessagePanel() {
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [showSavingDialog, setShowSavingDialog] = useState(false);
   const [showLoadingDialog, setShowLoadingDialog] = useState(false);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [isView, setIsView] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -229,6 +230,8 @@ export default function MessagePanel() {
     if (totalUsers) {
       setUserCount(totalUsers.userCountForMessageCriteria);
       setIsLoading(false);
+      setShowLoadingDialog(false);
+      setShowSavingDialog(true);
     }
   }, [totalUsers]);
 
@@ -248,8 +251,15 @@ export default function MessagePanel() {
   const onShowDialog = () => {
     setUserCount(0);
     setIsLoading(true);
+    setShowLoadingDialog(true);
     getUserCountForMessageCriteria();
-    setShowSavingDialog(true);
+  };
+
+  const onShowSavingDialog = () => {
+    setShowSavingDialog(false);
+    setIsLoading(true);
+    setShowScheduleDialog(true);
+    onSaveMessage();
   };
 
   const onSaveMessage = async () => {
@@ -311,7 +321,7 @@ export default function MessagePanel() {
       },
     })
       .then((response) => {
-        setShowSavingDialog(false);
+        setShowScheduleDialog(false);
         setIsLoading(false);
         backToMessageList();
         setNotification({
@@ -498,6 +508,77 @@ export default function MessagePanel() {
         <Dialog
           className="px-60"
           stretch
+          visible={showLoadingDialog}
+          position={DialogPosition.Middle}
+        >
+          <LoadingSpinner
+            size="medium"
+            className="mt-4"
+            spinnerColor="primary"
+            backgroundColor="uiLight"
+          />
+
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Selecting recipients`}
+            detailText={`Gathering recipient list. This might take a few minutes.`}
+            actionButtons={[
+              {
+                text: 'Cancel',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  setShowLoadingDialog(false);
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        </Dialog>
+        <Dialog
+          className="px-60"
+          stretch
+          visible={showScheduleDialog}
+          position={DialogPosition.Middle}
+        >
+          <LoadingSpinner
+            size="medium"
+            className="mt-4"
+            spinnerColor="primary"
+            backgroundColor="uiLight"
+          />
+
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Message scheduling in process`}
+            detailText={`Your message is being scheduled. This may take a few minutes.`}
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  setShowScheduleDialog(false);
+                  backToMessageList();
+                  setNotification({
+                    title: 'Message scheduled',
+                    variant: NOTIFICATION.SUCCESS,
+                  });
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        </Dialog>
+        <Dialog
+          className="px-60"
+          stretch
           visible={showSavingDialog}
           position={DialogPosition.Middle}
         >
@@ -529,7 +610,7 @@ export default function MessagePanel() {
                 textColour: 'secondary',
                 colour: 'secondary',
                 type: 'outlined',
-                onClick: () => onSaveMessage(),
+                onClick: () => onShowSavingDialog(),
                 leadingIcon: 'PencilIcon',
               },
               {

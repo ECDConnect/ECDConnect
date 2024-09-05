@@ -12,7 +12,7 @@ class TenantService {
       .get(APIs.tenantCurrent)
       .catch(handlerError);
 
-    if (response.status < 300) return response.data;
+    if (response && response.status < 300) return response.data;
     return null;
   }
 }

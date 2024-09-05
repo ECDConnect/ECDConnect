@@ -114,6 +114,12 @@
                 public const string GoogleGrouping = "General.Analytics.Google";
                 public const string GoogleReport = "General.Analytics.Google.DashboardGoogleReport";
             }
+
+            public static class Grafana
+            {
+                public const string GrafanaGrouping = "General.Analytics.Grafana";
+                public const string GrafanaGeneralReport = "General.Analytics.Grafana.GeneralDashboard";
+            }
         }
 
         public static class CallBacks

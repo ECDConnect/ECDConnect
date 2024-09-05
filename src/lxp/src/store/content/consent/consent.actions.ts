@@ -44,15 +44,15 @@ export const getConsent = createAsyncThunk<
 export const getOpenConsent = createAsyncThunk<
   ConsentDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  { locale: string; type: ContentConsentTypeEnum },
+  { locale: string; name: ContentConsentTypeEnum },
   ThunkApiType<RootState>
 >(
   'getOpenConsent',
   // eslint-disable-next-line no-empty-pattern
-  async ({ locale, type }, { rejectWithValue }) => {
+  async ({ locale, name }, { rejectWithValue }) => {
     try {
       let content = await new ContentConsentService(locale, '').getOpenConsent(
-        type
+        name
       );
 
       if (!content) {

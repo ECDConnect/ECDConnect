@@ -1,14 +1,8 @@
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 import { ChildProgressDetailedReport } from '@/models/progress/child-progress-report';
-import { ChildProgressSkill } from '@/models/progress/progress-skill';
-import { useAppDispatch } from '@/store';
 import { childrenSelectors } from '@/store/children';
 import { classroomsSelectors } from '@/store/classroom';
-import {
-  progressTrackingActions,
-  progressTrackingSelectors,
-  progressTrackingThunkActions,
-} from '@/store/progress-tracking';
+import { progressTrackingSelectors } from '@/store/progress-tracking';
 import {
   replaceSkillText as baseReplaceSkillText,
   getProgressAgeGroupForChild,
@@ -44,6 +38,10 @@ export const useProgressForChild = (childId: string) => {
       )
     : undefined;
 
+  const ageInMonths = !!child?.user?.dateOfBirth
+    ? differenceInMonths(new Date(), new Date(child.user.dateOfBirth))
+    : undefined;
+
   const skillsForAgeGroup = useSelector(
     progressTrackingSelectors.getSkillsForAgeGroup(currentAgeGroup?.id || 0)
   );
@@ -54,30 +52,53 @@ export const useProgressForChild = (childId: string) => {
 
   // Sets up reports, adding details for reporting period, skill names (for locale) etc
   const detailedReports = useMemo<ChildProgressDetailedReport[]>(() => {
-    const details = allReports.map((report) => {
-      const reportingPeriod = allReportingPeriods.find(
-        (x) => x.id === report.childProgressReportPeriodId
-      );
+    // Filter out incomplete reports from past reporting periods
+    const details = allReports
+      .filter(
+        (report) =>
+          !!report.dateCompleted ||
+          report.childProgressReportPeriodId === currentReportingPeriod?.id
+      )
+      .map((report) => {
+        const reportingPeriod = allReportingPeriods.find(
+          (x) => x.id === report.childProgressReportPeriodId
+        );
 
-      const missedSkillCount =
-        skillsForAgeGroup.length - report.skillObservations.length;
-      const doNotKnowSkillCount = report.skillObservations.filter(
-        (x) => x.value === ProgressSkillValues.DoNotKnow
-      ).length;
-      const doNotKnowPercentage =
-        ((missedSkillCount + doNotKnowSkillCount) /
-          report.skillObservations.length) *
-        100;
+        const missedSkillCount =
+          skillsForAgeGroup.length - report.skillObservations.length;
+        const doNotKnowSkillCount = report.skillObservations.filter(
+          (x) => x.value === ProgressSkillValues.DoNotKnow
+        ).length;
+        const doNotKnowPercentage =
+          ((missedSkillCount + doNotKnowSkillCount) /
+            report.skillObservations.length) *
+          100;
 
-      return {
-        ...report,
-        unknownPercentage: doNotKnowPercentage,
-        unknownCount: missedSkillCount + doNotKnowSkillCount,
-        skillsToWorkOn: report.skillsToWorkOn
-          .map((skillToWorkOn) => {
-            const skill = allSkills.find((x) => x.id === skillToWorkOn.skillId);
+        return {
+          ...report,
+          unknownPercentage: doNotKnowPercentage,
+          unknownCount: missedSkillCount + doNotKnowSkillCount,
+          skillsToWorkOn: report.skillsToWorkOn
+            .map((skillToWorkOn) => {
+              const skill = allSkills.find(
+                (x) => x.id === skillToWorkOn.skillId
+              );
+              return {
+                ...skillToWorkOn,
+                skillName: baseReplaceSkillText(
+                  skill?.name || '',
+                  child?.user?.firstName || ''
+                ),
+                skillDescription: skill?.description || '',
+                subCategoryId: skill?.subCategory.id || 0,
+                categoryId: skill?.subCategory.category.id || 0,
+              };
+            })
+            .sort((a, b) => a.skillId - b.skillId),
+          skillObservations: report.skillObservations.map((skillObs) => {
+            const skill = allSkills.find((x) => x.id === skillObs.skillId);
             return {
-              ...skillToWorkOn,
+              ...skillObs,
               skillName: baseReplaceSkillText(
                 skill?.name || '',
                 child?.user?.firstName || ''
@@ -85,53 +106,45 @@ export const useProgressForChild = (childId: string) => {
               skillDescription: skill?.description || '',
               subCategoryId: skill?.subCategory.id || 0,
               categoryId: skill?.subCategory.category.id || 0,
+              isPositive:
+                !!skillObs.value &&
+                ((!skill?.isReverseScored &&
+                  skillObs.value === ProgressSkillValues.Yes) ||
+                  (!!skill?.isReverseScored &&
+                    skillObs.value === ProgressSkillValues.No)),
+              isNegative:
+                !!skillObs.value &&
+                ((!skill?.isReverseScored &&
+                  skillObs.value === ProgressSkillValues.No) ||
+                  (!!skill?.isReverseScored &&
+                    skillObs.value === ProgressSkillValues.Yes)),
             };
-          })
-          .sort((a, b) => a.skillId - b.skillId),
-        skillObservations: report.skillObservations.map((skillObs) => {
-          const skill = allSkills.find((x) => x.id === skillObs.skillId);
-          return {
-            ...skillObs,
-            skillName: baseReplaceSkillText(
-              skill?.name || '',
-              child?.user?.firstName || ''
-            ),
-            skillDescription: skill?.description || '',
-            subCategoryId: skill?.subCategory.id || 0,
-            categoryId: skill?.subCategory.category.id || 0,
-            isPositive:
-              !!skillObs.value &&
-              ((!skill?.isReverseScored &&
-                skillObs.value === ProgressSkillValues.Yes) ||
-                (!!skill?.isReverseScored &&
-                  skillObs.value === ProgressSkillValues.No)),
-            isNegative:
-              !!skillObs.value &&
-              ((!skill?.isReverseScored &&
-                skillObs.value === ProgressSkillValues.No) ||
-                (!!skill?.isReverseScored &&
-                  skillObs.value === ProgressSkillValues.Yes)),
-          };
-        }),
-        reportingPeriodStartDate: new Date(reportingPeriod!.startDate),
-        reportingPeriodEndDate: new Date(reportingPeriod!.endDate),
-        reportingPeriodNumber: reportingPeriod!.reportNumber,
-        ageInMonthsAtReport: !!child?.user?.dateOfBirth
-          ? differenceInMonths(
-              new Date(reportingPeriod!.endDate),
-              new Date(child.user.dateOfBirth)
-            )
-          : undefined,
-      };
-    });
+          }),
+          reportingPeriodStartDate: reportingPeriod!.startDate,
+          reportingPeriodEndDate: reportingPeriod!.endDate,
+          reportingPeriodNumber: reportingPeriod!.reportNumber,
+          ageInMonthsAtReport: !!child?.user?.dateOfBirth
+            ? differenceInMonths(
+                new Date(reportingPeriod!.endDate),
+                new Date(child.user.dateOfBirth)
+              )
+            : undefined,
+        };
+      });
 
     return details;
-  }, [allReports, allReportingPeriods]);
+  }, [allReports, allReportingPeriods, currentReportingPeriod]);
+
+  const currentReport = detailedReports.find(
+    (x) => x.childProgressReportPeriodId === currentReportingPeriod?.id
+  );
 
   return {
     child,
+    ageInMonths,
     detailedReports,
     currentReportingPeriod,
     currentAgeGroup,
+    currentReport,
   };
 };
