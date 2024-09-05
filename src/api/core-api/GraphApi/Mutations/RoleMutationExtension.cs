@@ -6,8 +6,6 @@ using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 
@@ -86,5 +84,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return isRoleDeleted.Succeeded;
         }
+
+
     }
 }

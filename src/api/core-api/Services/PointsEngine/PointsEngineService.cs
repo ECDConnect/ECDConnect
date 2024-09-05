@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -49,6 +48,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private readonly IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
         private readonly IGenericRepository<Programme, Guid> _programmeRepo;
+        private readonly IGenericRepository<Learner, Guid> _learnerRepo;
 
 
         private MonthlyAttendanceReport _monthlyAttendanceReportService;
@@ -91,6 +91,7 @@ namespace EcdLink.Api.CoreApi.Services
             _userPermissionRepo = _repositoryFactory.CreateGenericRepository<UserPermission>(userContext: _uId);
             _statementsRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
             _statementsIncomeRepo = _repositoryFactory.CreateGenericRepository<StatementsIncome>(userContext: _uId);
+            _learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: _uId);
 
             _notificationService = notificationService;
             _classroomService = classroomService;
@@ -224,6 +225,9 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 userPoints[i].ComparativeTargetPercentage = (totalUsers == 0 ? 0 : Math.Round((double)(totalUsers -  userPoints[i].RankingNr) / (double)(totalUsers) * 100));
                 userPoints[i].NonComparativeTargetPercentage = maxTotal == 0 ? 0 : Math.Round((double)userPoints[i].PointsTotal / (double)(maxTotal) * 100);
+
+                userPoints[i].ComparativeTargetPercentage = userPoints[i].ComparativeTargetPercentage > 100 ? 100 : userPoints[i].ComparativeTargetPercentage;
+                userPoints[i].NonComparativeTargetPercentage = userPoints[i].NonComparativeTargetPercentage > 100 ? 100 : userPoints[i].NonComparativeTargetPercentage;
             }
 
             var userPointRecord = userPoints.Where(x => x.UserId == practitioner.UserId).FirstOrDefault();
@@ -470,7 +474,7 @@ namespace EcdLink.Api.CoreApi.Services
                         AddOrUpdatePoints(
                             PointsActivityConstants.ChildAttendanceRegisterSavedId,
                             userId,
-                            userPoints >= (int)activity.MaxPointsIndividualMonthly ? (int)activity.MaxPointsIndividualMonthly : userPoints,
+                            userPoints,
                             timesScored);
                     }
                 }
@@ -483,25 +487,29 @@ namespace EcdLink.Api.CoreApi.Services
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public void CalculateChildRegistrationComplete(Guid childUserId)
+        public void CalculateChildRegistrationComplete(Guid userId)
         {
-            var parentUserId = _hierarchyEngine.GetUserParentUserId(childUserId);
-            var practitioner = _practitionerRepo.GetByUserId(parentUserId.ToString());
+            var practitioner = _practitionerRepo.GetByUserId(userId);
             if (practitioner != null)
             {
-                var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildRegistrationCompleteId);
                 var today = DateTime.Now;
                 var userChildrenCount = _childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)
                                                                     && x.UpdatedDate.Year == today.Year
+                                                                    && x.UpdatedDate.Month == today.Month
                                                                     && x.WorkflowStatusId == Constants.WorkflowStatus.ActiveId).Count();
 
-                var userPoints = userChildrenCount * activity.Points;
-                AddOrUpdatePoints(
-                    PointsActivityConstants.ChildRegistrationCompleteId,
-                    (Guid)parentUserId,
-                    userPoints >= (int)activity.MaxPointsIndividualYearly ? (int)activity.MaxPointsIndividualYearly : userPoints,
-                    userChildrenCount
-                   );
+                if (userChildrenCount > 0)
+                {
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildRegistrationCompleteId);
+                    var userPoints = userChildrenCount * activity.Points;
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.ChildRegistrationCompleteId,
+                        userId,
+                        userPoints,
+                        userChildrenCount
+                       );
+                }
+
             }
         }
 
@@ -518,24 +526,24 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var today = DateTime.Now;
 
-                // Reading from audit table to retrieve data for practitioner 
-                var childCount = _integrationAuditRepo.GetAll().Where(x => x.Entity == "Child" &&
-                                                                           x.Property == "IsActive" &&
-                                                                           x.ValueBefore == "True" &&
-                                                                           x.ValueAfter == "False" &&
-                                                                           x.UserId.ToString() == userId.ToString() &&
-                                                                           x.UpdatedDate.Year == today.Year)
-                                                                .OrderBy(x => x.InsertedDate)
-                                                                .Count();
-                if (childCount > 0)
+                var learners = _classroomGroupRepo.GetAll()
+                                .Where(x =>
+                                    x.IsActive
+                                    && x.Classroom.UserId == userId
+                                    && x.Classroom.IsActive)
+                                .SelectMany(x => x.Learners)
+                                .Where(x => !x.IsActive && x.StoppedAttendance.HasValue && x.UpdatedDate.Year == today.Year && x.UpdatedDate.Month == today.Month)
+                                .ToList();
+
+                if (learners.Count > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildRemovedFromPreschoolId);
-                    var userPoints = childCount * activity.Points;
+                    var userPoints = learners.Count * activity.Points;
                     AddOrUpdatePoints(
                         PointsActivityConstants.ChildRemovedFromPreschoolId,
                         userId,
-                        userPoints >= (int)activity.MaxPointsIndividualYearly ? (int)activity.MaxPointsIndividualYearly : userPoints,
-                        childCount
+                        userPoints,
+                        learners.Count
                        );
                 }
             }
@@ -734,15 +742,15 @@ namespace EcdLink.Api.CoreApi.Services
                 if (statementCount > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.DownloadIncomeStatementId);
-                    var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
-                                            x.UserId == userId
-                                            && x.PointsActivityId == activity.Id
-                                            && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
+                    //var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
+                    //                        x.UserId == userId
+                    //                        && x.PointsActivityId == activity.Id
+                    //                        && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
                     
                     AddOrUpdatePoints(
                         PointsActivityConstants.DownloadIncomeStatementId,
                         userId,
-                        yearPoints >= (int)activity.MaxPointsIndividualYearly ? 0 : activity.Points,
+                        activity.Points,
                         statementCount
                     );
                 }
@@ -784,7 +792,7 @@ namespace EcdLink.Api.CoreApi.Services
                             AddOrUpdatePoints(
                               PointsActivityConstants.AddExpenseOrIncomeToStatementId,
                               userId,
-                              monthPoints > 25 ? activity.Points : monthPoints,
+                              monthPoints,
                               itemsCount
                             );
                         }
@@ -889,11 +897,10 @@ namespace EcdLink.Api.CoreApi.Services
                     foreach (var item in childProgressReports)
                     {
                         var userPoints = activity.Points * item.Total;
-
                         AddOrUpdatePoints(
                             PointsActivityConstants.CompleteChildProgressObservationsId,
                             userId,
-                            userPoints >= (int)activity.MaxPointsIndividualMonthly ? (int)activity.MaxPointsIndividualMonthly : userPoints,
+                            userPoints,
                             item.Total,
                             new DateTime(today.Year, item.Month, today.Day)
                         );
@@ -926,15 +933,15 @@ namespace EcdLink.Api.CoreApi.Services
                                                             && x.ChildProgressReportPeriod.StartDate.Year == today.Year
                                                             && x.ChildProgressReportPeriod.StartDate.Month == today.Month)
                                                     .Count();
-                    var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
-                                           x.UserId == userId
-                                           && x.PointsActivityId == activity.Id
-                                           && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
+                    //var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
+                    //                       x.UserId == userId
+                    //                       && x.PointsActivityId == activity.Id
+                    //                       && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
                     var userPoints = (childProgressReportsCount * activity.Points);
                     AddOrUpdatePoints(
                             PointsActivityConstants.CreateChildProgressReportId,
                             userId,
-                            userPoints + yearPoints >= (int)activity.MaxPointsIndividualYearly ? (int)activity.MaxPointsIndividualYearly : userPoints,
+                            userPoints,
                             childProgressReportsCount
                     );
                 }
@@ -989,15 +996,15 @@ namespace EcdLink.Api.CoreApi.Services
                 if (trainingCoursesCount > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteOnlineTrainingCourseId);
-                    var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
-                                           x.UserId == userId
-                                           && x.PointsActivityId == activity.Id
-                                           && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
-                    var userPoints = yearPoints == 0 ? activity.Points : 0;
+                    //var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
+                    //                       x.UserId == userId
+                    //                       && x.PointsActivityId == activity.Id
+                    //                       && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
+                    //var userPoints = yearPoints == 0 ? activity.Points : 0;
                     AddOrUpdatePoints(
                         PointsActivityConstants.CompleteOnlineTrainingCourseId,
                         userId,
-                        userPoints,
+                        activity.Points,
                         trainingCoursesCount);
                 }
             }
@@ -1061,7 +1068,7 @@ namespace EcdLink.Api.CoreApi.Services
                 AddOrUpdatePoints(
                     PointsActivityConstants.ConnectWithAnotherUserId,
                     userId,
-                    userPoints >= (int)activity.MaxPointsIndividualMonthly ? (int)activity.MaxPointsIndividualMonthly : userPoints,
+                    userPoints,
                     acceptedConnectionsCount
                 );
 
