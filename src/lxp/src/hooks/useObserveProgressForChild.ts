@@ -173,7 +173,10 @@ export const useObserveProgressForChild = (childId: string) => {
     };
   }, [report]);
 
-  const areObservationsComplete = (updatedSkillId?: number) => {
+  const areObservationsComplete = (
+    updatedSkillId?: number,
+    updatedSkillValue?: ProgressSkillValues
+  ) => {
     // Check if we have added all observations
     const allObsMade = skillsForAgeGroup.every((x) => {
       return (
@@ -184,9 +187,21 @@ export const useObserveProgressForChild = (childId: string) => {
       );
     });
 
-    const noDonNotKnow = !currentReport?.skillObservations.some(
-      (x) => x.value === ProgressSkillValues.DoNotKnow
-    );
+    let doNotKnowCount =
+      currentReport?.skillObservations.filter(
+        (x) =>
+          x.skillId !== updatedSkillId &&
+          x.value === ProgressSkillValues.DoNotKnow
+      ).length || 0;
+
+    if (
+      !!updatedSkillValue &&
+      updatedSkillValue === ProgressSkillValues.DoNotKnow
+    ) {
+      doNotKnowCount++;
+    }
+
+    const doNotKnowPerc = (doNotKnowCount / skillsForAgeGroup.length) * 100;
 
     const skillsToWorkOnSelected =
       currentReport?.skillsToWorkOn.length === 4 ||
@@ -196,7 +211,7 @@ export const useObserveProgressForChild = (childId: string) => {
           0
         );
 
-    return allObsMade && noDonNotKnow && skillsToWorkOnSelected;
+    return allObsMade && doNotKnowPerc < 25 && skillsToWorkOnSelected;
   };
 
   const addObservationForSkill = async (
@@ -360,14 +375,14 @@ export const useObserveProgressForChild = (childId: string) => {
   };
 
   const completeReport = () => {
-    if (!currentObservationPeriod) {
+    if (!currentReportingPeriod) {
       return;
     }
 
     appDispatch(
       progressTrackingActions.completeReport({
         childId,
-        reportingPeriodId: currentObservationPeriod.id,
+        reportingPeriodId: currentReportingPeriod.id,
         classroomName: classroom!.name,
         practitionerName: `${
           practitionerForChild?.practitioner?.user?.firstName

@@ -59,8 +59,6 @@ export default function ProgressWalkthroughWrapper() {
     tso: progressWalkthroughTso,
   };
 
-  console.log('translations', translations);
-
   const steps: StepType[] = [
     {
       target: '#progressWalkthroughStep1',
