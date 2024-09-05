@@ -59,7 +59,7 @@ export const OrganisationalTerms: React.FC<OrganisationalTermsProps> = ({
     async (currentLocale) => {
       const consentData = await GetConsentForPortal(Config.authApi, {
         locale: currentLocale,
-        type: ContentConsentTypeEnum.OrganisationalTermsAndConditions,
+        name: ContentConsentTypeEnum.OrganisationalTermsAndConditions,
       });
 
       if (consentData && consentData.length > 0) {

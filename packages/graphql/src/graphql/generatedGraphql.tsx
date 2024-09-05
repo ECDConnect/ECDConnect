@@ -17979,7 +17979,7 @@ export type QueryOpenAccessAddChildDetailArgs = {
 
 export type QueryOpenConsentArgs = {
   locale?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryOtherConnectionsArgs = {
