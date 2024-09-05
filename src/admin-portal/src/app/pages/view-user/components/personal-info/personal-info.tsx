@@ -340,6 +340,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
         IsActive: true,
         CoachHierarchy: coach,
         Progress: copy?.progress,
+        ProgressWalkthroughComplete: false,
       };
 
       await updatePractitioner({

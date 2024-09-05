@@ -289,6 +289,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
           ? practitionerForm.principalHierarchy
           : null,
       Progress: 0,
+      ProgressWalkthroughComplete: false,
     };
 
     await createPractitioner({
