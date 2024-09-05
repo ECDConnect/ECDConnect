@@ -84,7 +84,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
 
   const getData = async () => {
     if (tenant && tenant.tenant && tenant.tenant.themePath) {
-      fetch(tenant.tenant.themePath)
+      await fetch(tenant.tenant.themePath)
         .then(function (res) {
           return res.json();
         })
@@ -96,7 +96,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
 
   useEffect(() => {
     getData();
-  }, [tenant?.tenant?.themePath]);
+  }, [tenant]);
 
   useEffect(() => {
     if (data && data.colors) {
