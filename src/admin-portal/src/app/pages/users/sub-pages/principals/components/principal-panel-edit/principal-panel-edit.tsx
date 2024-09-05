@@ -180,6 +180,7 @@ export default function PractitionerPanelEdit({
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
       Progress: 0,
+      ProgressWalkthroughComplete: false,
     };
 
     await updatePractitioner({
