@@ -83,7 +83,7 @@ export const OtherIncome: React.FC<AddIncomeProps> = ({
   );
 
   const disabled =
-    !!statement?.downloaded ||
+    (dateReceived && !!statement?.downloaded) ||
     (!!incomeItem && isBefore(new Date(incomeItem.dateReceived), sixtyDaysAgo));
 
   const month = !!dateReceived
