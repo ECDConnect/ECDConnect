@@ -13,6 +13,7 @@ import { RootState } from '@store/types';
 import { UserDto } from '@ecdlink/core';
 import { BackendNotificationsValidator } from './validators/backend-notifications/backendNotificationsValidador';
 import { PointsNotificationValidator } from './validators/points/pointsNotificationValidator';
+import { PractitionerNotificationValidator } from './validators/practitionerNotificationsValidator.ts/practitionerNotificationsValidator';
 
 export class NotificationService {
   interval: number;
@@ -86,6 +87,7 @@ export class NotificationService {
       new ChildProgressReportNotificationValidator(store, currentDate),
       new UserLastLoginNotificationValidator(store, currentDate),
       new PointsNotificationValidator(store, currentDate),
+      new PractitionerNotificationValidator(store, currentDate),
     ];
   };
 }

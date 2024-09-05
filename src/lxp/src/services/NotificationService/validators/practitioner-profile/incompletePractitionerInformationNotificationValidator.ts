@@ -9,7 +9,6 @@ import {
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { differenceInDays } from 'date-fns';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompletePractitionerInformationNotificationValidator
@@ -31,9 +30,6 @@ export class IncompletePractitionerInformationNotificationValidator
       classroomData: classroomState,
       practitioner: practitionerState,
       trainee: traineeState,
-      auth: authState,
-      tenant: tenantState,
-      community: communityState,
     } = this.store.getState();
 
     const principalClassroom = localStorage?.getItem(
@@ -184,93 +180,6 @@ export class IncompletePractitionerInformationNotificationValidator
             viewType: 'Hub',
             routeConfig: {
               route: ROUTES.PRACTITIONER.PROFILE.EDIT,
-            },
-          },
-        ];
-      }
-
-      const year = new Date().getFullYear();
-      const checkLocationDate = new Date(year, 2, 1);
-      const today = new Date();
-      const checkLocationDateLessThan15Days =
-        differenceInDays(new Date(), checkLocationDate) < 15;
-
-      const isMoreThan30Days =
-        differenceInDays(
-          new Date(),
-          new Date(practitionerState?.practitioner?.startDate!)
-        ) > 30;
-      const isLessThan45Days =
-        differenceInDays(
-          new Date(),
-          new Date(practitionerState?.practitioner?.startDate!)
-        ) < 45;
-
-      if (
-        (isMoreThan30Days &&
-          isLessThan45Days &&
-          !classroomState?.classroom?.siteAddress) ||
-        (today === checkLocationDate &&
-          !classroomState?.classroom?.siteAddress &&
-          checkLocationDateLessThan15Days)
-      ) {
-        return [
-          {
-            reference: `practitioner-profile-no-preschool-location`,
-            title: `Add your preschool location!`,
-            message: `You can add your preschool location to ${tenantState?.tenant?.applicationName}.`,
-            dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.high,
-            viewOnDashboard: true,
-            area: 'practitioner',
-            icon: 'SwitchVerticalIcon',
-            color: 'primary',
-            actionText: 'Add location',
-            viewType: 'Both',
-            routeConfig: {
-              route: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
-            },
-          },
-        ];
-      }
-
-      if (!practitionerState?.practitioner?.user?.phoneNumber) {
-        return [
-          {
-            reference: `practitioner-profile-no-cellphone-number`,
-            title: `Add your cellphone number!`,
-            message: `Add your cellphone number to stay connected.`,
-            dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.lower,
-            viewOnDashboard: true,
-            area: 'practitioner',
-            icon: 'SwitchVerticalIcon',
-            color: 'primary',
-            actionText: 'Add number',
-            viewType: 'Both',
-            routeConfig: {
-              route: ROUTES.PRACTITIONER.ABOUT.ROOT,
-            },
-          },
-        ];
-      }
-
-      if (!isMoreThan30Days && !communityState?.communityProfile) {
-        return [
-          {
-            reference: `practitioner-profile-no-preschool-location`,
-            title: `Join the communty!`,
-            message: `Did you know you can connect with other ECD Heroes on ${tenantState?.tenant?.applicationName}.`,
-            dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.average,
-            viewOnDashboard: true,
-            area: 'practitioner',
-            icon: 'SwitchVerticalIcon',
-            color: 'primary',
-            actionText: 'Get started',
-            viewType: 'Both',
-            routeConfig: {
-              route: ROUTES.PRACTITIONER.COMMUNITY.WELCOME,
             },
           },
         ];
