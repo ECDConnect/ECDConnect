@@ -109,13 +109,6 @@ namespace ECDLink.Core.Services
         /// <param name="startDate"></param>
         /// <param name="endDate">End date can be ommitted to get everything from the start date</param>
         /// <returns></returns>
-        /// <summary>
-        /// Gets all statements between the given date ranges. End date can be ommitted to get everything from the start date
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="startDate"></param>
-        /// <param name="endDate">End date can be ommitted to get everything from the start date</param>
-        /// <returns></returns>
         public List<StatementsIncomeStatement> GetStatements(Guid userId, DateTime startDate, DateTime? endDate = null)
         {
             var statementsQuery = _statementsRepo.GetAll()
