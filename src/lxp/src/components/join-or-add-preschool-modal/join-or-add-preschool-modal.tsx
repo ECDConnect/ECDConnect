@@ -6,6 +6,9 @@ import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
+import { classroomsSelectors } from '@/store/classroom';
 
 interface JoinOrAddPreschoolModalProps {
   onSubmit: () => void;
@@ -19,6 +22,8 @@ export const JoinOrAddPreschoolModal: React.FC<
   const history = useHistory();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const classroom = useSelector(classroomsSelectors.getClassroom);
 
   const handleOnlineCallback = (callback: () => void) => {
     if (isOnline) {
@@ -64,12 +69,20 @@ export const JoinOrAddPreschoolModal: React.FC<
           textColour: 'white',
           type: 'filled',
           leadingIcon: 'ArrowCircleRightIcon',
-          onClick: async () => {
-            onSubmit();
-            handleOnlineCallback(() =>
-              history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)
-            );
-          },
+          onClick:
+            practitioner?.principalHierarchy && !classroom
+              ? async () => {
+                  onSubmit();
+                  handleOnlineCallback(() =>
+                    history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                  );
+                }
+              : async () => {
+                  onSubmit();
+                  handleOnlineCallback(() =>
+                    history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)
+                  );
+                },
         },
         {
           colour: 'quatenary',

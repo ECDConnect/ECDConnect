@@ -19,6 +19,7 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { useAppDispatch } from '@/store';
 import { progressTrackingThunkActions } from '@/store/progress-tracking';
+import { useAppContext } from '@/walkthrougContext';
 
 export type ObservationsForChildLandingIncompleteProps = {
   childId: string;
@@ -29,6 +30,11 @@ export const ObservationsForChildLandingIncomplete: React.FC<
   ObservationsForChildLandingIncompleteProps
 > = ({ childId, currentAgeGroup }) => {
   const history = useHistory();
+  const {
+    setState,
+    state: { run: isWalkthrough },
+  } = useAppContext();
+
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
 
@@ -128,20 +134,26 @@ export const ObservationsForChildLandingIncomplete: React.FC<
           />
         )}
       </div>
-      <Button
-        onClick={() =>
-          history.push(ROUTES.PROGRESS_OBSERVATIONS, {
-            childId: childId,
-          })
-        }
-        className="mt-auto mb-4 w-full"
-        size="normal"
-        color="quatenary"
-        type="filled"
-        icon="PencilIcon"
-        text="Start"
-        textColor="white"
-      />
+      <div id="startObservationsButton">
+        <Button
+          onClick={() => {
+            if (isWalkthrough) {
+              console.log('updateing step number');
+              setState({ stepIndex: 2 });
+            }
+            history.push(ROUTES.PROGRESS_OBSERVATIONS, {
+              childId: childId,
+            });
+          }}
+          className="mt-auto mb-4 w-full"
+          size="normal"
+          color="quatenary"
+          type="filled"
+          icon="PencilIcon"
+          text="Start"
+          textColor="white"
+        />
+      </div>
     </>
   );
 };

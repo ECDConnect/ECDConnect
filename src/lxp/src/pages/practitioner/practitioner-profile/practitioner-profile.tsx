@@ -233,9 +233,10 @@ export const PractitionerProfile: React.FC = () => {
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
           if (
-            (classroom && classroom.id) ||
-            (classroomGroups && !missingProgramme) ||
-            isOpenAccess
+            ((classroom && classroom.id) ||
+              (classroomGroups && !missingProgramme) ||
+              isOpenAccess) &&
+            !(!classroom && practitioner?.principalHierarchy)
           ) {
             if (isOnline) {
               history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);

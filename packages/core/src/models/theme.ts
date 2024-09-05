@@ -56,4 +56,5 @@ export interface ThemeColorsModel {
   pointsCardBarBg: string;
   quatenaryBg: string;
   adminBackground: string;
+  quinary: string;
 }

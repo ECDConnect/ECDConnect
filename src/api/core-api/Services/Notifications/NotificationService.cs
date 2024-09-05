@@ -483,15 +483,15 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                         if (item == "practitioners_principals")
                         {
-                            roleNames.Add("Practitioners - principals");
+                            roleNames.Add("Principal");
                         }
                         if (item == "practitioners_non_principals")
                         {
-                            roleNames.Add("Practitioners - non-principals");
+                            roleNames.Add("Practitioner");
                         }
                         if (item == "coaches")
                         {
-                            roleNames.Add("Coaches");
+                            roleNames.Add("Coach");
                         }
                         if (item == "chw")
                         {

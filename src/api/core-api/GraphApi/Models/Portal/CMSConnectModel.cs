@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
 {
     public class CMSConnectModel
     {
@@ -18,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public int ContentId { get; set; }
         public string ButtonText { get; set; }
         public string Link { get; set; }
-        public int LinkedConnect {  get; set; }
+        public int LinkedConnect { get; set; }
     }
-    
+
 }

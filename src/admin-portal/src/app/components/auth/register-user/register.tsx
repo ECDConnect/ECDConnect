@@ -52,8 +52,6 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
   const termsState = watch('acceptedTerms');
   const acceptedTerms = termsState && isValid;
 
-  console.log(resetToken);
-
   const registerNewUser = async () => {
     if (isValid) {
       setIsLoading(true);

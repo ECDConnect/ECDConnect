@@ -27,6 +27,7 @@ import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.pn
 import {
   IncomeStatementDto,
   LocalStorageKeys,
+  MoreInformationTypeEnum,
   getPreviousMonth,
 } from '@ecdlink/core';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
@@ -473,7 +474,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       <Dialog fullScreen visible={isLearnMore} position={DialogPosition.Full}>
         <InfoPage
           title="Ideas for making a profit"
-          section="Business - Money tab, Learn more"
+          section={MoreInformationTypeEnum.IdeasForMakingAProfit}
           childrenPosition="bottom"
           onClose={() => setIsLearnMore(false)}
         />

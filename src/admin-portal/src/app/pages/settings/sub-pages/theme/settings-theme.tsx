@@ -1,14 +1,10 @@
 import { useMutation } from '@apollo/client';
 import {
-  applyTheme,
   DefaultTheme,
   DefaultThemeType,
-  NOTIFICATION,
-  PermissionEnum,
   ThemeModel,
   useNotifications,
-  useTheme,
-  WhiteLabelTheme,
+  NOTIFICATION,
 } from '@ecdlink/core';
 import { FileTypeEnum, FileUpload, UpdateTheme } from '@ecdlink/graphql';
 import { Typography, Button } from '@ecdlink/ui';
@@ -16,7 +12,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import ContentLoader from '../../../../components/content-loader/content-loader';
-import { useUser } from '../../../../hooks/useUser';
 import {
   initialThemeColours,
   themeColoursScheme,
@@ -32,23 +27,21 @@ import {
 import FormColorField from '../../../../components/form-color-field/form-color-field';
 import { SaveIcon } from '@heroicons/react/solid';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
+import { TenantContextType } from '../../../../hooks/useTenant';
 
 interface SettingsThemeProps {
-  theme?: ThemeModel;
-  overRideTheme: (theme: ThemeModel) => void;
+  tenant: TenantContextType;
   defaultTheme: DefaultThemeType;
 }
 
 export const SettingsTheme: React.FC<SettingsThemeProps> = ({
-  theme,
-  overRideTheme,
+  tenant,
   defaultTheme,
 }) => {
-  const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
   const [updateTheme] = useMutation(UpdateTheme);
   const [fileUpload] = useMutation(FileUpload);
-
+  const [data, setData] = useState({} as any);
+  const { setNotification } = useNotifications();
   const [loading, setLoading] = useState<boolean>(false);
   const [editColorsActive, setEditColorsActive] = useState<boolean>(false);
   const acceptedFormats = ['svg', 'png', 'PNG'];
@@ -89,49 +82,73 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
     mode: 'onBlur',
   });
 
-  useEffect(() => {
-    if (theme) {
-      colorSetValue('primary', theme.colors.primary);
-      colorSetValue('secondary', theme.colors.secondary);
-      colorSetValue('tertiary', theme.colors.tertiary);
-      colorSetValue('primaryAccent1', theme.colors.primaryAccent1);
-      colorSetValue('primaryAccent2', theme.colors.primaryAccent2);
-      colorSetValue('secondaryAccent1', theme.colors.secondaryAccent1);
-      colorSetValue('secondaryAccent2', theme.colors.secondaryAccent2);
-      colorSetValue('tertiaryAccent1', theme.colors.tertiaryAccent1);
-      colorSetValue('textDark', theme.colors.textDark);
-      colorSetValue('textMid', theme.colors.textMid);
-      colorSetValue('textLight', theme.colors.textLight);
-      colorSetValue('uiMidDark', theme.colors.uiMidDark);
-      colorSetValue('uiMid', theme.colors.uiMid);
-      colorSetValue('uiLight', theme.colors.uiLight);
-      colorSetValue('uiBg', theme.colors.uiBg);
-      colorSetValue('modalBg', theme.colors.modalBg);
-      colorSetValue('errorMain', theme.colors.errorMain);
-      colorSetValue('errorDark', theme.colors.errorDark);
-      colorSetValue('errorBg', theme.colors.errorBg);
-      colorSetValue('alertMain', theme.colors.alertMain);
-      colorSetValue('alertDark', theme.colors.alertDark);
-      colorSetValue('alertBg', theme.colors.alertBg);
-      colorSetValue('successMain', theme.colors.successMain);
-      colorSetValue('successDark', theme.colors.successDark);
-      colorSetValue('successBg', theme.colors.successBg);
-      colorSetValue('infoMain', theme.colors.infoMain);
-      colorSetValue('infoDark', theme.colors.infoDark);
-      colorSetValue('infoBb', theme.colors.infoBb);
+  const getData = async () => {
+    if (tenant && tenant.tenant && tenant.tenant.themePath) {
+      fetch(tenant.tenant.themePath)
+        .then(function (res) {
+          return res.json();
+        })
+        .then(async function (data) {
+          setData(data);
+        });
+    }
+  };
 
-      colorSetValue('quatenary', theme.colors.quatenary);
-      colorSetValue('quatenaryMain', theme.colors.quatenaryMain);
-      colorSetValue('adminPortalBg', theme.colors.adminPortalBg);
-      colorSetValue('darkBlue', theme.colors.darkBlue);
-      colorSetValue('pointsCardBg', theme.colors.pointsCardBg);
-      colorSetValue('pointsCardBarBg', theme.colors.pointsCardBarBg);
-      colorSetValue('quatenaryBg', theme.colors.quatenaryBg);
-      colorSetValue('adminBackground', theme.colors.adminBackground);
+  useEffect(() => {
+    getData();
+  }, [tenant?.tenant?.themePath]);
+
+  useEffect(() => {
+    if (data && data.colors) {
+      colorSetValue('primary', data.colors.primary);
+      colorSetValue('secondary', data.colors.secondary);
+      colorSetValue('tertiary', data.colors.tertiary);
+      colorSetValue('primaryAccent1', data.colors.primaryAccent1);
+      colorSetValue('primaryAccent2', data.colors.primaryAccent2);
+      colorSetValue('secondaryAccent1', data.colors.secondaryAccent1);
+      colorSetValue('secondaryAccent2', data.colors.secondaryAccent2);
+      colorSetValue('tertiaryAccent1', data.colors.tertiaryAccent1);
+      colorSetValue('textDark', data.colors.textDark);
+      colorSetValue('textMid', data.colors.textMid);
+      colorSetValue('textLight', data.colors.textLight);
+      colorSetValue('uiMidDark', data.colors.uiMidDark);
+      colorSetValue('uiMid', data.colors.uiMid);
+      colorSetValue('uiLight', data.colors.uiLight);
+      colorSetValue('uiBg', data.colors.uiBg);
+      colorSetValue('modalBg', data.colors.modalBg);
+      colorSetValue('errorMain', data.colors.errorMain);
+      colorSetValue('errorDark', data.colors.errorDark);
+      colorSetValue('errorBg', data.colors.errorBg);
+      colorSetValue('alertMain', data.colors.alertMain);
+      colorSetValue('alertDark', data.colors.alertDark);
+      colorSetValue('alertBg', data.colors.alertBg);
+      colorSetValue('successMain', data.colors.successMain);
+      colorSetValue('successDark', data.colors.successDark);
+      colorSetValue('successBg', data.colors.successBg);
+      colorSetValue('infoMain', data.colors.infoMain);
+      colorSetValue('infoDark', data.colors.infoDark);
+      colorSetValue('infoBb', data.colors.infoBb);
+
+      colorSetValue('quatenary', data.colors.quatenary);
+      colorSetValue('quatenaryMain', data.colors.quatenaryMain);
+      colorSetValue('adminPortalBg', data.colors.adminPortalBg);
+      colorSetValue('darkBlue', data.colors.darkBlue);
+      colorSetValue('pointsCardBg', data.colors.pointsCardBg);
+      colorSetValue('pointsCardBarBg', data.colors.pointsCardBarBg);
+      colorSetValue('quatenaryBg', data.colors.quatenaryBg);
+      colorSetValue('adminBackground', data.colors.adminBackground);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]);
+  }, [data]);
 
+  useEffect(() => {
+    if (data && data.images) {
+      imagesSetValue('logoUrl', data.images.logoUrl);
+      imagesSetValue('graphicOverlayUrl', data.images.graphicOverlayUrl);
+      imagesSetValue('faviconUrl', data.images.faviconUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
   useEffect(() => {
     if (fontsRegister) {
       fontsSetValue('fontUrl', defaultTheme.fontUrl);
@@ -151,7 +168,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
 
     if (colorValid) {
       let logoUrl = '';
-      if (images.logoUrl) {
+      if (images.logoUrl && images.logoUrl.file && images.logoUrl.fileName) {
         await fileUpload({
           variables: {
             file: images.logoUrl.file,
@@ -166,7 +183,11 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
       }
 
       let graphicOverlayUrl = '';
-      if (images.graphicOverlayUrl) {
+      if (
+        images.graphicOverlayUrl &&
+        images.graphicOverlayUrl.file &&
+        images.graphicOverlayUrl.fileName
+      ) {
         await fileUpload({
           variables: {
             file: images.graphicOverlayUrl.file,
@@ -181,7 +202,11 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
       }
 
       let faviconUrl = '';
-      if (images.faviconUrl) {
+      if (
+        images.faviconUrl &&
+        images.faviconUrl.file &&
+        images.faviconUrl.fileName
+      ) {
         await fileUpload({
           variables: {
             file: images.faviconUrl.file,
@@ -195,7 +220,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
         });
       }
 
-      const themeVersion = theme && theme.version ? theme.version + 1 : 1;
+      const themeVersion = data && data.version ? data.version + 1 : 1;
       const themeInputModel: ThemeModel = {
         version: themeVersion,
         colors: {
@@ -236,6 +261,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
           pointsCardBarBg: colors.pointsCardBarBg,
           quatenaryBg: colors.quatenaryBg,
           adminBackground: colors.adminBackground,
+          quinary: colors.quinary,
         },
         fonts: {
           fontUrl: fontUrls.fontUrl ? fontUrls.fontUrl : DefaultTheme.fontUrl,
@@ -260,52 +286,20 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
         variables: {
           input: themeString,
         },
-      }).then(() => {
-        DefaultTheme.primary = colors.primary;
-        DefaultTheme.primaryAccent1 = colors.primaryAccent1;
-        DefaultTheme.primaryAccent2 = colors.primaryAccent2;
-        DefaultTheme.secondary = colors.secondary;
-        DefaultTheme.secondaryAccent1 = colors.secondaryAccent1;
-        DefaultTheme.secondaryAccent2 = colors.secondaryAccent2;
-        DefaultTheme.tertiary = colors.tertiary;
-        DefaultTheme.tertiaryAccent1 = colors.tertiaryAccent1;
-        DefaultTheme.tertiaryAccent2 = colors.tertiaryAccent2;
-        DefaultTheme.textDark = colors.textDark;
-        DefaultTheme.textMid = colors.textMid;
-        DefaultTheme.textLight = colors.textLight;
-        DefaultTheme.uiMidDark = colors.uiMidDark;
-        DefaultTheme.uiMid = colors.uiMid;
-        DefaultTheme.uiLight = colors.uiLight;
-        DefaultTheme.uiBg = colors.uiBg;
-        DefaultTheme.modalBg = colors.modalBg;
-        DefaultTheme.errorMain = colors.errorMain;
-        DefaultTheme.errorDark = colors.errorDark;
-        DefaultTheme.errorBg = colors.errorBg;
-        DefaultTheme.alertMain = colors.alertMain;
-        DefaultTheme.alertDark = colors.alertDark;
-        DefaultTheme.alertBg = colors.alertBg;
-        DefaultTheme.successMain = colors.successMain;
-        DefaultTheme.successDark = colors.successDark;
-        DefaultTheme.successBg = colors.successBg;
-        DefaultTheme.infoMain = colors.infoMain;
-        DefaultTheme.infoDark = colors.infoDark;
-        DefaultTheme.infoBb = colors.infoBb;
-        DefaultTheme.logoUrl = themeInputModel.images.logoUrl;
-        DefaultTheme.graphicOverlayUrl =
-          themeInputModel.images.graphicOverlayUrl;
-        DefaultTheme.faviconUrl = themeInputModel.images.faviconUrl;
-        DefaultTheme.fontUrl = themeInputModel.fonts.fontUrl;
-        DefaultTheme.mainHeadingOverrideFontUrl =
-          themeInputModel.fonts.mainHeadingOverrideFontUrl;
-
-        setNotification({
-          title: 'Successfully Updated Theme!',
-          variant: NOTIFICATION.SUCCESS,
+      })
+        .then(() => {
+          setNotification({
+            title: 'Successfully Updated Tenant!',
+            variant: NOTIFICATION.SUCCESS,
+          });
+          tenant.refresh();
+        })
+        .catch((err) => {
+          setNotification({
+            title: 'Failed to update Tenant',
+            variant: NOTIFICATION.ERROR,
+          });
         });
-
-        applyTheme();
-        overRideTheme(themeInputModel);
-      });
     }
     setEditColorsActive(!editColorsActive);
     setLoading(false);
@@ -406,8 +400,8 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                     />
                     <FormFileInput
                       acceptedFormats={acceptedFormats}
-                      contentUrl={theme?.images.graphicOverlayUrl}
-                      nameProp="graphicOverlayUrl"
+                      contentUrl={data?.images?.logoUrl}
+                      nameProp="logoUrl"
                       setValue={imagesSetValue}
                       label={''}
                       isWizardComponent={true}
@@ -438,9 +432,9 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                     />
                     <FormFileInput
                       acceptedFormats={acceptedFormats}
-                      contentUrl={theme?.images.logoUrl}
+                      contentUrl={data?.images?.graphicOverlayUrl}
                       label={''}
-                      nameProp="logoUrl"
+                      nameProp="graphicOverlayUrl"
                       setValue={imagesSetValue}
                       isWizardComponent={true}
                       hideFileName={true}
@@ -470,7 +464,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                     />
                     <FormFileInput
                       acceptedFormats={['ico']}
-                      contentUrl={theme?.images.faviconUrl}
+                      contentUrl={data?.images?.faviconUrl}
                       label={''}
                       nameProp="faviconUrl"
                       setValue={imagesSetValue}
@@ -513,7 +507,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormColorField
                     setValue={colorSetValue}
-                    currentColor={theme?.colors?.primary}
+                    currentColor={data?.colors?.primary}
                     label={''}
                     nameProp={'primary'}
                     register={colorRegister}
@@ -523,7 +517,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormColorField
                     setValue={colorSetValue}
-                    currentColor={theme?.colors?.secondary}
+                    currentColor={data?.colors?.secondary}
                     label={''}
                     nameProp={'secondary'}
                     register={colorRegister}
@@ -533,7 +527,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <div>
                   <FormColorField
                     setValue={colorSetValue}
-                    currentColor={theme?.colors?.tertiary}
+                    currentColor={data?.colors?.tertiary}
                     label={''}
                     nameProp={'tertiary'}
                     register={colorRegister}
@@ -546,25 +540,11 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 <p className="px-4 text-xl">Light version (svg, png, jpeg):</p>
                 <p className="px-4 text-xl">Favicon (ico):</p>
               </div>
-              <div className="mt-2 grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
+              <div className="pointer-events-none mt-2 grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
                 <div>
                   <FormFileInput
                     acceptedFormats={acceptedFormats}
-                    contentUrl={theme?.images.graphicOverlayUrl}
-                    label={''}
-                    nameProp="graphicOverlayUrl"
-                    setValue={imagesSetValue}
-                    disabled={true}
-                    isWizardComponent={true}
-                    hideFileName={true}
-                    hideAcceptedFormats={true}
-                    isImage={true}
-                  />
-                </div>
-                <div>
-                  <FormFileInput
-                    acceptedFormats={acceptedFormats}
-                    contentUrl={theme?.images.logoUrl}
+                    contentUrl={data?.images?.logoUrl}
                     label={''}
                     nameProp="logoUrl"
                     setValue={imagesSetValue}
@@ -577,8 +557,22 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                 </div>
                 <div>
                   <FormFileInput
+                    acceptedFormats={acceptedFormats}
+                    contentUrl={data?.images?.graphicOverlayUrl}
+                    label={''}
+                    nameProp="graphicOverlayUrl"
+                    setValue={imagesSetValue}
+                    disabled={true}
+                    isWizardComponent={true}
+                    hideFileName={true}
+                    hideAcceptedFormats={true}
+                    isImage={true}
+                  />
+                </div>
+                <div>
+                  <FormFileInput
                     acceptedFormats={['ico']}
-                    contentUrl={theme?.images.faviconUrl}
+                    contentUrl={data?.images?.faviconUrl}
                     label={''}
                     nameProp="faviconUrl"
                     setValue={imagesSetValue}

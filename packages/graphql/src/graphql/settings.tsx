@@ -10,6 +10,16 @@ export const settingGoogleReport = gql`
   }
 `;
 
+export const settingGrafanaReport = gql`
+  {
+    settings {
+      Grafana {
+        GeneralDashboard
+      }
+    }
+  }
+`;
+
 export const GetAllSystemSetting = gql`
   {
     GetAllSystemSetting {

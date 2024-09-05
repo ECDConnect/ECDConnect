@@ -20,6 +20,8 @@ export const LinksSharedResource = ({
   const [resourcesLinks, setResourcesLinks] = useState<ResourceLink[]>([]);
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
   const dialog = useDialog();
+  const urlRegex =
+    /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
   const getAllCall = `GetAll${contentType.name}`;
   const fields =
     contentType.fields?.map((field) => {
@@ -67,7 +69,7 @@ export const LinksSharedResource = ({
       title: '',
       link: '',
       description: '',
-      contentTypeId: 28,
+      contentTypeId: 38,
       contentId: -1,
     })) as ResourceLink[];
 
@@ -110,9 +112,13 @@ export const LinksSharedResource = ({
   ) => {
     if (!isToCheck) return false;
 
-    const hasEmptyField =
+    let hasEmptyField =
       !resourcesLinks[index]?.[fieldType] &&
       (index < 2 || !!resourcesLinks[index]?.[fieldType]);
+
+    if (fieldType === 'link' && resourcesLinks[index].link !== '') {
+      hasEmptyField = !urlRegex.test(resourcesLinks[index].link);
+    }
 
     return hasEmptyField;
   };
@@ -138,9 +144,13 @@ export const LinksSharedResource = ({
 
     setIsSubmitButtonClicked(true);
     const hasEmptyField = resourcesLinks.some((link, index) =>
-      index < 2 ? !link.title || !link.link || !link.description : ''
+      index < 2
+        ? !link.title ||
+          !link.link ||
+          !link.description ||
+          !urlRegex.test(link.link)
+        : link.link && !urlRegex.test(link.link)
     );
-
     if (hasEmptyField) return;
 
     await createContent({
@@ -151,6 +161,25 @@ export const LinksSharedResource = ({
     }).then(() => {
       refetch();
     });
+  };
+
+  const errorLinkMessage = (index) => {
+    var connectItem = resourcesLinks[index];
+
+    if (index < 2) {
+      if (connectItem.link === '') {
+        return 'This field is required.';
+      } else if (!urlRegex.test(connectItem.link)) {
+        return 'Please add a valid link.';
+      }
+    } else {
+      if (connectItem.link === '') {
+        return 'You must add a link for the resource';
+      } else if (!urlRegex.test(connectItem.link)) {
+        return 'Please add a valid link.';
+      }
+    }
+    return '';
   };
 
   const onCancel = async () => {
@@ -258,7 +287,7 @@ export const LinksSharedResource = ({
             {...(onCheckLinkError(isSubmitButtonClicked, linkIndex, 'link') && {
               error: {
                 type: 'required',
-                message: linkIndex < 2 ? 'This field is required.' : '',
+                message: errorLinkMessage(linkIndex),
               },
             })}
           />

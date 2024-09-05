@@ -23,8 +23,7 @@ export const IntialNotificationSetupContext =
   );
 
 const InitialNotificationSetup: React.FC = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
 
   const user = useSelector(userSelectors.getUser);
@@ -42,10 +41,13 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   );
 
   useEffect(() => {
-    initializeServices();
-    return () => {
-      stopService();
-    };
+    async function init() {
+      await initializeServices();
+      return () => {
+        stopService();
+      };
+    }
+    init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -62,7 +64,9 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
     [dispatch, notificationReferences]
   );
 
-  const initializeServices = useCallback(() => {
+  const initializeServices = useCallback(async () => {
+    setIsLoading(true);
+
     if (!notificationServiceRef.current) {
       notificationServiceRef.current = new NotificationService(
         notificationPollInterval,
@@ -72,17 +76,14 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
     }
     notificationServiceRef.current.registerValidators(store);
 
-    setIsLoading(true);
-
     notificationServiceRef.current.onNotificationsReceived = (
       messages: Message[]
     ) => {
-      setIsLoading(false);
-
       onNotificationsRecieved(messages);
     };
     notificationServiceRef.current.initialEvaluate();
     notificationServiceRef.current.start();
+    setIsLoading(false);
   }, [
     auth?.auth_token,
     notificationPollInterval,
@@ -103,10 +104,14 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
     }
   };
 
+  const values = {
+    stopService,
+    startService,
+    isLoading,
+  };
+
   return (
-    <IntialNotificationSetupContext.Provider
-      value={{ stopService, startService }}
-    >
+    <IntialNotificationSetupContext.Provider value={values}>
       {!isLoading && children}
       {isLoading && <Loader loadingMessage="Loading notifications ..." />}
     </IntialNotificationSetupContext.Provider>

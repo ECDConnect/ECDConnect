@@ -40,7 +40,7 @@ export const ProgressCaregiverReportSummaryPage: React.FC<
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
-      style={{ height: '1400px' }}
+      style={{ height: '1100px' }}
     >
       <div className="mb-4 flex flex-row">
         <div className="flex flex-col">

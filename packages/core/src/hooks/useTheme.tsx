@@ -100,11 +100,12 @@ function ThemeProvider({
         DefaultTheme.pointsCardBarBg = data.colors.pointsCardBarBg;
         DefaultTheme.quatenaryBg = data.colors.quatenaryBg;
         DefaultTheme.adminBackground = data.colors.adminBackground;
+        DefaultTheme.quinary = data.colors.quinary;
       }
 
       if (data.images) {
         DefaultTheme.logoUrl = `url(${data.images.logoUrl})`;
-        DefaultTheme.graphicOverlayUrl = data.images.graphicOverlayUrl;
+        DefaultTheme.graphicOverlayUrl = `url(${data.images.graphicOverlayUrl})`;
         DefaultTheme.faviconUrl = data.images.faviconUrl;
         DefaultTheme.portalLoginLogoUrl = data.images.portalLoginLogoUrl;
         DefaultTheme.portalLoginBackgroundUrl =
@@ -164,6 +165,7 @@ function ThemeProvider({
     DefaultTheme.pointsCardBarBg = WhiteLabelTheme.pointsCardBarBg;
     DefaultTheme.quatenaryBg = WhiteLabelTheme.quatenaryBg;
     DefaultTheme.adminBackground = WhiteLabelTheme.adminBackground;
+    DefaultTheme.quinary = WhiteLabelTheme.quinary;
   }
 
   function overRideTheme(theme: ThemeModel) {

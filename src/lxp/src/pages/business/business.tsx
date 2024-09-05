@@ -19,6 +19,7 @@ import { useAppContext } from '@/walkthrougContext';
 import { InfoPage } from './money/submit-income-statements/components/info-page';
 import { NavigationNames } from '../navigation';
 import PractitionersList from '../classroom/class-dashboard/practitioners/practitioners-list/practitioners-list';
+import { MoreInformationTypeEnum } from '@ecdlink/core';
 
 export const Business: React.FC = () => {
   const history = useHistory();
@@ -114,7 +115,7 @@ export const Business: React.FC = () => {
       <Dialog fullScreen visible={showInfo} position={DialogPosition.Full}>
         <InfoPage
           title="Income statements"
-          section="Business - Money Tab"
+          section={MoreInformationTypeEnum.IncomeStatements}
           onClose={() => setShowInfo(false)}
         >
           <Walkthrough onBack={() => setShowInfo(false)} />

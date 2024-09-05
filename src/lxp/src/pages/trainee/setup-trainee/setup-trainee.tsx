@@ -73,6 +73,7 @@ export const SetupTrainee = () => {
       IsActive: true,
       Progress: copy.progress,
       Id: copy.id,
+      ProgressWalkthroughComplete: copy.progressWalkthroughComplete || false,
     };
 
     appDispatch(practitionerActions.updatePractitioner(copy));

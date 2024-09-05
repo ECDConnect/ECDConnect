@@ -1,13 +1,18 @@
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Security.Models;
+using EcdLink.Api.CoreApi.Security.Models.Requests;
+using ECDLink.ContentManagement.Repositories;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.DataAccessLayer.Services;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Managers;
+using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Model;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +30,9 @@ namespace ECDLink.Security.Api
     {
         
         private readonly TenantService _tenantService;
+        private readonly ILocaleService<Language> _localeService;
         private readonly SecurityNotificationManager _notificationManager;
+        private readonly ContentManagementRepository _contentRepo;
 
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
@@ -39,7 +46,9 @@ namespace ECDLink.Security.Api
             IGenericRepositoryFactory repoFactory,
             HierarchyEngine hierarchyEngine,
             SecurityNotificationManager notificationManager,
-            TenantService tenantService)
+            TenantService tenantService,
+            ILocaleService<Language> localeService,
+            ContentManagementRepository contentRepo)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -50,6 +59,8 @@ namespace ECDLink.Security.Api
 
             _notificationManager = notificationManager;
             _tenantService = tenantService;
+            _localeService = localeService;
+            _contentRepo = contentRepo;
         }
 
 
@@ -72,7 +83,7 @@ namespace ECDLink.Security.Api
         [Route("add-tenant-setup-info")]
         [AllowAnonymous]
         [HttpPost]
-        public async Task<TenantSetupInfo> AddTenantSetupInfo([FromBody] string setupInfo)
+        public async Task<IActionResult> AddTenantSetupInfo([FromBody] string setupInfo)
         {
             var tenantOrgDetail = JsonConvert.DeserializeObject<TenantOrgDetailModel>(setupInfo);
 
@@ -94,10 +105,25 @@ namespace ECDLink.Security.Api
             // Send email to new super admin 2
             await _notificationManager.SendWelcomeEmailToNewSuperAdminAsync((Guid)_applicationUserId, tenantOrgDetail.SuperAdmin2FirstName, tenantOrgDetail.SuperAdmin2Email);
 
-            return setupRecord;
+            return Ok(setupRecord);
         }
 
+        [Route("fetch-available-languages")]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult FetchAllLanguages()
+        {
+            return Ok(_localeService.GetAvailableLocale());
+        }
 
+        [Route("get-consent-for-portal")]
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult GetConsentForPortal([FromBody] PortalConsentModel input)
+        {
+            var language = _localeService.GetLocale(input.Locale);
+            return Ok(_contentRepo.GetByValueKey("Consent", "type", input.Type, language.Id));
+        }
 
 
     }

@@ -148,13 +148,13 @@ export const upsertClassroom = createAsyncThunk<
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
           IsActive: true, // All classrooms/groups on FE will be active
           SiteAddress: classroom?.siteAddress?.addressLine1
-            ? mapSiteAddress(classroom.siteAddress)
+            ? mapSiteAddress(classroom.siteAddress as any)
             : null,
           PreschoolCode: classroom?.preschoolCode,
         };
 
         if (classroom?.siteAddress?.id) {
-          const addressInput = mapSiteAddress(classroom.siteAddress);
+          const addressInput = mapSiteAddress(classroom.siteAddress as any);
 
           await new SiteAddressService(userAuth?.auth_token!).updateSiteAddress(
             classroom.siteAddress.id ?? '',
@@ -468,12 +468,17 @@ const mapLearnerInput = (learnerDto: Partial<LearnerDto>): LearnerInput => ({
 
 const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({
   Id: x.id,
+  Area: x.area,
   AddressLine1: x.addressLine1,
   AddressLine2: x.addressLine2,
   AddressLine3: x.addressLine3,
+  Latitude: !!x.latitude ? x.latitude.toString() : undefined,
+  Longitude: !!x.longitude ? x.longitude.toString() : undefined,
+  Municipality: x.municipality,
   Name: x.name,
   PostalCode: x.postalCode,
   ProvinceId: x.provinceId,
+  Province: null,
   Ward: x.ward,
   IsActive: x.isActive === false ? false : true,
 });
