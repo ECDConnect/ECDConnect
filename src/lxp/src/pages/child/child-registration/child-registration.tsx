@@ -52,15 +52,19 @@ import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.typ
 import { PointsService } from '@/services/PointsService';
 import { classroomsSelectors } from '@/store/classroom';
 import { ChildEmergencyContactFormModel } from '@/schemas/child/child-registration/child-emergency-contact-form';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { getWorkflowStatusIdByEnum } = useStaticData();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const location = useLocation<ChildRegistrationRouteState>();
   const routeStep = location?.state?.step;
   const childId = location?.state?.childId;
+  const notificationReference = location?.state?.notificationReference;
   const childDetails = location?.state?.childDetails;
   const practitionerId = location?.state?.practitionerId;
   const { isOnline } = useOnlineStatus();
@@ -71,6 +75,7 @@ export const ChildRegistration: React.FC = () => {
   const isFromPqa = !!practitionerId;
   const isPractitioner = !!practitioner;
   const dialog = useDialog();
+  const notifications = useSelector(notificationsSelectors.getAllNotifications);
 
   const existingClassroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupByChildUserId(existingChild?.userId!)
@@ -278,6 +283,14 @@ export const ChildRegistration: React.FC = () => {
           );
         }
       }
+    }
+
+    const hasNotification = notifications?.find(
+      (item) => item?.message?.reference === notificationReference
+    );
+
+    if (hasNotification) {
+      appDispatch(notificationActions.removeNotification(hasNotification!));
     }
 
     onFinished();

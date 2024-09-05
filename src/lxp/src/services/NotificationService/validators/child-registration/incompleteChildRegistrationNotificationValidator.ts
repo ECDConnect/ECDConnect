@@ -87,6 +87,7 @@ export class IncompleteChildRegistrationNotificationValidator
             params: {
               step: 6,
               childId: child.id,
+              notificationReference: `${child.id || child.user?.firstName}-reg`,
             },
           },
         });
