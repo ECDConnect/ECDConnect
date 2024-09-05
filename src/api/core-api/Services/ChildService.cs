@@ -24,6 +24,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<Learner, Guid> _learnerRepo;
         private AuthenticationDbContext _dbContext;
         private readonly IPointsEngineService _pointsService;
+        private Guid? _applicationUserId;
 
         public ChildService(
             IHttpContextAccessor contextAccessor,
@@ -32,11 +33,11 @@ namespace EcdLink.Api.CoreApi.Services
             [Service] AuthenticationDbContext dbContext,
             [Service] IPointsEngineService pointsService)
         {
-            var applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());
+            _applicationUserId = (contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId());
 
-            _childRepo = repoFactory.CreateGenericRepository<Child>(userContext: applicationUserId);
-            _classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: applicationUserId);
-            _learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: applicationUserId);
+            _childRepo = repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
+            _classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
+            _learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: _applicationUserId);
 
             _pointsService = pointsService;
 
@@ -64,8 +65,6 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var child = _childRepo.GetById(input.Id);
             var isActive = child.IsActive && child.User.IsActive;
-
-            // TODO - Based on if the workflow status has changed, add registration points if required
 
             // Update child fields
             child.IsActive = isActive;
@@ -158,16 +157,26 @@ namespace EcdLink.Api.CoreApi.Services
                             learner.IsActive = false;
                             learner.StoppedAttendance = DateTime.Now;
                             _learnerRepo.Update(learner);
+                            
                         }
                     }
+                    
                 }
             }
-            // Calculate points for practitioner
-            if (child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
+
+            // We check here for the child status from the input to calculate the points for removal
+            if (!input.IsActive)
             {
-                _pointsService.CalculateChildRegistrationComplete((Guid)child.UserId);
+                _pointsService.CalculateChildRemovedFromPreschool((Guid)_applicationUserId);
+            } 
+            else
+            {
+                // Calculate points for practitioner
+                if (child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
+                {
+                    _pointsService.CalculateChildRegistrationComplete((Guid)_applicationUserId);
+                }
             }
-                      
         }
 
         public void UpdateCaregiverGrants(Guid childUserId, List<Guid> grantIds)
