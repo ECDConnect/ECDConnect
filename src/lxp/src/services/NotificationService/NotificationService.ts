@@ -12,6 +12,7 @@ import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import { UserDto } from '@ecdlink/core';
 import { BackendNotificationsValidator } from './validators/backend-notifications/backendNotificationsValidador';
+import { PointsNotificationValidator } from './validators/points/pointsNotificationValidator';
 
 export class NotificationService {
   interval: number;
@@ -84,6 +85,7 @@ export class NotificationService {
       new ProgrammePlanningNotificationValidator(store, currentDate),
       new ChildProgressReportNotificationValidator(store, currentDate),
       new UserLastLoginNotificationValidator(store, currentDate),
+      new PointsNotificationValidator(store, currentDate),
     ];
   };
 }

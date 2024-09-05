@@ -1,6 +1,7 @@
 import {
   PointsLibrary,
   PointsToDoItemModel,
+  PointsUserDateSummary,
   PointsUserSummary,
   PointsUserYearMonthSummary,
   UserClubStandingModel,
@@ -18,4 +19,5 @@ export interface PointsState {
     | undefined;
   pointsToDo: PointsToDoItemModel | undefined;
   yearPoints: PointsUserYearMonthSummary | undefined;
+  shareData: PointsUserDateSummary | undefined;
 }

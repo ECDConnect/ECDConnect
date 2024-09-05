@@ -19,6 +19,7 @@ import {
   markAsReadNotification,
 } from '@/store/notifications/notifications.actions';
 import { MessageActionConfig } from '@models/messages/messages';
+import { referenceNames } from '@/services/NotificationService/validators/points/poinstNotificationValidator.types';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
@@ -99,6 +100,13 @@ export const Messages: React.FC = () => {
         history.push(value?.routeConfig?.route);
         break;
       }
+    }
+
+    if (
+      notification?.message?.reference ===
+      referenceNames?.yearPointsGreaterThen0
+    ) {
+      appDispatch(notificationActions.removeNotification(notification!));
     }
 
     if (notification.message.routeConfig) {

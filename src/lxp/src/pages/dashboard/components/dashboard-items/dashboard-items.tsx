@@ -16,6 +16,7 @@ import { notificationTagConfig } from '@/constants/notifications';
 import { markAsReadNotification } from '@/store/notifications/notifications.actions';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationActions } from '@/store/notifications';
+import { referenceNames } from '@/services/NotificationService/validators/points/poinstNotificationValidator.types';
 
 interface DashboardItemsProps extends ComponentBaseProps {
   listItems: StackedListItemType[];
@@ -73,6 +74,13 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
           })
         );
       }
+    }
+
+    if (
+      notification?.message?.reference ===
+      referenceNames?.yearPointsGreaterThen0
+    ) {
+      appDispatch(notificationActions.removeNotification(notification!));
     }
 
     if (notification.message.routeConfig) {

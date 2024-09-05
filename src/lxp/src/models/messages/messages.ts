@@ -22,7 +22,8 @@ export type Message = {
     | 'tracking-attendance'
     | 'child-registration'
     | 'programme-planning'
-    | 'progress-report';
+    | 'progress-report'
+    | 'points';
   expiryDate?: string;
   action?: string;
 };
