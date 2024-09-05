@@ -51,7 +51,7 @@ export class PointsNotificationValidator implements NotificationValidator {
     const today = new Date();
     const lessThen10Days = differenceInDays(lastDayOfMonthDate, today);
     const currentYear = new Date().getFullYear();
-    console.log({ currentYear });
+
     const firstDecDayDate = new Date(currentYear, 11, 1);
     const yearpointsTotal = pointsState.yearPoints?.total;
 
