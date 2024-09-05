@@ -496,6 +496,7 @@ namespace EcdLink.Api.CoreApi.Services
                 var userChildrenCount = _childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)
                                                                     && x.UpdatedDate.Year == today.Year
                                                                     && x.UpdatedDate.Month == today.Month
+                                                                    && x.CaregiverId.HasValue
                                                                     && x.WorkflowStatusId == Constants.WorkflowStatus.ActiveId).Count();
 
                 if (userChildrenCount > 0)
