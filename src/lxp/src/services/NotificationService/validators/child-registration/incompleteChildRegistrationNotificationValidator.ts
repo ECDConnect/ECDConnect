@@ -72,7 +72,7 @@ export class IncompleteChildRegistrationNotificationValidator
             child.user?.firstName
           }'s profile will be removed on ${addDays(
             new Date(child.insertedDate || 0),
-            20
+            30
           ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}`,
           dateCreated: new Date().toISOString(),
           priority: NotificationPriority.lowest,

@@ -8,7 +8,7 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useCallback, useEffect, useState } from 'react';
 import { ProgressReportingPeriodsNumber } from './progress-reporting-periods-number';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { useAppDispatch } from '@/store';
 import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import { useSelector } from 'react-redux';
@@ -20,6 +20,12 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { ProgressReportingPeriodsTimings } from './progress-reporting-periods-timings';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
+import { getAllNotifications } from '@/store/notifications/notifications.selectors';
+import { notificationActions } from '@/store/notifications';
+
+export type ProgressReportingPeriodsRouteState = {
+  messageReference: string;
+};
 
 export const ProgressReportingPeriods: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -27,6 +33,9 @@ export const ProgressReportingPeriods: React.FC = () => {
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const history = useHistory();
+  const location = useLocation<ProgressReportingPeriodsRouteState>();
+  const messageReference = location?.state?.messageReference;
+  const notifications = useSelector(getAllNotifications);
 
   const lastYearsReportingPeriods = useSelector(
     classroomsSelectors.getPreviousYearsReportingPeriods()
@@ -95,6 +104,14 @@ export const ProgressReportingPeriods: React.FC = () => {
           })),
         })
       );
+
+    const hasNotification = notifications?.find(
+      (item) => item?.message?.reference === messageReference
+    );
+
+    if (hasNotification) {
+      appDispatch(notificationActions.removeNotification(hasNotification!));
+    }
 
     save();
     showMessage({

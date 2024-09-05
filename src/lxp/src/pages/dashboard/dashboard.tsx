@@ -435,7 +435,6 @@ export const Dashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-
   /**
    * Data loading for coaches:
    * 1. Practitioners
