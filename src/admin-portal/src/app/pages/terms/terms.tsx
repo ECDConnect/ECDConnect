@@ -34,7 +34,7 @@ export function TermsPage(props: any) {
         type: ContentConsentTypeEnum.AdminTermsAndConditions,
       },
       query:
-        'query openConsent($locale: String, $type: String) {  openConsent(locale: $locale, type: $type) {    id    name    type    description  }}',
+        'query openConsent($locale: String, $name: String) {  openConsent(locale: $locale, name: $name) {    id    name    type    description  }}',
     });
     setIsLoading(true);
     fetch(Config.graphQlApi, {

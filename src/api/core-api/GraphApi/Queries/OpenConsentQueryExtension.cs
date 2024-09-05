@@ -14,12 +14,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public IEnumerable<object> GetOpenConsent(
             [Service] ContentManagementRepository contentRepo,
             [Service] ILocaleService<Language> localeService,
-            string type,
+            string name,
             string locale)
         {
             var language = localeService.GetLocale(locale);
 
-            var content = contentRepo.GetByValueKey("Consent", "type", type, language.Id);
+            var content = contentRepo.GetByValueKey("Consent", "name", name, language.Id);
 
             return content;
         }

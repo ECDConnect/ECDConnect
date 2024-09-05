@@ -4,6 +4,6 @@ namespace EcdLink.Api.CoreApi.Security.Models.Requests
     {
         public string Locale { get; set; }
 
-        public string Type { get; set; }
+        public string Name { get; set; }
     }
 }
