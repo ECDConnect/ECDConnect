@@ -84,7 +84,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return isRoleDeleted.Succeeded;
         }
-
-
     }
 }

@@ -48,8 +48,6 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private readonly IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
         private readonly IGenericRepository<Programme, Guid> _programmeRepo;
-        private readonly IGenericRepository<Learner, Guid> _learnerRepo;
-
 
         private MonthlyAttendanceReport _monthlyAttendanceReportService;
         private HierarchyEngine _hierarchyEngine;
@@ -91,7 +89,6 @@ namespace EcdLink.Api.CoreApi.Services
             _userPermissionRepo = _repositoryFactory.CreateGenericRepository<UserPermission>(userContext: _uId);
             _statementsRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
             _statementsIncomeRepo = _repositoryFactory.CreateGenericRepository<StatementsIncome>(userContext: _uId);
-            _learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: _uId);
 
             _notificationService = notificationService;
             _classroomService = classroomService;

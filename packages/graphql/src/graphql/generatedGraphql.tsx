@@ -7994,6 +7994,7 @@ export type Mutation = {
   updatePractitionerEmergencyContact: Scalars['Boolean'];
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
   updatePractitionerProgress: Scalars['Decimal'];
+  updatePractitionerProgressWalkthrough: Scalars['Boolean'];
   updatePractitionerRegistered: Scalars['Boolean'];
   updatePractitionerRemovalHistory?: Maybe<PractitionerRemovalHistory>;
   updatePractitionerShareInfo: Scalars['Boolean'];
@@ -11126,6 +11127,10 @@ export type MutationUpdatePractitionerIsFundaAppAdminArgs = {
 export type MutationUpdatePractitionerProgressArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
   progress: Scalars['Decimal'];
+};
+
+export type MutationUpdatePractitionerProgressWalkthroughArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePractitionerRegisteredArgs = {
