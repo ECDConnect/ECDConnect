@@ -405,10 +405,7 @@ class PractitionerService {
         'Get Practitioner by user id Failed - Server connection error'
       );
     }
-    console.log(
-      'response.data.data.practitionerByUserId',
-      response.data.data.practitionerByUserId
-    );
+
     return response.data.data.practitionerByUserId;
   }
 

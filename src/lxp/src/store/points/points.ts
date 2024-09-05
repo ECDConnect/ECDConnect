@@ -6,6 +6,7 @@ import {
   getPointsSummaryForUser,
   getUserClubStanding,
   pointsTodoItems,
+  sharedData,
   yearPointsView,
 } from './points.actions';
 
@@ -15,6 +16,7 @@ const initialState: PointsState = {
   userClubStanding: undefined,
   pointsToDo: undefined,
   yearPoints: undefined,
+  shareData: undefined,
 };
 
 const pointsState = createSlice({
@@ -27,6 +29,7 @@ const pointsState = createSlice({
       state.userClubStanding = undefined;
       state.pointsToDo = undefined;
       state.yearPoints = undefined;
+      state.shareData = undefined;
     },
   },
   extraReducers: (builder) => {
@@ -47,6 +50,9 @@ const pointsState = createSlice({
     });
     builder.addCase(yearPointsView.fulfilled, (state, action) => {
       state.yearPoints = action.payload;
+    });
+    builder.addCase(sharedData.fulfilled, (state, action) => {
+      state.shareData = action.payload;
     });
   },
 });

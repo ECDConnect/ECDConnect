@@ -1,10 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  PermissionEnum,
-  RoleSystemNameEnum,
-  useDialog,
-  useTheme,
-} from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
   Avatar,
@@ -19,7 +14,6 @@ import {
   ScoreCard,
   NoPointsScoreCard,
 } from '@ecdlink/ui';
-import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -54,16 +48,13 @@ import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
-import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
+import { traineeThunkActions } from '@/store/trainee';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
-import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '../community-old/clubs-tab/club/individual-club-view';
-import { notificationTagConfig } from '@/constants/notifications';
 import { childrenThunkActions } from '@/store/children';
 import {
   TabsItemForPrincipal,
@@ -74,7 +65,6 @@ import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
 import { BusinessTabItems } from '../business/business.types';
 import { useTenant } from '@/hooks/useTenant';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
-import { ReactComponent as Cebisa } from '@/assets/icon_cebisa.svg';
 import { differenceInDays, getMonth, getYear } from 'date-fns';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
@@ -108,7 +98,6 @@ export const Dashboard: React.FC = () => {
     businessEnabled,
     calendarEnabled,
     classroomActivitiesEnabled,
-    coachRoleEnabled,
     progressEnabled,
     trainingEnabled,
   } = useTenantModules();
@@ -116,7 +105,6 @@ export const Dashboard: React.FC = () => {
   const appName = tenant?.tenant?.applicationName;
   const isOpenAccess = tenant?.isOpenAccess;
   const isWhiteLabel = tenant?.isWhiteLabel;
-  const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -142,10 +130,7 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const isOnStipend = practitioner?.isOnStipend;
-  const timeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
+
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -159,12 +144,6 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getDashboardNotification
   );
 
-  // this acceptAgreement is for club leader
-  const isPractitionerAcceptAgreementNotification =
-    dashboardNotification?.message?.cta?.includes(
-      notificationTagConfig.AcceptAgreement.cta!
-    );
-
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
@@ -177,6 +156,13 @@ export const Dashboard: React.FC = () => {
 
     appDispatch(
       pointsThunkActions.yearPointsView({ userId: practitioner?.userId! })
+    );
+
+    appDispatch(
+      pointsThunkActions.sharedData({
+        userId: practitioner?.userId!,
+        isMonthly: true,
+      })
     );
   }, [appDispatch, practitioner?.userId]);
 
@@ -366,55 +352,6 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     convertImageToBase64(offlineStatments, setStorageItem);
   }, []);
-
-  const clubCard = useMemo((): ScoreCardProps => {
-    const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
-      club?.pointsTotal ?? 0,
-      club?.maxPointsTotal ?? 0
-    );
-    const mainColor =
-      !!club?.pointsTotal && isAtLeast80PercentOfTotal
-        ? 'successMain'
-        : 'secondary';
-    const bgColour =
-      !!club?.pointsTotal && isAtLeast80PercentOfTotal
-        ? 'successBg'
-        : 'secondaryAccent2';
-
-    return {
-      image: (
-        <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
-          <Badge
-            className="absolute z-0 h-12 w-12"
-            fill={`var(--${mainColor})`}
-          />
-          <Typography
-            className="relative z-10"
-            color="white"
-            type="h1"
-            text={String(club?.leagueRanking)}
-          />
-        </div>
-      ),
-      currentPoints: club?.pointsTotal ?? 0,
-      maxPoints: club?.maxPointsTotal ?? 0,
-      barBgColour: 'white',
-      barColour: mainColor,
-      hint: club?.name ?? '',
-      mainText: '',
-      hintClassName: 'mt-10',
-      bgColour,
-      textColour: 'black',
-      onClick: () =>
-        history.push(
-          isPractitionerAcceptAgreementNotification
-            ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
-            : ROUTES.PRACTITIONER.COMMUNITY[
-                practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
-              ]
-        ),
-    };
-  }, [club, practitioner]);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();

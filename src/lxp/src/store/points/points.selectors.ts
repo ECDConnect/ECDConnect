@@ -3,6 +3,7 @@ import { RootState } from '../types';
 import {
   PointsLibrary,
   PointsToDoItemModel,
+  PointsUserDateSummary,
   PointsUserSummary,
   PointsUserYearMonthSummary,
 } from '@ecdlink/graphql';
@@ -25,6 +26,7 @@ export const getMonthPointsSummary = (state: RootState) => {
   const pointsTotal = pointsSummaryData?.reduce((total, current) => {
     const dataMonth = getMonth(new Date(current?.dateScored));
     const dataYear = getYear(new Date(current?.dateScored));
+
     if (dataMonth === currentMonth && dataYear === currentYear) {
       return (total += current.pointsTotal);
     }
@@ -275,3 +277,7 @@ export const getPointsToDo = (
 
 export const getTotalYearPoints = (state: RootState): number | undefined =>
   state.points.yearPoints?.total;
+
+export const getPointsShareData = (
+  state: RootState
+): PointsUserDateSummary | undefined => state.points.shareData;
