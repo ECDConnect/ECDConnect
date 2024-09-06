@@ -56,7 +56,7 @@ export const ContactDialog: React.FC<ContactDialogProps> = ({
               text={`${contactNumber}`}
               type="h2"
               weight="skinny"
-              color="primary"
+              color="textDark"
               className={'ml-4 mt-2'}
             />
           </div>
@@ -65,7 +65,7 @@ export const ContactDialog: React.FC<ContactDialogProps> = ({
           <div className={styles.contactButtons}>
             <div className="ml-4 grid grid-cols-2 justify-items-center">
               <Button
-                color={'primary'}
+                color={'quatenary'}
                 type={'outlined'}
                 className={'mr-4 rounded-xl'}
                 size={'normal'}
@@ -81,12 +81,12 @@ export const ContactDialog: React.FC<ContactDialogProps> = ({
                     text={`Whatsapp ${firstName}`}
                     type="button"
                     weight="skinny"
-                    color="primary"
+                    color="quatenary"
                   />
                 </div>
               </Button>
               <Button
-                color={'primary'}
+                color={'quatenary'}
                 type={'outlined'}
                 className={'mr-4 rounded-xl'}
                 size={'small'}
@@ -94,21 +94,21 @@ export const ContactDialog: React.FC<ContactDialogProps> = ({
               >
                 <div className="flex items-center justify-center">
                   <PhoneIcon
-                    className="text-primary mr-2 h-6 w-5"
+                    className="text-quatenary mr-2 h-6 w-5"
                     aria-hidden="true"
                   />
                   <Typography
                     text={`Call ${firstName}`}
                     type="button"
                     weight="skinny"
-                    color="primary"
+                    color="quatenary"
                   />
                 </div>
               </Button>
             </div>
           </div>
           <div className="flex justify-center">
-            <div className="w-11/12 rounded-2xl">
+            <div className="ml-4 mr-4 w-full rounded-2xl">
               <Alert
                 type="info"
                 className="mt-4"
@@ -122,7 +122,7 @@ export const ContactDialog: React.FC<ContactDialogProps> = ({
             <div className="w-11/12">
               <Button
                 className={styles.button.replace('mt-4', 'mt-3')}
-                color={'primary'}
+                color={'quatenary'}
                 type="filled"
                 onClick={onClose}
               >
