@@ -890,8 +890,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             _traineeRepo.Update(trainee);
-            //remove communitysupport notification
-            _notificationService.ExpireNotificationsTypesForUser(userId, TemplateTypeConstants.GainCommunitySupport, null, null, Guid.Parse(userId));
             return trainee;
         }
 

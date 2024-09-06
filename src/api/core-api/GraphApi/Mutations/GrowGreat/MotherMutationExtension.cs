@@ -18,7 +18,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         public Mother AddMother([Service] MotherManager motherManager, MotherModel input)
         {
             var mother = motherManager.AddMother(input);
-            motherManager.CheckForDuplicateNotification(mother);
             return mother;
         }
 

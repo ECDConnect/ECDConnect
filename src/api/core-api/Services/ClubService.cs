@@ -385,8 +385,6 @@ namespace EcdLink.Api.CoreApi.Services
                 pendingClubLeader.DateAssigned = null;
 
                 _clubLeaderRepo.Update(pendingClubLeader);
-                // Expire notification for pending club leader
-                _notificationService.ExpireNotificationsTypesForUser(pendingClubLeader.Practitioner.UserId.ToString(), TemplateTypeConstants.ClubLeaderRoleAssigned);
             }
 
             // Add new leader
@@ -403,11 +401,6 @@ namespace EcdLink.Api.CoreApi.Services
                     IsActive = true
                 });
 
-            // Expire notification for user if exist
-            _notificationService.ExpireNotificationsTypesForUser(userToSend.Id.ToString(), TemplateTypeConstants.ClubLeaderRoleAssigned);
-
-            // Add new notification for new club leader assignment
-            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
 
             // Archive leader in member table
             ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId).FirstOrDefault();
@@ -448,7 +441,6 @@ namespace EcdLink.Api.CoreApi.Services
                
             }
             _clubMemberRepo.InsertMany(members);
-            SendNewClubMemberNotifications(input.ClubId, members.Select(x => x.PractitionerId).ToList());
 
             return true;
         }
@@ -492,76 +484,8 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Insert all
             _clubMemberRepo.InsertMany(clubMembers);
-
-            // Notify club members that they are in a new club
-            return SendNewClubMemberNotifications(input.ClubId, clubMembers.Select(x => x.PractitionerId).ToList());
-        }
-
-        private bool SendNewClubMemberNotifications(Guid clubId, List<Guid> practitionerIds)
-        {
-            // Notifications
-            var club = _clubRepo.GetById(clubId);
-            List<TagsReplacements> replacements = new List<TagsReplacements>
-            {
-                new TagsReplacements()
-                {
-                    FindValue = "ClubName",
-                    ReplacementValue = club.Name
-                }
-            };
-
-            var users = _practitionerRepo.GetAll().Where(x => practitionerIds.Contains(x.Id)).Select(x => x.User).ToList();
-            foreach (var user in users)
-            {
-                // Expire notification for user if exist
-                _notificationService.ExpireNotificationsTypesForUser(user.Id.ToString(), TemplateTypeConstants.UserAddedToClub);
-
-                // Add notification to show user is new to club
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
-            }
-
             return true;
-        }
 
-        private bool SendNewClubLeaderNotifications(Guid clubId, Guid newLeaderPracttitionerId)
-        {
-            // Notifications
-            Club club = _clubRepo.GetById(clubId);
-            List<ClubMember> clubMembers = _clubMemberRepo.GetAll()
-                                            .Where(x => x.ClubId == clubId && x.IsActive == true)
-                                             .Include(x => x.Practitioner)
-                                             .ThenInclude(x => x.User).ToList();
-            Practitioner leader = _practitionerRepo.GetById(newLeaderPracttitionerId);
-            if (leader != null)
-            {
-                List<TagsReplacements> replacements = new List<TagsReplacements>
-                {
-                    new TagsReplacements()
-                    {
-                        FindValue = "ClubName",
-                        ReplacementValue = club.Name
-                    }
-                };
-                if (leader.User!=null)
-                {
-                    replacements.Add(
-                    new TagsReplacements()
-                    {
-                        FindValue = "ClubLeaderName",
-                        ReplacementValue = leader.User.FirstName
-                    });
-                }
-
-                foreach (ClubMember clubMember in clubMembers)
-                {
-                    if (clubMember.Practitioner.UserId != leader.UserId)
-                    {
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.NewClubleader, DateTime.Now.Date, clubMember.Practitioner.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14), false, true);
-                    }
-                }
-            }
-
-            return true;
         }
 
         public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, Guid clubSupportPractitionerId)
@@ -594,8 +518,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 ChangeClubSupportRole(clubId, clubSupportPractitionerId);
             }
-            //notify members of the new leader
-            SendNewClubLeaderNotifications(clubId, practitionerId);
+            
 
             return newClubLeader != null;
         }

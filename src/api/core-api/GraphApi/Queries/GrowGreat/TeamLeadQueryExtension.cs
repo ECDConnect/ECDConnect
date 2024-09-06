@@ -66,14 +66,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // Get ids and tokens
             var userIds = teamLeadsQuery.Select(x => (Guid)x.UserId).ToList();
 
-            var defaultInvitations = shortenUrlRepo.GetAll()
+            var defaultInvitations = new List<ShortenUrlEntity>();
+            /*var defaultInvitations = shortenUrlRepo.GetAll()
                 .Where(x =>
                     userIds.Contains(x.UserId.Value)
                     && x.MessageType == TemplateTypeConstants.TeamLeadInvitation
                     && x.IsActive
                     && x.Clicked == 0).GroupBy(l => l.UserId)
                 .Select(g => g.OrderByDescending(c => c.InsertedDate).FirstOrDefault())
-                .ToList();
+                .ToList();*/
 
             var invitations = defaultInvitations
                 .Select(x => new { x.UserId, x.InsertedDate })

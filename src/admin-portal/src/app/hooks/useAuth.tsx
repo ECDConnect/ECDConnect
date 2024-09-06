@@ -25,7 +25,6 @@ import {
   UserForgotPassword,
   ResetPasswordConfirmation,
   RegisterNewUser,
-  RegisterNewTeamLead,
   VerifyInvitationRequest,
   VerifyCellPhoneNumber,
 } from '../services/auth.service';
@@ -38,11 +37,6 @@ export interface AuthContextType {
     baseEndPoint: string
   ) => Promise<boolean>;
   login: (body: LoginRequestModel, baseEndPoint: string) => Promise<boolean>;
-
-  registerTeamLeadUser: (
-    body: RegisterRequestModel,
-    baseEndPoint: string
-  ) => Promise<boolean | any>;
 
   verifyPhoneNumber: (
     baseEndPoint: string,
@@ -112,27 +106,6 @@ export function AuthProvider({
   ): Promise<boolean> => {
     try {
       const response = await RegisterNewUser(baseEndPoint, body);
-
-      if (response.data) {
-        localStorage.setItem(
-          LocalStorageKeys.user,
-          JSON.stringify(response.data)
-        );
-        setAuthenticatedUser(response.data);
-        return true;
-      }
-      return false;
-    } catch (err) {
-      return false;
-    }
-  };
-
-  const registerTeamLeadUser = async (
-    body: RegisterRequestModel,
-    baseEndPoint: string
-  ): Promise<boolean> => {
-    try {
-      const response = await RegisterNewTeamLead(baseEndPoint, body);
 
       if (response.data) {
         localStorage.setItem(
@@ -282,7 +255,6 @@ export function AuthProvider({
       registerUser,
       logout,
       getAccessTokenPromise,
-      registerTeamLeadUser,
       verifyPhoneNumber,
       verifyCellphoneNumber,
     }),
