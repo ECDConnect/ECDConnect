@@ -75,3 +75,7 @@ ion-content {
   background-repeat: no-repeat !important;
   background-size: contain !important;
 }
+
+.mirrored {
+  transform: scaleX(-1);
+}

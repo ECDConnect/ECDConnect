@@ -777,10 +777,14 @@ export const Dashboard: React.FC = () => {
       current: true,
     },
     {
-      name: NavigationNames.Practitioners,
-      icon: styles.classroomIconName,
+      name: NavigationNames.Messages,
+      href: ROUTES.MESSAGES,
+      icon: styles.messagesIconName,
       current: false,
-      href: ROUTES.COACH.PRACTITIONERS,
+      showDivider: true,
+      getNotificationCount: () => {
+        return newNotificationCount;
+      },
     },
     {
       name: NavigationNames.Profile.Profile,
@@ -792,24 +796,26 @@ export const Dashboard: React.FC = () => {
       showDivider: true,
     },
     {
-      name: NavigationNames.Messages,
-      href: ROUTES.MESSAGES,
-      icon: styles.messagesIconName,
+      name: NavigationNames.Practitioners,
+      icon: styles.classroomIconName,
       current: false,
-      showDivider: true,
-      getNotificationCount: () => {
-        return newNotificationCount;
-      },
+      href: ROUTES.COACH.PRACTITIONERS,
     },
     {
-      name: NavigationNames.Community.Community,
-      href: isFirstTimeCommunitySection
-        ? ROUTES.COMMUNITY.WELCOME
-        : ROUTES.COMMUNITY.ROOT,
-      params: { isFromDashboard: true } as CommunityRouteState,
-      icon: styles.communityIconName,
+      name: NavigationNames.Training,
+      href: ROUTES.TRAINING,
+      icon: styles.trainingIconName,
       current: false,
       showDivider: true,
+      hideItem: !trainingEnabled && isWhiteLabel,
+    },
+    {
+      name: NavigationNames.Calendar,
+      href: ROUTES.CALENDAR,
+      icon: styles.calendarIconName,
+      current: false,
+      showDivider: true,
+      hideItem: !calendarEnabled && isWhiteLabel,
     },
     {
       name: NavigationNames.Logout,
@@ -1007,7 +1013,8 @@ export const Dashboard: React.FC = () => {
         isProgress > 0 &&
         hasConsent &&
         !missingProgramme) ||
-      isTrialPeriod
+      isTrialPeriod ||
+      isCoach
     ) {
       history.push(ROUTES.TRAINING);
     } else if (
