@@ -12,6 +12,7 @@ import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.typ
 import ROUTES from '@/routes/routes';
 import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
 import { ChildProgressReport } from '@ecdlink/graphql';
+import { referenceNames } from '../points/poinstNotificationValidator.types';
 
 type ReportingPeriodType = {
   period: string;
@@ -150,6 +151,25 @@ export class ChildProgressReportNotificationValidator
     return childrenProgressReports as ChildProgressReport[];
   };
 
+  private getCompletedChildrenProgressReports = (
+    reportingPeriod: ChildProgressReportPeriodDto
+  ): ChildProgressReport[] => {
+    const { progressTracking: progressTrackingState } = this.store.getState();
+
+    if (!progressTrackingState || !progressTrackingState.childProgressReports)
+      return [];
+
+    const childrenProgressReports: unknown =
+      progressTrackingState.childProgressReports.filter(
+        (report) =>
+          new Date(report?.dateCompleted!) >=
+            new Date(reportingPeriod?.startDate) &&
+          new Date(report?.dateCompleted!) <= new Date(reportingPeriod?.endDate)
+      );
+
+    return childrenProgressReports as ChildProgressReport[];
+  };
+
   private getCurrentReportPeriod = (
     reportingPeriods: ChildProgressReportPeriodDto[]
   ): ChildProgressReportPeriodDto | undefined => {
@@ -273,7 +293,7 @@ export class ChildProgressReportNotificationValidator
     return notifications;
   };
 
-  private getNotificationsCompleteReportsAllChildren = (
+  private getNotificationsCreatedReportsAllChildren = (
     reportingPeriod: ReportingPeriodType
   ): Message[] => {
     const {
@@ -288,7 +308,7 @@ export class ChildProgressReportNotificationValidator
     const currentUser = userState.user;
     const children = childrenState?.childData?.children;
 
-    const reference = `${currentUser?.id}-${reportingPeriod.period}-${reportingPeriod.year}-AllComplete`;
+    const reference = referenceNames.allChildrenProgressReportsCreated;
 
     if (this.notificationAlreadyDone(reference)) return [];
 
@@ -305,6 +325,8 @@ export class ChildProgressReportNotificationValidator
       today >= new Date(currentReportPeriod?.startDate!) &&
       today <= new Date(currentReportPeriod?.endDate!);
     const activeChildren = children?.filter((item) => item?.isActive === true);
+
+    if (activeChildren?.length === 0) return [];
 
     const expectedReportCount = activeChildren?.length;
 
@@ -323,6 +345,146 @@ export class ChildProgressReportNotificationValidator
       dateCreated: new Date().toISOString(),
       expiryDate: addDays(new Date(), 7).toISOString(),
       icon: 'CheckCircleIcon',
+      viewOnDashboard: true,
+      viewType: 'Both',
+      routeConfig: {
+        route:
+          ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+        params: {
+          report: 'completed-all',
+        },
+      },
+    };
+
+    return [notification];
+  };
+
+  private getNotificationsCompletedReportsAllChildren = (
+    reportingPeriod: ReportingPeriodType
+  ): Message[] => {
+    const {
+      user: userState,
+      practitioner: practitionerState,
+      classroomData: classroomState,
+      children: childrenState,
+    } = this.store.getState();
+
+    if (!practitionerState || !practitionerState.practitioner) return [];
+
+    const currentUser = userState.user;
+    const children = childrenState?.childData?.children;
+
+    const reference = referenceNames.allChildrenProgressReportsCreated;
+
+    if (this.notificationAlreadyDone(reference)) return [];
+
+    if (!classroomState?.classroom?.childProgressReportPeriods) return [];
+
+    const reportingPeriods =
+      classroomState?.classroom?.childProgressReportPeriods;
+
+    const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
+
+    const reports = this.getCompletedChildrenProgressReports(
+      currentReportPeriod!
+    );
+
+    const today = new Date();
+    const isBetweenReportProgressPeriodDate =
+      today >= new Date(currentReportPeriod?.startDate!) &&
+      today <= new Date(currentReportPeriod?.endDate!);
+    const activeChildren = children?.filter((item) => item?.isActive === true);
+
+    if (activeChildren?.length === 0) return [];
+
+    const expectedReportCount = activeChildren?.length;
+
+    if (!isBetweenReportProgressPeriodDate) return [];
+
+    if (reports?.length < expectedReportCount) return [];
+
+    const notification: Message = {
+      reference,
+      title: `Well done, you've created progress reports for all children!`,
+      message: `Great job! You can get a summary of what you are working on with each child.`,
+      priority: 24,
+      actionText: 'Get summary',
+      area: 'progress-report',
+      color: 'successMain',
+      dateCreated: new Date().toISOString(),
+      expiryDate: addDays(new Date(), 7).toISOString(),
+      icon: 'CheckCircleIcon',
+      viewOnDashboard: true,
+      viewType: 'Both',
+      routeConfig: {
+        route:
+          ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+        params: {
+          report: 'completed-all',
+        },
+      },
+    };
+
+    return [notification];
+  };
+
+  private getNotificationsPastDeadlineDate = (
+    reportingPeriod: ReportingPeriodType
+  ): Message[] => {
+    const {
+      practitioner: practitionerState,
+      classroomData: classroomState,
+      children: childrenState,
+    } = this.store.getState();
+
+    if (!practitionerState || !practitionerState.practitioner) return [];
+
+    const children = childrenState?.childData?.children;
+
+    const reference = referenceNames?.pastDeadlineDateForProgressReports;
+
+    if (this.notificationAlreadyDone(reference)) return [];
+
+    if (!classroomState?.classroom?.childProgressReportPeriods) return [];
+
+    const activeChildren = children?.filter((item) => item?.isActive === true);
+
+    if (activeChildren?.length === 0) return [];
+
+    const reportingPeriods =
+      classroomState?.classroom?.childProgressReportPeriods;
+
+    const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
+
+    const reports = this?.getCompletedChildrenProgressReports(
+      currentReportPeriod!
+    );
+
+    const today = new Date();
+    const pastOneDayAfterReportPeriodEndDate = addDays(
+      new Date(currentReportPeriod?.endDate!),
+      1
+    );
+    const isPastOneDayAfterReportPeriodEndDate =
+      today === pastOneDayAfterReportPeriodEndDate;
+
+    const expectedReportCount = activeChildren?.length;
+
+    if (!isPastOneDayAfterReportPeriodEndDate) return [];
+
+    if (reports?.length === expectedReportCount) return [];
+
+    const notification: Message = {
+      reference,
+      title: `See progress summary`,
+      message: `Progress reports created for ${reports?.length} children! See a summary of the skills your class is working on.`,
+      priority: 25,
+      actionText: 'Get summary',
+      area: 'progress-report',
+      color: 'infoMain',
+      dateCreated: new Date().toISOString(),
+      expiryDate: addDays(new Date(), 7).toISOString(),
+      icon: 'InformationCircleIcon',
       viewOnDashboard: true,
       viewType: 'Both',
       routeConfig: {
@@ -382,7 +544,7 @@ export class ChildProgressReportNotificationValidator
       color: 'infoMain',
       dateCreated: new Date().toISOString(),
       expiryDate: addMonths(new Date(), 3).toISOString(),
-      icon: 'InformationIcon',
+      icon: 'CheckCircleIcon',
       viewOnDashboard: true,
       viewType: 'Both',
       routeConfig: {
@@ -509,7 +671,7 @@ export class ChildProgressReportNotificationValidator
     const newNotifications: Message[] = [];
 
     newNotifications.push(
-      ...this.getNotificationsCompleteReportsAllChildren(reportingPeriod)
+      ...this.getNotificationsCreatedReportsAllChildren(reportingPeriod)
     );
     newNotifications.push(
       ...this.getNotificationsPastDeadlineAndReportsNotComplete(reportingPeriod)
@@ -520,6 +682,12 @@ export class ChildProgressReportNotificationValidator
 
     newNotifications?.push(...this.getNotificationForNoProgressReportPeriods());
     newNotifications?.push(...this.getSevenDaysBeforeWithNoProgressReports());
+    newNotifications?.push(
+      ...this.getNotificationsCompletedReportsAllChildren(reportingPeriod)
+    );
+    newNotifications?.push(
+      ...this.getNotificationsPastDeadlineDate(reportingPeriod)
+    );
 
     // don't add if added already ??
     const notifications = newNotifications.filter(
