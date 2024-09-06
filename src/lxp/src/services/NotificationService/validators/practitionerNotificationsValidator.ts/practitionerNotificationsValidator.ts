@@ -1,5 +1,5 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { differenceInDays } from 'date-fns';
+import { addDays, differenceInDays } from 'date-fns';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
@@ -70,6 +70,7 @@ export class PractitionerNotificationValidator
         title: `Add your preschool location!`,
         message: `You can add your preschool location to ${tenantState?.tenant?.applicationName}.`,
         dateCreated: new Date().toISOString(),
+        expiryDate: addDays(new Date(), 14).toISOString(),
         priority: 30,
         viewOnDashboard: true,
         area: 'practitioner',
