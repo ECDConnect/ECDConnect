@@ -6,6 +6,7 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -39,6 +40,7 @@ namespace ECDLink.Core.Services
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private IGenericRepository<Classroom, Guid> _classroomRepo;
 
         private ApplicationUserManager _userManager;
         private DocumentManager _documentManager;
@@ -74,6 +76,7 @@ namespace ECDLink.Core.Services
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+            _classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
 
             _pdfConverter = pdfConverter;
 
@@ -355,6 +358,7 @@ namespace ECDLink.Core.Services
 
         public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
+            var classroom = _classroomRepo.GetByUserId(userId);
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);
 
@@ -374,7 +378,10 @@ namespace ECDLink.Core.Services
 
             var pdfDocumentHeader = new PdfDocumentHeader();
             pdfDocumentHeader.UserId = userId;
-            pdfDocumentHeader.SiteAddress = _personnelService.GetUserSiteAddress(userId);
+
+            var siteAddress = classroom.SiteAddress?.AddressLine1 ?? "" + classroom.SiteAddress?.AddressLine2 ?? "" + classroom.SiteAddress?.AddressLine3 ?? "" + classroom.SiteAddress?.PostalCode ?? "" + classroom.SiteAddress?.Province.Description ?? "";
+            pdfDocumentHeader.SiteAddress = siteAddress;
+
             pdfDocumentHeader.ReportType = "StatementsPDF";
             var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader);
 
