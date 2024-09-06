@@ -102,12 +102,19 @@ export const Messages: React.FC = () => {
       }
     }
 
-    if (
+    const resetNotificationOnClick =
       notification?.message?.reference ===
         referenceNames?.yearPointsGreaterThen0 ||
       notification?.message?.reference ===
-        referenceNames?.getSevenDaysBeforeWithNoProgressReports
-    ) {
+        referenceNames?.getSevenDaysBeforeWithNoProgressReports ||
+      notification?.message?.reference ===
+        referenceNames?.allChildrenProgressReportsCompleted ||
+      notification?.message?.reference ===
+        referenceNames?.allChildrenProgressReportsCreated ||
+      notification?.message?.reference ===
+        referenceNames?.pastDeadlineDateForProgressReports;
+
+    if (resetNotificationOnClick) {
       appDispatch(notificationActions.removeNotification(notification!));
     }
 
@@ -149,7 +156,7 @@ export const Messages: React.FC = () => {
             <MessageCard
               key={`message-card-${notification.message.reference}`}
               className={''}
-              status={notification.isNew ? 'new' : 'viewed'}
+              status={notification?.isNew ? 'new' : 'viewed'}
               title={notification.message.title}
               message={notification.message.message}
               dateCreated={notification.message.dateCreated}

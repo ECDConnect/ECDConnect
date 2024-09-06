@@ -31,6 +31,17 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+  const resetNotificationOnClick =
+    notification?.message?.reference ===
+      referenceNames?.yearPointsGreaterThen0 ||
+    notification?.message?.reference ===
+      referenceNames?.getSevenDaysBeforeWithNoProgressReports ||
+    notification?.message?.reference ===
+      referenceNames?.allChildrenProgressReportsCompleted ||
+    notification?.message?.reference ===
+      referenceNames?.allChildrenProgressReportsCreated ||
+    notification?.message?.reference ===
+      referenceNames?.pastDeadlineDateForProgressReports;
 
   const showOnlineOnly = () => {
     dialog({
@@ -76,12 +87,7 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       }
     }
 
-    if (
-      notification?.message?.reference ===
-        referenceNames?.yearPointsGreaterThen0 ||
-      notification?.message?.reference ===
-        referenceNames?.getSevenDaysBeforeWithNoProgressReports
-    ) {
+    if (resetNotificationOnClick) {
       appDispatch(notificationActions.removeNotification(notification!));
     }
 
