@@ -365,7 +365,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
 
                 //now list through all practitioners and remove the principalhierarchies and assign new
-                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy == Guid.Parse(oldPrincipalUserId)).ToList();
+                /*List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy == Guid.Parse(oldPrincipalUserId)).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     //send notifications about change of FAA/Principal
@@ -388,7 +388,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                         _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now.Date, practi.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
                     }
-                }
+                }*/
 
                 //Swap the unsure class if there is one
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId.ToString()).Where(x => x.Name == "Unsure").FirstOrDefault();
@@ -497,7 +497,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
 
                 //send notifications that user has been demoted
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                /*List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "principalOrFAA",
@@ -510,7 +510,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     FindValue = "ProgrammeName",
                     ReplacementValue = classroom.Name
                 });
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DemotedFromPrincipalOrFAA, DateTime.Now.Date, practitionerToDemote.User, null, MessageStatusConstants.Amber, replacements);
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DemotedFromPrincipalOrFAA, DateTime.Now.Date, practitionerToDemote.User, null, MessageStatusConstants.Amber, replacements);*/
             }
 
             return practitionerToDemote;

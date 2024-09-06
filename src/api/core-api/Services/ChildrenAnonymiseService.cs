@@ -63,7 +63,7 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                     _hierarchyEngine.DeleteHierarchy(child.UserId);
                     var parentUserId = _hierarchyEngine.GetUserParentUserId(child.UserId);
-                    _notificationService.ExpireNotificationsTypesForUser(parentUserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString()); //remove prac notifications for this specific child
+                   // _notificationService.ExpireNotificationsTypesForUser(parentUserId.ToString(), TemplateTypeConstants.ChildRegistrationIncomplete, null, child.UserId.ToString()); //remove prac notifications for this specific child
                     var documents = _context.Documents.Where(x => x.UserId == child.UserId).ToList();
                     if (documents.Any())
                     {

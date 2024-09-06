@@ -68,22 +68,25 @@ namespace ECDLink.Abstractrions.Constants
         public const string FeedbackNotification = "feedback-notification";// hub, push
 
 
-        // With GG also removed this could be 107 messages/notifications removed
+        // Uncertain
+        public const string PractitionerRemovedFromProgramme = "practitioner-removed-from-programme";
+        public const string PractitionerMarkedAbsent = "marked-absent";  
+
+
+        // With GG also removed this will be +- 105 messages/notifications removed
         /* public const string DemotedFromPrincipalOrFAA = "demoted-from-principal-faa";
-         public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
+            public const string ProgressreportsNotCreated = "progressreports-not-created";
+            public const string AllProgressReportsCompletedForClass = "all-progress-reports-completed-for-class";
+            public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
+            public const string PractitionerNotLinkedToProgramme = "not-linked-to-programme";
+            public const string ChildRegistrationIncomplete = "child-reg-incomplete";
+            public const string MonthlyPointsReminderA = "monthly-points-reminder-a";  // was implemented for clubs
+            public const string ReportDeadlinePassed = "report-deadline-passed";
          public const string AttendanceWeekly = "attendance-weekly";
          public const string PrincipalFAAChanged = "principal-changed";
          public const string PrincipalMovedToProgramme = "reassigned-to-new-programme";
-         public const string PractitionerRemovedFromProgramme = "practitioner-removed-from-programme";
          public const string UpdatePreschoolFee = "update-preschool-fee";
-         public const string PractitionerNotLinkedToProgramme = "not-linked-to-programme";
-         public const string ChildRegistrationIncomplete = "child-reg-incomplete";
-         public const string ProgressreportsNotCreated = "progressreports-not-created";
-         public const string PractitionerMarkedAbsent = "marked-absent";
-         public const string AllProgressReportsCompletedForClass = "all-progress-reports-completed-for-class";
-         public const string MonthlyPointsReminderA = "monthly-points-reminder-a";
-         public const string ReportDeadlinePassed = "report-deadline-passed";
-         //public const string FillInSelfAsessmentForm = "fillin-self-asessment-form";
+         // public const string FillInSelfAsessmentForm = "fillin-self-asessment-form";
          // public const string TeamLeadInvitation = "team-lead-portal-invitation";
          // public const string EmailChangedByAdmin = "email-changed-by-admin";
          // public const string TraineeOverdueTasks = "trainee-overdue-tasks";

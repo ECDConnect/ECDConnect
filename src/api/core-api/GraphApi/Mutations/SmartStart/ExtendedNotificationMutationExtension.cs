@@ -53,45 +53,6 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             };
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements);
         }
-        public async Task<bool> SendDemotedAsPrincipalFAAProgrammeNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "principalOrFAA",
-                ReplacementValue = principalOrFAA
-            });
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "ProgrammeName",
-                ReplacementValue = programmeName
-            });
-
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.DemotedFromPrincipalOrFAA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements);
-        }
-
-        public async Task<bool> SendPrincipalChangedNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "PrincipalOrFAA",
-                ReplacementValue = principalOrFAA
-            });
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "ProgrammeName",
-                ReplacementValue = programmeName
-            });
-
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements);
-        }
 
         public async Task<bool> SendPromotedToPrincipalFAAProgrammeNotification(
 [Service] ApplicationUserManager userManager,
@@ -109,32 +70,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7), false, true);
         }
 
-
-
-        public async Task<bool> SendUserAssignedToClassFromOldClassNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string className, string oldClassName, string principalName)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "ClassName",
-                ReplacementValue = className
-            });
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "OldClassName",
-                ReplacementValue = oldClassName
-            });
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "PrincipalName",
-                ReplacementValue = principalName
-            });
-
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClassFromOld, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }
+        
         public async Task<bool> SendUserAssignedToClassNotification(
 [Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string className, string oldClassName, string principalName)
@@ -154,30 +90,6 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
-
-        public async Task<bool> SendProgressreportsNotCreatedNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, DateTime dueDate)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "DueDate",
-                ReplacementValue = dueDate.ToString()
-            });
-
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressreportsNotCreated, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
-        }
-
-       /* public async Task<bool> SendRegisterThreeChildrenNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.RegisterThreeChildren, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }*/
 
         public async Task<bool> SendRemovedFromProgrammeNotification(
 [Service] ApplicationUserManager userManager,
@@ -213,34 +125,8 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
-
-        public async Task<bool> SendUpdateFeeNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "CurrentYear",
-                ReplacementValue = DateTime.Now.Year.ToString()
-            });
-
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.UpdatePreschoolFee, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
-        }
-
-        public async Task<bool> SendPractitionerNotAssignedToProgrammeNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerNotLinkedToProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }
-
-
-        public async Task<bool> SendSetAbsenteeNotification(
+        
+       /* public async Task<bool> SendSetAbsenteeNotification(
 [Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string absentStartDate, string parentPrincipalFAACoachName, string parentPrincipalFAACoachUserId)
         {
@@ -301,7 +187,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.AllProgressReportsCompletedForClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }
+        }*/
 
         /*public async Task<bool> SendEndofyearPointEarnedNotification(
 [Service] ApplicationUserManager userManager,
@@ -346,7 +232,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalAllReportsDone, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(7));
         }*/
 
-        public async Task<bool> SendReportDeadlinePassedNotification(
+       /* public async Task<bool> SendReportDeadlinePassedNotification(
 [Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string trackingMonth, string noOfChildren)
         {
@@ -363,9 +249,9 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             });
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReportDeadlinePassed, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
-        }
+        }*/
 
-        public async Task<bool> SendPrincipalMovedToProgrammeNotification(
+       /* public async Task<bool> SendPrincipalMovedToProgrammeNotification(
 [Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string trackingMonth, string noOfChildren)
         {
@@ -382,7 +268,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             });
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalMovedToProgramme, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
-        }
+        }*/
 
     }
 }
