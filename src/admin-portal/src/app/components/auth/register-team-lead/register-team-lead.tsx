@@ -69,7 +69,7 @@ const tlRegisterSchema = Yup.object().shape({
 export default function RegisterTeamLead(
   props: RouteComponentProps<RouteParams>
 ) {
-  const { logout, registerTeamLeadUser, verifyPhoneNumber } = useAuth();
+  const { logout, verifyPhoneNumber } = useAuth();
   const { theme } = useTheme();
   const { setNotification } = useNotifications();
   const history = useHistory();
@@ -155,17 +155,17 @@ export default function RegisterTeamLead(
         token: resetToken,
         acceptedTerms: formValues.acceptedTerms,
       };
-
-      const isAuthenticated = await registerTeamLeadUser(
-        body,
-        Config.authApi
-      ).catch(() => {
-        setNotification({
-          title: ` Failed to Sign Up!`,
-          variant: NOTIFICATION.ERROR,
-        });
-        setIsLoading(false);
-      });
+      const isAuthenticated = false;
+      // const isAuthenticated = await registerTeamLeadUser(
+      //   body,
+      //   Config.authApi
+      // ).catch(() => {
+      //   setNotification({
+      //     title: ` Failed to Sign Up!`,
+      //     variant: NOTIFICATION.ERROR,
+      //   });
+      //   setIsLoading(false);
+      // });
 
       if (isAuthenticated) {
         setIsLoading(false);

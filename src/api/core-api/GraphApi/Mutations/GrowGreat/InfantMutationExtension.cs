@@ -18,7 +18,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         public Infant AddInfant([Service] InfantManager infantManager, InfantModel input)
         {
             var infant = infantManager.AddInfant(input);
-            infantManager.CheckForDuplicateNotification(infant);
             return infant;
         }
 
