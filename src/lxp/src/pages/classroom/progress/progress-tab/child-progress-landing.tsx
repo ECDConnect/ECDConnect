@@ -29,7 +29,17 @@ import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 
-export const ChildProgressLanding: React.FC = () => {
+export type ChildProgressLandingRouteState = {
+  childId: string;
+};
+
+interface ChildProgressLandingProps {
+  messageReference?: string;
+}
+
+export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
+  messageReference,
+}) => {
   const history = useHistory();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
@@ -131,7 +141,9 @@ export const ChildProgressLanding: React.FC = () => {
     <>
       {/* No report periods defined and principal */}
       {!isReportWindowSet && !!practitioner?.isPrincipal && (
-        <ProgressTabNoReportPeriodAndPrincipal />
+        <ProgressTabNoReportPeriodAndPrincipal
+          messageReference={messageReference}
+        />
       )}
       {/* No report periods defined and practitioner */}
       {!isReportWindowSet && !practitioner?.isPrincipal && (

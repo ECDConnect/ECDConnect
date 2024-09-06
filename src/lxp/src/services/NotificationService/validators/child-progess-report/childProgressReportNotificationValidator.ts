@@ -8,6 +8,8 @@ import {
 } from '../../NotificationService.types';
 import { ChildDto, ChildProgressReportSummaryModel } from '@ecdlink/core';
 import { addMonths } from 'date-fns';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import ROUTES from '@/routes/routes';
 
 type ReportingPeriodType = {
   period: string;
@@ -131,6 +133,54 @@ export class ChildProgressReportNotificationValidator
     const { notifications: notificationsState } = this.store.getState();
 
     return notificationsState.notificationReferences.includes(reference);
+  };
+
+  private getNotificationForNoProgressReportPeriods = (): Message[] => {
+    const {
+      user: userState,
+      practitioner: practitionerState,
+      classroomData: classroomState,
+    } = this.store.getState();
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const februaryFirstDay = new Date(currentYear, 1, 1);
+
+    if (!practitionerState || !practitionerState.practitioner) return [];
+
+    const notifications: Message[] = [];
+    const currentUser = userState.user;
+
+    const reference = `${currentUser?.id}-${currentMonth}-${currentYear}-report-periods`;
+
+    if (
+      today === februaryFirstDay &&
+      !classroomState?.classroom?.childProgressReportPeriods
+    ) {
+      notifications?.push({
+        reference,
+        title: `Get started with ${currentYear} progress reports`,
+        message: `Choose progress reporting periods for ${currentYear} to start tracking child progress.`,
+        priority: NotificationPriority.high,
+        actionText: 'Get summary',
+        area: 'progress-report',
+        color: 'alertMain',
+        dateCreated: new Date().toISOString(),
+        expiryDate: addMonths(new Date(), 3).toISOString(),
+        icon: 'ExclamationIcon',
+        viewOnDashboard: true,
+        viewType: 'Both',
+        routeConfig: {
+          route: ROUTES.CLASSROOM.ROOT,
+          params: {
+            activeTabIndex: TabsItems.PROGRESS,
+            messageReference: reference,
+          },
+        },
+      });
+    }
+
+    return notifications;
   };
 
   private getNotificationsCompleteReportsAllChildren = (
@@ -368,6 +418,8 @@ export class ChildProgressReportNotificationValidator
     newNotifications.push(
       ...this.getNotificationsPrincipalAboutPractioners(reportingPeriod)
     );
+
+    newNotifications?.push(...this.getNotificationForNoProgressReportPeriods());
 
     // don't add if added already ??
     const notifications = newNotifications.filter(
