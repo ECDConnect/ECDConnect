@@ -64,7 +64,7 @@ namespace EcdLink.Api.CoreApi.Services
         public void UpdateChild(UpdateChildAndCaregiverInput input)
         {
             var child = _childRepo.GetById(input.Id);
-            var isActive = child.IsActive && child.User.IsActive;
+            var isActive = child.IsActive && child.User.IsActive && input.IsActive;
 
             // Update child fields
             child.IsActive = isActive;
