@@ -28,6 +28,7 @@ import FormColorField from '../../../../components/form-color-field/form-color-f
 import { SaveIcon } from '@heroicons/react/solid';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
 import { TenantContextType } from '../../../../hooks/useTenant';
+import { lightenColor } from '../../../../utils/color-utils/color-utils';
 
 interface SettingsThemeProps {
   tenant: TenantContextType;
@@ -83,6 +84,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
   });
 
   const getData = async () => {
+    setLoading(true);
     if (tenant && tenant.tenant && tenant.tenant.themePath) {
       await fetch(tenant.tenant.themePath)
         .then(function (res) {
@@ -92,6 +94,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
           setData(data);
         });
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -149,6 +152,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
   useEffect(() => {
     if (fontsRegister) {
       fontsSetValue('fontUrl', defaultTheme.fontUrl);
@@ -220,19 +224,26 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
         });
       }
 
-      const themeVersion = data && data.version ? data.version + 1 : 1;
+      let primaryLighter50 = lightenColor(colors.primary, 50); // 50% lighter
+      let primaryLighter20 = lightenColor(colors.primary, 20); // 25% lighter
+      let secondaryLighter50 = lightenColor(colors.secondary, 50); // 50% lighter
+      let secondaryLighter20 = lightenColor(colors.secondary, 20); // 25% lighter
+      let tertiaryLighter50 = lightenColor(colors.tertiary, 50); // 50% lighter
+      let tertiaryLighter20 = lightenColor(colors.tertiary, 20); // 25% lighter
+
+      const themeVersion = data && data.version ? Number(data.version) + 1 : 1;
       const themeInputModel: ThemeModel = {
         version: themeVersion,
         colors: {
           primary: colors.primary,
-          primaryAccent1: colors.primaryAccent1,
-          primaryAccent2: colors.primaryAccent2,
+          primaryAccent1: primaryLighter20,
+          primaryAccent2: primaryLighter50,
           secondary: colors.secondary,
-          secondaryAccent1: colors.secondaryAccent1,
-          secondaryAccent2: colors.secondaryAccent2,
+          secondaryAccent1: secondaryLighter20,
+          secondaryAccent2: secondaryLighter50,
           tertiary: colors.tertiary,
-          tertiaryAccent1: colors.tertiaryAccent1,
-          tertiaryAccent2: colors.tertiaryAccent2,
+          tertiaryAccent1: tertiaryLighter20,
+          tertiaryAccent2: tertiaryLighter50,
           textDark: colors.textDark,
           textMid: colors.textMid,
           textLight: colors.textLight,
@@ -535,55 +546,63 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
                   />
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
-                <p className="px-4 text-xl">Dark version (svg, png, jpeg):</p>
-                <p className="px-4 text-xl">Light version (svg, png, jpeg):</p>
-                <p className="px-4 text-xl">Favicon (ico):</p>
-              </div>
-              <div className="pointer-events-none mt-2 grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
-                <div>
-                  <FormFileInput
-                    acceptedFormats={acceptedFormats}
-                    contentUrl={data?.images?.logoUrl}
-                    label={''}
-                    nameProp="logoUrl"
-                    setValue={imagesSetValue}
-                    disabled={true}
-                    isWizardComponent={true}
-                    hideFileName={true}
-                    hideAcceptedFormats={true}
-                    isImage={true}
-                  />
-                </div>
-                <div>
-                  <FormFileInput
-                    acceptedFormats={acceptedFormats}
-                    contentUrl={data?.images?.graphicOverlayUrl}
-                    label={''}
-                    nameProp="graphicOverlayUrl"
-                    setValue={imagesSetValue}
-                    disabled={true}
-                    isWizardComponent={true}
-                    hideFileName={true}
-                    hideAcceptedFormats={true}
-                    isImage={true}
-                  />
-                </div>
-                <div>
-                  <FormFileInput
-                    acceptedFormats={['ico']}
-                    contentUrl={data?.images?.faviconUrl}
-                    label={''}
-                    nameProp="faviconUrl"
-                    setValue={imagesSetValue}
-                    disabled={true}
-                    isWizardComponent={true}
-                    hideFileName={true}
-                    hideAcceptedFormats={true}
-                    isImage={true}
-                  />
-                </div>
-              </div>
+              {data && data.images && (
+                <>
+                  <div className="mt-4 grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
+                    <p className="px-4 text-xl">
+                      Dark version (svg, png, jpeg):
+                    </p>
+                    <p className="px-4 text-xl">
+                      Light version (svg, png, jpeg):
+                    </p>
+                    <p className="px-4 text-xl">Favicon (ico):</p>
+                  </div>
+                  <div className="pointer-events-none mt-2 grid grid-cols-3 gap-y-6 gap-x-4 sm:grid-cols-3">
+                    <div>
+                      <FormFileInput
+                        acceptedFormats={acceptedFormats}
+                        contentUrl={data?.images?.logoUrl}
+                        label={''}
+                        nameProp="logoUrl"
+                        setValue={imagesSetValue}
+                        disabled={true}
+                        isWizardComponent={true}
+                        hideFileName={true}
+                        hideAcceptedFormats={true}
+                        isImage={true}
+                      />
+                    </div>
+                    <div>
+                      <FormFileInput
+                        acceptedFormats={acceptedFormats}
+                        contentUrl={data?.images?.graphicOverlayUrl}
+                        label={''}
+                        nameProp="graphicOverlayUrl"
+                        setValue={imagesSetValue}
+                        disabled={true}
+                        isWizardComponent={true}
+                        hideFileName={true}
+                        hideAcceptedFormats={true}
+                        isImage={true}
+                      />
+                    </div>
+                    <div>
+                      <FormFileInput
+                        acceptedFormats={['ico']}
+                        contentUrl={data?.images?.faviconUrl}
+                        label={''}
+                        nameProp="faviconUrl"
+                        setValue={imagesSetValue}
+                        disabled={true}
+                        isWizardComponent={true}
+                        hideFileName={true}
+                        hideAcceptedFormats={true}
+                        isImage={true}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>

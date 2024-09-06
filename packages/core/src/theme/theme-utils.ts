@@ -29,7 +29,7 @@ export const mapTheme = (variables: ITheme): IMappedTheme => {
     '--uiMidDark': variables.uiMidDark || '#5e557a',
     '--uiMid': variables.uiMid || '#827c93',
     '--uiLight': variables.uiLight || '#cac5d8',
-    '--uiBg': variables.uiBg || '#F3F1F9',
+    '--uiBg': variables.uiBg || '#EFF6FA',
     '--errorMain': variables.errorMain || '#ED1414',
     '--errorDark': variables.errorDark || '#D20000',
     '--errorBg': variables.errorBg || '#FFEEF6',

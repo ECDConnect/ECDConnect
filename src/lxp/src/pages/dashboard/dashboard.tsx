@@ -893,7 +893,7 @@ export const Dashboard: React.FC = () => {
       onActionClick: () => {
         goToTraining();
       },
-      classNames: 'bg-successBg',
+      classNames: 'bg-tertiary',
     });
 
   const goToCommunity = () => {
