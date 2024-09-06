@@ -22,7 +22,7 @@ type CameraProps = {
 export const Camera = ({ onGetPhoto, onClose }: CameraProps) => {
   const [facingMode, setFacingMode] = useState<
     'user' | { exact: 'environment' }
-  >('user');
+  >({ exact: 'environment' });
   const [isAllowedSwitchCamera, setIsAllowedSwitchCamera] = useState(false);
   const [preview, setPreview] = useState<string | ArrayBuffer | null>('');
 
