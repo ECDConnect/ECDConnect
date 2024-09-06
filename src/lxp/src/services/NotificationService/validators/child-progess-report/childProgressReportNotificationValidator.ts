@@ -7,9 +7,11 @@ import {
   NotificationIntervals,
 } from '../../NotificationService.types';
 import { ChildDto, ChildProgressReportSummaryModel } from '@ecdlink/core';
-import { addMonths } from 'date-fns';
+import { addMonths, format, sub, subDays } from 'date-fns';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import ROUTES from '@/routes/routes';
+import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
+import { ChildProgressReport } from '@ecdlink/graphql';
 
 type ReportingPeriodType = {
   period: string;
@@ -129,6 +131,25 @@ export class ChildProgressReportNotificationValidator
     });
   };
 
+  private getChildrenProgressReports = (
+    reportingPeriod: ChildProgressReportPeriodDto
+  ): ChildProgressReport[] => {
+    const { progressTracking: progressTrackingState } = this.store.getState();
+
+    if (!progressTrackingState || !progressTrackingState.childProgressReports)
+      return [];
+
+    const childrenProgressReports: unknown =
+      progressTrackingState.childProgressReports.filter(
+        (report) =>
+          new Date(report?.dateCreated!) >=
+            new Date(reportingPeriod?.startDate) &&
+          new Date(report?.dateCreated!) <= new Date(reportingPeriod?.endDate)
+      );
+
+    return childrenProgressReports as ChildProgressReport[];
+  };
+
   private notificationAlreadyDone = (reference: string): boolean => {
     const { notifications: notificationsState } = this.store.getState();
 
@@ -161,8 +182,67 @@ export class ChildProgressReportNotificationValidator
         reference,
         title: `Get started with ${currentYear} progress reports`,
         message: `Choose progress reporting periods for ${currentYear} to start tracking child progress.`,
-        priority: NotificationPriority.high,
+        priority: 21,
         actionText: 'Get summary',
+        area: 'progress-report',
+        color: 'alertMain',
+        dateCreated: new Date().toISOString(),
+        expiryDate: addMonths(new Date(), 3).toISOString(),
+        icon: 'ExclamationIcon',
+        viewOnDashboard: true,
+        viewType: 'Both',
+        routeConfig: {
+          route: ROUTES.CLASSROOM.ROOT,
+          params: {
+            activeTabIndex: TabsItems.PROGRESS,
+            messageReference: reference,
+          },
+        },
+      });
+    }
+
+    return notifications;
+  };
+
+  private getSevenDaysBeforeWithNoProgressReports = (): Message[] => {
+    const { practitioner: practitionerState, classroomData: classroomState } =
+      this.store.getState();
+    const today = new Date();
+
+    if (!classroomState?.classroom?.childProgressReportPeriods) return [];
+
+    const reportingPeriods =
+      classroomState?.classroom?.childProgressReportPeriods;
+
+    const currentReportPeriod = reportingPeriods?.find(
+      (item) =>
+        new Date(item?.startDate) < today && new Date(item?.endDate) > today
+    );
+    const reportPeriodEndDate = new Date(currentReportPeriod?.endDate!);
+    const sevenDaysBeforeEndDate = subDays(reportPeriodEndDate, 7);
+
+    const reports = this.getChildrenProgressReports(currentReportPeriod!);
+
+    if (!practitionerState || !practitionerState.practitioner) return [];
+
+    const notifications: Message[] = [];
+
+    const reference = `getSevenDaysBeforeWithNoProgressReports`;
+
+    if (
+      classroomState?.classroom?.childProgressReportPeriods &&
+      today === sevenDaysBeforeEndDate &&
+      reports?.length === 0
+    ) {
+      notifications?.push({
+        reference,
+        title: `Finish your progress reports`,
+        message: `The deadline is coming up on ${format(
+          reportPeriodEndDate,
+          'd MMMM y'
+        )}! Create the reports to share with caregivers.`,
+        priority: 22,
+        actionText: 'Create reports',
         area: 'progress-report',
         color: 'alertMain',
         dateCreated: new Date().toISOString(),
@@ -420,6 +500,7 @@ export class ChildProgressReportNotificationValidator
     );
 
     newNotifications?.push(...this.getNotificationForNoProgressReportPeriods());
+    newNotifications?.push(...this.getSevenDaysBeforeWithNoProgressReports());
 
     // don't add if added already ??
     const notifications = newNotifications.filter(

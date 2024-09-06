@@ -1,11 +1,10 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { differenceInDays, lastDayOfMonth } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
   NotificationValidator,
   NotificationIntervals,
-  NotificationPriority,
 } from '../../NotificationService.types';
 import { RoleSystemNameEnum } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
@@ -71,7 +70,7 @@ export class PractitionerNotificationValidator
         title: `Add your preschool location!`,
         message: `You can add your preschool location to ${tenantState?.tenant?.applicationName}.`,
         dateCreated: new Date().toISOString(),
-        priority: NotificationPriority.average,
+        priority: 30,
         viewOnDashboard: true,
         area: 'practitioner',
         icon: 'InformationCircleIcon',
@@ -93,7 +92,7 @@ export class PractitionerNotificationValidator
         title: `Add your cellphone number!`,
         message: `Add your cellphone number to stay connected.`,
         dateCreated: new Date().toISOString(),
-        priority: NotificationPriority.high,
+        priority: 31,
         viewOnDashboard: true,
         area: 'practitioner',
         icon: 'ExclamationIcon',
@@ -109,10 +108,10 @@ export class PractitionerNotificationValidator
     if (!isMoreThan30Days && !communityState?.communityProfile) {
       notifications.push({
         reference: `practitioner-no-community-profile`,
-        title: `Join the communty!`,
+        title: `Join the community!`,
         message: `Did you know you can connect with other ECD Heroes on ${tenantState?.tenant?.applicationName}.`,
         dateCreated: new Date().toISOString(),
-        priority: NotificationPriority.average,
+        priority: 34,
         viewOnDashboard: true,
         area: 'practitioner',
         icon: 'InformationCircleIcon',

@@ -78,7 +78,9 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
 
     if (
       notification?.message?.reference ===
-      referenceNames?.yearPointsGreaterThen0
+        referenceNames?.yearPointsGreaterThen0 ||
+      notification?.message?.reference ===
+        referenceNames?.getSevenDaysBeforeWithNoProgressReports
     ) {
       appDispatch(notificationActions.removeNotification(notification!));
     }

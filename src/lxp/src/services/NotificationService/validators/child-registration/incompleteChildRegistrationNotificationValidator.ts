@@ -75,7 +75,7 @@ export class IncompleteChildRegistrationNotificationValidator
             30
           ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}`,
           dateCreated: new Date().toISOString(),
-          priority: NotificationPriority.lowest,
+          priority: 18,
           viewOnDashboard: true,
           area: 'child-registration',
           icon: 'XCircleIcon',
