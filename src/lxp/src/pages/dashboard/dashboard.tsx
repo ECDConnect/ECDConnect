@@ -501,7 +501,10 @@ export const Dashboard: React.FC = () => {
       return;
     }
     if (
-      ((classroom && classroom.id) ||
+      ((classroom &&
+        classroom.id &&
+        classroomGroups &&
+        classroomGroups.length > 0) ||
         (classroomGroups && classroomGroups.length > 0)) &&
       isRegistered &&
       isProgress &&
@@ -889,7 +892,10 @@ export const Dashboard: React.FC = () => {
 
   const goToCommunity = () => {
     if (
-      (classroom && classroom.id) ||
+      (classroom &&
+        classroom.id &&
+        classroomGroups &&
+        classroomGroups.length > 0) ||
       (classroomGroups &&
         classroomGroups.length > 0 &&
         isRegistered &&
@@ -948,7 +954,10 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (classroom && !!classroom.id) ||
+      (classroom &&
+        !!classroom.id &&
+        classroomGroups &&
+        classroomGroups.length > 0) ||
       (classroomGroups &&
         classroomGroups.length > 0 &&
         !!classroom?.id &&
@@ -972,7 +981,10 @@ export const Dashboard: React.FC = () => {
 
   const goToCalendar = () => {
     if (
-      (((classroom && classroom.id) ||
+      (((classroom &&
+        classroom.id &&
+        classroomGroups &&
+        classroomGroups?.length > 0) ||
         (classroomGroups && classroomGroups.length > 0)) &&
         isRegistered &&
         isProgress &&
@@ -999,7 +1011,10 @@ export const Dashboard: React.FC = () => {
 
   const goToTraining = () => {
     if (
-      (((classroom && classroom.id) ||
+      (((classroom &&
+        classroom.id &&
+        classroomGroups &&
+        classroomGroups?.length > 0) ||
         (classroomGroups && classroomGroups.length > 0)) &&
         isRegistered &&
         isProgress &&
