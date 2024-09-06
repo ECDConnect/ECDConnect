@@ -84,7 +84,10 @@ export class PractitionerNotificationValidator
       });
     }
 
-    if (!practitionerState?.practitioner?.user?.phoneNumber) {
+    if (
+      !practitionerState?.practitioner?.user?.phoneNumber &&
+      practitionerState?.practitioner?.isRegistered
+    ) {
       notifications?.push({
         reference: `practitioner-profile-no-cellphone-number`,
         title: `Add your cellphone number!`,

@@ -233,7 +233,10 @@ export const PractitionerProfile: React.FC = () => {
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
           if (
-            ((classroom && classroom.id) ||
+            ((classroom &&
+              classroom.id &&
+              classroomGroups &&
+              classroomGroups?.length > 0) ||
               (classroomGroups && !missingProgramme) ||
               isOpenAccess) &&
             !(!classroom && practitioner?.principalHierarchy)
