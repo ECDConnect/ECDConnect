@@ -34,11 +34,11 @@ export const Camera = ({ onGetPhoto, onClose }: CameraProps) => {
   };
 
   const onSwitchCamera = () => {
-    if (isAllowedSwitchCamera) {
-      setFacingMode((prevState) =>
-        prevState === 'user' ? { exact: 'environment' } : 'user'
-      );
-    }
+    //if (isAllowedSwitchCamera) {
+    setFacingMode((prevState) =>
+      prevState === 'user' ? { exact: 'environment' } : 'user'
+    );
+    //}
   };
 
   const handleImageUpload = (event: FormEvent<HTMLInputElement>) => {
