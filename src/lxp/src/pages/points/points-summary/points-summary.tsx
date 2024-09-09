@@ -650,7 +650,7 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.viewedCommunitySection ? 'bg-successMain' : 'bg-uiLight'
         } rounded-full h-12 w-12 p-2.5`,
         showIcon: true,
-        onActionClick: () => console.log('ahahah'),
+        onActionClick: () => {},
         hideRightIcon: true,
         backgroundColor: pointsToDo?.viewedCommunitySection
           ? 'successBg'
