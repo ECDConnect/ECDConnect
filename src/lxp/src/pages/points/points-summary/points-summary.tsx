@@ -522,7 +522,8 @@ export const PointsSummary: React.FC = () => {
             : pointsToDo?.savedIncomeOrExpense ||
               pointsToDo?.savedIncomeOrExpense ||
               (!practitioner?.isPrincipal &&
-                planActivitiesPermission?.isActive === false &&
+                (planActivitiesPermission?.isActive === false ||
+                  planActivitiesPermission?.isActive === undefined) &&
                 pointsToDo?.isPartOfPreschool)
             ? 'quatenary'
             : 'bg-uiLight'
@@ -532,7 +533,8 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.savedIncomeOrExpense ||
           pointsToDo?.savedIncomeOrExpense ||
           (!practitioner?.isPrincipal &&
-            planActivitiesPermission?.isActive === false &&
+            (planActivitiesPermission?.isActive === false ||
+              planActivitiesPermission?.isActive === undefined) &&
             !pointsToDo?.viewedCommunitySection)
             ? () => history.push(ROUTES.COMMUNITY.WELCOME)
             : () => {},
@@ -542,7 +544,8 @@ export const PointsSummary: React.FC = () => {
           : pointsToDo?.savedIncomeOrExpense ||
             pointsToDo?.savedIncomeOrExpense ||
             (!practitioner?.isPrincipal &&
-              planActivitiesPermission?.isActive === false &&
+              (planActivitiesPermission?.isActive === false ||
+                planActivitiesPermission?.isActive === undefined) &&
               pointsToDo?.isPartOfPreschool)
           ? 'quatenaryBg'
           : 'adminPortalBg',
@@ -551,7 +554,7 @@ export const PointsSummary: React.FC = () => {
 
     return stackedMenuList;
   };
-
+  console.log(pointsToDo?.isPartOfPreschool);
   const getSecondaryStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
@@ -647,7 +650,7 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.viewedCommunitySection ? 'bg-successMain' : 'bg-uiLight'
         } rounded-full h-12 w-12 p-2.5`,
         showIcon: true,
-        onActionClick: () => {},
+        onActionClick: () => console.log('ahahah'),
         hideRightIcon: true,
         backgroundColor: pointsToDo?.viewedCommunitySection
           ? 'successBg'
