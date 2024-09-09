@@ -58,23 +58,16 @@ export default function CreateResource({
 
   const { type: formType } = useWatch({ control });
 
-  const mutationName = `update${contentType?.name}`;
-
+  const updateMutationName = `update${contentType?.name}`;
   const creationMutationName = `create${contentType?.name}`;
+  const deleteMutationName = `delete${contentType?.name}`;
 
   const updateMutation = gql` 
-    mutation ${mutationName} ($id: String!, $input: ${contentType?.name}Input!, $localeId: String!) {
-      ${mutationName} (id: $id, input: $input, localeId: $localeId) {
+    mutation ${updateMutationName} ($id: String!, $input: ${contentType?.name}Input!, $localeId: String!) {
+      ${updateMutationName} (id: $id, input: $input, localeId: $localeId) {
         id
       } 
     }
-  `;
-
-  const deleteMutationName = `delete${contentType?.name}`;
-  const deleteMutation = gql` 
-    mutation ${deleteMutationName} ($id: String!, $localeId: String!) {
-      ${deleteMutationName} (id: $id, localeId: $localeId) 
-      }
   `;
 
   const createMutation = gql` 
@@ -83,10 +76,18 @@ export default function CreateResource({
     }
 `;
 
-  const dialog = useDialog();
+  const deleteMutation = gql` 
+    mutation ${deleteMutationName} ($id: String!, $localeId: String!) {
+      ${deleteMutationName} (id: $id, localeId: $localeId) 
+      }
+  `;
 
+  const [updateContent] = useMutation(updateMutation);
+  const [createContent] = useMutation(createMutation);
   const [deleteContent, { loading: isLoadingDeleteContent }] =
     useMutation(deleteMutation);
+
+  const dialog = useDialog();
 
   const deleteAndRefresh = async (event: MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
@@ -142,9 +143,6 @@ export default function CreateResource({
       ),
     });
   };
-
-  const [updateContent] = useMutation(updateMutation);
-  const [createContent] = useMutation(createMutation);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -224,41 +222,39 @@ export default function CreateResource({
   };
 
   const onSubmit = async (values: any) => {
-    // setLoading(true);
+    setLoading(true);
     const model = { ...values };
-    // model.sectionType = (choosedSectionTitle === ResourcesTitles.ClassroomResources ? 'Classroom' : 'Business');
-    console.log('model', model);
-    console.log('content?.id', content?.id);
-    // if (!content?.id) {
+    model.sectionType =
+      choosedSectionTitle === ResourcesTitles.ClassroomResources
+        ? 'classroom'
+        : 'business';
 
-    console.log('selectedLanguageId', selectedLanguageId);
-    await createContent({
-      variables: {
-        input: { ...model },
-        localeId: selectedLanguageId.toString(),
-      },
-      // }).catch(() => {
-      //   setLoading(false);
-    });
-
-    // } else {
-    //   await updateContent({
-    //     variables: {
-    //       id: content.id.toString(),
-    //       input: { ...model },
-    //       localeId: selectedLanguageId.toString(),
-    //     },
-    //   }).catch(() => {
-    //     setLoading(false);
-    //   });
-    // }
+    if (!content?.id) {
+      await createContent({
+        variables: {
+          input: { ...model },
+          localeId: selectedLanguageId.toString(),
+        },
+      }).catch(() => {
+        setLoading(false);
+      });
+    } else {
+      await updateContent({
+        variables: {
+          id: content.id.toString(),
+          input: { ...model },
+          localeId: selectedLanguageId.toString(),
+        },
+      }).catch(() => {
+        setLoading(false);
+      });
+    }
 
     setNotification({
       title: 'Successfully Updated Content!',
       variant: NOTIFICATION.SUCCESS,
     });
 
-    setLoading(false);
     savedContent();
     setLoading(false);
   };

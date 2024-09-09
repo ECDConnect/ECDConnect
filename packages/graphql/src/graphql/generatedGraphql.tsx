@@ -14265,7 +14265,6 @@ export type Query = {
   classAttendanceMetricsByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classroomActionItems?: Maybe<Array<Maybe<NotificationDisplay>>>;
   classroomAttendanceOverviewReport?: Maybe<ClassroomGroupChildAttendanceReportOverviewModel>;
-  classroomBusinessResources: Array<Maybe<ClassroomBusinessResource>>;
   classroomForUser?: Maybe<ClassroomModel>;
   classroomGroupsForUser?: Maybe<Array<Maybe<ClassroomGroupModel>>>;
   clinicById?: Maybe<ClinicModel>;
@@ -16594,11 +16593,6 @@ export type QueryClassroomAttendanceOverviewReportArgs = {
   endDate: Scalars['DateTime'];
   startDate: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryClassroomBusinessResourcesArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  section?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryClassroomForUserArgs = {

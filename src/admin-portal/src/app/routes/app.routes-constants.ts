@@ -25,6 +25,7 @@ const ROUTES = {
   DOCUMENTS: '/documents',
   PROFILE: '/profile',
   RESET: '/reset',
+  CONTENT_MANAGEMENT: 'content-management',
   TEAM_LEAD_LEAGUES: '/tl-leagues',
   CLINICS: addPrefix('/clinics', {
     ALL_CLINICS: '/clinics',
