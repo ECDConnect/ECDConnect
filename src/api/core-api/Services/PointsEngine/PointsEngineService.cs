@@ -490,21 +490,23 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitioner != null)
             {
                 var today = DateTime.Now;
-                var userChildrenCount = _childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)
-                                                                    && x.UpdatedDate.Year == today.Year
-                                                                    && x.UpdatedDate.Month == today.Month
-                                                                    && x.CaregiverId.HasValue
-                                                                    && x.WorkflowStatusId == Constants.WorkflowStatus.ActiveId).Count();
 
-                if (userChildrenCount > 0)
+                var learnerCount = _classroomGroupRepo
+                                    .GetAll()
+                                    .Where(x => x.IsActive && x.Classroom.UserId == userId)
+                                    .SelectMany(x => x.Learners)
+                                    .Where(x => x.IsActive && !x.StoppedAttendance.HasValue && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month)
+                                    .Count();
+
+                if (learnerCount > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildRegistrationCompleteId);
-                    var userPoints = userChildrenCount * activity.Points;
+                    var userPoints = learnerCount * activity.Points;
                     AddOrUpdatePoints(
                         PointsActivityConstants.ChildRegistrationCompleteId,
                         userId,
                         userPoints,
-                        userChildrenCount
+                        learnerCount
                        );
                 }
 
