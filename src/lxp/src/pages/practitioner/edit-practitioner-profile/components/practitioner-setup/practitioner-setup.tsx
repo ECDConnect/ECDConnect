@@ -194,7 +194,7 @@ export const PractitionerSetup = ({
               />
             )}
 
-            {practitionerToProgramme && practitioner?.shareInfo && (
+            {practitionerToProgramme && practitioner?.shareInfo !== true && (
               <>
                 <Typography
                   type="h4"

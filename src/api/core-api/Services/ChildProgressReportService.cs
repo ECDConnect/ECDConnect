@@ -184,12 +184,13 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var newReport = new ChildProgressReport
                 {
+                    Id = input.Id,
                     UserId = _contextUserId,
                     ChildId = input.ChildId,
                     ChildProgressReportPeriodId = input.ChildProgressReportPeriodId,
                     DateCompleted = input.DateCompleted,
                     ObservationsCompleteDate = input.ObservationsCompleteDate,
-                    ReportContent = JsonConvert.SerializeObject(reportContent),
+                    ReportContent = JsonConvert.SerializeObject(reportContent),                    
                 };
 
                 _childProgressReportRepo.Insert(newReport);

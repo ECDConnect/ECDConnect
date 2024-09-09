@@ -58,6 +58,7 @@ export const PractitionerSignature: React.FC<SignupSignatureProps> = ({
         IsActive: true,
         Progress: copy.progress,
         SigningSignature: copy.signingSignature,
+        ProgressWalkthroughComplete: copy.progressWalkthroughComplete || false,
       };
 
       appDispatch(practitionerActions.updatePractitioner(copy));

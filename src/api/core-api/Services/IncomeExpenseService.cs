@@ -6,15 +6,14 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
-using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +38,7 @@ namespace ECDLink.Core.Services
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private IGenericRepository<Classroom, Guid> _classroomRepo;
 
         private ApplicationUserManager _userManager;
         private DocumentManager _documentManager;
@@ -74,6 +74,7 @@ namespace ECDLink.Core.Services
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+            _classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
 
             _pdfConverter = pdfConverter;
 
@@ -114,48 +115,14 @@ namespace ECDLink.Core.Services
             var statementsQuery = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId == userId && x.Year == startDate.Year);
+                .Where(x => x.UserId == userId &&
+                    (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
 
-            // Handle notifications if applicable
-            var practitioner = _practitionerRepo.GetByUserId(userId);
-            var totalDaysOnApp = (DateTime.Now.Date - practitioner.StartDate.Value.Date).Days;
-            if (!statementsQuery.Any())
-            {
-                if (practitioner.IsRegistered.HasValue && practitioner.IsRegistered.Value && practitioner.IsPrincipalOrAdmin())
-                {
-                    if (totalDaysOnApp > 59)
-                    {
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements60DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, DateTime.Now.Date.AddDays(7),
-                                                                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
-                    }
-                }
-            } 
-            else
-            {
-                var thirtyDaysBack = startDate.AddDays(-30);
-                var lastThirtyDaysData = statementsQuery.Where(x => (x.Year > thirtyDaysBack.Year || (x.Year == thirtyDaysBack.Year && x.Month >= thirtyDaysBack.Month)));
-                if (!lastThirtyDaysData.Any() && totalDaysOnApp > 119)
-                {
-                    var replacements = new List<TagsReplacements>
-                {
-                    new TagsReplacements()
-                    {
-                        FindValue = "ApplicationName",
-                        ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
-                    }
-                };
-                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, null,
-                                                                                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
-                }
-            }
-
-            // Apply start date
-            statementsQuery = statementsQuery.Where(x => (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
-            // Apply end date 
             if (endDate.HasValue)
             {
                 statementsQuery = statementsQuery.Where(x => x.Year < endDate.Value.Year || (x.Year == endDate.Value.Year && x.Month <= endDate.Value.Month));
             }
+
             return statementsQuery.ToList();
         }
 
@@ -389,6 +356,7 @@ namespace ECDLink.Core.Services
 
         public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
+            var classroom = _classroomRepo.GetByUserId(userId);
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);
 
@@ -408,7 +376,10 @@ namespace ECDLink.Core.Services
 
             var pdfDocumentHeader = new PdfDocumentHeader();
             pdfDocumentHeader.UserId = userId;
-            pdfDocumentHeader.SiteAddress = _personnelService.GetUserSiteAddress(userId);
+
+            var siteAddress = classroom.SiteAddress?.AddressLine1 ?? "" + classroom.SiteAddress?.AddressLine2 ?? "" + classroom.SiteAddress?.AddressLine3 ?? "" + classroom.SiteAddress?.PostalCode ?? "" + classroom.SiteAddress?.Province.Description ?? "";
+            pdfDocumentHeader.SiteAddress = siteAddress;
+
             pdfDocumentHeader.ReportType = "StatementsPDF";
             var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader);
 

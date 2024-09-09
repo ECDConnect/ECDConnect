@@ -72,10 +72,10 @@ export class IncompleteChildRegistrationNotificationValidator
             child.user?.firstName
           }'s profile will be removed on ${addDays(
             new Date(child.insertedDate || 0),
-            20
+            30
           ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}`,
           dateCreated: new Date().toISOString(),
-          priority: NotificationPriority.lowest,
+          priority: 18,
           viewOnDashboard: true,
           area: 'child-registration',
           icon: 'XCircleIcon',
@@ -87,6 +87,7 @@ export class IncompleteChildRegistrationNotificationValidator
             params: {
               step: 6,
               childId: child.id,
+              notificationReference: `${child.id || child.user?.firstName}-reg`,
             },
           },
         });

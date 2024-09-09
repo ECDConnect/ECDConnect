@@ -109,12 +109,15 @@ export const RemoveChild: React.FC = () => {
       })
     );
     appDispatch(childrenActions.updateChild(updatedChild));
-    appDispatch(
-      childrenThunkActions.updateChild({
-        child: updatedChild,
-        id: String(updatedChild.id),
-      })
-    );
+
+    if (isOnline) {
+      appDispatch(
+        childrenThunkActions.updateChild({
+          child: updatedChild,
+          id: String(updatedChild.id),
+        })
+      );
+    }
 
     showMessage({
       message: `Child removed`,

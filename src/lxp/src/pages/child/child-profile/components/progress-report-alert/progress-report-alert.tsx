@@ -51,7 +51,11 @@ export const ChildProgressReportAlert: React.FC<
       className="bg-uiBg m-4 flex cursor-pointer flex-row items-center gap-1 rounded-2xl p-4 text-white"
       onClick={navigateToChildProgressObservation}
     >
-      <RoundIcon backgroundColor="quatenary" icon="PresentationChartLineIcon" />
+      <RoundIcon
+        backgroundColor="quatenary"
+        icon="PresentationChartLineIcon"
+        iconColor="white"
+      />
       <div className="ml-2 flex flex-col">
         <Typography
           type="h4"

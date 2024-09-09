@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task DailyUserOfflineNotification()
         {
-            _logger.LogInformation("DailyUserOfflineNotification started at " + DateTime.Now);
+            /*_logger.LogInformation("DailyUserOfflineNotification started at " + DateTime.Now);
 
             try
             {
@@ -90,6 +90,8 @@ namespace EcdLink.Api.CoreApi.Services
                 _logger.LogError("Issue in DailyUserOfflineNotification" + ex.Message, ex);
             }
             _logger.LogInformation("DailyUserOfflineNotification stopped at " + DateTime.Now);
+
+            */
         }
 
         

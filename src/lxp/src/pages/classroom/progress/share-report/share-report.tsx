@@ -71,12 +71,14 @@ export const ProgressShareReport: React.FC = () => {
           textColor="textMid"
           placeholder={'Tap to choose report'}
           labelColor="textDark"
-          list={detailedReports.map((x) => ({
-            label: `Report ${x.reportingPeriodNumber} - ${new Date(
-              x.reportingPeriodEndDate
-            ).getFullYear()}`,
-            value: x.id,
-          }))}
+          list={detailedReports
+            .filter((x) => !!x.dateCompleted)
+            .map((x) => ({
+              label: `Report ${x.reportingPeriodNumber} - ${new Date(
+                x.reportingPeriodEndDate
+              ).getFullYear()}`,
+              value: x.id,
+            }))}
           selectedValue={selectedReport}
           onChange={(item) => setSelectedReport(item)}
           className="my-2"

@@ -122,7 +122,7 @@ namespace ECDLink.Security.Api
         public IActionResult GetConsentForPortal([FromBody] PortalConsentModel input)
         {
             var language = _localeService.GetLocale(input.Locale);
-            return Ok(_contentRepo.GetByValueKey("Consent", "type", input.Type, language.Id));
+            return Ok(_contentRepo.GetByValueKey("Consent", "name", input.Name, language.Id));
         }
 
 

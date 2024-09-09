@@ -7758,7 +7758,6 @@ export type Mutation = {
   expireNotificationsTypesForUser: Scalars['Boolean'];
   expireRelationshipLinksService: Scalars['Boolean'];
   fileUpload?: Maybe<DocumentModel>;
-  gGBottom75PercPointsTeam: Scalars['Boolean'];
   generateCaregiverChildToken?: Maybe<InitialChildRegistrationModel>;
   importCoaches?: Maybe<UserImportModel>;
   importPractitioners?: Maybe<UserImportModel>;
@@ -7789,85 +7788,20 @@ export type Mutation = {
   >;
   saveWelcomeMessage: Scalars['Boolean'];
   scheduleConsolidationMeetingDate?: Maybe<Trainee>;
-  sendAllProgressReportsCompletedForClassNotification: Scalars['Boolean'];
-  sendAnyGGNotification: Scalars['Boolean'];
-  sendAnyGGNotificationWithReplacements: Scalars['Boolean'];
   sendAnyNotification: Scalars['Boolean'];
   sendAnyNotificationWithReplacements: Scalars['Boolean'];
   sendBulkInviteToPortal?: Maybe<BulkInvitationResult>;
-  sendClubleaderRoleAssignedNotification: Scalars['Boolean'];
-  sendCoachAddresUpdatedScheduleVisitNotification: Scalars['Boolean'];
   sendCoachInviteToApplication: Scalars['Boolean'];
-  sendCoachNewTraineesNotification: Scalars['Boolean'];
-  sendCoachRemoveTraineeNotification: Scalars['Boolean'];
-  sendCoachTraineeReadySmartspaceCheckNotification: Scalars['Boolean'];
-  sendCoachVisitRequestedNotification: Scalars['Boolean'];
-  sendCoachVisitsOverdueNotification: Scalars['Boolean'];
-  sendDemotedAsPrincipalFAAProgrammeNotification: Scalars['Boolean'];
-  sendEndofyearPointEarnedNotification: Scalars['Boolean'];
-  sendFillInSelfAsessmentFormNotification: Scalars['Boolean'];
-  sendGGAddBreastfeedingClubNotification: Scalars['Boolean'];
-  sendGGBronzeTierPointsTeamNotification: Scalars['Boolean'];
-  sendGGChildGrowthIssueNotification: Scalars['Boolean'];
-  sendGGChildMUACNotification: Scalars['Boolean'];
-  sendGGChildOlderThanFiveNotification: Scalars['Boolean'];
-  sendGGEarningPointsNotification: Scalars['Boolean'];
-  sendGGEarningXPointsNotification: Scalars['Boolean'];
-  sendGGExpectedMomDeliveryDateApproachingNotification: Scalars['Boolean'];
-  sendGGGGAddedABreastfeedingClubNotification: Scalars['Boolean'];
-  sendGGGoldTierPointsTeamNotification: Scalars['Boolean'];
-  sendGGLowBirthWeightNotification: Scalars['Boolean'];
-  sendGGMultipleReferralsNotification: Scalars['Boolean'];
-  sendGGPointsTeamPlacementNotBottom75PercNotification: Scalars['Boolean'];
-  sendGGPointsTeamPlacementNotTop3Notification: Scalars['Boolean'];
-  sendGGPointsTeamPlacementNotification: Scalars['Boolean'];
-  sendGGPointsYearlySummaryNotification: Scalars['Boolean'];
-  sendGGReferralDangerSignsNotification: Scalars['Boolean'];
-  sendGGSilverTierPointsTeamNotification: Scalars['Boolean'];
-  sendGGTop25PercPointsTeamNotification: Scalars['Boolean'];
-  sendGGTopPointsEarnerNotification: Scalars['Boolean'];
-  sendGGTopPointsTeamNotification: Scalars['Boolean'];
-  sendGGTwoVisitsMissedNotification: Scalars['Boolean'];
-  sendGGUploadRTHNotification: Scalars['Boolean'];
-  sendGGVisitOverdueNotification: Scalars['Boolean'];
-  sendGGVisitsNotCompleted14daysNotification: Scalars['Boolean'];
-  sendGGWalkthroughNotificationNotification: Scalars['Boolean'];
-  sendGGXVisitsMissedNotification: Scalars['Boolean'];
-  sendGGyoungerthan20Notification: Scalars['Boolean'];
-  sendGainedCommunitySupportNotification: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
-  sendNewClubleaderNotification: Scalars['Boolean'];
   sendNotificationToUser: Scalars['Boolean'];
-  sendOnly2MoreTraineeTaskLeftsNotification: Scalars['Boolean'];
-  sendOverdueTraineeTasksNotification: Scalars['Boolean'];
   sendPractitionerAddedToProgrammeNotification: Scalars['Boolean'];
   sendPractitionerInviteToApplication: Scalars['Boolean'];
   sendPractitionerInviteToPreSchool?: Maybe<Scalars['String']>;
-  sendPractitionerNotAssignedToProgrammeNotification: Scalars['Boolean'];
   sendPractitionerRemovedFromProgrammeNotification: Scalars['Boolean'];
-  sendPrincipalAllReportsDoneNotification: Scalars['Boolean'];
-  sendPrincipalChangedNotification: Scalars['Boolean'];
   sendPrincipalInviteToApplication?: Maybe<Scalars['String']>;
-  sendPrincipalMovedToProgrammeNotification: Scalars['Boolean'];
-  sendPrincipalReportDeadlinePassedNotification: Scalars['Boolean'];
-  sendProgressreportsNotCreatedNotification: Scalars['Boolean'];
   sendPromotedToPrincipalFAAProgrammeNotification: Scalars['Boolean'];
-  sendRecordCaregiverMeetingNotification: Scalars['Boolean'];
-  sendRegisterThreeChildrenNotification: Scalars['Boolean'];
   sendRemovedFromProgrammeNotification: Scalars['Boolean'];
-  sendReportDeadlinePassedNotification: Scalars['Boolean'];
-  sendSetAbsenteeNotification: Scalars['Boolean'];
-  sendSetLeaveNotification: Scalars['Boolean'];
   sendTeamLeadVerifyPhoneNumberSMS?: Maybe<ApplicationUser>;
-  sendTopSmartStarterPointsNotification: Scalars['Boolean'];
-  sendTrainee2WeekOnboardingWarningNotification: Scalars['Boolean'];
-  sendTraineeJourneyStartSelfNotification: Scalars['Boolean'];
-  sendTraineeSetupVenueNotification: Scalars['Boolean'];
-  sendTraineeSignAgreementNotification: Scalars['Boolean'];
-  sendTraineeSignStartupSupportAgreementNotification: Scalars['Boolean'];
-  sendUpdateFeeNotification: Scalars['Boolean'];
-  sendUserAddedToClubNotification: Scalars['Boolean'];
-  sendUserAssignedToClassFromOldClassNotification: Scalars['Boolean'];
   sendUserAssignedToClassNotification: Scalars['Boolean'];
   setContactClubLeaderStatusForMeeting?: Maybe<ClubMeeting>;
   switchPrincipal: Scalars['Boolean'];
@@ -7994,6 +7928,7 @@ export type Mutation = {
   updatePractitionerEmergencyContact: Scalars['Boolean'];
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
   updatePractitionerProgress: Scalars['Decimal'];
+  updatePractitionerProgressWalkthrough: Scalars['Boolean'];
   updatePractitionerRegistered: Scalars['Boolean'];
   updatePractitionerRemovalHistory?: Maybe<PractitionerRemovalHistory>;
   updatePractitionerShareInfo: Scalars['Boolean'];
@@ -9904,11 +9839,6 @@ export type MutationFileUploadArgs = {
   fileType: FileTypeEnum;
 };
 
-export type MutationGgBottom75PercPointsTeamArgs = {
-  ranking?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationGenerateCaregiverChildTokenArgs = {
   classgroupId: Scalars['UUID'];
   firstname?: InputMaybe<Scalars['String']>;
@@ -10041,21 +9971,6 @@ export type MutationScheduleConsolidationMeetingDateArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendAllProgressReportsCompletedForClassNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendAnyGgNotificationArgs = {
-  templateType?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendAnyGgNotificationWithReplacementsArgs = {
-  replacements?: InputMaybe<Array<InputMaybe<TagsReplacementsInput>>>;
-  templateType?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendAnyNotificationArgs = {
   templateType?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -10071,231 +9986,12 @@ export type MutationSendBulkInviteToPortalArgs = {
   userIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-export type MutationSendClubleaderRoleAssignedNotificationArgs = {
-  clubName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendCoachAddresUpdatedScheduleVisitNotificationArgs = {
-  principalOrFAAName?: InputMaybe<Scalars['String']>;
-  programmeName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendCoachInviteToApplicationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendCoachNewTraineesNotificationArgs = {
-  traineeFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendCoachRemoveTraineeNotificationArgs = {
-  traineeName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendCoachTraineeReadySmartspaceCheckNotificationArgs = {
-  traineeFirstName?: InputMaybe<Scalars['String']>;
-  traineeUserId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendCoachVisitRequestedNotificationArgs = {
-  practitionerFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendCoachVisitsOverdueNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendDemotedAsPrincipalFaaProgrammeNotificationArgs = {
-  principalOrFAA?: InputMaybe<Scalars['String']>;
-  programmeName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendEndofyearPointEarnedNotificationArgs = {
-  pointsEarned?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendFillInSelfAsessmentFormNotificationArgs = {
-  dueDate?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgAddBreastfeedingClubNotificationArgs = {
-  currentMonth?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgBronzeTierPointsTeamNotificationArgs = {
-  quarter?: InputMaybe<Scalars['String']>;
-  totalTeamPoints?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgChildGrowthIssueNotificationArgs = {
-  childFirstName?: InputMaybe<Scalars['String']>;
-  infantUserId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgChildMuacNotificationArgs = {
-  childFirstName?: InputMaybe<Scalars['String']>;
-  infantUserId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgChildOlderThanFiveNotificationArgs = {
-  childFirstName?: InputMaybe<Scalars['String']>;
-  removalDate?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgEarningPointsNotificationArgs = {
-  currentMonth?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgEarningXPointsNotificationArgs = {
-  averagePoints?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgExpectedMomDeliveryDateApproachingNotificationArgs = {
-  clientFirstName?: InputMaybe<Scalars['String']>;
-  expectedDeliveryDate?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgggAddedABreastfeedingClubNotificationArgs = {
-  currentClubs?: InputMaybe<Scalars['String']>;
-  currentMonth?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgGoldTierPointsTeamNotificationArgs = {
-  quarter?: InputMaybe<Scalars['String']>;
-  totalTeamPoints?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgLowBirthWeightNotificationArgs = {
-  caregiverFirstName?: InputMaybe<Scalars['String']>;
-  childFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgMultipleReferralsNotificationArgs = {
-  clientFirstName?: InputMaybe<Scalars['String']>;
-  noOfReferrals?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgPointsTeamPlacementNotBottom75PercNotificationArgs = {
-  currentYear?: InputMaybe<Scalars['String']>;
-  placement?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgPointsTeamPlacementNotTop3NotificationArgs = {
-  currentYear?: InputMaybe<Scalars['String']>;
-  placement?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgPointsTeamPlacementNotificationArgs = {
-  currentYear?: InputMaybe<Scalars['String']>;
-  placement?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgPointsYearlySummaryNotificationArgs = {
-  currentYear?: InputMaybe<Scalars['String']>;
-  pointsEarned?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgReferralDangerSignsNotificationArgs = {
-  dangerSignsList?: InputMaybe<Scalars['String']>;
-  firstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgSilverTierPointsTeamNotificationArgs = {
-  quarter?: InputMaybe<Scalars['String']>;
-  totalTeamPoints?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgTop25PercPointsTeamNotificationArgs = {
-  pointsBehindWinningTeam?: InputMaybe<Scalars['String']>;
-  totalTeamPoints?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgTopPointsEarnerNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgTopPointsTeamNotificationArgs = {
-  totalTeamPoints?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgTwoVisitsMissedNotificationArgs = {
-  childFirstName?: InputMaybe<Scalars['String']>;
-  clientFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgUploadRthNotificationArgs = {
-  childFirstName?: InputMaybe<Scalars['String']>;
-  firstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgVisitOverdueNotificationArgs = {
-  clientFirstName?: InputMaybe<Scalars['String']>;
-  noOfReferrals?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgVisitsNotCompleted14daysNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgWalkthroughNotificationNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGgxVisitsMissedNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-  visitsOverdue?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGGyoungerthan20NotificationArgs = {
-  caregiverFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendGainedCommunitySupportNotificationArgs = {
-  supportDate?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationSendInviteToApplicationArgs = {
   inviteToPortal?: Scalars['Boolean'];
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendNewClubleaderNotificationArgs = {
-  clubLeaderName?: InputMaybe<Scalars['String']>;
-  clubName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -10305,15 +10001,6 @@ export type MutationSendNotificationToUserArgs = {
   templateType?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
   userType?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendOnly2MoreTraineeTaskLeftsNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendOverdueTraineeTasksNotificationArgs = {
-  dueDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationSendPractitionerAddedToProgrammeNotificationArgs = {
@@ -10331,23 +10018,8 @@ export type MutationSendPractitionerInviteToPreSchoolArgs = {
   principalUserId: Scalars['UUID'];
 };
 
-export type MutationSendPractitionerNotAssignedToProgrammeNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendPractitionerRemovedFromProgrammeNotificationArgs = {
   practitionerName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendPrincipalAllReportsDoneNotificationArgs = {
-  practitionerFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendPrincipalChangedNotificationArgs = {
-  principalOrFAA?: InputMaybe<Scalars['String']>;
-  programmeName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -10356,35 +10028,9 @@ export type MutationSendPrincipalInviteToApplicationArgs = {
   principalPhoneNumber?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendPrincipalMovedToProgrammeNotificationArgs = {
-  noOfChildren?: InputMaybe<Scalars['String']>;
-  trackingMonth?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendPrincipalReportDeadlinePassedNotificationArgs = {
-  practitionerFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendProgressreportsNotCreatedNotificationArgs = {
-  dueDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendPromotedToPrincipalFaaProgrammeNotificationArgs = {
   principalOrFAA?: InputMaybe<Scalars['String']>;
   programmeName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendRecordCaregiverMeetingNotificationArgs = {
-  clubId?: InputMaybe<Scalars['String']>;
-  meetingDate?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendRegisterThreeChildrenNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -10394,74 +10040,9 @@ export type MutationSendRemovedFromProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendReportDeadlinePassedNotificationArgs = {
-  noOfChildren?: InputMaybe<Scalars['String']>;
-  trackingMonth?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendSetAbsenteeNotificationArgs = {
-  absentStartDate?: InputMaybe<Scalars['String']>;
-  parentPrincipalFAACoachName?: InputMaybe<Scalars['String']>;
-  parentPrincipalFAACoachUserId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendSetLeaveNotificationArgs = {
-  absentEndDate?: InputMaybe<Scalars['String']>;
-  absentStartDate?: InputMaybe<Scalars['String']>;
-  parentPrincipalFAACoachName?: InputMaybe<Scalars['String']>;
-  parentPrincipalUserId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendTeamLeadVerifyPhoneNumberSmsArgs = {
   pendingPhoneNumber?: InputMaybe<Scalars['String']>;
   userId: Scalars['UUID'];
-};
-
-export type MutationSendTopSmartStarterPointsNotificationArgs = {
-  previousMonth?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendTrainee2WeekOnboardingWarningNotificationArgs = {
-  traineeFirstName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendTraineeJourneyStartSelfNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendTraineeSetupVenueNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendTraineeSignAgreementNotificationArgs = {
-  dueDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendTraineeSignStartupSupportAgreementNotificationArgs = {
-  dueDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendUpdateFeeNotificationArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendUserAddedToClubNotificationArgs = {
-  clubName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationSendUserAssignedToClassFromOldClassNotificationArgs = {
-  className?: InputMaybe<Scalars['String']>;
-  oldClassName?: InputMaybe<Scalars['String']>;
-  principalName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationSendUserAssignedToClassNotificationArgs = {
@@ -11126,6 +10707,10 @@ export type MutationUpdatePractitionerIsFundaAppAdminArgs = {
 export type MutationUpdatePractitionerProgressArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
   progress: Scalars['Decimal'];
+};
+
+export type MutationUpdatePractitionerProgressWalkthroughArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePractitionerRegisteredArgs = {
@@ -13145,6 +12730,7 @@ export type Practitioner = {
   principalHierarchy?: Maybe<Scalars['UUID']>;
   programmeType?: Maybe<Scalars['String']>;
   progress: Scalars['Decimal'];
+  progressWalkthroughComplete: Scalars['Boolean'];
   reasonForLeaving?: Maybe<ReasonForPractitionerLeaving>;
   reasonForLeavingDetails?: Maybe<Scalars['String']>;
   reasonForPractitionerLeavingId?: Maybe<Scalars['UUID']>;
@@ -13262,6 +12848,7 @@ export type PractitionerFilterInput = {
   principalHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   programmeType?: InputMaybe<StringOperationFilterInput>;
   progress?: InputMaybe<ComparableDecimalOperationFilterInput>;
+  progressWalkthroughComplete?: InputMaybe<BooleanOperationFilterInput>;
   reasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingFilterInput>;
   reasonForLeavingDetails?: InputMaybe<StringOperationFilterInput>;
   reasonForPractitionerLeavingId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -13312,6 +12899,7 @@ export type PractitionerInput = {
   PrincipalHierarchy?: InputMaybe<Scalars['UUID']>;
   ProgrammeType?: InputMaybe<Scalars['String']>;
   Progress: Scalars['Decimal'];
+  ProgressWalkthroughComplete: Scalars['Boolean'];
   ReasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingInput>;
   ReasonForLeavingDetails?: InputMaybe<Scalars['String']>;
   ReasonForPractitionerLeavingId?: InputMaybe<Scalars['UUID']>;
@@ -13374,6 +12962,7 @@ export type PractitionerModel = {
   principalHierarchy?: Maybe<Scalars['UUID']>;
   programmeType?: Maybe<Scalars['String']>;
   progress: Scalars['Decimal'];
+  progressWalkthroughComplete: Scalars['Boolean'];
   setupTraineeInitiated?: Maybe<Scalars['Boolean']>;
   shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
@@ -13521,6 +13110,7 @@ export type PractitionerSortInput = {
   principalHierarchy?: InputMaybe<SortEnumType>;
   programmeType?: InputMaybe<SortEnumType>;
   progress?: InputMaybe<SortEnumType>;
+  progressWalkthroughComplete?: InputMaybe<SortEnumType>;
   reasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingSortInput>;
   reasonForLeavingDetails?: InputMaybe<SortEnumType>;
   reasonForPractitionerLeavingId?: InputMaybe<SortEnumType>;
@@ -17975,7 +17565,7 @@ export type QueryOpenAccessAddChildDetailArgs = {
 
 export type QueryOpenConsentArgs = {
   locale?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryOtherConnectionsArgs = {

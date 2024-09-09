@@ -66,6 +66,7 @@ export const ClassDashboard: React.FC = () => {
   );
   const [showAttendanceWalkthrough, setShowAttendanceWalkthrough] =
     useState(false);
+  const messageReference = state?.messageReference;
   const appDispatch = useAppDispatch();
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
@@ -154,7 +155,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: NavigationNames.Classroom.Progress,
       initActive: false,
-      child: <ChildProgressLanding />,
+      child: <ChildProgressLanding messageReference={messageReference} />,
     },
     {
       title: NavigationNames.Classroom.Activities,

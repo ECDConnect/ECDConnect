@@ -35,7 +35,10 @@ namespace EcdLink.Api.CoreApi.Services
 
         public PortalUsersTLModel GetTeamLeadById(Guid teamLeadId)
         {
-            var teamLead = _teamLeadRepo.GetById(teamLeadId);
+
+            return new PortalUsersTLModel();
+
+            /*var teamLead = _teamLeadRepo.GetById(teamLeadId);
 
             // Get ids and tokens
             var invitation = _shortenUrlEntityRepo.GetAll()
@@ -57,7 +60,7 @@ namespace EcdLink.Api.CoreApi.Services
                 IsRegistered = teamLead.IsRegistered,
                 ProvinceIds = teamLead.Clinics.Where(x => x.IsActive && x.Clinic.SubDistrict != null).Select(x => x.Clinic.SubDistrict.District.ProvinceId).ToList(),
                 SubDistrictIds = teamLead.Clinics.Where(x => x.IsActive && x.Clinic.SubDistrict != null).Select(x => (Guid)x.Clinic.SubDistrictId).ToList()
-            };
+            };*/
         }
     }
 }

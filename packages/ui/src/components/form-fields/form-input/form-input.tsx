@@ -216,7 +216,9 @@ export const FormInput = <T extends FieldValues>({
                 paddingLeft: prefixIcon ? 20 : startIcon ? 50 : 16,
                 backgroundColor: isAdminPortalField
                   ? 'adminPortalBg'
-                  : `var(--${color})`,
+                  : color
+                  ? `var(--${color})`
+                  : 'bg-uiBg',
               }}
               {...restProps}
             />
@@ -237,7 +239,7 @@ export const FormInput = <T extends FieldValues>({
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
                 paddingLeft: prefixIcon ? 20 : startIcon ? 50 : 16,
-                backgroundColor: `var(--${color})`,
+                backgroundColor: color ? `var(--${color})` : 'bg-uiBg',
               }}
               {...restProps}
             />

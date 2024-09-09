@@ -76,7 +76,7 @@ export const PointsSummary: React.FC = () => {
   // );
   const pointsTotalForYear = useSelector(pointsSelectors.getTotalYearPoints);
 
-  const [pointsShareData, setPointsShareData] = useState<any>();
+  const pointsShareData = useSelector(pointsSelectors.getPointsShareData);
 
   const getPointsToDoItems = useCallback(async () => {
     const response = dispatch(
@@ -86,13 +86,15 @@ export const PointsSummary: React.FC = () => {
   }, [dispatch, practitioner?.userId]);
 
   const getshareData = useCallback(async () => {
-    const response = await new PointsService(userAuth?.auth_token!).sharedData(
-      practitioner?.userId!,
-      true
+    const response = await dispatch(
+      pointsThunkActions.sharedData({
+        userId: practitioner?.userId!,
+        isMonthly: true,
+      })
     );
-    setPointsShareData(response);
+
     return response;
-  }, [practitioner?.userId, userAuth?.auth_token]);
+  }, [dispatch, practitioner?.userId]);
 
   const getYearPoints = useCallback(async () => {
     const response = await new PointsService(
@@ -102,7 +104,7 @@ export const PointsSummary: React.FC = () => {
   }, [practitioner?.userId, userAuth?.auth_token]);
 
   const todoListFiltered = pointActivitiesItems.filter((el) => {
-    return pointsShareData?.activityDetail.some((f: any) => {
+    return pointsShareData?.activityDetail?.some((f: any) => {
       return f.activity !== el.activity;
     });
   });
@@ -964,81 +966,82 @@ export const PointsSummary: React.FC = () => {
           )}
           {(!pointsTotalForYear ||
             (pointsTotalForYear && pointsTotalForYear <= 10)) &&
-            pointsToDo?.viewedCommunitySection &&
-            getCurrentPointsToDo === 4 && (
-              <CelebrationCard
-                image={<EmojiHappyYellow className="mr-2 h-20 w-20" />}
-                primaryMessage={`Wow, great job!`}
-                secondaryMessage={`Take a bow, ${appName} pro!`}
-                primaryTextColour="white"
-                secondaryTextColour="white"
-                backgroundColour="successMain"
-                className="mt-4"
-              />
-            )}
+          pointsToDo?.viewedCommunitySection &&
+          getCurrentPointsToDo === 4 ? (
+            <CelebrationCard
+              image={<EmojiHappyYellow className="mr-2 h-20 w-20" />}
+              primaryMessage={`Wow, great job!`}
+              secondaryMessage={`Take a bow, ${appName} pro!`}
+              primaryTextColour="white"
+              secondaryTextColour="white"
+              backgroundColour="successMain"
+              className="mt-4"
+            />
+          ) : null}
           {getCurrentPointsToDo === 4 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 && (
-              <ScoreCard
-                className="mt-5 py-6"
-                mainText={`${monthPoints} points`}
-                currentPoints={monthPoints}
-                maxPoints={pointsMax}
-                barBgColour="white"
-                barColour={
-                  percentageScore < 60
-                    ? 'alertMain'
-                    : percentageScore < 80
-                    ? 'quatenary'
-                    : 'successMain'
-                }
-                bgColour={
-                  percentageScore < 60
-                    ? 'alertBg'
-                    : percentageScore < 80
-                    ? 'quatenaryBg'
-                    : 'successBg'
-                }
-                textColour="black"
-              />
-            )}
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 ? (
+            <ScoreCard
+              className="mt-5 py-6"
+              mainText={`${monthPoints} points`}
+              currentPoints={monthPoints}
+              maxPoints={pointsMax}
+              barBgColour="white"
+              barColour={
+                percentageScore < 60
+                  ? 'alertMain'
+                  : percentageScore < 80
+                  ? 'quatenary'
+                  : 'successMain'
+              }
+              bgColour={
+                percentageScore < 60
+                  ? 'alertBg'
+                  : percentageScore < 80
+                  ? 'quatenaryBg'
+                  : 'successBg'
+              }
+              textColour="black"
+            />
+          ) : null}
           {!isOnline &&
-            monthPoints &&
-            !pointsShareData &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            getCurrentPointsToDo === 4 &&
-            celebrationCard}
+          monthPoints &&
+          !pointsShareData &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          getCurrentPointsToDo === 4
+            ? celebrationCard
+            : null}
           {isOnline &&
-            monthPoints &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            getCurrentPointsToDo === 4 && (
-              <CelebrationCard
-                image={getEmoji(
-                  pointsShareData?.userRankingData
-                    ?.comparativeTargetPercentageColor
-                )}
-                primaryMessage={
-                  pointsShareData?.userRankingData?.comparativePrimaryMessage
-                }
-                secondaryMessage={
-                  pointsShareData?.userRankingData?.comparativeSecondaryMessage
-                }
-                primaryTextColour={getTitleColor(
-                  pointsShareData?.userRankingData
-                    ?.comparativeTargetPercentageColor
-                )}
-                secondaryTextColour="black"
-                backgroundColour={getBgColor(
-                  pointsShareData?.userRankingData
-                    ?.comparativeTargetPercentageColor
-                )}
-              />
-            )}
-          {(!pointsTotalForYear ||
-            pointsTotalForYear <= 10 ||
-            getCurrentPointsToDo < 4) && (
+          monthPoints &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          getCurrentPointsToDo === 4 ? (
+            <CelebrationCard
+              image={getEmoji(
+                pointsShareData?.userRankingData
+                  ?.comparativeTargetPercentageColor!
+              )}
+              primaryMessage={
+                pointsShareData?.userRankingData?.comparativePrimaryMessage!
+              }
+              secondaryMessage={
+                pointsShareData?.userRankingData?.comparativeSecondaryMessage!
+              }
+              primaryTextColour={getTitleColor(
+                pointsShareData?.userRankingData
+                  ?.comparativeTargetPercentageColor!
+              )}
+              secondaryTextColour="black"
+              backgroundColour={getBgColor(
+                pointsShareData?.userRankingData
+                  ?.comparativeTargetPercentageColor!
+              )}
+            />
+          ) : null}
+          {!pointsTotalForYear ||
+          pointsTotalForYear <= 10 ||
+          getCurrentPointsToDo < 4 ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -1070,145 +1073,125 @@ export const PointsSummary: React.FC = () => {
                 ></StackedList>
               </div>
             </div>
+          ) : null}
+          {!!todoListFiltered &&
+          !!todoListFiltered.length &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          getCurrentPointsToDo === 4 ? (
+            <Typography
+              className="mt-8 mb-4"
+              type={'h3'}
+              color="black"
+              text={`How you can earn more points in ${format(
+                new Date(),
+                'MMMM'
+              )}:`}
+            />
+          ) : (
+            0
           )}
           {!!todoListFiltered &&
-            !!todoListFiltered.length &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            getCurrentPointsToDo === 4 && (
-              <Typography
-                className="mt-8 mb-4"
-                type={'h3'}
-                color="black"
-                text={`How you can earn more points in ${format(
-                  new Date(),
-                  'MMMM'
-                )}:`}
-              />
-            )}
-          {/* {!!pointsTodoList &&
-            pointsTodoList.map((pointsLibraryScore, index) => {
-              return (
-                <PointsProgressCard
-                  key={'points_' + index}
-                  currentPoints={pointsLibraryScore.pointsTotal}
-                  maxPoints={
-                    pointsLibraryScore.maxMonthlyPoints !== 0
-                      ? pointsLibraryScore.maxMonthlyPoints
-                      : pointsLibraryScore.maxYearlyPoints
-                  }
-                  description={pointsLibraryScore.todoDescription || 'Unknown'}
-                  badgeImage={
-                    <Badge
-                      style={{
-                        objectFit: 'cover',
-                        width: '100%',
-                        height: '100%',
-                      }}
-                      fill="var(--primary)"
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          getCurrentPointsToDo === 4
+            ? todoListFiltered?.slice(0, 3)?.map((item) => {
+                return (
+                  <div
+                    key={item?.activity}
+                    onClick={() =>
+                      history.push(item?.href, {
+                        activeTabIndex: item?.tabIndex,
+                      })
+                    }
+                  >
+                    <PointsTodoItem
+                      text={item?.missingActivityText}
+                      icon={item?.icon}
                     />
-                  }
-                />
-              );
-            })} */}
-          {!!todoListFiltered &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            getCurrentPointsToDo === 4 &&
-            todoListFiltered?.slice(0, 3)?.map((item) => {
-              return (
-                <div
-                  key={item?.activity}
-                  onClick={() =>
-                    history.push(item?.href, { activeTabIndex: item?.tabIndex })
-                  }
-                >
-                  <PointsTodoItem
-                    text={item?.missingActivityText}
-                    icon={item?.icon}
-                  />
-                </div>
-              );
-            })}
+                  </div>
+                );
+              })
+            : null}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
           {getCurrentPointsToDo === 4 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            monthPoints > 0 && (
-              <Button
-                size="normal"
-                className="mb-4 w-full"
-                type="filled"
-                color="quatenary"
-                text="Share"
-                textColor="white"
-                icon="ShareIcon"
-                onClick={() => {
-                  setShowPrintData(true);
-                  setTimeout(() => {
-                    if (shareRef.current) {
-                      captureAndDownloadComponent(
-                        shareRef.current,
-                        'points-month-summary.jpg'
-                      );
-                      setShowPrintData(false);
-                    }
-                  }, 100);
-                }}
-              />
-            )}
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          monthPoints > 0 ? (
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="filled"
+              color="quatenary"
+              text="Share"
+              textColor="white"
+              icon="ShareIcon"
+              onClick={() => {
+                setShowPrintData(true);
+                setTimeout(() => {
+                  if (shareRef.current) {
+                    captureAndDownloadComponent(
+                      shareRef.current,
+                      'points-month-summary.jpg'
+                    );
+                    setShowPrintData(false);
+                  }
+                }, 100);
+              }}
+            />
+          ) : null}
           {getCurrentPointsToDo === 4 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            monthPoints === 0 &&
-            !practitioner?.coachHierarchy && (
-              <Button
-                size="normal"
-                className="mb-4 w-full"
-                type="filled"
-                color="quatenary"
-                text="Find out how you can earn points"
-                textColor="white"
-                icon="LightBulbIcon"
-                onClick={() => setShowInfo(true)}
-              />
-            )}
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          monthPoints === 0 &&
+          !practitioner?.coachHierarchy ? (
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="filled"
+              color="quatenary"
+              text="Find out how you can earn points"
+              textColor="white"
+              icon="LightBulbIcon"
+              onClick={() => setShowInfo(true)}
+            />
+          ) : null}
           {getCurrentPointsToDo === 4 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            monthPoints === 0 &&
-            practitioner?.coachHierarchy && (
-              <Button
-                size="normal"
-                className="mb-4 w-full"
-                type="outlined"
-                color="quatenary"
-                text="Ask your coach for help"
-                textColor="white"
-                icon="ChatIcon"
-                onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
-              />
-            )}
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          monthPoints === 0 &&
+          practitioner?.coachHierarchy ? (
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="outlined"
+              color="quatenary"
+              text="Ask your coach for help"
+              textColor="white"
+              icon="ChatIcon"
+              onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
+            />
+          ) : null}
           {getCurrentPointsToDo === 4 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 && (
-              <Button
-                size="normal"
-                className="mb-4 w-full"
-                type="outlined"
-                color="quatenary"
-                text="See detailed report"
-                textColor="quatenary"
-                icon="EyeIcon"
-                disabled={!isOnline}
-                onClick={() =>
-                  history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
-                    userRankingData: pointsShareData?.userRankingData,
-                  })
-                }
-              />
-            )}
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 ? (
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="outlined"
+              color="quatenary"
+              text="See detailed report"
+              textColor="quatenary"
+              icon="EyeIcon"
+              disabled={!isOnline}
+              onClick={() =>
+                history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
+                  userRankingData: pointsShareData?.userRankingData,
+                })
+              }
+            />
+          ) : null}
         </div>
       </BannerWrapper>
       <Dialog
@@ -1221,8 +1204,8 @@ export const PointsSummary: React.FC = () => {
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Month"
-          pointsTotal={pointsShareData?.total}
-          pointsSummaries={pointsShareData?.activityDetail}
+          pointsTotal={String(pointsShareData?.total)}
+          pointsSummaries={pointsShareData?.activityDetail as any}
           userFullName={
             practitioner?.user?.surname
               ? `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`

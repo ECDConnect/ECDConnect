@@ -45,7 +45,12 @@ export const PointsShare: React.FC<PointsShareProps> = ({
   return (
     <>
       <div className="bg-primary flex h-24 flex-col items-center">
-        <Logo className="mr-2 h-20 w-48" />
+        <Typography
+          className="mt-6"
+          type={'h1'}
+          color="white"
+          text={`${appName}`}
+        />
       </div>
       <div className="bg-uiBg flex flex-col items-center">
         <Typography

@@ -250,8 +250,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             if (cellphone is null || cellphone.Length == 0)
                 errors.Add("Cellphone is empty.");
 
-            if (cellphone.Length < 9 || cellphone.Length > 10 || Regex.Matches(cellphone, "[^0-9]").Count > 0)
+            if (cellphone is not null)
+            {
+              if (cellphone.Length > 0 && cellphone.Length < 9 || cellphone.Length > 10 || Regex.Matches(cellphone, "[^0-9]").Count > 0)
                 errors.Add("Cellphone is invalid.");
+            }
 
             return errors;
         }

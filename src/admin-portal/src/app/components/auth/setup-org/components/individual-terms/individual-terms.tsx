@@ -59,7 +59,7 @@ export const IndividualTerms: React.FC<IndividualTermsProps> = ({
     async (currentLocale) => {
       const consentData = await GetConsentForPortal(Config.authApi, {
         locale: currentLocale,
-        type: ContentConsentTypeEnum.IndividualTermsAndConditions,
+        name: ContentConsentTypeEnum.IndividualTermsAndConditions,
       });
 
       if (consentData && consentData.length > 0) {

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
 {
-    public class Statements30DaysNotificationTask : INotificationTask
+    public class ExpireStatements30DaysNotificationTask : INotificationTask
     {
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repoFactory;
@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
         private IGenericRepository<MessageLog, Guid> _messageRepo;
 
 
-        public Statements30DaysNotificationTask(
+        public ExpireStatements30DaysNotificationTask(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] INotificationService notificationService,

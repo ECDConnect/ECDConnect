@@ -140,7 +140,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     practitioner.ShareInfo = true;
                     practitionerRepo.Update(practitioner);
                     //deactivate notifications
-                    notificationService.ExpireNotificationsTypesForUser(practitionerId, TemplateTypeConstants.PrincipalFAAChanged, null, null, Guid.Parse(practitionerId));
+                    //notificationService.ExpireNotificationsTypesForUser(practitionerId, TemplateTypeConstants.PrincipalFAAChanged, null, null, Guid.Parse(practitionerId));
 
                     return true;
                 }
@@ -448,6 +448,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public bool UpdatePractitionerBusinessWalkthrough([Service] PersonnelService personnelService, string userId)
         {
             return personnelService.UpdatePractitionerBusinessWalkthrough(userId);
+        }
+
+        public bool UpdatePractitionerProgressWalkthrough([Service] PersonnelService personnelService, string userId)
+        {
+            personnelService.UpdatePractitioneProgressWalkthrough(userId);
+            return true;
         }
 
         public Practitioner UpdatePractitionerCommunityTabStatus(

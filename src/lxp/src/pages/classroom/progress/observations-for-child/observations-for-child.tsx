@@ -7,6 +7,9 @@ import { ObservationsForChildSkillsToWorkOn } from './observations-for-child-ski
 import ROUTES from '@/routes/routes';
 import { ObservationsForChildSupportLearning } from './observations-for-child-support-learning';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import ProgressWalkthroughWrapper from '../walkthrough/progress-walkthrough-wrapper';
+import { useProgressWalkthrough } from '@/hooks/useProgressWalkthrough';
+import { useAppContext } from '@/walkthrougContext';
 
 export type ObservationsForChildState = {
   childId: string;
@@ -17,6 +20,10 @@ export type ObservationsForChildState = {
 export const ObservationsForChild: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const {
+    setState,
+    state: { run: isWalkthrough, stepIndex },
+  } = useAppContext();
 
   const { state: routeState } = useLocation<ObservationsForChildState>();
 
@@ -34,6 +41,9 @@ export const ObservationsForChild: React.FC = () => {
     updateSkillToWorkOn,
     syncChildProgressReports,
   } = useObserveProgressForChild(routeState.childId);
+
+  const { ageGroup, walkthroughObservations, walkthroughReplaceSkillText } =
+    useProgressWalkthrough();
 
   const ageGroupRequiresSupportLearningSteps = true; // TODO - only for certain age groups
 
@@ -88,7 +98,7 @@ export const ObservationsForChild: React.FC = () => {
       onBack={() =>
         currentStep === 1 ? history.goBack() : setCurrentStep(currentStep - 1)
       }
-      title={`Report ${currentObservationPeriod?.reportNumber}`} // TODO, is this the number for the child, or for the reporting window???
+      title={`Report ${currentObservationPeriod?.reportNumber}`}
       subTitle={`Step ${currentStep} of ${totalSteps}`}
       renderOverflow
       onClose={() => {
@@ -101,14 +111,25 @@ export const ObservationsForChild: React.FC = () => {
       }}
     >
       <div className="flex h-full w-full flex-col px-4 pt-4 pb-4">
+        <ProgressWalkthroughWrapper />
         {currentStep <= totalSkillsSteps && (
           <ObservationsForChildSkills
-            ageGroup={observationsAgeGroup!}
-            child={child!}
+            ageGroup={isWalkthrough ? ageGroup : observationsAgeGroup!}
+            childFirstName={isWalkthrough ? 'Temba' : child!.user!.firstName!}
             currentStep={currentStep}
-            skills={currentObservations}
-            replaceSkillText={replaceSkillText}
-            onSetSkillValue={addObservationForSkill}
+            skills={
+              isWalkthrough ? walkthroughObservations : currentObservations
+            }
+            replaceSkillText={
+              isWalkthrough ? walkthroughReplaceSkillText : replaceSkillText
+            }
+            onSetSkillValue={
+              isWalkthrough
+                ? () => {
+                    setState({ stepIndex: stepIndex + 1 });
+                  }
+                : addObservationForSkill
+            }
           />
         )}
         {currentStep === totalSkillsSteps + 1 && (
@@ -158,13 +179,21 @@ export const ObservationsForChild: React.FC = () => {
           disabled={!nextEnabled}
         />
         <Button
+          id="saveAndExitButton"
           onClick={() => {
-            if (isOnline) {
-              syncChildProgressReports();
+            if (isWalkthrough) {
+              setState({ stepIndex: 9 });
+              history.replace(ROUTES.PROGRESS_REPORT_LIST, {
+                childId: routeState.childId,
+              });
+            } else {
+              if (isOnline && !isWalkthrough) {
+                syncChildProgressReports();
+              }
+              history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
+                childId: routeState.childId,
+              });
             }
-            history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
-              childId: routeState.childId,
-            });
           }}
           className="mb-4 w-full"
           size="normal"

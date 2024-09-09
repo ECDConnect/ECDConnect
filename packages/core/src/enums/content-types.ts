@@ -8,12 +8,6 @@ export enum ContentConsentTypeEnum {
   TermsAndConditions = 'Terms & Conditions',
   PermissionToShare = 'Permission to Share Information',
   PhotoPermissions = 'Photo Permissions',
-  // ConsentAgreement = 'Consent Agreement',
-  // CommitmentAgreement = 'Commitment Agreement',
-  // IndemnityAgreement = 'Indemnity Agreement',
-  // LearningThroughPlay = 'Learning Through Play',
-  // FranchiseeAgreement = 'Franchisee Agreement',
-  // ChildProtection = 'SmartStarter Information Sheet on Child Protection',
 }
 
 export enum MoreInformationTypeEnum {

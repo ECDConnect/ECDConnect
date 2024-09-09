@@ -27,7 +27,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepositoryFactory _repoFactory;
         private VisitManager _visitManager;
         private ApplicationUserManager _userManager;
-        private ExtendedNotificationManager _notificationManager;
 
         private INotificationService _notificationService;
         private VisitBackReferralManager _visitBackReferralManager;
@@ -55,7 +54,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             IGenericRepositoryFactory repoFactory,
             VisitManager visitManager,
             [Service] ApplicationUserManager userManager,
-            [Service] ExtendedNotificationManager notificationManager,
             [Service] INotificationService notificationService,
             VisitBackReferralManager visitBackReferralManager,
             HierarchyEngine hierarchyEngine)
@@ -64,7 +62,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _visitManager = visitManager;
             _userManager = userManager;
-            _notificationManager = notificationManager;
             _notificationService = notificationService;
             _visitBackReferralManager = visitBackReferralManager;
             _hierarchyEngine = hierarchyEngine;
@@ -270,8 +267,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                 AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
                             }
 
-                            _ = _notificationManager.SendGGReferralDangerSignsInfantNotification(_userManager, _notificationService, _applicationUserId.ToString(), motherName, bulletList, infantUserId, referralGuid);
-
                             // Add additional visit item with secondary text: ""Danger signs""
                             AddAdditionalVisit(infantId, GGSettings.client_child, GGSettings.danger_signs);
                         }
@@ -314,7 +309,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = GGSettings.urgent_care;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, vData.VisitSection, false);
 
-                          _ = _notificationManager.SendGGReferralDangerSignsInfantNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, bulletList, infantUserId, referralGuid);
                     }
                 }
                 else if (vData.Question == GGSettings.q_stop_worry ||
@@ -584,10 +578,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         // Add G4 secondary alert text: ""Refer to home affairs""
                         comment = GGSettings.home_affairs_referrals;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_dashboard, vData.VisitSection, false);
-
-                        _ = _notificationManager.SendGGReferDOHANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId, referralGuid);
-                    } else {
-                        _ = _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGReferDOHA, searchCriteria: infantUserId);
                     }
                 }
                 else if (vData.Question == GGSettings.QuestionReceivingCSG)
@@ -615,7 +605,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = GGSettings.has_csg3;
                         AddVisitDataStatus(vData, comment, StatusColours.Amber, GGSettings.visit_data_client_progress, vData.VisitSection, false);
 
-                        _ = _notificationManager.SendGGReferSASSANotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, motherName, infantUserId, referralGuid);
                     }
                 }
             }
@@ -815,7 +804,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(visitData, comment, StatusColours.Amber, GGSettings.visit_data_client_summary, visitData.VisitSection, false);
 
                         Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == motherId).FirstOrDefault();
-                        _ = _notificationManager.SendGGReferralDangerSignsMotherNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, bulletList, mother.UserId.ToString(), referralGuid);
                     }
                 }
             }
@@ -871,18 +859,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // add amber item to G9 client summary: ""You are struggling and need some support""
                 comment = new StringBuilder($"{GGSettings.need_support}");
                 AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
-
-                if (clientType == GGSettings.client_child)
-                {
-                    Infant infant = _infantRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
-                    _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infant.UserId.ToString(), referralGuid);
-                    _ = _notificationManager.SendGGPortalCHWMaternalDistressNotificationInfant(_userManager, _notificationService, _applicationUserId.ToString(), infant);
-                } else if (clientType == GGSettings.client_mother)
-                {
-                    Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
-                    _ = _notificationManager.SendGGRedAlertMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString(), referralGuid);
-                    _ = _notificationManager.SendGGPortalCHWMaternalDistressNotificationMother(_userManager, _notificationService, _applicationUserId.ToString(), mother);
-                }
+                
             }
             else
             {
@@ -898,11 +875,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     var comment = new StringBuilder($"{GGSettings.need_support}");
                     AddVisitDataStatus(q3, comment.ToString(), StatusColours.Amber, GGSettings.visit_data_client_summary, q3.VisitSection, false);
 
-                    if (clientType == GGSettings.client_mother)
-                    {
-                        Mother mother = _motherRepo.GetAll().Where(x => x.Id.ToString() == clientId).FirstOrDefault();
-                        _ = _notificationManager.SendGGMaternalDistressNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mother.UserId.ToString(), referralGuid);
-                    }    
+                        
                 }
 
                 if (q3.QuestionAnswer == GGSettings.AnswerNo && q1.QuestionAnswer == GGSettings.AnswerNo && q2.QuestionAnswer == GGSettings.AnswerNo)
@@ -913,17 +886,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                     //add green item to G9 client summary: You are coping well!
                     AddVisitDataStatus(q3, comment.ToString(), StatusColours.Green, GGSettings.visit_data_client_summary, q3.VisitSection, true);
-                }
-                if (q3.QuestionAnswer == GGSettings.AnswerNo)
-                {
-                    if (clientType == GGSettings.client_child)
-                    {
-                        _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGRedAlertMaternalDistressInfant);
-                    }
-                    else if (clientType == GGSettings.client_child)
-                    {
-                        _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.GGRedAlertMaternalDistressMother);
-                    }  
                 }
             }
             return true;
@@ -1302,19 +1264,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         growthIssue = lengthIndicator;
                     }
-                    _notificationManager.SendGGChildGrowthIssueNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, mothername, infantUserId, growthIssue, referralGuid).Wait();
                 } 
-                else
-                {
-                    if (muacIndicator == GGSettings.IndicatorSevereAcuteMalnutrition)
-                    {
-                        _notificationManager.SendGGChildMUACNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId, referralGuid).Wait();
-                    }else
-                    {
-                        _notificationManager.SendGGChildMUACMalnutritionNotification(_userManager, _notificationService, _applicationUserId.ToString(), firstName, infantUserId, referralGuid).Wait();
-                    }
-                    
-                }
 
             }
 

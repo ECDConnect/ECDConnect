@@ -9,7 +9,6 @@ import {
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { differenceInDays } from 'date-fns';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompletePractitionerInformationNotificationValidator
@@ -31,7 +30,6 @@ export class IncompletePractitionerInformationNotificationValidator
       classroomData: classroomState,
       practitioner: practitionerState,
       trainee: traineeState,
-      auth: authState,
     } = this.store.getState();
 
     const principalClassroom = localStorage?.getItem(
@@ -39,13 +37,6 @@ export class IncompletePractitionerInformationNotificationValidator
     );
     if (!classroomState || !userState) return [];
     const isOnStipend = practitionerState?.practitioner?.isOnStipend;
-
-    const differenceInDaysResult = practitionerState?.practitioner?.startDate
-      ? differenceInDays(
-          new Date(),
-          new Date(practitionerState?.practitioner?.startDate)
-        )
-      : null;
 
     /**
      * Notification is returned when
