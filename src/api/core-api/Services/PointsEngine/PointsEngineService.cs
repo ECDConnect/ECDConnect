@@ -490,21 +490,23 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitioner != null)
             {
                 var today = DateTime.Now;
-                var userChildrenCount = _childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)
-                                                                    && x.UpdatedDate.Year == today.Year
-                                                                    && x.UpdatedDate.Month == today.Month
-                                                                    && x.CaregiverId.HasValue
-                                                                    && x.WorkflowStatusId == Constants.WorkflowStatus.ActiveId).Count();
 
-                if (userChildrenCount > 0)
+                var learnerCount = _classroomGroupRepo
+                                    .GetAll()
+                                    .Where(x => x.IsActive && x.Classroom.UserId == userId)
+                                    .SelectMany(x => x.Learners)
+                                    .Where(x => x.IsActive && !x.StoppedAttendance.HasValue && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month)
+                                    .Count();
+
+                if (learnerCount > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ChildRegistrationCompleteId);
-                    var userPoints = userChildrenCount * activity.Points;
+                    var userPoints = learnerCount * activity.Points;
                     AddOrUpdatePoints(
                         PointsActivityConstants.ChildRegistrationCompleteId,
                         userId,
                         userPoints,
-                        userChildrenCount
+                        learnerCount
                        );
                 }
 
@@ -764,19 +766,18 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null && practitioner.IsPrincipal == true)
                 {
                     var today = DateTime.Now;
-                    var incomeExpenseItems = _statementsRepo
+                    var statements = _statementsRepo
                                             .GetAll()
                                             .Where(x => x.IsActive 
                                                     && x.UserId == userId 
-                                                    && x.Year == today.Year 
-                                                    && x.Month == today.Month 
+                                                    && x.Year >= today.Year 
                                                     && (x.IncomeItems.Count > 0 || x.ExpenseItems.Count > 0))
                                             .ToList();
 
-                    if (incomeExpenseItems.Count > 0)
+                    if (statements.Count > 0)
                     {
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddExpenseOrIncomeToStatementId);
-                        foreach (var item in incomeExpenseItems)
+                        foreach (var item in statements)
                         {
                             var itemsCount = item.IncomeItems.Count + item.ExpenseItems.Count;
                             var monthPoints = itemsCount * activity.Points;
@@ -785,7 +786,8 @@ namespace EcdLink.Api.CoreApi.Services
                               PointsActivityConstants.AddExpenseOrIncomeToStatementId,
                               userId,
                               monthPoints,
-                              itemsCount
+                              itemsCount,
+                              new DateTime(item.Year, item.Month, 01)
                             );
                         }
                     }
@@ -1053,7 +1055,6 @@ namespace EcdLink.Api.CoreApi.Services
                                             .Count();
             if (acceptedConnectionsCount > 0)
             {
-                // principal and practitioner max month(10) and max year(120)
                 var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ConnectWithAnotherUserId);
                 var userPoints = acceptedConnectionsCount * activity.Points;
 
