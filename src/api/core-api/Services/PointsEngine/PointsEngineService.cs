@@ -959,14 +959,13 @@ namespace EcdLink.Api.CoreApi.Services
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.DownloadPreschoolOrClassProgressSummaryId);
                     var today = DateTime.Now;
                     var schoolClassIds = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).Select(x => x.Id).ToList();
-                    // TODO: waiting for development to finish
-                    /*AddOrUpdatePoints(
-                                PointsActivityConstants.DownloadPreschoolOrClassProgressSummaryId,
-                                userId,
-                                activity.Points,
-                                1,
-                                new DateTime(today.Year, today.Month, today.Day)
-                            );*/
+                    AddOrUpdatePoints(
+                        PointsActivityConstants.DownloadPreschoolOrClassProgressSummaryId,
+                        userId,
+                        activity.Points,
+                        1,
+                        new DateTime(today.Year, today.Month, today.Day)
+                    );
                 }
             }
         }
@@ -1067,6 +1066,5 @@ namespace EcdLink.Api.CoreApi.Services
 
             }
         }
-
     }
 }
