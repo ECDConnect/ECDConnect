@@ -120,7 +120,7 @@ export class PractitionerNotificationValidator
         actionText: 'Get started',
         viewType: 'Both',
         routeConfig: {
-          route: ROUTES.PRACTITIONER.COMMUNITY.WELCOME,
+          route: ROUTES.COMMUNITY.WELCOME,
         },
       });
     }
