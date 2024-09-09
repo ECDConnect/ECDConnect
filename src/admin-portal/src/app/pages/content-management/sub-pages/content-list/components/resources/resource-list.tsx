@@ -6,18 +6,8 @@ import {
   ContentTypeFieldDto,
   LanguageDto,
   PermissionEnum,
-  camelCaseToSentanceCase,
 } from '@ecdlink/core';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import UiTable from '../../../../components/ui-table';
-import { useUser } from '../../../../hooks/useUser';
-import {
-  ActivitiesTitles,
-  ContentManagementView,
-  FieldType,
-  searchByActivityTypeOptions,
-} from '../../content-management-models';
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -25,20 +15,28 @@ import {
   SearchIcon,
 } from '@heroicons/react/solid';
 import {
-  ContentManagementTabs,
-  ContentTypes,
-} from '../../../../constants/content-management';
-import { BulkActionStatus } from '../../../../components/ui-table/type';
-import { LanguageId } from '../../../../constants/language';
-import {
   Dropdown,
   SearchDropDown,
   SearchDropDownOption,
-  Table,
   Typography,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import ReactDatePicker from 'react-datepicker';
+import ContentLoader from '../../../../../../components/content-loader/content-loader';
+import {
+  ContentManagementView,
+  FieldType,
+  ResourcesTitles,
+  searchByActivityTypeOptions,
+} from '../../../../content-management-models';
+import { useUser } from '../../../../../../hooks/useUser';
+import { LanguageId } from '../../../../../../constants/language';
+import {
+  ContentManagementTabs,
+  ContentTypes,
+} from '../../../../../../constants/content-management';
+import { BulkActionStatus } from '../../../../../../components/ui-table/type';
+import UiTable from '../../../../../../components/ui-table';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -56,7 +54,7 @@ export interface ContentListProps {
   dataTypes?: any;
 }
 
-export default function ContentList({
+export default function ResourceList({
   selectedTab,
   contentType,
   languages,
@@ -70,18 +68,12 @@ export default function ContentList({
 }: ContentListProps) {
   const { hasPermission } = useUser();
   const [tableData, setTableData] = useState<any[]>([]);
-  const [themes, setThemes] = useState<any[]>([]);
-  const [skills, setSkills] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
-  const [buttonText, setButtonText] = useState(contentType.name);
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
   const [typeFilter, setTypeFilter] = useState<SearchDropDownOption<string>[]>(
     []
   );
-  const [skillFilter, setSkillFilter] = useState<
-    SearchDropDownOption<string>[]
-  >([]);
 
   const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
     (item) => ({
@@ -91,69 +83,64 @@ export default function ContentList({
     })
   );
 
-  const getAllTheme = `GetAllTheme`;
+  // const [classroomResources, setClassroomResources] = useState<any[]>([]);
+  // const [businessResources, setBusinessResources] = useState<any[]>([]);
 
-  const themeQuery = gql` 
-    query ${getAllTheme} ($localeId: String) {
-      ${getAllTheme} (localeId: $localeId) {
-          id
-          name
-      }
-     }
-  `;
+  // const getClassroomResources = `GetClassroomBusinessResources`;
+  // const classroomResourceQuery = gql`
+  //   query ${getClassroomResources} ($localeId: String) {
+  //     ${getClassroomResources} (localeId: $localeId) {
+  //         id
+  //         resourceType
+  //         title
+  //         shortDescription
+  //         link
+  //         longDescription
+  //         dataFree
+  //         sectionType
+  //         numberLikes
+  //         availableLanguages
+  //         updatedDate
+  //     }
+  //    }
+  // `;
+  // const [fetchClassroomResourceData, { data: classroomResourceData }] = useLazyQuery(classroomResourceQuery, {
+  //   fetchPolicy: 'cache-first',
+  //   variables: {
+  //     localeId: languageId,
+  //     section: 'classroom'
+  //   },
+  // });
 
-  const [fetchThemeData, { data: themesData }] = useLazyQuery(themeQuery, {
-    fetchPolicy: 'cache-first',
-    variables: {
-      localeId: languageId,
-    },
-  });
-
-  const getAllSkills = `GetAllProgressTrackingSubCategory`;
-
-  const SkillsQuery = gql` 
-    query ${getAllSkills} ($localeId: String) {
-      ${getAllSkills} (localeId: $localeId) {
-          id
-          name
-      }
-     }
-  `;
-
-  const [fetchSkillsData, { data: skillsData }] = useLazyQuery(SkillsQuery, {
-    fetchPolicy: 'cache-first',
-    variables: {
-      localeId: languageId,
-    },
-  });
-
-  const sortByThemeOptions: SearchDropDownOption<string>[] = themes?.map(
-    (item) => ({
-      id: item?.id,
-      label: item?.name,
-      value: item?.id,
-    })
-  );
-
-  const sortBySkillsOptions: SearchDropDownOption<string>[] = skills?.map(
-    (item) => ({
-      id: item?.id,
-      label: item?.name,
-      value: item?.id,
-    })
-  );
-  const [themeFilter, setThemeFilter] = useState<
-    SearchDropDownOption<string>[]
-  >([]);
+  // const getBusinessResources = `GetClassroomBusinessResources`;
+  // const businessResourceQuery = gql`
+  //   query ${getBusinessResources} ($localeId: String) {
+  //     ${getBusinessResources} (localeId: $localeId) {
+  //         id
+  //         resourceType
+  //         title
+  //         shortDescription
+  //         link
+  //         longDescription
+  //         dataFree
+  //         sectionType
+  //         numberLikes
+  //         availableLanguages
+  //         updatedDate
+  //     }
+  //    }
+  // `;
+  // const [fetchBusinessResourcesData, { data: businessResourceData }] = useLazyQuery(businessResourceQuery, {
+  //   fetchPolicy: 'cache-first',
+  //   variables: {
+  //     localeId: languageId,
+  //     section: 'business'
+  //   },
+  // });
 
   const [languageFilter, setLanguageFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
-
-  const themeFilterValues = useMemo(
-    () => themeFilter?.map((item) => item?.value),
-    [themeFilter]
-  );
 
   const languageFilterValues = useMemo(
     () => languageFilter?.map((item) => item?.value),
@@ -163,10 +150,7 @@ export default function ContentList({
     () => typeFilter?.map((item) => item?.value),
     [typeFilter]
   );
-  const skillFilterValues = useMemo(
-    () => skillFilter?.map((item) => item?.value),
-    [skillFilter]
-  );
+
   const [showFilter, setShowFilter] = useState(false);
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
@@ -198,38 +182,27 @@ export default function ContentList({
     );
   }, []);
 
-  useEffect(() => {
-    if (choosedSectionTitle === 'Small/large group activities') {
-      if (!themes || themes?.length === 0) {
-        fetchThemeData();
-      }
-      if (!skills || skills?.length === 0) {
-        fetchSkillsData();
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (contentType.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
+  //     if (choosedSectionTitle === ResourcesTitles.ClassroomResources && classroomResources.length === 0) {
+  //       fetchClassroomResourceData()
+  //     }
+  //     if (choosedSectionTitle === ResourcesTitles.BusinessResources && businessResources.length === 0) {
+  //       fetchBusinessResourcesData();
+  //     }
+  //   }
+  // }, [businessResources.length, choosedSectionTitle, classroomResources.length, contentType.name, fetchBusinessResourcesData, fetchClassroomResourceData]);
 
-  useEffect(() => {
-    if (themesData && themesData[getAllTheme]) {
-      setThemes(
-        themesData[getAllTheme].map((item: any) => ({
-          ...item,
-        }))
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [themesData]);
-
-  useEffect(() => {
-    if (skillsData && skillsData[getAllSkills]) {
-      setSkills(
-        skillsData[getAllSkills].map((item: any) => ({
-          ...item,
-        }))
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skillsData]);
+  // useEffect(() => {
+  //   if (contentType.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
+  //     if (choosedSectionTitle === ResourcesTitles.ClassroomResources && classroomResourceData && classroomResourceData.length > 0) {
+  //       setClassroomResources(classroomResourceData);
+  //     }
+  //     if (choosedSectionTitle === ResourcesTitles.BusinessResources && businessResourceData && businessResourceData.length > 0) {
+  //       setBusinessResources(businessResourceData);
+  //     }
+  //   }
+  // }, [businessResourceData, choosedSectionTitle, classroomResourceData, contentType.name]);
 
   useEffect(() => {
     if (contentType && contentType.fields) {
@@ -252,22 +225,6 @@ export default function ContentList({
           displayFields.push(x);
       });
 
-      if (choosedSectionTitle === 'Small/large group activities') {
-        const smallLargeGroupsDisplayFields = displayFields?.filter(
-          (item) => item?.fieldName !== 'subType'
-        );
-        setDisplayFields(smallLargeGroupsDisplayFields);
-        return;
-      }
-
-      if (choosedSectionTitle === 'Story activities') {
-        const smallLargeGroupsDisplayFields = displayFields?.filter(
-          (item) =>
-            item?.fieldName !== 'subCategories' && item?.fieldName !== 'themes'
-        );
-        setDisplayFields(smallLargeGroupsDisplayFields);
-        return;
-      }
       if (contentType.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
         const resourceFields = displayFields?.filter(
           (item) =>
@@ -317,24 +274,6 @@ export default function ContentList({
         x.fieldType.dataType !== FieldType.StaticLink
       )
         return x.fieldName;
-      else if (x?.fieldName === 'subCategories')
-        return `
-        ${x.fieldName} {
-          id
-          name
-          imageUrl
-          imageHexColor
-        }
-        `;
-      else if (x?.fieldName === 'themes')
-        return `
-        ${x.fieldName} {
-          id
-          name
-          color
-          imageUrl
-        }
-        `;
       else if (
         x.fieldType.dataType === FieldType.Link &&
         x?.displayMainTable === true
@@ -354,6 +293,7 @@ export default function ContentList({
     }) ?? [];
 
   const getAllCall = `GetAll${contentType.name}`;
+  console.log('getAllCall', getAllCall);
 
   const query = gql` 
     query ${getAllCall} ($localeId: String) {
@@ -375,70 +315,28 @@ export default function ContentList({
     },
   });
 
+  console.log('selectedTab', selectedTab);
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
-      const moreInforItems = contentData[getAllCall].map((item: any) => ({
+      // const resources = contentData[getAllCall].map((item: any) => ({
+      //   ...item,
+      // }));
+
+      const getFormattedDateString = (mDate: String) => {
+        if (mDate == null || '') return '';
+        const dateItems = mDate.split('T');
+        return dateItems[0];
+      };
+
+      const copyItems = contentData[getAllCall].map((item: any) => ({
         ...item,
+        startDate:
+          item.startDate !== null ? getFormattedDateString(item.startDate) : '',
+        endDate:
+          item.startDate !== null ? getFormattedDateString(item.endDate) : '',
       }));
 
-      if (selectedTab === 1) {
-        setTableData(moreInforItems);
-      } else if (selectedTab === 2) {
-        setTableData(moreInforItems);
-      } else if (selectedTab === 3) {
-        if (
-          choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
-        ) {
-          const filteredList = moreInforItems?.filter(
-            (item) =>
-              item?.type === 'Small group' || item?.type === 'Large group'
-          );
-          const sortedList = filteredList.sort((a, b) =>
-            new Date(a?.updatedDate).getTime() >
-            new Date(b?.updatedDate).getTime()
-              ? -1
-              : new Date(a?.updatedDate).getTime() <
-                new Date(b?.updatedDate).getTime()
-              ? 1
-              : 0
-          );
-          setTableData(sortedList);
-          return;
-        }
-
-        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
-          setTableData(
-            moreInforItems?.filter((item) => item?.type === 'Story time')
-          );
-          return;
-        }
-
-        setTableData(moreInforItems);
-      } else if (selectedTab === 4) {
-        const getFormattedDateString = (mDate: String) => {
-          if (mDate == null || '') return '';
-          const dateItems = mDate.split('T');
-          return dateItems[0];
-        };
-
-        const copyItems = contentData[getAllCall].map((item: any) => ({
-          ...item,
-          startDate:
-            item.startDate !== null
-              ? getFormattedDateString(item.startDate)
-              : '',
-          endDate:
-            item.startDate !== null ? getFormattedDateString(item.endDate) : '',
-        }));
-
-        setTableData(copyItems);
-      } else {
-        const copyItems = contentData[getAllCall].map((item: any) => ({
-          ...item,
-        }));
-
-        setTableData(copyItems);
-      }
+      setTableData(copyItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentData, selectedTab]);
@@ -455,19 +353,12 @@ export default function ContentList({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages]);
 
-  useEffect(() => {
-    if (contentType.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
-      setButtonText('Resource');
-    } else if (contentType?.name === 'StoryBook') {
-      setButtonText('Story');
-    }
-  }, [contentType.name]);
-
   const viewSelectedRow = (item?: any) => {
     const model: ContentManagementView = {
       content: item,
       languageId: languageId,
     };
+
     viewContent(model);
   };
 
@@ -533,43 +424,6 @@ export default function ContentList({
       return typeFilterValue;
     }
 
-    if (skillFilterValues?.length > 0) {
-      const skillFilterValue = tableData?.filter((el) => {
-        return skillFilterValues?.some((f) => {
-          return el.subCategories?.some((x) => f === x.id);
-        });
-      });
-
-      if (languageFilter?.length > 0) {
-        const filteredbyLanguageObjects = skillFilterValue.filter((item) =>
-          item.availableLanguages.some((languageId) =>
-            languageFilterValues.includes(languageId)
-          )
-        );
-        return filteredbyLanguageObjects;
-      }
-
-      return skillFilterValue;
-    }
-    if (themeFilterValues?.length > 0) {
-      const themeFilterValue = tableData?.filter((el) => {
-        return themeFilterValues?.some((f) => {
-          return el.themes?.some((x) => f === x.id);
-        });
-      });
-
-      if (languageFilter?.length > 0) {
-        const filteredbyLanguageObjects = themeFilterValue.filter((item) =>
-          item.availableLanguages.some((languageId) =>
-            languageFilterValues.includes(languageId)
-          )
-        );
-        return filteredbyLanguageObjects;
-      }
-
-      return themeFilterValue;
-    }
-
     if (languageFilter?.length > 0) {
       const filteredbyLanguageObjects = tableData.filter((item) =>
         item.availableLanguages.some((languageId) =>
@@ -587,8 +441,6 @@ export default function ContentList({
     tableData,
     startDate,
     typeFilterValues,
-    skillFilterValues,
-    themeFilterValues,
   ]);
 
   const renderTables = useMemo(() => {
@@ -626,13 +478,13 @@ export default function ContentList({
   }, [
     displayFields,
     filterByValue,
+    filteredData,
     hasPermission,
     languages,
     loadingContent,
     onBulkActionCallback,
     searchValue,
     selectedTab,
-    tableData,
     viewSelectedRow,
   ]);
 
@@ -657,8 +509,6 @@ export default function ContentList({
     setStartDate('');
     setEndDate('');
     setTypeFilter([]);
-    setThemeFilter([]);
-    setSkillFilter([]);
     setLanguageFilter([]);
   };
 
@@ -734,21 +584,19 @@ export default function ContentList({
                   </span>
                 </div>
               )}
-              {hasPermission(PermissionEnum.create_static) &&
-                contentType?.name !== ContentTypes.CONSENT &&
-                contentType?.name !== ContentTypes.MORE_INFORMATION && (
-                  <button
-                    onClick={() => {
-                      hasPermission(PermissionEnum.update_static) &&
-                        viewSelectedRow();
-                    }}
-                    type="button"
-                    className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
-                  >
-                    <PlusIcon width="22px" className="pl-1" />
-                    Add {camelCaseToSentanceCase(buttonText)}
-                  </button>
-                )}
+              {hasPermission(PermissionEnum.create_static) && (
+                <button
+                  onClick={() => {
+                    hasPermission(PermissionEnum.update_static) &&
+                      viewSelectedRow();
+                  }}
+                  type="button"
+                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
+                >
+                  <PlusIcon width="22px" className="pl-1" />
+                  Add Resource
+                </button>
+              )}
             </div>
           </div>
           <div className="pb-5 sm:flex sm:items-center sm:justify-between"></div>
@@ -803,46 +651,6 @@ export default function ContentList({
                       color={'secondary'}
                       info={{
                         name: `Types:`,
-                      }}
-                      bgColor="adminPortalBg"
-                    />
-                  </div>
-                  <div className="mr-2 flex items-center gap-2">
-                    <SearchDropDown<string>
-                      displayMenuOverlay={true}
-                      className={'mr-1 w-full'}
-                      menuItemClassName={
-                        'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                      }
-                      overlayTopOffset={'120'}
-                      options={sortByThemeOptions}
-                      selectedOptions={themeFilter}
-                      onChange={setThemeFilter}
-                      placeholder={'Themes'}
-                      multiple={true}
-                      color={'secondary'}
-                      info={{
-                        name: `Themes:`,
-                      }}
-                      bgColor="adminPortalBg"
-                    />
-                  </div>
-                  <div className="mr-2 flex items-center gap-2">
-                    <SearchDropDown<string>
-                      displayMenuOverlay={true}
-                      className={'mr-1 w-full'}
-                      menuItemClassName={
-                        'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                      }
-                      overlayTopOffset={'120'}
-                      options={sortBySkillsOptions}
-                      selectedOptions={skillFilter}
-                      onChange={setSkillFilter}
-                      placeholder={'Skills'}
-                      multiple={true}
-                      color={'secondary'}
-                      info={{
-                        name: `Skills:`,
                       }}
                       bgColor="adminPortalBg"
                     />

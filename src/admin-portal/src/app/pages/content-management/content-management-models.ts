@@ -22,6 +22,7 @@ export enum ContentName {
   Theme = 'Theme',
   ProgressTrackingCategory = 'ProgressTrackingCategory',
   ProgressTrackingSkill = 'ProgressTrackingSkill',
+  ClassroomBusinessResource = 'ClassroomBusinessResource',
 }
 
 export enum StoryActivitiesTypes {
@@ -35,6 +36,13 @@ export enum ActivitiesTitles {
   StoryActivities = 'Story activities',
   Storybooks = 'Storybooks',
   SmallLargeGroupActivities = 'Small/large group activities',
+}
+
+export enum ResourcesTitles {
+  ClassroomResources = 'Classroom resources',
+  BusinessResources = 'Business resources',
+  CommunityLinks = 'Community links',
+  ChildProgressReportLinksForCaregivers = 'Child progress report links for caregivers',
 }
 
 export enum ActivityTypes {
