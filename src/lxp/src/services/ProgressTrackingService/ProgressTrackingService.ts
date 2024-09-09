@@ -321,6 +321,34 @@ class ProgressTrackingService {
 
     return response.data.data.createOrUpdateChildProgressReport;
   }
+
+  async classroomProgressSummaryDownloaded(
+    classroomGroupId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { createOrUpdateChildProgressReport: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation ClassroomProgressSummaryDownloaded($classroomGroupId: UUID!) {
+          classroomProgressSummaryDownloaded(classroomGroupId: $classroomGroupId) {
+          }
+        }
+      `,
+      variables: {
+        classroomGroupId: classroomGroupId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Progress report summary downloaded failed - Server connection error'
+      );
+    }
+
+    return response.data.data.createOrUpdateChildProgressReport;
+  }
 }
 
 export default ProgressTrackingService;

@@ -7417,6 +7417,7 @@ export type Mutation = {
   cancelRemovalFromProgramme: Scalars['Boolean'];
   changeClubName?: Maybe<Club>;
   changeClubSupportRole: Scalars['Boolean'];
+  classroomProgressSummaryDownloaded: Scalars['Boolean'];
   contentTypeImport: Scalars['Boolean'];
   correctDuplicateHierarchies: Scalars['Boolean'];
   createAbsentees?: Maybe<Absentees>;
@@ -8320,6 +8321,10 @@ export type MutationChangeClubNameArgs = {
 export type MutationChangeClubSupportRoleArgs = {
   clubId: Scalars['UUID'];
   practitionerId: Scalars['UUID'];
+};
+
+export type MutationClassroomProgressSummaryDownloadedArgs = {
+  classroomGroupId: Scalars['UUID'];
 };
 
 export type MutationContentTypeImportArgs = {

@@ -160,22 +160,14 @@ namespace EcdLink.Api.CoreApi.Services
                             
                         }
                     }
-                    
+                    _pointsService.CalculateChildRemovedFromPreschool((Guid)_applicationUserId);
                 }
             }
 
-            // We check here for the child status from the input to calculate the points for removal
-            if (!input.IsActive)
+            // Calculate points for practitioner
+            if (isActive && child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
             {
-                _pointsService.CalculateChildRemovedFromPreschool((Guid)_applicationUserId);
-            } 
-            else
-            {
-                // Calculate points for practitioner
-                if (child.WorkflowStatusId == Constants.WorkflowStatus.ActiveId)
-                {
-                    _pointsService.CalculateChildRegistrationComplete((Guid)_applicationUserId);
-                }
+                _pointsService.CalculateChildRegistrationComplete((Guid)_applicationUserId);
             }
         }
 
