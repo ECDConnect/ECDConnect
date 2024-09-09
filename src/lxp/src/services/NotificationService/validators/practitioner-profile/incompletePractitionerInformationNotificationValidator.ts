@@ -30,11 +30,13 @@ export class IncompletePractitionerInformationNotificationValidator
       classroomData: classroomState,
       practitioner: practitionerState,
       trainee: traineeState,
+      tenant: tenantState,
     } = this.store.getState();
 
     const principalClassroom = localStorage?.getItem(
       LocalStorageKeys?.classroomForInvitedUser
     );
+    console.log({ principalClassroom });
     if (!classroomState || !userState) return [];
     const isOnStipend = practitionerState?.practitioner?.isOnStipend;
 
@@ -135,10 +137,10 @@ export class IncompletePractitionerInformationNotificationValidator
                 : 'Join or add a preschool!',
             message:
               practitionerState?.practitioner?.progress === 1.0
-                ? 'Ask your principal to sign up for AppName and add you to the preschool, or fill in your preschool code now.'
+                ? `Ask your principal to sign up for ${tenantState?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
                 : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
-            priority: 15,
+            priority: 6,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',
@@ -161,7 +163,9 @@ export class IncompletePractitionerInformationNotificationValidator
                 ? 'Join your preschool team!'
                 : practitionerState?.practitioner?.principalHierarchy
                 ? `You have been added to ${
-                    classroomState?.classroom?.name || principalClassroom
+                    classroomState?.classroom?.name
+                      ? classroomState?.classroom?.name
+                      : principalClassroom
                   }`
                 : 'Join or add a preschool!',
             message:
@@ -171,7 +175,7 @@ export class IncompletePractitionerInformationNotificationValidator
                 ? 'Connect with your principal & manage your classes.'
                 : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.lower,
+            priority: 7,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',

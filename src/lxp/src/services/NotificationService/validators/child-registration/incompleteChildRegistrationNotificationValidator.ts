@@ -6,7 +6,6 @@ import { RootState } from '@store/types';
 import {
   NotificationValidator,
   NotificationIntervals,
-  NotificationPriority,
 } from '../../NotificationService.types';
 import { RoleSystemNameEnum } from '@ecdlink/core';
 import { DateFormats } from '@/constants/Dates';
