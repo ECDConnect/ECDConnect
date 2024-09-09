@@ -522,7 +522,8 @@ export const PointsSummary: React.FC = () => {
             : pointsToDo?.savedIncomeOrExpense ||
               pointsToDo?.savedIncomeOrExpense ||
               (!practitioner?.isPrincipal &&
-                planActivitiesPermission?.isActive === false &&
+                (planActivitiesPermission?.isActive === false ||
+                  planActivitiesPermission?.isActive === undefined) &&
                 pointsToDo?.isPartOfPreschool)
             ? 'quatenary'
             : 'bg-uiLight'
@@ -532,7 +533,8 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.savedIncomeOrExpense ||
           pointsToDo?.savedIncomeOrExpense ||
           (!practitioner?.isPrincipal &&
-            planActivitiesPermission?.isActive === false &&
+            (planActivitiesPermission?.isActive === false ||
+              planActivitiesPermission?.isActive === undefined) &&
             !pointsToDo?.viewedCommunitySection)
             ? () => history.push(ROUTES.COMMUNITY.WELCOME)
             : () => {},
@@ -542,7 +544,8 @@ export const PointsSummary: React.FC = () => {
           : pointsToDo?.savedIncomeOrExpense ||
             pointsToDo?.savedIncomeOrExpense ||
             (!practitioner?.isPrincipal &&
-              planActivitiesPermission?.isActive === false &&
+              (planActivitiesPermission?.isActive === false ||
+                planActivitiesPermission?.isActive === undefined) &&
               pointsToDo?.isPartOfPreschool)
           ? 'quatenaryBg'
           : 'adminPortalBg',
