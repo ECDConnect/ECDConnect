@@ -554,7 +554,7 @@ export const PointsSummary: React.FC = () => {
 
     return stackedMenuList;
   };
-  console.log(pointsToDo?.isPartOfPreschool);
+
   const getSecondaryStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
