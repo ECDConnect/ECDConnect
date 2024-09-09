@@ -701,18 +701,12 @@ namespace EcdLink.Api.CoreApi.Services
                 if (schoolClasses.Count > 0)
                 {
                     var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddNewClassToPreschoolId);
-                    var currentPointsCount = _pointsUserSummaryRepo.GetAll().Where(x =>
-                                                x.UserId == userId
-                                                && x.PointsActivityId == activity.Id
-                                                && x.DateScored.Year >= today.Year).Count();
-
-                    var userPoints = currentPointsCount == 0 ? activity.Points : 0;
                     foreach(var item in schoolClasses)
                     {
                         AddOrUpdatePoints(
                             PointsActivityConstants.AddNewClassToPreschoolId,
                             userId,
-                            userPoints,
+                            activity.Points * item.Total,
                             item.Total,
                             new DateTime(today.Year, item.Month, today.Day)
                         );
