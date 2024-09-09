@@ -766,19 +766,18 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null && practitioner.IsPrincipal == true)
                 {
                     var today = DateTime.Now;
-                    var incomeExpenseItems = _statementsRepo
+                    var statements = _statementsRepo
                                             .GetAll()
                                             .Where(x => x.IsActive 
                                                     && x.UserId == userId 
-                                                    && x.Year == today.Year 
-                                                    && x.Month == today.Month 
+                                                    && x.Year >= today.Year 
                                                     && (x.IncomeItems.Count > 0 || x.ExpenseItems.Count > 0))
                                             .ToList();
 
-                    if (incomeExpenseItems.Count > 0)
+                    if (statements.Count > 0)
                     {
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.AddExpenseOrIncomeToStatementId);
-                        foreach (var item in incomeExpenseItems)
+                        foreach (var item in statements)
                         {
                             var itemsCount = item.IncomeItems.Count + item.ExpenseItems.Count;
                             var monthPoints = itemsCount * activity.Points;
@@ -787,7 +786,8 @@ namespace EcdLink.Api.CoreApi.Services
                               PointsActivityConstants.AddExpenseOrIncomeToStatementId,
                               userId,
                               monthPoints,
-                              itemsCount
+                              itemsCount,
+                              new DateTime(item.Year, item.Month, 01)
                             );
                         }
                     }
