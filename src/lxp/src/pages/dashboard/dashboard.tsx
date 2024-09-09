@@ -1333,7 +1333,8 @@ export const Dashboard: React.FC = () => {
           totalYearPoints > 10 &&
           !!pointsScoreProps &&
           !isCoach &&
-          getCurrentPointsToDo === 4 ? (
+          getCurrentPointsToDo === 4 &&
+          !isCoach ? (
             <ScoreCard
               className="mt-5 mb-1 h-20"
               progressBarClassName="flex pt-2"
@@ -1350,9 +1351,10 @@ export const Dashboard: React.FC = () => {
               textPosition={pointsScoreProps.textPosition}
             />
           ) : null}
-          {getCurrentPointsToDo < 4 ||
-          !totalYearPoints ||
-          (totalYearPoints && totalYearPoints <= 10) ? (
+          {(getCurrentPointsToDo < 4 ||
+            !totalYearPoints ||
+            (totalYearPoints && totalYearPoints <= 10)) &&
+          !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 w-full py-6"

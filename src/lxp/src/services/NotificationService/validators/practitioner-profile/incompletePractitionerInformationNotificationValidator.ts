@@ -36,7 +36,7 @@ export class IncompletePractitionerInformationNotificationValidator
     const principalClassroom = localStorage?.getItem(
       LocalStorageKeys?.classroomForInvitedUser
     );
-    console.log({ principalClassroom });
+
     if (!classroomState || !userState) return [];
     const isOnStipend = practitionerState?.practitioner?.isOnStipend;
 
@@ -73,7 +73,10 @@ export class IncompletePractitionerInformationNotificationValidator
         (!addedByPrincipal &&
           practitionerState?.practitioner?.progress === 0) ||
         (practitionerState?.practitioner?.progress === 1.0 &&
-          !addedByPrincipal);
+          !addedByPrincipal) ||
+        (practitionerState?.practitioner?.progress === 2 &&
+          !addedByPrincipal &&
+          !classroomState?.classroom?.name);
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (isTrainee) {
