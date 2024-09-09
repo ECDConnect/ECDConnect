@@ -1055,7 +1055,6 @@ namespace EcdLink.Api.CoreApi.Services
                                             .Count();
             if (acceptedConnectionsCount > 0)
             {
-                // principal and practitioner max month(10) and max year(120)
                 var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ConnectWithAnotherUserId);
                 var userPoints = acceptedConnectionsCount * activity.Points;
 
