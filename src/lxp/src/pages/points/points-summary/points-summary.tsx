@@ -46,6 +46,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { pointsTodoItems } from '@/store/points/points.actions';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
@@ -479,7 +480,10 @@ export const PointsSummary: React.FC = () => {
           !pointsToDo?.savedIncomeOrExpense &&
           !pointsToDo?.savedIncomeOrExpense &&
           practitioner?.isPrincipal
-            ? () => history.push(ROUTES.BUSINESS)
+            ? () =>
+                history.push(ROUTES.BUSINESS, {
+                  activeTabIndex: BusinessTabItems.MONEY,
+                })
             : pointsToDo?.isPartOfPreschool &&
               !pointsToDo?.savedIncomeOrExpense &&
               !pointsToDo?.savedIncomeOrExpense &&
