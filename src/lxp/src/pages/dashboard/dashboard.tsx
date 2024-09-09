@@ -148,6 +148,10 @@ export const Dashboard: React.FC = () => {
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
+  const planActivitiesPermission = practitioner?.permissions?.find(
+    (item) =>
+      item?.permissionName === PermissionsNames.plan_classroom_actitivies
+  );
 
   const getPointsToDoItems = useCallback(async () => {
     appDispatch(
@@ -1071,7 +1075,7 @@ export const Dashboard: React.FC = () => {
   }, [pointsToDo, practitioner?.isPrincipal]);
 
   const renderTodoText = useMemo(() => {
-    const plnaActivitiesPermission = practitioner?.permissions?.find(
+    const planActivitiesPermission = practitioner?.permissions?.find(
       (item) =>
         item?.permissionName === PermissionsNames.plan_classroom_actitivies
     );
@@ -1088,7 +1092,7 @@ export const Dashboard: React.FC = () => {
       (pointsToDo?.plannedOneDay && practitioner?.isPrincipal) ||
       (pointsToDo?.plannedOneDay &&
         !practitioner?.isPrincipal &&
-        plnaActivitiesPermission?.isActive === true)
+        planActivitiesPermission?.isActive === true)
     ) {
       return 'Cwepheshe';
     }
@@ -1360,7 +1364,13 @@ export const Dashboard: React.FC = () => {
               className="mt-5 w-full py-6"
               mainText={''}
               currentPoints={getCurrentPointsToDo}
-              maxPoints={4}
+              maxPoints={
+                practitioner?.isPrincipal ||
+                (!practitioner?.isPrincipal &&
+                  planActivitiesPermission?.isActive === true)
+                  ? 4
+                  : 3
+              }
               barBgColour="white"
               barColour={renderPointsToDoProgressBarColor}
               bgColour={renderPointsToDoScoreCardBgColor}

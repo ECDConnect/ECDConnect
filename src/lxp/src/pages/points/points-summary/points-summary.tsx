@@ -963,7 +963,13 @@ export const PointsSummary: React.FC = () => {
               className="mt-5 py-6"
               mainText={renderTodoText}
               currentPoints={getCurrentPointsToDo}
-              maxPoints={4}
+              maxPoints={
+                practitioner?.isPrincipal ||
+                (!practitioner?.isPrincipal &&
+                  planActivitiesPermission?.isActive === true)
+                  ? 4
+                  : 3
+              }
               barBgColour="white"
               barColour={renderPointsToDoProgressBarColor}
               bgColour={renderPointsToDoScoreCardBgColor}
