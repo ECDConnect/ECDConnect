@@ -1117,9 +1117,7 @@ export const PointsSummary: React.FC = () => {
                 'MMMM'
               )}:`}
             />
-          ) : (
-            0
-          )}
+          ) : null}
           {!!todoListFiltered &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
