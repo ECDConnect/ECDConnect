@@ -86,7 +86,7 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
   const getData = async () => {
     setLoading(true);
     if (tenant && tenant.tenant && tenant.tenant.themePath) {
-      await fetch(tenant.tenant.themePath)
+      await fetch(tenant.tenant.themePath, { cache: 'no-store' })
         .then(function (res) {
           return res.json();
         })
@@ -303,7 +303,8 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
             title: 'Successfully Updated Tenant!',
             variant: NOTIFICATION.SUCCESS,
           });
-          tenant.refresh();
+          setData({});
+          getData();
         })
         .catch((err) => {
           setNotification({
