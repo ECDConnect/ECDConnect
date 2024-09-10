@@ -265,6 +265,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         nameProp={'name'}
         placeholder={'E.g. Tuesday class'}
         value={name}
+        hint="Optional"
       />
       <Typography
         text={playgroupName?.message || ''}
