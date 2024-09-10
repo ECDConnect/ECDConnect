@@ -237,7 +237,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
           <div>
             <span>{`When does ${
               name ? `"${name}"` : 'the'
-            } playgroup meet? `}</span>
+            } class meet? `}</span>
             <span>You must choose at least 2 days</span>
             <div className="mt-2 -mb-4">
               <Controller
