@@ -2,7 +2,6 @@ import {
   AttendanceDto,
   ChildAttendanceReportModel,
   useDialog,
-  useTheme,
   Document,
   ContentConsentTypeEnum,
   LocalStorageKeys,
@@ -88,6 +87,7 @@ import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { ProgressWalkthroughStart } from '@/pages/classroom/progress/walkthrough/progress-walkthrough-start';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -108,7 +108,6 @@ const baseNotificationListItem: ListItemProps = {
 export const ChildProfile: React.FC = () => {
   const currentDate = new Date();
   const { isOnline } = useOnlineStatus();
-  const { theme } = useTheme();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
@@ -713,7 +712,7 @@ export const ChildProfile: React.FC = () => {
     <div className={styles.contentWrapper}>
       <BannerWrapper
         showBackground={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         title={`${child?.user?.firstName} ${child?.user?.surname}’s Profile`}
         color={'primary'}
         size="medium"
