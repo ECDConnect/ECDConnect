@@ -12,8 +12,8 @@ import {
 import { GoogleMapGeoCodeResponse } from './google-map.types';
 import { ComponentBaseProps } from '../../models/ComponentBaseProps';
 
-const DEFAULT_LONGITUDE = -29.1199066;
-const DEFAULT_LATITUDE = 26.058415;
+const DEFAULT_LONGITUDE = 26.058415;
+const DEFAULT_LATITUDE = -29.1199066;
 
 export type CustomGoogleMapComponentProps = ComponentBaseProps & {
   children?: ReactNode;
@@ -103,16 +103,24 @@ const CustomGoogleMapComponent: FC<CustomGoogleMapComponentProps> = (props) => {
 
   useLayoutEffect(() => {
     if (longitude === DEFAULT_LONGITUDE && latitude === DEFAULT_LATITUDE) {
-      navigator.geolocation.getCurrentPosition(({ coords }) => {
-        if (!!coords?.longitude && !!coords?.latitude) {
-          setLongitude(coords.longitude);
-          setLatitude(coords.latitude);
-        } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          if (!!position.coords?.longitude && !!position.coords.latitude) {
+            setLongitude(position.coords.longitude);
+            setLatitude(position.coords.latitude);
+          } else {
+            setLongitude(props.longitude || DEFAULT_LONGITUDE);
+            setLatitude(props.latitude || DEFAULT_LATITUDE);
+          }
+          setInitialCoordsSet(true);
+        },
+        (error) => {
+          console.warn(`Defaulting map location: ${error.message}`);
           setLongitude(props.longitude || DEFAULT_LONGITUDE);
           setLatitude(props.latitude || DEFAULT_LATITUDE);
+          setInitialCoordsSet(true);
         }
-        setInitialCoordsSet(true);
-      });
+      );
     } else {
       setLongitude(props.longitude || DEFAULT_LONGITUDE);
       setLatitude(props.latitude || DEFAULT_LATITUDE);
