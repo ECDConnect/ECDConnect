@@ -64,6 +64,9 @@ export const PointsSummary: React.FC = () => {
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
+  const attendancePermission = practitioner?.permissions?.find(
+    (item) => item?.permissionName === PermissionsNames.take_attendance
+  );
 
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
@@ -104,11 +107,24 @@ export const PointsSummary: React.FC = () => {
     return response;
   }, [practitioner?.userId, userAuth?.auth_token]);
 
-  const todoListFiltered = pointActivitiesItems.filter((el) => {
-    return pointsShareData?.activityDetail?.some((f: any) => {
-      return f.activity !== el.activity;
-    });
-  });
+  const todoListFiltered = !practitioner?.isPrincipal
+    ? pointActivitiesItems
+        ?.filter((item) => item?.activity !== 'Income/expenses added')
+        ?.filter((item2) =>
+          attendancePermission?.isActive !== true
+            ? item2?.activity !== 'Attendance registers saved'
+            : item2
+        )
+        ?.filter((el) => {
+          return pointsShareData?.activityDetail?.some((f: any) => {
+            return f.activity !== el.activity;
+          });
+        })
+    : pointActivitiesItems.filter((el) => {
+        return pointsShareData?.activityDetail?.some((f: any) => {
+          return f.activity !== el.activity;
+        });
+      });
 
   const getCurrentPointsToDo = useMemo(() => {
     if (pointsToDo) {

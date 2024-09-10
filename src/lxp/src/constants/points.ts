@@ -1,3 +1,4 @@
+import { BusinessTabItems } from '@/pages/business/business.types';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import ROUTES from '@/routes/routes';
 
@@ -32,6 +33,7 @@ export const pointActivitiesItems: pointActivitiesDto[] = [
     missingActivityText: 'Add income & expenses',
     icon: 'CashIcon',
     href: ROUTES.BUSINESS,
+    tabIndex: BusinessTabItems.MONEY,
   },
   {
     activity: 'Attendance registers saved',
