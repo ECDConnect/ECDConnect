@@ -35,7 +35,7 @@ function ThemeProvider({
     const { value } = await Storage.get({ key: 'storageTheme' });
 
     if (!value || overRideCache) {
-      fetch(themeEndPoint)
+      await fetch(themeEndPoint, { cache: 'no-store' })
         .then(function (res) {
           return res.json();
         })

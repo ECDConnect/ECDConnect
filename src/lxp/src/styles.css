@@ -71,6 +71,14 @@ ion-content {
   gap: 16px;
 }
 
+.bg-bannerx2 {
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  object-fit: scale-down;
+  width: 20px;
+  height: 20px; 
+}
+
 .bg-logo {
   background-repeat: no-repeat !important;
   background-size: contain !important;
