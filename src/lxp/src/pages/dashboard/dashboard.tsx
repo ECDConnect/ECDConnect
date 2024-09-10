@@ -50,7 +50,7 @@ import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { traineeThunkActions } from '@/store/trainee';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
-import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
+import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community-old/community.types';
@@ -269,7 +269,7 @@ export const Dashboard: React.FC = () => {
         barBgColour: 'white',
         hint: 'points',
         textPosition: 'left',
-        barColour: 'secondary',
+        barColour: 'quatenary',
         bgColour: 'infoBb',
         currentPoints: pointsTotal,
         maxPoints: pointsMax,
