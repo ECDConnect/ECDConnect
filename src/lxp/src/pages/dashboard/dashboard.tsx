@@ -897,7 +897,7 @@ export const Dashboard: React.FC = () => {
       onActionClick: () => {
         goToTraining();
       },
-      classNames: 'bg-tertiary',
+      classNames: 'bg-tertiaryAccent2',
     });
 
   const goToCommunity = () => {
