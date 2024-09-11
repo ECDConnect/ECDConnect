@@ -873,32 +873,35 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null)
                 {
                     var today = DateTime.Now;
-                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteChildProgressObservationsId);
-                    var schoolClassIds = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).Select(x => x.Id).ToList();
+                    
                     var childProgressReports = _childProgressReportRepo
                                                     .GetAll()
                                                     .Where(x => x.IsActive
-                                                            && schoolClassIds.Contains(x.ChildProgressReportPeriod.ClassroomId)
-                                                            && x.ChildProgressReportPeriod.StartDate.Year == today.Year
-                                                            && x.ChildProgressReportPeriod.StartDate.Month == today.Month
-                                                            && x.ObservationsCompleteDate.HasValue)
+                                                            && x.UserId == userId
+                                                            && x.ObservationsCompleteDate.HasValue
+                                                            && x.ObservationsCompleteDate.Value.Year == today.Year
+                                                            && x.ObservationsCompleteDate.Value.Month == today.Month)
                                                     .Select(x => new { x.ObservationsCompleteDate.Value.Month, x.Id })
                                                     .ToList()
                                                     .GroupBy(x => x.Month)
                                                     .Select(x => new { Month = x.Key, Total = x.Count() })
                                                     .ToList();
-
-                    foreach (var item in childProgressReports)
+                    if (childProgressReports.Any())
                     {
-                        var userPoints = activity.Points * item.Total;
-                        AddOrUpdatePoints(
-                            PointsActivityConstants.CompleteChildProgressObservationsId,
-                            userId,
-                            userPoints,
-                            item.Total,
-                            new DateTime(today.Year, item.Month, today.Day)
-                        );
+                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteChildProgressObservationsId);
+                        foreach (var item in childProgressReports)
+                        {
+                            var userPoints = activity.Points * item.Total;
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.CompleteChildProgressObservationsId,
+                                userId,
+                                userPoints,
+                                item.Total,
+                                new DateTime(today.Year, item.Month, 01)
+                            );
+                        }
                     }
+
                 }
             }
         }
@@ -918,26 +921,32 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null)
                 {
                     var today = DateTime.Now;
-                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CreateChildProgressReportId);
-                    var schoolClassIds = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).Select(x => x.Id).ToList();
-                    var childProgressReportsCount = _childProgressReportRepo
+                    
+                    var childProgressReports = _childProgressReportRepo
                                                     .GetAll()
                                                     .Where(x => x.IsActive 
-                                                            && schoolClassIds.Contains(x.ChildProgressReportPeriod.ClassroomId)
-                                                            && x.ChildProgressReportPeriod.StartDate.Year == today.Year
-                                                            && x.ChildProgressReportPeriod.StartDate.Month == today.Month)
-                                                    .Count();
-                    //var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
-                    //                       x.UserId == userId
-                    //                       && x.PointsActivityId == activity.Id
-                    //                       && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
-                    var userPoints = (childProgressReportsCount * activity.Points);
-                    AddOrUpdatePoints(
-                            PointsActivityConstants.CreateChildProgressReportId,
-                            userId,
-                            userPoints,
-                            childProgressReportsCount
-                    );
+                                                            && x.UserId == userId
+                                                            && x.DateCompleted.Value.Year == today.Year
+                                                            && x.DateCompleted.Value.Month == today.Month)
+                                                    .Select(x => new { x.DateCompleted.Value.Month, x.Id })
+                                                    .ToList()
+                                                    .GroupBy(x => x.Month)
+                                                    .Select(x => new { Month = x.Key, Total = x.Count() })
+                                                    .ToList();
+                    if (childProgressReports.Any())
+                    {
+                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CreateChildProgressReportId);
+                        foreach (var item in childProgressReports)
+                        {
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.CreateChildProgressReportId,
+                                userId,
+                                item.Total * activity.Points,
+                                item.Total,
+                                new DateTime(today.Year, item.Month, 01)
+                            );
+                        }
+                    }
                 }
            }
         }
