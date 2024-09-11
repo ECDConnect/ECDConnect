@@ -621,7 +621,7 @@ export const AddPractitioner = ({
               )}
               <Button
                 size="normal"
-                className="mb-4 w-full"
+                className="mb-12 w-full"
                 type="filled"
                 color="quatenary"
                 text="Save"
