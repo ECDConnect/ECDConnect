@@ -327,13 +327,18 @@ export class ChildProgressReportNotificationValidator
       today <= new Date(currentReportPeriod?.endDate!);
     const activeChildren = children?.filter((item) => item?.isActive === true);
 
+    const reportsCompleted = Math.ceil(
+      (reports.filter((x) => !!x?.dateCompleted).length / reports.length) * 100
+    );
+
     if (activeChildren?.length === 0) return [];
 
-    const expectedReportCount = activeChildren?.length;
+    // const expectedReportCount = activeChildren?.length;
 
     if (!isBetweenReportProgressPeriodDate) return [];
 
-    if (reports?.length < expectedReportCount) return [];
+    // if (reports?.length < expectedReportCount) return [];
+    if (reportsCompleted < 100) return [];
 
     const notification: Message = {
       reference,
