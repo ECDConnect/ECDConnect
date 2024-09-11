@@ -283,9 +283,9 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
         images: {
           graphicOverlayUrl: graphicOverlayUrl
             ? graphicOverlayUrl
-            : DefaultTheme.graphicOverlayUrl,
-          logoUrl: logoUrl ? logoUrl : DefaultTheme.logoUrl,
-          faviconUrl: faviconUrl ? faviconUrl : DefaultTheme.faviconUrl,
+            : data.images.graphicOverlayUrl,
+          logoUrl: logoUrl ? logoUrl : data.images.logoUrl,
+          faviconUrl: faviconUrl ? faviconUrl : data.images.faviconUrl,
           portalLoginLogoUrl: DefaultTheme.portalLoginLogoUrl,
           portalLoginBackgroundUrl: DefaultTheme.portalLoginBackgroundUrl,
         },
