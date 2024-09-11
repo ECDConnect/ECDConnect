@@ -1,4 +1,4 @@
-import { useTheme, LoginRequestModel } from '@ecdlink/core';
+import { useTheme, LoginRequestModel, useDialog } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -10,8 +10,9 @@ import {
   Typography,
   Dialog,
   DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
@@ -31,6 +32,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { syncThunkActions } from '@/store/sync';
 import { userThunkActions } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
+import { IncorrectBrowser } from './incorrect-browser/incorrect-browser';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -38,6 +40,7 @@ const { version } = require('../../../../package.json');
 export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
+  const dialog = useDialog();
   const [displayError, setDisplayError] = useState(false);
   const displayMessage = 'Password or ID incorrect. Please try again';
   const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
@@ -46,6 +49,7 @@ export const Login: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
+  const [incorrectBrowser, setIncorrectBrowser] = useState(false);
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
@@ -190,6 +194,49 @@ export const Login: React.FC = () => {
   };
 
   const { theme } = useTheme();
+
+  const handleIncorrectBrowser = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="Oops! AppName works best on Chrome or Firefox"
+            paragraphs={[
+              `To download Chrome or Firefox, go to your phone's app store.`,
+            ]}
+            icon={'ExclamationIcon'}
+            iconSize={48}
+            iconColor={'alertMain'}
+            iconBorderColor={'white'}
+            actionButtons={[
+              {
+                text: 'Close',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => {},
+                textColour: 'quatenary',
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const userAgent = navigator.userAgent;
+
+  useEffect(() => {
+    if (
+      !userAgent.includes('Firefox') ||
+      !(userAgent.includes('Chrome') && !userAgent.includes('Edg'))
+    ) {
+      handleIncorrectBrowser();
+    }
+  }, [userAgent]);
 
   return (
     <BannerWrapper
