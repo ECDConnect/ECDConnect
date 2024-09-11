@@ -1337,28 +1337,32 @@ export const Dashboard: React.FC = () => {
           totalYearPoints > 10 &&
           !!pointsScoreProps &&
           !isCoach &&
-          getCurrentPointsToDo === 4 &&
-          !isCoach ? (
+          !practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true ? (
+            getCurrentPointsToDo === 4
+          ) : getCurrentPointsToDo === 3 && !isCoach ? (
             <ScoreCard
               className="mt-5 mb-1 h-20"
               progressBarClassName="flex pt-2"
-              mainText={pointsScoreProps.mainText}
+              mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}
-              currentPoints={pointsScoreProps.currentPoints}
-              maxPoints={pointsScoreProps.maxPoints}
-              onClick={pointsScoreProps.onClick}
-              barBgColour={pointsScoreProps.barBgColour}
-              barColour={pointsScoreProps.barColour}
-              bgColour={pointsScoreProps.bgColour}
-              image={pointsScoreProps.image}
-              textColour={pointsScoreProps.textColour}
-              textPosition={pointsScoreProps.textPosition}
+              currentPoints={pointsScoreProps?.currentPoints!}
+              maxPoints={pointsScoreProps?.maxPoints!}
+              onClick={pointsScoreProps?.onClick!}
+              barBgColour={pointsScoreProps?.barBgColour!}
+              barColour={pointsScoreProps?.barColour!}
+              bgColour={pointsScoreProps?.bgColour!}
+              image={pointsScoreProps?.image!}
+              textColour={pointsScoreProps?.textColour!}
+              textPosition={pointsScoreProps?.textPosition!}
             />
           ) : null}
-          {(getCurrentPointsToDo < 4 ||
-            !totalYearPoints ||
-            (totalYearPoints && totalYearPoints <= 10)) &&
-          !isCoach ? (
+          {(!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true
+            ? getCurrentPointsToDo < 4
+            : getCurrentPointsToDo < 3 ||
+              !totalYearPoints ||
+              (totalYearPoints && totalYearPoints <= 10)) && !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 w-full py-6"

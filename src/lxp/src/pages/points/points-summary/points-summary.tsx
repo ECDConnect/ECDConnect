@@ -971,9 +971,12 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMMM yyyy')}
           />
-          {(getCurrentPointsToDo < 4 ||
-            !pointsTotalForYear ||
-            (pointsTotalForYear && pointsTotalForYear <= 10)) && (
+          {(!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true
+            ? getCurrentPointsToDo < 4
+            : getCurrentPointsToDo < 3 ||
+              !pointsTotalForYear ||
+              (pointsTotalForYear && pointsTotalForYear <= 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 py-6"
@@ -1007,9 +1010,12 @@ export const PointsSummary: React.FC = () => {
               className="mt-4"
             />
           ) : null}
-          {getCurrentPointsToDo === 4 &&
-          pointsTotalForYear &&
-          pointsTotalForYear > 10 ? (
+          {!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true ? (
+            getCurrentPointsToDo === 4
+          ) : getCurrentPointsToDo === 3 &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 ? (
             <ScoreCard
               className="mt-5 py-6"
               mainText={`${monthPoints} points`}
@@ -1045,7 +1051,10 @@ export const PointsSummary: React.FC = () => {
           monthPoints &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          getCurrentPointsToDo === 4 ? (
+          !practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true ? (
+            getCurrentPointsToDo === 4
+          ) : getCurrentPointsToDo === 3 ? (
             <CelebrationCard
               image={getEmoji(
                 pointsShareData?.userRankingData
@@ -1070,7 +1079,10 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {!pointsTotalForYear ||
           pointsTotalForYear <= 10 ||
-          getCurrentPointsToDo < 4 ? (
+          (!practitioner?.isPrincipal &&
+            planActivitiesPermission?.isActive === true) ? (
+            getCurrentPointsToDo < 4
+          ) : getCurrentPointsToDo < 3 ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -1107,7 +1119,10 @@ export const PointsSummary: React.FC = () => {
           !!todoListFiltered.length &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          getCurrentPointsToDo === 4 ? (
+          !practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true ? (
+            getCurrentPointsToDo === 4
+          ) : getCurrentPointsToDo === 3 ? (
             <Typography
               className="mt-8 mb-4"
               type={'h3'}
@@ -1121,7 +1136,10 @@ export const PointsSummary: React.FC = () => {
           {!!todoListFiltered &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          getCurrentPointsToDo === 4
+          !practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true
+            ? getCurrentPointsToDo === 4
+            : getCurrentPointsToDo === 3
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
                   <div
@@ -1142,10 +1160,13 @@ export const PointsSummary: React.FC = () => {
             : null}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
-          {getCurrentPointsToDo === 4 &&
-          pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
-          monthPoints > 0 ? (
+          {!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true ? (
+            getCurrentPointsToDo === 4
+          ) : getCurrentPointsToDo === 3 &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
+            monthPoints > 0 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1168,11 +1189,14 @@ export const PointsSummary: React.FC = () => {
               }}
             />
           ) : null}
-          {getCurrentPointsToDo === 4 &&
-          pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
-          monthPoints === 0 &&
-          !practitioner?.coachHierarchy ? (
+          {!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true ? (
+            getCurrentPointsToDo === 4
+          ) : getCurrentPointsToDo === 3 &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
+            monthPoints === 0 &&
+            !practitioner?.coachHierarchy ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1184,11 +1208,14 @@ export const PointsSummary: React.FC = () => {
               onClick={() => setShowInfo(true)}
             />
           ) : null}
-          {getCurrentPointsToDo === 4 &&
-          pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
-          monthPoints === 0 &&
-          practitioner?.coachHierarchy ? (
+          {!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true ? (
+            getCurrentPointsToDo === 4
+          ) : getCurrentPointsToDo === 3 &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 &&
+            monthPoints === 0 &&
+            practitioner?.coachHierarchy ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1200,9 +1227,12 @@ export const PointsSummary: React.FC = () => {
               onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
             />
           ) : null}
-          {getCurrentPointsToDo === 4 &&
-          pointsTotalForYear &&
-          pointsTotalForYear > 10 ? (
+          {!practitioner?.isPrincipal &&
+          planActivitiesPermission?.isActive === true ? (
+            getCurrentPointsToDo === 4
+          ) : getCurrentPointsToDo === 3 &&
+            pointsTotalForYear &&
+            pointsTotalForYear > 10 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
