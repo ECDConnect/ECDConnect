@@ -125,7 +125,7 @@ export class IncompletePractitionerInformationNotificationValidator
           return [];
         }
       }
-      console.log({ showNotificationForPrincipalFlow });
+
       if (showNotificationForPrincipalFlow) {
         return [
           {
