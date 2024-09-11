@@ -437,6 +437,8 @@ export function ContentManagement() {
                     selectedType.name !== ContentTypes.RESOURCE_LINK &&
                     selectedType.name !== ContentTypes.CONNECT_ITEM &&
                     selectedType.name !==
+                      ContentTypes.CLASSROOMBUSINESSRESOURCE &&
+                    selectedType.name !==
                       ContentTypes.PROGRESS_TRACKING_SKILL &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
@@ -472,6 +474,23 @@ export function ContentManagement() {
                         searchValue={searchValue}
                         choosedSectionTitle={choosedSectionTitle}
                       ></ProgressToolsContentList>
+                    )}
+                  {selectedType?.name ===
+                    ContentTypes.CLASSROOMBUSINESSRESOURCE &&
+                    !specialType && (
+                      <ResourceList
+                        optionDefinitions={dataDefinitions?.contentDefinitions}
+                        contentType={selectedType}
+                        specialType={specialType}
+                        languages={languages?.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                        onSearch={search}
+                        choosedSectionTitle={choosedSectionTitle}
+                        setSelectedType={setSelectedType}
+                        dataTypes={dataTypes}
+                      />
                     )}
                   {selectedType?.name === ContentTypes.RESOURCE_LINK &&
                     !specialType && (

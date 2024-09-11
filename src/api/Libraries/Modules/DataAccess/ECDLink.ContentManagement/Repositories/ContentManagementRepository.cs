@@ -408,8 +408,10 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
                 }
-
-
+                if (contentFieldValuePairs.ContainsKey("insertedDate"))
+                {
+                    contentFieldValuePairs.Add("insertedDate", item.InsertedDate.ToString());
+                }
                 if (contentFieldValuePairs?.Any() ?? false)
                 {
                     allContentValuePairs.Add(contentFieldValuePairs.ToObject());

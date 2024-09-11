@@ -1,42 +1,41 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useQuery, useLazyQuery } from '@apollo/client';
+import { gql, useQuery, useMutation, useLazyQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
   ContentTypeFieldDto,
   LanguageDto,
-  PermissionEnum,
+  NOTIFICATION,
+  useDialog,
+  useNotifications,
 } from '@ecdlink/core';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PlusIcon,
-  SearchIcon,
-} from '@heroicons/react/solid';
-import {
-  Dropdown,
-  SearchDropDown,
+  DialogPosition,
+  renderIcon,
   SearchDropDownOption,
-  Typography,
+  Table,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import ReactDatePicker from 'react-datepicker';
-import ContentLoader from '../../../../../../components/content-loader/content-loader';
 import {
   ContentManagementView,
   FieldType,
   ResourcesTitles,
-  searchByActivityTypeOptions,
 } from '../../../../content-management-models';
-import { useUser } from '../../../../../../hooks/useUser';
+// import { useResources } from '../../../../../../hooks/useResources';
 import { LanguageId } from '../../../../../../constants/language';
-import {
-  ContentManagementTabs,
-  ContentTypes,
-} from '../../../../../../constants/content-management';
+import { ContentTypes } from '../../../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../../../components/ui-table/type';
-import UiTable from '../../../../../../components/ui-table';
+import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
+import debounce from 'lodash.debounce';
+import { DeleteMultipleResources } from '@ecdlink/graphql';
+import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
+import {
+  businessResourceOptions,
+  classroomResourceOptions,
+  DataFree,
+  Likes,
+} from './resource.types';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -46,13 +45,32 @@ export interface ContentListProps {
   viewContent: (content?: ContentManagementView) => void;
   refreshParent: () => void;
   onSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  searchValue?: string;
   choosedSectionTitle?: string;
   specialType?: string;
-  setNatalType?: (item: number) => void;
   setSelectedType?: (item: ContentTypeDto) => void;
   dataTypes?: any;
 }
+
+export const sortByDataFreeOptions: SearchDropDownOption<string>[] = [
+  DataFree?.Yes,
+  DataFree?.No,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+export const sortByLikeOptions: SearchDropDownOption<string>[] = [
+  Likes?.Zero,
+  Likes?.OneToTen,
+  Likes?.ElevenToFifty,
+  Likes?.FiftyOneToHundred,
+  Likes?.MoreThanHundred,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
 export default function ResourceList({
   selectedTab,
@@ -61,12 +79,11 @@ export default function ResourceList({
   viewContent,
   refreshParent,
   onSearch,
-  searchValue,
   choosedSectionTitle,
   setSelectedType,
   dataTypes,
 }: ContentListProps) {
-  const { hasPermission } = useUser();
+  // const { hasPermission } = useResources();
   const [tableData, setTableData] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
@@ -75,68 +92,21 @@ export default function ResourceList({
     []
   );
 
-  const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
-    (item) => ({
-      id: item?.id,
-      label: item?.description,
-      value: item?.id,
-    })
+  const [dataFreeFilter, setDataFreeFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredDataFree = useMemo(
+    () => dataFreeFilter?.map((item) => item?.id),
+    [dataFreeFilter]
   );
 
-  // const [classroomResources, setClassroomResources] = useState<any[]>([]);
-  // const [businessResources, setBusinessResources] = useState<any[]>([]);
-
-  // const getClassroomResources = `GetClassroomBusinessResources`;
-  // const classroomResourceQuery = gql`
-  //   query ${getClassroomResources} ($localeId: String) {
-  //     ${getClassroomResources} (localeId: $localeId) {
-  //         id
-  //         resourceType
-  //         title
-  //         shortDescription
-  //         link
-  //         longDescription
-  //         dataFree
-  //         sectionType
-  //         numberLikes
-  //         availableLanguages
-  //         updatedDate
-  //     }
-  //    }
-  // `;
-  // const [fetchClassroomResourceData, { data: classroomResourceData }] = useLazyQuery(classroomResourceQuery, {
-  //   fetchPolicy: 'cache-first',
-  //   variables: {
-  //     localeId: languageId,
-  //     section: 'classroom'
-  //   },
-  // });
-
-  // const getBusinessResources = `GetClassroomBusinessResources`;
-  // const businessResourceQuery = gql`
-  //   query ${getBusinessResources} ($localeId: String) {
-  //     ${getBusinessResources} (localeId: $localeId) {
-  //         id
-  //         resourceType
-  //         title
-  //         shortDescription
-  //         link
-  //         longDescription
-  //         dataFree
-  //         sectionType
-  //         numberLikes
-  //         availableLanguages
-  //         updatedDate
-  //     }
-  //    }
-  // `;
-  // const [fetchBusinessResourcesData, { data: businessResourceData }] = useLazyQuery(businessResourceQuery, {
-  //   fetchPolicy: 'cache-first',
-  //   variables: {
-  //     localeId: languageId,
-  //     section: 'business'
-  //   },
-  // });
+  const [likesFilter, setLikesFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredLikes = useMemo(
+    () => sortByLikeOptions?.map((item) => item?.id),
+    [likesFilter]
+  );
 
   const [languageFilter, setLanguageFilter] = useState<
     SearchDropDownOption<string>[]
@@ -151,8 +121,6 @@ export default function ResourceList({
     [typeFilter]
   );
 
-  const [showFilter, setShowFilter] = useState(false);
-
   const [filterDateAdded, setFilterDateAdded] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -165,6 +133,7 @@ export default function ResourceList({
     if (start && end) {
       setFilterDateAdded((prevState) => !prevState);
     }
+    console.log('onchange', start, end);
   };
 
   const dateDropdownValue = useMemo(
@@ -181,28 +150,6 @@ export default function ResourceList({
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
   }, []);
-
-  // useEffect(() => {
-  //   if (contentType.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
-  //     if (choosedSectionTitle === ResourcesTitles.ClassroomResources && classroomResources.length === 0) {
-  //       fetchClassroomResourceData()
-  //     }
-  //     if (choosedSectionTitle === ResourcesTitles.BusinessResources && businessResources.length === 0) {
-  //       fetchBusinessResourcesData();
-  //     }
-  //   }
-  // }, [businessResources.length, choosedSectionTitle, classroomResources.length, contentType.name, fetchBusinessResourcesData, fetchClassroomResourceData]);
-
-  // useEffect(() => {
-  //   if (contentType.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
-  //     if (choosedSectionTitle === ResourcesTitles.ClassroomResources && classroomResourceData && classroomResourceData.length > 0) {
-  //       setClassroomResources(classroomResourceData);
-  //     }
-  //     if (choosedSectionTitle === ResourcesTitles.BusinessResources && businessResourceData && businessResourceData.length > 0) {
-  //       setBusinessResources(businessResourceData);
-  //     }
-  //   }
-  // }, [businessResourceData, choosedSectionTitle, classroomResourceData, contentType.name]);
 
   useEffect(() => {
     if (contentType && contentType.fields) {
@@ -267,79 +214,78 @@ export default function ResourceList({
     }
   }, [choosedSectionTitle, contentType]);
 
-  const fields =
-    contentType.fields?.map((x) => {
-      if (
-        x.fieldType.dataType !== FieldType.Link &&
-        x.fieldType.dataType !== FieldType.StaticLink
-      )
-        return x.fieldName;
-      else if (
-        x.fieldType.dataType === FieldType.Link &&
-        x?.displayMainTable === true
-      )
-        return `
-        ${x.fieldName} {
-          id
-          name
-        }
-      `;
-      else
-        return `
-        ${x.fieldName} {
-          id
-        }
-      `;
-    }) ?? [];
+  const queryVariables = useMemo(
+    () => ({
+      localeId: languageId,
+      sectionType:
+        choosedSectionTitle === ResourcesTitles.ClassroomResources
+          ? 'classroom'
+          : 'business',
+      search: '',
+      dataFreeSearch: filteredDataFree,
+      likesSearch: filteredLikes,
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: null,
+      },
+    }),
+    [choosedSectionTitle, filteredDataFree, filteredLikes, languageId]
+  );
 
-  const getAllCall = `GetAll${contentType.name}`;
-  console.log('getAllCall', getAllCall);
-
-  const query = gql` 
-    query ${getAllCall} ($localeId: String) {
-      ${getAllCall} (localeId: $localeId) {
-        id
-        ${fields.join('\n')}
-        }
+  const [resources, setResources] = useState<any[]>([]);
+  const getResources = `GetResources`;
+  const resourceQuery = gql`
+    query ${getResources} ($localeId: String, $sectionType: String) {
+      ${getResources} (localeId: $localeId, sectionType: $sectionType) {
+          id
+          resourceType
+          title
+          shortDescription
+          link
+          longDescription
+          dataFree
+          sectionType
+          numberLikes
+          availableLanguages
+          updatedDate
+          insertedDate
       }
+     }
   `;
 
-  const {
-    data: contentData,
-    refetch: refetchContent,
-    loading: loadingContent,
-  } = useQuery(query, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      localeId: languageId,
-    },
+  const [
+    fetchResourceData,
+    { data: resourceData, refetch: refetchContent, loading: loadingContent },
+  ] = useLazyQuery(resourceQuery, {
+    fetchPolicy: 'network-only',
+    variables: queryVariables,
   });
 
-  console.log('selectedTab', selectedTab);
   useEffect(() => {
-    if (contentData && contentData[getAllCall]) {
-      // const resources = contentData[getAllCall].map((item: any) => ({
-      //   ...item,
-      // }));
-
-      const getFormattedDateString = (mDate: String) => {
-        if (mDate == null || '') return '';
-        const dateItems = mDate.split('T');
-        return dateItems[0];
-      };
-
-      const copyItems = contentData[getAllCall].map((item: any) => ({
+    if (resourceData && resourceData[getResources]) {
+      const copyItems = resourceData[getResources].map((item: any) => ({
         ...item,
-        startDate:
-          item.startDate !== null ? getFormattedDateString(item.startDate) : '',
-        endDate:
-          item.startDate !== null ? getFormattedDateString(item.endDate) : '',
       }));
+
+      if (choosedSectionTitle === ResourcesTitles.ClassroomResources) {
+        const classroomData = copyItems.filter(
+          (item) => item.sectionType === 'classroom'
+        );
+        setTableData(classroomData);
+        return;
+      }
+      if (choosedSectionTitle === ResourcesTitles.BusinessResources) {
+        const businessData = copyItems.filter(
+          (item) => item.sectionType === 'business'
+        );
+        setTableData(businessData);
+        return;
+      }
 
       setTableData(copyItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentData, selectedTab]);
+  }, [resourceData, selectedTab]);
 
   useEffect(() => {
     if (languages) {
@@ -443,264 +389,295 @@ export default function ResourceList({
     typeFilterValues,
   ]);
 
-  const renderTables = useMemo(() => {
-    return (
-      <UiTable
-        isLoading={!filteredData.length && loadingContent}
-        columns={displayFields?.map((item) => {
-          return {
-            field:
-              typeof item.fieldName === 'string'
-                ? item.fieldName
-                : JSON?.stringify(item.fieldName),
-            use:
-              typeof item.displayName === 'string'
-                ? item.displayName
-                : JSON?.stringify(item.displayName),
-          };
-        })}
-        rows={
-          searchValue !== 'Search by title or content...'
-            ? filterByValue(filteredData, searchValue)
-            : filteredData
-        }
-        component={
-          selectedTab === ContentManagementTabs.RESOURCES.id
-            ? ContentTypes.COACHING_CIRCLE_TOPICS
-            : 'cms'
-        }
-        viewRow={hasPermission(PermissionEnum.update_static) && viewSelectedRow}
-        onBulkActionCallback={onBulkActionCallback}
-        languages={languages}
-        noBulkSelection={true}
-      />
-    );
-  }, [
-    displayFields,
-    filterByValue,
-    filteredData,
-    hasPermission,
-    languages,
-    loadingContent,
-    onBulkActionCallback,
-    searchValue,
-    selectedTab,
-    viewSelectedRow,
-  ]);
+  //////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////
 
-  const hasDateFilter = useMemo(() => (!startDate ? 0 : 1), [startDate]);
-  const numberOfFilters = useMemo(
-    () => typeFilter?.length + hasDateFilter,
-    [hasDateFilter, typeFilter?.length]
+  const tableRef = useRef<TableRefMethods>(null);
+  const [searchValue, setSearchValue] = useState('');
+  const [selectedResources, setSelectedResources] = useState<Irow[]>([]);
+  const dialog = useDialog();
+  const { setNotification } = useNotifications();
+
+  const handleResetSelectedRows = () => {
+    tableRef?.current?.resetSelectedRows();
+  };
+
+  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value || '');
+  }, 150);
+
+  const inactiveResources = selectedResources?.filter(
+    (item) => item?.isActive === false
   );
 
-  const renderFilterButtonText = useMemo(() => {
-    if (numberOfFilters) {
-      if (numberOfFilters === 1) {
-        return `${numberOfFilters} Filter`;
-      }
-      return `${numberOfFilters} Filters`;
-    }
+  const isAllInactive = selectedResources.every(
+    (obj) => obj?.isActive === false
+  );
 
-    return 'Filter';
-  }, [numberOfFilters]);
+  const getChipColor = (type?: string) => {
+    if (type) {
+      switch (type) {
+        case classroomResourceOptions?.Activites:
+          return 'bg-primary';
+        case classroomResourceOptions?.Stories:
+          return 'bg-secondary';
+        case classroomResourceOptions?.TeachingTips:
+          return 'bg-tertiary';
+        case businessResourceOptions?.Financial:
+          return 'bg-primary';
+        case businessResourceOptions?.AdministrationPolicies:
+          return 'bg-secondary';
+        case businessResourceOptions?.DBERegistration:
+          return 'bg-tertiary';
+        default:
+          return 'bg-info';
+      }
+    } else {
+      return 'bg-info';
+    }
+  };
+
+  const rows: Irow[] =
+    (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
+      (item) => ({
+        ...item,
+        key: `resource_` + item?.id,
+        title: item?.title,
+        numberLikes: item?.numberLikes === null ? 0 : item?.numberLikes,
+        updatedDate: item?.updatedDate
+          ? format(new Date(item.updatedDate), 'dd/MM/yyyy')
+          : '-',
+        resourceTypeComponent: (
+          <div className="ml-0 flex cursor-pointer items-center">
+            <div
+              key={`role_` + item?.id}
+              className={
+                `${getChipColor(item?.resourceType)}` +
+                ' m-1 rounded-full py-1 px-3 text-xs text-white'
+              }
+            >
+              {item?.resourceType}
+            </div>
+          </div>
+        ),
+        dataFreeComponent: (
+          <p
+            className={
+              item?.dataFree === 'true' ? 'text-successMain' : 'text-errorMain'
+            }
+          >
+            {item?.dataFree === 'true'
+              ? renderIcon('CheckCircleIcon', 'success h-6 w-6')
+              : renderIcon('XCircleIcon', 'error h-6 w-6')}
+          </p>
+        ),
+      })
+    ) ?? [];
+
+  const columns: Icolumn[] = [
+    {
+      field: 'title',
+      use: 'Resource title',
+    },
+    {
+      field: 'resourceTypeComponent',
+      use: 'Type',
+    },
+    {
+      field: 'dataFreeComponent',
+      use: 'Data free?',
+    },
+    {
+      field: 'numberLikes',
+      use: '# of likes',
+    },
+    {
+      field: 'updatedDate',
+      use: 'Last updated',
+    },
+  ];
 
   const clearFilters = () => {
     setStartDate('');
     setEndDate('');
-    setTypeFilter([]);
-    setLanguageFilter([]);
+    setDataFreeFilter([]);
+    setLikesFilter([]);
   };
 
-  useEffect(() => {
-    if (selectedTab) {
-      clearFilters();
-      setShowFilter(false);
+  const isFilterActive =
+    !!dataFreeFilter?.length ||
+    !!startDate ||
+    !!endDate ||
+    !!likesFilter?.length;
+
+  const noContentText = useMemo(() => {
+    if (isFilterActive) {
+      return 'No results found. Try changing the filters selected';
     }
-  }, [selectedTab]);
+    return 'No entries found';
+  }, [isFilterActive]);
 
-  if (tableData && displayFields) {
-    return (
-      <div>
-        <div className="flex flex-col">
-          <div className="mb-8 flex flex-col items-center gap-2 md:justify-between lg:flex-row">
-            <div className="bg-adminPortalBg relative w-full rounded-md lg:w-6/12">
-              <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                <SearchIcon className="text-textMid h-5 w-5" />
-              </span>
-              <input
-                id="search-input"
-                className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
-                placeholder={searchText}
-                onChange={onSearch}
-              />
-            </div>
-            <div className="mt-0  flex w-10/12 justify-between sm:mt-0  sm:ml-4">
-              {(selectedTab === 2 || selectedTab === 3) && (
-                <div className="pr-2 ">
-                  <span className=" text-lg font-medium leading-6 text-gray-900">
-                    <button
-                      onClick={() => setShowFilter(!showFilter)}
-                      id="dropdownHoverButton"
-                      className={`${
-                        numberOfFilters
-                          ? ' bg-secondary'
-                          : 'border-secondary border-2 bg-white'
-                      } focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium ${
-                        numberOfFilters ? 'text-white' : 'text-textMid'
-                      } hover:bg-gray-300 focus:ring-2`}
-                      type="button"
-                    >
-                      <div className="flex items-center gap-1">
-                        <Typography
-                          className="truncate"
-                          type="help"
-                          color={numberOfFilters ? 'white' : 'textLight'}
-                          text={renderFilterButtonText}
-                        />
-                        {!showFilter ? (
-                          <span>
-                            <ChevronDownIcon
-                              className={`h-6 w-6 ${
-                                numberOfFilters
-                                  ? 'text-white'
-                                  : 'text-textLight'
-                              }`}
-                            />
-                          </span>
-                        ) : (
-                          <span>
-                            <ChevronUpIcon
-                              className={`h-6 w-6 ${
-                                numberOfFilters
-                                  ? 'text-white'
-                                  : 'text-textLight'
-                              }`}
-                            />
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  </span>
-                </div>
-              )}
-              {hasPermission(PermissionEnum.create_static) && (
-                <button
-                  onClick={() => {
-                    hasPermission(PermissionEnum.update_static) &&
-                      viewSelectedRow();
-                  }}
-                  type="button"
-                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
-                >
-                  <PlusIcon width="22px" className="pl-1" />
-                  Add Resource
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="pb-5 sm:flex sm:items-center sm:justify-between"></div>
-          {showFilter && (
-            <div className="mb-4 grid auto-cols-min grid-cols-5 items-center">
-              {!filterDateAdded && (
-                <div
-                  onClick={() => setFilterDateAdded(!filterDateAdded)}
-                  className="mr-1"
-                >
-                  <Dropdown
-                    fillType="filled"
-                    textColor={'textLight'}
-                    fillColor={endDate ? 'secondary' : 'adminPortalBg'}
-                    placeholder={dateDropdownValue || 'Last updated'}
-                    labelColor={endDate ? 'white' : 'textLight'}
-                    list={[]}
-                    onChange={(item) => {}}
-                    className="w-full text-sm text-white"
-                  />
-                </div>
-              )}
+  const [deactivateResources, { loading: deactivating }] = useMutation(
+    DeleteMultipleResources,
+    {
+      variables: {
+        ids: [],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
 
-              {filterDateAdded && (
-                <div>
-                  <ReactDatePicker
-                    selected={startDate}
-                    onChange={onChange}
-                    startDate={startDate}
-                    endDate={endDate}
-                    selectsRange={true}
-                    inline
-                    shouldCloseOnSelect={true}
-                  />
-                </div>
-              )}
-              {selectedTab === 3 && (
-                <>
-                  <div className="mr-2 flex items-center gap-2">
-                    <SearchDropDown<string>
-                      displayMenuOverlay={true}
-                      className={'mr-1 w-full'}
-                      menuItemClassName={
-                        'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                      }
-                      overlayTopOffset={'120'}
-                      options={searchByActivityTypeOptions}
-                      selectedOptions={typeFilter}
-                      onChange={setTypeFilter}
-                      placeholder={'Types'}
-                      multiple={true}
-                      color={'secondary'}
-                      info={{
-                        name: `Types:`,
-                      }}
-                      bgColor="adminPortalBg"
-                    />
-                  </div>
-                </>
-              )}
-              <div className="mr-2 flex items-center gap-2">
-                <SearchDropDown<string>
-                  displayMenuOverlay={true}
-                  className={'mr-1 w-full'}
-                  menuItemClassName={
-                    'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-                  }
-                  overlayTopOffset={'120'}
-                  options={sortByLanguageOptions}
-                  selectedOptions={languageFilter}
-                  onChange={setLanguageFilter}
-                  placeholder={'Languages'}
-                  multiple={true}
-                  color={'secondary'}
-                  info={{
-                    name: `Languages:`,
-                  }}
-                  bgColor="adminPortalBg"
-                />
-              </div>
+  const deactivateResource = useCallback(() => {
+    deactivateResources({
+      variables: {
+        ids: selectedResources?.map((item) => item?.userId),
+      },
+    })
+      .then((res) => {
+        if (res.data?.bulkDeleteResource?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Deleted ${res.data?.bulkDeleteResource?.success.length} Resources!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          refetchContent();
+          setSelectedResources([]);
+          handleResetSelectedRows();
+        }
+        if (res.data?.bulkDeleteResource?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Deleted ${res.data?.bulkDeleteResource?.failed.length} Resources!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          setSelectedResources([]);
+          handleResetSelectedRows();
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to delete',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  }, [deactivateResources, refetchContent, selectedResources, setNotification]);
 
-              <div className=" flex-end flex">
-                <button
-                  onClick={clearFilters}
-                  type="button"
-                  className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
-                >
-                  Clear All
-                </button>
-              </div>
-              <div></div>
-            </div>
-          )}
-          <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-                {renderTables}
-              </div>
-            </div>
-          </div>
+  const handleBulkDelete = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <AlertModal
+          title={`Are you sure you want to delete ${
+            selectedResources?.length - inactiveResources?.length
+          } items?`}
+          message={`Practitioners will no longer have access to these resources.`}
+          btnText={['Yes, delete', 'No, Cancel']}
+          hasAlert={isAllInactive || inactiveResources?.length > 0}
+          alertMessage={`Note: ${inactiveResources?.length} deleted.`}
+          alertType="error"
+          onCancel={() => {
+            onClose();
+            setSelectedResources([]);
+            handleResetSelectedRows();
+          }}
+          onSubmit={() => {
+            deactivateResource();
+            onClose();
+          }}
+        />
+      ),
+    });
+  }, [
+    deactivateResource,
+    dialog,
+    inactiveResources?.length,
+    isAllInactive,
+    selectedResources?.length,
+  ]);
+
+  return (
+    <>
+      <div className=" h-full rounded-2xl ">
+        <div className="rounded-xl bg-white ">
+          <Table
+            watchMode={true}
+            ref={tableRef}
+            rows={rows}
+            columns={columns}
+            onClearFilters={clearFilters}
+            onChangeSelectedRows={setSelectedResources}
+            onClickRow={viewSelectedRow}
+            noContentText={noContentText}
+            loading={{
+              isLoading: tableData === undefined || loadingContent,
+              size: 'medium',
+              spinnerColor: 'adminPortalBg',
+              backgroundColor: 'secondary',
+            }}
+            actionButton={{
+              text: 'Add Resource',
+              onClick: () => viewSelectedRow(),
+              icon: 'PlusIcon',
+            }}
+            search={{
+              placeholder: 'Search by title or content...',
+              onChange: search,
+            }}
+            bulkActions={[
+              {
+                type: 'outlined',
+                color: 'tertiary',
+                textColor:
+                  deactivating || isAllInactive ? 'uiLight' : 'tertiary',
+                icon: 'TrashIcon',
+                text: 'Delete',
+                isLoading: deactivating,
+                disabled: deactivating || isAllInactive,
+                onClick: handleBulkDelete,
+              },
+            ]}
+            filters={[
+              {
+                dateFormat: 'd MMM yyyy',
+                className: 'w-64 h-11 mt-1 border-2 border-transparent',
+                isFullWidth: false,
+                colour: !!startDate ? 'secondary' : 'adminPortalBg',
+                textColour: !!startDate ? 'white' : 'textMid',
+                placeholderText: 'Date inserted',
+                type: 'date-picker',
+                showChevronIcon: true,
+                chevronIconColour: !!startDate ? 'white' : 'primary',
+                hideCalendarIcon: true,
+                selected: startDate,
+                onChange,
+                startDate,
+                endDate,
+                selectsRange: true,
+                shouldCloseOnSelect: true,
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'ml-20 w-11/12',
+                options: sortByDataFreeOptions,
+                selectedOptions: dataFreeFilter,
+                onChange: setDataFreeFilter,
+                placeholder: 'Datafree',
+                multiple: true,
+                info: { name: 'Datafree :' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'ml-20 w-11/12',
+                options: sortByLikeOptions,
+                selectedOptions: likesFilter,
+                onChange: setLikesFilter,
+                placeholder: 'Likes',
+                multiple: true,
+                info: { name: 'Likes :' },
+              },
+            ]}
+          />
         </div>
       </div>
-    );
-  } else {
-    return <ContentLoader />;
-  }
+    </>
+  );
 }
