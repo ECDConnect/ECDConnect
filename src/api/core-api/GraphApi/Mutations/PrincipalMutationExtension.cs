@@ -399,7 +399,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.AcceptedDate = DateTime.Now;
                 status.Leaving = false;
 
-                notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
+                //notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
             }
 
             // expire the invite after accept or reject

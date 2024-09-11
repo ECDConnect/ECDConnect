@@ -239,29 +239,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var updateResult = dbRepo.Update(updateClass);
                 }
                 //send notification of change to Coach
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                var principal = userManager.FindByIdAsync(updateClass.UserId).Result;
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "PrincipalOrFAA",
-                    ReplacementValue = principal.FirstName + " " + principal.Surname
-                });
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "ProgrammeName",
-                    ReplacementValue = updateClass.Name != null ? updateClass.Name : ""
-                });
+                /* List<TagsReplacements> replacements = new List<TagsReplacements>();
+                 var principal = userManager.FindByIdAsync(updateClass.UserId).Result;
+                 replacements.Add(new TagsReplacements()
+                 {
+                     FindValue = "PrincipalOrFAA",
+                     ReplacementValue = principal.FirstName + " " + principal.Surname
+                 });
+                 replacements.Add(new TagsReplacements()
+                 {
+                     FindValue = "ProgrammeName",
+                     ReplacementValue = updateClass.Name != null ? updateClass.Name : ""
+                 });
 
-                var practitioner = practitionerRepo.GetByUserId(updateClass.UserId.ToString());
-                if (practitioner != null && practitioner.CoachHierarchy != null && practitioner.IsRegistered == true && practitioner.IsPrincipal == true)
-                {
-                    var coachToSend = userManager.FindByIdAsync(practitioner.CoachHierarchy).Result;
-                    if (coachToSend != null)
-                    {
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null,
-                            new List<RelatedEntity> { new RelatedEntity(practitioner.UserId.Value, "ApplicationUser") });
-                    }
-                }
+                 var practitioner = practitionerRepo.GetByUserId(updateClass.UserId.ToString());
+                 if (practitioner != null && practitioner.CoachHierarchy != null && practitioner.IsRegistered == true && practitioner.IsPrincipal == true)
+                 {
+                     var coachToSend = userManager.FindByIdAsync(practitioner.CoachHierarchy).Result;
+                     if (coachToSend != null)
+                     {
+                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachAddresUpdatedScheduleVisit, DateTime.Now.Date, coachToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null,
+                             new List<RelatedEntity> { new RelatedEntity(practitioner.UserId.Value, "ApplicationUser") });
+                     }
+                 }*/
             }
 
             return updateClass;

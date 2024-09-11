@@ -17,7 +17,7 @@ public class MonthlyNotificationChecks : CronJobService
 
     public override async Task DoWork(CancellationToken cancellationToken)
     {
-        if (DateTime.Now.Day == 1)
+       /* if (DateTime.Now.Day == 1)
         { //only run on 1st of month
             var service = GetRequiredService<INotificationTasksService>();
             await service.MonthlyTopPointsEarnerNotification();
@@ -25,6 +25,6 @@ public class MonthlyNotificationChecks : CronJobService
             {
                 await service.YearlyPointsSummaryNotification();
             }
-        }
+        }*/
     }
 }

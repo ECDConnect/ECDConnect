@@ -121,9 +121,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 hcw.UpdatedBy = applicationUserId.ToString();
                 var updatedRecord = hcwRepo.Update(hcw);
 
-                // Check notifications
-                healthCareWorkerManager.OnRemoveCheckNotifications(hcwId);
-
                 return new PortalUserHCWModel(updatedRecord);
             }
 

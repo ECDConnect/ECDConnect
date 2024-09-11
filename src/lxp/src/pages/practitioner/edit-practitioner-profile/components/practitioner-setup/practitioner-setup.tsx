@@ -36,6 +36,8 @@ import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.act
 import { ClassroomService } from '@/services/ClassroomService';
 import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { notificationActions } from '@/store/notifications';
+import { useTenant } from '@/hooks/useTenant';
+import { Message } from '@/models/messages/messages';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -62,8 +64,37 @@ export const PractitionerSetup = ({
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
+  const tenant = useTenant();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const principalNotification: Message[] = [
+    {
+      reference: `practitioner-profile`,
+      // Check if user skip the link to a principal step
+      title:
+        practitioner?.progress === 1.0
+          ? 'Join your preschool team!'
+          : 'Join or add a preschool!',
+      message:
+        practitioner?.progress === 1.0
+          ? `Ask your principal to sign up for ${tenant?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
+          : 'Set up your preschool or connect with your principal.',
+      dateCreated: new Date().toISOString(),
+      priority: 6,
+      viewOnDashboard: true,
+      area: 'practitioner',
+      icon: 'SwitchVerticalIcon',
+      color: 'primary',
+      actionText: 'Get started',
+      viewType: 'Hub',
+      routeConfig: {
+        route: ROUTES.PRINCIPAL.SETUP_PROFILE,
+      },
+    },
+  ];
 
   const getPractitionerResponse = async () => {
+    setIsLoading(true);
     const principalHierarchy = practitioner?.principalHierarchy!;
     const userId = user?.id!;
     const accepted = practitionerToProgramme!;
@@ -91,7 +122,13 @@ export const PractitionerSetup = ({
       await appDispatch(classroomsActions.resetClassroomState());
     }
 
-    appDispatch(notificationActions.resetNotificationState());
+    await appDispatch(notificationActions.resetNotificationState());
+
+    await appDispatch(
+      notificationActions.addNotifications(principalNotification)
+    );
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -194,7 +231,7 @@ export const PractitionerSetup = ({
               />
             )}
 
-            {practitionerToProgramme && practitioner?.shareInfo && (
+            {practitionerToProgramme && practitioner?.shareInfo !== true && (
               <>
                 <Typography
                   type="h4"
@@ -239,6 +276,7 @@ export const PractitionerSetup = ({
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"
+            isLoading={isLoading}
             disabled={
               (practitionerToProgramme === true &&
                 !allowPermissions &&
@@ -248,14 +286,14 @@ export const PractitionerSetup = ({
             }
             onClick={
               practitionerToProgramme === false
-                ? () => {
-                    getPractitionerResponse();
+                ? async () => {
+                    await getPractitionerResponse();
                     history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
-                    checkClassroomNeedsToBeRemove();
+                    await checkClassroomNeedsToBeRemove();
                   }
-                : () => {
-                    getPractitionerResponse();
-                    onSubmit({
+                : async () => {
+                    await getPractitionerResponse();
+                    await onSubmit({
                       practitionerToProgramme: !!practitionerToProgramme,
                       allowPermissions: !!allowPermissions,
                     });

@@ -217,7 +217,7 @@ export const ChildProgressReportsList: React.FC = () => {
                       childId: routeState.childId,
                     })
                   }
-                  className="mt-auto w-full"
+                  className="w-full"
                   size="small"
                   color="quatenary"
                   type={'filled'}
@@ -229,7 +229,7 @@ export const ChildProgressReportsList: React.FC = () => {
               {!!currentReportingPeriod && (
                 <Button
                   onClick={() => trackProgress()}
-                  className="w-full"
+                  className="mt-4 w-full"
                   size="small"
                   color="quatenary"
                   type={

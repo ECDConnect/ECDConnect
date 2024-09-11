@@ -15,6 +15,9 @@ export const ContentTypes = {
   MORE_INFORMATION: 'MoreInformation',
   INFO_PAGES: 'Info Pages',
   TOPIC: 'Topic',
+  THEME: 'Theme',
+  ACTIVITY: 'Activity',
+  CLASSROOMBUSINESSRESOURCE: 'ClassroomBusinessResource',
 };
 
 export const ContentForms = {

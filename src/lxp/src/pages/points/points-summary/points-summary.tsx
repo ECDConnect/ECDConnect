@@ -46,6 +46,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { pointsTodoItems } from '@/store/points/points.actions';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
+import { BusinessTabItems } from '@/pages/business/business.types';
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
@@ -63,6 +64,9 @@ export const PointsSummary: React.FC = () => {
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
+  const attendancePermission = practitioner?.permissions?.find(
+    (item) => item?.permissionName === PermissionsNames.take_attendance
+  );
 
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
@@ -76,7 +80,7 @@ export const PointsSummary: React.FC = () => {
   // );
   const pointsTotalForYear = useSelector(pointsSelectors.getTotalYearPoints);
 
-  const [pointsShareData, setPointsShareData] = useState<any>();
+  const pointsShareData = useSelector(pointsSelectors.getPointsShareData);
 
   const getPointsToDoItems = useCallback(async () => {
     const response = dispatch(
@@ -86,13 +90,15 @@ export const PointsSummary: React.FC = () => {
   }, [dispatch, practitioner?.userId]);
 
   const getshareData = useCallback(async () => {
-    const response = await new PointsService(userAuth?.auth_token!).sharedData(
-      practitioner?.userId!,
-      true
+    const response = await dispatch(
+      pointsThunkActions.sharedData({
+        userId: practitioner?.userId!,
+        isMonthly: true,
+      })
     );
-    setPointsShareData(response);
+
     return response;
-  }, [practitioner?.userId, userAuth?.auth_token]);
+  }, [dispatch, practitioner?.userId]);
 
   const getYearPoints = useCallback(async () => {
     const response = await new PointsService(
@@ -101,11 +107,24 @@ export const PointsSummary: React.FC = () => {
     return response;
   }, [practitioner?.userId, userAuth?.auth_token]);
 
-  const todoListFiltered = pointActivitiesItems.filter((el) => {
-    return pointsShareData?.activityDetail.some((f: any) => {
-      return f.activity !== el.activity;
-    });
-  });
+  const todoListFiltered = !practitioner?.isPrincipal
+    ? pointActivitiesItems
+        ?.filter((item) => item?.activity !== 'Income/expenses added')
+        ?.filter((item2) =>
+          attendancePermission?.isActive !== true
+            ? item2?.activity !== 'Attendance registers saved'
+            : item2
+        )
+        ?.filter((el) => {
+          return pointsShareData?.activityDetail?.some((f: any) => {
+            return f.activity !== el.activity;
+          });
+        })
+    : pointActivitiesItems.filter((el) => {
+        return pointsShareData?.activityDetail?.some((f: any) => {
+          return f.activity !== el.activity;
+        });
+      });
 
   const getCurrentPointsToDo = useMemo(() => {
     if (pointsToDo) {
@@ -477,7 +496,10 @@ export const PointsSummary: React.FC = () => {
           !pointsToDo?.savedIncomeOrExpense &&
           !pointsToDo?.savedIncomeOrExpense &&
           practitioner?.isPrincipal
-            ? () => history.push(ROUTES.BUSINESS)
+            ? () =>
+                history.push(ROUTES.BUSINESS, {
+                  activeTabIndex: BusinessTabItems.MONEY,
+                })
             : pointsToDo?.isPartOfPreschool &&
               !pointsToDo?.savedIncomeOrExpense &&
               !pointsToDo?.savedIncomeOrExpense &&
@@ -516,7 +538,8 @@ export const PointsSummary: React.FC = () => {
             : pointsToDo?.savedIncomeOrExpense ||
               pointsToDo?.savedIncomeOrExpense ||
               (!practitioner?.isPrincipal &&
-                planActivitiesPermission?.isActive === false &&
+                (planActivitiesPermission?.isActive === false ||
+                  planActivitiesPermission?.isActive === undefined) &&
                 pointsToDo?.isPartOfPreschool)
             ? 'quatenary'
             : 'bg-uiLight'
@@ -526,7 +549,8 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.savedIncomeOrExpense ||
           pointsToDo?.savedIncomeOrExpense ||
           (!practitioner?.isPrincipal &&
-            planActivitiesPermission?.isActive === false &&
+            (planActivitiesPermission?.isActive === false ||
+              planActivitiesPermission?.isActive === undefined) &&
             !pointsToDo?.viewedCommunitySection)
             ? () => history.push(ROUTES.COMMUNITY.WELCOME)
             : () => {},
@@ -536,7 +560,8 @@ export const PointsSummary: React.FC = () => {
           : pointsToDo?.savedIncomeOrExpense ||
             pointsToDo?.savedIncomeOrExpense ||
             (!practitioner?.isPrincipal &&
-              planActivitiesPermission?.isActive === false &&
+              (planActivitiesPermission?.isActive === false ||
+                planActivitiesPermission?.isActive === undefined) &&
               pointsToDo?.isPartOfPreschool)
           ? 'quatenaryBg'
           : 'adminPortalBg',
@@ -954,7 +979,13 @@ export const PointsSummary: React.FC = () => {
               className="mt-5 py-6"
               mainText={renderTodoText}
               currentPoints={getCurrentPointsToDo}
-              maxPoints={4}
+              maxPoints={
+                practitioner?.isPrincipal ||
+                (!practitioner?.isPrincipal &&
+                  planActivitiesPermission?.isActive === true)
+                  ? 4
+                  : 3
+              }
               barBgColour="white"
               barColour={renderPointsToDoProgressBarColor}
               bgColour={renderPointsToDoScoreCardBgColor}
@@ -1018,22 +1049,22 @@ export const PointsSummary: React.FC = () => {
             <CelebrationCard
               image={getEmoji(
                 pointsShareData?.userRankingData
-                  ?.comparativeTargetPercentageColor
+                  ?.comparativeTargetPercentageColor!
               )}
               primaryMessage={
-                pointsShareData?.userRankingData?.comparativePrimaryMessage
+                pointsShareData?.userRankingData?.comparativePrimaryMessage!
               }
               secondaryMessage={
-                pointsShareData?.userRankingData?.comparativeSecondaryMessage
+                pointsShareData?.userRankingData?.comparativeSecondaryMessage!
               }
               primaryTextColour={getTitleColor(
                 pointsShareData?.userRankingData
-                  ?.comparativeTargetPercentageColor
+                  ?.comparativeTargetPercentageColor!
               )}
               secondaryTextColour="black"
               backgroundColour={getBgColor(
                 pointsShareData?.userRankingData
-                  ?.comparativeTargetPercentageColor
+                  ?.comparativeTargetPercentageColor!
               )}
             />
           ) : null}
@@ -1086,34 +1117,7 @@ export const PointsSummary: React.FC = () => {
                 'MMMM'
               )}:`}
             />
-          ) : (
-            0
-          )}
-          {/* {!!pointsTodoList &&
-            pointsTodoList.map((pointsLibraryScore, index) => {
-              return (
-                <PointsProgressCard
-                  key={'points_' + index}
-                  currentPoints={pointsLibraryScore.pointsTotal}
-                  maxPoints={
-                    pointsLibraryScore.maxMonthlyPoints !== 0
-                      ? pointsLibraryScore.maxMonthlyPoints
-                      : pointsLibraryScore.maxYearlyPoints
-                  }
-                  description={pointsLibraryScore.todoDescription || 'Unknown'}
-                  badgeImage={
-                    <Badge
-                      style={{
-                        objectFit: 'cover',
-                        width: '100%',
-                        height: '100%',
-                      }}
-                      fill="var(--primary)"
-                    />
-                  }
-                />
-              );
-            })} */}
+          ) : null}
           {!!todoListFiltered &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
@@ -1227,8 +1231,8 @@ export const PointsSummary: React.FC = () => {
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Month"
-          pointsTotal={pointsShareData?.total}
-          pointsSummaries={pointsShareData?.activityDetail}
+          pointsTotal={String(pointsShareData?.total)}
+          pointsSummaries={pointsShareData?.activityDetail as any}
           userFullName={
             practitioner?.user?.surname
               ? `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`

@@ -45,5 +45,5 @@ export interface UpdateUsernameModel {
 
 export interface PortalConsentModel {
   locale: string;
-  type: string;
+  name: string;
 }

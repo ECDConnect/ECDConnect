@@ -59,7 +59,7 @@ export const initialThemeColours: ThemeColours = {
   uiMidDark: '#5e557a',
   uiMid: '#827c93',
   uiLight: '#cac5d8',
-  uiBg: '#F3F1F9',
+  uiBg: '#EFF6FA',
   modalBg: '#cac5d8',
   errorMain: '#ED1414',
   errorDark: '#D20000',

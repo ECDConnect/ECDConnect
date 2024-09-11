@@ -184,7 +184,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             _leagueRepo.InsertMany(newLeagues);
 
-            CheckAndExpireNotifications(startDate, endDate, TemplateTypeConstants.LeagueSetupUnassignedClinics);
         }
 
         public List<PortalLeagueModel> GetLeagues(DateTime? startDate, DateTime? endDate, string searchString = null, Guid? districtId = null, PagedQueryInput pagingInput = null)
@@ -260,7 +259,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             var startDate = LeagueHelpers.GetNextSeasonStartDate();
             var endDate = LeagueHelpers.GetNextSeasonEndDate();
-            CheckAndExpireNotifications(startDate, endDate, TemplateTypeConstants.LeagueSetupUnassignedClinics);
         }
 
         public void AddClinicToLeague(Guid leagueId, Guid clinicId)
@@ -291,7 +289,6 @@ namespace EcdLink.Api.CoreApi.Services
                 TenantId = Constants.Tenants.GrowGreatTenantId,
             });
 
-            CheckAndExpireNotifications(startDate, endDate, TemplateTypeConstants.UnassignedClinics);
         }
 
         public void EditLeague(Guid leagueId, string name, List<Guid> clinicsToAdd, List<Guid> clinicsToRemove)
@@ -349,26 +346,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             _leagueRepo.Update(league);
 
-            CheckAndExpireNotifications(LeagueHelpers.GetCurrentSeasonStartDate(), LeagueHelpers.GetCurrentSeasonEndDate(), TemplateTypeConstants.LeagueSetupUnassignedClinics);
-        }
-
-        private void CheckAndExpireNotifications(DateTime startDate, DateTime endDate, string notificationTemplate)
-        {
-            var anyUnassignedClinics = _clinicRepo.GetAll()
-                .Where(x => !x.Leagues.Any(x => x.IsActive && x.League.IsActive && x.League.StartDate == startDate && x.League.EndDate == endDate))
-                .Any();
-
-            if (anyUnassignedClinics)
-            {
-                return;
-            }
-
-            var adminUsers = _applicationUserManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
-
-            foreach (var user in adminUsers)
-            {
-                _notificationService.ExpireNotificationsTypesForUser(user.Id.ToString(), notificationTemplate);
-            }
         }
 
 

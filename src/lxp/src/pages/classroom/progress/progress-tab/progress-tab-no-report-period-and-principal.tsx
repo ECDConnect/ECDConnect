@@ -3,7 +3,13 @@ import { Button, Typography } from '@ecdlink/ui';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import { useHistory } from 'react-router';
 
-export const ProgressTabNoReportPeriodAndPrincipal: React.FC = () => {
+interface ProgressTabNoReportPeriodAndPrincipalProps {
+  messageReference?: string;
+}
+
+export const ProgressTabNoReportPeriodAndPrincipal: React.FC<
+  ProgressTabNoReportPeriodAndPrincipalProps
+> = ({ messageReference }) => {
   const history = useHistory();
 
   return (
@@ -24,7 +30,11 @@ export const ProgressTabNoReportPeriodAndPrincipal: React.FC = () => {
         type={'body'}
       />
       <Button
-        onClick={() => history.push(ROUTES.PROGRESS_SETUP_REPORTING_PERIODS)}
+        onClick={() =>
+          history.push(ROUTES.PROGRESS_SETUP_REPORTING_PERIODS, {
+            messageReference,
+          })
+        }
         className="mt-4 w-full"
         size="small"
         color="quatenary"

@@ -6,6 +6,11 @@ import { useMemo, useRef } from 'react';
 import { ProgresseportsSummaryPdf } from './reports-summary-pdf';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ProgressTrackingService } from '@/services/ProgressTrackingService';
+import { authSelectors } from '@/store/auth';
+import { pointsThunkActions } from '@/store/points';
 
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
@@ -14,6 +19,10 @@ export type ProgressViewReportsSummaryState = {
 
 export const ProgressViewReportsSummary: React.FC = () => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
+
+  const userAuth = useSelector(authSelectors.getAuthUser);
 
   const { state: routeState } = useLocation<ProgressViewReportsSummaryState>();
 
@@ -61,6 +70,25 @@ export const ProgressViewReportsSummary: React.FC = () => {
   );
 
   const classPractitioner = practitioner || currentPractitioner;
+
+  const addPoints = async () => {
+    if (isOnline) {
+      await new ProgressTrackingService(
+        userAuth?.auth_token || ''
+      ).classroomProgressSummaryDownloaded(routeState.classroomGroupId);
+
+      const currentDate = new Date();
+      const oneYearAgo = new Date();
+      oneYearAgo.setMonth(currentDate.getMonth() - 12);
+      appDispatch(
+        pointsThunkActions.getPointsSummaryForUser({
+          userId: userAuth?.id!,
+          startDate: oneYearAgo,
+          endDate: currentDate,
+        })
+      ).unwrap();
+    }
+  };
 
   return (
     <BannerWrapper
@@ -185,6 +213,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
               shareRef.current!,
               shareRef.current?.offsetWidth || 750
             );
+            addPoints();
           }}
           className="mt-4 mb-4 w-full"
           size="normal"

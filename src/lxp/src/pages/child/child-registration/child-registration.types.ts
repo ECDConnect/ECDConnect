@@ -19,4 +19,5 @@ export interface ChildRegistrationRouteState {
   childId?: string;
   childDetails?: ChildBasicInfoModel;
   practitionerId?: string;
+  notificationReference?: string;
 }

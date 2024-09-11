@@ -51,9 +51,10 @@ export const getOpenConsent = createAsyncThunk<
   // eslint-disable-next-line no-empty-pattern
   async ({ locale, name }, { rejectWithValue }) => {
     try {
-      let content = await new ContentConsentService(locale, '').getOpenConsent(
+      let content = await new ContentConsentService(
+        locale,
         name
-      );
+      ).getOpenConsent(name);
 
       if (!content) {
         return rejectWithValue('Error getting Terms And Conditions');

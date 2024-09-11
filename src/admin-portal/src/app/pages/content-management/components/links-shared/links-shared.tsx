@@ -264,7 +264,7 @@ export const LinksShared = ({
         textColor="white"
         text="Save & publish"
         icon="SaveIcon"
-        className="w-full rounded-2xl py-2 px-20 hover:opacity-80 md:w-auto"
+        className="mt-3 w-full rounded-2xl py-2 px-20 hover:opacity-80 md:w-auto"
       />
     </form>
   );

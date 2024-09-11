@@ -801,6 +801,27 @@ export const CoachPractitionerJourney = () => {
     );
   }
 
+  //add coming soon
+  const isComingSoon = true;
+
+  if (isComingSoon) {
+    return (
+      <BannerWrapper
+        size="small"
+        renderOverflow
+        displayOffline={!isOnline}
+        title="Site Visits"
+        subTitle={`${practitionerFirstName} ${practitioner?.user?.surname}`}
+        onBack={() => history.goBack()}
+        className="p-4"
+        renderBorder
+        isLoading={isLoadingTimeline}
+      >
+        <Typography color="textDark" text={`Coming soon`} type={'h2'} />
+      </BannerWrapper>
+    );
+  }
+
   return (
     <BannerWrapper
       size="small"

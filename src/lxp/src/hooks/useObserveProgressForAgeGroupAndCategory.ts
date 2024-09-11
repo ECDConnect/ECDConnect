@@ -171,30 +171,6 @@ export const useObserveProgressForAgeGroupAndCategory = (
         value,
       })
     );
-
-    // Check if we have added all observations
-    const report = childReports.find((x) => x.childId === childId);
-
-    if (!report) {
-      return;
-    }
-
-    const allObsMade = skillsForAgeGroup.every((x) => {
-      return (
-        skillId === x.id ||
-        (report.report.skillObservations || []).findIndex(
-          (y) => y.skillId === x.id
-        ) >= 0
-      );
-    });
-    if (allObsMade) {
-      appDispatch(
-        progressTrackingActions.markAllSkillsObserved({
-          childId,
-          reportingPeriodId,
-        })
-      );
-    }
   };
 
   const syncChildProgressReports = () => {

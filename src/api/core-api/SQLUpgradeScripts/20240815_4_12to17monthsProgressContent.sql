@@ -465,9 +465,6 @@ VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_va
 INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
 VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_ageGroups_id, content_age_group_12to17_18to23_24to29_id, null, null, CURRENT_DATE, CURRENT_DATE);
 
-INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
-VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_image_id, 'data:image/png;base64,', null, null, CURRENT_DATE, CURRENT_DATE);  
-
 -- update subcategory skills
 select cvs."Id", cvs."Value" || ',' || content_id into content_type_subcategory_skills_id, content_type_subcategory_new_skills_ids
 from "ContentValue" cvn
@@ -495,9 +492,6 @@ VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_va
 
 INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
 VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_ageGroups_id, content_age_group_12to17_18to23_24to29_30to35_id, null, null, CURRENT_DATE, CURRENT_DATE);
-
-INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
-VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_image_id, 'data:image/png;base64,', null, null, CURRENT_DATE, CURRENT_DATE);  
 
 -- update subcategory skills
 select cvs."Id", cvs."Value" || ',' || content_id into content_type_subcategory_skills_id, content_type_subcategory_new_skills_ids
