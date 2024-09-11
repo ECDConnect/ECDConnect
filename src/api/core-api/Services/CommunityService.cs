@@ -36,7 +36,6 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly ApplicationUserManager _userManager;
         private readonly IPointsEngineService _pointsService;
 
-
         public CommunityService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -460,8 +459,15 @@ namespace EcdLink.Api.CoreApi.Services
                     item.UpdatedDate = DateTime.Now;
                     item.UpdatedBy = _applicationUserId.ToString();
                     _communityProfileConnectionRepo.Update(item);
+
                 }
-                _pointsService.CalculateConnectWithAnotherUser(input.UserId);
+                var pointUserIds = accepted.Select(x => (Guid)x.FromProfile.UserId).Distinct().ToList();
+                pointUserIds.AddRange(accepted.Select(x => (Guid)x.ToProfile.UserId).Distinct().ToList());
+                foreach (var item in pointUserIds)
+                {
+                    _pointsService.CalculateConnectWithAnotherUser(item);
+
+                }
             }
             if (input.UserIdsToReject != null && input.UserIdsToReject.Any())
             {
@@ -475,6 +481,7 @@ namespace EcdLink.Api.CoreApi.Services
                     _communityProfileConnectionRepo.Update(item);
                 }
             }
+            _notificationService.ExpireNotificationsTypesForUser(input.UserId.ToString(), TemplateTypeConstants.OpenCommunityConnections);
             return GetCommunityProfile(input.UserId);
         }
 

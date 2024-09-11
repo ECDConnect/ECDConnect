@@ -20,6 +20,7 @@ import LanguageSelector from '../language-selector/language-selector';
 import * as styles from './article.styles';
 import { ArticleProps } from './article.types';
 import { LanguageCode } from '@/i18n/types';
+import { useTenant } from '@/hooks/useTenant';
 
 export const Article = ({
   visible = true,
@@ -40,6 +41,8 @@ export const Article = ({
   ]);
   const consent = useSelector(contentConsentSelectors.getConsent);
   const dialog = useDialog();
+  const tenant = useTenant();
+  const organisationName = tenant.tenant?.organisationName!;
 
   useEffect(() => {
     if (consent && visible && !isOpen) {
@@ -61,22 +64,40 @@ export const Article = ({
     const content = await appDispatch(
       contentConsentThunkActions.getOpenConsent({
         locale: locale,
-        type: consentEnumType,
+        name: consentEnumType,
       })
     ).unwrap();
 
-    if (!!content && content.length > 0) {
-      const consentFilter = isFromRegistration
-        ? content?.[0]
-        : content.find((x) => x.name === consentEnumType);
-      setArticleText(consentFilter?.description ?? '');
-      setAvailableLanguages(
-        consentFilter?.availableLanguages
-          ? consentFilter.availableLanguages?.map((item) => {
-              return item?.locale as LanguageCode;
-            })
-          : [language.locale as LanguageCode]
-      );
+    if (content && content.length > 0) {
+      const consentFilter = content?.[0];
+      var description = consentFilter?.description ?? '';
+
+      if (!consentFilter || description.length === 0) {
+        presentUnavailableAlert();
+      }
+
+      if (
+        description.length > 0 &&
+        description.indexOf('[organisationName]') !== -1
+      ) {
+        const replacedDescription = description.replaceAll(
+          '[organisationName]',
+          organisationName
+        );
+        setArticleText(replacedDescription ?? '');
+      } else {
+        setArticleText(description);
+      }
+
+      if (consentFilter?.availableLanguages !== undefined) {
+        setAvailableLanguages(
+          consentFilter?.availableLanguages
+            ? consentFilter.availableLanguages?.map((item) => {
+                return item?.locale as LanguageCode;
+              })
+            : [language.locale as LanguageCode]
+        );
+      }
     } else {
       setArticleText('');
       presentUnavailableAlert();
@@ -85,20 +106,31 @@ export const Article = ({
 
   const getContent = async (consentList: ConsentDto[] | undefined) => {
     const consentFilter = consentList?.find((x) => x.name === consentEnumType);
+    var description = consentFilter?.description ?? '';
 
-    if (!consentFilter || consentFilter.description?.length === 0) {
+    if (!consentFilter || description.length === 0) {
       presentUnavailableAlert();
     }
 
-    setAvailableLanguages(
-      consentFilter?.availableLanguages
-        ? consentFilter.availableLanguages?.map((item) => {
-            return item?.locale as LanguageCode;
-          })
-        : [language.locale as LanguageCode]
-    );
+    if (description.indexOf('[organisationName]') !== -1) {
+      const replacedDescription = description.replaceAll(
+        '[organisationName]',
+        organisationName
+      );
+      setArticleText(replacedDescription ?? '');
+    } else {
+      setArticleText(description);
+    }
 
-    setArticleText(consentFilter?.description ?? '');
+    if (consentFilter?.availableLanguages !== undefined) {
+      setAvailableLanguages(
+        consentFilter?.availableLanguages
+          ? consentFilter.availableLanguages?.map((item) => {
+              return item?.locale as LanguageCode;
+            })
+          : [language.locale as LanguageCode]
+      );
+    }
   };
 
   const presentUnavailableAlert = () => {

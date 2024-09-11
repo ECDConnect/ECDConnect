@@ -482,9 +482,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             var updatedClinic = _clinicRepo.Update(clinic);
 
-            // Expire notification
-            _notificationService.DeleteGroupNotifications(TemplateTypeConstants.ClinicMissingTeamLead, updatedClinic.Id);
-
             return updatedClinic;
         }
 
@@ -692,23 +689,6 @@ namespace EcdLink.Api.CoreApi.Services
                     });
                 }
                 _clinicMeetingCHWsInFieldRepo.InsertMany(clinicMeetingParticipantInFields);
-            }
-
-            // Remove notifications when the report has been submitted for the TLs clinic(s) for the month
-            var notification = _messageRepo.GetAll().Where(x =>
-                    x.MessageProtocol == "portal" &&
-                    x.MessageTemplateType == TemplateTypeConstants.GGPortalTLMissingMonthlyReport &&
-                    x.To == clinicMeeting.TeamLeadId.ToString() &&
-                    x.IsActive == true &&
-                    (x.MessageDate.Value.Date.Year == clinicMeeting.MeetingDate.Year && x.MessageDate.Value.Date.Month == clinicMeeting.MeetingDate.Month)
-                ).FirstOrDefault();
-
-            if (notification != null)
-            {
-                notification.IsActive = false;
-                notification.MessageEndDate = DateTime.Now;
-                notification.UpdatedDate = DateTime.Now;
-                _messageRepo.Update(notification);
             }
 
             return clinicMeeting;

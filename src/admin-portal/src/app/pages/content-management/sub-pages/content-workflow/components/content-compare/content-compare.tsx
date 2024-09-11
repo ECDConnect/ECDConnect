@@ -20,6 +20,8 @@ import CreateTheme from '../create-theme/create-theme';
 import CreateStory from '../../../content-list/components/create-story/create-story';
 import EditSkills from '../edit-skills/edit-skills';
 import EditCategory from '../edit-category/edit-category';
+import { ContentTypes } from '../../../../../../constants/content-management';
+import CreateResource from '../create-resource/create-resource';
 
 export interface ContentCompareProps {
   contentView: ContentManagementView;
@@ -253,6 +255,34 @@ export default function ContentCompare({
             </div>
           </>
         );
+      case ContentTypes.CLASSROOMBUSINESSRESOURCE:
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateResource
+                        key={'secondLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedSecondLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                        choosedSectionTitle={choosedSectionTitle}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
       case 'ProgressTrackingCategory':
         return (
           <>
@@ -362,6 +392,7 @@ export default function ContentCompare({
                 {contentType?.name === ContentName.StoryBook ||
                 contentType?.name === ContentName.Theme ||
                 contentType?.name === ContentName.ProgressTrackingCategory ||
+                contentType?.name === ContentName.ClassroomBusinessResource ||
                 contentType?.name === ContentName.ProgressTrackingSkill ? (
                   handleNoDynamicForms(contentType?.name)
                 ) : (
@@ -397,6 +428,7 @@ export default function ContentCompare({
                 {contentType?.name === ContentName.StoryBook ||
                 contentType?.name === ContentName.Theme ||
                 contentType?.name === ContentName.ProgressTrackingCategory ||
+                contentType?.name === ContentName.ClassroomBusinessResource ||
                 contentType?.name === ContentName.ProgressTrackingSkill ? (
                   handleSecondLanguageNoDynamicForms(contentType?.name)
                 ) : (

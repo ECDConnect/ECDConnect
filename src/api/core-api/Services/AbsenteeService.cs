@@ -215,7 +215,11 @@ namespace ECDLink.Api.CoreApi.Services
                             absentee.Reason = reason;
                     }
                     _absenteeRepo.Update(absentee);
-                    _reassignmentService.EditReassignment(absentee.UserId.ToString(), reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
+                    if (reassignedToPractitioner != null)
+                    {
+                        _reassignmentService.EditReassignment(absentee.UserId.ToString(), reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
+                    }
+                        
                     return absentee;
                 }
             }

@@ -1,21 +1,15 @@
 import {
   ActivityDto,
-  ChildDto,
   PractitionerProgressReportSummaryDto,
   ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
-  ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
-import { ProgressTrackingState } from '.';
-import { ChildProgressSubCategoryAssessment } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import { RootState } from '../types';
 import { ProgressSkill } from '@/models/progress/progress-skill';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
-import { getCurrentProgressReportPeriod as getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
-import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { ProgressTrackingCategoriesByLocale } from './progress-tracking.types';
 
 // CATEGORIES
@@ -122,7 +116,7 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
             name: skill.name,
             description: skill.description,
             supportImage: skill.supportImage,
-            ageGroups: (skill.ageGroups || []).map((x) => ({ id: x.id })),
+            isReverseScored: skill.isReverseScored,
             subCategory: {
               id: subCategory?.id,
               name: subCategory?.name,
@@ -136,96 +130,6 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
       );
 
       return detailedSkills;
-    }
-  );
-
-export const getProgressTrackingSkillById = (skillId: number) =>
-  createSelector(
-    getProgressTrackingSkills(),
-    (skills: ProgressTrackingSkillDto[]) => skills.find((x) => x.id === skillId)
-  );
-
-export const getProgressTrackingSkillsBySubCategoryId = (
-  subCategoryId: number
-) =>
-  createSelector(
-    getProgressTrackingSubCategories(),
-    (subCategories: ProgressTrackingSubCategoryDto[]) => {
-      return subCategories.find((x) => x.id === subCategoryId)?.skills;
-    }
-  );
-
-export const getChildProgressSubCategoryAssessments = (
-  subCategoryIds?: number[],
-  levelId?: number
-) =>
-  createSelector(
-    getProgressTrackingSkills(),
-    getProgressTrackingSubCategories(),
-    (state: RootState) => state.progressTracking.progressTrackingLevels,
-    (
-      progressTrackingSkills: ProgressTrackingSkillDto[],
-      progressTrackingSubCategories: ProgressTrackingSubCategoryDto[],
-      progressTrackingLevels: ProgressTrackingLevelDto[] | undefined
-    ) => {
-      if (!subCategoryIds || !levelId) return;
-
-      const subCategoryAssessments: ChildProgressSubCategoryAssessment[] = [];
-
-      const subCategories: ProgressTrackingSubCategoryDto[] =
-        progressTrackingSubCategories
-          .filter((subCategory) => subCategoryIds.includes(subCategory.id || 0))
-          .sort((a, b) => (b?.id || 0) - (a?.id || 0)) || [];
-
-      const level = progressTrackingLevels?.find(
-        (level) => level.id === levelId
-      );
-      // redux state only has the id in the data.
-      const subCategoriesSkillIds: number[] = subCategories?.flatMap(
-        (subCategory) => subCategory.skills.map((skill) => skill.id)
-      );
-
-      const subCategoryLevelSkills = progressTrackingSkills.filter(
-        (skill) =>
-          subCategoriesSkillIds.includes(skill.id) &&
-          skill.level[0]?.id === levelId
-      );
-
-      if (subCategories && level && subCategoryLevelSkills) {
-        for (const subCategory of subCategories) {
-          const subCategorySkillIds = subCategory.skills.map((x) => x.id);
-
-          const subCategorySkills = subCategoryLevelSkills
-            .filter((skill) => subCategorySkillIds.includes(skill.id))
-            .sort((a, b) => (b?.id || 0) - (a?.id || 0));
-
-          const assessment: ChildProgressSubCategoryAssessment = {
-            subCategory: subCategory,
-            level: level,
-            skills: subCategorySkills,
-          };
-
-          subCategoryAssessments.push(assessment);
-        }
-      }
-
-      return subCategoryAssessments;
-    }
-  );
-
-// LEVELS
-export const getProgressTrackingLevels = (
-  state: RootState
-): ProgressTrackingLevelDto[] =>
-  state.progressTracking.progressTrackingLevels || [];
-
-export const getProgressTrackingLevelById = (levelId?: number) =>
-  createSelector(
-    (state: RootState) => state.progressTracking.progressTrackingLevels,
-    (levels: ProgressTrackingLevelDto[] | undefined) => {
-      if (!levels || !levelId) return;
-
-      return levels.find((level) => level.id === levelId);
     }
   );
 
@@ -250,36 +154,24 @@ export const getPractitionerProgressReportSummary = (
 
 export const getSkillsForAgeGroup = (ageGroupId: number) =>
   createSelector(
-    getProgressTrackingSkills(),
     getProgressTrackingSkillsWithCategoryInfo(),
-    (skills: ProgressTrackingSkillDto[], detailedSkills: ProgressSkill[]) => {
-      console.log('detailedSkills', detailedSkills);
-      // Get all skills for age group
-      const ageSkills = skills.filter((x) =>
-        x.ageGroups?.some((x) => x.id === ageGroupId)
-      );
-
-      return detailedSkills.filter((x) => ageSkills.some((y) => y.id === x.id));
-    }
-  );
-
-export const getCurrentObservationsForChild = (childId: string) =>
-  createSelector(
-    getCurrentProgressReportPeriod(),
-    (state: RootState) => state.progressTracking.childProgressReports,
+    (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
     (
-      currentReportPeriod: ProgressReportPeriod | undefined,
-      childProgressReports: ChildProgressReport[]
-    ) => {
-      if (!currentReportPeriod) {
-        return undefined;
+      detailedSkills: ProgressSkill[],
+      ageGroups: ProgressTrackingAgeGroupDto[]
+    ): ProgressSkill[] => {
+      const ageGroup = ageGroups.find((x) => x.id === ageGroupId);
+
+      if (!ageGroup) {
+        return [];
       }
 
-      return childProgressReports.find(
-        (x) =>
-          x.childId === childId &&
-          x.childProgressReportPeriodId === currentReportPeriod.id
-      );
+      return ageGroup.skills.map((ageGroupSkill) => {
+        const skill = detailedSkills.find(
+          (skill) => skill.id === ageGroupSkill
+        );
+        return skill!;
+      });
     }
   );
 

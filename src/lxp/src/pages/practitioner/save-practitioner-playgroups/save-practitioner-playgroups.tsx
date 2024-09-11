@@ -76,7 +76,7 @@ export const EditPlaygroups: React.FC = () => {
           id: groupedItem.id,
           classroomId: groupedItem.classroomId,
           meetEveryday: isEveryDayClass,
-          name: groupedItem.name,
+          name: groupedItem.name || `Class ${groupedItems?.length}`,
           classroomGroupId: groupedItem.id,
           userId: groupedItem.userId,
           meetingDays: groupedItem.classProgrammes
@@ -162,7 +162,7 @@ export const EditPlaygroups: React.FC = () => {
           id: playG.id,
           classroomGroup: {
             id: playG?.id,
-            name: playG?.name || '',
+            name: playG?.name || `Class ${playgroups?.length}`,
             classroomId: playG?.classroomId,
             isActive: false,
             practitionerId: playG?.userId!,
@@ -229,7 +229,7 @@ export const EditPlaygroups: React.FC = () => {
           const updatedClassroom = await appDispatch(
             classroomsActions.updateClassroomGroup({
               ...currentPlayGroup,
-              name: playGroup.name,
+              name: playGroup.name || `Class ${results?.length}`,
               userId: playGroup.userId!,
               classProgrammes: currentPlayGroupProgrammes,
             })
@@ -248,7 +248,7 @@ export const EditPlaygroups: React.FC = () => {
                   ...currentPlayGroup,
                   classroomId: playGroup?.classroomId!,
                   id: playGroup?.id,
-                  name: playGroup.name,
+                  name: playGroup.name || `Class ${results?.length}`,
                   userId: playGroup.userId,
                   isActive: true,
                   learners: [],

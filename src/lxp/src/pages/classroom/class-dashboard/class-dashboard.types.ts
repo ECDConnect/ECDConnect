@@ -3,6 +3,7 @@ export type ClassDashboardRouteState = {
   programmeStartDate?: Date | undefined;
   fromChildAttendanceReport?: boolean;
   classroomGroupIdFromClassTab?: string;
+  messageReference?: string;
 };
 
 export const enum TabsItems {

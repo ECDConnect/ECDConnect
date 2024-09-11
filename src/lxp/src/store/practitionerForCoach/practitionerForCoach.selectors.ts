@@ -55,10 +55,10 @@ export const getPointsSummaryWithLibraryForPractitioner = (
       const usersPointsSummaries =
         pointsSummariesForUsers[userId].pointsSummaries;
 
-      const pointsSummaries: PointsSummaryDto[] = pointsLibrary.map(
+      const pointsSummaries: PointsSummaryDto[] = pointsLibrary?.map(
         (pointsLibrary) => {
           // Get the points summary for the user for
-          const pointsSummaryForMonth = usersPointsSummaries.find(
+          const pointsSummaryForMonth = usersPointsSummaries?.find(
             (x) =>
               x.month === month &&
               x.year === year &&
@@ -68,11 +68,11 @@ export const getPointsSummaryWithLibraryForPractitioner = (
           // Get the max pointsYTD from all the summaries for the year, this will be out total for the year
           const pointsForYear = Math.max(
             ...usersPointsSummaries
-              .filter(
+              ?.filter(
                 (x) =>
                   x.year === year && x.pointsLibrary?.id === pointsLibrary.id
               )
-              .map((x) => x.pointsYTD)
+              ?.map((x) => x.pointsYTD)
           );
 
           return {
@@ -123,7 +123,7 @@ export const getPointsTotalForYear = (userId: string) =>
       const usersPointsSummaries =
         pointsSummariesForUsers[userId].pointsSummaries;
 
-      pointsLibrary.forEach((activity) => {
+      pointsLibrary?.forEach((activity) => {
         const summariesForActivity = usersPointsSummaries
           .filter(
             (x) => x.year === currentYear && x.pointsLibrary?.id === activity.id

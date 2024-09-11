@@ -93,7 +93,7 @@ export const Step2: React.FC<Step1Props> = ({
 
   return (
     <div className={'h-screen overflow-auto px-4'}>
-      <div className="h-screen overflow-auto pt-2">
+      <div className="mb-12 h-screen overflow-auto pt-2">
         <div className="flex flex-col gap-11">
           <div className="flex w-full justify-center">
             <Card

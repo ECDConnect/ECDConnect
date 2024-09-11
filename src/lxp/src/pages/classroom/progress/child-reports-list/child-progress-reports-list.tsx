@@ -1,4 +1,4 @@
-import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
+import { Alert, BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -7,8 +7,10 @@ import { analyticsActions } from '@store/analytics';
 import { ReactComponent as NoProgressEmoticon } from '../../../../assets/ECD_Connect_emoji4.svg';
 import { ReactComponent as ComingSoonIcon } from '../../../../assets/icon/coming_soon.svg';
 import ROUTES from '@/routes/routes';
-import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
+import { useProgressForChild } from '@/hooks/useProgressForChild';
 import { ProgressReportsList } from './reports-list';
+import ProgressWalkthroughWrapper from '../walkthrough/progress-walkthrough-wrapper';
+import { useAppContext } from '@/walkthrougContext';
 
 export type ChildProgressReportsList = {
   childId: string;
@@ -19,15 +21,18 @@ export const ChildProgressReportsList: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const { state: routeState } = useLocation<ChildProgressReportsList>();
+  const {
+    state: { run: isWalkthrough },
+  } = useAppContext();
 
   const { childId } = routeState;
   const {
     child,
     currentAgeGroup,
     currentReportingPeriod,
-    currentReport,
-    completedReports,
-  } = useObserveProgressForChild(childId);
+    detailedReports,
+    ageInMonths,
+  } = useProgressForChild(childId);
 
   useEffect(() => {
     if (!isOnline) {
@@ -47,6 +52,48 @@ export const ChildProgressReportsList: React.FC = () => {
     });
   };
 
+  const walkthroughReports = [
+    {
+      id: 'walkthrough',
+      childId: 'walkthrough',
+      childProgressReportPeriodId: 'walkthrough',
+      reportingPeriodNumber: 2,
+      reportingPeriodStartDate: new Date(new Date().getFullYear(), 8, 1),
+      reportingPeriodEndDate: new Date(new Date().getFullYear(), 8, 31),
+      skillsToWorkOn: [],
+      unknownPercentage: 0,
+      unknownCount: 0,
+      skillObservations: [],
+      ageInMonthsAtReport: 3,
+    },
+    {
+      id: 'walkthrough',
+      childId: 'walkthrough',
+      childProgressReportPeriodId: 'walkthrough',
+      reportingPeriodNumber: 1,
+      reportingPeriodStartDate: new Date(new Date().getFullYear(), 6, 1),
+      reportingPeriodEndDate: new Date(new Date().getFullYear(), 6, 30),
+      skillsToWorkOn: [],
+      unknownPercentage: 0,
+      unknownCount: 0,
+      skillObservations: [],
+      ageInMonthsAtReport: 3,
+    },
+    {
+      id: 'walkthrough',
+      childId: 'walkthrough',
+      childProgressReportPeriodId: 'walkthrough',
+      reportingPeriodNumber: 2,
+      reportingPeriodStartDate: new Date(new Date().getFullYear() - 1, 8, 1),
+      reportingPeriodEndDate: new Date(new Date().getFullYear() - 1, 8, 31),
+      skillsToWorkOn: [],
+      unknownPercentage: 0,
+      unknownCount: 0,
+      skillObservations: [],
+      ageInMonthsAtReport: 3,
+    },
+  ];
+
   return (
     <BannerWrapper
       size={'small'}
@@ -55,11 +102,13 @@ export const ChildProgressReportsList: React.FC = () => {
         history.replace(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
       }
     >
+      <ProgressWalkthroughWrapper />
       <div className={'flex h-full flex-col px-4 pb-4'}>
         {/* No reports and no age group for child */}
-        {!currentAgeGroup &&
+        {!isWalkthrough &&
+          !currentAgeGroup &&
           !!currentReportingPeriod &&
-          (!completedReports || completedReports.length === 0) && (
+          (!detailedReports || detailedReports.length === 0) && (
             <div className="mt-2 flex flex-col justify-center p-8">
               <div>
                 <Typography
@@ -83,10 +132,10 @@ export const ChildProgressReportsList: React.FC = () => {
             </div>
           )}
         {/* NO REPORTS */}
-        {!!currentReportingPeriod &&
-          !!currentAgeGroup &&
-          !currentReport &&
-          (!completedReports || completedReports.length === 0) && (
+        {!isWalkthrough &&
+          !!ageInMonths &&
+          ageInMonths <= 60 &&
+          (!detailedReports || detailedReports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography
                 className={'mt-4'}
@@ -115,22 +164,31 @@ export const ChildProgressReportsList: React.FC = () => {
                   />
                 </div>
               </div>
-              <Button
-                onClick={() => trackProgress()}
-                className="mt-auto w-full"
-                size="small"
-                color="quatenary"
-                type="filled"
-                icon="PencilIcon"
-                text="Start tracking progress"
-                textColor="white"
-              />
+              <div className="mt-auto">
+                {!currentReportingPeriod && (
+                  <Alert
+                    type="info"
+                    title="All reporting periods for the year are closed. You can keep tracking progress next year."
+                  />
+                )}
+                {!!currentReportingPeriod && (
+                  <Button
+                    onClick={() => trackProgress()}
+                    className="w-full"
+                    size="small"
+                    color="quatenary"
+                    type="filled"
+                    icon="PencilIcon"
+                    text="Start tracking progress"
+                    textColor="white"
+                  />
+                )}
+              </div>
             </div>
           )}
 
         {/* REPORTS LIST */}
-        {(!!currentReport ||
-          (!!completedReports && !!completedReports.length)) && (
+        {(isWalkthrough || (!!detailedReports && !!detailedReports.length)) && (
           <div className="flex h-full w-full flex-col">
             <Typography
               className={'mt-4 mb-4'}
@@ -138,49 +196,60 @@ export const ChildProgressReportsList: React.FC = () => {
               color={'textDark'}
               text={`${child?.user?.firstName}'s reports`}
             />
-            <ProgressReportsList
-              childId={childId}
-              currentReport={currentReport}
-              pastReports={completedReports}
-            />
-            {!!completedReports && !!completedReports.length && (
-              <Button
-                onClick={() =>
-                  history.push(ROUTES.PROGRESS_SHARE_REPORT, {
-                    childId: routeState.childId,
-                  })
-                }
-                className="mt-auto w-full"
-                size="small"
-                color="quatenary"
-                type={'filled'}
-                textColor={'white'}
-                icon="ShareIcon"
-                text="Share a report"
+            <div id="pastReports">
+              <ProgressReportsList
+                childId={childId}
+                reports={isWalkthrough ? walkthroughReports : detailedReports}
               />
-            )}
-            {!!currentReport && (
-              <Button
-                onClick={() => trackProgress()}
-                className="mt-4 w-full"
-                size="small"
-                color="quatenary"
-                type={
-                  !!completedReports && !!completedReports.length
-                    ? 'outlined'
-                    : 'filled'
-                }
-                textColor={
-                  !!completedReports && !!completedReports.length
-                    ? 'quatenary'
-                    : 'white'
-                }
-                icon="ArrowCircleRightIcon"
-                text="Track progress"
-              />
-            )}
+            </div>
+
+            <div className="mt-auto">
+              {!isWalkthrough && !currentReportingPeriod && (
+                <Alert
+                  type="info"
+                  title="All reporting periods for the year are closed. You can keep tracking progress next year."
+                />
+              )}
+              {!!detailedReports && !!detailedReports.length && (
+                <Button
+                  onClick={() =>
+                    history.push(ROUTES.PROGRESS_SHARE_REPORT, {
+                      childId: routeState.childId,
+                    })
+                  }
+                  className="w-full"
+                  size="small"
+                  color="quatenary"
+                  type={'filled'}
+                  textColor={'white'}
+                  icon="ShareIcon"
+                  text="Share a report"
+                />
+              )}
+              {!!currentReportingPeriod && (
+                <Button
+                  onClick={() => trackProgress()}
+                  className="mt-4 w-full"
+                  size="small"
+                  color="quatenary"
+                  type={
+                    !!detailedReports && !!detailedReports.length
+                      ? 'outlined'
+                      : 'filled'
+                  }
+                  textColor={
+                    !!detailedReports && !!detailedReports.length
+                      ? 'quatenary'
+                      : 'white'
+                  }
+                  icon="ArrowCircleRightIcon"
+                  text="Track progress"
+                />
+              )}
+            </div>
           </div>
         )}
+        <div id="progressEnd" />
       </div>
     </BannerWrapper>
   );

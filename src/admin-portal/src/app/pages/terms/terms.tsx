@@ -3,7 +3,7 @@ import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 import { LoadingSpinner, Typography } from '@ecdlink/ui';
-import { Config } from '@ecdlink/core';
+import { Config, ContentConsentTypeEnum } from '@ecdlink/core';
 import { LanguagesModels } from './terms-types';
 import LanguageSelector from '../../components/language-selector/language-selector';
 
@@ -31,10 +31,10 @@ export function TermsPage(props: any) {
       operationName: 'openConsent',
       variables: {
         locale: selectedLocale,
-        type: 'TermsAndConditions',
+        type: ContentConsentTypeEnum.AdminTermsAndConditions,
       },
       query:
-        'query openConsent($locale: String, $type: String) {  openConsent(locale: $locale, type: $type) {    id    name    type    description  }}',
+        'query openConsent($locale: String, $name: String) {  openConsent(locale: $locale, name: $name) {    id    name    type    description  }}',
     });
     setIsLoading(true);
     fetch(Config.graphQlApi, {

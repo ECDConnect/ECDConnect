@@ -9,8 +9,7 @@ import {
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { differenceInDays, format } from 'date-fns';
-import { RoleSystemNameEnum } from '@ecdlink/core';
+import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -31,17 +30,15 @@ export class IncompletePractitionerInformationNotificationValidator
       classroomData: classroomState,
       practitioner: practitionerState,
       trainee: traineeState,
+      tenant: tenantState,
     } = this.store.getState();
+
+    const principalClassroom = localStorage?.getItem(
+      LocalStorageKeys?.classroomForInvitedUser
+    );
 
     if (!classroomState || !userState) return [];
     const isOnStipend = practitionerState?.practitioner?.isOnStipend;
-
-    const differenceInDaysResult = practitionerState?.practitioner?.startDate
-      ? differenceInDays(
-          new Date(),
-          new Date(practitionerState?.practitioner?.startDate)
-        )
-      : null;
 
     /**
      * Notification is returned when
@@ -76,7 +73,10 @@ export class IncompletePractitionerInformationNotificationValidator
         (!addedByPrincipal &&
           practitionerState?.practitioner?.progress === 0) ||
         (practitionerState?.practitioner?.progress === 1.0 &&
-          !addedByPrincipal);
+          !addedByPrincipal) ||
+        (practitionerState?.practitioner?.progress === 2 &&
+          !addedByPrincipal &&
+          !classroomState?.classroom?.name);
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (isTrainee) {
@@ -140,10 +140,10 @@ export class IncompletePractitionerInformationNotificationValidator
                 : 'Join or add a preschool!',
             message:
               practitionerState?.practitioner?.progress === 1.0
-                ? 'Ask your principal to sign up for AppName and add you to the preschool, or fill in your preschool code now.'
+                ? `Ask your principal to sign up for ${tenantState?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
                 : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
-            priority: 15,
+            priority: 6,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',
@@ -165,16 +165,20 @@ export class IncompletePractitionerInformationNotificationValidator
               practitionerState?.practitioner?.progress === 1.0
                 ? 'Join your preschool team!'
                 : practitionerState?.practitioner?.principalHierarchy
-                ? `You have been added to ${classroomState?.classroom?.name}`
+                ? `You have been added to ${
+                    classroomState?.classroom?.name
+                      ? classroomState?.classroom?.name
+                      : principalClassroom
+                  }`
                 : 'Join or add a preschool!',
             message:
               practitionerState?.practitioner?.progress === 1.0
-                ? 'Ask your principal to sign up for AppName and add you to the preschool, or fill in your preschool code now.'
+                ? `Ask your principal to sign up for ${tenantState?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
                 : practitionerState?.practitioner?.principalHierarchy
                 ? 'Connect with your principal & manage your classes.'
                 : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.lower,
+            priority: 7,
             viewOnDashboard: true,
             area: 'practitioner',
             icon: 'SwitchVerticalIcon',

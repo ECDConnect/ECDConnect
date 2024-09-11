@@ -102,7 +102,7 @@ export const TenantThemeProvider: React.FC<TenantThemeProviderProps> = (
       : props.defaultThemeUrl;
 
   return (
-    <ThemeProvider themeEndPoint={themeUrl} overRideCache={true}>
+    <ThemeProvider themeEndPoint={props.defaultThemeUrl} overRideCache={true}>
       {props.children}
     </ThemeProvider>
   );

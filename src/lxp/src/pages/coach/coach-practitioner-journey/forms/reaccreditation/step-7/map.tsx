@@ -1,4 +1,9 @@
-import { Button, Typography, CustomGoogleMap, Address } from '@ecdlink/ui';
+import {
+  Button,
+  Typography,
+  CustomGoogleMap,
+  GoogleMapGeoCodeAddressType,
+} from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
 
 interface Step7MapProps {
@@ -7,7 +12,10 @@ interface Step7MapProps {
 }
 const COMPONENT_HEIGHT = 280;
 
-const getInfo = (address: Address[] | undefined, type: string) =>
+const getInfo = (
+  address: GoogleMapGeoCodeAddressType[] | undefined,
+  type: string
+) =>
   address?.find((item) =>
     item?.types.find((currentType) => currentType.includes(type))
   )?.short_name;
@@ -20,7 +28,7 @@ export const Step7Map: React.FC<Step7MapProps> = ({ onClose, onSubmit }) => {
     onClose();
   };
 
-  const getAddress = useCallback((address?: Address[]) => {
+  const getAddress = useCallback((address?: GoogleMapGeoCodeAddressType[]) => {
     const number = getInfo(address, 'street_number');
     const street = getInfo(address, 'route');
     const city = getInfo(address, 'administrative_area_level_2');
@@ -34,10 +42,7 @@ export const Step7Map: React.FC<Step7MapProps> = ({ onClose, onSubmit }) => {
 
   return (
     <div>
-      <CustomGoogleMap
-        height={window.screen.height - COMPONENT_HEIGHT}
-        onChange={getAddress}
-      />
+      <CustomGoogleMap height={window.screen.height - COMPONENT_HEIGHT} />
       <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">
         <Typography
           type="h2"

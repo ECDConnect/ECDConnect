@@ -101,7 +101,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeProps> = ({
   );
 
   const disabled =
-    !!statement?.downloaded ||
+    (dateReceived && !!statement?.downloaded) ||
     (!!incomeItem && isBefore(new Date(incomeItem.dateReceived), sixtyDaysAgo));
 
   const payTypesList = payTypes?.map((p) => {

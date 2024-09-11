@@ -18,9 +18,9 @@ export const CoachPractitionerPointsMonthSummary: React.FC<
       practitionerId,
       date
     )
-  ).filter((x) => x.pointsTotal > 0);
+  )?.filter((x) => x.pointsTotal > 0);
 
-  const pointsTotal = pointsEarnedForMonth.reduce(
+  const pointsTotal = pointsEarnedForMonth?.reduce(
     (total, current) => (total += current.pointsTotal),
     0
   );
@@ -30,7 +30,7 @@ export const CoachPractitionerPointsMonthSummary: React.FC<
       <Divider dividerType="dashed" className="mt-3 mb-3" />
       <Typography type={'h1'} color="black" text={format(date, 'MMMM')} />
       <Typography type={'h2'} color="black" text={`${pointsTotal} points`} />
-      {pointsEarnedForMonth.map((pointsLibraryScore) => {
+      {pointsEarnedForMonth?.map((pointsLibraryScore) => {
         return (
           <div key={pointsLibraryScore.pointsLibraryId} className="mt-3">
             <PointsDetailsCard

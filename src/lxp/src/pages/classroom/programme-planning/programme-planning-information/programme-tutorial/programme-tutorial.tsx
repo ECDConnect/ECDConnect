@@ -33,7 +33,7 @@ import { ProgrammeDashboardRouteParams } from '../../programme-dashboard/program
 import { useTenant } from '@/hooks/useTenant';
 import { useAppContext } from '@/walkthrougContext';
 import { WalkthroughModal } from '@/components/walkthrough/modal';
-import { useDialog } from '@ecdlink/core';
+import { MoreInformationTypeEnum, useDialog } from '@ecdlink/core';
 import { ProgrammeThemeRouteState } from '../../programme-theme/programme-theme.types';
 const { usePDF } = require('react-to-pdf');
 
@@ -132,7 +132,10 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
   useEffect(() => {
     setIsLoading(true);
     new InfoService()
-      .getMoreInformation('Programme', selectedLanguage)
+      .getMoreInformation(
+        MoreInformationTypeEnum.LearningThroughPlay,
+        selectedLanguage
+      )
       .then((info) => {
         setData(info);
         setIsLoading(false);

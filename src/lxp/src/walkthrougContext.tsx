@@ -9,6 +9,8 @@ const appState = {
   tourActive: false,
   attendanceStatus: true,
   enableButton: true,
+  childId: '',
+  language: 'en-za',
 };
 
 export const AppContext = createContext({

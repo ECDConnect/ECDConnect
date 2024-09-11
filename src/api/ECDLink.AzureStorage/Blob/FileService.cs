@@ -146,9 +146,10 @@ namespace ECDLink.AzureStorage.Blob
                 var blobContainer = BlobClient.GetBlobContainerClient(container);
                 await blobContainer.CreateIfNotExistsAsync();
                 var blobClient = blobContainer.GetBlobClient(fileReference);
-                await blobClient.DeleteIfExistsAsync();
+                
+                //await blobClient.DeleteIfExistsAsync();
 
-                await blobClient.UploadAsync(file);
+                await blobClient.UploadAsync(file, true);
                 file.Dispose();
 
                 var fileUrl = blobClient.Uri.AbsoluteUri;

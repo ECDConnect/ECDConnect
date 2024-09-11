@@ -175,14 +175,6 @@ const ROUTES = {
   PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP:
     '/progress-view-reports-summary-select',
   PROGRESS_VIEW_REPORTS_SUMMARY: '/progress-view-reports-summary',
-  CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
-  CHILD_PROGRESS_OBSERVATION_REPORT: '/child-progress-observation-report',
-  COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS:
-    '/completed-child-progress-observation-reports',
-  VIEW_CHILD_PROGRESS_OBSERVATION_REPORT:
-    '/view-child-progress-observation-report',
-  DOWNLOAD_CHILD_PROGRESS_OBSERVATION_REPORTS:
-    '/download-child-progress-observation-reports',
   COACH_REGISTRATION: '/coach-registration',
   COACH_SMARTSPACE_CHECK: '/coach-smart-space-check',
   COACH_TRAINEE_ONBOARDING: '/coach-trainee-onboarding',

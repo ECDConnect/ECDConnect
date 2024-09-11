@@ -1,5 +1,6 @@
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.AzureStorage.Blob;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -20,23 +21,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Portal
     public class ThemeMutationExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
-        public async Task<string> UpdateTenantTheme(
+        public Task<string> UpdateTenantTheme(
             [Service] ITenantService tenantService,
             [Service] IFileService fileService, 
             string theme)
         {
             var fileName = TenantExecutionContext.Tenant.Id.ToString() + "_theme.json";
             using MemoryStream fileStream = new MemoryStream(Encoding.UTF8.GetBytes(theme));
-            await fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.Theme);
+            //await fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.Theme);
+            var fileUrl = Task.Run(() => fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.Theme)).Result;
             fileStream.Dispose();
-
-            // Update themePath on tenant if not available
-            if (TenantExecutionContext.Tenant.ThemePath == null)
-            {
-                var themePath = TenantExecutionContext.Tenant.BlobStorageAddress + "/theme/" + fileName;
-                tenantService.UpdateTenantThemePath(TenantExecutionContext.Tenant.Id, themePath);
-            }
-            return fileName;
+           
+            tenantService.UpdateTenantThemePath(TenantExecutionContext.Tenant.Id, fileUrl);
+            
+            return Task.FromResult(fileName);
         }
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]

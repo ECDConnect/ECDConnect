@@ -1,58 +1,20 @@
 import { classNames, TabItem } from '@ecdlink/ui';
 import { useState } from 'react';
-import GADashboard from './components/dashboard-qa/dashboard-qa';
-import PractitionerDashboard from './components/dashboard-practitioner/dashboard-practitioner';
-import ChildrenDashboard from './components/dashboard-children/dashboard-children';
-import MotherDashboard from './components/dashboard-mother/dashboard-mother';
-import HealthWorkerDashboard from './components/dashboard-health-worker/dashboard-health-worker';
-import { useTenant } from '../../hooks/useTenant';
+import GeneralDashboard from './components/dashboard-general/dashboard-general';
 
 // TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 export default function Dashboard() {
-  const tenant = useTenant();
-
   const getNavigationItems = () => {
-    if (tenant.isCHWConnect) {
-      return [
-        {
-          title: 'Analytics',
-          initActive: true,
-          child: <GADashboard />,
-        },
-        {
-          title: 'Health Workers',
-          initActive: false,
-          child: <HealthWorkerDashboard />,
-        },
-        {
-          title: 'Mothers',
-          initActive: false,
-          child: <MotherDashboard />,
-        },
-      ];
-    } else {
-      return [
-        {
-          title: 'Analytics',
-          initActive: true,
-          child: <GADashboard />,
-        },
-        {
-          title: 'Practitioners',
-          initActive: false,
-          child: <PractitionerDashboard />,
-        },
-        {
-          title: 'Children',
-          initActive: false,
-          child: <ChildrenDashboard />,
-        },
-      ];
-    }
+    return [
+      {
+        title: 'General',
+        initActive: true,
+        child: <GeneralDashboard />,
+      },
+    ];
   };
 
   const tabItems = getNavigationItems();
-
   const [currentTab, setCurrentTab] = useState<TabItem>(tabItems[0]);
 
   return (

@@ -109,17 +109,15 @@ export const RemoveChild: React.FC = () => {
       })
     );
     appDispatch(childrenActions.updateChild(updatedChild));
-    appDispatch(
-      childrenThunkActions.updateChild({
-        child: updatedChild,
-        id: String(updatedChild.id),
-      })
-    ).then(() =>
-      // TODO: Migrate this action to be fully handled by the backend
+
+    if (isOnline) {
       appDispatch(
-        childrenThunkActions.calculateChildrenRegistrationRemoval(true)
-      )
-    );
+        childrenThunkActions.updateChild({
+          child: updatedChild,
+          id: String(updatedChild.id),
+        })
+      );
+    }
 
     showMessage({
       message: `Child removed`,

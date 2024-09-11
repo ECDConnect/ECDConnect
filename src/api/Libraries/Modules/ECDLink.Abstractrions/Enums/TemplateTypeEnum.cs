@@ -24,6 +24,7 @@ namespace ECDLink.Abstractrions.Enums
         OAWLAuthCode = 19,
         PrincipalInvitation = 20,
         PreSchoolInvitation = 21,
-        NewTenantSetupInfoReceived = 22
+        NewTenantSetupInfoReceived = 22,
+        WelcomeEmailToNewSuperAdmin = 23
     }
 }

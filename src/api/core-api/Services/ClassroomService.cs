@@ -1,10 +1,12 @@
-﻿using EcdLink.Api.CoreApi.Services.Interfaces;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
 using Microsoft.AspNetCore.Http;
@@ -48,8 +50,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 throw new QueryException("Practitioner not found.");
             }
+
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabelTemplate
+                && !practitioner.IsPrincipalOrAdmin()
+                && practitioner.DateAccepted == null)
+            {
+                return null;
+            }
           
-            if (!practitioner.IsPrincipalOrAdmin() && (practitioner.PrincipalHierarchy == null || practitioner.Progress < 2))
+            if (!practitioner.IsPrincipalOrAdmin() &&  (practitioner.PrincipalHierarchy == null || practitioner.Progress < 2))
             {
                 return _classroomRepo.GetAll()
                     .Where(x =>
@@ -115,6 +124,21 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     && x.UserId.Value == userId
                     && x.Classroom.IsActive)
                 .ToList();
+        }
+
+        public List<PrincipalClassroomModel> GetPrincipalUserIdsForClassesWithoutPractitioners()
+        {
+            return _classroomGroupRepo.GetAll()
+                    .Include(x => x.Classroom)
+                    .Where(x =>
+                        x.IsActive
+                        && !x.UserId.HasValue
+                        && x.Classroom.IsActive
+                        && !x.Classroom.IsDummySchool.Value 
+                        && x.Classroom.UserId.HasValue)
+                    .Select(x => new PrincipalClassroomModel(x.Id, x.Name, x.Classroom.User))
+                    .Distinct()
+                    .ToList();
         }
     }
 }

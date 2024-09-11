@@ -233,9 +233,13 @@ export const PractitionerProfile: React.FC = () => {
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
           if (
-            (classroom && classroom.id) ||
-            (classroomGroups && !missingProgramme) ||
-            isOpenAccess
+            ((classroom &&
+              classroom.id &&
+              classroomGroups &&
+              classroomGroups?.length > 0) ||
+              (classroomGroups && !missingProgramme) ||
+              isOpenAccess) &&
+            !(!classroom && practitioner?.principalHierarchy)
           ) {
             if (isOnline) {
               history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
@@ -290,7 +294,7 @@ export const PractitionerProfile: React.FC = () => {
       displayOffline={!isOnline}
     >
       <TabList
-        className="mb-1 bg-white"
+        className="bg-uiBg mb-1 bg-white"
         tabItems={tabItem}
         setSelectedIndex={selectedTab}
       />
@@ -302,7 +306,7 @@ export const PractitionerProfile: React.FC = () => {
         />
       )}
       <AbsenceCard
-        className="ml-4 mt-5 w-11/12"
+        className="ml-4 mt-5 w-11/12 shadow"
         practitioner={practitioner!}
         handleReassignClass={handleReassignClass}
         practitionerUserId={practitioner?.userId!}

@@ -427,8 +427,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             visit.UpdatedBy = _applicationUserId.ToString();
             _visitRepo.Update(visit);
 
-            _notificationService.ExpireNotificationsTypesForUser(input.PractitionerId, TemplateTypeConstants.CoachVisitRequested);
-
             return true;
         }
         private VisitData GetVisitDataFromInputModel(CMSQuestion input, string visitId, string visitName, string visitSection)

@@ -399,11 +399,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ReplacementValue = trainee.InsertedDate.AddDays(21).ToShortDateString(),
             });
 
-            var userToSend = userManager.FindByIdAsync(trainee.UserId).Result;
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31), false,true,null,
-                relatedEntities: new List<RelatedEntity> { new RelatedEntity(trainee.UserId.Value, "ApplicationUser") });
-
-
             return visit;
         }
 

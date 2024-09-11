@@ -48,4 +48,13 @@ export interface ThemeColorsModel {
   infoMain: string;
   infoDark: string;
   infoBb: string;
+  quatenary: string;
+  quatenaryMain: string;
+  adminPortalBg: string;
+  darkBlue: string;
+  pointsCardBg: string;
+  pointsCardBarBg: string;
+  quatenaryBg: string;
+  adminBackground: string;
+  quinary: string;
 }

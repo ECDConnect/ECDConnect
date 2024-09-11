@@ -27,6 +27,8 @@ export const PractitionerActions = {
   GET_ALL_EXPENSES_FOR_PRACTITIONER: 'getAllExpensesForPractitioner',
   GET_ALL_INCOME_FOR_PRACTITIONER: 'getAllIncomeForPractitioner',
   UPDATE_PRACTITIONER_BUSINESS_WALK_THROUGH:
+    'updatePractitionerProgressWalkthrough',
+  UPDATE_PRACTITIONER_PROGRESS_WALKTHROUGH:
     'updatePractitionerBusinessWalkThrough',
   UPDATE_PRACTITIONER_SHARE_INFO: 'updatePractitionerShareInfo',
   UPDATE_PRINCIPAL_INVITATION: 'updatePrincipalInvitation',
@@ -447,6 +449,31 @@ export const updatePractitionerBusinessWalkThrough = createAsyncThunk<
         return await new PractitionerService(
           userAuth.auth_token
         ).UpdatePractitionerBusinessWalkthrough(userId);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerProgressWalkthrough = createAsyncThunk<
+  boolean | undefined,
+  {
+    userId: string;
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_PROGRESS_WALKTHROUGH,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PractitionerService(
+          userAuth.auth_token
+        ).UpdatePractitionerProgressWalkthrough(userId);
       }
     } catch (err) {
       return rejectWithValue(err);

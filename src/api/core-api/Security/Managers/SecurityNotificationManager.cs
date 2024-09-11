@@ -249,22 +249,38 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 // We need to update the user's email with the organisationEmail, send the mail and then revert
                 adminUser.Email = TenantExecutionContext.Tenant.OrganisationEmail;
                 await _userManager.UpdateNormalizedEmailAsync(adminUser);
-            }
+            
+                var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+                await notificationProvider
+                  .SetMessageTemplate(TemplateTypeEnum.NewTenantSetupInfoReceived)
+                  .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, tenantOrgDetail.ApplicationName)
+                  .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, tenantOrgDetail.OrganisationName)
+                  .SendMessageAsync();
 
-            var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
-            await notificationProvider
-              .SetMessageTemplate(TemplateTypeEnum.NewTenantSetupInfoReceived)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, tenantOrgDetail.ApplicationName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, tenantOrgDetail.OrganisationName)
-              .SendMessageAsync();
-
-            if (TenantExecutionContext.Tenant.OrganisationEmail != null)
-            {
                 // revert email address to previous
                 adminUser.Email = adminEmail;
                 await _userManager.UpdateNormalizedEmailAsync(adminUser);
             }
-
         }
+
+        public async Task SendWelcomeEmailToNewSuperAdminAsync(Guid adminUserId, string firstName, string email)
+        {
+            var adminUser = _userManager.FindByIdAsync(adminUserId).Result;
+            var adminEmail = adminUser.Email;
+
+            adminUser.Email = email;
+            await _userManager.UpdateNormalizedEmailAsync(adminUser);
+
+            var notificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.EMAIL);
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.WelcomeEmailToNewSuperAdmin)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .SendMessageAsync();
+
+            // revert email address to previous
+            adminUser.Email = adminEmail;
+            await _userManager.UpdateNormalizedEmailAsync(adminUser);
+        }
+
     }
 }

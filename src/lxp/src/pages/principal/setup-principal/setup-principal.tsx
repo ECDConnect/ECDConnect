@@ -45,6 +45,8 @@ import { PractitionerSignature } from '../components/practitioner-signature/prac
 import { SelectPractitionerRole } from '../components/select-practitioner-role/select-practitioner-role';
 import { PreschoolCodeCheck } from '../components/preschool-code-check/preschool-code-check';
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
+import { useTenant } from '@/hooks/useTenant';
+import { Message } from '@/models/messages/messages';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -54,6 +56,7 @@ export const SetupPrincipal: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const { syncClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const tenant = useTenant();
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const user = useSelector(userSelectors.getUser);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
@@ -95,6 +98,32 @@ export const SetupPrincipal: React.FC = () => {
     (page === PractitionerSetupSteps.CONFIRM_CLASSES &&
       classesPage === ConfirmClassesSteps.EDIT_CLASS) ||
     confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER;
+
+  const principalNotification: Message[] = [
+    {
+      reference: `practitioner-profile`,
+      // Check if user skip the link to a principal step
+      title:
+        practitioner?.progress === 1.0
+          ? 'Join your preschool team!'
+          : 'Join or add a preschool!',
+      message:
+        practitioner?.progress === 1.0
+          ? `Ask your principal to sign up for ${tenant?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
+          : 'Set up your preschool or connect with your principal.',
+      dateCreated: new Date().toISOString(),
+      priority: 6,
+      viewOnDashboard: true,
+      area: 'practitioner',
+      icon: 'SwitchVerticalIcon',
+      color: 'primary',
+      actionText: 'Get started',
+      viewType: 'Hub',
+      routeConfig: {
+        route: ROUTES.PRINCIPAL.SETUP_PROFILE,
+      },
+    },
+  ];
 
   const { stopService } = useNotificationService();
 
@@ -194,6 +223,9 @@ export const SetupPrincipal: React.FC = () => {
     // Update the principal data
     if (userAuth?.auth_token && user?.id) {
       if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
+        await appDispatch(
+          notificationActions.addNotifications(principalNotification)
+        );
         history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
         return;
       }
@@ -251,6 +283,7 @@ export const SetupPrincipal: React.FC = () => {
               idNumber: principalPractitioner.idNumber,
               firstName: principalPractitioner.firstName,
               lastName: principalPractitioner.surname,
+              preschoolCode: '',
             };
             await new PractitionerService(
               userAuth?.auth_token

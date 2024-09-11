@@ -30,6 +30,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string GoodProgressWith { get; set; }
 
         public string HowCanCaregiverSupport { get; set; }
+
+        public string ClassroomName { get; set; }
+        public string PractitionerName { get; set; }
+        public string PrincipalName { get; set; }
+        public string PrincipalPhoneNumber { get; set; }
     }
 
     public class SkillObservation

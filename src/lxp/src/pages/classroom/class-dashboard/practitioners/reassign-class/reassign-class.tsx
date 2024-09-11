@@ -784,26 +784,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 placeholder={'e.g. personal appointment'}
               />
             )}
-
-            {principalPractitioner && isOneDayLeave === false && (
-              <Dropdown
-                placeholder={'Select practitioner'}
-                list={
-                  practitionersList.filter(
-                    (item) => item?.value !== principalPractitioner?.userId
-                  ) || []
-                }
-                fillType="clear"
-                label={`Which practitioner will be the Funda App Admin during this time?`}
-                subLabel={`Every programme must have one practitioner responsible for submitting income statements and managing the programme.`}
-                fullWidth
-                className={'mt-3 w-full'}
-                selectedValue={principalOrFundaAppAdmin}
-                onChange={(item: any) => {
-                  setPrincipalOrFundaAppAdmin(item);
-                }}
-              />
-            )}
             {allAbsenteeClasses && allAbsenteeClasses?.length > 0
               ? allAbsenteeClasses?.map((item, index) => {
                   if (!item?.className) return null;

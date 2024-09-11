@@ -28,6 +28,14 @@ export type DefaultThemeType = {
   infoMain: string;
   infoDark: string;
   infoBb: string;
+  quatenary: string;
+  quatenaryMain: string;
+  adminPortalBg: string;
+  darkBlue: string;
+  pointsCardBg: string;
+  pointsCardBarBg: string;
+  quatenaryBg: string;
+  adminBackground: string;
   logoUrl: string;
   graphicOverlayUrl: string;
   faviconUrl: string;
@@ -36,6 +44,7 @@ export type DefaultThemeType = {
   fontUrl: string;
   mainHeadingOverrideFontUrl: string;
   darkBackground: string;
+  quinary: string;
 };
 
 export type DefaultThemeColors = Omit<
@@ -66,7 +75,7 @@ export const WhiteLabelTheme: DefaultThemeType = {
   uiMidDark: '#5e557a',
   uiMid: '#827c93',
   uiLight: '#cac5d8',
-  uiBg: '#F3F1F9',
+  uiBg: '#EFF6FA',
   modalBg: '#cac5d8',
   errorMain: '#ED1414',
   errorDark: '#D20000',
@@ -88,6 +97,15 @@ export const WhiteLabelTheme: DefaultThemeType = {
   fontUrl: 'Quicksand, sans-serif',
   mainHeadingOverrideFontUrl: 'Inter, sans-serif',
   darkBackground: '#27385A',
+  quatenary: '#1DBADF',
+  quatenaryMain: '#1DBADF',
+  adminPortalBg: '#EFF6FA',
+  darkBlue: '#27385A',
+  pointsCardBg: '#FEEED7',
+  pointsCardBarBg: '#FCCF8C',
+  quatenaryBg: '#D2F1F9',
+  adminBackground: '#EFF6FA',
+  quinary: '#FFD525',
 };
 
 export const DefaultTheme: DefaultThemeType = {
@@ -106,7 +124,7 @@ export const DefaultTheme: DefaultThemeType = {
   uiMidDark: '#5e557a',
   uiMid: '#827c93',
   uiLight: '#cac5d8',
-  uiBg: '#f3f1f9',
+  uiBg: '#EFF6FA',
   modalBg: '#cac5d8',
   errorMain: '#e74035',
   errorDark: '#99231b',
@@ -128,6 +146,15 @@ export const DefaultTheme: DefaultThemeType = {
   fontUrl: 'Quicksand, sans-serif',
   mainHeadingOverrideFontUrl: 'Inter, sans-serif',
   darkBackground: '#27385A',
+  quatenary: '#1DBADF',
+  quatenaryMain: '#1DBADF',
+  adminPortalBg: '#EFF6FA',
+  darkBlue: '#27385A',
+  pointsCardBg: '#FEEED7',
+  pointsCardBarBg: '#FCCF8C',
+  quatenaryBg: '#D2F1F9',
+  adminBackground: '#EFF6FA',
+  quinary: '#FFD525',
 };
 
 export const DefaultAvatarColors = [

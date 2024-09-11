@@ -1,13 +1,13 @@
 import { Card, Typography } from '@ecdlink/ui';
 import { ChildProgressDetailedSkillToWorkOn } from '@/models/progress/child-progress-report';
 
-export type ProgressCreateReportSkillsToWorkOnSumamryProps = {
+export type ProgressCreateReportSkillsToWorkOnSummaryProps = {
   childFirstname: string;
   skillsToWorkOn: ChildProgressDetailedSkillToWorkOn[];
 };
 
-export const ProgressCreateReportSkillsToWorkOnSumamry: React.FC<
-  ProgressCreateReportSkillsToWorkOnSumamryProps
+export const ProgressCreateReportSkillsToWorkOnSummary: React.FC<
+  ProgressCreateReportSkillsToWorkOnSummaryProps
 > = ({ childFirstname, skillsToWorkOn }) => {
   return (
     <>

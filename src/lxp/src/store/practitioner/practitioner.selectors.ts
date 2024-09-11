@@ -21,7 +21,6 @@ export const getPractitionerByUserId = (id: string) =>
     (state: RootState) => state.practitioner.practitioners,
     (practitioners: PractitionerDto[] | undefined) => {
       if (!practitioners) return;
-
       return practitioners.find((practitioner) => practitioner.userId === id);
     }
   );

@@ -51,9 +51,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (!string.IsNullOrEmpty(input.ProfileImageUrl))
             {
                 var parts = input.ProfileImageUrl.Split(';');
-                if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
-                if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
-                if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
+                if (parts.Length > 1)
+                {
+                    if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
+                    if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
+                    if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
+                }
             }
 
             if (input?.IsAdmin ?? false)
@@ -171,16 +174,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           UserModel input)
         {
             var user = await userManager.FindByIdAsync(id);
+            var userIsAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
+
+            // Check role of user requesting the change
             var currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
+            var currentUserIsSuperAdmin = await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
             if (input is null)
                 throw new QueryException("Input cannot be null.");
 
             if (!string.IsNullOrEmpty(input.ProfileImageUrl))
             {
-                if (!input.ProfilePicIsEmoji.HasValue || (input.ProfilePicIsEmoji.HasValue && !input.ProfilePicIsEmoji.Value))
+                var parts = input.ProfileImageUrl.Split(';');
+                if (parts.Length > 1)
                 {
-                    var parts = input.ProfileImageUrl.Split(';');
                     if (parts.Length != 2) throw new QueryException("Invalid profile image data.");
                     if (!parts[1].StartsWith("base64,")) throw new QueryException("Invalid profile image data.");
                     if (!fileService.IsImageFileType(parts[1].Substring(7))) throw new QueryException("Invalid profile image file type.");
@@ -353,21 +361,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 && user.Email != input.Email
                 && user.Id != currentUserId)
             {
-                user.PendingEmail = input.Email;
-                auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
-                try
+                // if current user is super admin and the user is admin, then we don't verify
+                if (currentUserIsSuperAdmin && userIsAdmin) 
                 {
-                    var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
-                    await securityNotificationManager.RequestVerifyEmailAsync(user, apiUrl);
-                }
-                catch (Exception exception)
+                    auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
+                    user.Email = input.Email;
+                    user.EmailConfirmed = false;
+                } 
+                else
                 {
-                    logger?.LogError("Could not send email verification for change of user email address.", new { userId = user.Id, exception });
+                    user.PendingEmail = input.Email;
+                    auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
+                    try
+                    {
+                        var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
+                        await securityNotificationManager.RequestVerifyEmailAsync(user, apiUrl);
+                    }
+                    catch (Exception exception)
+                    {
+                        logger?.LogError("Could not send email verification for change of user email address.", new { userId = user.Id, exception });
+                    }
+                    // Set email back to original so that it must first be verified.
+                    input.Email = user.Email;
+                    auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
                 }
-
-                // Set email back to original so that it must first be verified.
-                input.Email = user.Email;
-                auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
+               
             }
 
             // If the email is different (or will become unconfirmed)

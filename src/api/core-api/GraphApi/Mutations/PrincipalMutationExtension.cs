@@ -40,7 +40,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                                         string lastName,
                                                         string idNumber,
                                                         string userId,
-                                                        Guid? programmeTypeId)
+                                                        Guid? programmeTypeId,
+                                                        string? preschoolCode = "")
         {
             //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -131,6 +132,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             }
                             // add points for adding practitioner to programme
                             pointsService.CalculateAddNewPractitionerToPreschool(uId);
+                        } else
+                        {
+                            // send message to principal if preschool code is available
+                            if (preschoolCode != "")
+                            {
+                                replacements = new List<TagsReplacements>
+                                {
+                                    new TagsReplacements()
+                                    {
+                                        FindValue = "PractitionerFirstName",
+                                        ReplacementValue = practitioner.User.FirstName
+                                    },
+                                    new TagsReplacements()
+                                    {
+                                        FindValue = "PreschoolName",
+                                        ReplacementValue = programmeName
+                                    }
+                                };
+
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerJoinedWithPreschoolCode, DateTime.Now.Date, principalUser.User, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                            }
                         }
 
                         return practitioner;
@@ -360,10 +382,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     {
                         new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
                         new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName },
-                        new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToShortDateString() },
-                        new TagsReplacements() { FindValue = "PractitionerUserId", ReplacementValue = practitioner.UserId.ToString() }
                     };
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now.Date, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now.Date, principal.User, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
                 }
             }
             else
@@ -378,7 +399,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 status.AcceptedDate = DateTime.Now;
                 status.Leaving = false;
 
-                notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
+                //notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
             }
 
             // expire the invite after accept or reject

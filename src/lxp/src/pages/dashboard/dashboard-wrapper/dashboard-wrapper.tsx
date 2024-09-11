@@ -26,7 +26,7 @@ export default function DashboardWrapper() {
       disableBeacon: true,
     },
     {
-      target: '#wantToConnectWithPrincipal',
+      target: '#wantToConnectWithPrincipal2',
       content: t(
         'Great job! If you want to connect to your principal later or change your details, tap the profile button and go to “Preschool”.'
       ),
@@ -83,14 +83,13 @@ export default function DashboardWrapper() {
 
   const handleCallback = async (data: CallBackProps) => {
     const { action, index, lifecycle, type } = data;
-
     if (type === 'step:after' && index === 0) {
-      setState({ run: true, stepIndex: 1, enableButton: false });
+      // setState({ run: true, stepIndex: 1, enableButton: false });
+      setState({ run: false, stepIndex: 0, tourActive: false });
     } else if (type === 'step:after' && index === 1) {
       if (action === 'next') {
-        setState({ run: true, stepIndex: 2, enableButton: false });
+        setState({ run: false, stepIndex: 0, tourActive: false });
       } else {
-        setState({ run: true, stepIndex: 0 });
       }
     }
   };

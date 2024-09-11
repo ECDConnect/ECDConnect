@@ -1,5 +1,6 @@
-import { ChildProgressReportPeriodDto } from '../classroom/classroom.dto';
-
-export type ProgressReportPeriod = ChildProgressReportPeriodDto & {
+export type ProgressReportPeriod = {
+  id: string;
+  startDate: Date;
+  endDate: Date;
   reportNumber: number;
 };
