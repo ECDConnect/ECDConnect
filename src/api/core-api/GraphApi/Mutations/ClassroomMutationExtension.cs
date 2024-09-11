@@ -150,8 +150,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(input.UserId.Value, "ApplicationUser") });
                     //message the old user they were removed
-                    var oldUserToSend = userManager.FindByIdAsync(previousUser.ToString()).Result;
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(previousUser.Value, "ApplicationUser") });
+                   // var oldUserToSend = userManager.FindByIdAsync(previousUser.ToString()).Result;
+                   // notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now.Date, oldUserToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(previousUser.Value, "ApplicationUser") });
                 }
                 else
                 {
