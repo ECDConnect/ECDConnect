@@ -70,27 +70,6 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7), false, true);
         }
 
-        
-        public async Task<bool> SendUserAssignedToClassNotification(
-[Service] ApplicationUserManager userManager,
-[Service] INotificationService notificationService, string userId, string className, string oldClassName, string principalName)
-        {
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "ClassName",
-                ReplacementValue = className
-            });
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "PrincipalName",
-                ReplacementValue = principalName
-            });
-
-            var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-        }
-
         public async Task<bool> SendPractitionerRemovedFromProgrammeNotification(
 [Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string practitionerName)
