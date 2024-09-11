@@ -98,20 +98,9 @@ export const mapProgressReportDetails = (
     }
   );
 
-  const allObservationsMade =
-    skillsForAgeGroupCount === childReport?.skillObservations.length &&
-    !childReport?.skillObservations.some(
-      (x) => x.value === ProgressSkillValues.DoNotKnow
-    );
-
-  const skillsToWorkOnSelected =
-    childReport?.skillsToWorkOn.length === 4 ||
-    childReport?.skillsToWorkOn.length ===
-      mappedSkills.reduce((count, x) => (x.isNegative ? count + 1 : count), 0);
-
   return {
     isNotStarted: !childReport,
-    isInProgress: allObservationsMade && skillsToWorkOnSelected,
+    isInProgress: !!childReport?.skillObservations.length,
     isObservationsComplete: !!childReport?.observationsCompleteDate,
     report: {
       ...childReport,
