@@ -15,8 +15,6 @@ import Icon from '../../components/icon';
 import InformationPanel from '../../components/information-panel/information-panel';
 import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
-import ggLogo from '../../../assets/gg-logo.svg';
-import DGMTLogo from '../../../assets/dgmt_logo_primary.jpg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import {
   INavigation,
@@ -25,7 +23,6 @@ import {
 } from './shell.types';
 import { useUserRole } from '../../hooks/useUserRole';
 import ROUTES from '../../routes/app.routes-constants';
-import { navigationFromFrontend } from './shell.constants';
 import { useTenant } from '../../hooks/useTenant';
 
 function classNames(...classes: any[]) {
@@ -155,14 +152,6 @@ export default function Shell() {
     }
   }, [user, navigationData, isAdministrator, isSuperAdmin]);
 
-  const getLogoUrl = () => {
-    if (theme && theme.images) {
-      return DGMTLogo;
-    } else {
-      return ggLogo;
-    }
-  };
-
   const signOutClick = useCallback(() => {
     logout();
 
@@ -272,13 +261,6 @@ export default function Shell() {
               </Transition.Child>
               <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
                 <img className="h-100 mb-8" src={logo} alt="Login Logo" />
-                {!isOpenAccess && (
-                  <img
-                    className="h-28 w-8/12"
-                    src={getLogoUrl()}
-                    alt="Workflow"
-                  />
-                )}
               </div>
               <div className="mt-5 flex-1 flex-grow overflow-y-auto">
                 <nav className="space-y-1 px-2">
@@ -303,10 +285,6 @@ export default function Shell() {
             <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
               <div></div>
               <img className="mb-8" src={logo} alt="Login Logo" />
-
-              {!isOpenAccess && (
-                <img className="h-32 w-8/12" src={DGMTLogo} alt="Workflow" />
-              )}
             </div>
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
