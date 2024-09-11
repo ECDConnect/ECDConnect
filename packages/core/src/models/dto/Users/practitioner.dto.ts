@@ -47,6 +47,7 @@ export interface PractitionerDto extends EntityBase {
   permissions?: UserPermissionDto[];
   communitySectionViewDate?: string;
   clickedCommunityTab?: boolean;
+  progressWalkthroughComplete?: boolean;
 }
 
 export interface UserPermissionDto {

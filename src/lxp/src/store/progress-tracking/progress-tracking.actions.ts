@@ -11,11 +11,7 @@ import { ProgressTrackingService } from '@services/ProgressTrackingService';
 import { RootState, ThunkApiType } from '../types';
 import { OverrideCache } from '@/models/sync/override-cache';
 import { isBefore } from 'date-fns';
-import {
-  ChildAttendanceReportModel,
-  ChildProgressReportModel,
-  ChildProgressReportModelInput,
-} from '@ecdlink/graphql';
+import { ChildProgressReportModelInput } from '@ecdlink/graphql';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
 
 export const ProgressTrackingActions = {
@@ -145,7 +141,7 @@ export const getProgressTrackingContent = createAsyncThunk<
                 return {
                   ...subCategory,
                   skills: subCategory.skills
-                    .filter((x) => skills!.some((y) => y.id === x.id))
+                    ?.filter((x) => skills!.some((y) => y.id === x.id))
                     .map((skillMin) => {
                       const skill = skills!.find((x) => x.id === skillMin.id)!;
 
@@ -240,6 +236,10 @@ export const syncChildProgressReports = createAsyncThunk<
               childEnjoys: report.childEnjoys,
               goodProgressWith: report.goodProgressWith,
               howCanCaregiverSupport: report.howCanCaregiverSupport,
+              classroomName: report.classroomName,
+              practitionerName: report.practitionerName,
+              principalName: report.principalName,
+              principalPhoneNumber: report.principalPhoneNumber,
             };
 
             return await new ProgressTrackingService(

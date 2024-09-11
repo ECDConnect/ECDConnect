@@ -1,4 +1,4 @@
-import { ChildDto } from '@ecdlink/core';
+import { ChildDto, PractitionerDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import {
@@ -67,11 +67,48 @@ export const getClassroomGroupsForUser = (userId: string) =>
     }
   );
 
-export const getClassroomGroupByChildUserId = (childUserId: string) =>
+export const getClassroomGroupsWithPractitioner = () =>
   createSelector(
     (state: RootState) =>
       state.classroomData.classroomGroupData.classroomGroups,
-    (classroomGroups: SimpleClassroomGroupDto[] | undefined) => {
+    (state: RootState) => state.practitioner.practitioner,
+    (state: RootState) => state.practitioner.practitioners,
+    (
+      classroomGroups: ClassroomGroupDto[] | undefined,
+      practitioner: PractitionerDto | undefined,
+      practitioners: PractitionerDto[] | undefined
+    ): (ClassroomGroupDto & {
+      practitioner: PractitionerDto | undefined;
+    })[] => {
+      return (classroomGroups || []).map((cls) => {
+        let linkedPractitioner = undefined;
+
+        if (cls.userId === practitioner?.userId) {
+          linkedPractitioner = practitioner;
+        }
+
+        if (!linkedPractitioner && practitioners) {
+          linkedPractitioner = practitioners.find(
+            (practitioner) => practitioner.userId === cls.userId
+          );
+        }
+
+        return {
+          ...cls,
+          practitioner: linkedPractitioner,
+        };
+      });
+    }
+  );
+
+export const getClassroomGroupByChildUserId = (childUserId: string) =>
+  createSelector(
+    getClassroomGroupsWithPractitioner(),
+    (
+      classroomGroups: (ClassroomGroupDto & {
+        practitioner: PractitionerDto | undefined;
+      })[]
+    ) => {
       if (!classroomGroups || !childUserId) return;
 
       return classroomGroups.find((group) =>
@@ -171,9 +208,17 @@ export const getCurrentProgressReportPeriod = () =>
         return undefined;
       }
 
+      const startDate = new Date(currentYearsReportingPeriods[index].startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(currentYearsReportingPeriods[index].endDate);
+      endDate.setHours(23, 59, 59, 0);
+
       return {
         reportNumber: index + 1,
-        ...currentYearsReportingPeriods[index],
+        id: currentYearsReportingPeriods[index].id,
+        startDate: startDate,
+        endDate: endDate,
       } as ProgressReportPeriod;
     }
   );
@@ -198,12 +243,20 @@ export const getAllProgressReportPeriods = () =>
               new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
           );
 
-        reportingPeriodsForYear?.forEach((value, index) =>
+        reportingPeriodsForYear?.forEach((value, index) => {
+          const startDate = new Date(value.startDate);
+          startDate.setHours(0, 0, 0, 0);
+
+          const endDate = new Date(value.endDate);
+          endDate.setHours(23, 59, 59, 0);
+
           sortedReportingPeriods.push({
-            ...value,
+            id: value.id,
+            startDate: startDate,
+            endDate: endDate,
             reportNumber: index + 1,
-          })
-        );
+          });
+        });
       });
 
       return sortedReportingPeriods;

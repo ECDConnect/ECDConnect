@@ -96,8 +96,16 @@ module.exports = {
         infoDark: 'var(--infoDark)',
         infoBb: 'var(--infoBb)',
         modalBg: 'var(--modalBg)',
-        quatenary: '#1DBADF',
-        quatenaryBg: "#D2F1F9",
+        darkBackground: 'var(--darkBackground)',
+        adminPortalBg: 'var(--adminPortalBg)',
+        quatenary: 'var(--quatenary)',
+        quatenaryBg: 'var(--quatenaryBg)',
+        quatenaryMain:'var(--quatenaryMain)',
+        darkBlue: 'var(--darkBlue)',
+        pointsCardBg: 'var(--pointsCardBg)',
+        pointsCardBarBg: 'var(--pointsCardBarBg)',
+        infographicBg: 'var(--infographicBg)',
+        secondaryMain: 'var(--secondaryMain)',
         warning: '#FFD525',
         warningBg: '#fff6d0',
         blue: {
@@ -106,8 +114,8 @@ module.exports = {
         adminBackground: '#EFF6FA'
       },
       backgroundImage: (theme) => ({
-        logo: "url('./assets/logo.svg')",
-        bannerx2: "url('./assets/bannerx2.png')",
+        logo: "var(--logo)",
+        bannerx2: "var(--banner)",
       }),
       animation: {
         spinner: 'spin 1.5s linear infinite',

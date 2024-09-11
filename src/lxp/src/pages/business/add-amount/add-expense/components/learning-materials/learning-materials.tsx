@@ -106,7 +106,7 @@ export const LearningMaterials: React.FC<AddExpenseState> = ({
   );
 
   const disabled =
-    !!statement?.downloaded ||
+    (datePaid && !!statement?.downloaded) ||
     (!!expenseItem && isBefore(new Date(expenseItem.datePaid), sixtyDaysAgo));
 
   const month = !!datePaid ? getMonthName(new Date(datePaid).getMonth()) : '';

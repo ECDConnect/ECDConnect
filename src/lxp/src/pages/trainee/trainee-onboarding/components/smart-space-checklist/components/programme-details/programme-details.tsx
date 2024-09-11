@@ -233,8 +233,14 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
       addressLine1: editedAddress || '',
       addressLine2: '',
       addressLine3: '',
+      area: '',
+      latitude: null,
+      longitude: null,
+      municipality: '',
       name: '',
       postalCode: '',
+      provinceId: '',
+      province: null,
       ward: '',
     };
 
@@ -475,12 +481,12 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
               color={'secondary'}
               className={'my-3'}
               underline={true}
-              onClick={() => {
-                displayArticle(
-                  ContentConsentTypeEnum.ChildProtection,
-                  'Child Protection'
-                );
-              }}
+              // onClick={() => {
+              //   displayArticle(
+              //     ContentConsentTypeEnum.ChildProtection,
+              //     'Child Protection'
+              //   );
+              // }}
             />
           </div>
         </div>

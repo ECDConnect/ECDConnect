@@ -349,6 +349,7 @@ where mu.id = @userId
         public async Task SyncCompletedCourses()
         {
             if (!Enabled) return;
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.CHWConnect) return;
 
             try
             {
@@ -361,9 +362,15 @@ where mu.id = @userId
                 long fromCompleted = new DateTimeOffset(fromCompletedDate).ToUnixTimeSeconds();
                 _logger.LogInformation("Fetching moodle completed course info from '{0}' {1}", fromCompletedDate, fromCompleted);
 
-                var cohorts = _config.UserTypes.First(x => x.UserType == "*").Cohorts;
-                if (cohorts.Length == 0) return;
-                var inCohorts = "'" + string.Join("','", cohorts) + "'";
+                var cohorts = _config.UserTypes.First(x => x.UserType == "*").Cohorts.Where(x => !x.Contains("-ui")).ToList();
+                if (cohorts.Count > 1)
+                {
+                    // remove the OA cohort for a WL tenant
+                    cohorts = cohorts.Where(x => x != "ecd-connect").ToList();
+                }
+                if (cohorts.Count == 0) return;
+
+                var cohort = cohorts.First();
 
                 await using var conn = new NpgsqlConnection(GetConnectionString());
                 await conn.OpenAsync();
@@ -375,9 +382,11 @@ join mdl_course course on compl.course = course.id
 join mdl_user mu on compl.userid = mu.id 
 join mdl_cohort_members mcm on mu.id = mcm.userid 
 join mdl_cohort mc on mcm.cohortid = mc.id 
-where (mc.idnumber in ({inCohorts}) or mc.name in ({inCohorts}))
+where (mc.idnumber = '{cohort}' or mc.name = '{cohort}')
     and compl.timecompleted > (@fromCompleted)
 	and compl.timecompleted is not null
+    and mc.idnumber not ilike '%-ui'
+order by compl.timecompleted;
 "
                     , conn)
                     {
@@ -389,30 +398,38 @@ where (mc.idnumber in ({inCohorts}) or mc.name in ({inCohorts}))
                 long rows = 0;
                 while (await reader.ReadAsync())
                 {
-                    var cohort = reader.GetString(0);
+                    //var cohort = reader.GetString(0);
                     var username = reader.GetString(1);
                     var email = reader.GetString(2);
                     var course = reader.GetString(3);
-                    DateTime? timeCompleted = reader.IsDBNull(6) ? null : reader.GetDateTime(6);
+                    Int64? uxTimeCompleted = reader.IsDBNull(6) ? null : reader.GetInt64(6);
+                    DateTime? timeCompleted = null;
+                    if (uxTimeCompleted.HasValue)
+                    {
+                        timeCompleted = DateTimeOffset.FromUnixTimeSeconds(uxTimeCompleted.Value).UtcDateTime;
+                    }
 
                     if (!timeCompleted.HasValue) timeCompleted = DateTime.Now;
 
-                    Guid? userId = userMap.GetValueOrDefault(username);
-                    if (!userId.HasValue)
+                    Guid? userId = null;
+                    if (!userMap.ContainsKey(username))
                     {
                         Guid testUserId;
                         ApplicationUser user = null;
                         if (Guid.TryParse(username, out testUserId))
                         {
-                            user = await _userManager.FindByIdAsync(userId);
+                            user = await _userManager.FindByIdAsync(testUserId);
                         }
                         else
                         {
                             user = await _userManager.FindByNameAsync(username);
                         }
                         if (user != null) userId = user.Id;
-                        if (!userId.HasValue) userId = _adminUserId;
                         userMap.Add(username, userId);
+                    }
+                    else
+                    {
+                        userId = userMap[username];
                     }
 
                     if (userId.HasValue)
@@ -426,7 +443,6 @@ where (mc.idnumber in ({inCohorts}) or mc.name in ({inCohorts}))
                             UpdatedBy = _adminUserId.ToString()
                         };
                         userTrainingCourseRepo.Insert(userTrainingCourse);
-                        _pointsService.CalculateCompleteOnlineTrainingCourse(userId.Value);
                         rows++;
                     }
                 }
@@ -435,6 +451,15 @@ where (mc.idnumber in ({inCohorts}) or mc.name in ({inCohorts}))
                 await conn.CloseAsync();
 
                 _logger.LogInformation("Records inserted {0}", rows);
+
+                var pointsCalculated = 0;
+                foreach (var userId in userMap.Values)
+                {
+                    if (!userId.HasValue) continue;
+                    _pointsService.CalculateCompleteOnlineTrainingCourse(userId.Value);
+                    pointsCalculated++;
+                }
+                _logger.LogInformation("Points calculated for {0} users", pointsCalculated);
             }
             catch (Exception ex) 
             {

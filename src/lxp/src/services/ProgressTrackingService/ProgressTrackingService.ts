@@ -11,7 +11,12 @@ import {
   ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
-import { ChildProgressReportModelInput } from '@ecdlink/graphql';
+import {
+  ChildProgressReportModelInput,
+  ProgressTrackingAgeGroup,
+  ProgressTrackingSkill,
+} from '@ecdlink/graphql';
+import { id } from 'date-fns/locale';
 class ProgressTrackingService {
   _accessToken: string;
 
@@ -89,7 +94,9 @@ class ProgressTrackingService {
     locale: string
   ): Promise<ProgressTrackingAgeGroupDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { GetAllProgressTrackingAgeGroup: ProgressTrackingAgeGroup[] };
+    }>(``, {
       query: `query GetAllProgressTrackingAgeGroup($locale: String) {
           GetAllProgressTrackingAgeGroup(locale: $locale) {
             id
@@ -98,6 +105,7 @@ class ProgressTrackingService {
             endAgeInMonths     
             color
             description
+            skills
           }
         }`,
       variables: {
@@ -111,7 +119,21 @@ class ProgressTrackingService {
       );
     }
 
-    return response.data.data.GetAllProgressTrackingAgeGroup;
+    const mappedResponse =
+      response.data.data.GetAllProgressTrackingAgeGroup.map((x) => ({
+        id: x.id!,
+        name: x.name!,
+        startAgeInMonths: Number(x.startAgeInMonths!),
+        endAgeInMonths: Number(x.endAgeInMonths!),
+        color: x.color!,
+        description: x.description!,
+        skills:
+          x.skills! && x.skills.length > 0
+            ? x.skills!.split(',').map((y) => Number(y))
+            : [],
+      }));
+
+    return mappedResponse;
   }
 
   async getProgressTrackingSkills(
@@ -119,7 +141,7 @@ class ProgressTrackingService {
   ): Promise<ProgressTrackingSkillDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { GetAllProgressTrackingSkill: ProgressTrackingSkillDto[] };
+      data: { GetAllProgressTrackingSkill: ProgressTrackingSkill[] };
     }>(``, {
       query: `
       query GetAllProgressTrackingSkill($locale: String) {
@@ -127,12 +149,7 @@ class ProgressTrackingService {
           id                
           name
           supportImage
-          level {
-            id
-          }
-          ageGroups {
-            id
-          }
+          isReverseScored
           value
         }
       }         
@@ -147,8 +164,11 @@ class ProgressTrackingService {
     }
 
     return response.data.data.GetAllProgressTrackingSkill.map((x) => ({
-      ...x,
-      description: x.value, // Small remapping, I added the descriptions to the value field in the content since a description field did not exist and value was not being used
+      id: x.id!,
+      name: x.name || '',
+      supportImage: x.supportImage || undefined,
+      isReverseScored: !!x.isReverseScored,
+      description: x.value || '', // Small remapping, I added the descriptions to the value field in the content since a description field did not exist and value was not being used
     }));
   }
 
@@ -251,6 +271,10 @@ class ProgressTrackingService {
           childEnjoys
           goodProgressWith
           howCanCaregiverSupport
+          classroomName
+          practitionerName
+          principalName
+          principalPhoneNumber
           skillObservations {
             skillId,
             value
@@ -295,6 +319,34 @@ class ProgressTrackingService {
     if (response.status !== 200 || !!response.data.errors) {
       throw new Error(
         'Updating child progress report failed - Server connection error'
+      );
+    }
+
+    return response.data.data.createOrUpdateChildProgressReport;
+  }
+
+  async classroomProgressSummaryDownloaded(
+    classroomGroupId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { createOrUpdateChildProgressReport: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation ClassroomProgressSummaryDownloaded($classroomGroupId: UUID!) {
+          classroomProgressSummaryDownloaded(classroomGroupId: $classroomGroupId) {
+          }
+        }
+      `,
+      variables: {
+        classroomGroupId: classroomGroupId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Progress report summary downloaded failed - Server connection error'
       );
     }
 

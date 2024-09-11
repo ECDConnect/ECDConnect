@@ -404,6 +404,11 @@ namespace ECDLink.ContentManagement.Repositories
                     //update with fulllist
                     contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                 }
+                if (contentType == "Consent" && contentFieldValuePairs.ContainsKey("description"))
+                {
+                    contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
+                }
+
 
                 if (contentFieldValuePairs?.Any() ?? false)
                 {
@@ -729,7 +734,7 @@ namespace ECDLink.ContentManagement.Repositories
             foreach (var field in content.ContentType.Fields.Where(x => x.IsActive))
             {
                 // get the current content value record
-                ContentValue currentRecord = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id && x.LocaleId == localeId).FirstOrDefault();
+                ContentValue currentRecord = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id && x.LocaleId == localeId && x.TenantId == currentTenantId).FirstOrDefault();
                 // add check to see if field is available in the input
                 if (input.TryGetValue(field.FieldName, out var value) && value != null)
                 {
@@ -758,7 +763,7 @@ namespace ECDLink.ContentManagement.Repositories
                 }
                 else if (field.FieldName.ToString() == "availableLanguages") //update languages of the item if its a language field and the locale doesnt match or is null
                 {
-                    ContentValue availableLanguages = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id).FirstOrDefault();
+                    ContentValue availableLanguages = content.ContentValues.Where(x => x.ContentTypeFieldId == field.Id && x.TenantId == currentTenantId).FirstOrDefault();
                     var allLanguages = content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
 
                     if (availableLanguages == null)
@@ -784,7 +789,7 @@ namespace ECDLink.ContentManagement.Repositories
             }
 
             var objDict = content.ContentValues
-                            .Where(x => x.LocaleId == localeId)
+                            .Where(x => x.LocaleId == localeId && x.TenantId == currentTenantId)
                             .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
             objDict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
 

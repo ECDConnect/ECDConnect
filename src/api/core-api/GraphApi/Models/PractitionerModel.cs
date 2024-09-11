@@ -48,6 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public List<AbsenteeDetail> Absentees { get; set; }
         public List<UserPermissionModel> Permissions { get; set; }
         public DateTime? CommunitySectionViewDate { get; set; }
+        public bool ProgressWalkthroughComplete { get; set; }
     }
 
 }

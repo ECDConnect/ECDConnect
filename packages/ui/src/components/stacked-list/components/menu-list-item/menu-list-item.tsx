@@ -98,7 +98,7 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({
           )}
           {item?.rightIcon ? (
             renderIcon(item.rightIcon, item.rightIconClassName)
-          ) : (
+          ) : item?.hideRightIcon ? null : (
             <ChevronRightIcon className={styles.menuChevron} />
           )}
         </div>

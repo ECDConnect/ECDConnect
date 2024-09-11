@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static HotChocolate.ErrorCodes;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -75,6 +76,11 @@ namespace EcdLink.Api.CoreApi.Services
             public string GoodProgressWith { get; set; }
 
             public string HowCanCaregiverSupport { get; set; }
+
+            public string ClassroomName { get; set; }
+            public string PractitionerName { get; set; }
+            public string PrincipalName { get; set; }
+            public string PrincipalPhoneNumber { get; set; }
         }
 
         private readonly IGenericRepositoryFactory _repoFactory;
@@ -144,7 +150,11 @@ namespace EcdLink.Api.CoreApi.Services
                 Notes = input.Notes,
                 ChildEnjoys = input.ChildEnjoys,
                 GoodProgressWith = input.GoodProgressWith,
-                HowCanCaregiverSupport = input.HowCanCaregiverSupport
+                HowCanCaregiverSupport = input.HowCanCaregiverSupport,
+                ClassroomName = input.ClassroomName,
+                PractitionerName = input.PractitionerName,
+                PrincipalName = input.PrincipalName,
+                PrincipalPhoneNumber = input.PrincipalPhoneNumber,
             };
 
             // Check if report exists
@@ -155,7 +165,8 @@ namespace EcdLink.Api.CoreApi.Services
                 if (input.DateCompleted != null)
                 {
                     existingReport.DateCompleted = input.DateCompleted;
-                    
+                    // generate points for creating a new report
+                    _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
                 }
 
                 if (input.ObservationsCompleteDate != null)
@@ -174,17 +185,21 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var newReport = new ChildProgressReport
                 {
+                    Id = input.Id,
                     UserId = _contextUserId,
                     ChildId = input.ChildId,
                     ChildProgressReportPeriodId = input.ChildProgressReportPeriodId,
                     DateCompleted = input.DateCompleted,
                     ObservationsCompleteDate = input.ObservationsCompleteDate,
-                    ReportContent = JsonConvert.SerializeObject(reportContent),
+                    ReportContent = JsonConvert.SerializeObject(reportContent),                    
                 };
 
                 _childProgressReportRepo.Insert(newReport);
-                // generate points for creating a new report
-                _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
+
+                if (input.ObservationsCompleteDate != null)
+                {
+                    _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
+                }
             }
         }
 
@@ -216,148 +231,14 @@ namespace EcdLink.Api.CoreApi.Services
                     ObservationsCompleteDate = report.ObservationsCompleteDate,
                     ChildEnjoys = data.ChildEnjoys,
                     GoodProgressWith = data.GoodProgressWith,
-                    HowCanCaregiverSupport = data.HowCanCaregiverSupport
+                    HowCanCaregiverSupport = data.HowCanCaregiverSupport,
+                    ClassroomName = data.ClassroomName,
+                    PractitionerName = data.PractitionerName,
+                    PrincipalName = data.PrincipalName,
+                    PrincipalPhoneNumber = data.PrincipalPhoneNumber,
                 };
             }
         }
-
-
-
-
-
-        //public async Task<string> GenerateReport(ChildProgressReport reportEntity,
-        //    Practitioner practitioner,
-        //    string currentProfileImageUrl,
-        //    Document document)
-        //{
-        //    throw new NotImplementedException();
-        //    //var reportContent = JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(reportEntity.ReportContent);
-
-        //    //var fields = ChildProgressReportTemplate.GetFieldTemplate(reportContent, practitioner, currentProfileImageUrl);
-
-        //    //if (document == default)
-        //    //{
-        //    //    throw new FileNotFoundException("No Progress Report Document Assigned");
-        //    //}
-
-        //    //var pdfDocument = await _fileService.GetFile(DocumentHelper.GetFileName(document.Reference), FileTypeEnum.ReportTemplates);
-        //    //return _fieldService.FillForm(pdfDocument, fields, 5);
-        //}
-
-        //// GENERATES PDF MIGHT NOT BE NEEDED ANYMORE
-        //public async Task<string> GenerateChildProgressReport(
-        //  Guid userId,
-        //  Guid childId,
-        //  Guid classgroupId,
-        //  DateTime reportDate)
-        //{
-        //    var progressReportEntity = _childProgressReportRepo.GetAll()
-        //        .Where(x =>
-        //            // x.ClassroomGroupId == classgroupId
-        //            x.ChildId == childId
-        //            && x.ReportDate.Month == reportDate.Month && x.ReportDate.Year == reportDate.Year)
-        //        .OrderBy(x => x.Id)
-        //        .FirstOrDefault();
-
-        //    if (progressReportEntity == null)
-        //    {
-        //        return null;
-        //    }
-
-        //    var practitioner = _practitionerRepo.GetAll().Where(x => x.Hierarchy == progressReportEntity.Hierarchy).OrderBy(x => x.Id).FirstOrDefault();
-
-        //    using var dbScope = _dbFactory.CreateDbContext();
-
-        //    var document = _documentRepo.GetAll()
-        //        .Where(x => x.Name == ReportConstants.ChildProgressReport && x.IsActive)
-        //        .OrderBy(x => x.Id)
-        //        .FirstOrDefault();
-
-        //    return await GenerateReport(progressReportEntity, practitioner, practitioner != null ? practitioner.User.ProfileImageUrl : "", document);
-        //}
-
-        //public ChildProgressReportDetailedModel GetChildProgressReport(
-        //    Guid userId,
-        //    Guid reportId)
-        //{
-        //    var summaryEntity = _childProgressReportRepo.GetById(reportId);
-
-        //    return JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(summaryEntity.ReportContent);
-        //}
-
-        //// Should this fetch, get everything for a reporting window, rather than just an input number of reports?
-        //public IEnumerable<ChildProgressReportDetailedModel> GetChildProgressReports(
-        //    Guid userId,
-        //    int count)
-        //{
-        //    var reports = _childProgressReportRepo.GetAll()
-        //        .OrderByDescending(x => x.UpdatedDate)
-        //        .Take(count)
-        //        .ToList();
-
-        //    var result = new List<ChildProgressReportDetailedModel>();
-        //    foreach (var report in reports)
-        //    {
-        //        var detail = JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(report.ReportContent);
-        //        if (detail == null)
-        //        {
-        //            continue;
-        //        }
-        //        result.Add(detail);
-        //    }
-        //    return result;
-        //}
-
-        //// Should this fetch, get everything for a reporting window, rather than just an input number of reports?
-        //public IEnumerable<ChildProgressReportSummaryModel> GetChildProgressReportSummary(
-        //    Guid userId,
-        //    int count)
-        //{
-        //    var summaryEntities = _childProgressReportRepo.GetAll()
-        //        .OrderByDescending(x => x.UpdatedDate)
-        //        .Take(count)
-        //        .ToList();
-
-        //    var summaries = new List<ChildProgressReportSummaryModel>();
-
-        //    foreach (var item in summaryEntities)
-        //    {
-        //        var report = JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(item.ReportContent);
-
-        //        if (report == null || string.IsNullOrEmpty(report.DateCompleted))
-        //        {
-        //            continue;
-        //        }
-
-        //        var summary = new ChildProgressReportSummaryModel
-        //        {
-        //            Categories = report.Categories?.Select(x => new ObservationCategorySummary
-        //            {
-        //                AchievedLevelId = x.AchievedLevelId,
-        //                CategoryId = x.CategoryId,
-        //                Tasks = x.Tasks.Select(x => new ObservationCategoryTaskSummary
-        //                {
-        //                    LevelId = x.LevelId,
-        //                    SkillId = x.SkillId,
-        //                    Value = x.Value,
-        //                }).ToList()
-        //            }).ToList() ?? new List<ObservationCategorySummary>(),
-        //            ChildFirstname = report.ChildFirstname,
-        //            ChildSurname = report.ChildSurname,
-        //            ClassroomName = report.ClassroomName,
-        //            ReportDate = report.ReportingDate,
-        //            ReportPeriod = report.ReportingPeriod,
-        //            ReportDateCreated = report.DateCreated,
-        //            ReportDateCompleted = report.DateCompleted,
-        //            ChildId = report.ChildId,
-        //            ReportId = item.Id,
-        //        };
-
-        //        summaries.Add(summary);
-        //    }
-
-        //    return summaries;
-        //}
 
         public PractitionerProgressReportSummaryModel GetPractitionerProgressReportSummary(
             Guid userId,
@@ -372,31 +253,6 @@ namespace EcdLink.Api.CoreApi.Services
             result.ClassSummaries = GetPractitionerProgressReportSummary(startDate, endDate, userId, languageId);
             return result;
         }
-
-        //public PractitionerProgressReportSummaryModel GetPrincipalProgressReportSummary(
-        //    Guid userId,
-        //    DateTime startDate,
-        //    DateTime endDate,
-        //    string locale)
-        //{
-        //    var languageId = GetLanguageId(locale);
-
-        //    var result = new PractitionerProgressReportSummaryModel();
-        //    result.ReportingPeriod = endDate.ToString("MMMM yyyy"); // Not sure what to do with this?
-        //    result.ClassSummaries = new List<PractitionerClassProgressReportSummaryModel>();
-
-        //    var practitioners = _personnelService.GetAllPractitionersForPrincipal(userId.ToString());
-        //    foreach (var practitioner in practitioners)
-        //    {
-        //        if (practitioner.UserId == Guid.Empty) continue;
-        //        var practitionerClassSummaries = GetPractitionerProgressReportSummary(startDate, endDate, practitioner.UserId.Value, languageId);
-        //        if (practitionerClassSummaries.Count > 0)
-        //        {
-        //            result.ClassSummaries.AddRange(practitionerClassSummaries);
-        //        }
-        //    }
-        //    return result;
-        //}
 
         private List<PractitionerClassProgressReportSummaryModel> GetPractitionerProgressReportSummary(
             DateTime startDate,
@@ -564,93 +420,5 @@ namespace EcdLink.Api.CoreApi.Services
             list.ForEach(s => _skillMap.Add(s.Id, s));
             return list;
         }
-
-        //public (int reportsSubmittedOnTime, int reportsMissingOrIncomplete, int reportsSubmittedOverdue) GetChildProgressReportStatusCountsForPractitioner(
-        //    string practitionerHierarcry,
-        //    IEnumerable<Guid> classroomGroupIds)
-        //{
-        //    // Need to lookup the reporting periods for the classroom, and get best match
-        //    // TODO: Fix dates here
-        //    DateTime previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
-        //    DateTime previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
-        //    var isPeriod1 = previousMonthStart.Month <= 7;
-        //    DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-        //    DateTime reportPeriodEnd = GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
-
-        //    DateTime reportDueStart = GetReportDueStart(previousMonthStart.Year, isPeriod1);
-        //    DateTime reportDueEnd = GetReportDueEnd(previousMonthStart.Year, isPeriod1);
-
-        //    var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-        //    var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
-
-        //    var progressReports = _childProgressReportRepo
-        //        .GetAll()
-        //        .Where(x =>
-        //                x.ClassroomGroupId.HasValue
-        //                && classroomGroupIds.Contains(x.ClassroomGroupId.Value)
-        //                && x.ReportDate >= reportPeriodStart
-        //                && x.ReportDate <= reportOverDueEnd
-        //                && x.IsActive == true)
-        //        .OrderBy(x => x.ReportDate)
-        //        .ToList();
-
-        //    var reportsSubmittedOnTime = progressReports.Count(r => r.DateCompleted.HasValue && r.DateCompleted.Value <= reportDueEnd);
-        //    var reportsSubmittedOverdue = progressReports.Count(r => r.DateCompleted.HasValue && r.DateCompleted.Value >= reportOverDueStart);
-
-        //    var childCount = _childRepo.GetAll().Count(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHierarcry));
-
-        //    var reportsMissingOrIncomplete = childCount - (reportsSubmittedOnTime + reportsSubmittedOverdue);
-
-        //    return (reportsSubmittedOnTime, reportsMissingOrIncomplete, reportsSubmittedOverdue);
-        //}
-
-        //// TODO - None of these are needed anymore, or at least need updates
-        //public static DateTime GetReportPeriodStart(int year, bool isPeriod1)
-        //{
-        //    return (isPeriod1 ? new DateOnly(year, 1, 1) : new DateOnly(year, 7, 1))
-        //        .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        //}
-
-        //public static DateTime GetReportPeriodEnd(int year, bool isPeriod1)
-        //{
-        //    return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 12, 20))
-        //                    .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        //}
-
-        //public static DateTime GetNextReportDuePeriodStart(int year, bool isPeriod1)
-        //{
-        //    return (isPeriod1 ? new DateOnly(year, 11, 1) : new DateOnly(year + 1, 6, 1))
-        //                        .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        //}
-
-        //public static DateTime GetNextReportDuePeriodEnd(int year, bool isPeriod1)
-        //{
-        //    return (isPeriod1 ? new DateOnly(year, 11, 30) : new DateOnly(year + 1, 6, 30))
-        //                    .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        //}
-
-        //public static DateTime GetReportDueStart(int year, bool isPeriod1)
-        //{
-        //    return (isPeriod1 ? new DateOnly(year, 6, 1) : new DateOnly(year, 11, 1))
-        //                        .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        //}
-
-        //public static DateTime GetReportDueEnd(int year, bool isPeriod1)
-        //{
-        //    return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 11, 30))
-        //                    .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        //}
-
-        //public static DateTime GetReportOverDueStart(int year, bool isPeriod1)
-        //{
-        //    return (isPeriod1 ? new DateOnly(year, 7, 1) : new DateOnly(year, 12, 1))
-        //                    .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        //}
-
-        //public static DateTime GetReportOverDueEnd(int year, bool isPeriod1)
-        //{
-        //    return (isPeriod1 ? new DateOnly(year, 7, 31) : new DateOnly(year, 12, 20))
-        //                    .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        //}
     }
 }

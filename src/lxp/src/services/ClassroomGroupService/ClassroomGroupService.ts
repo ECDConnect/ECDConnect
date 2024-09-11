@@ -187,7 +187,7 @@ class ClassroomGroupService {
       mutation editAbsentee(
         $absenteeId: String,
     $deleteAbsentee: Boolean,
-    $reassignedToPractitioner: String!,
+    $reassignedToPractitioner: String,
     $reason: String!,
     $absentDate: DateTime!,
     $absentDateEnd: DateTime!,

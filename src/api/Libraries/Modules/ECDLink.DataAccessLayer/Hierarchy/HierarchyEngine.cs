@@ -45,7 +45,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             _cacheService = cacheService;
             _repoFactory = repoFactory;
             _logger = logger;
-            _logger.LogInformation("HierarchyEngine constructed");
+            //_logger.LogInformation("HierarchyEngine constructed");
 
         }
 
@@ -360,7 +360,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             {
                 var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
                 value = userHierarchyRepo.GetAll()
-                                   .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator") && x.TenantId.Equals(TenantExecutionContext.Tenant.Id) && x.Key == 1)
+                                   .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator") && x.TenantId.Equals(TenantExecutionContext.Tenant.Id))
                                    .OrderBy(x => x.Key)
                                    .Select(x => x.UserId)
                                    .ToList();

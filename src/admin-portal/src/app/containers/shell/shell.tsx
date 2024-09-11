@@ -76,7 +76,6 @@ export default function Shell() {
   const [activeNavigation, setActiveNavigation] = useState<INavigation>();
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
-  const isGrowGreatTenant = tenant.isCHWConnect;
 
   const { data: navigationData } = useQuery(GetAllNavigation, {
     fetchPolicy: 'cache-and-network',
@@ -96,17 +95,20 @@ export default function Shell() {
   );
 
   useEffect(() => {
+    setAvatarColor(getAvatarColor());
+    if (activeNavigation === undefined) {
+      history.push(ROUTES.USERS.ALL_ROLES);
+    }
+  }, [activeNavigation, history, location.pathname]);
+
+  useEffect(() => {
     if (navigation && location && location.pathname) {
       const current = navigation.find((x) =>
         location.pathname.includes(x.route)
       );
       if (current) setActiveNavigation(current);
     }
-  }, [navigation, location]);
-
-  useEffect(() => {
-    setAvatarColor(getAvatarColor());
-  }, []);
+  }, [navigation, location, activeNavigation]);
 
   useEffect(() => {
     if (navigationData?.GetAllNavigation) {
@@ -119,17 +121,15 @@ export default function Shell() {
         NavbarTypes.TLMeetings,
         NavbarTypes.Documents,
         NavbarTypes.CMS,
-        [NavbarTypes.Reporting],
+        // [NavbarTypes.Reporting],
         NavbarTypes.Messaging,
         NavbarTypes.SiteData,
-        [NavbarTypes.Settings],
+        isSuperAdmin && [NavbarTypes.Settings],
         NavbarTypes.Notifications,
         NavbarTypes.CHWsOptedOut,
       ];
 
-      const navigationList = isGrowGreatTenant
-        ? [...navigationData?.GetAllNavigation, ...navigationFromFrontend]
-        : navigationData?.GetAllNavigation;
+      const navigationList = navigationData?.GetAllNavigation;
 
       const adminNavigationList: INavigation[] = navigationList?.filter(
         (item) =>
@@ -153,7 +153,7 @@ export default function Shell() {
         setNavigation(filtered.slice().sort((a, b) => a.sequence - b.sequence));
       }
     }
-  }, [user, navigationData, isAdministrator, isSuperAdmin, isGrowGreatTenant]);
+  }, [user, navigationData, isAdministrator, isSuperAdmin]);
 
   const getLogoUrl = () => {
     if (theme && theme.images) {

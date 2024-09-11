@@ -52,6 +52,7 @@ export const TraineeAddSignature = () => {
         IsActive: true,
         Progress: copy.progress,
         SigningSignature: copy.signingSignature,
+        ProgressWalkthroughComplete: copy.progressWalkthroughComplete || false,
       };
 
       appDispatch(practitionerActions.updatePractitioner(copy));

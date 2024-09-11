@@ -35,7 +35,7 @@ function ThemeProvider({
     const { value } = await Storage.get({ key: 'storageTheme' });
 
     if (!value || overRideCache) {
-      fetch(themeEndPoint)
+      await fetch(themeEndPoint, { cache: 'no-store' })
         .then(function (res) {
           return res.json();
         })
@@ -56,47 +56,58 @@ function ThemeProvider({
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [themeEndPoint]);
 
   useEffect(() => {
     if (data && data.colors) {
       if (data.colors) {
         DefaultTheme.primary = data.colors.primary;
+        DefaultTheme.secondary = data.colors.secondary;
+        DefaultTheme.tertiary = data.colors.tertiary;
+
         DefaultTheme.primaryAccent1 = data.colors.primaryAccent1;
         DefaultTheme.primaryAccent2 = data.colors.primaryAccent2;
-        DefaultTheme.secondary = data.colors.secondary;
         DefaultTheme.secondaryAccent1 = data.colors.secondaryAccent1;
         DefaultTheme.secondaryAccent2 = data.colors.secondaryAccent2;
-        DefaultTheme.tertiary = data.colors.tertiary;
         DefaultTheme.tertiaryAccent1 = data.colors.tertiaryAccent1;
         DefaultTheme.tertiaryAccent2 = data.colors.tertiaryAccent2;
-        DefaultTheme.textDark = data.colors.textDark;
-        DefaultTheme.textMid = data.colors.textMid;
-        DefaultTheme.textLight = data.colors.textLight;
-        DefaultTheme.uiMidDark = data.colors.uiMidDark;
-        DefaultTheme.uiMid = data.colors.uiMid;
-        DefaultTheme.uiLight = data.colors.uiLight;
-        DefaultTheme.uiBg = data.colors.uiBg;
-        DefaultTheme.modalBg = data.colors.modalBg;
-        DefaultTheme.errorMain = data.colors.errorMain;
-        DefaultTheme.errorDark = data.colors.errorDark;
-        DefaultTheme.errorBg = data.colors.errorBg;
-        DefaultTheme.alertMain = data.colors.alertMain;
-        DefaultTheme.alertDark = data.colors.alertDark;
-        DefaultTheme.alertBg = data.colors.alertBg;
-        DefaultTheme.successMain = data.colors.successMain;
-        DefaultTheme.successDark = data.colors.successDark;
-        DefaultTheme.successBg = data.colors.successBg;
-        DefaultTheme.infoMain = data.colors.infoMain;
-        DefaultTheme.infoDark = data.colors.infoDark;
-        DefaultTheme.infoBb = data.colors.infoBb;
-        DefaultTheme.infoBb = data.colors.infoBb;
-        DefaultTheme.darkBackground = data.colors.darkBackground;
+
+        DefaultTheme.textDark = WhiteLabelTheme.textDark;
+        DefaultTheme.textMid = WhiteLabelTheme.textMid;
+        DefaultTheme.textLight = WhiteLabelTheme.textLight;
+        DefaultTheme.uiMidDark = WhiteLabelTheme.uiMidDark;
+        DefaultTheme.uiMid = WhiteLabelTheme.uiMid;
+        DefaultTheme.uiLight = WhiteLabelTheme.uiLight;
+        DefaultTheme.uiBg = WhiteLabelTheme.uiBg;
+        DefaultTheme.modalBg = WhiteLabelTheme.modalBg;
+        DefaultTheme.errorMain = WhiteLabelTheme.errorMain;
+        DefaultTheme.errorDark = WhiteLabelTheme.errorDark;
+        DefaultTheme.errorBg = WhiteLabelTheme.errorBg;
+        DefaultTheme.alertMain = WhiteLabelTheme.alertMain;
+        DefaultTheme.alertDark = WhiteLabelTheme.alertDark;
+        DefaultTheme.alertBg = WhiteLabelTheme.alertBg;
+        DefaultTheme.successMain = WhiteLabelTheme.successMain;
+        DefaultTheme.successDark = WhiteLabelTheme.successDark;
+        DefaultTheme.successBg = WhiteLabelTheme.successBg;
+        DefaultTheme.infoMain = WhiteLabelTheme.infoMain;
+        DefaultTheme.infoDark = WhiteLabelTheme.infoDark;
+        DefaultTheme.infoBb = WhiteLabelTheme.infoBb;
+        DefaultTheme.infoBb = WhiteLabelTheme.infoBb;
+        DefaultTheme.darkBackground = WhiteLabelTheme.darkBackground;
+        DefaultTheme.quatenary = WhiteLabelTheme.quatenary;
+        DefaultTheme.quatenaryMain = WhiteLabelTheme.quatenaryMain;
+        DefaultTheme.adminPortalBg = WhiteLabelTheme.adminPortalBg;
+        DefaultTheme.darkBlue = WhiteLabelTheme.darkBlue;
+        DefaultTheme.pointsCardBg = WhiteLabelTheme.pointsCardBg;
+        DefaultTheme.pointsCardBarBg = WhiteLabelTheme.pointsCardBarBg;
+        DefaultTheme.quatenaryBg = WhiteLabelTheme.quatenaryBg;
+        DefaultTheme.adminBackground = WhiteLabelTheme.adminBackground;
+        DefaultTheme.quinary = WhiteLabelTheme.quinary;
       }
 
       if (data.images) {
-        DefaultTheme.logoUrl = data.images.logoUrl;
-        DefaultTheme.graphicOverlayUrl = data.images.graphicOverlayUrl;
+        DefaultTheme.logoUrl = `url(${data.images.logoUrl})`;
+        DefaultTheme.graphicOverlayUrl = `url(${data.images.graphicOverlayUrl})`;
         DefaultTheme.faviconUrl = data.images.faviconUrl;
         DefaultTheme.portalLoginLogoUrl = data.images.portalLoginLogoUrl;
         DefaultTheme.portalLoginBackgroundUrl =
@@ -147,6 +158,16 @@ function ThemeProvider({
     DefaultTheme.fontUrl = WhiteLabelTheme.fontUrl;
     DefaultTheme.mainHeadingOverrideFontUrl =
       WhiteLabelTheme.mainHeadingOverrideFontUrl;
+    DefaultTheme.darkBackground = WhiteLabelTheme.darkBackground;
+    DefaultTheme.quatenary = WhiteLabelTheme.quatenary;
+    DefaultTheme.quatenaryMain = WhiteLabelTheme.quatenaryMain;
+    DefaultTheme.adminPortalBg = WhiteLabelTheme.adminPortalBg;
+    DefaultTheme.darkBlue = WhiteLabelTheme.darkBlue;
+    DefaultTheme.pointsCardBg = WhiteLabelTheme.pointsCardBg;
+    DefaultTheme.pointsCardBarBg = WhiteLabelTheme.pointsCardBarBg;
+    DefaultTheme.quatenaryBg = WhiteLabelTheme.quatenaryBg;
+    DefaultTheme.adminBackground = WhiteLabelTheme.adminBackground;
+    DefaultTheme.quinary = WhiteLabelTheme.quinary;
   }
 
   function overRideTheme(theme: ThemeModel) {

@@ -370,6 +370,7 @@ class PractitionerService {
             isCompletedBusinessWalkThrough
             clickedCommunityTab
             communitySectionViewDate
+            progressWalkthroughComplete
             absentees {
               absentDate
               absentDateEnd
@@ -820,12 +821,13 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String) {
+        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String, $preschoolCode: String) {
           addPractitionerToPrincipal(
             firstName: $firstName
             idNumber: $idNumber
             lastName: $lastName
             userId: $userId
+            preschoolCode: $preschoolCode
           ) {
             userId
             isActive
@@ -838,6 +840,7 @@ class PractitionerService {
         firstName: input.firstName,
         lastName: input.lastName,
         programmeTypeId: input.programmeTypeId,
+        preschoolCode: input.preschoolCode,
       },
     });
 
@@ -1536,6 +1539,32 @@ class PractitionerService {
     }
 
     return response.data.data.updatePractitionerBusinessWalkthrough;
+  }
+
+  async UpdatePractitionerProgressWalkthrough(
+    userId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation UpdatePractitionerProgressWalkthrough($userId: String) {
+        updatePractitionerProgressWalkthrough(userId: $userId) {
+          
+        }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update practitioner progress walk through Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerProgressWalkthrough;
   }
 
   async practitionerInvitePrincipal(

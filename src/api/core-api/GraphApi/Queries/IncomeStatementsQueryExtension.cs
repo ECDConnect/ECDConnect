@@ -1,7 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Managers;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;

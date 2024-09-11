@@ -3,8 +3,10 @@ using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -19,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
 
 namespace ECDLink.Core.Services
@@ -36,12 +39,14 @@ namespace ECDLink.Core.Services
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private IGenericRepository<Classroom, Guid> _classroomRepo;
 
         private ApplicationUserManager _userManager;
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
         private IPointsEngineService _pointsService;
+        private INotificationService _notificationService;
 
         private IConverter _pdfConverter;
 
@@ -52,6 +57,7 @@ namespace ECDLink.Core.Services
             [Service] ApplicationUserManager userManager,
             [Service] PersonnelService personnelService,
             [Service] IPointsEngineService pointsService,
+            [Service] INotificationService notificationService,
             HierarchyEngine hierarchyEngine,
             IConverter pdfConverter
             )
@@ -69,6 +75,7 @@ namespace ECDLink.Core.Services
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+            _classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
 
             _pdfConverter = pdfConverter;
 
@@ -76,6 +83,7 @@ namespace ECDLink.Core.Services
             _documentManager = documentManager;
             _personnelService = personnelService;
             _pointsService = pointsService;
+            _notificationService = notificationService;
         }
 
         #region Utils
@@ -154,6 +162,11 @@ namespace ECDLink.Core.Services
             };
 
             _pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+            if (newStatement.IncomeItems.Count > 0 || newStatement.ExpenseItems.Count > 0)
+            {
+                _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
+                _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
+            }
 
             return _statementsRepo.Insert(newStatement);
         }
@@ -332,6 +345,11 @@ namespace ECDLink.Core.Services
             #endregion
 
             _pointsService.CalculateAddExpenseOrIncomeToStatement((Guid)exisitingStatement.UserId);
+            if (newItems.Count > 0 || newExpenses.Count > 0)
+            {
+                _notificationService.ExpireNotificationsTypesForUser(exisitingStatement.UserId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
+                _notificationService.ExpireNotificationsTypesForUser(exisitingStatement.UserId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
+            }
             return exisitingStatement;
         }
 
@@ -339,6 +357,7 @@ namespace ECDLink.Core.Services
 
         public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
+            var classroom = _classroomRepo.GetByUserId(userId);
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);
 
@@ -358,7 +377,14 @@ namespace ECDLink.Core.Services
 
             var pdfDocumentHeader = new PdfDocumentHeader();
             pdfDocumentHeader.UserId = userId;
-            pdfDocumentHeader.SiteAddress = _personnelService.GetUserSiteAddress(userId);
+
+            var siteAddress = new StringBuilder(classroom.SiteAddress?.AddressLine1 ?? "");
+            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.AddressLine2)) siteAddress.Append(", " + classroom.SiteAddress?.AddressLine2);
+            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.AddressLine3)) siteAddress.Append(", " + classroom.SiteAddress?.AddressLine3 ?? "");
+            if (!string.IsNullOrWhiteSpace(classroom.SiteAddress?.PostalCode)) siteAddress.Append(", " + classroom.SiteAddress?.PostalCode ?? "");
+            if (classroom.SiteAddress?.Province != null) siteAddress.Append(", " + classroom.SiteAddress?.Province.Description ?? "");
+            pdfDocumentHeader.SiteAddress = siteAddress.ToString();
+
             pdfDocumentHeader.ReportType = "StatementsPDF";
             var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader);
 
@@ -486,6 +512,7 @@ namespace ECDLink.Core.Services
                                 ExpenseReceipt expenseReceipt = new ExpenseReceipt();
                                 expenseReceipt.Name = _data.Description;
                                 expenseReceipt.PhotoProof = _data.PhotoProof;
+                                expenseReceipt.InvoiceNr = _data.InvoiceNr;
                                 receipts.Add(expenseReceipt);
                             }
                             expenseText += "<tr>";
@@ -559,7 +586,7 @@ namespace ECDLink.Core.Services
                 var count = 1;
                 foreach (var item in receipts)
                 {
-                    receiptsText += "<div><h2>" + item.Name + "</h2><img style='max-width: 400px;' src='" + item.PhotoProof + "'/></div>";
+                    receiptsText += $"<div><h2>{item.InvoiceNr}: {item.Name}</h2><img style='max-width: 400px;' src='" + item.PhotoProof + "'/></div>";
 
                     if (count < receipts.Count && count % 2 == 0)
                     {
@@ -607,6 +634,7 @@ namespace ECDLink.Core.Services
             //
             //  EXPENSES
             //
+            var invoiceNr = 1;
             foreach (StatementsExpenseType type in expenseTypes)
             {
                 var expenses = statement.ExpenseItems.Where(x => x.ExpenseTypeId == type.Id.ToString());
@@ -616,14 +644,33 @@ namespace ECDLink.Core.Services
                     continue;
                 }
 
-                tables.Add(new IncomeExpensePDFTableModel
+                var expenseTable = new IncomeExpensePDFTableModel
                 {
                     TableName = type.Description,
                     Type = IncomeExpensePDF.EXPENSES,
                     Headers = getExpensePDFHeader(),
-                    Data = MapExpenseToPdfData(expenses),
+                    Data = new List<IncomeExpensePDFDataModel>(),
                     Total = expenses.Select(x => x.Amount).Sum(),
-                });
+                };
+
+                foreach (var expense in expenses)
+                {
+                    expenseTable.Data.Add(new IncomeExpensePDFDataModel
+                    {
+                        Description = expense.Notes,
+                        Date = expense.DatePaid,
+                        Amount = expense.Amount,
+                        PhotoProof = expense.PhotoProof,
+                        InvoiceNr = expense.PhotoProof != null ? invoiceNr.ToString() : "None",
+                    });
+
+                    if (expense.PhotoProof != null)
+                    {
+                        invoiceNr++;
+                    }
+                }                
+
+                tables.Add(expenseTable);
             }
 
             //
@@ -765,26 +812,6 @@ namespace ECDLink.Core.Services
             }
             return headers;
         }
-
-        private List<IncomeExpensePDFDataModel> MapExpenseToPdfData(IEnumerable<StatementsExpenses> expenseRows)
-        {
-            var results = new List<IncomeExpensePDFDataModel>();
-            var invoiceNr = 1;
-            foreach (var expense in expenseRows)
-            {
-                results.Add(new IncomeExpensePDFDataModel
-                {
-                    Description = expense.Notes,
-                    Date = expense.DatePaid,
-                    Amount = expense.Amount,
-                    PhotoProof = expense.PhotoProof,
-                    InvoiceNr = invoiceNr,
-                });
-                invoiceNr++;
-            }
-            return results;
-        }
-
 
         private List<IncomeExpensePDFDataModel> MapIncomeToPdfData(IEnumerable<StatementsIncome> incomeRows, IDictionary<string, string> childNamesById, List<StatementsIncomeType> incomeTypes, List<StatementsPayType> payTypes)
         {

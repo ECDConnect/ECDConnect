@@ -1,8 +1,12 @@
+import { BusinessTabItems } from '@/pages/business/business.types';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import ROUTES from '@/routes/routes';
+
 export const pointsConstants = {
-  practitionerMonthlyMax: 100,
-  principalOrAdminMonthlyMax: 150,
+  practitionerMonthlyMax: 220,
+  principalOrAdminMonthlyMax: 295,
   practitionerYearlyMax: 1200,
-  principalOrAdminYearlyMax: 1925,
+  principalOrAdminYearlyMax: 1200,
 };
 
 export const pointsActivitiesIds = {
@@ -14,3 +18,47 @@ export const pointsActivitiesIds = {
   MonthlyPreschoolFeesAdded: '1aea269b-db0b-4cc6-b052-c4eaa5d89b05',
   MonthlyPreschoolFeeUpdated: 'f7307227-2ff7-4b85-8851-27c2af79be28',
 };
+
+interface pointActivitiesDto {
+  activity: string;
+  missingActivityText: string;
+  icon: string;
+  href: string;
+  tabIndex?: number;
+}
+
+export const pointActivitiesItems: pointActivitiesDto[] = [
+  {
+    activity: 'Income/expenses added',
+    missingActivityText: 'Add income & expenses',
+    icon: 'CashIcon',
+    href: ROUTES.BUSINESS,
+    tabIndex: BusinessTabItems.MONEY,
+  },
+  {
+    activity: 'Attendance registers saved',
+    missingActivityText: 'Save your attendance registers',
+    icon: 'ClipboardListIcon',
+    href: ROUTES.CLASSROOM.ROOT,
+    tabIndex: TabsItems.ATTENDANCE,
+  },
+  {
+    activity: 'Children’s progress observations complete',
+    missingActivityText: 'Add child progress observations',
+    icon: 'PresentationChartBarIcon',
+    href: ROUTES.CLASSROOM.ROOT,
+    tabIndex: TabsItems.PROGRESS,
+  },
+  {
+    activity: 'New connections in community',
+    missingActivityText: 'Connect with your community',
+    icon: 'ShareIcon',
+    href: ROUTES.COMMUNITY.WELCOME,
+  },
+  {
+    activity: 'Training courses completed',
+    missingActivityText: 'Complete an online training',
+    icon: 'AcademicCapIcon',
+    href: ROUTES.TRAINING,
+  },
+];

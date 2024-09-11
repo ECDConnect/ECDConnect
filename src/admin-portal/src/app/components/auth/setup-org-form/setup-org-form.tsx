@@ -20,9 +20,12 @@ import { Step7 } from './components/step7/step7';
 import { Step8 } from './components/step8/step8';
 import { AddTenantSetupInfo } from '../../../services/auth.service';
 import { ConfirmationScreen } from './components/confirmation-screen/confirmation-screen';
+import { useHistory } from 'react-router';
+import ROUTES from '../../../routes/app.routes-constants';
 
 export const SetupOrgForm = () => {
   const { theme } = useTheme();
+  const history = useHistory();
   const [step, setStep] = useState(1);
   const renderButtonText = useMemo(
     () => (step < 8 ? 'Next' : 'Confirm & save'),
@@ -62,6 +65,8 @@ export const SetupOrgForm = () => {
   const handleGoBack = () => {
     if (step > 1) {
       setStep(step - 1);
+    } else {
+      history.push(ROUTES.SETUP_ORG);
     }
   };
 
@@ -171,13 +176,14 @@ export const SetupOrgForm = () => {
 
   return (
     <BannerWrapper
-      size={'normal'}
+      size={'small'}
       renderBorder={true}
       showBackground={false}
       color={'primary'}
       menuLogoUrl={theme?.images?.logoUrl}
       backgroundColour={'white'}
-      onBack={step > 1 ? () => handleGoBack() : null}
+      onBack={handleGoBack}
+      hasDecoratedBackButton={true}
     >
       <div className="p-24">
         <Typography type="h1" color="textDark" text={`Step ${step} of 8`} />

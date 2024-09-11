@@ -3,6 +3,7 @@ import {
   AuthCodeModel,
   LoginRequestModel,
   PasswordResetModel,
+  PortalConsentModel,
   RegisterRequestModel,
   SimpleUserModel,
   TenantModel,
@@ -127,19 +128,6 @@ export async function RegisterNewUser(
   );
 }
 
-export async function RegisterNewTeamLead(
-  baseEndPoint: string,
-  body: RegisterRequestModel
-) {
-  return await api(baseEndPoint).post(
-    APIs.acceptTeamLeadInvitation,
-    JSON.stringify(body),
-    {
-      headers: headers,
-    }
-  );
-}
-
 export async function VerifyInvitationRequest(
   baseEndPoint: string,
   verifyInvitationModel: VerifyInvitationModel
@@ -203,6 +191,31 @@ export async function ValidateNewTenant(baseEndPoint: string, body: string) {
 export async function AddTenantSetupInfo(baseEndPoint: string, body: string) {
   const response = await api(baseEndPoint)
     .post(APIs.addTenantSetupInfo, JSON.stringify(body), {
+      headers: headers,
+    })
+    .catch(handlerError);
+
+  if (response.status < 300) return response.data;
+  return null;
+}
+
+export async function FetchAllLanguages(baseEndPoint: string, body: string) {
+  const response = await api(baseEndPoint)
+    .post(APIs.fetchAllLanguages, JSON.stringify(body), {
+      headers: headers,
+    })
+    .catch(handlerError);
+
+  if (response.status < 300) return response.data;
+  return null;
+}
+
+export async function GetConsentForPortal(
+  baseEndPoint: string,
+  portalConsentModel: PortalConsentModel
+) {
+  const response = await api(baseEndPoint)
+    .post(APIs.getConsentForPortal, JSON.stringify(portalConsentModel), {
       headers: headers,
     })
     .catch(handlerError);

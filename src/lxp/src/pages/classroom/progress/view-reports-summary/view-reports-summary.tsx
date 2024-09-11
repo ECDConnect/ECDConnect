@@ -1,6 +1,16 @@
 import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useProgressForClassAndAgeGroup } from '@/hooks/useProgressForClassAndAgeGroup';
+import { useProgressGenerateSummaryPdfReport } from '@/hooks/useProgressGenerateSummaryPdfReport';
+import { useMemo, useRef } from 'react';
+import { ProgresseportsSummaryPdf } from './reports-summary-pdf';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ProgressTrackingService } from '@/services/ProgressTrackingService';
+import { authSelectors } from '@/store/auth';
+import { pointsThunkActions } from '@/store/points';
 
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
@@ -9,14 +19,76 @@ export type ProgressViewReportsSummaryState = {
 
 export const ProgressViewReportsSummary: React.FC = () => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
+
+  const userAuth = useSelector(authSelectors.getAuthUser);
 
   const { state: routeState } = useLocation<ProgressViewReportsSummaryState>();
 
-  const { reportsSummary, classroomGroup, ageGroup, childReports } =
-    useProgressForClassAndAgeGroup(
-      routeState.classroomGroupId,
-      routeState.ageGroupId
+  const {
+    reportsSummary,
+    classroomGroup,
+    ageGroup,
+    childReports,
+    currentReportingPeriod,
+  } = useProgressForClassAndAgeGroup(
+    routeState.classroomGroupId,
+    routeState.ageGroupId
+  );
+
+  const { generateReport } = useProgressGenerateSummaryPdfReport();
+
+  const splitPdf = useMemo(() => {
+    if (reportsSummary.length < 3) {
+      return false;
+    }
+
+    const skillCounts = reportsSummary.map((x) =>
+      x.subCategories.reduce((count, subCat) => {
+        return count + subCat.skills.length;
+      }, 0)
     );
+
+    if (
+      (skillCounts[0] || 0) + (skillCounts[2] || 0) > 15 ||
+      (skillCounts[1] || 0) + (skillCounts[3] || 0) > 15
+    ) {
+      return true;
+    }
+
+    return false;
+  }, [reportsSummary]);
+
+  const shareRef = useRef<HTMLDivElement>(null);
+
+  const currentPractitioner = useSelector(
+    practitionerSelectors.getPractitioner
+  );
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(classroomGroup!.userId)
+  );
+
+  const classPractitioner = practitioner || currentPractitioner;
+
+  const addPoints = async () => {
+    if (isOnline) {
+      await new ProgressTrackingService(
+        userAuth?.auth_token || ''
+      ).classroomProgressSummaryDownloaded(routeState.classroomGroupId);
+
+      const currentDate = new Date();
+      const oneYearAgo = new Date();
+      oneYearAgo.setMonth(currentDate.getMonth() - 12);
+      appDispatch(
+        pointsThunkActions.getPointsSummaryForUser({
+          userId: userAuth?.id!,
+          startDate: oneYearAgo,
+          endDate: currentDate,
+        })
+      ).unwrap();
+    }
+  };
 
   return (
     <BannerWrapper
@@ -104,8 +176,45 @@ export const ProgressViewReportsSummary: React.FC = () => {
             <Divider dividerType="dashed" />
           </div>
         ))}
+        {/* Hidden PDF content */}
+        <div hidden={true}>
+          <div ref={shareRef} style={{ letterSpacing: '0.01px' }}>
+            <ProgresseportsSummaryPdf
+              ageGroup={ageGroup}
+              classroomGroupName={classroomGroup?.name || ''}
+              currentReportingPeriod={currentReportingPeriod!}
+              practitionerName={`${classPractitioner?.user?.firstName} ${
+                classPractitioner?.user?.surname || ''
+              }`}
+              reportSummaries={
+                splitPdf ? reportsSummary.slice(0, 2) : reportsSummary
+              }
+            />
+            {splitPdf && (
+              <div className="mt-20">
+                <ProgresseportsSummaryPdf
+                  ageGroup={ageGroup}
+                  classroomGroupName={classroomGroup?.name || ''}
+                  currentReportingPeriod={currentReportingPeriod!}
+                  practitionerName={`${classPractitioner?.user?.firstName} ${
+                    classPractitioner?.user?.surname || ''
+                  }`}
+                  reportSummaries={
+                    splitPdf ? reportsSummary.slice(2, 4) : reportsSummary
+                  }
+                />
+              </div>
+            )}
+          </div>
+        </div>
         <Button
-          onClick={() => {}}
+          onClick={() => {
+            generateReport(
+              shareRef.current!,
+              shareRef.current?.offsetWidth || 750
+            );
+            addPoints();
+          }}
           className="mt-4 mb-4 w-full"
           size="normal"
           color="quatenary"

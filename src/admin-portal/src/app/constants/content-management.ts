@@ -1,18 +1,23 @@
 export const ContentManagementTabs = {
   PROCESS: { id: 2, name: 'Progress' },
   PROGRAMMES: { id: 3, name: 'Programme' },
-  COMMUNITY: { id: 4, name: 'Community' },
+  //COMMUNITY: { id: 4, name: 'Community' },
+  RESOURCES: { id: 4, name: 'Resources' },
 };
 
 export const ContentTypes = {
   COACHING_CIRCLE_TOPICS: 'CoachingCircleTopics',
   CONNECT: 'Connect',
   CONNECT_ITEM: 'ConnectItem',
+  RESOURCE_LINK: 'ResourceLink',
   PROGRESS_TRACKING_SKILL: 'ProgressTrackingSkill',
   CONSENT: 'Consent',
   MORE_INFORMATION: 'MoreInformation',
   INFO_PAGES: 'Info Pages',
   TOPIC: 'Topic',
+  THEME: 'Theme',
+  ACTIVITY: 'Activity',
+  CLASSROOMBUSINESSRESOURCE: 'ClassroomBusinessResource',
 };
 
 export const ContentForms = {

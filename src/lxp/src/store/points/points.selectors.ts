@@ -1,16 +1,39 @@
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
-import { PointsLibrary, PointsUserSummary } from '@ecdlink/graphql';
+import {
+  PointsLibrary,
+  PointsToDoItemModel,
+  PointsUserDateSummary,
+  PointsUserSummary,
+  PointsUserYearMonthSummary,
+} from '@ecdlink/graphql';
 import {
   PointsSummaryDto,
   PractitionerDto,
   getPreviousMonth,
 } from '@ecdlink/core';
+import { getMonth, getYear } from 'date-fns';
 
 export const getPointsSummary = createSelector(
   (state: RootState) => state.points.pointsSummary,
   (pointsSummary: PointsUserSummary[]) => pointsSummary
 );
+
+export const getMonthPointsSummary = (state: RootState) => {
+  const currentMonth = new Date().getMonth(); // +1 for 0 index
+  const currentYear = new Date().getFullYear();
+  const pointsSummaryData = state?.points?.pointsSummary;
+  const pointsTotal = pointsSummaryData?.reduce((total, current) => {
+    const dataMonth = getMonth(new Date(current?.dateScored));
+    const dataYear = getYear(new Date(current?.dateScored));
+
+    if (dataMonth === currentMonth && dataYear === currentYear) {
+      return (total += current.pointsTotal);
+    }
+    return total;
+  }, 0);
+  return pointsTotal;
+};
 
 export const getPointsLibrary = createSelector(
   (state: RootState) => state.points.pointsLibrary,
@@ -29,10 +52,10 @@ export const getPointsSummaryWithLibrary = (date: Date) =>
     ) => {
       const month = date.getMonth() + 1;
       const year = date.getFullYear();
-      const pointsSummaries: PointsSummaryDto[] = pointsLibrary.map(
+      const pointsSummaries: PointsSummaryDto[] = pointsLibrary?.map(
         (pointsLibrary) => {
           // Get the points summary for the user for
-          const pointsSummaryForMonth = pointsSummary.find(
+          const pointsSummaryForMonth = pointsSummary?.find(
             (x) =>
               x.month === month &&
               x.year === year &&
@@ -101,7 +124,7 @@ export const getPointsSummariesForActivity = (
       pointsLibrary: PointsLibrary[],
       practitioner: PractitionerDto | undefined
     ) => {
-      const activity = pointsLibrary.find((x) => x.id === id);
+      const activity = pointsLibrary?.find((x) => x.id === id);
       const pointsSummaries: PointsSummaryDto[] = [];
 
       if (!activity) {
@@ -169,16 +192,16 @@ export const getPointsSummaryForYear = () =>
       const pointsSummaries: PointsSummaryDto[] = [];
       const year = new Date().getFullYear();
 
-      pointsLibrary.forEach((activity) => {
-        const activitySummaries = pointsSummary.filter(
-          (x) => x.year === year && x.pointsLibrary?.id === activity.id
+      pointsLibrary?.forEach((activity) => {
+        const activitySummaries = pointsSummary?.filter(
+          (x) => x?.year === year && x?.pointsLibrary?.id === activity.id
         );
 
         const pointsForYear = Math.max(
           ...activitySummaries.map((x) => x.pointsYTD)
         );
 
-        const timesScored = activitySummaries.reduce((total, summary) => {
+        const timesScored = activitySummaries?.reduce((total, summary) => {
           return (total += summary.timesScored);
         }, 0);
 
@@ -215,13 +238,13 @@ export const getPointsSummaryForYear = () =>
 
 export const getPointsTotalForYear = () =>
   createSelector(
-    (state: RootState) => state.points.pointsSummary,
-    (state: RootState) => state.points.pointsLibrary,
+    (state: RootState) => state?.points?.pointsSummary,
+    (state: RootState) => state?.points?.pointsLibrary,
     (pointsSummary: PointsUserSummary[], pointsLibrary: PointsLibrary[]) => {
       let total = 0;
       const currentYear = new Date().getFullYear();
 
-      pointsLibrary.forEach((activity) => {
+      pointsLibrary?.forEach((activity) => {
         const summariesForActivity = pointsSummary
           .filter(
             (x) => x.year === currentYear && x.pointsLibrary?.id === activity.id
@@ -247,3 +270,14 @@ export const getCurrentClubStanding = () =>
       return userClubStanding?.standing;
     }
   );
+
+export const getPointsToDo = (
+  state: RootState
+): PointsToDoItemModel | undefined => state.points.pointsToDo;
+
+export const getTotalYearPoints = (state: RootState): number | undefined =>
+  state.points.yearPoints?.total;
+
+export const getPointsShareData = (
+  state: RootState
+): PointsUserDateSummary | undefined => state.points.shareData;

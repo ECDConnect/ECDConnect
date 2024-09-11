@@ -6,6 +6,7 @@ using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -42,6 +43,7 @@ namespace ECDLink.Security.Api
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly PersonnelService _personnelService;
         private readonly AuthenticationDbContext _dbContext;
+        private readonly INotificationService _notificationService;
 
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
@@ -58,7 +60,8 @@ namespace ECDLink.Security.Api
             SecurityNotificationManager notificationManager,
             PersonnelService personnelService,
             HierarchyEngine hierarchyEngine,
-            AuthenticationDbContext dbContext)
+            AuthenticationDbContext dbContext,
+            [Service] INotificationService notificationService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -73,6 +76,7 @@ namespace ECDLink.Security.Api
             _notificationManager = notificationManager;
             _securityCodeManager = securityCodeManager;
             _dbContext = dbContext;
+            _notificationService = notificationService;
         }
 
         // POST api/auth/login
@@ -332,11 +336,37 @@ namespace ECDLink.Security.Api
 
                 if (userByUsername != null)
                 {
-                   return BadRequest(new FailedVerificationModel
-                   {
-                     ErrorCode = 2,
-                     Error = "Invalid Username"
-                   });
+                    if (TenantExecutionContext.Tenant.TenantType == Tenancy.Enums.TenantType.WhiteLabel)
+                    {
+                        if (!string.IsNullOrEmpty(verifyModel.UserId))
+                        {
+                            var user = _dbContext.Users.Where(user => user.Id.ToString() == verifyModel.UserId).FirstOrDefault();
+                            if (user.IdNumber != verifyModel.Username)
+                            {
+                                return BadRequest(new FailedVerificationModel
+                                {
+                                    ErrorCode = 2,
+                                    Error = "Invalid Username"
+                                });
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest(new FailedVerificationModel
+                            {
+                                ErrorCode = 2,
+                                Error = "Invalid Username"
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(new FailedVerificationModel
+                        {
+                            ErrorCode = 2,
+                            Error = "Invalid Username"
+                        });
+                    }
                  }
             }
 
@@ -569,6 +599,7 @@ namespace ECDLink.Security.Api
             if (newRecord != null)
             {
                 await _notificationManager.SendHelpFormSubmissionToAdministratorAsync((Guid)_applicationUserId, newRecord);
+                await _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.FeedbackNotification);
             }
             else
             {

@@ -49,6 +49,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -200,7 +201,6 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IJWTRepository, JWTRepository>();
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
-            services.AddTransient<ExtendedNotificationManager>();
             services.AddTransient<HealthCareWorkerManager>();
             services.AddTransient<CaregiverManager>();
             services.AddTransient<MotherManager>();
@@ -254,6 +254,8 @@ namespace EcdLink.Api.CoreApi
 
             services.AddControllers();
 
+            if (TelemtryEnabled()) services.AddApplicationInsightsTelemetry();
+
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
         }
 
@@ -275,6 +277,8 @@ namespace EcdLink.Api.CoreApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
+
+            if (TelemtryEnabled()) app.UseMiddleware<CoreApi.Telemetry.TelemetryMiddleware>();
             // TODO: Can't upload images through CKEditor without bypassing Json sanitizer, update or replace.
             //app.UseInputSanitizer();
 
@@ -290,6 +294,17 @@ namespace EcdLink.Api.CoreApi
             GraphStartup.AddGraphConfiguration(app, env);
 
             MoodleStartup.AddMoodleConfiguration(app, env);
+        }
+
+        bool TelemtryEnabled()
+        {
+            var aiConnString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING1");
+            if (!string.IsNullOrEmpty(aiConnString)) return true;
+            var aiConfig = Configuration.GetSection("ApplicationInsights");
+            if (aiConfig == null) return false;
+            aiConnString = aiConfig["ConnectionString"];
+            if (!string.IsNullOrEmpty(aiConnString)) return true; ;
+            return false;
         }
     }
 }

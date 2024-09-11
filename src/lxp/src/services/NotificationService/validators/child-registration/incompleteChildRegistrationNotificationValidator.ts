@@ -1,6 +1,6 @@
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { differenceInCalendarDays } from 'date-fns';
+import { addDays, differenceInCalendarDays } from 'date-fns';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
@@ -8,6 +8,7 @@ import {
   NotificationIntervals,
 } from '../../NotificationService.types';
 import { RoleSystemNameEnum } from '@ecdlink/core';
+import { DateFormats } from '@/constants/Dates';
 
 export class IncompleteChildRegistrationNotificationValidator
   implements NotificationValidator
@@ -60,37 +61,38 @@ export class IncompleteChildRegistrationNotificationValidator
     if (!applicableChildren) return [];
 
     for (const child of applicableChildren) {
-      // if (!isCoach) {
-      //   notifications.push({
-      //     reference: `${child.id || childUser?.firstName}-reg`,
-      //     title: `${childUser?.firstName}'s registration incomplete`,
-      //     message: `If you do not complete ${
-      //       childUser?.firstName
-      //     }'s registration form, ${
-      //       childUser?.firstName
-      //     }'s profile will be removed on ${addDays(
-      //       new Date(child.insertedDate || 0),
-      //       20
-      //     ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}`,
-      //     dateCreated: new Date().toISOString(),
-      //     priority: NotificationPriority.lowest,
-      //     viewOnDashboard: true,
-      //     area: 'child-registration',
-      //     icon: 'XCircleIcon',
-      //     color: 'errorMain',
-      //     viewType: 'Both',
-      //     actionText: 'Finish registration',
-      //     routeConfig: {
-      //       route: '/child-registration',
-      //       params: {
-      //         step: 6,
-      //         childId: child.id,
-      //       },
-      //     },
-      //   });
-      // } else {
-      //   return [];
-      // }
+      if (!isCoach) {
+        notifications.push({
+          reference: `${child.id || child.user?.firstName}-reg`,
+          title: `${child.user?.firstName}'s registration incomplete`,
+          message: `If you do not complete ${
+            child.user?.firstName
+          }'s registration form, ${
+            child.user?.firstName
+          }'s profile will be removed on ${addDays(
+            new Date(child.insertedDate || 0),
+            30
+          ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}`,
+          dateCreated: new Date().toISOString(),
+          priority: 18,
+          viewOnDashboard: true,
+          area: 'child-registration',
+          icon: 'XCircleIcon',
+          color: 'errorMain',
+          viewType: 'Both',
+          actionText: 'Finish registration',
+          routeConfig: {
+            route: '/child-registration',
+            params: {
+              step: 6,
+              childId: child.id,
+              notificationReference: `${child.id || child.user?.firstName}-reg`,
+            },
+          },
+        });
+      } else {
+        return [];
+      }
     }
 
     return notifications;

@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
@@ -19,7 +20,6 @@ using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
 using System;
@@ -42,6 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
           ApplicationUserManager userManager,
+          AuthenticationDbContext dbContext,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
@@ -61,7 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var userImportList = new List<ApplicationUser>();
             var practitionerUsers = new Dictionary<string, Practitioner>();
             var createdUsers = new List<string>();
-
+            var coachRoleName = TenantExecutionContext.Tenant.Modules != null ? TenantExecutionContext.Tenant.Modules.CoachRoleName : "Coach";
             var validationErrors = new List<InputValidationError>();
 
             var bytes = Convert.FromBase64String(file);
@@ -70,8 +71,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
-
-            var idPassportDuplications = ValidateIdPassportDuplications(sheet);
 
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
@@ -98,17 +97,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && cellphone is null)
                     continue;
 
-                var rowErrors = GetPractitionerValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, coachIdOrPassport);
-
-                if (idPassportDuplications.Any())
-                {
-                    // If there is duplicate id or passport numbers add them to the row error list
-                    var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
-                    if (duplicateError != null)
-                    {
-                        rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
-                    }
-                }
+                var rowErrors = new List<string>();
 
                 // Collect all row errors.
                 // Could be on a row with no errors, but previous rows had errors.
@@ -130,7 +119,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var user = new ApplicationUser()
                 {
                     Id = userId,
-                    IdNumber = id,
+                    IdNumber = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                     UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                     FirstName = firstName,
                     Surname = surname,
@@ -148,7 +137,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!string.IsNullOrEmpty(coachIdOrPassport))
                 {
-                    var coachUser = userManager.FindByNameAsync(coachIdOrPassport).Result;
+                    var coachUser = dbContext.Users.Where(user => user.IdNumber == coachIdOrPassport && user.TenantId == tenantId).FirstOrDefault();
 
                     if (coachUser != null)
                     {
@@ -157,7 +146,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     else
                     {
                         validationErrors.Add(
-                            new InputValidationError(row, new List<string> { }, $"Coach does not exist for id/passport {coachIdOrPassport}")
+                            new InputValidationError(row, new List<string> { }, $"{coachRoleName} does not exist for id/passport {coachIdOrPassport}")
                         );
                     }
                 }
@@ -186,7 +175,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
-                var userExists = await userManager.FindByNameAsync(user.UserName);
+
+                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName || (x.IdNumber == user.IdNumber && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
 
                 if (userExists is not null)
                 {
@@ -275,59 +265,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 CreatedUsers = createdUsers,
                 ValidationErrors = validationErrors
             };
-
-            // Local function
-            static List<string> GetPractitionerValidationErrors(
-                string idOrPassport,
-                string id,
-                string passport,
-                string firstName,
-                string surname,
-                string cellphone,
-                string coachIdOrPassport)
-            {
-                var errors = new List<string>();
-                if (idOrPassport is null)
-                    errors.Add("Type of identification is empty");
-
-                var valid = new string[] { "id", "passport" };
-                if (!valid.Contains(idOrPassport))
-                    errors.Add($"Type of identification must be {string.Join(", ", valid)}");
-
-                if (idOrPassport?.ToLowerInvariant() == "id"
-                    && !UserHelper.IsSAIDValid(id))
-                {
-                    if (string.IsNullOrEmpty(id))
-                    {
-                        errors.Add("Id is empty");
-                    }
-                    else
-                    {
-                        errors.Add("Id invalid " + id);
-                    }
-                }
-
-                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
-                    errors.Add("Passport is empty");
-
-                if (firstName is null || firstName.Length == 0)
-                    errors.Add("First Name is empty.");
-
-                if (surname is null || surname.Length == 0)
-                    errors.Add("Surname is empty.");
-
-                if (cellphone is null || cellphone.Length == 0)
-                    errors.Add("Cellphone is empty.");
-
-                if (TenantExecutionContext.Tenant.Modules.CoachRoleEnabled)
-                {
-                    if (string.IsNullOrEmpty(coachIdOrPassport))
-                    {
-                        errors.Add("Coach Id is empty");
-                    }
-                }
-                return errors;
-            }
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
@@ -338,6 +275,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
           ApplicationUserManager userManager,
+          AuthenticationDbContext dbContext,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
@@ -367,8 +305,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var sheet = workbook.GetSheetAt(0);
             var headerRow = sheet.GetRow(0);
 
-            var idPassportDuplications = ValidateIdPassportDuplications(sheet);
-
             // Skip header row by starting at 1.
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
@@ -390,20 +326,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && passport is null
                     && firstName is null
                     && surname is null
-                    && cellphone is null)
+                && cellphone is null)
                     continue;
 
-                var rowErrors = GetCoachValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone);
 
-                if (idPassportDuplications.Any())
-                {
-                    // If there is duplicate id or passport numbers add them to the row error list
-                    var duplicateError = idPassportDuplications.Where(x => x.Row == row).FirstOrDefault();
-                    if (duplicateError != null)
-                    {
-                        rowErrors.Add(duplicateError.Errors.GetItemByIndex(0).ToString());
-                    }
-                }
+                var rowErrors = new List<string>();
 
                 // Collect all row errors.
                 // Could be on a row with no errors, but previous rows had errors.
@@ -423,7 +350,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var user = new ApplicationUser()
                 {
                     Id = userId,
-                    IdNumber = id,
+                    IdNumber = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                     UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                     FirstName = firstName,
                     Surname = surname,
@@ -463,7 +390,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
-                var userExists = await userManager.FindByNameAsync(user.UserName);
+                var userExists = dbContext.Users.Where(x => x.UserName == user.UserName || (x.IdNumber == user.IdNumber && x.TenantId == TenantExecutionContext.Tenant.Id)).FirstOrDefault();
 
                 if (userExists is not null)
                 {
@@ -553,104 +480,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ValidationErrors = validationErrors
             };
 
-            // Local function
-            static List<string> GetCoachValidationErrors(
-                string idOrPassport,
-                string id,
-                string passport,
-                string firstName,
-                string surname,
-                string cellphone)
-            {
-                var errors = new List<string>();
-                if (idOrPassport is null)
-                    errors.Add("Type of identification is empty");
-
-                var valid = new string[] { "id", "passport" };
-                if (!valid.Contains(idOrPassport))
-                    errors.Add($"Type of identification must be {string.Join(", ", valid)}");
-
-                if (idOrPassport?.ToLowerInvariant() == "id"
-                    && !UserHelper.IsSAIDValid(id))
-                {
-                    if (string.IsNullOrEmpty(id))
-                    {
-                        errors.Add("Id is empty");
-                    }
-                    else
-                    {
-                        errors.Add("Id invalid " + id);
-                    }
-                }
-
-                if (idOrPassport.ToLowerInvariant() == "passport" && (passport is null || passport.Length == 0))
-                    errors.Add("Passport is empty");
-
-                if (firstName is null || firstName.Length == 0)
-                    errors.Add("First Name is empty.");
-
-                if (surname is null || surname.Length == 0)
-                    errors.Add("Surname is empty.");
-
-                if (cellphone is null || cellphone.Length == 0)
-                    errors.Add("Cellphone is empty.");
-                return errors;
-            }
         }
-
-        private List<InputValidationError> ValidateIdPassportDuplications(ISheet sheet)
-        {
-            var validationErrors = new List<InputValidationError>();
-            var listItems = new Dictionary<int, String>();
-            for (var row = 1; row <= sheet.LastRowNum; row++)
-            {
-                var currentRow = sheet.GetRow(row);
-
-                if (currentRow is null)
-                {
-                    break;
-                }
-
-                var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
-                var id = UserHelper.CoerceValidSAID(ExcelHelper.GetCellValue(currentRow.GetCell(1)));
-                var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
-
-                if (idOrPassport is null
-                    && id is null
-                    && passport is null)
-                    continue;
-
-                if (id != null)
-                {
-                    listItems.Add(row, id);
-                }
-                if (passport != null)
-                {
-                    listItems.Add(row, passport);
-                }
-            }
-
-            var result = from item in listItems
-                         group item by item.Value into groupedItems
-                         where groupedItems.Count() > 1
-                         select groupedItems;
-
-            foreach (var row in result)
-            {
-                var sameValue = (from item in row select item.Key + "").ToArray();
-
-                if (sameValue.Length > 0)
-                {
-                    for (int i = 0; i < sameValue.Length; i++)
-                    {
-                        validationErrors.Add(new InputValidationError(int.Parse(sameValue[i]), new List<string> { $"Duplicate ID or Passport number for {row.Key}" }, $"Errors on row {sameValue[i]}."));
-                    }
-                }
-            }
-
-            return validationErrors;
-        }
-
 
     }
 }

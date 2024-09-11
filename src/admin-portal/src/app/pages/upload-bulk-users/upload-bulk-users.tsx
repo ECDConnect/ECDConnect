@@ -19,6 +19,7 @@ import { useHistory } from 'react-router';
 import { Alert, Button, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { useTenant } from '../../hooks/useTenant';
 import { pluralize } from '../pages.utils';
+import ROUTES from '../../routes/app.routes-constants';
 
 const acceptedFormats = ['xls', 'xlsx'];
 const allowedFileSize = 13631488;
@@ -87,6 +88,7 @@ export default function UploadBulkUser(props: any) {
               } practitioners!`,
               variant: NOTIFICATION.SUCCESS,
             });
+            history.push(ROUTES.USERS.PRACTITIONERS);
           }
 
           setIsLoading(false);
@@ -118,6 +120,7 @@ export default function UploadBulkUser(props: any) {
                 variant: NOTIFICATION.SUCCESS,
               });
               setIsLoading(false);
+              history.push(ROUTES.USERS.COACHES);
             }
           })
           .finally(() => setIsLoading(false));

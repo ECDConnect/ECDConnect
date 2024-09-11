@@ -41,13 +41,13 @@ class ContentConsentService {
     return response.data.data.GetAllConsent;
   }
 
-  async getOpenConsent(type: ContentConsentTypeEnum): Promise<ConsentDto[]> {
+  async getOpenConsent(name: ContentConsentTypeEnum): Promise<ConsentDto[]> {
     const apiInstance = api(Config.graphQlApi);
 
     const response = await apiInstance.post<any>(``, {
       query: `
-        query openConsent($locale: String, $type: String) {
-          openConsent(locale: $locale,type:$type) {          
+        query openConsent($locale: String, $name: String) {
+          openConsent(locale: $locale,name:$name) {          
             id
             name
             type
@@ -62,7 +62,7 @@ class ContentConsentService {
       `,
       variables: {
         locale: this._locale,
-        type: type,
+        name: name,
       },
     });
 

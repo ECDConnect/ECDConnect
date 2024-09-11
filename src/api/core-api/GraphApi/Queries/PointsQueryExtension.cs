@@ -3,17 +3,12 @@ using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -49,14 +44,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<UserRankingPointsModel> GetRankingDataForUser(
+        public PointsUserYearMonthSummary GetYearPointsView(
+            [Service] IPointsEngineService pointsService,
+            Guid userId)
+        {
+            return pointsService.GetYearPointsView(userId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public PointsUserDateSummary GetSharedData(
             [Service] IPointsEngineService pointsService,
             Guid userId,
-            DateTime startDate,
-            DateTime? endDate)
+            bool isMonthly)
         {
-            return pointsService.GetRankingDataForUser(userId, startDate, endDate);
+            return pointsService.GetSharedData(userId, isMonthly);
         }
+
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

@@ -32,6 +32,14 @@ export interface ThemeColours extends DefaultThemeColors {
   infoDark: string;
   infoBb: string;
   darkBackground: string;
+  quatenary: string;
+  quatenaryMain: string;
+  adminPortalBg: string;
+  darkBlue: string;
+  pointsCardBg: string;
+  pointsCardBarBg: string;
+  quatenaryBg: string;
+  adminBackground: string;
 }
 
 //TODO: (Tenancy) we can't have these hardcoded for multiple tenenats
@@ -51,7 +59,7 @@ export const initialThemeColours: ThemeColours = {
   uiMidDark: '#5e557a',
   uiMid: '#827c93',
   uiLight: '#cac5d8',
-  uiBg: '#F3F1F9',
+  uiBg: '#EFF6FA',
   modalBg: '#cac5d8',
   errorMain: '#ED1414',
   errorDark: '#D20000',
@@ -66,6 +74,15 @@ export const initialThemeColours: ThemeColours = {
   infoDark: '#1752AB',
   infoBb: '#EBF3FF',
   darkBackground: 'red',
+  quatenary: '#1DBADF',
+  quatenaryMain: '#1DBADF',
+  adminPortalBg: '#EFF6FA',
+  darkBlue: '#27385A',
+  pointsCardBg: '#FEEED7',
+  pointsCardBarBg: '#FCCF8C',
+  quatenaryBg: '#D2F1F9',
+  adminBackground: '#EFF6FA',
+  quinary: '#FFD525',
 };
 
 export const themeColoursScheme = Yup.object().shape({

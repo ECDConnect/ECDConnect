@@ -2,18 +2,23 @@ import { PointsSummaryDto } from '@ecdlink/core';
 import { PointsDetailsCard, Typography, renderIcon } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { ReactComponent as EmojiYellowSmile } from '@ecdlink/ui/src/assets/emoji/emoji_yellow_smileEyes.svg';
-import { ReactComponent as EmojiYellowBigSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import { ReactComponent as Star } from '../../../assets/star.svg';
+import { ReactComponent as Trophy } from '../../../assets/trophy.svg';
 import { ReactComponent as Logo } from '@/assets/logo.svg';
 import { ReactComponent as EmojiLightBulb } from '@ecdlink/ui/src/assets/emoji/emoji_lightbulb.svg';
+import { useTenant } from '@/hooks/useTenant';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export type PointsShareProps = {
   viewMode: 'Month' | 'Year';
   pointsSummaries: PointsSummaryDto[];
+  pointsTotal?: string;
   userFullName: string;
   childCount: number;
   clubStanding: number;
   clubName: string;
+  messageNr?: number;
 };
 
 export const PointsShare: React.FC<PointsShareProps> = ({
@@ -23,24 +28,36 @@ export const PointsShare: React.FC<PointsShareProps> = ({
   childCount,
   clubStanding,
   clubName,
+  pointsTotal,
+  messageNr,
 }) => {
-  const pointsTotal = pointsSummaries.reduce(
-    (total, current) =>
-      (total += viewMode === 'Month' ? current.pointsTotal : current.pointsYTD),
-    0
-  );
+  // Wait until the tests start
+  // const pointsTotal = pointsSummaries?.reduce(
+  //   (total, current) =>
+  //     (total +=
+  //       viewMode === 'Month' ? current?.pointsTotal : current?.pointsYTD),
+  //   0
+  // );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const tenant = useTenant();
+  const appName = tenant?.tenant?.applicationName;
 
   return (
     <>
       <div className="bg-primary flex h-24 flex-col items-center">
-        <Logo className="mr-2 h-20 w-48" />
+        <Typography
+          className="mt-6"
+          type={'h1'}
+          color="white"
+          text={`${appName}`}
+        />
       </div>
       <div className="bg-uiBg flex flex-col items-center">
         <Typography
           className="mt-6"
           type={'h1'}
           color="black"
-          text={`${userFullName}'s SmartStart points`}
+          text={`${userFullName}'s ${appName} points`}
         />
         <Typography
           className="mb-3"
@@ -56,29 +73,32 @@ export const PointsShare: React.FC<PointsShareProps> = ({
       <div className="mt-5 flex flex-col p-4">
         <div
           className={`bg-${
-            clubStanding > 50 ? 'successMain' : 'secondary'
+            messageNr === 1 || messageNr === 2 ? 'successMain' : 'quatenary'
           } h-115 mt-2 rounded-lg px-4 py-4 shadow-sm sm:px-6`}
         >
-          <div className="flex flex-row gap-3">
-            {clubStanding > 50 ? (
-              <EmojiYellowBigSmile className="mr-2 h-16 w-16" />
+          <div className="flex flex-row items-center gap-3">
+            {messageNr === 1 || messageNr === 2 ? (
+              <Star className="mr-2 h-16 w-16" />
             ) : (
-              <EmojiYellowSmile className="mr-2 h-16 w-16" />
+              <Trophy className="mr-2 h-16 w-16" />
             )}
             <div className="flex-column gap-3">
               <Typography
                 type="h3"
                 color="uiBg"
                 text={
-                  clubStanding === 100
-                    ? `Top SmartStarter in the ${clubName} for this period!`
-                    : clubStanding > 75
-                    ? `One of the top SmartStarters in the ${clubName} for this period!`
-                    : clubStanding > 50
+                  messageNr === 1
+                    ? `Top ${
+                        practitioner?.isPrincipal ? 'principal' : 'practitioner'
+                      } on ${appName} for this period!`
+                    : messageNr === 2
+                    ? `One of the top ${
+                        practitioner?.isPrincipal ? 'principal' : 'practitioner'
+                      } on ${clubName} for this period!`
+                    : clubStanding > 60
                     ? 'High points earner!'
-                    : 'High points earner!'
+                    : 'Well done'
                 }
-                className="pt-2"
               />
               <table>
                 <tbody>
@@ -99,19 +119,20 @@ export const PointsShare: React.FC<PointsShareProps> = ({
             </div>
           </div>
         </div>
-        {pointsSummaries.map((pointsLibraryScore) => {
+        {pointsSummaries?.map((pointsLibraryScore, idx) => {
           return (
-            <div className="mt-5">
+            <div className="mt-5" key={idx}>
               <PointsDetailsCard
                 pointsEarned={pointsLibraryScore.pointsTotal}
                 activityCount={pointsLibraryScore.timesScored}
-                title={pointsLibraryScore.description || 'Unknown'}
+                title={pointsLibraryScore.activity || 'Unknown'}
                 isShare
                 size="large"
+                textColour="textDark"
                 badgeImage={
                   <Badge
                     className="absolute z-0 h-full w-full"
-                    fill="var(--primary)"
+                    fill="var(--secondary)"
                   />
                 }
               />

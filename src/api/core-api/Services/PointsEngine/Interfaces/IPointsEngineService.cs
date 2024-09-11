@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,8 @@ namespace ECDLink.Core.Services.Interfaces
         List<PointsUserSummary> GetSummaryUserPoints(Guid userId, DateTime startDate, DateTime? endDate = null);
         PointsToDoItemModel GetPointsTodoItems(Guid userId);
         List<PointsActivity> GetPointActivities();
-        List<UserRankingPointsModel> GetRankingDataForUser(Guid userId, DateTime startDate, DateTime? endDate = null);
+        PointsUserYearMonthSummary GetYearPointsView(Guid userId);
+        PointsUserDateSummary GetSharedData(Guid userId, bool isMonthly);
         void CalculateChildAttendanceRegisterSaved(Guid userId);
         void CalculateChildRegistrationComplete(Guid childUserId);
         void CalculateChildRemovedFromPreschool(Guid userId);

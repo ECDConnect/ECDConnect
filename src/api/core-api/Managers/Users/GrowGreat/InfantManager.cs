@@ -180,18 +180,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 AddVisits(infant.Id, infant.User.DateOfBirth);
             }
 
-            if (totalActiveClieants == 0) {
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "infantId",
-                    ReplacementValue = infant.UserId.ToString(),
-                });
-
-               var userToSend = _userManager.FindByIdAsync(_applicationUserId).Result;
-               _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGWalkthroughNotificationInfant, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Blue, replacements);   
-            }
-
             return createdInfant;
         }
         public Infant UpdateInfant(Guid id, InfantModel input)
@@ -771,91 +759,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return infants;
         }
 
-        public void CheckForDuplicateNotification(Infant infant)
-        {
-            var duplicate = _infantRepo.GetAll()
-                .Where(x =>
-                    x.Id != infant.Id
-                    && x.IsActive
-                    && x.User.IsActive
-                    && x.User.FirstName == infant.User.FirstName
-                    && x.Caregiver.FirstName == infant.Caregiver.FirstName
-                    && x.Caregiver.Surname == infant.Caregiver.Surname
-                    && x.Caregiver.PhoneNumber == infant.Caregiver.PhoneNumber)
-            .FirstOrDefault();
-
-            if (duplicate == null)
-            {
-                return;
-            }
-            var adminUsers = _applicationUserManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR).Result;
-
-
-            var replacements = new List<TagsReplacements>
-            {
-                new TagsReplacements()
-                {
-                    FindValue = "ChildFirstName",
-                    ReplacementValue = $"{infant.User.FirstName}"
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "CaregiverFullName",
-                    ReplacementValue = $"{infant.Caregiver.FirstName} {infant.Caregiver.Surname}"
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "ClientPhoneNumber",
-                    ReplacementValue = infant.Caregiver.PhoneNumber
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "CHWFullName",
-                    ReplacementValue = $"{infant.Caregiver.HealthCareWorker.User.FirstName} {infant.Caregiver.HealthCareWorker.User.Surname}"
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "CHWClinicName",
-                    ReplacementValue = infant.Caregiver.HealthCareWorker.Clinic.Name
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "CHWSubDistrictName",
-                    ReplacementValue = infant.Caregiver.HealthCareWorker.Clinic.SubDistrict.Name
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "DuplicateCHWFullName",
-                    ReplacementValue = $"{duplicate.Caregiver.HealthCareWorker.User.FirstName} {duplicate.Caregiver.HealthCareWorker.User.Surname}"
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "DuplicateCHWClinicName",
-                    ReplacementValue = duplicate.Caregiver.HealthCareWorker.Clinic.Name
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "DuplicateCHWSubDistrictName",
-                    ReplacementValue = duplicate.Caregiver.HealthCareWorker.Clinic.SubDistrict.Name
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "DateAdded",
-                    ReplacementValue = duplicate.InsertedDate.ToShortDateString()
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "HealthCareWorkerId",
-                    ReplacementValue = infant.Caregiver.HealthCareWorkerId.ToString()
-                },
-            };
-
-            foreach (var user in adminUsers)
-            {
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DuplicateChildAdded, DateTime.Now.Date, user, "", MessageStatusConstants.Red, replacements,
-                    groupingId: Guid.NewGuid(),
-                    relatedEntities: new List<RelatedEntity> { new RelatedEntity(infant.Id, "Infant") });
-            }
-        }
+        
     }
 }

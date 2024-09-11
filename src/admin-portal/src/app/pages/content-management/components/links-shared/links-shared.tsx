@@ -1,88 +1,55 @@
-import { Button, DialogPosition, FormInput, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  DialogPosition,
+  FormInput,
+  Typography,
+} from '@ecdlink/ui';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { LinkPerSection, LinksSharedProps } from './links-shared.types';
+import { ConnectItem, LinksSharedProps } from './links-shared.types';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { LanguageId } from '../../../../constants/language';
-import { ConnectItem } from '@ecdlink/graphql';
 import ContentLoader from '../../../../components/content-loader/content-loader';
 import { useDialog } from '@ecdlink/core';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 
 export const LinksShared = ({
   contentType,
-  subContentType,
   onClose: cancelEdit,
 }: LinksSharedProps) => {
-  const [linksPerSectionData, setLinksPerSectionData] = useState<
-    LinkPerSection[]
-  >([]);
-
+  const [connectItems, setResourcesLinks] = useState<ConnectItem[]>([]);
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
-
   const dialog = useDialog();
+  const urlRegex =
+    /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
 
   const getAllCall = `GetAll${contentType.name}`;
-  const subGetAllCall = `GetAll${subContentType.name}`;
-
-  const fields =
-    contentType.fields?.map((field) => {
-      return field.fieldName;
-    }) ?? [];
-
-  const subFields =
-    subContentType.fields?.map((field) => {
-      if (field.fieldName === 'linkedConnect') {
-        return `${field.fieldName} {
-        id
-      }`;
-      }
-
-      return field.fieldName;
-    }) ?? [];
-
-  const hint = contentType?.content?.[0]?.contentValues?.find(
-    (item) => item?.contentTypeField?.fieldName === 'hint'
-  )?.value;
 
   const query = gql` 
     query ${getAllCall} ($localeId: String) {
       ${getAllCall} (localeId: $localeId) {
         id
-        ${fields.join('\n')}
-        }
-      }
-  `;
-
-  const subQuery = gql` 
-    query ${subGetAllCall} ($localeId: String) {
-      ${subGetAllCall} (localeId: $localeId) {
-        id
-        ${subFields.join('\n')}
+        link
+        buttonText
+        __typename
         }
       }
   `;
 
   const createMutation = gql`
-    mutation UpdateConnectSection(
-      $input: [CMSConnectModelInput]
+    mutation UpdateConnectItem(
+      $input: [CMSConnectItemModelInput]
       $localeId: String
     ) {
-      updateConnectSection(input: $input, localeId: $localeId)
+      updateConnectItem(input: $input, localeId: $localeId)
     }
   `;
 
-  const { data: sectionsData, loading: loadingSections } = useQuery(query, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      localeId: LanguageId.enZa,
-    },
-  });
-
   const {
-    data: sectionsLinksData,
-    refetch: refetchSectionsLinks,
-    loading: loadingSectionsLinks,
-  } = useQuery(subQuery, {
+    data: linksData,
+    loading: loadingLinks,
+    refetch,
+  } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: LanguageId.enZa,
@@ -91,126 +58,73 @@ export const LinksShared = ({
 
   const [createContent, { loading }] = useMutation(createMutation);
 
-  const sectionsQuantity = contentType?.content?.length ?? 1;
-  // TODO: define this dynamically
-  const linksQuantity = 10;
-
+  const connectQuantitiy = 10;
   const setInitialState = useCallback(() => {
-    const linksPerSectionData = new Array(sectionsQuantity).fill(0).map(() => ({
-      section: '',
-      contentTypeId: 27,
+    const connectLinks = new Array(connectQuantitiy).fill(0).map(() => ({
+      text: '',
+      link: '',
+      contentTypeId: 28,
       contentId: -1,
-      hint,
-      links: new Array(linksQuantity).fill(0).map(() => ({
-        text: '',
-        link: '',
-        contentTypeId: 28,
-        contentId: -1,
-        linkedConnect: -1,
-      })),
-    })) as LinkPerSection[];
+      linkedConnect: 0,
+    })) as ConnectItem[];
 
-    const currentSections = sectionsData?.[getAllCall] ?? [];
+    const currentLinks = linksData?.[getAllCall] ?? [];
 
-    linksPerSectionData?.forEach((sectionData, sectionIndex) => {
-      const currentSection = currentSections?.[sectionIndex];
-
-      sectionData.section =
-        currentSection?.[contentType.fields?.[0]?.fieldName ?? ''] ?? '';
-      sectionData.contentId = currentSection?.id ?? -1;
-
-      const links = sectionsLinksData?.[subGetAllCall]?.filter(
-        (item: ConnectItem) =>
-          item?.linkedConnect?.[0]?.id === currentSection?.id
-      ) as ConnectItem[];
-
-      sectionData?.links?.forEach((link, index) => {
-        link.text = links?.[index]?.buttonText ?? '';
-        link.link = links?.[index]?.link ?? '';
-        link.linkedConnect = currentSection?.id ?? -1;
-        link.contentId = links?.[index]?.id ?? -1;
-      });
+    connectLinks?.forEach((link, index) => {
+      link.text = currentLinks?.[index]?.buttonText ?? '';
+      link.link = currentLinks?.[index]?.link ?? '';
+      link.contentId = currentLinks?.[index]?.id ?? -1;
     });
 
-    setLinksPerSectionData(linksPerSectionData);
-  }, [
-    hint,
-    sectionsData,
-    contentType.fields,
-    getAllCall,
-    sectionsQuantity,
-    sectionsLinksData,
-    subGetAllCall,
-  ]);
-
-  const onChangeSectionTitle =
-    (sectionIndex: number) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { value } = event.target;
-
-      const newLinksPerSectionData = [...linksPerSectionData];
-
-      newLinksPerSectionData[sectionIndex].section = value;
-
-      setLinksPerSectionData(newLinksPerSectionData);
-    };
+    setResourcesLinks(connectLinks);
+  }, [linksData, getAllCall]);
 
   const onChangeLink =
-    (sectionIndex: number) =>
+    (resourceIndex: number) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = event.target;
       const [fieldName, index] = name.split('_');
-      const selectedSection = linksPerSectionData?.[sectionIndex];
-
-      const newLinksPerSectionData = [...linksPerSectionData];
+      const selectedResource = connectItems?.[resourceIndex];
+      const newConnectItemData = [...connectItems];
 
       if (fieldName === 'buttonText') {
-        newLinksPerSectionData[sectionIndex].links[index].text = value;
-      } else if (fieldName === 'buttonLink') {
-        newLinksPerSectionData[sectionIndex].links[index].link = value;
+        newConnectItemData[index].text = value;
+      } else if (fieldName === 'linkText') {
+        newConnectItemData[index].link = value;
       }
-
-      newLinksPerSectionData[sectionIndex].links[index].linkedConnect =
-        selectedSection?.contentId ?? -1;
-
-      setLinksPerSectionData(newLinksPerSectionData);
+      newConnectItemData[index].linkedConnect =
+        selectedResource?.contentId ?? -1;
+      setResourcesLinks(newConnectItemData);
     };
 
   const onCheckLinkError = (
     isToCheck: boolean,
-    sectionIndex: number,
     index: number,
     fieldType: 'text' | 'link'
   ) => {
     if (!isToCheck) return false;
 
-    const hasEmptyField =
-      !linksPerSectionData[sectionIndex]?.links[index]?.[fieldType] &&
+    let hasEmptyField =
+      !connectItems[index]?.[fieldType] &&
       (index === 0 ||
-        !!linksPerSectionData[sectionIndex]?.links[index]?.[
-          fieldType === 'text' ? 'link' : 'text'
-        ]);
+        !!connectItems[index]?.[fieldType === 'text' ? 'link' : 'text']);
+
+    if (fieldType === 'link' && connectItems[index].link !== '') {
+      hasEmptyField = !urlRegex.test(connectItems[index].link);
+    }
 
     return hasEmptyField;
   };
 
   const onFormatPayload = () => {
-    const payload = contentType?.content?.map((data, index) => ({
-      contentTypeId: Number(contentType.id),
-      contentId: Number(data.id),
-      name: linksPerSectionData?.[index]?.section,
-      hint: linksPerSectionData?.[index]?.hint,
-      links: linksPerSectionData?.[index]?.links
-        ?.filter((link) => (link.text && link.link) || link.contentId !== -1)
-        .map((link) => ({
-          buttonText: link.text,
-          link: link.link,
-          linkedConnect: link.linkedConnect,
-          contentTypeId: link.contentTypeId,
-          contentId: link.contentId,
-        })),
-    }));
-
+    const payload = connectItems
+      ?.filter((link) => (link.text && link.link) || link.contentId !== -1)
+      .map((link) => ({
+        text: link.text,
+        link: link.link,
+        contentTypeId: link.contentTypeId,
+        contentId: link.contentId,
+      }));
     return payload;
   };
 
@@ -218,13 +132,10 @@ export const LinksShared = ({
     event?.preventDefault();
 
     setIsSubmitButtonClicked(true);
-
-    const hasEmptyField = linksPerSectionData.some(
-      (sectionData) =>
-        !sectionData.section ||
-        sectionData.links.some((link, index) =>
-          index === 0 ? !link.text || !link.link : !link.text !== !link.link
-        )
+    const hasEmptyField = connectItems.some((link, index) =>
+      index === 0
+        ? !link.text || !link.link || !urlRegex.test(link.link)
+        : !link.text !== !link.link || (link.link && !urlRegex.test(link.link))
     );
 
     if (hasEmptyField) return;
@@ -235,7 +146,7 @@ export const LinksShared = ({
         localeId: LanguageId.enZa,
       },
     }).then(() => {
-      refetchSectionsLinks();
+      refetch();
     });
   };
 
@@ -261,12 +172,38 @@ export const LinksShared = ({
     setInitialState();
   }, [setInitialState]);
 
-  if (loadingSections || loadingSectionsLinks) return <ContentLoader />;
+  const errorLinkMessage = (index) => {
+    var connectItem = connectItems[index];
+
+    if (index === 0) {
+      if (connectItem.link === '') {
+        return 'This field is required.';
+      } else if (!urlRegex.test(connectItem.link)) {
+        return 'Please add a valid link.';
+      }
+    } else {
+      if (connectItem.link === '') {
+        return 'You must add a link for the filled button text.';
+      } else if (!urlRegex.test(connectItem.link)) {
+        return 'Please add a valid link.';
+      }
+    }
+    return '';
+  };
+
+  if (loadingLinks) return <ContentLoader />;
 
   return (
     <form onSubmit={onSubmit}>
-      <div className="flex justify-between">
-        <Typography type="h1" color="textDark" text={contentType.description} />
+      <div className="flex w-full justify-between">
+        <div>
+          <Typography type="h1" color="textDark" text="Community links" />
+          <Typography
+            type="h3"
+            color="textDark"
+            text="Social media links for practitioners & coaches"
+          />
+        </div>
         <Button
           type="filled"
           text="Cancel"
@@ -278,85 +215,44 @@ export const LinksShared = ({
           iconPosition="end"
         />
       </div>
-      <Typography type="h4" color="textMid" text={hint} className="mb-11" />
-      {new Array(sectionsQuantity).fill(0).map((_, sectionIndex) => (
-        <div key={sectionIndex} className="mb-11">
-          <Typography
-            type="h2"
-            color="textDark"
-            text={`Section ${sectionIndex + 1} links`}
-          />
-          <Typography
-            type="help"
-            color="textMid"
-            text={`You must add at least 1 and no more than ${linksQuantity}. If you add a text item, you must add a link.`}
-            className="mb-11"
+      {new Array(connectQuantitiy).fill(0).map((_, linkIndex) => (
+        <div
+          key={linkIndex}
+          className="flex w-full flex-row gap-4 overflow-auto whitespace-nowrap rounded-md bg-white"
+        >
+          <FormInput
+            name={`buttonText_` + linkIndex}
+            label={linkIndex === 0 ? `Button text *` : `Button text`}
+            placeholder="Add text"
+            value={connectItems[linkIndex]?.text}
+            className="w-full"
+            maxCharacters={40}
+            maxLength={40}
+            onChange={onChangeLink(linkIndex)}
+            {...(onCheckLinkError(isSubmitButtonClicked, linkIndex, 'text') && {
+              error: {
+                type: 'required',
+                message:
+                  linkIndex === 0
+                    ? 'This field is required.'
+                    : 'You must add a text for the filled link.',
+              },
+            })}
           />
           <FormInput
-            label="Section title *"
-            placeholder="Add title"
-            className="mb-4"
-            value={linksPerSectionData[sectionIndex]?.section}
-            onChange={onChangeSectionTitle(sectionIndex)}
-            {...(isSubmitButtonClicked &&
-              !linksPerSectionData[sectionIndex]?.section && {
-                error: {
-                  type: 'required',
-                  message: 'This field is required.',
-                },
-              })}
+            name={`linkText_` + linkIndex}
+            label={linkIndex === 0 ? `Link *` : `Link`}
+            placeholder="Add link..."
+            value={connectItems[linkIndex]?.link}
+            className="w-full"
+            onChange={onChangeLink(linkIndex)}
+            {...(onCheckLinkError(isSubmitButtonClicked, linkIndex, 'link') && {
+              error: {
+                type: 'required',
+                message: errorLinkMessage(linkIndex),
+              },
+            })}
           />
-          {new Array(linksQuantity).fill(0).map((_, index) => (
-            <div
-              className="mb-4 flex w-full flex-col gap-4 md:flex-row"
-              key={index}
-            >
-              <FormInput
-                name={`buttonText_${index}`}
-                className="w-full"
-                label={`Button text ${index === 0 ? '*' : ''}`}
-                placeholder="Add text"
-                value={linksPerSectionData[sectionIndex]?.links[index]?.text}
-                onChange={onChangeLink(sectionIndex)}
-                {...(onCheckLinkError(
-                  isSubmitButtonClicked,
-                  sectionIndex,
-                  index,
-                  'text'
-                ) && {
-                  error: {
-                    type: 'required',
-                    message:
-                      index === 0
-                        ? 'This field is required.'
-                        : 'You must add a text for the filled link.',
-                  },
-                })}
-              />
-              <FormInput
-                name={`buttonLink_${index}`}
-                className="w-full"
-                label={`Link ${index === 0 ? '*' : ''}`}
-                placeholder="Add link"
-                value={linksPerSectionData[sectionIndex]?.links[index]?.link}
-                onChange={onChangeLink(sectionIndex)}
-                {...(onCheckLinkError(
-                  isSubmitButtonClicked,
-                  sectionIndex,
-                  index,
-                  'link'
-                ) && {
-                  error: {
-                    type: 'required',
-                    message:
-                      index === 0
-                        ? 'This field is required.'
-                        : 'You must add a link for the filled button text.',
-                  },
-                })}
-              />
-            </div>
-          ))}
         </div>
       ))}
       <Button
@@ -368,7 +264,7 @@ export const LinksShared = ({
         textColor="white"
         text="Save & publish"
         icon="SaveIcon"
-        className="w-full rounded-2xl py-2 px-20 hover:opacity-80 md:w-auto"
+        className="mt-3 w-full rounded-2xl py-2 px-20 hover:opacity-80 md:w-auto"
       />
     </form>
   );

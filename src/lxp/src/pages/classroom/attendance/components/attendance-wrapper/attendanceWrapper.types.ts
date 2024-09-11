@@ -7,4 +7,6 @@ export interface AppState {
   tourActive: boolean;
   attendanceStatus: boolean;
   enableButton: boolean;
+  childId: string;
+  language: string;
 }

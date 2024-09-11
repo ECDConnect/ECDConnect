@@ -65,7 +65,7 @@ export const getDashboardNotification = createSelector(
   getAllNotifications,
   (notifications: Notification[]) => {
     return [...notifications]
-      .sort((a, b) => (a.message.priority < b.message.priority ? 1 : -1))
+      .sort((a, b) => (a.message.priority > b.message.priority ? 1 : -1))
       .find((n) => n.message.viewType !== 'Messages');
   }
 );

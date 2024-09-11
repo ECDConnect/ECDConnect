@@ -27,8 +27,19 @@ import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
+import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 
-export const ChildProgressLanding: React.FC = () => {
+export type ChildProgressLandingRouteState = {
+  childId: string;
+};
+
+interface ChildProgressLandingProps {
+  messageReference?: string;
+}
+
+export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
+  messageReference,
+}) => {
   const history = useHistory();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
@@ -41,6 +52,7 @@ export const ChildProgressLanding: React.FC = () => {
     hasPermissionToCreateProgressReports,
   } = useUserPermissions();
   const {
+    children,
     isReportWindowSet,
     isWithinReportPeriod,
     childReports,
@@ -67,40 +79,65 @@ export const ChildProgressLanding: React.FC = () => {
     hasPermissionToManageChildren || !!practitioner?.isPrincipal;
 
   const handleContinueTrackingProgress = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          customIcon={<RobotIcon className="mb-6" />}
-          importantText="How would you like to track progress today?"
-          detailText="Would you prefer to track progress for a specific child, or by developmental category?"
-          actionButtons={[
-            {
-              text: 'Individual child',
-              textColour: 'white',
-              colour: 'quatenary',
-              type: 'filled',
-              onClick: () => {
-                history.push(ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK);
-                submit();
+    if (!currentReportingPeriod) {
+      dialog({
+        position: DialogPosition.Middle,
+        render: (submit, cancel) => (
+          <ActionModal
+            customIcon={<RobotIcon className="mb-6" />}
+            importantText="There are no reports coming up!"
+            detailText="Looks like all your progress reports are done for the year"
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  cancel();
+                },
+                leadingIcon: 'XIcon',
               },
-              leadingIcon: 'UserIcon',
-            },
-            {
-              text: 'Category',
-              textColour: 'quatenary',
-              colour: 'quatenary',
-              type: 'outlined',
-              onClick: () => {
-                submit();
-                history.push(ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK);
+            ]}
+          />
+        ),
+      });
+    } else {
+      dialog({
+        position: DialogPosition.Middle,
+        render: (submit, cancel) => (
+          <ActionModal
+            customIcon={<RobotIcon className="mb-6" />}
+            importantText="How would you like to track progress today?"
+            detailText="Would you prefer to track progress for a specific child, or by developmental category?"
+            actionButtons={[
+              {
+                text: 'Individual child',
+                textColour: 'white',
+                colour: 'quatenary',
+                type: 'filled',
+                onClick: () => {
+                  history.push(ROUTES.PROGRESS_SELECT_CHILD_TO_TRACK);
+                  submit();
+                },
+                leadingIcon: 'UserIcon',
               },
-              leadingIcon: 'ClipboardListIcon',
-            },
-          ]}
-        />
-      ),
-    });
+              {
+                text: 'Category',
+                textColour: 'quatenary',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => {
+                  submit();
+                  history.push(ROUTES.PROGRESS_SELECT_CATEGORY_TO_TRACK);
+                },
+                leadingIcon: 'ClipboardListIcon',
+              },
+            ]}
+          />
+        ),
+      });
+    }
   }, [dialog]);
 
   //add coming soon
@@ -112,7 +149,9 @@ export const ChildProgressLanding: React.FC = () => {
     <>
       {/* No report periods defined and principal */}
       {!isReportWindowSet && !!practitioner?.isPrincipal && (
-        <ProgressTabNoReportPeriodAndPrincipal />
+        <ProgressTabNoReportPeriodAndPrincipal
+          messageReference={messageReference}
+        />
       )}
       {/* No report periods defined and practitioner */}
       {!isReportWindowSet && !practitioner?.isPrincipal && (
@@ -120,22 +159,26 @@ export const ChildProgressLanding: React.FC = () => {
           principalName={classroom?.principal.firstName || ''}
         />
       )}
-      {/* Report period setup, children, but no reports yet */}
-      {isReportWindowSet && childReports.every((x) => x.isNotStarted) && (
-        <ProgressTabNoReports />
-      )}
       {/* Report period setup, no children */}
-      {isReportWindowSet && !childReports?.length && (
+      {isReportWindowSet && !children?.length && (
         <ProgressTabNoChildren
           canAddChildren={canAddChildren}
           isOnline={isOnline}
           showOnlineOnly={showOnlineOnly}
         />
       )}
+      {/* Report period setup, children, but no reports yet */}
+      {isReportWindowSet &&
+        !!children.length &&
+        childReports.every((x) => x.isNotStarted) && (
+          <ProgressTabNoReports
+            trackProgress={handleContinueTrackingProgress}
+          />
+        )}
       {/* Report period setup, all children over 5 years*/}
       {isReportWindowSet &&
-        !!childReports?.length &&
-        childReports.every((x) => !x.ageInMonths || x.ageInMonths > 60) && (
+        !!children?.length &&
+        children.every((x) => !x.ageInMonths || x.ageInMonths > 60) && (
           <ProgressTabAllChildrenOverFive
             canAddChildren={canAddChildren}
             isOnline={isOnline}
@@ -143,9 +186,11 @@ export const ChildProgressLanding: React.FC = () => {
           />
         )}
       {/* Observations summary */}
-      <div className="mt-2 flex flex-col p-4">
-        {currentReportingPeriod && (
-          <>
+      {isReportWindowSet &&
+        !!children.length &&
+        childReports.some((x) => !x.isNotStarted) &&
+        children.some((x) => !x.ageInMonths || x.ageInMonths < 60) && (
+          <div className="mt-2 flex flex-col p-4">
             <Typography
               color="textDark"
               text={`Report ${currentReportingPeriod?.reportNumber}`}
@@ -162,108 +207,123 @@ export const ChildProgressLanding: React.FC = () => {
                 'd MMM yyyy'
               )}`}
             />
-            <Button
-              onClick={handleContinueTrackingProgress}
-              className="mt-4 w-full"
-              size="small"
-              color="quatenary"
-              textColor="white"
-              type="filled"
-              icon={'PresentationChartBarIcon'}
-              text={'Continue tracking progress'}
-            />
-          </>
-        )}
-
-        <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
-          <div className="justify-center">
-            <ProgressBar
-              label={`${
-                isWithinReportPeriod
-                  ? percentageReportsCompleted
-                  : percentageObservationsCompleted
-              }%`}
-              hint={
-                isWithinReportPeriod
-                  ? 'Reports created'
-                  : 'Observations completed'
-              }
-              subLabel=""
-              isHiddenSubLabel={true}
-              value={
-                isWithinReportPeriod
-                  ? percentageReportsCompleted
-                  : percentageObservationsCompleted
-              }
-              primaryColour="alertMain"
-              secondaryColour="textLight"
-              textColour="textDark"
-            />
-          </div>
-        </Card>
-        {/* Outside report period */}
-        {!isWithinReportPeriod && !isAllObservationsComplete && (
-          <ProgressTabObservationsSummary />
-        )}
-
-        {/* Within report period */}
-        {isWithinReportPeriod && (
-          <>
-            {!isAllReportsComplete && <ProgressTabReportSummary />}
-            {isAllObservationsComplete &&
-              !isAllReportsComplete &&
-              !hasPermissionToCreateProgressReports &&
-              !practitioner?.isPrincipal && (
-                <>
-                  <Alert
-                    type="success"
-                    title="Well done!"
-                    message="You can keep observing children and change your responses."
-                    className="mt-4"
-                  />
-                  <Button
-                    onClick={handleContinueTrackingProgress}
-                    className="mt-4 w-full"
-                    size="small"
-                    color="quatenary"
-                    textColor="white"
-                    type="filled"
-                    icon={'PresentationChartBarIcon'}
-                    text={'Continue tracking progress'}
-                  />
-                </>
-              )}
-            {isAllReportsComplete && (
-              <>
-                <Button
-                  onClick={() => {}}
-                  className="mt-4 w-full"
-                  size="small"
-                  color="quatenary"
-                  textColor="white"
-                  type="filled"
-                  icon={'DownloadIcon'}
-                  text={'Download all progress reports'}
-                />
-                <Button
-                  onClick={() =>
-                    history.replace(
-                      ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
-                    )
+            {(!isAllObservationsComplete || !isWithinReportPeriod) && (
+              <Button
+                onClick={handleContinueTrackingProgress}
+                className="mt-4 w-full"
+                size="small"
+                color="quatenary"
+                textColor="white"
+                type="filled"
+                icon={'PresentationChartBarIcon'}
+                text={'Continue tracking progress'}
+              />
+            )}
+            <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
+              <div className="justify-center">
+                {((isWithinReportPeriod &&
+                  percentageReportsCompleted === 100) ||
+                  (!isWithinReportPeriod &&
+                    percentageObservationsCompleted === 100)) && (
+                  <div className="mt-6 flex w-full justify-center">
+                    <EmojiYellowSmile className="h-20 w-20" />
+                  </div>
+                )}
+                <ProgressBar
+                  label={`${
+                    isWithinReportPeriod
+                      ? percentageReportsCompleted
+                      : percentageObservationsCompleted
+                  }%`}
+                  hint={
+                    isWithinReportPeriod
+                      ? 'Reports created'
+                      : 'Observations completed'
                   }
-                  className="mt-4 w-full"
-                  size="small"
-                  color="quatenary"
-                  textColor="quatenary"
-                  type="outlined"
-                  icon={'EyeIcon'}
-                  text={'See Sumamry'}
+                  subLabel=""
+                  isHiddenSubLabel={true}
+                  value={
+                    isWithinReportPeriod
+                      ? percentageReportsCompleted
+                      : percentageObservationsCompleted
+                  }
+                  primaryColour={
+                    (isWithinReportPeriod &&
+                      percentageReportsCompleted === 100) ||
+                    (!isWithinReportPeriod &&
+                      percentageObservationsCompleted === 100)
+                      ? 'successMain'
+                      : 'alertMain'
+                  }
+                  secondaryColour="textLight"
+                  textColour="textDark"
                 />
+              </div>
+            </Card>
+            {/* Outside report period */}
+            {!isWithinReportPeriod && !isAllObservationsComplete && (
+              <ProgressTabObservationsSummary />
+            )}
+
+            {/* Within report period */}
+            {isWithinReportPeriod && (
+              <>
+                {!isAllReportsComplete && <ProgressTabReportSummary />}
+                {isAllObservationsComplete &&
+                  !isAllReportsComplete &&
+                  !hasPermissionToCreateProgressReports &&
+                  !practitioner?.isPrincipal && (
+                    <>
+                      <Alert
+                        type="success"
+                        title="Well done!"
+                        message="You can keep observing children and change your responses."
+                        className="mt-4"
+                      />
+                      <Button
+                        onClick={handleContinueTrackingProgress}
+                        className="mt-4 w-full"
+                        size="small"
+                        color="quatenary"
+                        textColor="white"
+                        type="filled"
+                        icon={'PresentationChartBarIcon'}
+                        text={'Continue tracking progress'}
+                      />
+                    </>
+                  )}
+                {isAllReportsComplete && (
+                  <>
+                    <Button
+                      onClick={() => {}}
+                      className="mt-auto w-full"
+                      size="small"
+                      color="quatenary"
+                      textColor="white"
+                      type="filled"
+                      icon={'DownloadIcon'}
+                      text={'Download all progress reports'}
+                    />
+                    <Button
+                      onClick={() =>
+                        history.replace(
+                          ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+                        )
+                      }
+                      className="mt-4 w-full"
+                      size="small"
+                      color="quatenary"
+                      textColor="quatenary"
+                      type="outlined"
+                      icon={'EyeIcon'}
+                      text={'See Summary'}
+                    />
+                  </>
+                )}
               </>
             )}
-          </>
+          </div>
         )}
-      </div>
     </>
   );
 };

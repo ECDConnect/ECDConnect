@@ -60,34 +60,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 .FirstOrDefault();
         }
 
-
-        public void OnRemoveCheckNotifications(Guid healthCareWorkerId)
-        {
-            // Find any opted out notifications featuring this user
-            var notifications = _notificationService.GetMessages(TemplateTypeConstants.HealthCareWorkersOptedOut, healthCareWorkerId)
-                .Where(x => x.GroupingId.HasValue)
-                .GroupBy(x => x.GroupingId.Value)
-                .Select(x => new { GroupingId = x.Key, RelatedEntities = x.First().MessageLogRelatedTos.Select(x => x.RelatedEntityId).ToList() });
-
-            if (!notifications.Any())
-            {
-                return;
-            }
-
-            foreach (var notification in notifications)
-            {
-                // Check if all CHWs have been removed
-                var allRemoved = _healthCareWorkerRepo.GetAll()
-                    .Where(x => notification.RelatedEntities.Contains(x.Id))
-                    .All(x => !x.IsActive);
-
-                if (allRemoved)
-                {
-                    _notificationService.DeleteGroupNotifications(notification.GroupingId);
-                }
-            }
-        }
-
         public List<PortalUsersHCWModel> GetAllHealthCareWorkers(
             string search = null,
             List<Guid> provinceSearch = null,

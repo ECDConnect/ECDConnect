@@ -22,4 +22,5 @@ export enum LocalStorageKeys {
   practitionerInvitedPrincipalIdNumber = 'practitionerInvitedPrincipal',
   practitionerInvitedPrincipalUserId = 'practitionerInvitedPrincipalUserId',
   firstTimeOnCommunityDashboard = 'firstTimeOnCommunityDashboard',
+  classroomForInvitedUser = 'classroomForInvitedUser',
 }

@@ -184,8 +184,6 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             Mother mother = repository.GetById(Guid.Parse(motherId));
             mother.IsActive = false;
             repository.Update(mother);
-
-            _notificationService.DeleteGroupNotifications(TemplateTypeConstants.DuplicateMotherAdded, mother.Id);
         }
 
         private void ArchiveInfant(string infantId)
@@ -195,8 +193,6 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             Infant infant = repository.GetById(Guid.Parse(infantId));
             infant.IsActive = false;
             repository.Update(infant);
-
-            _notificationService.DeleteGroupNotifications(TemplateTypeConstants.DuplicateChildAdded, infant.Id);
         }
     }
 }

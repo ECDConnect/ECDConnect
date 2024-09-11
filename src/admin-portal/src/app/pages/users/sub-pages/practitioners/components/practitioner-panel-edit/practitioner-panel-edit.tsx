@@ -225,6 +225,7 @@ export default function PractitionerPanelEdit({
           ? practitionerForm.principalHierarchy
           : null,
       Progress: 0,
+      ProgressWalkthroughComplete: false,
     };
 
     await updatePractitioner({

@@ -64,14 +64,14 @@ export const CheckboxGroup = <T extends FieldValues = {}>({
   return (
     <label
       htmlFor={id}
-      className={`${className} text-textDark relative flex items-center overflow-hidden rounded-lg p-4 ${
+      className={`${className} text-textDark relative flex items-center rounded-lg p-4 ${
         checked
           ? `${
               isAdminPortalInput
-                ? 'bg-quaternary border-secondary border-2'
+                ? 'bg-adminPortalBg border-secondary border-2'
                 : 'bg-quatenaryBg border-quatenary border-2'
             }`
-          : `${isAdminPortalInput ? 'bg-adminPortalBg' : 'bg-uiBg'}`
+          : `${isAdminPortalInput ? 'border-secondary border-2' : 'bg-uiBg'}`
       }`}
     >
       {nameProp && register && (
