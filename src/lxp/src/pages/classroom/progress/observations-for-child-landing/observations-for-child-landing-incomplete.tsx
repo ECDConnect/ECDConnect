@@ -134,7 +134,7 @@ export const ObservationsForChildLandingIncomplete: React.FC<
           />
         )}
       </div>
-      <div id="startObservationsButton">
+      <div id="startObservationsButton" className="mt-auto mb-4">
         <Button
           onClick={() => {
             if (isWalkthrough) {
@@ -145,7 +145,7 @@ export const ObservationsForChildLandingIncomplete: React.FC<
               childId: childId,
             });
           }}
-          className="mt-auto mb-4 w-full"
+          className="w-full"
           size="normal"
           color="quatenary"
           type="filled"

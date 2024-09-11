@@ -3,9 +3,7 @@ import {
   UserDto,
   useDialog,
   usePrevious,
-  useTheme,
 } from '@ecdlink/core';
-import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
   ActionModal,
@@ -47,14 +45,10 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { NextOfKin } from './next-of-kin/next-of-kin';
-import { coachSelectors } from '@/store/coach';
-import { contentReportSelectors } from '@/store/content/report';
 import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
 import { PractitionerAboutRouteState } from './practitioner-about.types';
 import { BackToCommunityDialog } from '@/pages/coach/coach-about/components/back-to-community-dialog/indext';
 import { useTenant } from '@/hooks/useTenant';
-import { Editpassword } from './edit-password/edit-password';
-import { NewPassword } from '@/pages/auth/new-password/new-password';
 import { DialogFormInput } from '@/models/practitioner/DialogFormInput';
 import {
   PractitionerAccountModel,
@@ -63,6 +57,7 @@ import {
 } from '@/schemas/practitioner/practitioner-account';
 import { UserResetPasswrodParams } from '@/store/user/user.types';
 import { communitySelectors } from '@/store/community';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const PractitionerAbout: React.FC = () => {
   const location = useLocation<PractitionerAboutRouteState>();
@@ -70,19 +65,13 @@ export const PractitionerAbout: React.FC = () => {
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const {
-    userProfilePicture,
-    deleteDocument,
-    createNewDocument,
-    updateDocument,
-  } = useDocuments();
+  const { userProfilePicture, deleteDocument } = useDocuments();
 
   const communityProfile = useSelector(communitySelectors.getCommunityProfile);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
-  const [editPassword, setEditPassword] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
   const tenant = useTenant();
@@ -123,7 +112,6 @@ export const PractitionerAbout: React.FC = () => {
 
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
-  const coach = useSelector(coachSelectors?.getCoach);
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const reportingPeriod = useMemo(
@@ -162,8 +150,6 @@ export const PractitionerAbout: React.FC = () => {
     defaultValues: getDefaultFormvalues(),
     mode: 'onChange',
   });
-
-  const { theme } = useTheme();
 
   const handleUsingPhotoInReports = (using: boolean) => {
     dialog({
@@ -533,7 +519,7 @@ export const PractitionerAbout: React.FC = () => {
       </Dialog>
       <BannerWrapper
         showBackground
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         title={'About me'}
         color={'primary'}

@@ -141,38 +141,6 @@ namespace ECDLink.Security.Api
             return Ok(false);
         }
 
-        [Route("accept-team-lead-invitation")]
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> AcceptTeamLeadInvitation([FromBody] AcceptInvitationModel invitationModel)
-        {
-            var decodedToken = TokenHelper.DecodeToken(invitationModel.Token);
-
-            var user = await _invitationManager.GetValidUserWithTokenAsync(invitationModel.Username, decodedToken);
-
-            if (user == null)
-            {
-                return BadRequest("Invalid token");
-            }
-
-            if (!await _passwordManager.IsPasswordSecureAsync(user, invitationModel.Password))
-            {
-                return BadRequest();
-            }
-
-            await _passwordManager.AddPasswordAsync(user, invitationModel.Password);
-
-            var userIsTL = await _userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
-            if (userIsTL)
-            {
-                _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.TeamLeadInvitation);
-                _personnelService.RegisterTeamLead(user.Id);
-                return Ok(true);
-            }
-
-            return Ok(false);
-        }
-
         [Route("verify-invitation")]
         [AllowAnonymous]
         [HttpPost]

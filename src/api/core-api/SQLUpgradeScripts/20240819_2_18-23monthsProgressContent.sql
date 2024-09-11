@@ -366,7 +366,7 @@ VALUES(7, true, CURRENT_DATE, CURRENT_DATE, '', null, false) returning "Id" into
 
 -- Insert content values for skill
 INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
-VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_name_id, 'If you ask [childFirstName] to give you three objects (e.g., stones, beans), does { childFirstName } give you the correct amount?', null, null, CURRENT_DATE, CURRENT_DATE);  
+VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_name_id, 'If you ask [childFirstName] to give you three objects (e.g., stones, beans), does [childFirstName] give you the correct amount?', null, null, CURRENT_DATE, CURRENT_DATE);  
 
 INSERT INTO public."ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "StatusId", "TenantId", "InsertedDate", "UpdatedDate")
 VALUES(content_id, '9688cd08-adef-408c-9d34-5d75ae5c44df', content_type_field_value_id, 'If you ask them to give you three objects (e.g., stones, beans), do they give you the correct amount', null, null, CURRENT_DATE, CURRENT_DATE);

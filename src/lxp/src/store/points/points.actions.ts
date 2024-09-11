@@ -3,6 +3,7 @@ import { RootState, ThunkApiType } from '../types';
 import {
   PointsLibrary,
   PointsToDoItemModel,
+  PointsUserDateSummary,
   PointsUserSummary,
   PointsUserYearMonthSummary,
   UserClubStandingModel,
@@ -211,6 +212,40 @@ export const pointsTodoItems = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
       return todoPoints;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const sharedData = createAsyncThunk<
+  PointsUserDateSummary | undefined,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { userId: string; isMonthly: boolean },
+  ThunkApiType<RootState>
+>(
+  'sharedData',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId, isMonthly }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let pointShareData: PointsUserDateSummary | undefined;
+
+      if (userAuth?.auth_token) {
+        pointShareData = await new PointsService(
+          userAuth?.auth_token
+        ).sharedData(userId, isMonthly);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+      if (pointShareData) {
+        return pointShareData;
+      } else {
+        return undefined;
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

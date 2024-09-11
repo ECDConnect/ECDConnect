@@ -70,16 +70,13 @@ export const ObservationsForChildLanding: React.FC = () => {
             />
           </div>
           {/* Current observations still in progress */}
-          {isWalkthrough &&
-            stepIndex < 5 &&
-            !currentReport?.observationsCompleteDate && (
-              <ObservationsForChildLandingIncomplete
-                childId={routeState.childId}
-                currentAgeGroup={
-                  isWalkthrough ? ageGroup : observationsAgeGroup!
-                }
-              />
-            )}
+          {((isWalkthrough && stepIndex < 5) ||
+            !currentReport?.observationsCompleteDate) && (
+            <ObservationsForChildLandingIncomplete
+              childId={routeState.childId}
+              currentAgeGroup={isWalkthrough ? ageGroup : observationsAgeGroup!}
+            />
+          )}
           {/* All observations completed for current report period, but we are still outside the window */}
           {(isWalkthrough && stepIndex > 5) ||
             (!!currentReport && !!currentReport.observationsCompleteDate && (

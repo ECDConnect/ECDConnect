@@ -165,7 +165,8 @@ namespace EcdLink.Api.CoreApi.Services
                 if (input.DateCompleted != null)
                 {
                     existingReport.DateCompleted = input.DateCompleted;
-                    
+                    // generate points for creating a new report
+                    _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
                 }
 
                 if (input.ObservationsCompleteDate != null)
@@ -184,17 +185,21 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var newReport = new ChildProgressReport
                 {
+                    Id = input.Id,
                     UserId = _contextUserId,
                     ChildId = input.ChildId,
                     ChildProgressReportPeriodId = input.ChildProgressReportPeriodId,
                     DateCompleted = input.DateCompleted,
                     ObservationsCompleteDate = input.ObservationsCompleteDate,
-                    ReportContent = JsonConvert.SerializeObject(reportContent),
+                    ReportContent = JsonConvert.SerializeObject(reportContent),                    
                 };
 
                 _childProgressReportRepo.Insert(newReport);
-                // generate points for creating a new report
-                _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
+
+                if (input.ObservationsCompleteDate != null)
+                {
+                    _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
+                }
             }
         }
 

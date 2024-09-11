@@ -19,6 +19,7 @@ import {
   markAsReadNotification,
 } from '@/store/notifications/notifications.actions';
 import { MessageActionConfig } from '@models/messages/messages';
+import { referenceNames } from '@/services/NotificationService/validators/points/poinstNotificationValidator.types';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
@@ -101,6 +102,22 @@ export const Messages: React.FC = () => {
       }
     }
 
+    const resetNotificationOnClick =
+      notification?.message?.reference ===
+        referenceNames?.yearPointsGreaterThen0 ||
+      notification?.message?.reference ===
+        referenceNames?.getSevenDaysBeforeWithNoProgressReports ||
+      notification?.message?.reference ===
+        referenceNames?.allChildrenProgressReportsCompleted ||
+      notification?.message?.reference ===
+        referenceNames?.allChildrenProgressReportsCreated ||
+      notification?.message?.reference ===
+        referenceNames?.pastDeadlineDateForProgressReports;
+
+    if (resetNotificationOnClick) {
+      appDispatch(notificationActions.removeNotification(notification!));
+    }
+
     if (notification.message.routeConfig) {
       history.push(
         notification.message.routeConfig.route,
@@ -139,7 +156,7 @@ export const Messages: React.FC = () => {
             <MessageCard
               key={`message-card-${notification.message.reference}`}
               className={''}
-              status={notification.isNew ? 'new' : 'viewed'}
+              status={notification?.isNew ? 'new' : 'viewed'}
               title={notification.message.title}
               message={notification.message.message}
               dateCreated={notification.message.dateCreated}

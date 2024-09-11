@@ -121,7 +121,7 @@ namespace ECDLink.PostgresTenancy.Caching
         {
             var result = _tenantService.UpdateTenantThemePath(tenantId, themePath);
             if (result == null) return null;
-            AddToCache(result);
+            //AddToCache(result);
             return result;
         }
 

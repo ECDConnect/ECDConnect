@@ -11,6 +11,7 @@ import { ContentTypeDto, usePrevious } from '@ecdlink/core';
 import {
   ActivitiesTitles,
   ContentManagementView,
+  ResourcesTitles,
 } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, TitleListDataItem, classNames } from '@ecdlink/ui';
@@ -26,6 +27,7 @@ import { LinksShared } from './components/links-shared/links-shared';
 import ProgressToolsContentList from './sub-pages/content-list/components/progress-tools-content-list/progress-tools-content-list';
 import { useTenant } from '../../hooks/useTenant';
 import { LinksSharedResource } from './components/links-shared/links-shared-resource';
+import ResourceList from './sub-pages/content-list/components/resources/resource-list';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -163,38 +165,46 @@ export function ContentManagement() {
   const handleSubTabs = useCallback(() => {
     if (specialType === ContentManagementTabs.RESOURCES.name) {
       return setSubTabs([
-        // {
-        //   title: 'Classroom resources',
-        //   description: 'Add or edit resources in the classroom section of the app',
-        //   titleIcon: 'PuzzleIcon',
-        //   titleIconClassName: 'bg-secondary text-white',
-        //   onActionClick: () => {
-        //     setSpecialType('');
-        //     const selectedTypeObject = dataTypes?.contentTypes.find(
-        //       (type: ContentTypeDto) =>
-        //         type.name === ContentTypes.COACHING_CIRCLE_TOPICS
-        //     );
-        //     showGroupContentTypes(selectedTypeObject);
-        //   },
-        //   classNames: 'bg-white',
-        // },
-        // {
-        //   title: 'Business resources',
-        //   description: 'Add or edit resources in the business section of the app',
-        //   titleIcon: 'OfficeBuildingIcon',
-        //   titleIconClassName: 'bg-secondary text-white',
-        //   onActionClick: () => {
-        //     setSpecialType('');
-        //     const selectedTypeObject = dataTypes?.contentTypes.find(
-        //       (type: ContentTypeDto) =>
-        //         type.name === ContentTypes.COACHING_CIRCLE_TOPICS
-        //     );
-        //     showGroupContentTypes(selectedTypeObject);
-        //   },
-        //   classNames: 'bg-white',
-        // },
         {
-          title: 'Community links',
+          title: ResourcesTitles.ClassroomResources,
+          description:
+            'Add or edit resources in the classroom section of the app',
+          titleIcon: 'PuzzleIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) =>
+                type.name === ContentTypes.CLASSROOMBUSINESSRESOURCE
+            );
+            setChoosedSectionTitleSectionTitle(
+              ResourcesTitles.ClassroomResources
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+        {
+          title: ResourcesTitles.BusinessResources,
+          description:
+            'Add or edit resources in the business section of the app',
+          titleIcon: 'OfficeBuildingIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) =>
+                type.name === ContentTypes.CLASSROOMBUSINESSRESOURCE
+            );
+            setChoosedSectionTitleSectionTitle(
+              ResourcesTitles.BusinessResources
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+        {
+          title: ResourcesTitles.CommunityLinks,
           description:
             'Add or edit the links shared with practitioners and coaches',
           titleIcon: 'LinkIcon',
@@ -204,12 +214,13 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === ContentTypes.CONNECT_ITEM
             );
+            setChoosedSectionTitleSectionTitle(ResourcesTitles.CommunityLinks);
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
         },
         {
-          title: 'Child progress report links for caregivers',
+          title: ResourcesTitles.ChildProgressReportLinksForCaregivers,
           description:
             'Change the links to be added to the child progress reports for caregivers',
           titleIcon: 'DocumentReportIcon',
@@ -218,6 +229,9 @@ export function ContentManagement() {
             setSpecialType('');
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === ContentTypes.RESOURCE_LINK
+            );
+            setChoosedSectionTitleSectionTitle(
+              ResourcesTitles.ChildProgressReportLinksForCaregivers
             );
             showGroupContentTypes(selectedTypeObject);
           },
@@ -237,7 +251,7 @@ export function ContentManagement() {
           onActionClick: () => {
             setSpecialType('');
             const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'Theme'
+              (type: ContentTypeDto) => type.name === ContentTypes.THEME
             );
             setChoosedSectionTitleSectionTitle('');
             showGroupContentTypes(selectedTypeObject);
@@ -254,7 +268,7 @@ export function ContentManagement() {
           onActionClick: () => {
             setSpecialType('');
             const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'Activity'
+              (type: ContentTypeDto) => type.name === ContentTypes.ACTIVITY
             );
             setChoosedSectionTitleSectionTitle(
               ActivitiesTitles.SmallLargeGroupActivities
@@ -443,7 +457,6 @@ export function ContentManagement() {
                     )}
 
                   {selectedType &&
-                    selectedType.name !== ContentTypes.RESOURCE_LINK &&
                     selectedType.name ===
                       ContentTypes.PROGRESS_TRACKING_SKILL &&
                     languages?.GetAllLanguage &&

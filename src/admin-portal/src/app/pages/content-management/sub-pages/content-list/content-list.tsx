@@ -268,6 +268,43 @@ export default function ContentList({
         setDisplayFields(smallLargeGroupsDisplayFields);
         return;
       }
+      if (contentType.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
+        const resourceFields = displayFields?.filter(
+          (item) =>
+            item?.fieldName === 'title' ||
+            item?.fieldName === 'resourceType' ||
+            item?.fieldName === 'dataFree' ||
+            item?.fieldName === 'numberLikes' ||
+            item?.fieldName === 'updatedDate'
+        );
+
+        const resourceItems = resourceFields
+          .map((item: any) => ({
+            ...item,
+            displayName:
+              item.fieldName === 'title'
+                ? 'Resource title'
+                : item.fieldName === 'resourceType'
+                ? 'Type'
+                : item.fieldName === 'dataFree'
+                ? 'Data free?'
+                : item.displayName,
+            fieldOrder:
+              item.fieldName === 'title'
+                ? 1
+                : item.fieldName === 'resourceType'
+                ? 2
+                : item.fieldName === 'dataFree'
+                ? 3
+                : item.fieldOrder,
+          }))
+          .sort(function (a, b) {
+            return a.fieldOrder - b.fieldOrder;
+          });
+
+        setDisplayFields(resourceItems);
+        return;
+      }
 
       setDisplayFields(displayFields);
     }
@@ -419,9 +456,8 @@ export default function ContentList({
   }, [languages]);
 
   useEffect(() => {
-    if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-      setSearchText('Search by topic…');
-      setButtonText('Topic');
+    if (contentType.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
+      setButtonText('Resource');
     } else if (contentType?.name === 'StoryBook') {
       setButtonText('Story');
     }
@@ -432,7 +468,6 @@ export default function ContentList({
       content: item,
       languageId: languageId,
     };
-
     viewContent(model);
   };
 
