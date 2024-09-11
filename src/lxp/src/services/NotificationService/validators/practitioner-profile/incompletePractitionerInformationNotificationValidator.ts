@@ -73,10 +73,7 @@ export class IncompletePractitionerInformationNotificationValidator
         (!addedByPrincipal &&
           practitionerState?.practitioner?.progress === 0) ||
         (practitionerState?.practitioner?.progress === 1.0 &&
-          !addedByPrincipal) ||
-        (practitionerState?.practitioner?.progress === 2 &&
-          !addedByPrincipal &&
-          !classroomState?.classroom?.name);
+          !addedByPrincipal);
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (isTrainee) {
@@ -128,11 +125,11 @@ export class IncompletePractitionerInformationNotificationValidator
           return [];
         }
       }
-
+      console.log({ showNotificationForPrincipalFlow });
       if (showNotificationForPrincipalFlow) {
         return [
           {
-            reference: `practitioner-profile`,
+            reference: `principal-profile`,
             // Check if user skip the link to a principal step
             title:
               practitionerState?.practitioner?.progress === 1.0
