@@ -13,7 +13,10 @@ update "MessageTemplate" set "Ordering"= 12 where "TemplateType" = 'submit-weekl
 update "MessageTemplate" set "Ordering"= 13 where "TemplateType" = 'statements-60-days-notification';
 update "MessageTemplate" set "Ordering"= 14 where "TemplateType" = 'statements-30-days-notification';
 update "MessageTemplate" set "Ordering"= 15 where "TemplateType" = 'calendar-invitation';
-update "MessageTemplate" set "Ordering"= 16 where "TemplateType" = 'reassigned-to-new-class';
+update "MessageTemplate" set "Ordering"= 16, "Action" = '{"url":"/classroom","state":{"activeTabIndex":"0"}}' where "TemplateType" = 'reassigned-to-new-class';
 update "MessageTemplate" set "Ordering"= 17 where "TemplateType" = 'coach-remove-practitioner';
 update "MessageTemplate" set "Ordering"= 18 where "TemplateType" = 'open-community-connections';
 update "MessageTemplate" set "Ordering"= 19 where "TemplateType" = 'feedback-notification';
+
+
+
