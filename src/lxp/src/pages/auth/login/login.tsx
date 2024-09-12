@@ -32,7 +32,6 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { syncThunkActions } from '@/store/sync';
 import { userThunkActions } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
-import { IncorrectBrowser } from './incorrect-browser/incorrect-browser';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -216,7 +215,7 @@ export const Login: React.FC = () => {
                 text: 'Close',
                 colour: 'quatenary',
                 type: 'outlined',
-                onClick: () => {},
+                onClick: () => onSubmit(),
                 textColour: 'quatenary',
                 leadingIcon: 'XIcon',
               },
@@ -231,9 +230,11 @@ export const Login: React.FC = () => {
 
   useEffect(() => {
     if (
-      !userAgent.includes('Firefox') ||
-      !(userAgent.includes('Chrome') && !userAgent.includes('Edg'))
+      userAgent.includes('Firefox') ||
+      (userAgent.includes('Chrome') && !userAgent.includes('Edg'))
     ) {
+      return;
+    } else {
       handleIncorrectBrowser();
     }
   }, [userAgent]);

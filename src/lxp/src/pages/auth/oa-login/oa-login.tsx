@@ -225,7 +225,7 @@ export const OaLogin: React.FC = () => {
                 text: 'Close',
                 colour: 'quatenary',
                 type: 'outlined',
-                onClick: () => {},
+                onClick: () => onSubmit(),
                 textColour: 'quatenary',
                 leadingIcon: 'XIcon',
               },
@@ -240,9 +240,11 @@ export const OaLogin: React.FC = () => {
 
   useEffect(() => {
     if (
-      !userAgent.includes('Firefox') ||
-      !(userAgent.includes('Chrome') && !userAgent.includes('Edg'))
+      userAgent.includes('Firefox') ||
+      (userAgent.includes('Chrome') && !userAgent.includes('Edg'))
     ) {
+      return;
+    } else {
       handleIncorrectBrowser();
     }
   }, [userAgent]);

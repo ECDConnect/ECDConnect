@@ -238,7 +238,7 @@ export const SignUp: React.FC = () => {
                 text: 'Close',
                 colour: 'quatenary',
                 type: 'outlined',
-                onClick: () => {},
+                onClick: () => onSubmit(),
                 textColour: 'quatenary',
                 leadingIcon: 'XIcon',
               },
@@ -253,9 +253,11 @@ export const SignUp: React.FC = () => {
 
   useEffect(() => {
     if (
-      !userAgent.includes('Firefox') ||
-      !(userAgent.includes('Chrome') && !userAgent.includes('Edg'))
+      userAgent.includes('Firefox') ||
+      (userAgent.includes('Chrome') && !userAgent.includes('Edg'))
     ) {
+      return;
+    } else {
       handleIncorrectBrowser();
     }
   }, [userAgent]);
