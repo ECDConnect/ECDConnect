@@ -350,6 +350,11 @@ export const PointsSummary: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
+  const practitionerWithAttendancePermissionPointsToDo =
+    !practitioner?.isPrincipal && planActivitiesPermission?.isActive === true
+      ? getCurrentPointsToDo < 4
+      : getCurrentPointsToDo < 3;
+
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
     prop: K,
@@ -971,12 +976,9 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMMM yyyy')}
           />
-          {(!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true
-            ? getCurrentPointsToDo < 4
-            : getCurrentPointsToDo < 3 ||
-              !pointsTotalForYear ||
-              (pointsTotalForYear && pointsTotalForYear <= 10)) && (
+          {(practitionerWithAttendancePermissionPointsToDo ||
+            !pointsTotalForYear ||
+            (pointsTotalForYear && pointsTotalForYear <= 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 py-6"
@@ -1079,10 +1081,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {!pointsTotalForYear ||
           pointsTotalForYear <= 10 ||
-          (!practitioner?.isPrincipal &&
-            planActivitiesPermission?.isActive === true) ? (
-            getCurrentPointsToDo < 4
-          ) : getCurrentPointsToDo < 3 ? (
+          practitionerWithAttendancePermissionPointsToDo ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
