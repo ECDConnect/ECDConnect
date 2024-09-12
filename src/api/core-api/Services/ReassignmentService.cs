@@ -470,7 +470,7 @@ namespace ECDLink.Core.Services
                         var updatedClassroomGroup = classroomGroupRepo.Update(classroomGroupObj);
                         classgroupList.Add(updatedClassroomGroup.Id.ToString());
                         //update classroom
-                        reassignment.ClassroomsReassigned = UpdateClassrooms(fromUserId, toUserId, toUserHierarchy, updatedClassroomGroup.ClassroomId.ToString());
+                        reassignment.ClassroomsReassigned = GetClassrooms(fromUserId, toUserId, toUserHierarchy, updatedClassroomGroup.ClassroomId.ToString());
                         //update classProgramme
                         reassignment.ClassProgrammesReassigned = UpdateClassProgrammes(classroomGroupObj.Id, toUserHierarchy);
                         //reassign learners
@@ -502,57 +502,28 @@ namespace ECDLink.Core.Services
                         }
                     }
                     //update classroom
-                    reassignment.ClassroomsReassigned = UpdateClassrooms(fromUserId, toUserId, toUserHierarchy, null);
+                    reassignment.ClassroomsReassigned = GetClassrooms(fromUserId, toUserId, toUserHierarchy, null);
                 }
                 reassignment.ClassroomGroupsReassigned = classgroupList;
             }
             return reassignment;
         }
 
-        private List<string> UpdateClassrooms(string fromUserId,
-            string toUserId, string toUserHierarchy, string classroom = null)
+        private List<string> GetClassrooms(string fromUserId, string toUserId, string toUserHierarchy, string classroom = null)
         {
-            List<string> classroomsReassigned = new List<string>();
             var classroomRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
-
-            if (classroom != null)
+            if (classroom == null)
             {
-                // a group has been passed in, so match the userid and the classroomgroup, and update that
+                return classroomRepo.GetAll().Where(x => x.UserId.ToString() == fromUserId).Select(x => x.Id.ToString()).ToList();
+            } else
+            {
                 var classroomList = classroomRepo.GetAll().Where(x => x.Id == Guid.Parse(classroom)).ToList();
                 if (classroomList != null)
                 {
-                    //filter to only where user id matches
-                    classroomList = classroomList.Where(x => x.UserId.Value == Guid.Parse(fromUserId)).ToList();
-                    if (classroomList != null)
-                    {
-                        foreach (var classes in classroomList)
-                        {
-                            classes.Hierarchy = toUserHierarchy;
-                            classes.UserId = new Guid(toUserId);
-                            var updatedClassroomGroup = classroomRepo.Update(classes);
-
-                            classroomsReassigned.Add(updatedClassroomGroup.Id.ToString());
-                        }
-                    }
+                    return classroomList.Where(x => x.UserId.Value == Guid.Parse(fromUserId)).Select(x => x.Id.ToString()).ToList();
                 }
+                return null;
             }
-            else
-            {
-                //reassign all classrooms and classroomgroups if none in particular is given                        
-                var classroomList = classroomRepo.GetAll().Where(x => x.UserId.ToString() == fromUserId).ToList();
-                if (classroomList != null)
-                {
-                    foreach (var classes in classroomList)
-                    {
-                        classes.Hierarchy = toUserHierarchy;
-                        classes.UserId = new Guid(toUserId);
-                        var updatedClassroomGroup = classroomRepo.Update(classes);
-
-                        classroomsReassigned.Add(updatedClassroomGroup.Id.ToString());
-                    }
-                }
-            }
-            return classroomsReassigned;
         }
 
         private List<string> UpdateClassProgrammes(Guid classroomGroupId, string newHierarchy)
