@@ -276,7 +276,7 @@ namespace EcdLink.Api.CoreApi.Services
                 else if (userPointRecord.ComparativeTargetPercentage == 100)
                 {
                     userPointRecord.MessageNr = 1;
-                    userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName}s on {TenantExecutionContext.Tenant.ApplicationName}!";
+                    userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                     userPointRecord.ComparativeSecondaryMessage = "You are the top points earner so far this month. Keep it up!";
                 }
             }
