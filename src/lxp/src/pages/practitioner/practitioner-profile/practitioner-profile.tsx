@@ -305,12 +305,14 @@ export const PractitionerProfile: React.FC = () => {
           type={'error'}
         />
       )}
-      <AbsenceCard
-        className="ml-4 mt-5 w-11/12 shadow"
-        practitioner={practitioner!}
-        handleReassignClass={handleReassignClass}
-        practitionerUserId={practitioner?.userId!}
-      />
+      {practitioner?.isPrincipal && (
+        <AbsenceCard
+          className="ml-4 mt-5 w-11/12 shadow"
+          practitioner={practitioner!}
+          handleReassignClass={handleReassignClass}
+          practitionerUserId={practitioner?.userId!}
+        />
+      )}
     </BannerWrapper>
   );
 };
