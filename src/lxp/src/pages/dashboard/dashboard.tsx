@@ -509,6 +509,7 @@ export const Dashboard: React.FC = () => {
         classroom.id &&
         classroomGroups &&
         classroomGroups.length > 0) ||
+        (practitioner?.progress === 2 && classroom && classroom?.name) ||
         (classroomGroups && classroomGroups.length > 0)) &&
       isRegistered &&
       isProgress &&
@@ -906,6 +907,7 @@ export const Dashboard: React.FC = () => {
         classroom.id &&
         classroomGroups &&
         classroomGroups.length > 0) ||
+      (practitioner?.progress === 2 && classroom && classroom?.name) ||
       (classroomGroups &&
         classroomGroups.length > 0 &&
         isRegistered &&
@@ -968,6 +970,7 @@ export const Dashboard: React.FC = () => {
         !!classroom.id &&
         classroomGroups &&
         classroomGroups.length > 0) ||
+      (practitioner?.progress === 2 && classroom && classroom?.name) ||
       (classroomGroups &&
         classroomGroups.length > 0 &&
         !!classroom?.id &&
@@ -995,6 +998,7 @@ export const Dashboard: React.FC = () => {
         classroom.id &&
         classroomGroups &&
         classroomGroups?.length > 0) ||
+        (practitioner?.progress === 2 && classroom && classroom?.name) ||
         (classroomGroups && classroomGroups.length > 0)) &&
         isRegistered &&
         isProgress &&
@@ -1025,6 +1029,7 @@ export const Dashboard: React.FC = () => {
         classroom.id &&
         classroomGroups &&
         classroomGroups?.length > 0) ||
+        (practitioner?.progress === 2 && classroom && classroom?.name) ||
         (classroomGroups && classroomGroups.length > 0)) &&
         isRegistered &&
         isProgress &&
