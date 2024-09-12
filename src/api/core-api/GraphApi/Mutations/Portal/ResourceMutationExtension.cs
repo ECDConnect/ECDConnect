@@ -18,7 +18,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
         public bool UpdateCaregiverResourceLink(
             [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService,
             List<CMSResourceLinkModel> input,
             Guid localeId)
         {
@@ -48,7 +47,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
         public bool UpdateResourceConnectItem(
             [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService,
             List<CMSConnectItemModel> input,
             Guid localeId)
         {
