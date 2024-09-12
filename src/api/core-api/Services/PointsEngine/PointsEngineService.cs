@@ -217,7 +217,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
 
-            var totalUsers = userPoints.Count();
+            var totalUsers = userPoints.Count() + 1;
             for (int i = 0; i < userPoints.Count; i++)
             {
                 userPoints[i].ComparativeTargetPercentage = (totalUsers == 0 ? 0 : Math.Round((double)(totalUsers -  userPoints[i].RankingNr) / (double)(totalUsers) * 100));
