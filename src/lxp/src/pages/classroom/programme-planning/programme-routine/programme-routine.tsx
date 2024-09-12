@@ -56,6 +56,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import walkthroughImage from '../../../../assets/walktroughImage.png';
 import { parseISO } from 'date-fns';
 import { useAppContext } from '@/walkthrougContext';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export const ProgrammeRoutine: React.FC = () => {
   const { state } = useLocation<ProgrammeRoutineRouteState>();
@@ -63,6 +64,8 @@ export const ProgrammeRoutine: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
+
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
 
   const {
     state: { run: isWalkthrough },
@@ -609,7 +612,8 @@ export const ProgrammeRoutine: React.FC = () => {
         </>
       )}
 
-      {isDayCompleted &&
+      {hasPermissionToPlanClassroomActivities &&
+        isDayCompleted &&
         !isProgrammeCompleted &&
         isWeekComplete &&
         displayDayCompletedCard && (

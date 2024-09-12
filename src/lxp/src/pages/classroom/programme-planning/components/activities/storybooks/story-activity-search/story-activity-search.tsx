@@ -191,7 +191,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
         (activity) =>
           activity.availableLanguages &&
           activity.availableLanguages.some(
-            (x) => x.id === selectedLanguageFilterOptions[0].id
+            (x) => !!x && x.id === selectedLanguageFilterOptions[0].id
           )
       );
     }
