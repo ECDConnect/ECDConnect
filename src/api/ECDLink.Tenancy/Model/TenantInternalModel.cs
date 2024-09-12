@@ -7,6 +7,7 @@ namespace ECDLink.Tenancy.Model
     {
         public Guid Id { get; set; }
         public string SiteAddress { get; set; }
+        public string SiteAddress2 { get; set; }
         public string AdminSiteAddress { get; set; }
         public string ApplicationName { get; set; }
         public string OrganisationName { get; set; }
