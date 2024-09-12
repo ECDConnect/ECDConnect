@@ -33,27 +33,6 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, templateType, DateTime.Now.Date, userToSend, null, MessageStatusConstants.Blue, replacements);
         }
 
-        public async Task<bool> SendPractitionerAddedToProgrammeNotification(
-  [Service] ApplicationUserManager userManager,
-  [Service] INotificationService notificationService, string userId, string programmeName)
-        {
-            var userToSend = await userManager.FindByIdAsync(userId);
-            var replacements = new List<TagsReplacements>
-            {
-                new TagsReplacements()
-                {
-                    FindValue = "ProgrammeName",
-                    ReplacementValue = programmeName
-                },
-                new TagsReplacements()
-                {
-                    FindValue = "ApplicationName",
-                    ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
-                }
-            };
-            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements);
-        }
-
         public async Task<bool> SendPromotedToPrincipalFAAProgrammeNotification(
 [Service] ApplicationUserManager userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)

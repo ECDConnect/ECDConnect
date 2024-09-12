@@ -1,5 +1,6 @@
 using DotLiquid.Util;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.ContentManagement.Constants;
 using ECDLink.ContentManagement.Entities;
 using ECDLink.Core.Caching.Configuration;
 using ECDLink.Core.Extensions;
@@ -404,9 +405,10 @@ namespace ECDLink.ContentManagement.Repositories
                     //update with fulllist
                     contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                 }
-                if (contentType == "Consent" && contentFieldValuePairs.ContainsKey("description"))
+                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) && contentFieldValuePairs.ContainsKey("description"))
                 {
                     contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
+                    contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
                 }
                 if (contentFieldValuePairs.ContainsKey("insertedDate"))
                 {
