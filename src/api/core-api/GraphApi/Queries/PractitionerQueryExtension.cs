@@ -320,6 +320,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             IGenericRepositoryFactory repoFactory, 
             string userId)
         {
+            if (userId == null)
+            {
+                return null;
+            }
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
