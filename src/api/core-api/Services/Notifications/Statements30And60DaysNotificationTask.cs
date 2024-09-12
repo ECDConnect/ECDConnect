@@ -91,6 +91,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                     var usersToGetNotifications = allPrincipalsBefore120Days.Where(x => !allUserIdsWithIncomeExpenses.Contains(x.UserId)).ToList();
                     if (usersToGetNotifications.Count > 0)
                     {
+                        var expireDate = DateTime.Now.Day > 7 ? new DateTime(today.Year, today.Month + 1, today.Day) : new DateTime(today.Year, today.Month, 8);
                         var replacements = new List<TagsReplacements>
                         {
                             new TagsReplacements()
@@ -101,7 +102,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                         };
                         foreach (var practitioner in usersToGetNotifications)
                         {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, DateTime.Now.Date.AddDays(7),
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, expireDate,
                                                                             relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
                         }
                     }
