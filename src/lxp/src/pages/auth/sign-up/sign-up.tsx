@@ -3,6 +3,7 @@ import {
   ContentConsentTypeEnum,
   NOTIFICATION,
   RegisterRequestModel,
+  useDialog,
   useNotifications,
   useQueryParams,
   useTheme,
@@ -46,6 +47,7 @@ const token = new URLSearchParams(window.location.search).get('token');
 export const SignUp: React.FC = () => {
   const tenant = useTenant();
   const appDispatch = useAppDispatch();
+  const dialog = useDialog();
   const { setNotification } = useNotifications();
   const {
     watch,
@@ -214,6 +216,51 @@ export const SignUp: React.FC = () => {
     setPresentArticle(true);
     setArticleTitle(title);
   };
+
+  const handleIncorrectBrowser = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="Oops! AppName works best on Chrome or Firefox"
+            paragraphs={[
+              `To download Chrome or Firefox, go to your phone's app store.`,
+            ]}
+            icon={'ExclamationIcon'}
+            iconSize={48}
+            iconColor={'alertMain'}
+            iconBorderColor={'white'}
+            actionButtons={[
+              {
+                text: 'Close',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => onSubmit(),
+                textColour: 'quatenary',
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const userAgent = navigator.userAgent;
+
+  useEffect(() => {
+    if (
+      userAgent.includes('Firefox') ||
+      (userAgent.includes('Chrome') && !userAgent.includes('Edg'))
+    ) {
+      return;
+    } else {
+      handleIncorrectBrowser();
+    }
+  }, [userAgent]);
 
   return (
     <div className={styles.wrapper}>
