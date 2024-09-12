@@ -42,7 +42,6 @@ export const Article = ({
   const consent = useSelector(contentConsentSelectors.getConsent);
   const dialog = useDialog();
   const tenant = useTenant();
-  const organisationName = tenant.tenant?.organisationName!;
 
   useEffect(() => {
     if (consent && visible && !isOpen) {
@@ -78,13 +77,20 @@ export const Article = ({
 
       if (
         description.length > 0 &&
-        description.indexOf('[organisationName]') !== -1
+        (description.indexOf('[organisationName]') !== -1 ||
+          description.indexOf('[applicationName]') !== -1)
       ) {
-        const replacedDescription = description.replaceAll(
+        const replacedOrgName = description.replaceAll(
           '[organisationName]',
-          organisationName
+          tenant.tenant?.organisationName!
         );
-        setArticleText(replacedDescription ?? '');
+
+        const replacedAppName = replacedOrgName.replaceAll(
+          '[applicationName]',
+          tenant.tenant?.applicationName!
+        );
+
+        setArticleText(replacedAppName ?? '');
       } else {
         setArticleText(description);
       }
@@ -112,12 +118,22 @@ export const Article = ({
       presentUnavailableAlert();
     }
 
-    if (description.indexOf('[organisationName]') !== -1) {
-      const replacedDescription = description.replaceAll(
+    if (
+      description.length > 0 &&
+      (description.indexOf('[organisationName]') !== -1 ||
+        description.indexOf('[applicationName]') !== -1)
+    ) {
+      const replacedOrgName = description.replaceAll(
         '[organisationName]',
-        organisationName
+        tenant.tenant?.organisationName!
       );
-      setArticleText(replacedDescription ?? '');
+
+      const replacedAppName = replacedOrgName.replaceAll(
+        '[applicationName]',
+        tenant.tenant?.applicationName!
+      );
+
+      setArticleText(replacedAppName ?? '');
     } else {
       setArticleText(description);
     }
