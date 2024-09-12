@@ -11,6 +11,7 @@ import { RootState } from '../types';
 import { ProgressSkill } from '@/models/progress/progress-skill';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
 import { ProgressTrackingCategoriesByLocale } from './progress-tracking.types';
+import { ResourceLink } from '@ecdlink/graphql';
 
 // CATEGORIES
 export const getProgressTrackingCategories = () =>
@@ -208,5 +209,13 @@ export const getProgressAgeGroups = () =>
     (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
     (progressTrackingAgeGroups: ProgressTrackingAgeGroupDto[]) => {
       return progressTrackingAgeGroups;
+    }
+  );
+
+export const getResourceLinks = () =>
+  createSelector(
+    (state: RootState) => state.progressTracking.resourceLinks,
+    (resourceLinks: ResourceLink[] | undefined) => {
+      return resourceLinks || [];
     }
   );

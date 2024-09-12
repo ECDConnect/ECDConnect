@@ -4,8 +4,8 @@ import {
   getChildProgressReports,
   getPractitionerProgressReportSummary,
   getProgressTrackingAgeGroups,
-  getProgressTrackingLevels,
   getProgressTrackingContent,
+  getResourceLinks,
   syncChildProgressReports,
 } from './progress-tracking.actions';
 import { ProgressTrackingState } from './progress-tracking.types';
@@ -16,7 +16,7 @@ const initialState: ProgressTrackingState = {
   currentLocale: 'en-za',
   progressTrackingContentByLocale: {},
   progressTrackingAgeGroups: { data: [], dateRefreshed: undefined },
-  progressTrackingLevels: undefined,
+  resourceLinks: undefined,
   practitionerProgressReportSummary: undefined,
 
   childProgressReports: [],
@@ -28,7 +28,7 @@ const progressTrackingSlice = createSlice({
   reducers: {
     resetProgressTrackingState: (state) => {
       state.progressTrackingAgeGroups = initialState.progressTrackingAgeGroups;
-      state.progressTrackingLevels = initialState.progressTrackingLevels;
+      state.resourceLinks = initialState.resourceLinks;
       state.practitionerProgressReportSummary =
         initialState?.practitionerProgressReportSummary;
     },
@@ -446,8 +446,8 @@ const progressTrackingSlice = createSlice({
         dateRefreshed: new Date().toDateString(),
       };
     });
-    builder.addCase(getProgressTrackingLevels.fulfilled, (state, action) => {
-      state.progressTrackingLevels = action.payload;
+    builder.addCase(getResourceLinks.fulfilled, (state, action) => {
+      state.resourceLinks = action.payload;
     });
     builder.addCase(
       getPractitionerProgressReportSummary.fulfilled,

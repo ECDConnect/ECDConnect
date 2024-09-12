@@ -1,9 +1,9 @@
-import { Card, Divider, Typography } from '@ecdlink/ui';
-import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
+import { Divider, Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import lightbulbEmoji from '@/assets/ECD_Connect_lightbulb.png';
-import { ProgressReportsCategorySummary } from '@/models/progress/child-progress-report';
-import { ProgressTrackingAgeGroupDto } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import { progressTrackingSelectors } from '@/store/progress-tracking';
+import resourceLink from '@/assets/resource-link.png';
 
 export type ProgressCaregiverReportResourcesPageProps = {
   childFirstName: string;
@@ -15,6 +15,8 @@ export type ProgressCaregiverReportResourcesPageProps = {
 export const ProgressCaregiverResourcesPage: React.FC<
   ProgressCaregiverReportResourcesPageProps
 > = ({ childFirstName, pageNumber, totalPages, reportingPeriodEndDate }) => {
+  const links = useSelector(progressTrackingSelectors.getResourceLinks());
+
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
@@ -43,6 +45,28 @@ export const ProgressCaregiverResourcesPage: React.FC<
         </div>
       </div>
       <Divider dividerType="dashed" className="mb-4" />
+      {links.map((x) => (
+        <div className="border-infoMain bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm">
+          <div className="flex flex-row">
+            <img src={resourceLink} className="mr-4 h-14 w-14" />
+            <Typography
+              type="h3"
+              color="textDark"
+              text={x.title || 'some text'}
+              className="mb-2"
+            />
+          </div>
+          <Typography
+            type="body"
+            color="textDark"
+            text={x.description || ''}
+            className="mb-2"
+          />
+          <a className="text-quatenary" href={x.link || ''}>
+            {x.link || ''}
+          </a>
+        </div>
+      ))}
       <p
         className="font-body text-textDark mt-auto ml-auto"
         style={{ fontSize: '12px', fontWeight: 'bold' }}

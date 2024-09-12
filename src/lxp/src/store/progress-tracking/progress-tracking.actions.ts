@@ -11,7 +11,7 @@ import { ProgressTrackingService } from '@services/ProgressTrackingService';
 import { RootState, ThunkApiType } from '../types';
 import { OverrideCache } from '@/models/sync/override-cache';
 import { isBefore } from 'date-fns';
-import { ChildProgressReportModelInput } from '@ecdlink/graphql';
+import { ChildProgressReportModelInput, ResourceLink } from '@ecdlink/graphql';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
 
 export const ProgressTrackingActions = {
@@ -160,43 +160,43 @@ export const getProgressTrackingContent = createAsyncThunk<
   }
 );
 
-export const getProgressTrackingLevels = createAsyncThunk<
-  ProgressTrackingLevelDto[],
+export const getResourceLinks = createAsyncThunk<
+  ResourceLink[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   { locale: string; force?: boolean },
   ThunkApiType<RootState>
 >(
-  'getProgressTrackingLevels',
+  'getResourceLinks',
   // eslint-disable-next-line no-empty-pattern
   async ({ locale, force }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      progressTracking: { progressTrackingLevels },
+      progressTracking: { resourceLinks },
       user: { userLocalePreference },
     } = getState();
 
-    if (!progressTrackingLevels || userLocalePreference !== locale || force) {
+    if (!resourceLinks || userLocalePreference !== locale || force) {
       try {
-        let levels: ProgressTrackingLevelDto[] | undefined;
+        let resources: ResourceLink[] | undefined;
 
         if (userAuth?.auth_token) {
-          levels = await new ProgressTrackingService(
+          resources = await new ProgressTrackingService(
             userAuth?.auth_token
-          ).getProgressTrackingLevels(locale);
+          ).getProgressResourcesLinks(locale);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
 
-        if (!levels) {
+        if (!resources) {
           return rejectWithValue('Error getting progress tracking levels');
         }
 
-        return levels;
+        return resources;
       } catch (err) {
         return rejectWithValue(err);
       }
     } else {
-      return progressTrackingLevels;
+      return resourceLinks;
     }
   }
 );
