@@ -15,7 +15,8 @@ export default function GeneralDashboard() {
       var url =
         data.settings.Grafana.GeneralDashboard +
         '?from=now-6M&to=now&orgId=1&var-TenantId=' +
-        tenant.tenant.id;
+        tenant.tenant.id +
+        '&kiosk=tv';
       setGeneratlURL(url);
     }
   }, [data, tenant.tenant.id]);

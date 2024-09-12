@@ -17,10 +17,7 @@ import { ExclamationCircleIcon } from '@heroicons/react/solid';
 interface ReactivateUserProps {
   userData: UserDto;
   refetchUserData?: () => void;
-  isTeamLead?: boolean;
   isAdministrator?: boolean;
-  teamLeadId?: string;
-  hcwId?: string;
 }
 
 export const ReactivateUser: React.FC<ReactivateUserProps> = ({

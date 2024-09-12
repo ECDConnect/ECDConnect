@@ -134,7 +134,7 @@ export const LinksSharedResource = ({
         link: link.link,
         description: link.description,
         contentTypeId: link.contentTypeId,
-        id: link.contentId,
+        contentId: link.contentId,
       }));
     return payload;
   };
