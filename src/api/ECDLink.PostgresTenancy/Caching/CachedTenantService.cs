@@ -58,6 +58,7 @@ namespace ECDLink.PostgresTenancy.Caching
 
             _memoryCache.Set(CacheKey(tenant.Id, tenant.SiteAddress), tenant, options);
             _memoryCache.Set(CacheKeyWithSiteAddress(tenant.SiteAddress), tenant, options);
+            if (!string.IsNullOrEmpty(tenant.SiteAddress2) && tenant.SiteAddress2 != "none") _memoryCache.Set(CacheKeyWithSiteAddress(tenant.SiteAddress2), tenant, options);
             if (!string.IsNullOrEmpty(tenant.AdminSiteAddress) && tenant.AdminSiteAddress != "none") _memoryCache.Set(CacheKeyWithSiteAddress(tenant.AdminSiteAddress), tenant, options);
             if (!string.IsNullOrEmpty(tenant.TestSiteAddress) && tenant.TestSiteAddress != "none") _memoryCache.Set(CacheKeyWithSiteAddress(tenant.TestSiteAddress), tenant, options);
             if (!string.IsNullOrEmpty(tenant.AdminTestSiteAddress) && tenant.AdminTestSiteAddress != "none") _memoryCache.Set(CacheKeyWithSiteAddress(tenant.AdminTestSiteAddress), tenant, options);

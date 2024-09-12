@@ -27,7 +27,7 @@ namespace ECDLink.PostgresTenancy.Services
             if (tenantId.HasValue)
             {
                 tenantQuery = tenantQuery.Where(x => x.Id == tenantId.Value);
-                if (!string.IsNullOrEmpty(siteAddress)) tenantQuery = tenantQuery.Where(x => x.SiteAddress == siteAddress || x.TestSiteAddress == siteAddress || x.AdminSiteAddress == siteAddress || x.AdminTestSiteAddress == siteAddress);
+                if (!string.IsNullOrEmpty(siteAddress)) tenantQuery = tenantQuery.Where(x => x.SiteAddress == siteAddress || x.TestSiteAddress == siteAddress || x.AdminSiteAddress == siteAddress || x.AdminTestSiteAddress == siteAddress || x.SiteAddress2 == siteAddress);
                 tenants = tenantQuery.ToList();
                 if (includeModules)
                 {
@@ -37,7 +37,7 @@ namespace ECDLink.PostgresTenancy.Services
             }
             else if (!string.IsNullOrEmpty(siteAddress))
             {
-                tenantQuery = tenantQuery.Where(x => x.SiteAddress == siteAddress || x.TestSiteAddress == siteAddress || x.AdminSiteAddress == siteAddress || x.AdminTestSiteAddress == siteAddress);
+                tenantQuery = tenantQuery.Where(x => x.SiteAddress == siteAddress || x.TestSiteAddress == siteAddress || x.AdminSiteAddress == siteAddress || x.AdminTestSiteAddress == siteAddress || x.SiteAddress2 == siteAddress);
                 tenants = tenantQuery.ToList();
                 if (includeModules)
                 {
@@ -135,6 +135,7 @@ namespace ECDLink.PostgresTenancy.Services
                 OrganisationName = tenantEntity.OrganisationName,
                 ApplicationName = tenantEntity.ApplicationName,
                 SiteAddress = tenantEntity.SiteAddress,
+                SiteAddress2 = tenantEntity.SiteAddress2,
                 AdminSiteAddress = tenantEntity.AdminSiteAddress,
                 TenantType = tenantEntity.TenantTypeId,
                 ThemePath = tenantEntity.ThemePath,
