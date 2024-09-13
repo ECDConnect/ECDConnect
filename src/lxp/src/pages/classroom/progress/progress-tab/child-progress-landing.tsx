@@ -44,9 +44,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
 
-  //add coming soon
-  const isComingSoon = true;
-
   const {
     hasPermissionToManageChildren,
     hasPermissionToCreateProgressReports,
@@ -139,11 +136,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       });
     }
   }, [dialog]);
-
-  //add coming soon
-  if (isComingSoon) {
-    return <Typography color="textDark" text={`Coming soon`} type={'h2'} />;
-  }
 
   return (
     <>
