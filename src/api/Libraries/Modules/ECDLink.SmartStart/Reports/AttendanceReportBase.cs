@@ -3,7 +3,6 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

@@ -1,9 +1,8 @@
-﻿using System;
-
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+﻿namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class PractitionerStats
     {
+        public string SchoolName { get; set; }
         public int TotalPractitionersForSchool { get; set; }
         public int TotalChildrenForSchool { get; set; }
         public int TotalClassesForSchool { get; set; }
