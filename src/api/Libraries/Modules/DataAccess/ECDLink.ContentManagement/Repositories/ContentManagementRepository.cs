@@ -8,6 +8,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
+using HotChocolate.Language;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -93,7 +94,7 @@ namespace ECDLink.ContentManagement.Repositories
                         .ToList();
 
                 // Use global tenant as a fallback, mostly for static and dynamic links
-                contents = contents?.Any() ?? false ? contents
+                contents = (contents?.Any() ?? false) ? contents
                     : contentType?.Content
                         .Where(x => x.IsActive
                                 && x.TenantId == null)
@@ -120,7 +121,7 @@ namespace ECDLink.ContentManagement.Repositories
                         .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                         .ToList();
 
-                    contentValues = contentValues?.Any() ?? false ? contentValues
+                    contentValues = (contentValues?.Any() ?? false) ? contentValues
                         : item.ContentValues
                         .Where(x => x.LocaleId == localeId
                                 && x.ContentTypeField.IsActive == true
@@ -326,10 +327,35 @@ namespace ECDLink.ContentManagement.Repositories
 
                 foreach (var item in content)
                 {
+                    var noTenantContenValues = item.ContentValues
+                        .Where(x => x.LocaleId == localeId
+                                && x.ContentTypeField.IsActive == true
+                                && (x.TenantId == null))
+                        .Select(y => new { y.Id, y.ContentTypeField,y.Value, y.ContentId })
+                        .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                        .ToList();
+
+                    var contentValues = item.ContentValues
+                     .Where(x => x.LocaleId == localeId
+                             && x.ContentTypeField.IsActive == true
+                             && (x.TenantId == TenantExecutionContext.Tenant.Id))
+                     .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                     .ToList();
+
+                    var allContents = contentValues.Union(noTenantContenValues).ToList();
+
+                    contentValues = (contentValues?.Any() ?? false) ? contentValues
+                        : item.ContentValues
+                        .Where(x => x.LocaleId == localeId
+                                && x.ContentTypeField.IsActive == true
+                                && (x.TenantId == null))
+                         .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                        .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                        .ToList();
+
                     // TODO: Use .Query() to get the data in one query?
-                    var objDict = item.ContentValues
-                                  .Where(x => x.LocaleId == localeId)
-                                  .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+                    var objDict = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
 
                     objDict.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
                     dynamicContentList.Add(objDict.ToObject());
