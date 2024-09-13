@@ -88,17 +88,17 @@ namespace ECDLink.ContentManagement.Repositories
 
                 var contents = contentType?.Content
                         .Where(x => x.IsActive
-                     && (x.TenantId == currentTenant || x.TenantId == null))
+                     && (x.TenantId == currentTenant))
                         .OrderBy(x => x.Id)
                         .ToList();
 
-              /*  // Use global tenant as a fallback, mostly for static and dynamic links
+                // Use global tenant as a fallback, mostly for static and dynamic links
                 contents = contents?.Any() ?? false ? contents
                     : contentType?.Content
                         .Where(x => x.IsActive
                                 && x.TenantId == null)
                         .OrderBy(x => x.Id)
-                        .ToList();*/
+                        .ToList();
 
                 // No Content Found
                 if (contents == default)
@@ -116,10 +116,17 @@ namespace ECDLink.ContentManagement.Repositories
                     var contentValues = item.ContentValues
                         .Where(x => x.LocaleId == localeId
                                 && x.ContentTypeField.IsActive == true
-                                && (x.TenantId == TenantExecutionContext.Tenant.Id || x.TenantId == null))
+                                && (x.TenantId == TenantExecutionContext.Tenant.Id))
                         .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                         .ToList();
 
+                    contentValues = contentValues?.Any() ?? false ? contentValues
+                        : item.ContentValues
+                        .Where(x => x.LocaleId == localeId
+                                && x.ContentTypeField.IsActive == true
+                                && (x.TenantId == null))
+                        .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                        .ToList();
 
                     // Ignore the TenantId on ContentTypeField because HotChocolate doesn't allow duplicate names.
                     var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
