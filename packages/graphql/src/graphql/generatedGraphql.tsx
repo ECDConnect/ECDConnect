@@ -7798,15 +7798,12 @@ export type Mutation = {
   sendCoachInviteToApplication: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
   sendNotificationToUser: Scalars['Boolean'];
-  sendPractitionerAddedToProgrammeNotification: Scalars['Boolean'];
   sendPractitionerInviteToApplication: Scalars['Boolean'];
   sendPractitionerInviteToPreSchool?: Maybe<Scalars['String']>;
   sendPractitionerRemovedFromProgrammeNotification: Scalars['Boolean'];
   sendPrincipalInviteToApplication?: Maybe<Scalars['String']>;
   sendPromotedToPrincipalFAAProgrammeNotification: Scalars['Boolean'];
-  sendRemovedFromProgrammeNotification: Scalars['Boolean'];
   sendTeamLeadVerifyPhoneNumberSMS?: Maybe<ApplicationUser>;
-  sendUserAssignedToClassNotification: Scalars['Boolean'];
   setContactClubLeaderStatusForMeeting?: Maybe<ClubMeeting>;
   switchPrincipal: Scalars['Boolean'];
   trackAttendance: Scalars['Boolean'];
@@ -10018,11 +10015,6 @@ export type MutationSendNotificationToUserArgs = {
   userType?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendPractitionerAddedToProgrammeNotificationArgs = {
-  programmeName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendPractitionerInviteToApplicationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -10049,22 +10041,9 @@ export type MutationSendPromotedToPrincipalFaaProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendRemovedFromProgrammeNotificationArgs = {
-  principalName?: InputMaybe<Scalars['String']>;
-  programmeName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendTeamLeadVerifyPhoneNumberSmsArgs = {
   pendingPhoneNumber?: InputMaybe<Scalars['String']>;
   userId: Scalars['UUID'];
-};
-
-export type MutationSendUserAssignedToClassNotificationArgs = {
-  className?: InputMaybe<Scalars['String']>;
-  oldClassName?: InputMaybe<Scalars['String']>;
-  principalName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationSetContactClubLeaderStatusForMeetingArgs = {
@@ -14477,6 +14456,7 @@ export type Query = {
   infantVisits?: Maybe<Array<Maybe<BasicVisitModel>>>;
   infographics: Array<Maybe<Infographics>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
+  latestUrlInviteForUser?: Maybe<Scalars['String']>;
   league?: Maybe<LeagueWithRankingsModel>;
   leagueById?: Maybe<LeagueClinicsModel>;
   leagueForUser?: Maybe<LeagueClubsModel>;
@@ -17500,6 +17480,10 @@ export type QueryInfographicsArgs = {
 
 export type QueryLastPractitionerInviteDateArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryLatestUrlInviteForUserArgs = {
+  userId: Scalars['UUID'];
 };
 
 export type QueryLeagueArgs = {
