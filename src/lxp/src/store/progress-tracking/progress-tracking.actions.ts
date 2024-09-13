@@ -108,13 +108,15 @@ export const getProgressTrackingContent = createAsyncThunk<
         let skills: ProgressTrackingSkillDto[] | undefined;
 
         if (userAuth?.auth_token) {
+          // TODO - Once categories and sub categories are correctly set up for other languages, remove fixed en-za fetch and replace with locale variable
           categories = await new ProgressTrackingService(
             userAuth?.auth_token
-          ).getProgressTrackingCategories(locale);
+          ).getProgressTrackingCategories('en-za');
 
+          // TODO - Once categories and sub categories are correctly set up for other languages, remove fixed en-za fetch and replace with locale variable
           subCategories = await new ProgressTrackingService(
             userAuth?.auth_token
-          ).getProgressTrackingSubCategories(locale);
+          ).getProgressTrackingSubCategories('en-za');
 
           skills = await new ProgressTrackingService(
             userAuth?.auth_token
