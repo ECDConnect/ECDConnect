@@ -13,6 +13,7 @@ namespace ECDLink.Tenancy.Model
         {
             Id = model.Id;
             SiteAddress = model.SiteAddress;
+            SiteAddress2 = model.SiteAddress2;
             AdminSiteAddress = model.AdminSiteAddress;
             ApplicationName = model.ApplicationName;
             OrganisationName = model.OrganisationName;
@@ -28,6 +29,7 @@ namespace ECDLink.Tenancy.Model
 
         public Guid Id { get; set; }
         public string SiteAddress { get; set; }
+        public string SiteAddress2 { get; set; }
         public string AdminSiteAddress { get; set; }
         public string ApplicationName { get; set; }
         public string OrganisationName { get; set; }
