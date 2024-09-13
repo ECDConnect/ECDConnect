@@ -233,3 +233,9 @@ export const ReactivateMultipleUsers = gql`
     bulkReactivateUsers(userIds: $userIds)
   }
 `;
+
+export const GetLatestUrlInviteForUser = gql`
+  query GetLatestUrlInviteForUser($userId: UUID!) {
+    latestUrlInviteForUser(userId: $userId)
+  }
+`;
