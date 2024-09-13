@@ -41,6 +41,7 @@ import { PractitionerSummary } from './components/practitioner-summary/practitio
 import { PractitionerIssuesAndHighlights } from './components/practitioner-issues/practitioner-issues-and-highlights';
 import { CoachSummary } from './components/coach-summary/coach-summary';
 import { CoachIssuesAndHighlights } from './components/coach-issues-and-highlights/coach-issues-and-highlights';
+import { pluralize } from '../pages.utils';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -74,8 +75,6 @@ export function ViewUser(props: any) {
   const endDate1 = currentDate;
   const connectUsage = props?.location?.state?.connectUsage;
   const connectUsageColor = props?.location?.state?.connectUsageColor;
-  const hcwId = props?.location?.state?.hcwId;
-  const teamLeadId = props?.location?.state?.teamLeadId;
   const isPractitioner =
     props.location.state?.component ===
     UsersRouteRedirectTypeEnum?.practitioner;
@@ -84,13 +83,9 @@ export function ViewUser(props: any) {
     props.location.state?.component === UsersRouteRedirectTypeEnum?.principal;
   const isCoach =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.coach;
-  const isTeamLead =
-    props.location.state?.component === UsersRouteRedirectTypeEnum?.teamLeads;
   const isFromAdministratorTable =
     props.location.state?.component === UsersRolesTypeEnum?.administrator;
-  const isCHW =
-    props.location.state?.component === UsersRouteRedirectTypeEnum?.chw;
-  const clinicIds = props?.location?.state?.clinicIds;
+
   const isRegistered = props?.location?.state?.isRegistered;
   const [successNotification] = useState<boolean>(false);
   const tenant = useTenant();
@@ -112,27 +107,27 @@ export function ViewUser(props: any) {
 
   let userId = localStorage.getItem('selectedUser');
 
-  const paths: BreadcrumbProps['paths'] = isTeamLeadRole
-    ? [
-        { name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS },
-        { name: 'View user', url: '' },
-      ]
-    : [
-        { name: 'Users', url: ROUTES.USERS.ALL_ROLES },
-        ...(isFromAdministratorTable
-          ? [{ name: 'Administrators', url: ROUTES.USERS.ADMINS }]
-          : []),
-        ...(isTeamLead
-          ? [{ name: 'Team Leads', url: ROUTES.USERS.TEAM_LEADS }]
-          : []),
-        ...(isCHW
-          ? [{ name: 'CHWs', url: ROUTES.USERS.HEALTH_CARE_WORKERS }]
-          : []),
-        ...(!isFromAdministratorTable && !isTeamLead && !isCHW
-          ? [{ name: 'All roles', url: ROUTES.USERS.ALL_ROLES }]
-          : []),
-        { name: 'View user', url: '' },
-      ];
+  const paths: BreadcrumbProps['paths'] = [
+    { name: 'Users', url: ROUTES.USERS.ALL_ROLES },
+    ...(isFromAdministratorTable
+      ? [{ name: 'Administrators', url: ROUTES.USERS.ADMINS }]
+      : []),
+    ...(isPractitioner || isPrincipal
+      ? [{ name: 'Practitioners', url: ROUTES.USERS.PRACTITIONERS }]
+      : []),
+    ...(isCoach
+      ? [
+          {
+            name: pluralize(tenant.modules.coachRoleName),
+            url: ROUTES.USERS.COACHES,
+          },
+        ]
+      : []),
+    ...(!isFromAdministratorTable && !isPractitioner && !isPrincipal && !isCoach
+      ? [{ name: 'All roles', url: ROUTES.USERS.ALL_ROLES }]
+      : []),
+    { name: 'View user', url: '' },
+  ];
 
   const [
     getPractitionerByUserId,
@@ -191,30 +186,6 @@ export function ViewUser(props: any) {
 
   const getRoleStatusChip = (status: string) => {
     switch (status) {
-      case UsersRouteRedirectTypeEnum?.chw:
-        return (
-          <div>
-            <StatusChip
-              className="ml-auto self-center py-2"
-              borderColour="tertiary"
-              backgroundColour="tertiary"
-              textColour="white"
-              text={UsersRolesTypeEnum?.chw}
-            />
-          </div>
-        );
-      case UsersRouteRedirectTypeEnum?.teamLeads:
-        return (
-          <div>
-            <StatusChip
-              className="ml-auto self-center py-2"
-              borderColour="darkBlue"
-              backgroundColour="darkBlue"
-              textColour="white"
-              text={UsersRolesTypeEnum?.teamLeads}
-            />
-          </div>
-        );
       case UsersRolesTypeEnum?.administrator:
         return (
           <div>
@@ -379,11 +350,7 @@ export function ViewUser(props: any) {
           />
           <div className="flex gap-2">
             {getRoleStatusChip(props.location.state?.component)}
-            {(isTeamLead ||
-              isCHWRole ||
-              isPractitioner ||
-              isPrincipal ||
-              isCoach) &&
+            {(isPractitioner || isPrincipal || isCoach) &&
               getConnectUsageChip(connectUsage)}
           </div>
         </div>
@@ -455,14 +422,6 @@ export function ViewUser(props: any) {
         />
       )}
 
-      {(isTeamLead ||
-        props.location.state?.component ===
-          UsersRouteRedirectTypeEnum?.teamLeads) && (
-        <>
-          <TeamLeadClinics clinicIds={clinicIds} />
-        </>
-      )}
-
       <div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
         {userData?.userById?.isActive && (
           <div className="flex flex-col gap-2 lg:flex-row">
@@ -488,10 +447,7 @@ export function ViewUser(props: any) {
           <ReactivateUser
             userData={userData?.userById}
             refetchUserData={refetchUserData}
-            isTeamLead={isTeamLead}
             isAdministrator={isAdministrator || isSuperAdmin}
-            teamLeadId={teamLeadId}
-            hcwId={hcwId}
           />
         )}
 

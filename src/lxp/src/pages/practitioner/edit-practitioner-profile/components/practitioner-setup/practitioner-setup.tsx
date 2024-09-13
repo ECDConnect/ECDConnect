@@ -287,7 +287,9 @@ export const PractitionerSetup = ({
                 practitioner?.shareInfo !== true) ||
               practitionerToProgramme === null ||
               practitionerToProgramme === undefined ||
-              (isWhiteLabel && !allowPermissions)
+              (isWhiteLabel &&
+                !allowPermissions &&
+                practitionerToProgramme !== false)
             }
             onClick={
               practitionerToProgramme === false

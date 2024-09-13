@@ -154,11 +154,11 @@ namespace ECDLink.SmartStart.Services
             if (practi != null && practi.IsPrincipal == true)
             {
                return _classGroupRepo.GetAll()
-              .Include(x => x.Classroom)
-              .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
-              .Where(x => x.IsActive && x.Classroom.UserId.ToString() == userId)
-              .OrderBy(x => x.Id)
-             .ToList();
+                              .Include(x => x.Classroom)
+                              .Include(x => x.ClassProgrammes.Where(x => x.IsActive))
+                              .Where(x => x.IsActive && x.Classroom.UserId.ToString() == userId)
+                              .OrderBy(x => x.Id)
+                             .ToList();
             }
 
 

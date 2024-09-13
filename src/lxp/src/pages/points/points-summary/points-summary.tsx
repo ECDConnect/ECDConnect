@@ -350,6 +350,18 @@ export const PointsSummary: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
+  const practitionerWithAttendancePermissionPointsToDo =
+    practitioner?.isPrincipal ||
+    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+      ? getCurrentPointsToDo < 4
+      : getCurrentPointsToDo < 3;
+
+  const practitionerWithAttendancePermissionPoints =
+    practitioner?.isPrincipal ||
+    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+      ? getCurrentPointsToDo === 4
+      : getCurrentPointsToDo === 3;
+
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
     prop: K,
@@ -971,12 +983,9 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMMM yyyy')}
           />
-          {(!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true
-            ? getCurrentPointsToDo < 4
-            : getCurrentPointsToDo < 3 ||
-              !pointsTotalForYear ||
-              (pointsTotalForYear && pointsTotalForYear <= 10)) && (
+          {(practitionerWithAttendancePermissionPointsToDo ||
+            !pointsTotalForYear ||
+            (pointsTotalForYear && pointsTotalForYear <= 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 py-6"
@@ -1010,12 +1019,9 @@ export const PointsSummary: React.FC = () => {
               className="mt-4"
             />
           ) : null}
-          {!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true ? (
-            getCurrentPointsToDo === 4
-          ) : getCurrentPointsToDo === 3 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 ? (
+          {practitionerWithAttendancePermissionPoints &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 ? (
             <ScoreCard
               className="mt-5 py-6"
               mainText={`${monthPoints} points`}
@@ -1051,10 +1057,7 @@ export const PointsSummary: React.FC = () => {
           monthPoints &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          !practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true ? (
-            getCurrentPointsToDo === 4
-          ) : getCurrentPointsToDo === 3 ? (
+          practitionerWithAttendancePermissionPoints ? (
             <CelebrationCard
               image={getEmoji(
                 pointsShareData?.userRankingData
@@ -1079,10 +1082,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {!pointsTotalForYear ||
           pointsTotalForYear <= 10 ||
-          (!practitioner?.isPrincipal &&
-            planActivitiesPermission?.isActive === true) ? (
-            getCurrentPointsToDo < 4
-          ) : getCurrentPointsToDo < 3 ? (
+          practitionerWithAttendancePermissionPointsToDo ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -1119,10 +1119,7 @@ export const PointsSummary: React.FC = () => {
           !!todoListFiltered.length &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          !practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true ? (
-            getCurrentPointsToDo === 4
-          ) : getCurrentPointsToDo === 3 ? (
+          practitionerWithAttendancePermissionPoints ? (
             <Typography
               className="mt-8 mb-4"
               type={'h3'}
@@ -1136,10 +1133,7 @@ export const PointsSummary: React.FC = () => {
           {!!todoListFiltered &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          !practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true
-            ? getCurrentPointsToDo === 4
-            : getCurrentPointsToDo === 3
+          practitionerWithAttendancePermissionPoints
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
                   <div
@@ -1160,13 +1154,10 @@ export const PointsSummary: React.FC = () => {
             : null}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
-          {!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true ? (
-            getCurrentPointsToDo === 4
-          ) : getCurrentPointsToDo === 3 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            monthPoints > 0 ? (
+          {practitionerWithAttendancePermissionPoints &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          monthPoints > 0 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1189,14 +1180,11 @@ export const PointsSummary: React.FC = () => {
               }}
             />
           ) : null}
-          {!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true ? (
-            getCurrentPointsToDo === 4
-          ) : getCurrentPointsToDo === 3 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            monthPoints === 0 &&
-            !practitioner?.coachHierarchy ? (
+          {practitionerWithAttendancePermissionPoints &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          monthPoints === 0 &&
+          !practitioner?.coachHierarchy ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1208,14 +1196,11 @@ export const PointsSummary: React.FC = () => {
               onClick={() => setShowInfo(true)}
             />
           ) : null}
-          {!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true ? (
-            getCurrentPointsToDo === 4
-          ) : getCurrentPointsToDo === 3 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 &&
-            monthPoints === 0 &&
-            practitioner?.coachHierarchy ? (
+          {practitionerWithAttendancePermissionPoints &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 &&
+          monthPoints === 0 &&
+          practitioner?.coachHierarchy ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1227,12 +1212,9 @@ export const PointsSummary: React.FC = () => {
               onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
             />
           ) : null}
-          {!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true ? (
-            getCurrentPointsToDo === 4
-          ) : getCurrentPointsToDo === 3 &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 10 ? (
+          {practitionerWithAttendancePermissionPoints &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 10 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
