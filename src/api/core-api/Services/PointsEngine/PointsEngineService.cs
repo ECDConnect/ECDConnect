@@ -203,8 +203,11 @@ namespace EcdLink.Api.CoreApi.Services
                             .ToList()
                             .OrderByDescending(x => x.PointsTotal)
                             .ToList();
-
-            userPoints[0].RankingNr = 1;
+            if (userPoints.Count > 1)
+            {
+                userPoints[0].RankingNr = 1;
+            }
+            
             for (int i = 1; i < userPoints.Count; i++)
             {
                 if (userPoints[i].PointsTotal == userPoints[i - 1].PointsTotal)
