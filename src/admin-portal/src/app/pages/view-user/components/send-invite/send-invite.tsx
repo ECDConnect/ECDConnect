@@ -34,7 +34,6 @@ export const SendInvite: React.FC<SendInviteProps> = ({
     },
   });
 
-  console.log({ lastUrlInviteForuser });
   const { setNotification } = useNotifications();
 
   const isAdminUser = userData?.roles?.some(
@@ -84,6 +83,7 @@ export const SendInvite: React.FC<SendInviteProps> = ({
               textColour: 'secondary',
               type: 'outlined',
               leadingIcon: 'DuplicateIcon',
+              disabled: !lastUrlInviteForuser,
               onClick: () => {
                 navigator?.clipboard?.writeText &&
                   navigator?.clipboard?.writeText(
