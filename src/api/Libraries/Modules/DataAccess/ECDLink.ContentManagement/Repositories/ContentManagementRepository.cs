@@ -343,8 +343,22 @@ namespace ECDLink.ContentManagement.Repositories
                      .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                      .ToList();
 
-                    var allContents = contentValues.Union(noTenantContenValues).ToList();
+                    //var allContents = contentValues.Union(noTenantContenValues).ToList();
+                    // Union just merges the two lists and no duplicates.  With ContentValues.Id in the object, it will never be duplicates.
 
+
+                    var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
+                    foreach (var ntcv in noTenantContenValues)
+                    {
+                        var ntcvKey = new { ntcv.ContentTypeField, ntcv.ContentId };
+                        if (!mergedContentValues.ContainsKey(ntcvKey))
+                        {
+                            mergedContentValues.Add(ntcvKey, ntcv);
+                        }
+                    }
+                    contentValues = mergedContentValues.Values.OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId).ToList();
+
+                    /*
                     contentValues = (contentValues?.Any() ?? false) ? contentValues
                         : item.ContentValues
                         .Where(x => x.LocaleId == localeId
@@ -353,6 +367,7 @@ namespace ECDLink.ContentManagement.Repositories
                          .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
                         .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                         .ToList();
+                    */
 
                     // TODO: Use .Query() to get the data in one query?
                     var objDict = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
