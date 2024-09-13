@@ -32,6 +32,14 @@ const progressTrackingSlice = createSlice({
       state.practitionerProgressReportSummary =
         initialState?.practitionerProgressReportSummary;
     },
+    setLocale: (
+      state,
+      action: PayloadAction<{
+        localeId: string;
+      }>
+    ) => {
+      state.currentLocale = action.payload.localeId;
+    },
     updateSkill: (
       state,
       action: PayloadAction<{
