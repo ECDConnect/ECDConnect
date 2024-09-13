@@ -94,6 +94,11 @@ export function ContentManagement() {
         id: 1,
       },
       {
+        name: ContentManagementTabs.PROCESS.name,
+        // href: '/',
+        id: ContentManagementTabs.PROCESS.id,
+      },
+      {
         name: ContentManagementTabs.PROGRAMMES.name,
         // href: '/',
         id: ContentManagementTabs.PROGRAMMES.id,
@@ -163,6 +168,53 @@ export function ContentManagement() {
   }, 500);
 
   const handleSubTabs = useCallback(() => {
+    if (specialType === ContentManagementTabs.PROCESS.name) {
+      return setSubTabs([
+        {
+          title: 'Levels',
+          description:
+            'Children will be placed at a specific level or stage of development',
+          titleIcon: 'ChartBarIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'ProgressTrackingLevel'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+        {
+          title: 'Progress categories & subcategories',
+          description: 'Development areas',
+          titleIcon: 'PresentationChartBarIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'ProgressTrackingCategory'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+        {
+          title: 'Progress tool',
+          description: 'Edit the skills shown in the progress tracker',
+          titleIcon: 'PresentationChartBarIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'ProgressTrackingSkill'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+      ]);
+    }
     if (specialType === ContentManagementTabs.RESOURCES.name) {
       return setSubTabs([
         {
