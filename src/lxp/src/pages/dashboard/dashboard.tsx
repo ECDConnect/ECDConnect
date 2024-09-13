@@ -1260,12 +1260,6 @@ export const Dashboard: React.FC = () => {
       ? getCurrentPointsToDo === 4
       : getCurrentPointsToDo === 3;
 
-  // const practitionerWithAttendancePermissionPointsToDo =
-  //   !practitioner?.isPrincipal &&
-  //   planActivitiesPermission?.isActive === true
-  //     ? getCurrentPointsToDo < 4
-  //     : getCurrentPointsToDo < 3;
-
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
     prop: K,
