@@ -111,13 +111,13 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
     getProgressTrackingCategories(),
     (categories: ProgressTrackingCategoryDto[]): ProgressSkill[] => {
       const detailedSkills = categories.flatMap((category) =>
-        category.subCategories.flatMap((subCategory) =>
-          subCategory.skills.map((skill) => ({
+        category?.subCategories?.flatMap((subCategory) =>
+          subCategory?.skills?.map((skill) => ({
             id: skill.id,
-            name: skill.name,
-            description: skill.description,
-            supportImage: skill.supportImage,
-            isReverseScored: skill.isReverseScored,
+            name: skill?.name,
+            description: skill?.description,
+            supportImage: skill?.supportImage,
+            isReverseScored: skill?.isReverseScored,
             subCategory: {
               id: subCategory?.id,
               name: subCategory?.name,

@@ -133,8 +133,8 @@ export const getProgressTrackingContent = createAsyncThunk<
         return categories.map((cat) => {
           return {
             ...cat,
-            subCategories: cat.subCategories
-              .filter((x) => subCategories!.some((y) => y.id === x.id))
+            subCategories: cat?.subCategories
+              ?.filter((x) => subCategories!.some((y) => y.id === x.id))
               .map((subCatMin) => {
                 const subCategory = subCategories!.find(
                   (x) => x.id === subCatMin.id
@@ -142,11 +142,10 @@ export const getProgressTrackingContent = createAsyncThunk<
 
                 return {
                   ...subCategory,
-                  skills: subCategory.skills
-                    .filter((x) => skills!.some((y) => y.id === x.id))
+                  skills: subCategory?.skills
+                    ?.filter((x) => skills!.some((y) => y.id === x.id))
                     .map((skillMin) => {
                       const skill = skills!.find((x) => x.id === skillMin.id)!;
-
                       return skill;
                     }),
                 };
