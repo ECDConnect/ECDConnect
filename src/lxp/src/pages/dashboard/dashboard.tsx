@@ -231,7 +231,7 @@ export const Dashboard: React.FC = () => {
       const dataMonth = getMonth(new Date(current?.dateScored));
 
       const dataYear = getYear(new Date(current?.dateScored));
-      if (dataMonth + 1 === currentMonth && dataYear === currentYear) {
+      if (dataMonth === currentMonth && dataYear === currentYear) {
         return (total += current.pointsTotal);
       }
       return total;
