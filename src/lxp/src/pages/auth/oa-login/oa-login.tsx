@@ -41,6 +41,7 @@ import {
 } from '@/schemas/auth/login/oa-login';
 import { AuthService } from '@/services/AuthService';
 import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
+import { useTenant } from '@/hooks/useTenant';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -55,6 +56,7 @@ export const OaLogin: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
+  const tenant = useTenant();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
@@ -212,7 +214,7 @@ export const OaLogin: React.FC = () => {
         return (
           <ActionModal
             className={'mx-4'}
-            title="Oops! AppName works best on Chrome or Firefox"
+            title={`Oops! ${tenant?.tenant?.applicationName} works best on Chrome or Firefox`}
             paragraphs={[
               `To download Chrome or Firefox, go to your phone's app store.`,
             ]}
