@@ -1,5 +1,4 @@
 using AngleSharp.Common;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
@@ -549,7 +548,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public PractitionerStats GetPractitionerStats(
+        public PractitionerStatsModel GetPractitionerStats(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IClassroomService classroomService,
@@ -562,13 +561,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: uId);
             var statementsRepo = repoFactory.CreateRepository<StatementsIncomeStatement>(userContext: uId);
 
-            PractitionerStats stats = new PractitionerStats();
+            PractitionerStatsModel stats = new PractitionerStatsModel();
 
             var classroom = classroomService.GetClassroomForUser(userId);
-            stats.SchoolName = classroom.Name;
-            stats.TotalPractitionersForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Select(x => x.UserId).Distinct().Count();
-            stats.TotalChildrenForSchool = classroom.ClassroomGroups.SelectMany(x => x.Learners.Where(y => y.IsActive && !y.StoppedAttendance.HasValue)).Distinct().Count();
-            stats.TotalClassesForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Count();
+            if (classroom != null)
+            {
+                stats.SchoolName = classroom.Name;
+                stats.TotalPractitionersForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Select(x => x.UserId).Distinct().Count();
+                stats.TotalChildrenForSchool = classroom.ClassroomGroups.SelectMany(x => x.Learners.Where(y => y.IsActive && !y.StoppedAttendance.HasValue)).Distinct().Count();
+                stats.TotalClassesForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Count();
+            }
 
             var attendanceReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, endDate).SingleOrDefault();
             stats.TotalAttendanceRegistersCompleted = attendanceReport != null ? attendanceReport.NumberOfSessions : 0 ; 
@@ -584,7 +586,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             return stats;
         }
-
 
     }
 }
