@@ -18,7 +18,7 @@ export const Resources = () => {
   const handleGetResources = useCallback(async () => {
     const response = await new ResourcesService(
       userAuth?.auth_token!
-    )?.getResources(locale);
+    )?.getResources(locale, 'business', '', [''], [''], null, null);
   }, [locale, userAuth?.auth_token]);
 
   useEffect(() => {

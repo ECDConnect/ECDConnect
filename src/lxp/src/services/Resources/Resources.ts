@@ -14,8 +14,8 @@ class ResourcesService {
     search?: string,
     dataFreeSearch?: [string],
     likesSearch?: [string],
-    startDate?: string,
-    endDate?: string,
+    startDate?: string | null,
+    endDate?: string | null,
     pagingInput?: PagedQueryInput
   ): Promise<any[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
