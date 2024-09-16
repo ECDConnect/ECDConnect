@@ -225,7 +225,7 @@ export const SignUp: React.FC = () => {
         return (
           <ActionModal
             className={'mx-4'}
-            title="Oops! AppName works best on Chrome or Firefox"
+            title={`Oops! ${appName} works best on Chrome or Firefox`}
             paragraphs={[
               `To download Chrome or Firefox, go to your phone's app store.`,
             ]}
