@@ -203,8 +203,11 @@ namespace EcdLink.Api.CoreApi.Services
                             .ToList()
                             .OrderByDescending(x => x.PointsTotal)
                             .ToList();
-
-            userPoints[0].RankingNr = 1;
+            if (userPoints.Count > 1)
+            {
+                userPoints[0].RankingNr = 1;
+            }
+            
             for (int i = 1; i < userPoints.Count; i++)
             {
                 if (userPoints[i].PointsTotal == userPoints[i - 1].PointsTotal)
@@ -217,7 +220,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
 
-            var totalUsers = userPoints.Count()+1;
+            var totalUsers = userPoints.Count() + 1;
             for (int i = 0; i < userPoints.Count; i++)
             {
                 userPoints[i].ComparativeTargetPercentage = (totalUsers == 0 ? 0 : Math.Round((double)(totalUsers -  userPoints[i].RankingNr) / (double)(totalUsers) * 100));
@@ -248,30 +251,39 @@ namespace EcdLink.Api.CoreApi.Services
                 userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
             }
 
-            if (userPointRecord.ComparativeTargetPercentage == 100)
+            if (userPointRecord.RankingNr == 1)
             {
                 userPointRecord.MessageNr = 1;
-                userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName}s on {TenantExecutionContext.Tenant.ApplicationName}!";
+                userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                 userPointRecord.ComparativeSecondaryMessage = "You are the top points earner so far this month. Keep it up!";
-            }
-            if (userPointRecord.ComparativeTargetPercentage >= 75)
+            } else
             {
-                userPointRecord.MessageNr = 2;
-                userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are one of the top {roleName}s on {TenantExecutionContext.Tenant.ApplicationName}!";
-                userPointRecord.ComparativeSecondaryMessage = "You are one of the top points earners so far this month. Keep it up!";
+                if (userPointRecord.ComparativeTargetPercentage < 50)
+                {
+                    userPointRecord.MessageNr = 4;
+                    userPointRecord.ComparativePrimaryMessage = $"Keep going {firstName}!";
+                    userPointRecord.ComparativeSecondaryMessage = $"Most of the practitioners on {TenantExecutionContext.Tenant.ApplicationName} have earned more than {userPointRecord.PointsTotal} points! Earn more points to join them.";
+                }
+                else if (userPointRecord.ComparativeTargetPercentage >= 50 && userPointRecord.ComparativeTargetPercentage < 75)
+                {
+                    userPointRecord.MessageNr = 3;
+                    userPointRecord.ComparativePrimaryMessage = $"Wow, great job {firstName}!";
+                    userPointRecord.ComparativeSecondaryMessage = $"You have more points than most other {TenantExecutionContext.Tenant.ApplicationName} {roleName}s!";
+                }
+                else if (userPointRecord.ComparativeTargetPercentage >= 75)
+                {
+                    userPointRecord.MessageNr = 2;
+                    userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are one of the top {roleName}s on {TenantExecutionContext.Tenant.ApplicationName}!";
+                    userPointRecord.ComparativeSecondaryMessage = "You are one of the top points earners so far this month. Keep it up!";
+                } 
+                else if (userPointRecord.ComparativeTargetPercentage == 100)
+                {
+                    userPointRecord.MessageNr = 1;
+                    userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
+                    userPointRecord.ComparativeSecondaryMessage = "You are the top points earner so far this month. Keep it up!";
+                }
             }
-            if (userPointRecord.ComparativeTargetPercentage >= 50 && userPointRecord.ComparativeTargetPercentage < 75)
-            {
-                userPointRecord.MessageNr = 3;
-                userPointRecord.ComparativePrimaryMessage = $"Wow, great job {firstName}!";
-                userPointRecord.ComparativeSecondaryMessage = $"You have more points than most other {TenantExecutionContext.Tenant.ApplicationName} {roleName}s!";
-            }
-            if (userPointRecord.ComparativeTargetPercentage < 50)
-            {
-                userPointRecord.MessageNr = 4;
-                userPointRecord.ComparativePrimaryMessage = $"Keep going {firstName}!";
-                userPointRecord.ComparativeSecondaryMessage = $"Most of the practitioners on {TenantExecutionContext.Tenant.ApplicationName} have earned more than {userPointRecord.PointsTotal} points! Earn more points to join them.";
-            }
+            
 
             // NON COMPARATIVE
             userPointRecord.NonComparativeTargetPercentageColor = Constants.CSSColorClasses.Orange;
@@ -290,17 +302,16 @@ namespace EcdLink.Api.CoreApi.Services
                 userPointRecord.NonComparativePrimaryMessage = $"Well done {firstName}!";
                 userPointRecord.NonComparativeSecondaryMessage = "You're doing well, keep it up!";
             }
-            if (userPointRecord.NonComparativeTargetPercentage >= 60 && userPointRecord.NonComparativeTargetPercentage <= 79)
+            else if (userPointRecord.NonComparativeTargetPercentage >= 60 && userPointRecord.NonComparativeTargetPercentage <= 79)
             {
                 userPointRecord.NonComparativePrimaryMessage = $"Wow, great job {firstName}!";
                 userPointRecord.NonComparativeSecondaryMessage = "You’re doing well, keep it up! You can still earn more points this month.";
             }
-            if (userPointRecord.NonComparativeTargetPercentage < 60)
+            else if (userPointRecord.PointsTotal > 0 && userPointRecord.NonComparativeTargetPercentage < 60)
             {
                 userPointRecord.NonComparativePrimaryMessage = $"Keep going {firstName}!";
                 userPointRecord.NonComparativeSecondaryMessage = $"Keep using {TenantExecutionContext.Tenant.ApplicationName} to earn points!";
-            }
-            if (userPointRecord.PointsTotal == 0)
+            } else if (userPointRecord.PointsTotal == 0)
             {
                 userPointRecord.NonComparativePrimaryMessage = $"No points earned yet";
                 userPointRecord.NonComparativeSecondaryMessage = $"Keep going to earn points!";
@@ -873,32 +884,35 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null)
                 {
                     var today = DateTime.Now;
-                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteChildProgressObservationsId);
-                    var schoolClassIds = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).Select(x => x.Id).ToList();
+                    
                     var childProgressReports = _childProgressReportRepo
                                                     .GetAll()
                                                     .Where(x => x.IsActive
-                                                            && schoolClassIds.Contains(x.ChildProgressReportPeriod.ClassroomId)
-                                                            && x.ChildProgressReportPeriod.StartDate.Year == today.Year
-                                                            && x.ChildProgressReportPeriod.StartDate.Month == today.Month
-                                                            && x.ObservationsCompleteDate.HasValue)
+                                                            && x.UserId == userId
+                                                            && x.ObservationsCompleteDate.HasValue
+                                                            && x.ObservationsCompleteDate.Value.Year == today.Year
+                                                            && x.ObservationsCompleteDate.Value.Month == today.Month)
                                                     .Select(x => new { x.ObservationsCompleteDate.Value.Month, x.Id })
                                                     .ToList()
                                                     .GroupBy(x => x.Month)
                                                     .Select(x => new { Month = x.Key, Total = x.Count() })
                                                     .ToList();
-
-                    foreach (var item in childProgressReports)
+                    if (childProgressReports.Any())
                     {
-                        var userPoints = activity.Points * item.Total;
-                        AddOrUpdatePoints(
-                            PointsActivityConstants.CompleteChildProgressObservationsId,
-                            userId,
-                            userPoints,
-                            item.Total,
-                            new DateTime(today.Year, item.Month, today.Day)
-                        );
+                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CompleteChildProgressObservationsId);
+                        foreach (var item in childProgressReports)
+                        {
+                            var userPoints = activity.Points * item.Total;
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.CompleteChildProgressObservationsId,
+                                userId,
+                                userPoints,
+                                item.Total,
+                                new DateTime(today.Year, item.Month, 01)
+                            );
+                        }
                     }
+
                 }
             }
         }
@@ -918,26 +932,32 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null)
                 {
                     var today = DateTime.Now;
-                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CreateChildProgressReportId);
-                    var schoolClassIds = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).Select(x => x.Id).ToList();
-                    var childProgressReportsCount = _childProgressReportRepo
+                    
+                    var childProgressReports = _childProgressReportRepo
                                                     .GetAll()
                                                     .Where(x => x.IsActive 
-                                                            && schoolClassIds.Contains(x.ChildProgressReportPeriod.ClassroomId)
-                                                            && x.ChildProgressReportPeriod.StartDate.Year == today.Year
-                                                            && x.ChildProgressReportPeriod.StartDate.Month == today.Month)
-                                                    .Count();
-                    //var yearPoints = _pointsUserSummaryRepo.GetAll().Where(x =>
-                    //                       x.UserId == userId
-                    //                       && x.PointsActivityId == activity.Id
-                    //                       && x.DateScored.Year >= today.Year).Select(x => x.PointsTotal).Sum();
-                    var userPoints = (childProgressReportsCount * activity.Points);
-                    AddOrUpdatePoints(
-                            PointsActivityConstants.CreateChildProgressReportId,
-                            userId,
-                            userPoints,
-                            childProgressReportsCount
-                    );
+                                                            && x.UserId == userId
+                                                            && x.DateCompleted.Value.Year == today.Year
+                                                            && x.DateCompleted.Value.Month == today.Month)
+                                                    .Select(x => new { x.DateCompleted.Value.Month, x.Id })
+                                                    .ToList()
+                                                    .GroupBy(x => x.Month)
+                                                    .Select(x => new { Month = x.Key, Total = x.Count() })
+                                                    .ToList();
+                    if (childProgressReports.Any())
+                    {
+                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.CreateChildProgressReportId);
+                        foreach (var item in childProgressReports)
+                        {
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.CreateChildProgressReportId,
+                                userId,
+                                item.Total * activity.Points,
+                                item.Total,
+                                new DateTime(today.Year, item.Month, 01)
+                            );
+                        }
+                    }
                 }
            }
         }

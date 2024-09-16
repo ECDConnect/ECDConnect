@@ -165,6 +165,11 @@ namespace ECDLink.UrlShortner.Managers
                 .ToList();
         }
 
+        public string GetLatestUrlInviteForUser(Guid userId, string messageType)
+        {
+            return _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) & x.IsActive && x.Clicked == 0).OrderByDescending(x => x.InsertedDate).Select(x => x.URL).FirstOrDefault();
+        }
+
         public void UpdateMessageNotificationResult(Guid userId, string messageType, int notificationResult)
         {
             var message = _entities.Where(x => x.UserId == userId && string.Equals(x.MessageType, messageType) & x.IsActive).OrderByDescending(x => x.InsertedDate).FirstOrDefault();

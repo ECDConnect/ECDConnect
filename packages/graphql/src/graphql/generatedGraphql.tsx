@@ -1994,6 +1994,7 @@ export type ClassroomBusinessResource = {
   availableLanguages?: Maybe<Array<Maybe<Language>>>;
   dataFree?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  insertedDate?: Maybe<Scalars['String']>;
   link?: Maybe<Scalars['String']>;
   longDescription?: Maybe<Scalars['String']>;
   numberLikes?: Maybe<Scalars['String']>;
@@ -2007,6 +2008,7 @@ export type ClassroomBusinessResource = {
 export type ClassroomBusinessResourceInput = {
   availableLanguages?: InputMaybe<Scalars['String']>;
   dataFree?: InputMaybe<Scalars['String']>;
+  insertedDate?: InputMaybe<Scalars['String']>;
   link?: InputMaybe<Scalars['String']>;
   longDescription?: InputMaybe<Scalars['String']>;
   numberLikes?: InputMaybe<Scalars['String']>;
@@ -7586,6 +7588,7 @@ export type Mutation = {
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
   deleteBreastFeedingClub?: Maybe<Scalars['Boolean']>;
   deleteBreastFeedingClubClient?: Maybe<Scalars['Boolean']>;
+  deleteBulkResources: Scalars['Boolean'];
   deleteCalendarEvent?: Maybe<Scalars['Boolean']>;
   deleteCalendarEventParticipant?: Maybe<Scalars['Boolean']>;
   deleteCalendarEventType?: Maybe<Scalars['Boolean']>;
@@ -7794,15 +7797,12 @@ export type Mutation = {
   sendCoachInviteToApplication: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
   sendNotificationToUser: Scalars['Boolean'];
-  sendPractitionerAddedToProgrammeNotification: Scalars['Boolean'];
   sendPractitionerInviteToApplication: Scalars['Boolean'];
   sendPractitionerInviteToPreSchool?: Maybe<Scalars['String']>;
   sendPractitionerRemovedFromProgrammeNotification: Scalars['Boolean'];
   sendPrincipalInviteToApplication?: Maybe<Scalars['String']>;
   sendPromotedToPrincipalFAAProgrammeNotification: Scalars['Boolean'];
-  sendRemovedFromProgrammeNotification: Scalars['Boolean'];
   sendTeamLeadVerifyPhoneNumberSMS?: Maybe<ApplicationUser>;
-  sendUserAssignedToClassNotification: Scalars['Boolean'];
   setContactClubLeaderStatusForMeeting?: Maybe<ClubMeeting>;
   switchPrincipal: Scalars['Boolean'];
   trackAttendance: Scalars['Boolean'];
@@ -7815,6 +7815,7 @@ export type Mutation = {
   updateCalendarEventParticipant?: Maybe<CalendarEventParticipant>;
   updateCalendarEventType?: Maybe<CalendarEventType>;
   updateCaregiver?: Maybe<Caregiver>;
+  updateCaregiverResourceLink: Scalars['Boolean'];
   updateChild?: Maybe<Child>;
   updateChildAndCaregiver: Scalars['Boolean'];
   updateChildProgressReport?: Maybe<ChildProgressReport>;
@@ -7856,7 +7857,7 @@ export type Mutation = {
   updateCommunitySkill?: Maybe<CommunitySkill>;
   updateCommunitySupport?: Maybe<Trainee>;
   updateConnect?: Maybe<Connect>;
-  updateConnectItem: Scalars['Boolean'];
+  updateConnectItem?: Maybe<ConnectItem>;
   updateConsent?: Maybe<Consent>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
   updateDangerSign?: Maybe<DangerSign>;
@@ -7956,7 +7957,8 @@ export type Mutation = {
   updateReferralType?: Maybe<ReferralType>;
   updateRelation?: Maybe<Relation>;
   updateRemovalFromProgramme: Scalars['Boolean'];
-  updateResourceLink: Scalars['Boolean'];
+  updateResourceConnectItem: Scalars['Boolean'];
+  updateResourceLink?: Maybe<ResourceLink>;
   updateRole?: Maybe<ApplicationIdentityRole>;
   updateShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   updateSiteAddress?: Maybe<SiteAddress>;
@@ -9072,6 +9074,11 @@ export type MutationDeleteBreastFeedingClubClientArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
+export type MutationDeleteBulkResourcesArgs = {
+  input?: InputMaybe<Array<InputMaybe<CmsConnectItemModelInput>>>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationDeleteCalendarEventArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -10007,11 +10014,6 @@ export type MutationSendNotificationToUserArgs = {
   userType?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendPractitionerAddedToProgrammeNotificationArgs = {
-  programmeName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendPractitionerInviteToApplicationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -10038,22 +10040,9 @@ export type MutationSendPromotedToPrincipalFaaProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSendRemovedFromProgrammeNotificationArgs = {
-  principalName?: InputMaybe<Scalars['String']>;
-  programmeName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendTeamLeadVerifyPhoneNumberSmsArgs = {
   pendingPhoneNumber?: InputMaybe<Scalars['String']>;
   userId: Scalars['UUID'];
-};
-
-export type MutationSendUserAssignedToClassNotificationArgs = {
-  className?: InputMaybe<Scalars['String']>;
-  oldClassName?: InputMaybe<Scalars['String']>;
-  principalName?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationSetContactClubLeaderStatusForMeetingArgs = {
@@ -10116,6 +10105,11 @@ export type MutationUpdateCalendarEventTypeArgs = {
 export type MutationUpdateCaregiverArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<CaregiverInput>;
+};
+
+export type MutationUpdateCaregiverResourceLinkArgs = {
+  input?: InputMaybe<Array<InputMaybe<CmsResourceLinkModelInput>>>;
+  localeId: Scalars['UUID'];
 };
 
 export type MutationUpdateChildArgs = {
@@ -10326,7 +10320,7 @@ export type MutationUpdateConnectArgs = {
 
 export type MutationUpdateConnectItemArgs = {
   id: Scalars['String'];
-  input?: InputMaybe<Array<InputMaybe<CmsConnectItemModelInput>>>;
+  input: ConnectItemInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -10872,9 +10866,14 @@ export type MutationUpdateRemovalFromProgrammeArgs = {
   removalId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationUpdateResourceConnectItemArgs = {
+  input?: InputMaybe<Array<InputMaybe<CmsConnectItemModelInput>>>;
+  localeId: Scalars['UUID'];
+};
+
 export type MutationUpdateResourceLinkArgs = {
   id: Scalars['String'];
-  input?: InputMaybe<Array<InputMaybe<CmsResourceLinkModelInput>>>;
+  input: ResourceLinkInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -14456,6 +14455,7 @@ export type Query = {
   infantVisits?: Maybe<Array<Maybe<BasicVisitModel>>>;
   infographics: Array<Maybe<Infographics>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
+  latestUrlInviteForUser?: Maybe<Scalars['String']>;
   league?: Maybe<LeagueWithRankingsModel>;
   leagueById?: Maybe<LeagueClinicsModel>;
   leagueForUser?: Maybe<LeagueClubsModel>;
@@ -14518,6 +14518,7 @@ export type Query = {
   removeHolidays?: Maybe<Array<Scalars['DateTime']>>;
   removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
   reportDetailsForPractitioner?: Maybe<PractitionerReportDetails>;
+  resources: Array<Maybe<ClassroomBusinessResource>>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<ApplicationIdentityRole>>>;
   settings?: Maybe<SettingsType>;
@@ -17480,6 +17481,10 @@ export type QueryLastPractitionerInviteDateArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryLatestUrlInviteForUserArgs = {
+  userId: Scalars['UUID'];
+};
+
 export type QueryLeagueArgs = {
   endDate: Scalars['DateTime'];
   leagueId: Scalars['UUID'];
@@ -17704,6 +17709,17 @@ export type QueryRemoveWeekendDaysArgs = {
 
 export type QueryReportDetailsForPractitionerArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryResourcesArgs = {
+  dataFreeSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  likesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  localeId: Scalars['UUID'];
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  search?: InputMaybe<Scalars['String']>;
+  sectionType?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
 };
 
 export type QueryRoleForUserArgs = {

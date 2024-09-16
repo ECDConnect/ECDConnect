@@ -1,5 +1,4 @@
 using AngleSharp.Common;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
@@ -15,7 +14,9 @@ using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -23,6 +24,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
@@ -320,6 +322,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             IGenericRepositoryFactory repoFactory, 
             string userId)
         {
+            if (userId == null)
+            {
+                return null;
+            }
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
@@ -542,37 +548,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public PractitionerStats GetPractitionerStats(
+        public PractitionerStatsModel GetPractitionerStats(
             [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory, 
+            IGenericRepositoryFactory repoFactory,
+            [Service] IClassroomService classroomService,
+            [Service] MonthlyAttendanceReport monthlyAttendanceReport,
             Guid userId,
             DateTime startDate,
             DateTime endDate)
         {
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: uId);
+            var statementsRepo = repoFactory.CreateRepository<StatementsIncomeStatement>(userContext: uId);
 
-            PractitionerStats stats = new PractitionerStats();
+            PractitionerStatsModel stats = new PractitionerStatsModel();
 
-            var practitioner = practitionerRepo.GetByUserId(userId);
-            // var classroom = classroomRepo.GetByUserId((Guid)practitioner.PrincipalHierarchy);
-            // var classroomGroups = classroom.ClassroomGroups;
+            var classroom = classroomService.GetClassroomForUser(userId);
+            if (classroom != null)
+            {
+                stats.SchoolName = classroom.Name;
+                stats.TotalPractitionersForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Select(x => x.UserId).Distinct().Count();
+                stats.TotalChildrenForSchool = classroom.ClassroomGroups.SelectMany(x => x.Learners.Where(y => y.IsActive && !y.StoppedAttendance.HasValue)).Distinct().Count();
+                stats.TotalClassesForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Count();
+            }
 
+            var attendanceReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, endDate).SingleOrDefault();
+            stats.TotalAttendanceRegistersCompleted = attendanceReport != null ? attendanceReport.NumberOfSessions : 0 ; 
+            stats.TotalAttendanceRegistersNotCompleted = attendanceReport != null ? attendanceReport.TotalScheduledSessions : 0;
 
-            stats.TotalPractitionersForSchool = 0;
-            stats.TotalChildrenForSchool = 0;
-            stats.TotalClassesForSchool = 0;
-            stats.TotalAttendanceRegistersCompleted = 0;
-            stats.TotalAttendanceRegistersNotCompleted = 0;
-            stats.TotalProgressReportsCompleted = 0;
-            stats.TotalProgressReportsNotCompleted = 0;
-            stats.TotalIncomeStatementsDownloaded = 0;
-            stats.TotalIncomeStatementsWithNoItems = 0;
+            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).ToList();
+            stats.TotalProgressReportsCompleted = progressData.Where(x => x.DateCompleted.HasValue).Count();
+            stats.TotalProgressReportsNotCompleted = progressData.Where(x => !x.DateCompleted.HasValue).Count(); ;
+
+            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).ToList();
+            stats.TotalIncomeStatementsDownloaded = statementData.Where(x => x.Downloaded == true).Count();
+            stats.TotalIncomeStatementsWithNoItems = statementData.Where(x => x.IncomeItems.Count == 0 && x.ExpenseItems.Count == 0).Count();
 
             return stats;
         }
-
 
     }
 }

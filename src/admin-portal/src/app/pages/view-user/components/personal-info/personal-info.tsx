@@ -506,14 +506,16 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                       component === UsersRouteRedirectTypeEnum?.practitioner) &&
                       isWhiteLabel && (
                         <Dropdown
-                          placeholder={'Click to select a coach'}
+                          placeholder={
+                            'Click to select a ' + tenant.modules.coachRoleName
+                          }
                           className={`mb-4 justify-between ${
                             component ===
                             UsersRouteRedirectTypeEnum?.practitioner
                               ? 'opacity-50'
                               : ''
                           }`}
-                          label={'Coach'}
+                          label={tenant.modules.coachRoleName}
                           isAdminPortalInput={true}
                           list={coaches || []}
                           onChange={(item) => {
@@ -534,15 +536,21 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                       isWhiteLabel && (
                         <Alert
                           className={'mt-5 mb-3 rounded-xl'}
-                          title={`All practitioners at a preschool must have the same coach as the principal. To update the coach for ${
-                            userData?.firstName
-                          }'s preschool, please go to the principal's profile: ${
-                            practitionerPrincipal?.user?.firstName
-                              ? practitionerPrincipal?.user?.firstName
-                              : ''
-                          } (ID: ${
-                            practitionerPrincipal?.user?.idNumber || ''
-                          }).`}
+                          title={
+                            `All practitioners at a preschool must have the same ` +
+                            tenant.modules.coachRoleName +
+                            ` as the principal. To update the ` +
+                            tenant.modules.coachRoleName +
+                            ` for ${
+                              userData?.firstName
+                            }'s preschool, please go to the principal's profile: ${
+                              practitionerPrincipal?.user?.firstName
+                                ? practitionerPrincipal?.user?.firstName
+                                : ''
+                            } (ID: ${
+                              practitionerPrincipal?.user?.idNumber || ''
+                            }).`
+                          }
                           type={'info'}
                         />
                       )}
@@ -565,9 +573,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   </div>
                 </div>
               </div>
-              {component === UsersRouteRedirectTypeEnum?.chw ||
-              component === UsersRouteRedirectTypeEnum?.teamLeads ||
-              component === UsersRouteRedirectTypeEnum?.practitioner ||
+              {component === UsersRouteRedirectTypeEnum?.practitioner ||
               component === UsersRouteRedirectTypeEnum?.principal ||
               component === UsersRouteRedirectTypeEnum?.coach ? (
                 <Button

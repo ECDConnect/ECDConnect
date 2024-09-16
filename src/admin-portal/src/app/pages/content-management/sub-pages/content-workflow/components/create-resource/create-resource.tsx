@@ -17,7 +17,7 @@ import {
   FormTemplateField,
   ResourcesTitles,
 } from '../../../../content-management-models';
-import { Alert, DialogPosition } from '@ecdlink/ui';
+import { DialogPosition } from '@ecdlink/ui';
 import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateResourceForm from './create-resource-form';
@@ -48,7 +48,8 @@ export default function CreateResource({
   choosedSectionTitle,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit, control, getValues } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
@@ -147,16 +148,6 @@ export default function CreateResource({
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  // const validation =
-  //   filteredThemeDays &&
-  //   filteredThemeDays.every(
-  //     (item) =>
-  //       item.smallGroupActivity &&
-  //       item.largeGroupActivity &&
-  //       item.storyBook &&
-  //       item.storyActivity
-  //   );
-
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
       const t: DynamicFormTemplate = {
@@ -210,7 +201,6 @@ export default function CreateResource({
       contentValue: item,
       optionDefinition: optionDefinition,
       selectedLanguageId: selectedLanguageId,
-      dataLinkName: field.dataLinkName,
     };
 
     if (item && item.localeId === selectedLanguageId) {
@@ -224,6 +214,8 @@ export default function CreateResource({
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
+    console.log('model', model);
+
     model.sectionType =
       choosedSectionTitle === ResourcesTitles.ClassroomResources
         ? 'classroom'
@@ -257,12 +249,20 @@ export default function CreateResource({
 
     savedContent();
     setLoading(false);
+    cancelEdit();
   };
 
-  const disableButtonDays = false;
+  const formValues = getValues();
+
+  const disableButtonItems = template?.fields?.filter(
+    (item) =>
+      item?.required.value &&
+      formValues?.hasOwnProperty(item?.propName) &&
+      !formValues[item?.propName]
+  );
 
   const disbleButtonStyles = `bg-secondary ${
-    disableButtonDays ? 'opacity-25' : ''
+    disableButtonItems && disableButtonItems.length > 0 ? 'opacity-25' : ''
   } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   if (
@@ -308,13 +308,14 @@ export default function CreateResource({
               defaultLanguageId={defaultLanguageId}
               choosedSectionTitle={choosedSectionTitle}
               formType={formType}
+              getValues={getValues}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              // disabled={disableButtonDays}
+              disabled={disableButtonItems && disableButtonItems.length > 0}
               className={disbleButtonStyles}
             >
               <SaveIcon width="22px" className="mr-2" />

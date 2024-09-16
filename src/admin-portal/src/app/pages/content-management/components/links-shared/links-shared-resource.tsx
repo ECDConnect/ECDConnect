@@ -42,11 +42,11 @@ export const LinksSharedResource = ({
   `;
 
   const createMutation = gql`
-    mutation UpdateResourceLink(
+    mutation UpdateCaregiverResourceLink(
       $input: [CMSResourceLinkModelInput]
-      $localeId: String
+      $localeId: UUID!
     ) {
-      updateResourceLink(input: $input, localeId: $localeId)
+      updateCaregiverResourceLink(input: $input, localeId: $localeId)
     }
   `;
 

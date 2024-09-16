@@ -350,6 +350,18 @@ export const PointsSummary: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
+  const practitionerWithAttendancePermissionPointsToDo =
+    practitioner?.isPrincipal ||
+    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+      ? getCurrentPointsToDo < 4
+      : getCurrentPointsToDo < 3;
+
+  const practitionerWithAttendancePermissionPoints =
+    practitioner?.isPrincipal ||
+    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+      ? getCurrentPointsToDo === 4
+      : getCurrentPointsToDo === 3;
+
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
     prop: K,
@@ -971,7 +983,7 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMMM yyyy')}
           />
-          {(getCurrentPointsToDo < 4 ||
+          {(practitionerWithAttendancePermissionPointsToDo ||
             !pointsTotalForYear ||
             (pointsTotalForYear && pointsTotalForYear <= 10)) && (
             <NoPointsScoreCard
@@ -1007,7 +1019,7 @@ export const PointsSummary: React.FC = () => {
               className="mt-4"
             />
           ) : null}
-          {getCurrentPointsToDo === 4 &&
+          {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 ? (
             <ScoreCard
@@ -1045,7 +1057,7 @@ export const PointsSummary: React.FC = () => {
           monthPoints &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          getCurrentPointsToDo === 4 ? (
+          practitionerWithAttendancePermissionPoints ? (
             <CelebrationCard
               image={getEmoji(
                 pointsShareData?.userRankingData
@@ -1070,7 +1082,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {!pointsTotalForYear ||
           pointsTotalForYear <= 10 ||
-          getCurrentPointsToDo < 4 ? (
+          practitionerWithAttendancePermissionPointsToDo ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -1107,7 +1119,7 @@ export const PointsSummary: React.FC = () => {
           !!todoListFiltered.length &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          getCurrentPointsToDo === 4 ? (
+          practitionerWithAttendancePermissionPoints ? (
             <Typography
               className="mt-8 mb-4"
               type={'h3'}
@@ -1121,7 +1133,7 @@ export const PointsSummary: React.FC = () => {
           {!!todoListFiltered &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
-          getCurrentPointsToDo === 4
+          practitionerWithAttendancePermissionPoints
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
                   <div
@@ -1142,7 +1154,7 @@ export const PointsSummary: React.FC = () => {
             : null}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
-          {getCurrentPointsToDo === 4 &&
+          {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
           monthPoints > 0 ? (
@@ -1168,7 +1180,7 @@ export const PointsSummary: React.FC = () => {
               }}
             />
           ) : null}
-          {getCurrentPointsToDo === 4 &&
+          {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
           monthPoints === 0 &&
@@ -1184,7 +1196,7 @@ export const PointsSummary: React.FC = () => {
               onClick={() => setShowInfo(true)}
             />
           ) : null}
-          {getCurrentPointsToDo === 4 &&
+          {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 &&
           monthPoints === 0 &&
@@ -1200,7 +1212,7 @@ export const PointsSummary: React.FC = () => {
               onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
             />
           ) : null}
-          {getCurrentPointsToDo === 4 &&
+          {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
           pointsTotalForYear > 10 ? (
             <Button

@@ -135,7 +135,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
         ),
       });
     }
-  }, [dialog]);
+  }, [dialog, currentReportingPeriod]);
 
   return (
     <>
