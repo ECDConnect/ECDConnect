@@ -223,8 +223,8 @@ export default function ResourceList({
       search: '',
       dataFreeSearch: filteredDataFree,
       likesSearch: filteredLikes,
-      startDate: startDate,
-      endDate: endDate,
+      startDate: startDate === '' ? null : startDate,
+      endDate: endDate === '' ? null : endDate,
       pagingInput: {
         pageNumber: 1,
         pageSize: null,
