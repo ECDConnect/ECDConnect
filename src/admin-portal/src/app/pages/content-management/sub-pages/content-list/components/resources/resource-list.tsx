@@ -510,7 +510,7 @@ export default function ResourceList({
     DeleteMultipleResources,
     {
       variables: {
-        ids: [],
+        contentIds: selectedResources?.map((item) => item?.id),
       },
       fetchPolicy: 'network-only',
     }
@@ -519,22 +519,22 @@ export default function ResourceList({
   const deactivateResource = useCallback(() => {
     deactivateResources({
       variables: {
-        ids: selectedResources?.map((item) => item?.userId),
+        contentIds: selectedResources?.map((item) => item?.id),
       },
     })
       .then((res) => {
-        if (res.data?.bulkDeleteResource?.success.length > 0) {
+        if (res.data?.deleteBulkResources?.success.length > 0) {
           setNotification({
-            title: ` Successfully Deleted ${res.data?.bulkDeleteResource?.success.length} Resources!`,
+            title: ` Successfully Deleted ${res.data?.deleteBulkResources?.success.length} Resources!`,
             variant: NOTIFICATION.SUCCESS,
           });
           refetchContent();
           setSelectedResources([]);
           handleResetSelectedRows();
         }
-        if (res.data?.bulkDeleteResource?.failed.length > 0) {
+        if (res.data?.deleteBulkResources?.failed.length > 0) {
           setNotification({
-            title: ` Failed to Deleted ${res.data?.bulkDeleteResource?.failed.length} Resources!`,
+            title: ` Failed to Deleted ${res.data?.deleteBulkResources?.failed.length} Resources!`,
             variant: NOTIFICATION.ERROR,
           });
           setSelectedResources([]);

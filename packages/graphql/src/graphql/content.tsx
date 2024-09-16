@@ -136,8 +136,8 @@ export const BulkUpdateConsentImages = gql`
 `;
 
 export const DeleteMultipleResources = gql`
-  mutation DeleteMultipleResources($ids: [String]) {
-    deleteMultipleResources(ids: $ids) {
+  mutation DeleteBulkResources($contentIds: [Int!]) {
+    deleteBulkResources(contentIds: $contentIds) {
       success
       failed
     }
