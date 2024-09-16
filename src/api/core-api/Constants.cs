@@ -1080,6 +1080,15 @@ namespace EcdLink.Api.CoreApi
         {
             public static readonly Guid TeamLeadMonthlyMeetingId = new Guid("2497b684-2d62-46ea-af56-34b1746891be");
         }
+
+        public static class ResourceLikes
+        {
+            public const string Zero = "0 likes";
+            public const string OneToTen = "1 to 10 likes";
+            public const string ElevenToFifty = "11 to 50 likes";
+            public const string FiftyOneToHundred = "51 to 100 likes";
+            public const string MoreThanHundred = "More than 100 likes";
+        }
     }
 }
 

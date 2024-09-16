@@ -37,11 +37,11 @@ export const LinksShared = ({
   `;
 
   const createMutation = gql`
-    mutation UpdateConnectItem(
+    mutation UpdateResourceConnectItem(
       $input: [CMSConnectItemModelInput]
-      $localeId: String
+      $localeId: UUID!
     ) {
-      updateConnectItem(input: $input, localeId: $localeId)
+      updateResourceConnectItem(input: $input, localeId: $localeId)
     }
   `;
 

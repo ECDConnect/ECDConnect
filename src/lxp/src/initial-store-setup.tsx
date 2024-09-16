@@ -247,7 +247,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       })
     ).unwrap();
     await appDispatch(
-      progressTrackingThunkActions.getProgressTrackingLevels({
+      progressTrackingThunkActions.getResourceLinks({
         locale: 'en-za',
       })
     ).unwrap();

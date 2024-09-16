@@ -41,7 +41,8 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
     notification?.message?.reference ===
       referenceNames?.allChildrenProgressReportsCreated ||
     notification?.message?.reference ===
-      referenceNames?.pastDeadlineDateForProgressReports;
+      referenceNames?.pastDeadlineDateForProgressReports ||
+    notification?.message?.priority === 8;
 
   const showOnlineOnly = () => {
     dialog({

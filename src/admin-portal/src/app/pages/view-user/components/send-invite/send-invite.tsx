@@ -6,8 +6,11 @@ import {
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
-import { useMutation } from '@apollo/client';
-import { SendInviteToApplication } from '@ecdlink/graphql';
+import { useMutation, useQuery } from '@apollo/client';
+import {
+  GetLatestUrlInviteForUser,
+  SendInviteToApplication,
+} from '@ecdlink/graphql';
 
 interface SendInviteProps {
   userData: UserDto;
@@ -24,6 +27,13 @@ export const SendInvite: React.FC<SendInviteProps> = ({
   const [sendInviteToApplication, { loading }] = useMutation(
     SendInviteToApplication
   );
+  const { data: lastUrlInviteForuser } = useQuery(GetLatestUrlInviteForUser, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      userId: userData?.id,
+    },
+  });
+
   const { setNotification } = useNotifications();
 
   const isAdminUser = userData?.roles?.some(
@@ -73,42 +83,17 @@ export const SendInvite: React.FC<SendInviteProps> = ({
               textColour: 'secondary',
               type: 'outlined',
               leadingIcon: 'DuplicateIcon',
-              onClick: onCancel,
+              disabled: !lastUrlInviteForuser,
+              onClick: () => {
+                navigator?.clipboard?.writeText &&
+                  navigator?.clipboard?.writeText(
+                    lastUrlInviteForuser?.latestUrlInviteForUser
+                  );
+                onCancel();
+              },
             },
           ]}
         />
-
-        // <AlertModal
-        //   title="Would you like to re-send the SMS or copy the URL?"
-        //   message={`You are about to send an invite to ${
-        //     chwData?.user?.fullName ?? userData?.fullName
-        //   }`}
-        //   btnText={['Re-send the SMS', 'Copy the invite URL']}
-        //   onCancel={onCancel}
-
-        //   onSubmit={() => {
-        //     onSubmit();
-        //     sendInviteToApplication({
-        //       variables: {
-        //         userId: userData?.id ?? chwData?.user.id,
-        //         inviteToPortal: isAdminUser,
-        //       },
-        //     })
-        //       .then(() => {
-        //         refetchUserData();
-        //         setNotification({
-        //           title: 'Successfully Sent Invite!',
-        //           variant: NOTIFICATION.SUCCESS,
-        //         });
-        //       })
-        //       .catch((err) => {
-        //         setNotification({
-        //           title: 'Failed to Send Invite!',
-        //           variant: NOTIFICATION.ERROR,
-        //         });
-        //       });
-        //   }}
-        // />
       ),
     });
   };

@@ -65,6 +65,7 @@ export const PractitionerSetup = ({
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const tenant = useTenant();
+  const isWhiteLabel = tenant?.isWhiteLabel;
   const [isLoading, setIsLoading] = useState(false);
 
   const principalNotification: Message[] = [
@@ -231,39 +232,42 @@ export const PractitionerSetup = ({
               />
             )}
 
-            {practitionerToProgramme && practitioner?.shareInfo !== true && (
-              <>
-                <Typography
-                  type="h4"
-                  text="Permission to share information with principal"
-                />
-                <div
-                  className={`${false && 'border-errorDark border'} ${
-                    false ? 'border-quatenary bg-quatenaryBg border' : 'bg-uiBg'
-                  } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
-                >
-                  <div className="flex">
-                    <Checkbox
-                      register={register}
-                      checked={allowPermissions}
-                      nameProp="allowPermissions"
-                      className="mr-4 flex-1"
-                      description="I accept that my information will be shared with the programme principal"
-                    />
-                    &nbsp;
-                    <Button
-                      color={'secondaryAccent2'}
-                      type={'filled'}
-                      text="Read"
-                      textColor="secondary"
-                      className={'rounded-xl'}
-                      size={'small'}
-                      onClick={() => setViewPermissionToShare(true)}
-                    />
+            {(practitionerToProgramme && practitioner?.shareInfo !== true) ||
+              (practitionerToProgramme && isWhiteLabel && (
+                <>
+                  <Typography
+                    type="h4"
+                    text="Permission to share information with principal"
+                  />
+                  <div
+                    className={`${false && 'border-errorDark border'} ${
+                      false
+                        ? 'border-quatenary bg-quatenaryBg border'
+                        : 'bg-uiBg'
+                    } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+                  >
+                    <div className="flex">
+                      <Checkbox
+                        register={register}
+                        checked={allowPermissions}
+                        nameProp="allowPermissions"
+                        className="mr-4 flex-1"
+                        description="I accept that my information will be shared with the programme principal"
+                      />
+                      &nbsp;
+                      <Button
+                        color={'secondaryAccent2'}
+                        type={'filled'}
+                        text="Read"
+                        textColor="secondary"
+                        className={'rounded-xl'}
+                        size={'small'}
+                        onClick={() => setViewPermissionToShare(true)}
+                      />
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              ))}
           </div>
         )}
 
@@ -282,7 +286,10 @@ export const PractitionerSetup = ({
                 !allowPermissions &&
                 practitioner?.shareInfo !== true) ||
               practitionerToProgramme === null ||
-              practitionerToProgramme === undefined
+              practitionerToProgramme === undefined ||
+              (isWhiteLabel &&
+                !allowPermissions &&
+                practitionerToProgramme !== false)
             }
             onClick={
               practitionerToProgramme === false

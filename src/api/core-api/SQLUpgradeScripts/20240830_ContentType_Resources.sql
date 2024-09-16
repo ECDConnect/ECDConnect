@@ -11,7 +11,8 @@ INSERT INTO "ContentTypeField" ("Id","FieldOrder","FieldName","FieldTypeId","IsA
 (nextval('public."ContentTypeField_Id_seq"'),7,'sectionType',1,true,'',39,current_date,current_date,NULL,NULL,'Section Type',false,false,false),
 (nextval('public."ContentTypeField_Id_seq"'),8,'numberLikes',1,true,'',39,current_date,current_date,NULL,NULL,'# of likes',true,false,false),
 (nextval('public."ContentTypeField_Id_seq"'),9,'updatedDate',1,true,'',39,current_date,current_date,NULL,NULL,'Last updated',true,false,false),
-(nextval('public."ContentTypeField_Id_seq"'),10,'availableLanguages',5,true,'Language',39,current_date,current_date,NULL,NULL,'Lanagues',false,false,false);
+(nextval('public."ContentTypeField_Id_seq"'),10,'availableLanguages',5,true,'Language',39,current_date,current_date,NULL,NULL,'Lanagues',false,false,false),
+(nextval('public."ContentTypeField_Id_seq"'),11,'insertedDate',1,true,'',39,current_date,current_date,NULL,NULL,'Inserted Date',true,false,false);
 
 
 

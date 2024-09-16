@@ -10,8 +10,9 @@ import {
   Typography,
   ButtonGroup,
   ButtonGroupTypes,
-  Radio,
   FormInput,
+  CoreRadioGroup,
+  Alert,
 } from '@ecdlink/ui';
 
 export interface CreateResourceFormProps {
@@ -21,6 +22,7 @@ export interface CreateResourceFormProps {
   defaultLanguageId: string;
   formType?: string;
   choosedSectionTitle: string;
+  getValues?: any;
 }
 
 const contentWrapper = '';
@@ -30,17 +32,21 @@ const dataFreeOptions = [
 ];
 
 export const classroomOptions = [
-  'Activities',
-  'Stories',
-  'Teaching tips',
-  'Other',
+  { id: 0, label: 'Activities', value: 'Activities' },
+  { id: 1, label: 'Stories', value: 'Stories' },
+  { id: 2, label: 'Teaching tips', value: 'Teaching tips' },
+  { id: 3, label: 'Other', value: 'Other' },
 ];
 
 export const businessOptions = [
-  'Financial',
-  'Administration & policies',
-  'DBE registration',
-  'Other',
+  { id: 0, label: 'Financial', value: 'Financial' },
+  {
+    id: 1,
+    label: 'Administration & policies',
+    value: 'Administration & policies',
+  },
+  { id: 2, label: 'DBE registration', value: 'DBE registration' },
+  { id: 3, label: 'Other', value: 'Other' },
 ];
 
 const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
@@ -49,9 +55,11 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
   setValue,
   defaultLanguageId,
   choosedSectionTitle,
+  getValues,
 }) => {
   const { register, control, errors } = handleform;
-  const [resourceType, setResourceType] = useState('');
+  const formValues = getValues();
+  const [selectedResourceType, setSelectedResourceType] = useState<string>();
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -69,10 +77,8 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
 
   const renderFields = useCallback((fields: FormTemplateField[]) => {
     const isEdit = fields.some((f) => !!f.contentValue);
-
     return fields.map((field) => {
-      const { type, title, propName, required, validation } = field;
-
+      const { type, title, propName, required, validation, isRequired } = field;
       register(propName, { required: required });
       switch (type) {
         case FieldType.Text:
@@ -92,6 +98,13 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                   color={'textMid'}
                   text={`If accessing this link requires data, please select "No".`}
                 />
+                {isEdit && (
+                  <Alert
+                    className="mt-2 mb-2 rounded-md"
+                    message={`Editing this response will update this data free response for all translations of this page`}
+                    type="warning"
+                  />
+                )}
                 <ButtonGroup<string>
                   color="tertiary"
                   textColor="tertiary"
@@ -101,7 +114,9 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                   onOptionSelected={(value) => {
                     onStateChange(propName, value);
                   }}
-                  // selectedOptions={'true'}
+                  selectedOptions={
+                    field.contentValue ? field.contentValue.value : undefined
+                  }
                 />
               </div>
             );
@@ -117,29 +132,56 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                     text={field?.title + ` *`}
                   />
                 </div>
+                {isEdit && (
+                  <Alert
+                    className="mt-2 mb-2 rounded-md"
+                    message={`Editing this resource type here will update the resource type for all translations of this page`}
+                    type="warning"
+                  />
+                )}
                 <fieldset className="flex flex-col gap-1">
-                  {choosedSectionTitle === ResourcesTitles.ClassroomResources &&
-                    classroomOptions?.map((item) => (
-                      <Radio
-                        variant="slim"
-                        key={item}
-                        description={item}
-                        value={item}
-                        // checked={resourceType === item}
-                        onChange={(data) => onStateChange(propName, data)}
-                      />
-                    ))}
-                  {choosedSectionTitle === ResourcesTitles.BusinessResources &&
-                    businessOptions?.map((item) => (
-                      <Radio
-                        variant="slim"
-                        key={item}
-                        description={item}
-                        value={item}
-                        // checked={resourceType === item}
-                        onChange={(data) => onStateChange(propName, data)}
-                      />
-                    ))}
+                  {choosedSectionTitle ===
+                    ResourcesTitles.ClassroomResources && (
+                    <CoreRadioGroup
+                      options={classroomOptions.map((x) => ({
+                        id: x.id,
+                        label: x.label,
+                        value: x.value,
+                      }))}
+                      currentValue={
+                        field.contentValue
+                          ? field.contentValue.value
+                          : selectedResourceType
+                      }
+                      colour={'quatenary'}
+                      selectedOptionBackgroundColor="uiBg"
+                      onChange={(val: string) => {
+                        setSelectedResourceType(val);
+                        onStateChange(propName, val);
+                      }}
+                    />
+                  )}
+                  {choosedSectionTitle ===
+                    ResourcesTitles.BusinessResources && (
+                    <CoreRadioGroup
+                      options={businessOptions.map((x) => ({
+                        id: x.id,
+                        label: x.label,
+                        value: x.value,
+                      }))}
+                      currentValue={
+                        field.contentValue
+                          ? field.contentValue.value
+                          : selectedResourceType
+                      }
+                      colour={'quatenary'}
+                      selectedOptionBackgroundColor="uiBg"
+                      onChange={(val: string) => {
+                        setSelectedResourceType(val);
+                        onStateChange(propName, val);
+                      }}
+                    />
+                  )}
                 </fieldset>
               </div>
             );
@@ -148,18 +190,20 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
             return (
               <div key={propName} className={contentWrapper}>
                 <FormInput
-                  name={propName}
-                  label={`Title *`}
+                  label={'Title *'}
+                  textInputType="input"
+                  visible={true}
+                  nameProp={propName}
                   placeholder="Give the resource a short title"
                   subLabel="Character limit: 40 characters."
                   maxCharacters={40}
                   maxLength={40}
                   register={register}
+                  value={formValues[propName]}
                   error={errors[propName]?.message}
-                  value={
-                    field.contentValue ? field.contentValue.value : undefined
+                  onChange={(data) =>
+                    onStateChange(propName, data.target.value)
                   }
-                  onChange={(data) => onStateChange(propName, data)}
                 />
               </div>
             );
@@ -168,7 +212,7 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
             return (
               <div key={propName} className={contentWrapper}>
                 <FormInput
-                  name={propName}
+                  nameProp={propName}
                   label={`Short description *`}
                   placeholder="Add short description"
                   subLabel="Character limit: 50 characters."
@@ -176,10 +220,10 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                   maxLength={50}
                   register={register}
                   error={errors[propName]?.message}
-                  value={
-                    field.contentValue ? field.contentValue.value : undefined
+                  value={formValues[propName]}
+                  onChange={(data) =>
+                    onStateChange(propName, data.target.value)
                   }
-                  onChange={(data) => onStateChange(propName, data)}
                 />
               </div>
             );
@@ -188,16 +232,16 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
             return (
               <div key={propName} className={contentWrapper}>
                 <FormInput
-                  name={propName}
+                  nameProp={propName}
                   label={`Link *`}
                   placeholder="Add link"
                   subLabel="Before adding a link, please test it to make sure it works."
-                  value={
-                    field.contentValue ? field.contentValue.value : undefined
-                  }
+                  value={formValues[propName]}
                   register={register}
                   error={errors[propName]?.message}
-                  onChange={(data) => onStateChange(propName, data)}
+                  onChange={(data) =>
+                    onStateChange(propName, data.target.value)
+                  }
                 />
               </div>
             );
@@ -221,9 +265,7 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                 <Editor
                   label={title + ` *`}
                   subLabel={`How will this resource help practitioners? `}
-                  currentValue={
-                    field.contentValue ? field.contentValue.value : undefined
-                  }
+                  currentValue={formValues[propName]}
                   onStateChange={(data) => onStateChange(propName, data)}
                 />
               </div>

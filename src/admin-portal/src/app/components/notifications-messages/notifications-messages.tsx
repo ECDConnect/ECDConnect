@@ -139,35 +139,35 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   };
 
-  const goToTargetChw = useCallback(() => {
-    history.push({
-      pathname: ROUTES.USERS.VIEW_USER,
-      state: {
-        component: UsersRouteRedirectTypeEnum.chw,
-        userId: targetHcw?.user?.id,
-        clinicId: targetHcw?.clinicId,
-        hcwId: targetHcw?.id,
-        isRegistered: targetHcw?.isRegistered,
-        connectUsage: targetHcw?.user?.connectUsage,
-        connectUsageColor: targetHcw?.user?.connectUsageColor,
-      },
-    });
-  }, [history, targetHcw]);
+  // const goToTargetChw = useCallback(() => {
+  //   history.push({
+  //     pathname: ROUTES.USERS.VIEW_USER,
+  //     state: {
+  //       component: UsersRouteRedirectTypeEnum.chw,
+  //       userId: targetHcw?.user?.id,
+  //       clinicId: targetHcw?.clinicId,
+  //       hcwId: targetHcw?.id,
+  //       isRegistered: targetHcw?.isRegistered,
+  //       connectUsage: targetHcw?.user?.connectUsage,
+  //       connectUsageColor: targetHcw?.user?.connectUsageColor,
+  //     },
+  //   });
+  // }, [history, targetHcw]);
 
-  const goToTargetTeamLead = useCallback(() => {
-    history.push({
-      pathname: ROUTES.USERS.VIEW_USER,
-      state: {
-        component: UsersRouteRedirectTypeEnum.teamLeads,
-        userId: targetTeamLead?.user?.id,
-        teamLeadId: targetTeamLead?.id,
-        connectUsage: targetTeamLead?.user?.connectUsage,
-        isRegistered: targetTeamLead?.isRegistered,
-        clinicIds: targetTeamLead?.clinicIds,
-        connectUsageColor: targetTeamLead?.user?.connectUsageColor,
-      },
-    });
-  }, [history, targetTeamLead]);
+  // const goToTargetTeamLead = useCallback(() => {
+  //   history.push({
+  //     pathname: ROUTES.USERS.VIEW_USER,
+  //     state: {
+  //       component: UsersRouteRedirectTypeEnum.teamLeads,
+  //       userId: targetTeamLead?.user?.id,
+  //       teamLeadId: targetTeamLead?.id,
+  //       connectUsage: targetTeamLead?.user?.connectUsage,
+  //       isRegistered: targetTeamLead?.isRegistered,
+  //       clinicIds: targetTeamLead?.clinicIds,
+  //       connectUsageColor: targetTeamLead?.user?.connectUsageColor,
+  //     },
+  //   });
+  // }, [history, targetTeamLead]);
 
   const handleRedirectURL = useCallback(
     (value: string) => {
@@ -181,8 +181,8 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
           return history.push(ROUTES.TEAM_MEETINGS, {
             clinicId: targetClinic?.id,
           });
-        case NotificationsCTAText.ContactCHW:
-          return goToTargetChw();
+        // case NotificationsCTAText.ContactCHW:
+        //   return goToTargetChw();
         case NotificationsCTAText.AddLeagues:
           return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
         case NotificationsCTAText.AssignToLeagues:
@@ -191,10 +191,10 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
           return history.push(ROUTES.HEALTH_CARE_WORKER.OPTED_OUT, {
             ...actionJson?.state,
           } as HealthCareWorkerOptedOutRouteState);
-        case NotificationsCTAText.DuplicateClientPregnantMom:
-          return goToTargetChw();
-        case NotificationsCTAText.DuplicateClientChild:
-          return goToTargetChw();
+        // case NotificationsCTAText.DuplicateClientPregnantMom:
+        //   return goToTargetChw();
+        // case NotificationsCTAText.DuplicateClientChild:
+        //   return goToTargetChw();
         case NotificationsCTAText.AdminNextMonthTLMeetingTopic:
           return history.push(ROUTES.TL_MEETINGS.EDIT_TOPICS);
         case NotificationsCTAText.ClinicMissingTL:
@@ -205,19 +205,13 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
               openEditPanel: true,
             } as ClinicsRouteState,
           });
-        case NotificationsCTAText.NoMeetingReportClinic:
-          return goToTargetTeamLead();
+        // case NotificationsCTAText.NoMeetingReportClinic:
+        //   return goToTargetTeamLead();
         default:
           return null;
       }
     },
-    [
-      actionJson?.state,
-      goToTargetChw,
-      goToTargetTeamLead,
-      history,
-      targetClinic,
-    ]
+    [actionJson?.state, history, targetClinic]
   );
 
   const handleNotificationClick = useCallback(() => {

@@ -7,7 +7,6 @@ import {
 } from '@ecdlink/core';
 import {
   ProgressTrackingCategoryDto,
-  ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
@@ -15,6 +14,7 @@ import {
   ChildProgressReportModelInput,
   ProgressTrackingAgeGroup,
   ProgressTrackingSkill,
+  ResourceLink,
 } from '@ecdlink/graphql';
 import { id } from 'date-fns/locale';
 class ProgressTrackingService {
@@ -172,20 +172,16 @@ class ProgressTrackingService {
     }));
   }
 
-  async getProgressTrackingLevels(
-    locale: string
-  ): Promise<ProgressTrackingLevelDto[]> {
+  async getProgressResourcesLinks(locale: string): Promise<ResourceLink[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query GetAllProgressTrackingLevel($locale: String) {
-        GetAllProgressTrackingLevel(locale: $locale) {
+      query GetResourcesLinks($locale: String) {
+        GetAllResourceLink(locale: $locale) {
           id
-          name
+          link
           description
-          imageUrl  
-          imageUrlDim
-          imageUrlDone
+          title
         }
       }        
       `,
@@ -194,13 +190,17 @@ class ProgressTrackingService {
       },
     });
 
+    console.log('response', response);
     if (response.status !== 200) {
       throw new Error(
         'Get Progress Tracking Levels failed - Server connection error'
       );
     }
-
-    return response.data.data.GetAllProgressTrackingLevel;
+    console.log(
+      'response.data.data.GetAllResourceLink',
+      response.data.data.GetAllResourceLink
+    );
+    return response.data.data.GetAllResourceLink;
   }
 
   async practitionerProgressReportSummary(

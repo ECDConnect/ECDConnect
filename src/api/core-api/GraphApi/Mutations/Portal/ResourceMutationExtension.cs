@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
@@ -16,22 +17,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class ResourcesMutationExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
-        public bool UpdateResourceLink(
+        public bool UpdateCaregiverResourceLink(
             [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService,
             List<CMSResourceLinkModel> input,
-            string localeId)
+            Guid localeId)
         {
-            Guid languageId;
-            if (Guid.TryParse(localeId, out languageId))
-            {
-                languageId = localeService.GetLocaleById(languageId)?.Id ?? Guid.Empty;
-            }
-            else
-            {
-                languageId = localeService.GetLocale(localeId)?.Id ?? Guid.Empty;
-            }
-
             foreach (var item in input)
             {
                 Dictionary<string, object> connectDict = new Dictionary<string, object>
@@ -44,11 +34,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (item.ContentId != -1)
                 {
                     //update
-                    contentRepo.Update(item.ContentId, languageId, connectDict);
+                    contentRepo.Update(item.ContentId, localeId, connectDict);
                 } else
                 {
                     //insert
-                    item.ContentId = contentRepo.Create(item.ContentTypeId, languageId, connectDict);
+                    item.ContentId = contentRepo.Create(item.ContentTypeId, localeId, connectDict);
                 }
             }
 
@@ -56,22 +46,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
-        public bool UpdateConnectItem(
+        public bool UpdateResourceConnectItem(
             [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService,
             List<CMSConnectItemModel> input,
-            string localeId)
+            Guid localeId)
         {
-            Guid languageId;
-            if (Guid.TryParse(localeId, out languageId))
-            {
-                languageId = localeService.GetLocaleById(languageId)?.Id ?? Guid.Empty;
-            }
-            else
-            {
-                languageId = localeService.GetLocale(localeId)?.Id ?? Guid.Empty;
-            }
-
             foreach (var item in input)
             {
                 Dictionary<string, object> connectDict = new Dictionary<string, object>
@@ -83,16 +62,47 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (item.ContentId != -1)
                 {
                     //update
-                    contentRepo.Update(item.ContentId, languageId, connectDict);
+                    contentRepo.Update(item.ContentId, localeId, connectDict);
                 }
                 else
                 {
                     //insert
-                    item.ContentId = contentRepo.Create(item.ContentTypeId, languageId, connectDict);
+                    item.ContentId = contentRepo.Create(item.ContentTypeId, localeId, connectDict);
                 }
             }
 
             return true;
+        }
+
+
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
+        public BulkDeactivateResult DeleteBulkResources(
+            [Service] ContentManagementRepository contentRepo,
+            [Service] ILocaleService<Language> localeService,
+            List<int> contentIds)
+        {
+            if (contentIds is null || contentIds.Count == 0)
+            {
+                return new BulkDeactivateResult();
+            }
+
+            var success = new List<string>();
+            var failed = new List<string>();
+
+            foreach (int contentId in contentIds)
+            {
+                bool deleteResult = contentRepo.Delete(contentId);
+                if (deleteResult)
+                {
+                    success.Add(contentId.ToString());
+                }
+                else
+                {
+                    failed.Add(contentId.ToString());
+                }
+            }
+
+            return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
 

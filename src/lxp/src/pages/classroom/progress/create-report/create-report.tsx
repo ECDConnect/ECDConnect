@@ -181,7 +181,7 @@ export const ProgressCreateReport: React.FC = () => {
             }
             className="mt-6 mb-4"
             onChange={(event) => setHowCanCaregiverSupport(event.target.value)}
-            value={currentReport?.howCanCaregiverSupport}
+            value={howCanCaregiverSupport}
           />
         )}
         <Button
@@ -200,6 +200,11 @@ export const ProgressCreateReport: React.FC = () => {
           text={currentStep < 3 ? 'Next' : 'Create caregiver report'}
           icon={currentStep < 3 ? 'ArrowCircleRightIcon' : 'DocumentReportIcon'}
           textColor="white"
+          disabled={
+            (currentStep === 1 && !childEnjoys) ||
+            (currentStep === 2 && !goodProgressWith) ||
+            (currentStep === 3 && !howCanCaregiverSupport)
+          }
         />
         {currentStep === 3 && (
           <ProgressCreateReportSkillsToWorkOnSummary
