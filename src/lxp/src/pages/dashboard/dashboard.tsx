@@ -152,7 +152,7 @@ export const Dashboard: React.FC = () => {
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
-
+  console.log({ pointsToDo });
   const getPointsToDoItems = useCallback(async () => {
     appDispatch(
       pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
@@ -231,7 +231,7 @@ export const Dashboard: React.FC = () => {
       const dataMonth = getMonth(new Date(current?.dateScored));
 
       const dataYear = getYear(new Date(current?.dateScored));
-      if (dataMonth === currentMonth && dataYear === currentYear) {
+      if (dataMonth + 1 === currentMonth && dataYear === currentYear) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -1078,7 +1078,7 @@ export const Dashboard: React.FC = () => {
       return 0;
     }
   }, [pointsToDo, practitioner?.isPrincipal]);
-
+  console.log({ getCurrentPointsToDo });
   const renderTodoText = useMemo(() => {
     const planActivitiesPermission = practitioner?.permissions?.find(
       (item) =>
@@ -1250,7 +1250,8 @@ export const Dashboard: React.FC = () => {
   ]);
 
   const practitionerWithAttendancePermissionPointsToDo =
-    !practitioner?.isPrincipal && planActivitiesPermission?.isActive === true
+    practitioner?.isPrincipal ||
+    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
       ? getCurrentPointsToDo < 4
       : getCurrentPointsToDo < 3;
 
