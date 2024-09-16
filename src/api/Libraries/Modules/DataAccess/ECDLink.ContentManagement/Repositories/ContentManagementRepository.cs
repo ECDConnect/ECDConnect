@@ -492,9 +492,13 @@ namespace ECDLink.ContentManagement.Repositories
                     contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
                     contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
                 }
-                if (contentFieldValuePairs.ContainsKey("insertedDate"))
+                if (!contentFieldValuePairs.ContainsKey("insertedDate"))
                 {
                     contentFieldValuePairs.Add("insertedDate", item.InsertedDate.ToString());
+                }
+                else
+                {
+                    contentFieldValuePairs["insertedDate"] = item.InsertedDate.ToString();
                 }
                 if (contentFieldValuePairs?.Any() ?? false)
                 {
