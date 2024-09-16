@@ -152,7 +152,7 @@ export const Dashboard: React.FC = () => {
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
-  console.log({ pointsToDo });
+
   const getPointsToDoItems = useCallback(async () => {
     appDispatch(
       pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })
@@ -1078,7 +1078,7 @@ export const Dashboard: React.FC = () => {
       return 0;
     }
   }, [pointsToDo, practitioner?.isPrincipal]);
-  console.log({ getCurrentPointsToDo });
+
   const renderTodoText = useMemo(() => {
     const planActivitiesPermission = practitioner?.permissions?.find(
       (item) =>
