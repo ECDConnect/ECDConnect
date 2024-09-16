@@ -139,3 +139,23 @@ export const UploadCoaches = gql`
     }
   }
 `;
+
+export const GetCoachStats = gql`
+  query GetCoachStats(
+    $userId: UUID!
+    $startDate: DateTime!
+    $endDate: DateTime!
+  ) {
+    coachStats(userId: $userId, startDate: $startDate, endDate: $endDate) {
+      totalPractitionersForSchool
+      totalChildrenForSchool
+      totalClassesForSchool
+      totalAttendanceRegistersCompleted
+      totalAttendanceRegistersNotCompleted
+      totalProgressReportsCompleted
+      totalProgressReportsNotCompleted
+      totalIncomeStatementsDownloaded
+      totalIncomeStatementsWithNoItems
+    }
+  }
+`;
