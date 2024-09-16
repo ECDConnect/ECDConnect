@@ -1250,7 +1250,8 @@ export const Dashboard: React.FC = () => {
   ]);
 
   const practitionerWithAttendancePermissionPointsToDo =
-    !practitioner?.isPrincipal && planActivitiesPermission?.isActive === true
+    practitioner?.isPrincipal ||
+    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
       ? getCurrentPointsToDo < 4
       : getCurrentPointsToDo < 3;
 
