@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         }
                     }
 
-                    if (startDate != null && endDate != null)
+                    if (startDate != null)
                     {
                         foreach (var resource in resourceData)
                         {
@@ -140,18 +140,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                             if (insertedDate is not null)
                             {
-                                var insertDate = (DateTime)insertedDate;
-                                if (insertDate >= startDate && insertDate <= endDate)
+                                var hasInsert = DateTime.TryParse(insertedDate.ToString(), out var insertDate);
+                                if (endDate != null)
                                 {
-                                    allContentValuePairs.Add(item);
+                                    if (insertDate >= startDate && insertDate <= endDate)
+                                    {
+                                        allContentValuePairs.Add(item);
+                                    }
+                                }
+                                else
+                                {
+                                    if (insertDate >= startDate)
+                                    {
+                                        allContentValuePairs.Add(item);
+                                    }
                                 }
                             } 
                             else
                             {
-                                var updateDate = (DateTime)updatedDate;
-                                if (updateDate >= startDate && updateDate <= endDate)
+                                var hasUpdate = DateTime.TryParse(updatedDate.ToString(), out var updateDate);
+                                if (endDate != null)
                                 {
-                                    allContentValuePairs.Add(item);
+                                    if (updateDate >= startDate && updateDate <= endDate)
+                                    {
+                                        allContentValuePairs.Add(item);
+                                    }
+                                } 
+                                else
+                                {
+                                    if (updateDate >= startDate)
+                                    {
+                                        allContentValuePairs.Add(item);
+                                    }
                                 }
                             }
 
