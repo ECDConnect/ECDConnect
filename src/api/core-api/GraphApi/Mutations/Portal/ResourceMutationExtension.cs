@@ -8,6 +8,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 
@@ -105,6 +106,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        public bool UpdateResourceTypesAndDataFree(
+            [Service] ContentManagementRepository contentRepo,
+            int contentId,
+            int contentTypeId,
+            string resourceType,
+            string dataFree,
+            Guid localeId)
+        {
+            if (contentId == 0)
+            {
+                return false;
+            }
+
+            var allLanguages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            foreach (var languageId in allLanguages)
+            {
+                if (languageId != localeId)
+                {
+                    Dictionary<string, object> connectDict = new Dictionary<string, object>
+                    {
+                        { "resourceType", resourceType},
+                        { "dataFree", dataFree }
+                    };
+
+                    contentRepo.Update(contentId, languageId, connectDict);
+                }
+            }
+            return true;
+        }
 
     }
 }

@@ -39,3 +39,21 @@ export const GetResources = gql`
     }
   }
 `;
+
+export const UpdateResourceTypesAndDataFree = gql`
+  mutation UpdateResourceTypesAndDataFree(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $resourceType: String
+    $dataFree: String
+  ) {
+    updateResourceTypesAndDataFree(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      resourceType: $resourceType
+      dataFree: $dataFree
+    )
+  }
+`;
