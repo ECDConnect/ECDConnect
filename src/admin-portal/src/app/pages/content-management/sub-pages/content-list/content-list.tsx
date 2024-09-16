@@ -16,6 +16,7 @@ import {
   ActivitiesTitles,
   ContentManagementView,
   FieldType,
+  ResourcesTitles,
   searchByActivityTypeOptions,
 } from '../../content-management-models';
 import {

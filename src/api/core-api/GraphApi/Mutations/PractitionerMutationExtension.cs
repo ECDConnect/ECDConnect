@@ -99,25 +99,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (updateAddressResult != null)
                             practitioner.SiteAddressId = updateAddressResult.Id;
                     }
-
-                    if (input.IsTrainee != null)
+                    if (practitioner.IsPrincipalOrAdmin())
                     {
-                        practitioner.IsTrainee = input.IsTrainee;
-                        if ((bool)input.IsTrainee)
+                        // update coach hierarchy for all practitioners linked to principal
+                        var linkedPractitioners = dbRepo.GetAll().Where(x => x.IsActive == true && x.IsRegistered == true && x.PrincipalHierarchy == practitioner.UserId).ToList();
+                        if (linkedPractitioners.Any() && practitioner.CoachHierarchy != null)
                         {
-                            var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
-                            var trainee = traineeRepo.GetByUserId(practitioner.UserId.Value);
-                            if (trainee == null)
+                            foreach (var item in linkedPractitioners)
                             {
-                                //create Trainee record
-                                traineeRepo.Insert(new Trainee() { UserId = input.UserId, IsActive = true, Id = input.Id });
+                                item.CoachHierarchy = practitioner.CoachHierarchy;
+                                dbRepo.Update(item);
                             }
                         }
                     }
 
                     Practitioner updateResult = dbRepo.Update(practitioner);
-                    //Update RemoteEntity - Integration
-                    //await integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
 
                     return updateResult;
                 }

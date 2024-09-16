@@ -1,3 +1,4 @@
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -8,10 +9,10 @@ using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.Moodle.Models;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
+using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
@@ -340,5 +341,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (currentUser == null) return null;
             return moodleService.CreateUserAsync(currentUser).Result.ToString();
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public string GetLatestUrlInviteForUser(
+            [Service] ShortUrlManager shortUrlManager,
+            Guid userId)
+        {
+            return shortUrlManager.GetLatestUrlInviteForUser(userId, TemplateTypeConstants.Invitation);
+        }
+
     }
 }

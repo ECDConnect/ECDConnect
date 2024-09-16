@@ -231,6 +231,19 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
 
+            // Create portal notification
+            var portalNotificationProvider = _notificationProviderFactory.Create(adminUser, MessageTypeConstants.PORTAL);
+            await portalNotificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.AdminUserHelpForm)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.AffectedUserFullName, affectedUserFullName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpContactDetail, helpContactDetail)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpCategory, userHelp.Subject)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpDescription, userHelp.Description)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.HelpLoginStatus, helpLoginStatus)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+
             if (organisationEmail != null)
             {
                 // revert email address to previous

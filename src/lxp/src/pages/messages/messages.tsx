@@ -112,7 +112,8 @@ export const Messages: React.FC = () => {
       notification?.message?.reference ===
         referenceNames?.allChildrenProgressReportsCreated ||
       notification?.message?.reference ===
-        referenceNames?.pastDeadlineDateForProgressReports;
+        referenceNames?.pastDeadlineDateForProgressReports ||
+      notification?.message?.priority === 8;
 
     if (resetNotificationOnClick) {
       appDispatch(notificationActions.removeNotification(notification!));

@@ -18,7 +18,7 @@ export const ProgressTabReportSummary: React.FC = () => {
       .map((childReport) => ({
         id: childReport.childId,
         profileDataUrl: childReport.childProfileImageUrl,
-        profileText: childReport.childFirstName,
+        profileText: childReport.childFullName,
         avatarColor: getAvatarColor() || '',
         title: childReport.childFirstName,
         subTitle: childReport.isObservationsComplete
