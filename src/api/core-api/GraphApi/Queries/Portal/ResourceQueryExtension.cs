@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
@@ -99,7 +98,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                                         allContentValuePairs.Add(item);
                                     }
                                 }
-
                                 if (likesSearch.Contains(Constants.ResourceLikes.OneToTen))
                                 {
                                     if (likes > 0 && likes < 11)
@@ -107,21 +105,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                                         allContentValuePairs.Add(item);
                                     }
                                 }
-                                else if (likesSearch.Contains(Constants.ResourceLikes.ElevenToFifty))
+                                if (likesSearch.Contains(Constants.ResourceLikes.ElevenToFifty))
                                 {
                                     if (likes > 10 && likes < 51)
                                     {
                                         allContentValuePairs.Add(item);
                                     }
                                 }
-                                else if (likesSearch.Contains(Constants.ResourceLikes.FiftyOneToHundred))
+                                if (likesSearch.Contains(Constants.ResourceLikes.FiftyOneToHundred))
                                 {
                                     if (likes > 51 && likes < 101)
                                     {
                                         allContentValuePairs.Add(item);
                                     }
                                 }
-                                else if (likesSearch.Contains(Constants.ResourceLikes.MoreThanHundred))
+                                if (likesSearch.Contains(Constants.ResourceLikes.MoreThanHundred))
                                 {
                                     if (likes > 100)
                                     {
