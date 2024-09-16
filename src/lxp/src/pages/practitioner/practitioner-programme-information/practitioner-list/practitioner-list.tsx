@@ -25,6 +25,7 @@ import { authSelectors } from '@/store/auth';
 import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
 import { EditPractitionerModal } from './components/edit-practitioner-modal';
+import TransparentLayer from '../../../../assets/TransparentLayer.png';
 
 export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const location = useLocation<PractitionerListRouteState>();
@@ -159,7 +160,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
       <BannerWrapper
         // showBackground={true}
         isLoading={isLoading}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        showBackground={true}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         title={isPrincipal ? `Edit Practitioners` : `View Practitioners`}
         color={'primary'}

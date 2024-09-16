@@ -47,6 +47,7 @@ import { PreschoolCodeCheck } from '../components/preschool-code-check/preschool
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
 import { useTenant } from '@/hooks/useTenant';
 import { Message } from '@/models/messages/messages';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -524,7 +525,8 @@ export const SetupPrincipal: React.FC = () => {
         onClose={exitPrompt}
         backgroundColour={'white'}
         className={'relative'}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
+        backgroundImageColour={'primary'}
         displayOffline={!isOnline}
       >
         <div className={'px-4'}>{renderStep(page)}</div>
