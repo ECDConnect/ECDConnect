@@ -50,6 +50,7 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAppContext } from '@/walkthrougContext';
 import { PractitionerListRouteState } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
+import { Resources } from '../resources/resources';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -165,11 +166,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: NavigationNames.Classroom.Resources,
       initActive: false,
-      child: (
-        <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
-        </div>
-      ),
+      child: <Resources />,
     },
   ];
 
