@@ -28,7 +28,7 @@ import { ContentTypes } from '../../../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../../../components/ui-table/type';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import debounce from 'lodash.debounce';
-import { DeleteMultipleResources } from '@ecdlink/graphql';
+import { DeleteMultipleResources, GetResources } from '@ecdlink/graphql';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import {
   businessResourceOptions,
@@ -57,7 +57,7 @@ export const sortByDataFreeOptions: SearchDropDownOption<string>[] = [
 ].map((item) => ({
   id: item,
   label: item,
-  value: item,
+  value: item === 'Yes' ? 'true' : 'false',
 }));
 
 export const sortByLikeOptions: SearchDropDownOption<string>[] = [
@@ -96,7 +96,7 @@ export default function ResourceList({
     SearchDropDownOption<string>[]
   >([]);
   const filteredDataFree = useMemo(
-    () => dataFreeFilter?.map((item) => item?.id),
+    () => dataFreeFilter?.map((item) => item?.value),
     [dataFreeFilter]
   );
 
@@ -104,7 +104,7 @@ export default function ResourceList({
     SearchDropDownOption<string>[]
   >([]);
   const filteredLikes = useMemo(
-    () => sortByLikeOptions?.map((item) => item?.id),
+    () => likesFilter?.map((item) => item?.value),
     [likesFilter]
   );
 
@@ -133,7 +133,6 @@ export default function ResourceList({
     if (start && end) {
       setFilterDateAdded((prevState) => !prevState);
     }
-    console.log('onchange', start, end);
   };
 
   const dateDropdownValue = useMemo(
@@ -224,46 +223,35 @@ export default function ResourceList({
       search: '',
       dataFreeSearch: filteredDataFree,
       likesSearch: filteredLikes,
+      startDate: startDate,
+      endDate: endDate,
       pagingInput: {
         pageNumber: 1,
         pageSize: null,
       },
     }),
-    [choosedSectionTitle, filteredDataFree, filteredLikes, languageId]
+    [
+      choosedSectionTitle,
+      endDate,
+      filteredDataFree,
+      filteredLikes,
+      languageId,
+      startDate,
+    ]
   );
 
   const [resources, setResources] = useState<any[]>([]);
-  const getResources = `GetResources`;
-  const resourceQuery = gql`
-    query ${getResources} ($localeId: String, $sectionType: String) {
-      ${getResources} (localeId: $localeId, sectionType: $sectionType) {
-          id
-          resourceType
-          title
-          shortDescription
-          link
-          longDescription
-          dataFree
-          sectionType
-          numberLikes
-          availableLanguages
-          updatedDate
-          insertedDate
-      }
-     }
-  `;
-
   const [
     fetchResourceData,
     { data: resourceData, refetch: refetchContent, loading: loadingContent },
-  ] = useLazyQuery(resourceQuery, {
+  ] = useLazyQuery(GetResources, {
     fetchPolicy: 'network-only',
     variables: queryVariables,
   });
 
   useEffect(() => {
-    if (resourceData && resourceData[getResources]) {
-      const copyItems = resourceData[getResources].map((item: any) => ({
+    if (resourceData && resourceData.resources) {
+      const copyItems = resourceData.resources.map((item: any) => ({
         ...item,
       }));
 

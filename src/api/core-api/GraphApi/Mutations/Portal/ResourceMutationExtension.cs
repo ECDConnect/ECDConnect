@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
@@ -75,43 +76,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
-        public bool DeleteBulkResources(
+        public BulkDeactivateResult DeleteBulkResources(
             [Service] ContentManagementRepository contentRepo,
             [Service] ILocaleService<Language> localeService,
-            List<CMSConnectItemModel> input,
-            string localeId)
+            List<int> contentIds)
         {
-            Guid languageId;
-            if (Guid.TryParse(localeId, out languageId))
+            if (contentIds is null || contentIds.Count == 0)
             {
-                languageId = localeService.GetLocaleById(languageId)?.Id ?? Guid.Empty;
-            }
-            else
-            {
-                languageId = localeService.GetLocale(localeId)?.Id ?? Guid.Empty;
+                return new BulkDeactivateResult();
             }
 
-            foreach (var item in input)
-            {
-                Dictionary<string, object> connectDict = new Dictionary<string, object>
-                {
-                    { "buttonText", item.ButtonText },
-                    { "link", item.Link },
-                };
+            var success = new List<string>();
+            var failed = new List<string>();
 
-                if (item.ContentId != -1)
+            foreach (int contentId in contentIds)
+            {
+                bool deleteResult = contentRepo.Delete(contentId);
+                if (deleteResult)
                 {
-                    //update
-                    contentRepo.Update(item.ContentId, languageId, connectDict);
+                    success.Add(contentId.ToString());
                 }
                 else
                 {
-                    //insert
-                    item.ContentId = contentRepo.Create(item.ContentTypeId, languageId, connectDict);
+                    failed.Add(contentId.ToString());
                 }
             }
 
-            return true;
+            return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
 

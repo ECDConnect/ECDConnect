@@ -2,6 +2,8 @@ import { gql } from '@apollo/client';
 
 export const GetResources = gql`
   query GetResources(
+    $localeId: UUID!
+    $sectionType: String
     $search: String
     $dataFreeSearch: [String]
     $likesSearch: [String]
@@ -10,6 +12,8 @@ export const GetResources = gql`
     $pagingInput: PagedQueryInput
   ) {
     resources(
+      localeId: $localeId
+      sectionType: $sectionType
       search: $search
       dataFreeSearch: $dataFreeSearch
       likesSearch: $likesSearch
@@ -26,9 +30,12 @@ export const GetResources = gql`
       dataFree
       sectionType
       numberLikes
-      availableLanguages
+      availableLanguages {
+        id
+      }
       updatedDate
       insertedDate
+      __typename
     }
   }
 `;
