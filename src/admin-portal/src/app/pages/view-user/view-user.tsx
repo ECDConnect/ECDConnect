@@ -162,10 +162,10 @@ export function ViewUser(props: any) {
   );
 
   useEffect(() => {
-    if (isPractitioner) {
+    if (isPractitioner || isPrincipal) {
       getPractitionerStats();
     }
-  }, [getPractitionerStats, isPractitioner]);
+  }, [getPractitionerStats, isPractitioner, isPrincipal]);
 
   const {
     data: userData,
@@ -402,7 +402,7 @@ export function ViewUser(props: any) {
           />
         )}
 
-      {isPractitioner && isRegistered && (
+      {(isPractitioner || isPrincipal) && isRegistered && (
         <PractitionerSummary
           summaryData={practitionerStatsData?.practitionerStats}
         />
@@ -411,7 +411,7 @@ export function ViewUser(props: any) {
       {isCoach && isRegistered && (
         <CoachSummary summaryData={practitionerStatsData?.practitionerStats} />
       )}
-      {isPractitioner && isRegistered && (
+      {(isPractitioner || isPrincipal) && isRegistered && (
         <PractitionerIssuesAndHighlights
           summaryData={practitionerStatsData?.practitionerStats}
         />
