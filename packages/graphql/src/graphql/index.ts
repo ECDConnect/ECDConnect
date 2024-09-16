@@ -61,3 +61,4 @@ export * from './notfications';
 export * from './topics';
 export * from './danger-sign-translation';
 export * from './setup-wizard';
+export * from './resources';

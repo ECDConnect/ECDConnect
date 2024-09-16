@@ -14,9 +14,10 @@ using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Clinics;
 using ECDLink.DataAccessLayer.Entities.Clubs;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Managers;
@@ -24,6 +25,8 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.SmartStart.Reports;
+using ECDLink.SmartStart.Services;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
@@ -438,6 +441,85 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var fileName = templateHeaderSheet.Replace(" ", "_");
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public CoachStatsModel GetCoachStats(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IClassroomService classroomService,
+            [Service] MonthlyAttendanceReport monthlyAttendanceReport,
+            [Service] AttendanceService attendanceService,
+            Guid userId,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var childProgressReportRepo = repoFactory.CreateGenericRepository<ChildProgressReport>(userContext: uId);
+            var statementsRepo = repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: uId);
+            var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
+            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
+
+            CoachStatsModel stats = new CoachStatsModel();
+
+            var coach = coachRepo.GetById(userId);
+            var records = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy == userId).ToList();
+
+            var principalUserIds = records.Where(x => x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().ToList();
+            var allUserIds = records.Select(x => x.UserId).Distinct().ToList();
+
+            stats.TotalPractitioners = records.Count;
+            stats.TotalNewPractitioners = records.Where(x => x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).Count();
+            stats.TotalSiteVisits = coach.PractitionerVisits != null ? coach.PractitionerVisits.Where(x => x.IsActive && x.ActualVisitDate.Value.Date >= startDate.Date && x.ActualVisitDate.Value.Date <= endDate.Date).Count() : 0;
+
+            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && principalUserIds.Contains(x.UserId) && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).ToList();
+            stats.TotalWithNoIncomeExpense = statementData.Where(x => x.IncomeItems.Count == 0 && x.ExpenseItems.Count == 0).Select(x => x.UserId).Distinct().Count();
+            stats.TotalWithIncomeExpense = statementData.Where(x => x.IncomeItems.Count > 0 || x.ExpenseItems.Count > 0).Select(x => x.UserId).Distinct().Count(); ;
+
+            var lessThan75 = 0;
+            var moreThan75 = 0;
+            foreach ( var id in allUserIds)
+            {
+                var attendance = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, endDate).SingleOrDefault();
+                if (attendance != null)
+                {
+                    if (attendance.PercentageAttendance < 75) 
+                    {
+                        lessThan75++;
+                    }
+                    if (attendance.PercentageAttendance >= 75) 
+                    {
+                        moreThan75++;
+                    }
+                }
+            }
+            stats.TotalLessThan75AttendanceRegisters = lessThan75;
+            stats.TotalMoreThan75hAttendanceRegisters = moreThan75;
+
+            var totalWithNoProgressReports = 0;
+            var totalWithProgressReports = 0;
+            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && allUserIds.Contains(x.UserId) && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).ToList();
+            foreach (var id in allUserIds)
+            {
+                // this take the principal vs practitioner role into account
+                var classroomGroups = attendanceService.GetUserClassroomGroups(id.ToString());
+                var totalLearners = classroomGroups.SelectMany(x => x.Learners.Where(y => y.IsActive && !y.StoppedAttendance.HasValue)).Count();
+                var totalProgressReports = progressData.Where(x => x.UserId == id).Select(x => x.ChildId).Count();
+                if (totalLearners == totalProgressReports) {
+                    totalWithProgressReports++;
+                } else
+                {
+                    totalWithNoProgressReports++;
+                }
+            }
+            
+            stats.TotalWithNoProgressReports = totalWithNoProgressReports; // practitioners did not create progress reports for all children
+            stats.TotalWithProgressReports = totalWithProgressReports;// practitioners did create progress reports for all children
+
+            return stats;
         }
     }
 }

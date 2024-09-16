@@ -11,6 +11,7 @@ import { RootState } from '../types';
 import { ProgressSkill } from '@/models/progress/progress-skill';
 import { ChildProgressReport } from '@/models/progress/child-progress-report';
 import { ProgressTrackingCategoriesByLocale } from './progress-tracking.types';
+import { ResourceLink } from '@ecdlink/graphql';
 
 // CATEGORIES
 export const getProgressTrackingCategories = () =>
@@ -110,13 +111,13 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
     getProgressTrackingCategories(),
     (categories: ProgressTrackingCategoryDto[]): ProgressSkill[] => {
       const detailedSkills = categories.flatMap((category) =>
-        category.subCategories.flatMap((subCategory) =>
-          subCategory.skills.map((skill) => ({
+        category?.subCategories?.flatMap((subCategory) =>
+          subCategory?.skills?.map((skill) => ({
             id: skill.id,
-            name: skill.name,
-            description: skill.description,
-            supportImage: skill.supportImage,
-            isReverseScored: skill.isReverseScored,
+            name: skill?.name,
+            description: skill?.description,
+            supportImage: skill?.supportImage,
+            isReverseScored: skill?.isReverseScored,
             subCategory: {
               id: subCategory?.id,
               name: subCategory?.name,
@@ -208,5 +209,13 @@ export const getProgressAgeGroups = () =>
     (state: RootState) => state.progressTracking.progressTrackingAgeGroups.data,
     (progressTrackingAgeGroups: ProgressTrackingAgeGroupDto[]) => {
       return progressTrackingAgeGroups;
+    }
+  );
+
+export const getResourceLinks = () =>
+  createSelector(
+    (state: RootState) => state.progressTracking.resourceLinks,
+    (resourceLinks: ResourceLink[] | undefined) => {
+      return resourceLinks || [];
     }
   );

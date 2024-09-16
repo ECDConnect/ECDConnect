@@ -134,3 +134,12 @@ export const BulkUpdateConsentImages = gql`
     )
   }
 `;
+
+export const DeleteMultipleResources = gql`
+  mutation DeleteMultipleResources($ids: [String]) {
+    deleteMultipleResources(ids: $ids) {
+      success
+      failed
+    }
+  }
+`;

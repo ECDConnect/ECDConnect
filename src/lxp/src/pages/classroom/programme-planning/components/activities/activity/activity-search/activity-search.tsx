@@ -129,8 +129,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     return filteredActivities.find(
       (activity) =>
         activity.id === duplicatedDailyProgramme?.storyActivityId ||
-        activity.id === duplicatedDailyProgramme?.smallGroupActivityId ||
-        activity
+        activity.id === duplicatedDailyProgramme?.smallGroupActivityId
     );
   }, [duplicatedDailyProgramme, filteredActivities]);
 
@@ -348,7 +347,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
         );
       },
     };
-
   return (
     <>
       <BannerWrapper
@@ -431,16 +429,16 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             className={'my-4'}
             color="textDark"
           />
-          {recommendedActivity && (
+          {!!recommendedActivity && (
             <ActivityCard
-              key={`search-header-activity-${recommendedActivity.activity?.id}`}
+              key={`search-header-activity-${recommendedActivity.activity.id}`}
               activity={recommendedActivity.activity}
-              selected={selectedActivityId === recommendedActivity.activity?.id}
+              selected={selectedActivityId === recommendedActivity.activity.id}
               recommended
               recommendedText={
-                recommendedActivity?.subCategory
+                recommendedActivity.subCategory
                   ? `Recommended because you do not have enough <b>${
-                      recommendedActivity?.subCategory?.name
+                      recommendedActivity.subCategory?.name
                     }</b> activities planned for ${getDateRangeText(
                       programme?.startDate,
                       programme?.endDate

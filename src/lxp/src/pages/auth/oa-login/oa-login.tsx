@@ -3,6 +3,7 @@ import {
   LoginRequestModel,
   Config,
   LocalStorageKeys,
+  useDialog,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -15,8 +16,9 @@ import {
   Typography,
   Dialog,
   DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './oa-login.styles';
@@ -79,6 +81,7 @@ export const OaLogin: React.FC = () => {
   });
   const { isValid, errors } = loginFormState;
   const { username, password } = useWatch({ control });
+  const dialog = useDialog();
 
   const userHash = CryptoJS.AES.encrypt(password, 'user pass').toString();
   const userIdHash = CryptoJS.AES.encrypt(username, 'user id').toString();
@@ -201,7 +204,50 @@ export const OaLogin: React.FC = () => {
     history.push(ROUTES.PASSWORD_RESET);
   };
 
-  const { theme } = useTheme();
+  const handleIncorrectBrowser = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onSubmit) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="Oops! AppName works best on Chrome or Firefox"
+            paragraphs={[
+              `To download Chrome or Firefox, go to your phone's app store.`,
+            ]}
+            icon={'ExclamationIcon'}
+            iconSize={48}
+            iconColor={'alertMain'}
+            iconBorderColor={'white'}
+            actionButtons={[
+              {
+                text: 'Close',
+                colour: 'quatenary',
+                type: 'outlined',
+                onClick: () => onSubmit(),
+                textColour: 'quatenary',
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const userAgent = navigator.userAgent;
+
+  useEffect(() => {
+    if (
+      userAgent.includes('Firefox') ||
+      (userAgent.includes('Chrome') && !userAgent.includes('Edg'))
+    ) {
+      return;
+    } else {
+      handleIncorrectBrowser();
+    }
+  }, [userAgent]);
 
   return (
     <BannerWrapper

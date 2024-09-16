@@ -79,7 +79,11 @@ export const ObservationsForChild: React.FC = () => {
 
     // All details filled in for how to support
     if (currentStep === totalSkillsSteps + 2) {
-      return currentReport!.skillsToWorkOn.every((x) => x.howToSupport !== '');
+      return (
+        (!!currentReport!.skillsToWorkOn.length &&
+          currentReport!.skillsToWorkOn.every((x) => x.howToSupport !== '')) ||
+        !!currentReport!.howToSupport
+      );
     }
 
     // For skills pages, all in that current page must be answered

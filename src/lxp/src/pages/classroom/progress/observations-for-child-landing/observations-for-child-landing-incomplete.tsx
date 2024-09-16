@@ -18,7 +18,10 @@ import { ContentService } from '@/services/ContentService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { useAppDispatch } from '@/store';
-import { progressTrackingThunkActions } from '@/store/progress-tracking';
+import {
+  progressTrackingActions,
+  progressTrackingThunkActions,
+} from '@/store/progress-tracking';
 import { useAppContext } from '@/walkthrougContext';
 
 export type ObservationsForChildLandingIncompleteProps = {
@@ -56,6 +59,9 @@ export const ObservationsForChildLandingIncomplete: React.FC<
           locale: language.locale,
         })
       ).unwrap();
+      await appDispatch(
+        progressTrackingActions.setLocale({ localeId: language.locale })
+      );
     } else {
       presentUnavailableAlert();
     }

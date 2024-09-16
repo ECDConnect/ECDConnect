@@ -7,6 +7,7 @@ import {
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
 } from '@ecdlink/core';
+import { ResourceLink } from '@ecdlink/graphql';
 
 export type ProgressTrackingState = {
   currentLocale: string;
@@ -14,7 +15,7 @@ export type ProgressTrackingState = {
   progressTrackingAgeGroups: {
     data: ProgressTrackingAgeGroupDto[];
   } & OfflineCache;
-  progressTrackingLevels: ProgressTrackingLevelDto[] | undefined;
+  resourceLinks: ResourceLink[] | undefined;
   practitionerProgressReportSummary?:
     | PractitionerProgressReportSummaryDto
     | undefined;
