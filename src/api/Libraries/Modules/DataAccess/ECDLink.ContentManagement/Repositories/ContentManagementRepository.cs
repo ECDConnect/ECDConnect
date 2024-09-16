@@ -8,6 +8,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
+using HotChocolate.Language;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -88,17 +89,17 @@ namespace ECDLink.ContentManagement.Repositories
 
                 var contents = contentType?.Content
                         .Where(x => x.IsActive
-                     && (x.TenantId == currentTenant || x.TenantId == null))
+                     && (x.TenantId == currentTenant))
                         .OrderBy(x => x.Id)
                         .ToList();
 
-              /*  // Use global tenant as a fallback, mostly for static and dynamic links
-                contents = contents?.Any() ?? false ? contents
+                // Use global tenant as a fallback, mostly for static and dynamic links
+                contents = (contents?.Any() ?? false) ? contents
                     : contentType?.Content
                         .Where(x => x.IsActive
                                 && x.TenantId == null)
                         .OrderBy(x => x.Id)
-                        .ToList();*/
+                        .ToList();
 
                 // No Content Found
                 if (contents == default)
@@ -113,13 +114,36 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     // keep our tenant's content values and fill in the gaps with the global tenant's content values
                     // Get the ContentValues for the current tenant, or the global tenant.
-                    var contentValues = item.ContentValues
-                        .Where(x => x.LocaleId == localeId
-                                && x.ContentTypeField.IsActive == true
-                                && (x.TenantId == TenantExecutionContext.Tenant.Id || x.TenantId == null))
-                        .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
-                        .ToList();
+                    var noTenantContenValues = item.ContentValues
+                         .Where(x => x.LocaleId == localeId
+                                 && x.ContentTypeField.IsActive == true
+                                 && (x.TenantId == null))
+                         .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                         .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                         .ToList();
 
+                    var contentValues = item.ContentValues
+                     .Where(x => x.LocaleId == localeId
+                             && x.ContentTypeField.IsActive == true
+                             && (x.TenantId == TenantExecutionContext.Tenant.Id))
+                     .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                     .ToList();
+
+                    //var allContents = contentValues.Union(noTenantContenValues).ToList();
+                    // Union just merges the two lists and no duplicates.  With ContentValues.Id in the object, it will never be duplicates.
+
+
+                    var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
+                    foreach (var ntcv in noTenantContenValues)
+                    {
+                        var ntcvKey = new { ntcv.ContentTypeField, ntcv.ContentId };
+                        if (!mergedContentValues.ContainsKey(ntcvKey))
+                        {
+                            mergedContentValues.Add(ntcvKey, ntcv);
+                        }
+                    }
+                    contentValues = mergedContentValues.Values.OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId).ToList();
 
                     // Ignore the TenantId on ContentTypeField because HotChocolate doesn't allow duplicate names.
                     var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
@@ -207,18 +231,47 @@ namespace ECDLink.ContentManagement.Repositories
                                 .OrderByDescending(x => x.UpdatedDate)
                                 .ThenBy(x => x.ContentTypeField?.FieldOrder)
                                 .ToList();
+          
+                // keep our tenant's content values and fill in the gaps with the global tenant's content values
+                // Get the ContentValues for the current tenant, or the global tenant.
+                var noTenantContenValues = content.ContentValues
+                     .Where(x => x.LocaleId == localeId
+                             && x.ContentTypeField.IsActive == true
+                             && (x.TenantId == null))
+                     .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                     .ToList();
 
                 var contentValues = content.ContentValues
-                                .Where(x => x.LocaleId == localeId
-                                    && x.TenantId == currentTenant)
-                                .OrderBy(x => x.ContentTypeField?.FieldOrder)
-                                .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+                 .Where(x => x.LocaleId == localeId
+                         && x.ContentTypeField.IsActive == true
+                         && (x.TenantId == TenantExecutionContext.Tenant.Id))
+                 .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                 .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                 .ToList();
 
-                contentValues.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
-                contentValues.Add("updatedDate", contentValuesList.TryGetAtIndex(0).UpdatedDate.ToString());
+                //var allContents = contentValues.Union(noTenantContenValues).ToList();
+                // Union just merges the two lists and no duplicates.  With ContentValues.Id in the object, it will never be duplicates.
+
+
+                var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
+                foreach (var ntcv in noTenantContenValues)
+                {
+                    var ntcvKey = new { ntcv.ContentTypeField, ntcv.ContentId };
+                    if (!mergedContentValues.ContainsKey(ntcvKey))
+                    {
+                        mergedContentValues.Add(ntcvKey, ntcv);
+                    }
+                }
+                contentValues = mergedContentValues.Values.OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId).ToList();
+
+                var dict = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+
+                dict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
+                dict.Add("updatedDate", contentValuesList.TryGetAtIndex(0).UpdatedDate.ToString());
                 
 
-                result = contentValues.ToObject();
+                result = dict.ToObject();
 
                 _memoryCache.Set(key, result, GetCacheOptions());
             }
@@ -319,10 +372,39 @@ namespace ECDLink.ContentManagement.Repositories
 
                 foreach (var item in content)
                 {
+                    var noTenantContenValues = item.ContentValues
+                        .Where(x => x.LocaleId == localeId
+                                && x.ContentTypeField.IsActive == true
+                                && (x.TenantId == null))
+                        .Select(y => new { y.Id, y.ContentTypeField,y.Value, y.ContentId })
+                        .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                        .ToList();
+
+                    var contentValues = item.ContentValues
+                     .Where(x => x.LocaleId == localeId
+                             && x.ContentTypeField.IsActive == true
+                             && (x.TenantId == TenantExecutionContext.Tenant.Id))
+                     .Select(y => new { y.Id, y.ContentTypeField, y.Value, y.ContentId })
+                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                     .ToList();
+
+                    //var allContents = contentValues.Union(noTenantContenValues).ToList();
+                    // Union just merges the two lists and no duplicates.  With ContentValues.Id in the object, it will never be duplicates.
+
+
+                    var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
+                    foreach (var ntcv in noTenantContenValues)
+                    {
+                        var ntcvKey = new { ntcv.ContentTypeField, ntcv.ContentId };
+                        if (!mergedContentValues.ContainsKey(ntcvKey))
+                        {
+                            mergedContentValues.Add(ntcvKey, ntcv);
+                        }
+                    }
+                    contentValues = mergedContentValues.Values.OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId).ToList();
+
                     // TODO: Use .Query() to get the data in one query?
-                    var objDict = item.ContentValues
-                                  .Where(x => x.LocaleId == localeId)
-                                  .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+                    var objDict = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
 
                     objDict.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
                     dynamicContentList.Add(objDict.ToObject());

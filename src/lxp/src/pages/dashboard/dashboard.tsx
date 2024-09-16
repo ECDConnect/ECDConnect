@@ -231,7 +231,7 @@ export const Dashboard: React.FC = () => {
       const dataMonth = getMonth(new Date(current?.dateScored));
 
       const dataYear = getYear(new Date(current?.dateScored));
-      if (dataMonth === currentMonth && dataYear === currentYear) {
+      if (dataMonth + 1 === currentMonth && dataYear === currentYear) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -1249,6 +1249,17 @@ export const Dashboard: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
+  const practitionerWithAttendancePermissionPointsToDo =
+    !practitioner?.isPrincipal && planActivitiesPermission?.isActive === true
+      ? getCurrentPointsToDo < 4
+      : getCurrentPointsToDo < 3;
+
+  const practitionerWithAttendancePermissionPoints =
+    practitioner?.isPrincipal ||
+    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+      ? getCurrentPointsToDo === 4
+      : getCurrentPointsToDo === 3;
+
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
     prop: K,
@@ -1342,10 +1353,8 @@ export const Dashboard: React.FC = () => {
           totalYearPoints > 10 &&
           !!pointsScoreProps &&
           !isCoach &&
-          !practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true ? (
-            getCurrentPointsToDo === 4
-          ) : getCurrentPointsToDo === 3 && !isCoach ? (
+          practitionerWithAttendancePermissionPoints &&
+          !isCoach ? (
             <ScoreCard
               className="mt-5 mb-1 h-20"
               progressBarClassName="flex pt-2"
@@ -1362,12 +1371,10 @@ export const Dashboard: React.FC = () => {
               textPosition={pointsScoreProps?.textPosition!}
             />
           ) : null}
-          {(!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true
-            ? getCurrentPointsToDo < 4
-            : getCurrentPointsToDo < 3 ||
-              !totalYearPoints ||
-              (totalYearPoints && totalYearPoints <= 10)) && !isCoach ? (
+          {(practitionerWithAttendancePermissionPointsToDo ||
+            !totalYearPoints ||
+            (totalYearPoints && totalYearPoints <= 10)) &&
+          !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 w-full py-6"

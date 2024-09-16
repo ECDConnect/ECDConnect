@@ -1,4 +1,12 @@
-import { BannerWrapper, Button, Card, Dropdown, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  Button,
+  Card,
+  DialogPosition,
+  Dropdown,
+  Typography,
+} from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useRef, useState } from 'react';
 import LanguageSelector from '@/components/language-selector/language-selector';
@@ -8,6 +16,15 @@ import { useProgressGenerateSummaryPdfReport as usePdfFromHtml } from '@/hooks/u
 import { useProgressForChild } from '@/hooks/useProgressForChild';
 import ROUTES from '@/routes/routes';
 import { TabsItems } from '../../class-dashboard/class-dashboard.types';
+import { ContentTypeEnum, LanguageDto, useDialog } from '@ecdlink/core';
+import { ContentService } from '@/services/ContentService';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import {
+  progressTrackingActions,
+  progressTrackingThunkActions,
+} from '@/store/progress-tracking';
+import { useAppDispatch } from '@/store';
 
 export type ProgressShareReportState = {
   childId: string;
@@ -17,6 +34,8 @@ export type ProgressShareReportState = {
 
 export const ProgressShareReport: React.FC = () => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const dialog = useDialog();
 
   const { state: routeState } = useLocation<ProgressShareReportState>();
 
@@ -29,6 +48,60 @@ export const ProgressShareReport: React.FC = () => {
   );
 
   const shareRef = useRef<HTMLDivElement>(null);
+
+  const userAuth = useSelector(authSelectors.getAuthUser);
+
+  const changeLanguage = async (language: LanguageDto) => {
+    const hasTranslations = await new ContentService(
+      userAuth?.auth_token ?? ''
+    ).hasContentTypeBeenTranslated(
+      ContentTypeEnum.ProgressTrackingCategory,
+      language.id ?? ''
+    );
+
+    if (hasTranslations) {
+      await appDispatch(
+        progressTrackingThunkActions.getProgressTrackingContent({
+          locale: language.locale,
+        })
+      ).unwrap();
+      await appDispatch(
+        progressTrackingActions.setLocale({ localeId: language.locale })
+      );
+    } else {
+      presentUnavailableAlert();
+    }
+  };
+
+  const presentUnavailableAlert = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, close) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="No content found"
+            paragraphs={[
+              'Could not find any content for the selected language, please select another.',
+            ]}
+            icon={'InformationCircleIcon'}
+            iconColor={'infoDark'}
+            iconBorderColor={'infoBb'}
+            actionButtons={[
+              {
+                text: 'Close',
+                colour: 'primary',
+                onClick: close,
+                type: 'filled',
+                textColour: 'white',
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
 
   return (
     <BannerWrapper
@@ -87,7 +160,9 @@ export const ProgressShareReport: React.FC = () => {
           labelText="Choose report language"
           labelClassName="font-medium font-body text-textDark pr-2"
           currentLocale="en-za"
-          selectLanguage={(data) => {}}
+          selectLanguage={(data) => {
+            changeLanguage(data);
+          }}
         />
         <Typography
           color="textDark"

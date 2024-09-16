@@ -75,7 +75,7 @@ export const mapProgressReportDetails = (
 ) => {
   const mappedSkills = (childReport?.skillObservations || []).map(
     (skillObs) => {
-      const skill = allSkills.find((x) => x.id === skillObs.skillId);
+      const skill = allSkills?.find((x) => x.id === skillObs.skillId);
       return {
         ...skillObs,
         skillName: replaceSkillText(skill?.name || '', childFirstName),
