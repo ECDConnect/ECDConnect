@@ -49,10 +49,6 @@ export const Resources = () => {
     [resources]
   );
 
-  console.log({ activitiesResources });
-  console.log({ storiesResources });
-  console.log({ teachingTipssResources });
-  console.log({ otherResources });
   const handleGetResources = useCallback(async () => {
     const response = await new ResourcesService(
       userAuth?.auth_token!

@@ -77,6 +77,60 @@ class ResourcesService {
 
     return response.data.data.resources;
   }
+
+  async getResourceLikedStatusForUser(contentId: number): Promise<any[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+     query GetResourceLikedStatusForUser($contentId: Int!) {
+  resourceLikedStatusForUser(
+    contentId: $contentId
+  ) {
+    contentId
+    isActive
+  }
+}
+          `,
+      variables: {
+        contentId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Resource liked status for user Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.resourceLikedStatusForUser;
+  }
+
+  async updateResourceLikes(contentId: number): Promise<any[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+     mutation UpdateResourceLikes($contentId: Int!, $contentTypeId: Int!, $liked: Boolean!) {
+  updateResourceLikes(
+    contentId: $contentId
+    contentTypeId: $contentTypeId
+    liked: $liked
+  ) {
+  }
+}
+          `,
+      variables: {
+        contentId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update liked status for user Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateResourceLikes;
+  }
 }
 
 export default ResourcesService;

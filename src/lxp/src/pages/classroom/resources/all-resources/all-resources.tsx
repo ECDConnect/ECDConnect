@@ -148,8 +148,12 @@ export const AllResources: React.FC<AllResourcesprops> = ({
   };
 
   console.log({ resourcesTypesFilter });
-  const filteredData = resourcesSorted.filter((resource) =>
-    activitiesFormatted.includes(resource.resourceType)
+  const filteredData = useMemo(
+    () =>
+      resourcesSorted.filter((resource) =>
+        activitiesFormatted.includes(resource.resourceType)
+      ),
+    [activitiesFormatted, resourcesSorted]
   );
   console.log({ filteredData });
 
@@ -157,7 +161,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
     if (resourcesTypesFilter) {
       setResourcesListFormatted(filteredData);
     }
-  }, []);
+  }, [filteredData, resourcesTypesFilter]);
 
   return (
     <div>

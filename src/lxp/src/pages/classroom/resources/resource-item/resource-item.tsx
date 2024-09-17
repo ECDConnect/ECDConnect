@@ -10,9 +10,12 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
+import { ResourcesService } from '@/services/Resources';
 import { ThumbUpIcon } from '@heroicons/react/solid';
 import { ResourcesNames } from '../resources.types';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
 
 interface ResourceItemProps {
   resource: any;
@@ -24,6 +27,23 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
   onClose,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+
+  const [isLiked, setIsLiked] = useState(false);
+
+  const handleCheckIfUserLiked = useCallback(async () => {
+    const response = await new ResourcesService(
+      userAuth?.auth_token!
+    )?.getResourceLikedStatusForUser(resource?.id);
+    console.log({ response });
+    // if (response) {
+    //   setResources(response);
+    // }
+  }, [resource?.id, userAuth?.auth_token]);
+
+  useEffect(() => {
+    handleCheckIfUserLiked();
+  }, []);
 
   const getChipStatusColor = (resourceType: string) => {
     switch (resourceType) {
@@ -59,12 +79,11 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
       );
     }
   }, [resource?.dataFree]);
-  console.log(navigator?.share());
 
-  const handleShare = async () => {
-    if (navigator.share) {
+  const handleShare = useCallback(async () => {
+    if (navigator?.share) {
       try {
-        await navigator.share({
+        await navigator?.share({
           title: 'Share resource',
           url: resource?.link,
         });
@@ -75,7 +94,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
     } else {
       alert('Web Share API not supported in this browser.');
     }
-  };
+  }, [resource?.link]);
 
   return (
     <div>
