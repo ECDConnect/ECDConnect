@@ -250,10 +250,6 @@ namespace ECDLink.ContentManagement.Repositories
                  .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                  .ToList();
 
-                //var allContents = contentValues.Union(noTenantContenValues).ToList();
-                // Union just merges the two lists and no duplicates.  With ContentValues.Id in the object, it will never be duplicates.
-
-
                 var mergedContentValues = contentValues.ToDictionary(cv => new { cv.ContentTypeField, cv.ContentId });
                 foreach (var ntcv in noTenantContenValues)
                 {
@@ -268,8 +264,10 @@ namespace ECDLink.ContentManagement.Repositories
                 var dict = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
 
                 dict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
-                dict.Add("updatedDate", contentValuesList.TryGetAtIndex(0).UpdatedDate.ToString());
-                
+                if (!dict.ContainsKey("updatedDate"))
+                {
+                    dict.Add("updatedDate", contentValuesList.TryGetAtIndex(0).UpdatedDate.ToString());
+                }
 
                 result = dict.ToObject();
 

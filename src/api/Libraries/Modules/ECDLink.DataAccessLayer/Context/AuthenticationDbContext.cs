@@ -220,6 +220,8 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<CommunityProfileSkill> CommunityProfileSkill { get; set; }
         public DbSet<CommunityProfileConnection> CommunityProfileConnections { get; set; }
 
+        public DbSet<UserResourceLikes> UserResourceLikes { get; set; }
+
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
         {
