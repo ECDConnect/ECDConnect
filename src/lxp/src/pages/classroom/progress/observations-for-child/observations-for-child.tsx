@@ -61,7 +61,7 @@ export const ObservationsForChild: React.FC = () => {
       ? Math.ceil(
           currentObservations.findIndex(
             (x) => x.id === routeState.jumpToSkillId
-          ) || 1 / 5
+          ) / 5 || 1 / 5
         )
       : 1
   );

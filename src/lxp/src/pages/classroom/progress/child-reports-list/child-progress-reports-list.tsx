@@ -12,7 +12,7 @@ import { ProgressReportsList } from './reports-list';
 import ProgressWalkthroughWrapper from '../walkthrough/progress-walkthrough-wrapper';
 import { useAppContext } from '@/walkthrougContext';
 
-export type ChildProgressReportsList = {
+export type ChildProgressReportsListRouteState = {
   childId: string;
 };
 
@@ -20,7 +20,8 @@ export const ChildProgressReportsList: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const { state: routeState } = useLocation<ChildProgressReportsList>();
+  const { state: routeState } =
+    useLocation<ChildProgressReportsListRouteState>();
   const {
     state: { run: isWalkthrough },
   } = useAppContext();
