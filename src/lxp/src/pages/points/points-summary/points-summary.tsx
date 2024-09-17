@@ -377,7 +377,14 @@ export const PointsSummary: React.FC = () => {
       delete (obj as any)[prop]; // Use type assertion to bypass TypeScript checks
     }
   }
-
+  console.log(
+    pointsToDo?.savedIncomeOrExpense ||
+      pointsToDo?.savedIncomeOrExpense ||
+      (!practitioner?.isPrincipal &&
+        (planActivitiesPermission?.isActive === false ||
+          planActivitiesPermission?.isActive === undefined) &&
+        !pointsToDo?.viewedCommunitySection)
+  );
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
@@ -540,7 +547,7 @@ export const PointsSummary: React.FC = () => {
           : subTitleStyle,
         className:
           (pointsToDo?.savedIncomeOrExpense ||
-            pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.plannedOneDay ||
             (!practitioner?.isPrincipal &&
               planActivitiesPermission?.isActive === false &&
               pointsToDo?.isPartOfPreschool)) &&
@@ -554,7 +561,7 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.viewedCommunitySection
             ? 'bg-successMain'
             : pointsToDo?.savedIncomeOrExpense ||
-              pointsToDo?.savedIncomeOrExpense ||
+              pointsToDo?.plannedOneDay ||
               (!practitioner?.isPrincipal &&
                 (planActivitiesPermission?.isActive === false ||
                   planActivitiesPermission?.isActive === undefined) &&
@@ -565,7 +572,7 @@ export const PointsSummary: React.FC = () => {
         showIcon: true,
         onActionClick:
           pointsToDo?.savedIncomeOrExpense ||
-          pointsToDo?.savedIncomeOrExpense ||
+          pointsToDo?.plannedOneDay ||
           (!practitioner?.isPrincipal &&
             (planActivitiesPermission?.isActive === false ||
               planActivitiesPermission?.isActive === undefined) &&
@@ -576,7 +583,7 @@ export const PointsSummary: React.FC = () => {
         backgroundColor: pointsToDo?.viewedCommunitySection
           ? 'successBg'
           : pointsToDo?.savedIncomeOrExpense ||
-            pointsToDo?.savedIncomeOrExpense ||
+            pointsToDo?.plannedOneDay ||
             (!practitioner?.isPrincipal &&
               (planActivitiesPermission?.isActive === false ||
                 planActivitiesPermission?.isActive === undefined) &&
