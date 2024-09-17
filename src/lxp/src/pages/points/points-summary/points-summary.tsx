@@ -469,7 +469,7 @@ export const PointsSummary: React.FC = () => {
         className:
           pointsToDo?.isPartOfPreschool &&
           !pointsToDo?.savedIncomeOrExpense &&
-          !pointsToDo?.savedIncomeOrExpense
+          !pointsToDo?.plannedOneDay
             ? ''
             : 'px-2',
         menuIcon:
