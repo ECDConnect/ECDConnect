@@ -22,11 +22,15 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { ReactComponent as EmojiHappyYellow } from '../../../assets/ECD_Connect_emoji3.svg';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
-import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
+import { ReactComponent as EmojiBlueSmile } from '../../../assets/emoji_blue_smile_eye_open.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../../assets/mehFace.svg';
 import { format, getMonth, getYear } from 'date-fns';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PointsSummaryDto, captureAndDownloadComponent } from '@ecdlink/core';
+import {
+  PointsSummaryDto,
+  captureAndDownloadComponent,
+  useDialog,
+} from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
 import { PointsShare } from '../points-share/points-share';
 import { PointsInfoPage } from '../info/points-info-page';
@@ -47,10 +51,12 @@ import { pointsTodoItems } from '@/store/points/points.actions';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import { BusinessTabItems } from '@/pages/business/business.types';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
   const dispatch = useAppDispatch();
+  const dialog = useDialog();
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const { isOnline } = useOnlineStatus();
@@ -868,102 +874,82 @@ export const PointsSummary: React.FC = () => {
   }
 
   const celebrationCard = useMemo(() => {
-    if (!!userStanding) {
-      if (monthPoints === 100) {
-        return (
-          <CelebrationCard
-            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
-            secondaryMessage="You are the top points earner in your club! Keep it up!"
-            primaryTextColour="successMain"
-            secondaryTextColour="black"
-            backgroundColour="successBg"
-          />
-        );
-      }
-      if (monthPoints > 75) {
-        return (
-          <CelebrationCard
-            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
-            secondaryMessage="You are one of the top points earners in your club! Keep it up!"
-            primaryTextColour="successMain"
-            secondaryTextColour="black"
-            backgroundColour="successBg"
-          />
-        );
-      }
-      if (monthPoints >= 50) {
-        return (
-          <CelebrationCard
-            image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
-            secondaryMessage="You have more points than most other SmartStarters in your club!"
-            primaryTextColour="secondary"
-            secondaryTextColour="black"
-            backgroundColour="infoBb"
-          />
-        );
-      }
-      if (monthPoints > 50) {
-        return (
-          <CelebrationCard
-            image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
-            primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-            primaryTextColour="alertMain"
-            backgroundColour="alertBg"
-            secondaryMessage={`Most of the SmartStarters in your club have more than ${pointsTotalForYear} points! Earn more points to join them.`}
-            secondaryTextColour="black"
-          />
-        );
-      }
-    }
-
-    if (percentageScore < 60) {
-      return (
-        <CelebrationCard
-          image={<EmojiOrangeSmile className="mr-2 h-20 w-20" />}
-          primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-          primaryTextColour="alertMain"
-          backgroundColour="alertBg"
-          secondaryMessage="Check out the tips below to earn more points this month."
-          secondaryTextColour="black"
-        />
-      );
-    } else if (percentageScore < 80) {
-      return (
-        <CelebrationCard
-          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Wow, great job ${practitioner?.user?.firstName}!`}
-          secondaryMessage="You're doing well, keep it up! You can still earn more points this month."
-          primaryTextColour="secondary"
-          secondaryTextColour="black"
-          backgroundColour="infoBb"
-        />
-      );
-    } else {
+    if (percentageScore >= 80) {
       return (
         <CelebrationCard
           image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Well done ${practitioner?.user?.firstName}!`}
-          secondaryMessage="You're doing well, keep it up!"
+          primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
+          secondaryMessage="You’re doing well, keep it up!"
           primaryTextColour="successMain"
           secondaryTextColour="black"
           backgroundColour="successBg"
         />
       );
     }
+    if (percentageScore >= 60 && percentageScore <= 79) {
+      return (
+        <CelebrationCard
+          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+          primaryMessage={`Wow, great job ${practitioner?.user?.firstName}!`}
+          secondaryMessage="You’re doing well, keep it up! You can still earn more points this month."
+          primaryTextColour="quatenary"
+          secondaryTextColour="textDark"
+          backgroundColour="quatenaryBg"
+        />
+      );
+    }
+    if (percentageScore > 0 && percentageScore < 60) {
+      return (
+        <CelebrationCard
+          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+          primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
+          primaryTextColour="alertMain"
+          backgroundColour="alertBg"
+          secondaryMessage={`Keep using ${tenant?.tenant?.applicationName} to earn points!`}
+          secondaryTextColour="textDark"
+        />
+      );
+    }
+    return (
+      <CelebrationCard
+        image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+        primaryMessage={`No points earned yet`}
+        secondaryMessage="Keep going to earn points!"
+        primaryTextColour="alertMain"
+        secondaryTextColour="textDark"
+        backgroundColour="alertBg"
+      />
+    );
   }, [
-    monthPoints,
     percentageScore,
-    pointsTotalForYear,
     practitioner?.user?.firstName,
-    userStanding,
+    tenant?.tenant?.applicationName,
   ]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
+
+  const showOnlineOnly = useCallback(() => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  }, [dialog]);
+
+  const handleSeeDetailedReport = useCallback(() => {
+    if (!isOnline) {
+      showOnlineOnly();
+      return;
+    } else {
+      history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
+        userRankingData: pointsShareData?.userRankingData,
+      });
+    }
+  }, [history, isOnline, pointsShareData?.userRankingData, showOnlineOnly]);
 
   return (
     <>
@@ -1047,12 +1033,11 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {!isOnline &&
           monthPoints &&
-          !pointsShareData &&
           pointsTotalForYear &&
           pointsTotalForYear >= 10 &&
-          getCurrentPointsToDo === 4
-            ? celebrationCard
-            : null}
+          getCurrentPointsToDo === 4 ? (
+            <div>{celebrationCard}</div>
+          ) : null}
           {isOnline &&
           monthPoints &&
           pointsTotalForYear &&
@@ -1223,12 +1208,7 @@ export const PointsSummary: React.FC = () => {
               text="See detailed report"
               textColor="quatenary"
               icon="EyeIcon"
-              disabled={!isOnline}
-              onClick={() =>
-                history.push(ROUTES.PRACTITIONER.POINTS.YEAR, {
-                  userRankingData: pointsShareData?.userRankingData,
-                })
-              }
+              onClick={handleSeeDetailedReport}
             />
           ) : null}
         </div>
