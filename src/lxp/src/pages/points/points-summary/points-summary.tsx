@@ -985,7 +985,7 @@ export const PointsSummary: React.FC = () => {
           />
           {(practitionerWithAttendancePermissionPointsToDo ||
             !pointsTotalForYear ||
-            (pointsTotalForYear && pointsTotalForYear <= 10)) && (
+            (pointsTotalForYear && pointsTotalForYear < 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
               className="mt-5 py-6"
@@ -1006,7 +1006,7 @@ export const PointsSummary: React.FC = () => {
             />
           )}
           {(!pointsTotalForYear ||
-            (pointsTotalForYear && pointsTotalForYear <= 10)) &&
+            (pointsTotalForYear && pointsTotalForYear < 10)) &&
           pointsToDo?.viewedCommunitySection &&
           getCurrentPointsToDo === 4 ? (
             <CelebrationCard
@@ -1021,7 +1021,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 ? (
+          pointsTotalForYear >= 10 ? (
             <ScoreCard
               className="mt-5 py-6"
               mainText={`${monthPoints} points`}
@@ -1049,14 +1049,14 @@ export const PointsSummary: React.FC = () => {
           monthPoints &&
           !pointsShareData &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
+          pointsTotalForYear >= 10 &&
           getCurrentPointsToDo === 4
             ? celebrationCard
             : null}
           {isOnline &&
           monthPoints &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
+          pointsTotalForYear >= 10 &&
           practitionerWithAttendancePermissionPoints ? (
             <CelebrationCard
               image={getEmoji(
@@ -1081,7 +1081,7 @@ export const PointsSummary: React.FC = () => {
             />
           ) : null}
           {!pointsTotalForYear ||
-          pointsTotalForYear <= 10 ||
+          pointsTotalForYear < 10 ||
           practitionerWithAttendancePermissionPointsToDo ? (
             <div>
               <Divider dividerType="dashed" />
@@ -1118,7 +1118,7 @@ export const PointsSummary: React.FC = () => {
           {!!todoListFiltered &&
           !!todoListFiltered.length &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
+          pointsTotalForYear >= 10 &&
           practitionerWithAttendancePermissionPoints ? (
             <Typography
               className="mt-8 mb-4"
@@ -1132,7 +1132,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {!!todoListFiltered &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
+          pointsTotalForYear >= 10 &&
           practitionerWithAttendancePermissionPoints
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
@@ -1156,7 +1156,7 @@ export const PointsSummary: React.FC = () => {
         <div className="flex-column mt-10 justify-end p-4">
           {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
+          pointsTotalForYear >= 10 &&
           monthPoints > 0 ? (
             <Button
               size="normal"
@@ -1182,7 +1182,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
+          pointsTotalForYear >= 10 &&
           monthPoints === 0 &&
           !practitioner?.coachHierarchy ? (
             <Button
@@ -1198,7 +1198,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 &&
+          pointsTotalForYear >= 10 &&
           monthPoints === 0 &&
           practitioner?.coachHierarchy ? (
             <Button
@@ -1214,7 +1214,7 @@ export const PointsSummary: React.FC = () => {
           ) : null}
           {practitionerWithAttendancePermissionPoints &&
           pointsTotalForYear &&
-          pointsTotalForYear > 10 ? (
+          pointsTotalForYear >= 10 ? (
             <Button
               size="normal"
               className="mb-4 w-full"

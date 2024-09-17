@@ -1351,7 +1351,7 @@ export const Dashboard: React.FC = () => {
             notification={dashboardNotification}
           />
           {totalYearPoints &&
-          totalYearPoints > 10 &&
+          totalYearPoints >= 10 &&
           !!pointsScoreProps &&
           !isCoach &&
           practitionerWithAttendancePermissionPoints &&
@@ -1374,7 +1374,7 @@ export const Dashboard: React.FC = () => {
           ) : null}
           {(practitionerWithAttendancePermissionPointsToDo ||
             !totalYearPoints ||
-            (totalYearPoints && totalYearPoints <= 10)) &&
+            (totalYearPoints && totalYearPoints < 10)) &&
           !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
