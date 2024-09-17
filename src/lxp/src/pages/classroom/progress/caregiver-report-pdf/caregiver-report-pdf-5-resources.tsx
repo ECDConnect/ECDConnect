@@ -23,7 +23,7 @@ export const ProgressCaregiverResourcesPage: React.FC<
       style={{ height: '1100px' }}
     >
       <div className="mb-4 flex flex-row">
-        <img src={lightbulbEmoji} className="mr-4 h-20 w-20" />
+        <img src={lightbulbEmoji} className="mr-4 h-20 w-20" alt="bulb" />
         <Typography
           type="h1"
           color="textDark"
@@ -48,7 +48,7 @@ export const ProgressCaregiverResourcesPage: React.FC<
       {links.map((x) => (
         <div className="border-infoMain bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm">
           <div className="flex flex-row">
-            <img src={resourceLink} className="mr-4 h-14 w-14" />
+            <img src={resourceLink} className="mr-4 h-14 w-14" alt="link" />
             <Typography
               type="h3"
               color="textDark"

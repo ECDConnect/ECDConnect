@@ -216,6 +216,6 @@ export const getResourceLinks = () =>
   createSelector(
     (state: RootState) => state.progressTracking.resourceLinks,
     (resourceLinks: ResourceLink[] | undefined) => {
-      return resourceLinks || [];
+      return resourceLinks?.filter((item) => item?.title) || [];
     }
   );
