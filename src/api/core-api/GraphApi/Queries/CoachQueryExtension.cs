@@ -88,6 +88,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             Coach coach = dbRepo.GetByUserId(userId);
+            if (coach == null)
+            {
+                coach = dbRepo.GetById(new Guid(userId));
+            }
 
             if (coach != null)
             {
