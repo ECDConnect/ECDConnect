@@ -32,7 +32,7 @@ export const ChildProgressReportsList: React.FC = () => {
   const planActivitiesPermission = practitioner?.permissions?.find(
     (item) => item?.permissionName === PermissionsNames.create_progress_reports
   );
-  console.log({ planActivitiesPermission });
+
   const { childId } = routeState;
   const {
     child,
