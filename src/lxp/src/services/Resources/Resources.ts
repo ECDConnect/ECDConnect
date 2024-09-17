@@ -12,8 +12,8 @@ class ResourcesService {
     localeId: string,
     sectionType?: string,
     search?: string,
-    dataFreeSearch?: [string],
-    likesSearch?: [string],
+    dataFreeSearch?: [],
+    likesSearch?: [],
     startDate?: string | null,
     endDate?: string | null,
     pagingInput?: PagedQueryInput
@@ -75,7 +75,7 @@ class ResourcesService {
       throw new Error('Get Resources Failed - Server connection error');
     }
 
-    return response.data.data.GetResources;
+    return response.data.data.resources;
   }
 }
 
