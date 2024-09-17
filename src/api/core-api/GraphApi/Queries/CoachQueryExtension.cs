@@ -88,18 +88,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             Coach coach = dbRepo.GetByUserId(userId);
-            if (coach == null)
-            {
-                coach = dbRepo.GetById(new Guid(userId));
-            }
 
-            if (coach != null)
-            {
-                List<Visit> visits = visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_coach);
+            List<Visit> visits = visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_coach);
 
-                coach.TraineeVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_trainee_visit).ToList();
-                coach.PractitionerVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit || x.VisitType.Name == Constants.SSSettings.visitType_practitioner_call).ToList();
-            }
+            coach.TraineeVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_trainee_visit).ToList();
+            coach.PractitionerVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit || x.VisitType.Name == Constants.SSSettings.visitType_practitioner_call).ToList();
 
             return coach;
         }
