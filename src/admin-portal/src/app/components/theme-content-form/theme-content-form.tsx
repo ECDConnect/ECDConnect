@@ -120,14 +120,15 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     }) ?? [];
 
   const getAllCall = `GetAll${optionDefinition?.contentName}`;
+  const totalDays = 20;
 
   const [tempData, setTempData] = useState<any[]>([]);
-  const tempDataArr = useMemo(() => tempData?.slice(0, 16), [tempData]);
+  const tempDataArr = useMemo(() => tempData?.slice(0, totalDays), [tempData]);
   const [tableData, setTableData] = useState<any[]>([]);
   const arr = contentValue?.value?.split(',');
   const currentTempData = tempData
     ?.filter((item) => arr?.includes(String(item?.id)))
-    .slice(0, 16);
+    .slice(0, totalDays);
   const [handleInitialState, setHandleInitialState] = useState(true);
   const [currentThemeDaysArr, setCurrentThemeDaysArr] = useState([]);
   const [themeDaysArr, setThemeDaysArr] = useState([]);
@@ -355,11 +356,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   }, [currentThemeDaysArr]);
 
   useEffect(() => {
-    if (
-      themeDaysArr?.length > 0 &&
-      smallGroupOptions?.length > 0 &&
-      largeGroupOptions?.length > 0
-    ) {
+    if (smallGroupOptions?.length > 0 && largeGroupOptions?.length > 0) {
       setLoading(false);
     }
   }, [themeDaysArr, smallGroupOptions, largeGroupOptions]);
@@ -444,7 +441,9 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
               type={'body'}
               color={'textMid'}
               text={
-                'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
+                'Every theme must have ' +
+                totalDays +
+                ' planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
               }
             />
           )}
@@ -702,7 +701,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
               ))}
 
             <Pagination
-              recordsPerPage={16}
+              recordsPerPage={totalDays}
               items={tempDataArr}
               responseData={setTableData}
             />
