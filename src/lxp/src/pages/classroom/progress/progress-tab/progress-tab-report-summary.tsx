@@ -20,7 +20,7 @@ export const ProgressTabReportSummary: React.FC = () => {
         profileDataUrl: childReport.childProfileImageUrl,
         profileText: childReport.childFullName,
         avatarColor: getAvatarColor() || '',
-        title: childReport.childFirstName,
+        title: childReport?.childFullName || childReport.childFirstName,
         subTitle: childReport.isObservationsComplete
           ? 'Observations complete'
           : childReport.isInProgress
