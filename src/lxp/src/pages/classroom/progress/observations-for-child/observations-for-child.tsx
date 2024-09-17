@@ -67,7 +67,9 @@ export const ObservationsForChild: React.FC = () => {
   );
 
   const negativeSkills =
-    currentReport?.skillObservations.filter((x) => x.isNegative) || [];
+    currentReport?.skillObservations.filter(
+      (x) => x.isNegative || !x?.isPositive
+    ) || [];
 
   const skillsToChoose = negativeSkills.length < 4 ? negativeSkills.length : 4;
 
