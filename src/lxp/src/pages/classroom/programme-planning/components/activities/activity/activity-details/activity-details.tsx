@@ -1,7 +1,7 @@
 import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { activitySelectors } from '@store/content/activity';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ActivitySubCategoryCard } from '../../components/activity-sub-category-card/activity-sub-category-card';
 import { ActivityDetailsProps } from './activity-details.types';
@@ -41,6 +41,12 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
       setOnlineOnlyAlert(true);
     }
   };
+
+  useEffect(() => {
+    if (isWalkthrough && state.stepIndex === 7) {
+      onActivityChanged();
+    }
+  }, [isWalkthrough, onActivityChanged, state.stepIndex]);
 
   if (!activityDetail) return <></>;
 
