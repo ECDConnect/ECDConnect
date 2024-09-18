@@ -182,7 +182,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
       (item) => item.id === language.id
     );
 
-    if (hasTranslations && language.locale !== 'en-za') {
+    if (hasTranslations) {
       let storyBooks: StoryBookDto[] | undefined;
 
       storyBooks = await new ContentStoryBookService(
@@ -280,7 +280,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 hideDetails={true}
                 selected={false}
                 buttonIcon={'SwitchVerticalIcon'}
-                buttonText={'Change activity'}
+                buttonText={'Change activity3'}
                 onSelected={() =>
                   onActivitySwitched && isOnline
                     ? onActivitySwitched()
@@ -667,7 +667,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
       (item) => item.id === language.id
     );
 
-    if (hasTranslations && language.locale !== 'en-za') {
+    if (hasTranslations) {
       let activities: ActivityDto[] | undefined;
 
       activities = await new ContentActivityService(
@@ -729,7 +729,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
                 className={'mt-4 w-full'}
                 color={'quatenary'}
                 textColor={'white'}
-                text={'Change activity'}
+                text={'Change activity4'}
                 icon={'RefreshIcon'}
                 iconPosition={'start'}
                 onClick={handleActivitySwitched}
@@ -800,7 +800,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
                 className={'mt-4 w-full'}
                 color={'quatenary'}
                 textColor={'white'}
-                text={'Change activity'}
+                text={'Change activity5'}
                 icon={'RefreshIcon'}
                 iconPosition={'start'}
                 onClick={handleActivitySwitched}
