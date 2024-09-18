@@ -23,7 +23,7 @@ import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { useTenant } from '@/hooks/useTenant';
 import { coachSelectors } from '@/store/coach';
 import { CoachFeedback } from './components/coach-feedback/coach-feedback';
-
+import TransparentLayer from '../../../../../../../assets/TransparentLayer.png';
 interface CommunityCoachProfileProps {
   onClose?: (item: boolean) => void;
 }
@@ -68,7 +68,7 @@ export const CommunityCoachProfile: React.FC<CommunityCoachProfileProps> = ({
         showBackground={true}
         size="medium"
         renderBorder={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         title={coach?.user?.fullName}
         color={'primary'}

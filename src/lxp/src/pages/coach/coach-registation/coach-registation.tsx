@@ -36,6 +36,7 @@ import AuthService from '@services/AuthService/AuthService';
 
 import { staticDataThunkActions } from '@store/static-data';
 import { useAppDispatch } from '@store';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 import {
   initialRegisterValues,
@@ -172,7 +173,7 @@ export const CoachRegistration: React.FC = () => {
       <BannerWrapper
         color={'primary'}
         showBackground
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
         size={'signup'}
