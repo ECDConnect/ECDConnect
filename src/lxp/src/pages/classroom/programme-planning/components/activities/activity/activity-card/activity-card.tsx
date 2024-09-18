@@ -51,6 +51,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     onSelected();
   };
 
+  console.log('activity', activity);
+
   return (
     <>
       <Card
@@ -131,6 +133,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             handleActivitySelected();
             setDisplayDetails(false);
           }}
+          availableLanguages={activity.availableLanguages}
         />
       </Dialog>
     </>
