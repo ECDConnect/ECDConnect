@@ -146,6 +146,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             handleActivitySelected();
             setDisplayDetails(false);
           }}
+          availableLanguages={activity.availableLanguages}
         />
       </Dialog>
     </>

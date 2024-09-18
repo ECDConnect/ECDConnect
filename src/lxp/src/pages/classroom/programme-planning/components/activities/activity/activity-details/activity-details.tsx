@@ -10,6 +10,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useAppContext } from '@/walkthrougContext';
 import { dummyActivityDetails } from '@/pages/classroom/programme-planning/programme-dashboard/walkthrough/dummy-content';
 import ProgrammeWrapper from '../../../../programme-dashboard/walkthrough/programme-wrapper';
+import { LanguageCode } from '@/i18n/types';
 
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   activityId,
@@ -18,20 +19,34 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   onActivityChanged,
   onActivitySelected,
   onBack,
+  availableLanguages,
 }) => {
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
   const { isOnline } = useOnlineStatus();
 
   const { state } = useAppContext();
-
   const isWalkthrough = state?.run;
+
+  const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [languages, setLanguages] = useState([language.locale as LanguageCode]);
+
+  useEffect(() => {
+    if (availableLanguages !== undefined) {
+      setLanguages(
+        availableLanguages
+          ? availableLanguages?.map((item) => {
+              return item?.locale as LanguageCode;
+            })
+          : [language.locale as LanguageCode]
+      );
+    }
+  }, [availableLanguages, language.locale]);
 
   const activityById = useSelector(
     activitySelectors.getActivityById(activityId)
   );
 
   const activityDetail = isWalkthrough ? dummyActivityDetails : activityById;
-
   const date = new Date();
 
   const handleActivityChanged = () => {
@@ -82,7 +97,11 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
           />
         )}
 
-        <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
+        <LanguageSelector
+          currentLocale={'en-za'}
+          selectLanguage={() => {}}
+          availableLanguages={languages}
+        />
         <Divider />
         <div className="px-4 py-3">
           <Typography type="h1" text={activityDetail.name} color={'textDark'} />
