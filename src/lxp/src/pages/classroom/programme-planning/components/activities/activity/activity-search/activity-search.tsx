@@ -46,6 +46,7 @@ import {
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { format, isSameDay, isSameWeek, parseISO } from 'date-fns';
 import { useProgrammePlanningRecommendations } from '@/hooks/useProgrammePlanningRecommendations';
+import { useAppContext } from '@/walkthrougContext';
 
 const ActivitySearch: React.FC<ActivitySearchProps> = ({
   title,
@@ -59,6 +60,12 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   onSave,
   submitButtonText = 'Save',
 }) => {
+  const { setState, state } = useAppContext();
+  const isWalkthrough = state?.run;
+  const nextWalkthroughStep = (stepNr: number) => {
+    setState({ stepIndex: stepNr });
+  };
+
   const { isOnline } = useOnlineStatus();
   const languages = useSelector(staticDataSelectors.getLanguages);
   const allThemes = useSelector(programmeThemeSelectors.getProgrammeThemes);
@@ -334,10 +341,10 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             activity={item}
             selected={isSelected}
             onSelected={() => {
-              setSelectedActivityId(item.id);
               setSearchTextActive(false);
               applyFilters(activities);
             }}
+            onClose={onClose}
             onDeselection={() => {
               setSelectedActivityId(undefined);
               setSearchTextActive(false);
@@ -430,32 +437,40 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             color="textDark"
           />
           {!!recommendedActivity && (
-            <ActivityCard
-              key={`search-header-activity-${recommendedActivity.activity.id}`}
-              activity={recommendedActivity.activity}
-              selected={selectedActivityId === recommendedActivity.activity.id}
-              recommended
-              recommendedText={
-                recommendedActivity.subCategory
-                  ? `Recommended because you do not have enough <b>${
-                      recommendedActivity.subCategory?.name
-                    }</b> activities planned for ${getDateRangeText(
-                      programme?.startDate,
-                      programme?.endDate
-                    )}`
-                  : ''
-              }
-              onSelected={() => {
-                setSelectedActivityId(recommendedActivity.activity?.id);
-                setSearchTextActive(false);
-                applyFilters(activities);
-              }}
-              onDeselection={() => {
-                setSelectedActivityId(undefined);
-                setSearchTextActive(false);
-                applyFilters(activities);
-              }}
-            />
+            <div id="walkthrough-small-group-activity">
+              <ActivityCard
+                key={`search-header-activity-${recommendedActivity.activity.id}`}
+                activity={recommendedActivity.activity}
+                selected={
+                  selectedActivityId === recommendedActivity.activity.id
+                }
+                recommended
+                recommendedText={
+                  recommendedActivity.subCategory
+                    ? `Recommended because you do not have enough <b>${
+                        recommendedActivity.subCategory?.name
+                      }</b> activities planned for ${getDateRangeText(
+                        programme?.startDate,
+                        programme?.endDate
+                      )}`
+                    : ''
+                }
+                onSelected={() => {
+                  if (isWalkthrough) {
+                    nextWalkthroughStep(8);
+                  }
+                  setSelectedActivityId(recommendedActivity.activity?.id);
+                  setSearchTextActive(false);
+                  applyFilters(activities);
+                }}
+                onClose={onClose}
+                onDeselection={() => {
+                  setSelectedActivityId(undefined);
+                  setSearchTextActive(false);
+                  applyFilters(activities);
+                }}
+              />
+            </div>
           )}
 
           {hasActiveFilters && filteredActivities.length === 0 && (
@@ -478,6 +493,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 onSelected={() => {
                   setSelectedActivityId(activity.id);
                 }}
+                onClose={onClose}
                 onDeselection={() => {
                   setSelectedActivityId(undefined);
                 }}

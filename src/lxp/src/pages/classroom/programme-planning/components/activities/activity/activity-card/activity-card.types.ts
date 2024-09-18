@@ -8,4 +8,5 @@ export type ActivityCardProps = {
   selected: boolean;
   onSelected: () => void;
   onDeselection: () => void;
+  onClose: () => void;
 };

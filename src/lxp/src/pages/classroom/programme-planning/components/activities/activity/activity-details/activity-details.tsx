@@ -57,6 +57,12 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (isWalkthrough && state.stepIndex === 7) {
+      onActivityChanged();
+    }
+  }, [isWalkthrough, onActivityChanged, state.stepIndex]);
+
   if (!activityDetail) return <></>;
 
   return (

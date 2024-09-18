@@ -66,6 +66,7 @@ import { ProgrammeDashboardRouteParams } from '../../programme-dashboard.types';
 import { useAppContext } from '@/walkthrougContext';
 import {
   dummyDailyProgramme,
+  dummyRecommendedActivity,
   dummyRoutineItems,
 } from '../../walkthrough/dummy-content';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -286,7 +287,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             isSelected={true}
             disabled={!hasPermissionToEdit}
             onActivitySelected={() => {
-              nextWalkthroughStep(6);
+              if (state.stepIndex === 5) {
+                nextWalkthroughStep(6);
+              }
               onClose();
               // onEditActivityItem(routineItem, day);
             }}
@@ -359,8 +362,19 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     });
   };
 
-  const onProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
-    nextWalkthroughStep(5);
+  const onProgrammeClick = (
+    routineItem: ProgrammeRoutineItemDto,
+    stepIndex: number
+  ) => {
+    // walkthrough
+    if (isWalkthrough) {
+      if (stepIndex === 4) {
+        nextWalkthroughStep(5);
+      } else if (stepIndex === 6) {
+        nextWalkthroughStep(7);
+      }
+    }
+
     if (routineItem.name === DailyRoutineItemType.messageBoard) {
       openMessageBoardItem(routineItem);
       return;
@@ -507,10 +521,14 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 ? currentDailyProgramme?.largeGroupActivityId
                 : currentDailyProgramme?.smallGroupActivityId
             }
-            recommendedActivity={getFirstActivityByType(
-              recommendedActivities,
-              getRoutineItemType(routineItem.name)
-            )}
+            recommendedActivity={
+              isWalkthrough && state.stepIndex === 6
+                ? dummyRecommendedActivity
+                : getFirstActivityByType(
+                    recommendedActivities,
+                    getRoutineItemType(routineItem.name)
+                  )
+            }
             routineItem={routineItem}
             onSave={(activityId?: number) => {
               onActivitySelected(routineItem, day, activityId);
@@ -684,8 +702,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                             : currentDailyProgramme
                         }
                         selectedDate={selectedDate}
-                        disabled={isWalkthrough && state.stepIndex !== 4}
-                        onClick={() => onProgrammeClick(routineItem)}
+                        //disabled={isWalkthrough && state.stepIndex !== 4}
+                        onClick={() =>
+                          onProgrammeClick(routineItem, state.stepIndex)
+                        }
                       />
                       {index === programmeRoutine.routineItems.length - 1 && (
                         <Divider className="-m-1 mb-4" />
