@@ -1,5 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  RoleSystemNameEnum,
+  useDialog,
+  useTheme,
+} from '@ecdlink/core';
 import {
   ActionModal,
   Avatar,
@@ -65,7 +70,7 @@ import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
 import { BusinessTabItems } from '../business/business.types';
 import { useTenant } from '@/hooks/useTenant';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
-import { differenceInDays, getMonth, getYear } from 'date-fns';
+import { differenceInDays, getMonth, getYear, isToday } from 'date-fns';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import DashboardWrapper from './dashboard-wrapper/dashboard-wrapper';
@@ -562,6 +567,23 @@ export const Dashboard: React.FC = () => {
         await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
     }
   }, [practitioner?.userId]);
+
+  const currentReportingPeriod = useSelector(
+    classroomsSelectors.getCurrentProgressReportPeriod()
+  );
+
+  const lastProgressReportPeriodisToday =
+    currentReportingPeriod?.endDate &&
+    isToday(new Date(currentReportingPeriod?.endDate));
+
+  useEffect(() => {
+    if (!lastProgressReportPeriodisToday) {
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
+      );
+    }
+  }, [lastProgressReportPeriodisToday]);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
