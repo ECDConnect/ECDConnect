@@ -106,7 +106,11 @@ export class PractitionerNotificationValidator
       });
     }
 
-    if (isMoreThan30Days && !communityState?.communityProfile) {
+    if (
+      isMoreThan30Days &&
+      classroomState?.classroomGroupData?.classroomGroups?.length > 0 &&
+      !communityState?.communityProfile
+    ) {
       notifications.push({
         reference: `practitioner-no-community-profile`,
         title: `Join the community!`,
