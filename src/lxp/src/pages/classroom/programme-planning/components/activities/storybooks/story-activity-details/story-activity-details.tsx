@@ -280,7 +280,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 hideDetails={true}
                 selected={false}
                 buttonIcon={'SwitchVerticalIcon'}
-                buttonText={'Change activity3'}
+                buttonText={'Change activity'}
                 onSelected={() =>
                   onActivitySwitched && isOnline
                     ? onActivitySwitched()
@@ -729,7 +729,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
                 className={'mt-4 w-full'}
                 color={'quatenary'}
                 textColor={'white'}
-                text={'Change activity4'}
+                text={'Change activity'}
                 icon={'RefreshIcon'}
                 iconPosition={'start'}
                 onClick={handleActivitySwitched}
@@ -800,7 +800,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
                 className={'mt-4 w-full'}
                 color={'quatenary'}
                 textColor={'white'}
-                text={'Change activity5'}
+                text={'Change activity'}
                 icon={'RefreshIcon'}
                 iconPosition={'start'}
                 onClick={handleActivitySwitched}
