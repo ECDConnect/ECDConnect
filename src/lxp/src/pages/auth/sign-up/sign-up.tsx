@@ -41,6 +41,7 @@ import { UserService } from '@/services/UserService';
 import { HelpForm } from '@/components/help-form/help-form';
 import ROUTES from '@/routes/routes';
 import { useTenant } from '@/hooks/useTenant';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -267,7 +268,7 @@ export const SignUp: React.FC = () => {
       <BannerWrapper
         color={'primary'}
         showBackground={isWhitelabel ? false : true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
         size={'signup'}
