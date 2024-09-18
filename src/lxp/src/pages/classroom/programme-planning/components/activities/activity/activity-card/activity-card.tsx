@@ -51,8 +51,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     onSelected();
   };
 
-  console.log('activity', activity);
-
   return (
     <>
       <Card
