@@ -46,7 +46,9 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
                 type="help"
                 color="textMid"
                 text={limitStringLength(
-                  material.charAt(0).toUpperCase() + material.slice(1),
+                  material
+                    ? material.charAt(0).toUpperCase() + material.slice(1)
+                    : '',
                   50
                 )}
               />
@@ -60,7 +62,9 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
             variant="slim"
             description={title}
             hint={limitStringLength(
-              material.charAt(0).toUpperCase() + material.slice(1),
+              material
+                ? material.charAt(0).toUpperCase() + material.slice(1)
+                : '',
               50
             )}
             checked={selected}
