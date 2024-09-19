@@ -11,3 +11,15 @@ export const ResourcesIcons = {
   teachingTips: 'LightBulbIcon',
   other: 'ViewGridIcon',
 };
+
+export const DataType = {
+  dataFree: 'Data free',
+  notDataFree: 'Not Data Free',
+};
+
+export const DataTypeFilterOption = {
+  mostLiked: 'Most liked',
+  newest: 'Newest',
+  oldest: 'Oldest',
+  title: 'Title',
+};

@@ -185,7 +185,6 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const displayTutorial = (type?: string) => {
-    console.log({ type });
     switch (type) {
       case NavigationNames.Classroom.Attendance:
         setAttendanceTutorialActive(!!hasPermissionToEdit);

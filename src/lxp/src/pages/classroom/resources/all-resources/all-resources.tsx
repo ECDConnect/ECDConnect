@@ -7,6 +7,7 @@ import {
   SearchDropDown,
   SearchDropDownOption,
   StackedList,
+  Typography,
 } from '@ecdlink/ui';
 import { ThumbUpIcon } from '@heroicons/react/solid';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,12 +16,19 @@ import { useDialog } from '@ecdlink/core';
 import SearchHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '@/components/search-header/search-header';
-import { ResourcesNames } from '../resources.types';
+import {
+  DataType,
+  DataTypeFilterOption,
+  ResourcesNames,
+} from '../resources.types';
 import { filterActivitiesByType } from '@/utils/classroom/programme-planning/activity-search.utils';
+import { sortByOptions } from '@/pages/community-old/clubs-tab/index.filters';
 
 interface AllResourcesprops {
   resources: any[];
   setViewAllResources: (item: boolean) => void;
+  setResourceTypeItem?: (item: string) => void;
+  resourceTypeItem?: string;
 }
 
 const SortByResourcesTypes: SearchDropDownOption<string>[] = [
@@ -34,73 +42,130 @@ const SortByResourcesTypes: SearchDropDownOption<string>[] = [
   value: item,
 }));
 
+const SortByTypeOfData: SearchDropDownOption<string>[] = [
+  DataType?.dataFree,
+  DataType?.notDataFree,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+const SortByFilterOption: SearchDropDownOption<string>[] = [
+  DataTypeFilterOption?.mostLiked,
+  DataTypeFilterOption?.newest,
+  DataTypeFilterOption?.oldest,
+  DataTypeFilterOption?.title,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
 export const AllResources: React.FC<AllResourcesprops> = ({
   resources,
   setViewAllResources,
+  setResourceTypeItem,
+  resourceTypeItem,
 }) => {
   const { isOnline } = useOnlineStatus();
   const listItems: MenuListDataItem[] = [];
-  const [resourcesListFormatted, setResourcesListFormatted] =
-    useState<MenuListDataItem[]>();
+  const [resourcesListFormatted, setResourcesListFormatted] = useState<any[]>();
   const [resourcesTypesFilter, setResourcesTypesFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+
+  const filteredByType = useMemo(
+    () => resources?.filter((item) => item?.resourceType === resourceTypeItem),
+    [resourceTypeItem, resources]
+  );
+
+  const resourcesSorted = useMemo(
+    () =>
+      resourceTypeItem
+        ? filteredByType?.sort((a, b) =>
+            Number(a.numberLikes) > Number(b.numberLikes)
+              ? -1
+              : Number(a.numberLikes) < Number(b.numberLikes)
+              ? 1
+              : 0
+          )
+        : resources?.sort((a, b) =>
+            Number(a.numberLikes) > Number(b.numberLikes)
+              ? -1
+              : Number(a.numberLikes) < Number(b.numberLikes)
+              ? 1
+              : 0
+          ),
+    [filteredByType, resourceTypeItem, resources]
+  );
+
+  const [resourcesData, setResourcesData] = useState(resourcesSorted);
+
+  const [dataTypeFilter, setDataTypeFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const [sortOptionFilter, setsortOptionFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
   const activitiesFormatted = useMemo(
     () => resourcesTypesFilter?.map((item) => item?.id),
     [resourcesTypesFilter]
   );
+  const dataTypesFormatted = useMemo(
+    () => dataTypeFilter?.map((item) => item?.id),
+    [dataTypeFilter]
+  );
+  const filterByFormatted = useMemo(
+    () => sortOptionFilter?.map((item) => item?.id),
+    [sortOptionFilter]
+  );
+
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [resourcesIndex, setResourcesIndex] = useState(
     resources?.length < 5 ? resources?.length : 5
   );
   const dialog = useDialog();
 
-  const resourcesSorted = useMemo(
-    () =>
-      resources?.sort((a, b) =>
-        Number(a.numberLikes) > Number(b.numberLikes)
-          ? -1
-          : Number(a.numberLikes) < Number(b.numberLikes)
-          ? 1
-          : 0
-      ),
-    [resources]
-  );
-
-  if (resourcesSorted) {
-    resourcesSorted?.slice(0, resourcesIndex)?.map((item) => {
-      listItems?.push({
-        title: item?.title,
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        subTitle: item?.shortDescription,
-        subTitleStyle:
-          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-        showIcon: false,
-        onActionClick: () => {
-          dialog({
-            position: DialogPosition.Full,
-            render: (onClose) => (
-              <ResourceItem resource={item} onClose={onClose} />
-            ),
-          });
-        },
-        likesItem: (
-          <div
-            className={`${
-              Number(item?.numberLikes) > 0 ? 'bg-successMain' : 'bg-infoMain'
-            } full mr-4 flex items-center gap-2 rounded-full px-3 py-1`}
-          >
-            <ThumbUpIcon className="h-6 w-6 text-white" />
-            <div>{item?.numberLikes ? item?.numberLikes : 0}</div>
-          </div>
-        ),
+  if (resourcesData) {
+    (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0
+      ? resourcesListFormatted
+      : resourcesData
+    )
+      ?.slice(0, resourcesIndex)
+      ?.map((item) => {
+        listItems?.push({
+          title: item?.title,
+          titleStyle: 'text-textDark font-semibold text-base leading-snug',
+          subTitle: item?.shortDescription,
+          subTitleStyle:
+            'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+          showIcon: false,
+          onActionClick: () => {
+            dialog({
+              position: DialogPosition.Full,
+              render: (onClose) => (
+                <ResourceItem resource={item} onClose={onClose} />
+              ),
+            });
+          },
+          likesItem: (
+            <div
+              className={`${
+                Number(item?.numberLikes) > 0 ? 'bg-successMain' : 'bg-infoMain'
+              } full mr-4 flex items-center gap-2 rounded-full px-3 py-1`}
+            >
+              <ThumbUpIcon className="h-6 w-6 text-white" />
+              <div>{item?.numberLikes ? item?.numberLikes : 0}</div>
+            </div>
+          ),
+        });
       });
-    });
   }
 
   const onSearchChange = (value: string) => {
     setResourcesListFormatted(
-      resourcesSorted?.filter((x) =>
+      resourcesData?.filter((x) =>
         x?.title?.toLowerCase()?.includes(value?.toLowerCase())
       ) || []
     );
@@ -147,32 +212,167 @@ export const AllResources: React.FC<AllResourcesprops> = ({
     },
   };
 
-  console.log({ resourcesTypesFilter });
-  const filteredData = useMemo(
+  const filteredDataByActivity = useMemo(
     () =>
-      resourcesSorted.filter((resource) =>
+      resourcesData.filter((resource) =>
         activitiesFormatted.includes(resource.resourceType)
       ),
-    [activitiesFormatted, resourcesSorted]
+    [activitiesFormatted, resourcesData]
   );
-  console.log({ filteredData });
+  const filteredDataByDataType = useMemo(() => {
+    if (!dataTypesFormatted?.find((item) => item === DataType?.dataFree)) {
+      return resourcesData?.filter(
+        (item) => item?.dataFree === 'false' || item?.dataFree === false
+      );
+    } else if (
+      !dataTypesFormatted?.find((item) => item === DataType?.notDataFree)
+    ) {
+      return resourcesData?.filter(
+        (item) => item?.dataFree === 'true' || item?.dataFree === true
+      );
+    } else return resourcesData;
+  }, [dataTypesFormatted, resourcesData]);
 
   useEffect(() => {
-    if (resourcesTypesFilter) {
-      setResourcesListFormatted(filteredData);
+    if (filterByFormatted?.length) {
+      const sortedBy = filterByFormatted?.find((item) => item);
+
+      if (sortedBy === DataTypeFilterOption?.mostLiked) {
+        if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
+          const sorted = resourcesListFormatted?.sort((a, b) =>
+            Number(a.numberLikes) > Number(b.numberLikes)
+              ? -1
+              : Number(a.numberLikes) < Number(b.numberLikes)
+              ? 1
+              : 0
+          );
+          setResourcesListFormatted(sorted);
+        } else {
+          const sorted = resourcesData?.sort((a, b) =>
+            Number(a.numberLikes) > Number(b.numberLikes)
+              ? -1
+              : Number(a.numberLikes) < Number(b.numberLikes)
+              ? 1
+              : 0
+          );
+          setResourcesData(sorted);
+        }
+      }
+
+      if (sortedBy === DataTypeFilterOption?.newest) {
+        if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
+          const sorted = resourcesListFormatted?.sort((a, b) =>
+            new Date(a.insertedDate) > new Date(b.insertedDate)
+              ? -1
+              : new Date(a.insertedDate) < new Date(b.insertedDate)
+              ? 1
+              : 0
+          );
+          setResourcesListFormatted(sorted);
+        } else {
+          const sorted = resourcesData?.sort((a, b) =>
+            new Date(a.insertedDate) > new Date(b.insertedDate)
+              ? -1
+              : new Date(a.insertedDate) < new Date(b.insertedDate)
+              ? 1
+              : 0
+          );
+          setResourcesData(sorted);
+        }
+      }
+
+      if (sortedBy === DataTypeFilterOption?.oldest) {
+        if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
+          const sorted = resourcesListFormatted?.sort((a, b) =>
+            new Date(a.insertedDate) < new Date(b.insertedDate)
+              ? -1
+              : new Date(a.insertedDate) > new Date(b.insertedDate)
+              ? 1
+              : 0
+          );
+          setResourcesListFormatted(sorted);
+        } else {
+          const sorted = resourcesData?.sort((a, b) =>
+            new Date(a.insertedDate) < new Date(b.insertedDate)
+              ? -1
+              : new Date(a.insertedDate) > new Date(b.insertedDate)
+              ? 1
+              : 0
+          );
+          setResourcesData(sorted);
+        }
+      }
+      if (sortedBy === DataTypeFilterOption?.title) {
+        if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
+          const sorted = resourcesListFormatted?.sort((a, b) =>
+            a.title < b.title ? -1 : a.title > b.title ? 1 : 0
+          );
+          setResourcesListFormatted(sorted);
+        } else {
+          const sorted = resourcesData?.sort((a, b) =>
+            new Date(a.title) < new Date(b.title)
+              ? -1
+              : new Date(a.title) > new Date(b.title)
+              ? 1
+              : 0
+          );
+          setResourcesData(sorted);
+        }
+      }
+    } else {
+      if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
+        setResourcesListFormatted(resourcesData);
+      } else {
+        setResourcesData(resourcesSorted);
+      }
     }
-  }, [filteredData, resourcesTypesFilter]);
+  }, [
+    activitiesFormatted?.length,
+    dataTypesFormatted?.length,
+    filterByFormatted,
+    resourcesListFormatted,
+    resourcesData,
+    resourcesSorted,
+  ]);
+
+  useEffect(() => {
+    if (resourcesTypesFilter?.length > 0) {
+      setResourcesListFormatted(filteredDataByActivity);
+    }
+
+    if (dataTypeFilter?.length > 0) {
+      setResourcesListFormatted(filteredDataByDataType);
+    }
+
+    if (resourcesTypesFilter?.length > 0 && dataTypeFilter?.length > 0) {
+      const filteredItems = filteredDataByActivity?.filter((x) =>
+        filteredDataByDataType?.some((y) => y.id === x.id)
+      );
+      setResourcesListFormatted(filteredItems);
+    }
+  }, [
+    dataTypeFilter,
+    filteredDataByActivity,
+    filteredDataByDataType,
+    resourcesTypesFilter,
+  ]);
 
   return (
     <div>
       <BannerWrapper
         size="small"
-        onBack={() => setViewAllResources(false)}
+        onBack={() => {
+          setResourceTypeItem && setResourceTypeItem('');
+          setViewAllResources(false);
+        }}
         color="primary"
         className={'h-full'}
         title={`Classroom resources`}
         displayOffline={!isOnline}
-        onClose={() => setViewAllResources(false)}
+        onClose={() => {
+          setResourceTypeItem && setResourceTypeItem('');
+          setViewAllResources(false);
+        }}
       />
       {resources && resources.length > 0 && (
         <SearchHeader<MenuListDataItem>
@@ -197,13 +397,58 @@ export const AllResources: React.FC<AllResourcesprops> = ({
             selectedOptions={resourcesTypesFilter}
             onChange={setResourcesTypesFilter}
             placeholder={'Activities'}
+            info={{
+              name: `Filter by: Type`,
+            }}
             multiple={true}
+            color={'quatenary'}
+            preventCloseOnClick={true}
+          />
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            className={'mr-1'}
+            menuItemClassName={
+              'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+            }
+            overlayTopOffset={'3'}
+            options={SortByTypeOfData}
+            selectedOptions={dataTypeFilter}
+            onChange={setDataTypeFilter}
+            placeholder={'Data free'}
+            info={{
+              name: `Filter by: Data Free`,
+            }}
+            multiple={true}
+            color={'quatenary'}
+            preventCloseOnClick={true}
+          />
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            className={'mr-1'}
+            menuItemClassName={
+              'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+            }
+            overlayTopOffset={'3'}
+            options={SortByFilterOption}
+            selectedOptions={sortOptionFilter}
+            onChange={setsortOptionFilter}
+            placeholder={'Sort'}
+            info={{
+              name: `Sort by:`,
+            }}
+            multiple={false}
             color={'quatenary'}
             preventCloseOnClick={true}
           />
         </SearchHeader>
       )}
       <div className="p-4">
+        <Typography
+          type={'h2'}
+          text={resourceTypeItem}
+          color={'textDark'}
+          className="my-4"
+        />
         <StackedList
           className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
           type="MenuList"
@@ -211,10 +456,10 @@ export const AllResources: React.FC<AllResourcesprops> = ({
         />
         <Button
           onClick={() =>
-            resourcesIndex < resourcesSorted.length!
+            resourcesIndex < resourcesData.length!
               ? setResourcesIndex(
-                  resourcesIndex < resourcesSorted.length!
-                    ? resourcesIndex + resourcesSorted.length! - resourcesIndex
+                  resourcesIndex < resourcesData.length!
+                    ? resourcesIndex + resourcesData.length! - resourcesIndex
                     : resourcesIndex + 5
                 )
               : {}
@@ -226,7 +471,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
           type="outlined"
           icon={'EyeIcon'}
           text={'See more resources'}
-          disabled={resourcesIndex === resourcesSorted.length!}
+          disabled={resourcesIndex === resourcesData.length!}
         />
       </div>
     </div>

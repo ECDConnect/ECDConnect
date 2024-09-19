@@ -20,8 +20,8 @@ export const Resources = () => {
   );
   const [resources, setResources] = useState<any[]>([]);
   const [viewAllResources, setViewAllResources] = useState(false);
-  console.log({ resources });
-  console.log(ResourcesNames?.activities);
+  const [resourceTypeItem, setResourceTypeItem] = useState('');
+
   const activitiesResources = useMemo(
     () =>
       resources?.filter(
@@ -53,7 +53,7 @@ export const Resources = () => {
     const response = await new ResourcesService(
       userAuth?.auth_token!
     )?.getResources(locale, 'classroom', '', [], [], null, null);
-    console.log({ response });
+
     if (response) {
       setResources(response);
     }
@@ -61,6 +61,10 @@ export const Resources = () => {
 
   useEffect(() => {
     handleGetResources();
+  }, []);
+
+  const handleOpenResources = useCallback(() => {
+    setViewAllResources(true);
   }, []);
 
   const resourceItems: StackedListItemType[] = [];
@@ -71,7 +75,10 @@ export const Resources = () => {
       titleIcon: ResourcesIcons.activities,
       titleIconClassName: 'bg-quatenary text-white',
       classNames: 'bg-quatenaryBg',
-      onActionClick: () => {},
+      onActionClick: () => {
+        setResourceTypeItem(ResourcesNames.activities);
+        handleOpenResources();
+      },
     });
   }
 
@@ -81,7 +88,10 @@ export const Resources = () => {
       titleIcon: ResourcesIcons.stories,
       titleIconClassName: 'bg-secondary text-white',
       classNames: 'bg-secondaryAccent2',
-      onActionClick: () => {},
+      onActionClick: () => {
+        setResourceTypeItem(ResourcesNames.stories);
+        handleOpenResources();
+      },
     });
   }
 
@@ -91,7 +101,10 @@ export const Resources = () => {
       titleIcon: ResourcesIcons.teachingTips,
       titleIconClassName: 'bg-warning text-white',
       classNames: 'bg-warningBg',
-      onActionClick: () => {},
+      onActionClick: () => {
+        setResourceTypeItem(ResourcesNames.teachingTips);
+        handleOpenResources();
+      },
     });
   }
 
@@ -101,7 +114,10 @@ export const Resources = () => {
       titleIcon: ResourcesIcons.other,
       titleIconClassName: 'bg-successMain text-white',
       classNames: 'bg-successBg',
-      onActionClick: () => {},
+      onActionClick: () => {
+        setResourceTypeItem(ResourcesNames.other);
+        handleOpenResources();
+      },
     });
   }
   return (
@@ -136,6 +152,8 @@ export const Resources = () => {
         <AllResources
           resources={resources}
           setViewAllResources={setViewAllResources}
+          setResourceTypeItem={setResourceTypeItem}
+          resourceTypeItem={resourceTypeItem}
         />
       </Dialog>
     </div>
