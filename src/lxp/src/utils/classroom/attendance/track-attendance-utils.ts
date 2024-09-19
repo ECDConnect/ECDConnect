@@ -217,7 +217,10 @@ export const getMissedClassAttendance = (
             (att) =>
               att.attendanceDate &&
               att.classroomProgrammeId === programme.id &&
-              missedDayDate.getTime() === new Date(att.attendanceDate).getTime()
+              missedDayDate.getTime() ===
+                new Date(
+                  new Date(att.attendanceDate).setHours(0, 0, 0, 0)
+                ).getTime()
           )
         ) {
           returnProgrammes.push({ ...programme, missedDate: missedDayDate });
