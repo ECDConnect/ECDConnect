@@ -21,6 +21,7 @@ import { DialogPosition } from '@ecdlink/ui';
 import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateResourceForm from './create-resource-form';
+import { UpdateResourceTypesAndDataFree } from '@ecdlink/graphql';
 
 export interface ContentViewProps {
   content: any;
@@ -87,6 +88,9 @@ export default function CreateResource({
   const [createContent] = useMutation(createMutation);
   const [deleteContent, { loading: isLoadingDeleteContent }] =
     useMutation(deleteMutation);
+  const [saveResouceTypesAndDataFree] = useMutation(
+    UpdateResourceTypesAndDataFree
+  );
 
   const dialog = useDialog();
 
@@ -214,7 +218,6 @@ export default function CreateResource({
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
-    console.log('model', model);
 
     model.sectionType =
       choosedSectionTitle === ResourcesTitles.ClassroomResources
@@ -239,6 +242,16 @@ export default function CreateResource({
         },
       }).catch(() => {
         setLoading(false);
+      });
+
+      await saveResouceTypesAndDataFree({
+        variables: {
+          contentId: +content.id,
+          contentTypeId: +contentType.id,
+          localeId: selectedLanguageId.toString(),
+          resourceType: model.resourceType,
+          dataFree: model.dataFree,
+        },
       });
     }
 

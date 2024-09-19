@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux';
 import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import { cloneDeep } from '@apollo/client/utilities';
 import { useAppDispatch } from '@/store';
+import TransparentLayer from '../../../../assets/TransparentLayer.png';
 
 export const ShareSomeDetails = ({
   onNext,
@@ -79,7 +80,7 @@ export const ShareSomeDetails = ({
           onBack={() => setShareSomeDetails && setShareSomeDetails(false)}
           backgroundColour={'white'}
           className={'relative'}
-          backgroundUrl={theme?.images.graphicOverlayUrl}
+          backgroundUrl={TransparentLayer}
           // displayOffline={!isOnline}
         >
           <div className="flex flex-col gap-11">

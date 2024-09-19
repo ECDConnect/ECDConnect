@@ -1,3 +1,4 @@
+import { RecommendedActivity } from '@/hooks/useProgrammePlanningRecommendations';
 import { ActivityDto, DailyProgrammeDto, LanguageDto } from '@ecdlink/core';
 
 export const dummyThemes = [
@@ -9,6 +10,46 @@ export const dummyThemes = [
     themeDays: [],
   },
 ];
+
+export const dummyRecommendedActivity: RecommendedActivity = {
+  activity: {
+    id: 215,
+    name: 'Nature puzzle',
+    type: 'Small group',
+    subType: '',
+    image: '',
+    themes: [],
+    materials: 'Crayons, paper, puzzle pieces, lego blocks, pens, pencils',
+    description:
+      '<p>1. Give each child some wooden blocks and an animal </p><p>2. Ask them to balance all the blocks on top of each other to make a tower </p><p>3. They can make any type of tower they like </p><p>4. Talk about the shape of the tower and the shape of the block </p><p>5. Use words like ‘biggest, smallest, longest, shortest, widest’ etc. </p><p>6. Once they have balanced their blocks, ask them to balance an animal at the top of the tower </p><p>7. Ask them what their animals can see from the top of their tower</p>',
+    notes:
+      '<p>How can I extend learning? </p><p>Level 1: What shape is your tower? How many blocks have you used to make your tower? </p><p>Level 2: Whose tower is the tallest/ shortest / widest? What can your animal see from the top of their tower? </p><p>Level 3: How else can you build your tower? What if you combine your blocks with someone else – now what kind of tower can you build, now that you have double the blocks?</p>',
+    availableLanguages: [
+      {
+        id: '9688cd08-adef-408c-9d34-5d75ae5c44df',
+        description: 'English',
+      },
+    ] as LanguageDto[],
+    subCategories: [
+      {
+        id: 0,
+        imageUrl:
+          'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638618393267249329_imageUrl.png',
+        name: 'Social',
+        description: '',
+        skills: [],
+      },
+      {
+        id: 1,
+        imageUrl:
+          'https://ecdconnectstoragedev.blob.core.windows.net/content-image/638618397368582224_imageUrl.png',
+        name: 'Social',
+        description: '',
+        skills: [],
+      },
+    ],
+  },
+};
 
 export const dummyDailyProgramme: DailyProgrammeDto = {
   programmeId: '1',

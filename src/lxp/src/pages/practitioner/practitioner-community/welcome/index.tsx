@@ -35,6 +35,7 @@ import {
 } from '@/store/notifications';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationTagConfig } from '@/constants/notifications';
+import TransparentLayer from '../../../../assets/TransparentLayer.png';
 
 export const PractitionerCommunityWelcome: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -135,11 +136,7 @@ export const PractitionerCommunityWelcome: React.FC = () => {
       onClose={() => history.push(ROUTES.DASHBOARD)}
     >
       <div className="h-48 overflow-hidden">
-        <img
-          className="w-full"
-          alt="background"
-          src={theme?.images.graphicOverlayUrl}
-        />
+        <img className="w-full" alt="background" src={TransparentLayer} />
       </div>
       <div
         className="absolute  z-20 flex h-full flex-col overflow-auto p-4"

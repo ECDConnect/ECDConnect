@@ -56,6 +56,7 @@ import { useTenant } from '@/hooks/useTenant';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { formatAddress } from '@/components/address-map/address-map';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -412,7 +413,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         showBackground={true}
         size="medium"
         renderBorder={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         title={classroom?.name}
         color={'primary'}

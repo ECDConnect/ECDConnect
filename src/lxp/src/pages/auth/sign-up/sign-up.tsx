@@ -41,6 +41,7 @@ import { UserService } from '@/services/UserService';
 import { HelpForm } from '@/components/help-form/help-form';
 import ROUTES from '@/routes/routes';
 import { useTenant } from '@/hooks/useTenant';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -225,7 +226,7 @@ export const SignUp: React.FC = () => {
         return (
           <ActionModal
             className={'mx-4'}
-            title="Oops! AppName works best on Chrome or Firefox"
+            title={`Oops! ${appName} works best on Chrome or Firefox`}
             paragraphs={[
               `To download Chrome or Firefox, go to your phone's app store.`,
             ]}
@@ -267,7 +268,7 @@ export const SignUp: React.FC = () => {
       <BannerWrapper
         color={'primary'}
         showBackground={isWhitelabel ? false : true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
         size={'signup'}

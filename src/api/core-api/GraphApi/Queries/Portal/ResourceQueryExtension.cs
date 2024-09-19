@@ -1,9 +1,19 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Attributes;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -183,6 +193,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             }
 
             return resourceData;
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public UserResourceLikes GetResourceLikedStatusForUser(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            int contentId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var userResourceLikesRepo = repoFactory.CreateRepository<UserResourceLikes>();
+            return userResourceLikesRepo.GetByUserId(uId);
         }
     }
 }

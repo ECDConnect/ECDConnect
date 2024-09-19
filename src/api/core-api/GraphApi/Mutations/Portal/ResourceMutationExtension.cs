@@ -4,12 +4,17 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Calendar;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -105,6 +110,123 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        public bool UpdateResourceTypesAndDataFree(
+            [Service] ContentManagementRepository contentRepo,
+            int contentId,
+            int contentTypeId,
+            string resourceType,
+            string dataFree,
+            Guid localeId)
+        {
+            if (contentId == 0)
+            {
+                return false;
+            }
+
+            var allLanguages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            foreach (var languageId in allLanguages)
+            {
+                if (languageId != localeId)
+                {
+                    Dictionary<string, object> connectDict = new Dictionary<string, object>
+                    {
+                        { "resourceType", resourceType},
+                        { "dataFree", dataFree }
+                    };
+
+                    contentRepo.Update(contentId, languageId, connectDict);
+                }
+            }
+            return true;
+        }
+
+
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
+        public bool UpdateResourceLikes(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] ContentManagementRepository contentRepo,
+            int contentId,
+            int contentTypeId,
+            bool liked)
+        {
+            if (contentId == 0)
+            {
+                return false;
+            }
+
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var userResourceLikesRepo = repoFactory.CreateRepository<UserResourceLikes>();
+            var userResource = userResourceLikesRepo.GetAll().Where(x => x.UserId == uId && x.ContentId == contentId).FirstOrDefault();
+            if (liked)
+            {
+                if (userResource == null)
+                {
+                    userResourceLikesRepo.Insert(new UserResourceLikes()
+                    {
+                        UserId = uId,
+                        ContentId = contentId
+                    });
+                } else
+                {
+                    userResource.IsActive = true;
+                    userResourceLikesRepo.Update(userResource);
+                }
+            }
+            else
+            {
+                if (userResource != null)
+                {
+                    userResourceLikesRepo.Delete(userResource.Id);
+                }
+            }
+            
+            var allLanguages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            foreach (var languageId in allLanguages)
+            {
+                var resourceData = contentRepo.GetById(contentId, languageId);
+
+                var item = (IDictionary<string, object>)resourceData;
+                item.TryGetValue("numberLikes", out var numberLikes);
+
+                if (string.IsNullOrEmpty(numberLikes.ToString()))
+                {
+                    if (liked)
+                    {
+                        Dictionary<string, object> connectDict = new Dictionary<string, object>
+                        {
+                            { "numberLikes", 1},
+                        };
+                        contentRepo.Update(contentId, languageId, connectDict);
+                    }
+                }
+                else
+                {
+                    var numLikes = int.Parse(numberLikes.ToString());
+                    if (liked)
+                    {
+                        numLikes++;
+                    }
+                    else
+                    {
+                        if (numLikes > 0)
+                        {
+                            numLikes--;
+                        }
+                    }
+
+                    Dictionary<string, object> connectDict = new Dictionary<string, object>
+                    {
+                        { "numberLikes", numLikes},
+                    };
+                    contentRepo.Update(contentId, languageId, connectDict);
+                }
+            }
+
+            return true;
+;
+        }
 
     }
 }

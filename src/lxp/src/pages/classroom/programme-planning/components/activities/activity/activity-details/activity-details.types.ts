@@ -1,3 +1,5 @@
+import { LanguageDto } from '@ecdlink/core';
+
 export type ActivityDetailsProps = {
   activityId: number;
   isSelected: boolean;
@@ -5,4 +7,5 @@ export type ActivityDetailsProps = {
   onActivitySelected: () => void;
   onActivityChanged: () => void;
   onBack: () => void;
+  availableLanguages?: LanguageDto[];
 };

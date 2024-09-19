@@ -50,6 +50,7 @@ import { PractitionerNotAccepted } from './practitioner-not-accepted/practitione
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
+import TransparentLayer from '../../../../../assets/TransparentLayer.png';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -335,7 +336,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
       <div className={styles.contentWrapper}>
         <BannerWrapper
           showBackground={true}
-          backgroundUrl={theme?.images.graphicOverlayUrl}
+          backgroundUrl={TransparentLayer}
           title={`${practitioner?.user?.firstName}'s Profile`}
           color={'primary'}
           size="medium"

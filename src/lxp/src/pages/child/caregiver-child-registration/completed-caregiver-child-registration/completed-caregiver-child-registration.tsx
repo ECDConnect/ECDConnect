@@ -9,6 +9,7 @@ import {
 import { ContactPerson } from '../../../../components/contact-person/contact-person';
 import { ChildRegistrationDetails } from '../caregiver-child-registration.types';
 import { ReactComponent as Balloons } from '@/assets/balloons_bg_blue.svg';
+import TransparentLayer from '../../../../assets/TransparentLayer.png';
 
 export interface CompletedCaregiverChildRegistrationProps
   extends ComponentBaseProps {
@@ -24,7 +25,8 @@ export const CompletedCaregiverChildRegistration: React.FC<
     <BannerWrapper
       size="large"
       showBackground={true}
-      backgroundUrl={theme.theme?.images.graphicOverlayUrl}
+      backgroundUrl={TransparentLayer}
+      backgroundImageColour={'primary'}
       className="p-4"
       renderOverflow
       titleOverrideRender={() => (
