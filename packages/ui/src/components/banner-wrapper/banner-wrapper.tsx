@@ -124,11 +124,12 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
             />
           )}
         </div>
-        <div className={styles.titleWrapper}>
-          {titleOverrideRender && titleOverrideRender()}
-          {!titleOverrideRender &&
-            (title ? (
-              subTitle ? (
+
+        {titleOverrideRender && titleOverrideRender()}
+        {!titleOverrideRender &&
+          (title ? (
+            subTitle ? (
+              <div className={styles.titleWrapper}>
                 <div className={styles.titleSubWrapper}>
                   <Typography
                     type="h4"
@@ -142,18 +143,20 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
                     color={'primaryAccent2'}
                   />
                 </div>
-              ) : (
+              </div>
+            ) : (
+              <div className={styles.titleWrapper}>
                 <Typography
                   type="h4"
                   text={title}
                   color={'white'}
                   className="w-full overflow-auto truncate"
                 />
-              )
-            ) : (
-              <div className={styles.logo}></div>
-            ))}
-        </div>
+              </div>
+            )
+          ) : (
+            <div className={styles.logo}></div>
+          ))}
         <div className={styles.iconWrapperRight}>
           {onClose && (
             <XIcon

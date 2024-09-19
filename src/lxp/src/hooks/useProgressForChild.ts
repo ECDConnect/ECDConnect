@@ -53,52 +53,30 @@ export const useProgressForChild = (childId: string) => {
   // Sets up reports, adding details for reporting period, skill names (for locale) etc
   const detailedReports = useMemo<ChildProgressDetailedReport[]>(() => {
     // Filter out incomplete reports from past reporting periods
-    const details = allReports
-      .filter(
-        (report) =>
-          !!report.dateCompleted ||
-          report.childProgressReportPeriodId === currentReportingPeriod?.id
-      )
-      .map((report) => {
-        const reportingPeriod = allReportingPeriods.find(
-          (x) => x.id === report.childProgressReportPeriodId
-        );
+    const details = allReports.map((report) => {
+      const reportingPeriod = allReportingPeriods.find(
+        (x) => x.id === report.childProgressReportPeriodId
+      );
 
-        const missedSkillCount =
-          skillsForAgeGroup.length - report.skillObservations.length;
-        const doNotKnowSkillCount = report.skillObservations.filter(
-          (x) => x.value === ProgressSkillValues.DoNotKnow
-        ).length;
-        const doNotKnowPercentage =
-          ((missedSkillCount + doNotKnowSkillCount) /
-            report.skillObservations.length) *
-          100;
+      const missedSkillCount =
+        skillsForAgeGroup.length - report.skillObservations.length;
+      const doNotKnowSkillCount = report.skillObservations.filter(
+        (x) => x.value === ProgressSkillValues.DoNotKnow
+      ).length;
+      const doNotKnowPercentage =
+        ((missedSkillCount + doNotKnowSkillCount) /
+          report.skillObservations.length) *
+        100;
 
-        return {
-          ...report,
-          unknownPercentage: doNotKnowPercentage,
-          unknownCount: missedSkillCount + doNotKnowSkillCount,
-          skillsToWorkOn: report.skillsToWorkOn
-            .map((skillToWorkOn) => {
-              const skill = allSkills.find(
-                (x) => x.id === skillToWorkOn.skillId
-              );
-              return {
-                ...skillToWorkOn,
-                skillName: baseReplaceSkillText(
-                  skill?.name || '',
-                  child?.user?.firstName || ''
-                ),
-                skillDescription: skill?.description || '',
-                subCategoryId: skill?.subCategory.id || 0,
-                categoryId: skill?.subCategory.category.id || 0,
-              };
-            })
-            .sort((a, b) => a.skillId - b.skillId),
-          skillObservations: report.skillObservations.map((skillObs) => {
-            const skill = allSkills.find((x) => x.id === skillObs.skillId);
+      return {
+        ...report,
+        unknownPercentage: doNotKnowPercentage,
+        unknownCount: missedSkillCount + doNotKnowSkillCount,
+        skillsToWorkOn: report.skillsToWorkOn
+          .map((skillToWorkOn) => {
+            const skill = allSkills.find((x) => x.id === skillToWorkOn.skillId);
             return {
-              ...skillObs,
+              ...skillToWorkOn,
               skillName: baseReplaceSkillText(
                 skill?.name || '',
                 child?.user?.firstName || ''
@@ -106,31 +84,45 @@ export const useProgressForChild = (childId: string) => {
               skillDescription: skill?.description || '',
               subCategoryId: skill?.subCategory.id || 0,
               categoryId: skill?.subCategory.category.id || 0,
-              isPositive:
-                !!skillObs.value &&
-                ((!skill?.isReverseScored &&
-                  skillObs.value === ProgressSkillValues.Yes) ||
-                  (!!skill?.isReverseScored &&
-                    skillObs.value === ProgressSkillValues.No)),
-              isNegative:
-                !!skillObs.value &&
-                ((!skill?.isReverseScored &&
-                  skillObs.value === ProgressSkillValues.No) ||
-                  (!!skill?.isReverseScored &&
-                    skillObs.value === ProgressSkillValues.Yes)),
             };
-          }),
-          reportingPeriodStartDate: reportingPeriod!.startDate,
-          reportingPeriodEndDate: reportingPeriod!.endDate,
-          reportingPeriodNumber: reportingPeriod!.reportNumber,
-          ageInMonthsAtReport: !!child?.user?.dateOfBirth
-            ? differenceInMonths(
-                new Date(reportingPeriod!.endDate),
-                new Date(child.user.dateOfBirth)
-              )
-            : undefined,
-        };
-      });
+          })
+          .sort((a, b) => a.skillId - b.skillId),
+        skillObservations: report.skillObservations.map((skillObs) => {
+          const skill = allSkills.find((x) => x.id === skillObs.skillId);
+          return {
+            ...skillObs,
+            skillName: baseReplaceSkillText(
+              skill?.name || '',
+              child?.user?.firstName || ''
+            ),
+            skillDescription: skill?.description || '',
+            subCategoryId: skill?.subCategory.id || 0,
+            categoryId: skill?.subCategory.category.id || 0,
+            isPositive:
+              !!skillObs.value &&
+              ((!skill?.isReverseScored &&
+                skillObs.value === ProgressSkillValues.Yes) ||
+                (!!skill?.isReverseScored &&
+                  skillObs.value === ProgressSkillValues.No)),
+            isNegative:
+              !!skillObs.value &&
+              ((!skill?.isReverseScored &&
+                skillObs.value === ProgressSkillValues.No) ||
+                (!!skill?.isReverseScored &&
+                  skillObs.value === ProgressSkillValues.Yes)),
+          };
+        }),
+        reportingPeriodStartDate: reportingPeriod!.startDate,
+        reportingPeriodEndDate: reportingPeriod!.endDate,
+        reportingPeriodNumber: reportingPeriod!.reportNumber,
+        ageInMonthsAtReport: !!child?.user?.dateOfBirth
+          ? differenceInMonths(
+              new Date(reportingPeriod!.endDate),
+              new Date(child.user.dateOfBirth)
+            )
+          : undefined,
+      };
+    });
 
     return details;
   }, [allReports, allReportingPeriods, currentReportingPeriod]);

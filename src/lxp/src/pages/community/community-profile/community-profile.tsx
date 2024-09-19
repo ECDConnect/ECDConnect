@@ -24,6 +24,8 @@ import { EditCommunitySkills } from './components/edit-community-skills/edit-com
 import { CommunityBasicInfo } from './components/community-basic-info/community-basic-info';
 import { BasicInfoItems } from '../community.types';
 import ROUTES from '@/routes/routes';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
+
 export interface CommunityProfileRouteState {
   isFromAddMoreDetails: boolean;
 }
@@ -75,7 +77,7 @@ export const CommunityProfile = () => {
         showBackground={true}
         size="medium"
         renderBorder={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         title={user?.fullName}
         color={'primary'}

@@ -24,6 +24,7 @@ import { userSelectors } from '@store/user';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { PractitionerService } from '@/services/PractitionerService';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const CoachProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -209,7 +210,7 @@ export const CoachProgrammeInformation: React.FC = () => {
     <div className={styles.contentWrapper}>
       <BannerWrapper
         showBackground={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         title={'Preschool'}
         subTitle={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
         color={'primary'}

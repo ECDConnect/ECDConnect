@@ -57,6 +57,7 @@ import { PractitionerDelicensed } from './practitioner-delicensed/practitioner-d
 import { authSelectors } from '@/store/auth';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -501,7 +502,8 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         <div className={styles.contentWrapper}>
           <BannerWrapper
             showBackground={true}
-            backgroundUrl={theme?.images.graphicOverlayUrl}
+            backgroundUrl={TransparentLayer}
+            backgroundImageColour={'primary'}
             title={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
             color={'primary'}
             size="medium"

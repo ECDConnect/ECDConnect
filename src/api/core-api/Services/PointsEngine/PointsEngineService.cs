@@ -502,11 +502,13 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var today = DateTime.Now;
 
-                var learnerCount = _classroomGroupRepo
+                var learnerCount = _childRepo
                                     .GetAll()
-                                    .Where(x => x.IsActive && x.Classroom.UserId == userId)
-                                    .SelectMany(x => x.Learners)
-                                    .Where(x => x.IsActive && !x.StoppedAttendance.HasValue && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month)
+                                    .Where(x => x.IsActive 
+                                            && x.Hierarchy.Contains(practitioner.Hierarchy) 
+                                            && x.WorkflowStatusId == Constants.WorkflowStatus.ActiveId
+                                            && x.UpdatedDate.Year == today.Year
+                                            && x.UpdatedDate.Month == today.Month)
                                     .Count();
 
                 if (learnerCount > 0)
