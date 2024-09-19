@@ -113,7 +113,7 @@ const ProgrammeTiming: React.FC = () => {
       render: (onClose) => (
         <ActionModal
           customIcon={<Robot className="mb-3 h-24 w-24" />}
-          title={`Great, I have set up your ${selectedTheme.name} programme!`}
+          title={`Great, I have set up your ${selectedTheme?.name} programme!`}
           detailText={`All your activities have been planned for ${getDateRangeText(
             selectedDate?.toString(),
             endDate?.toString()
@@ -147,7 +147,7 @@ const ProgrammeTiming: React.FC = () => {
     endDate,
     history,
     selectedDate,
-    selectedTheme.name,
+    selectedTheme,
     state.classroomGroupId,
   ]);
 
@@ -254,7 +254,7 @@ const ProgrammeTiming: React.FC = () => {
       size="medium"
       renderBorder={true}
       title={'Choose dates and language'}
-      subTitle={`Theme: ${selectedTheme.name}`}
+      subTitle={`Theme: ${selectedTheme?.name}`}
       color={'primary'}
       onBack={handleBack}
       displayOffline={!isOnline}
@@ -273,7 +273,7 @@ const ProgrammeTiming: React.FC = () => {
       <>
         <div className="mt-3 flex items-center gap-2">
           <img
-            src={selectedTheme.imageUrl}
+            src={selectedTheme?.imageUrl}
             alt="Theme icon"
             className="w-9 rounded-full"
           />

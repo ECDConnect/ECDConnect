@@ -230,13 +230,13 @@ export const ProgrammeDashboard: React.FC = () => {
     }
   }, [
     classroomGroupId,
-    dailyProgrammesUnplanned,
     dialog,
     hasPermissionToEdit,
     history,
     isWholeWeekPlanned,
     previousSelectedDate,
     selectedDate,
+    tomorrowUnplannedActivity,
     user?.firstName,
   ]);
 
