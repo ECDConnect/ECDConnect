@@ -72,7 +72,6 @@ import {
 import { practitionerSelectors } from '@/store/practitioner';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
-import { useTenantModules } from '@/hooks/useTenantModules';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -87,8 +86,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     setState({ stepIndex: stepNr });
   };
   const isWalkthrough = state?.run;
-
-  const { classroomActivitiesEnabled } = useTenantModules();
 
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -464,7 +461,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   useEffect(() => {
     // Celebrate message
     if (plannedWeeksCount > 1) {
-      if (classroomActivitiesEnabled) {
+      if (hasPermissionToPlanClassroomActivities) {
         setCelebrateMessage(
           `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
         );
@@ -496,7 +493,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       }
     }
   }, [
-    classroomActivitiesEnabled,
+    hasPermissionToPlanClassroomActivities,
     improveProgrammeMessage,
     isWholeWeekPlanned,
     plannedActivities,
