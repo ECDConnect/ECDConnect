@@ -1,5 +1,5 @@
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
-import { addDays, isAfter, isSameDay, isSameWeek, isToday } from 'date-fns';
+import { format, isSameDay, isSameWeek } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import { programmeSelectors } from '@store/programme';
@@ -163,13 +163,18 @@ export const ProgrammeDashboard: React.FC = () => {
     setTimeout(() => setShowReport(false), 600);
   }, [setShowReport, toPDF]);
 
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const tomorrowUnplannedActivity = dailyProgrammesUnplanned.find(
+    (x) => format(x.date, 'EEEE, d LLLL') === format(tomorrow, 'EEEE, d LLLL')
+  );
+
   const showStartPlanning = useCallback(() => {
     if (
       hasPermissionToEdit &&
       !isWholeWeekPlanned &&
-      dailyProgrammesUnplanned.every(
-        (day) => isToday(day.date) || isAfter(day.date, new Date())
-      ) &&
+      tomorrowUnplannedActivity &&
       (!previousSelectedDate || !isSameWeek(selectedDate, previousSelectedDate))
     ) {
       dialog({
@@ -227,6 +232,7 @@ export const ProgrammeDashboard: React.FC = () => {
     classroomGroupId,
     dailyProgrammesUnplanned,
     dialog,
+    hasPermissionToEdit,
     history,
     isWholeWeekPlanned,
     previousSelectedDate,
