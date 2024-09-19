@@ -174,9 +174,14 @@ export const getMissedClassAttendance = (
       programmes: classProgrammesUpToCurrentDay?.filter(
         // Filter programmes that occur on the same day of the week as the current day
         // and whose start date is before or on the current day
-        (programme) =>
-          programme.meetingDay === day.dayOfWeek &&
-          new Date(programme.programmeStartDate).getTime() <= day.date.getTime()
+        (programme) => {
+          const checkEndOfDay = new Date(day.date.setHours(23, 59, 59));
+          return (
+            programme.meetingDay === day.dayOfWeek &&
+            new Date(programme.programmeStartDate).getTime() <=
+              checkEndOfDay.getTime()
+          );
+        }
       ),
     }))
     // Filter out days that don't have any programmes
