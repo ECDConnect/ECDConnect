@@ -23,6 +23,7 @@ import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useEffect, useState } from 'react';
 import { ConnectionContactDetails } from './connection-contact-details/connection-contact-details';
 import { AcceptRejectCommunityRequestsInputModelInput } from '@ecdlink/graphql';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const ConnectionProfile = () => {
   const { isOnline } = useOnlineStatus();
@@ -311,7 +312,7 @@ export const ConnectionProfile = () => {
         showBackground={true}
         size="medium"
         renderBorder={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         title={communityProfile?.communityUser?.fullName}
         color={'primary'}

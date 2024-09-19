@@ -73,12 +73,14 @@ ion-content {
 
 .bg-bannerx2 {
   background-repeat: no-repeat !important;
-  background-size: contain !important;
+  background-size: cover !important;
+  background-position: center;
 }
 
 .bg-logo {
   background-repeat: no-repeat !important;
   background-size: contain !important;
+  background-position: center;
 }
 
 .mirrored {

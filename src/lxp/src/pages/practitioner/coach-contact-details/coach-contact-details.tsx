@@ -18,6 +18,7 @@ import * as styles from './coach-contact-details.styles';
 import { useTheme } from '@ecdlink/core';
 import { CoachFeedback } from '@/pages/community/community-tabs/components/community-dashboard/components/community-coach-profile/components/coach-feedback/coach-feedback';
 import { useState } from 'react';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const CoachContactDetails: React.FC = () => {
   const history = useHistory();
@@ -42,7 +43,8 @@ export const CoachContactDetails: React.FC = () => {
     <div className={styles.contentWrapper}>
       <BannerWrapper
         showBackground={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
+        backgroundImageColour={'primary'}
         title={`${coach?.user?.firstName} ${coach?.user?.surname}`}
         color={'primary'}
         size="medium"

@@ -49,7 +49,9 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
       <BannerWrapper
         size={'small'}
         title={`Child progress summary`}
-        onBack={() => history.goBack()}
+        onBack={() =>
+          history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 })
+        }
       >
         <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>
           {/* SELECT CLASSROOM GROUP */}
@@ -130,6 +132,7 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
             text={'Next'}
             icon={'ArrowCircleRightIcon'}
             textColor="white"
+            disabled={step === 1 ? !selectedClassroomGroup : !selectedAgeGroup}
           />
         </div>
       </BannerWrapper>

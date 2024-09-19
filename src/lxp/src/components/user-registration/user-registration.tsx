@@ -7,12 +7,12 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import facebookLogo from '../../assets/icon/facebook_white.svg';
+
 import { useState } from 'react';
 import { CreateUserForm } from './components/create-user-form/create-user-form';
-import { useTenant } from '@/hooks/useTenant';
 import { useHistory, useLocation } from 'react-router';
 import { useTheme } from '@ecdlink/core';
+import TransparentLayer from '../../assets/TransparentLayer.png';
 
 interface UserRegistrationProps {
   closeAction?: (item: boolean) => void;
@@ -40,7 +40,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
       onBack={() => history?.goBack()}
       color="primary"
       className={'h-screen'}
-      backgroundUrl={theme?.images.graphicOverlayUrl}
+      backgroundUrl={TransparentLayer}
       displayOffline={!isOnline}
     >
       <div className="p-4">

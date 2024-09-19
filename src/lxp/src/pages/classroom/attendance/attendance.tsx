@@ -18,7 +18,6 @@ import {
   classroomGroupHasAttendanceDate,
   getClassroomGroupSchoolDays,
   getMissedAttendanceSummaryGroups,
-  isValidAttendableDate,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { AttendanceComponentType } from './attendance.types';
@@ -161,12 +160,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         getDay(currentDate)
       );
     });
-
-    const isValidDayForAttendance = isValidAttendableDate(
-      currentDate,
-      meetingDays || [],
-      publicHolidays || []
-    );
 
     //weekend check
     if (!currentDayClassroomGroup && missedDays.length === 0) {

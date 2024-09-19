@@ -292,7 +292,6 @@ export const SettingsTheme: React.FC<SettingsThemeProps> = ({
       };
 
       const themeString = JSON.stringify(themeInputModel);
-      console.log(themeString);
       await updateTheme({
         variables: {
           input: themeString,

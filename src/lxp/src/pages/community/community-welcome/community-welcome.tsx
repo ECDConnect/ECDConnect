@@ -30,6 +30,7 @@ import { CommunityProfileInputModelInput } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import { AddPhotoDialog } from './components/add-photo-dialog';
 import { userSelectors } from '@/store/user';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const NewCommunityWelcome = ({
   setJoinCommunity,
@@ -194,7 +195,7 @@ export const NewCommunityWelcome = ({
         onClose={() => history?.push(ROUTES.DASHBOARD)}
         backgroundColour={'white'}
         className={'relative'}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         displayOffline={!isOnline}
       >
         {renderStep(step)}
