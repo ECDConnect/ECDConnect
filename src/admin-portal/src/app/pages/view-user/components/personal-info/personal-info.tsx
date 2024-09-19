@@ -292,7 +292,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       idNumber: chwDataForm?.idNumber,
       phoneNumber: chwDataForm?.phoneNumber,
       email: adminDataForm?.email,
-      userName: chwDataForm?.idNumber,
+      userName: chwDataForm?.userName,
       firstName: chwDataForm?.firstName,
       surname: chwDataForm?.surname,
     };

@@ -19,4 +19,5 @@ export interface TenantDto extends EntityBase {
   } | null;
   googleAnalyticsTag: string;
   googleTagManager: string;
+  blobStorageAddress: string;
 }

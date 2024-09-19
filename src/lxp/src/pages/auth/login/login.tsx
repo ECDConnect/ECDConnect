@@ -32,6 +32,8 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { syncThunkActions } from '@/store/sync';
 import { userThunkActions } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
+import { useTenant } from '@/hooks/useTenant';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -49,6 +51,7 @@ export const Login: React.FC = () => {
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
   const [incorrectBrowser, setIncorrectBrowser] = useState(false);
+  const tenant = useTenant();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
@@ -202,7 +205,7 @@ export const Login: React.FC = () => {
         return (
           <ActionModal
             className={'mx-4'}
-            title="Oops! AppName works best on Chrome or Firefox"
+            title={`Oops! ${tenant?.tenant?.applicationName} works best on Chrome or Firefox`}
             paragraphs={[
               `To download Chrome or Firefox, go to your phone's app store.`,
             ]}
@@ -242,7 +245,7 @@ export const Login: React.FC = () => {
   return (
     <BannerWrapper
       showBackground={true}
-      backgroundUrl={theme?.images?.graphicOverlayUrl}
+      backgroundUrl={TransparentLayer}
       backgroundImageColour={'primary'}
       color="primary"
       size="sub-normal"

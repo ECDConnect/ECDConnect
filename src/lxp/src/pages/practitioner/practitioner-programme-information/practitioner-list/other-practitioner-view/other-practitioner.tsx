@@ -13,6 +13,7 @@ import { formatPhonenumberInternational } from '@utils/common/contact-details.ut
 import { PractitionerProfileRouteState } from './other-colleagues.types';
 import * as styles from './other-colleagues.styles';
 import { useTheme } from '@ecdlink/core';
+import TransparentLayer from '../../../../../assets/TransparentLayer.png';
 
 export const OtherPractitionerProfile: React.FC<
   PractitionerProfileRouteState
@@ -45,7 +46,7 @@ export const OtherPractitionerProfile: React.FC<
       displayOffline={!isOnline}
       backgroundImageColour={'primary'}
       showBackground={true}
-      backgroundUrl={theme?.images.graphicOverlayUrl}
+      backgroundUrl={TransparentLayer}
       className="px-4"
     >
       <div className={'inline-flex w-full justify-center pt-8'}>

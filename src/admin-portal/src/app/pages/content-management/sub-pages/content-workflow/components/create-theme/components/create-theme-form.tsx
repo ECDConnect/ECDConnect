@@ -108,6 +108,8 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [template]);
 
+  console.log('fields', fields);
+
   const renderFields = useCallback(
     (fields: FormTemplateField[]) => {
       const isEdit = fields.some((f) => !!f.contentValue);
@@ -253,7 +255,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                     returnFullUrl={true}
                     setValue={setValue}
                     allowedFileSize={allowedFileSize}
-                    isThemeFormFile={true}
+                    isThemeFormFile={propName === 'themeLogo' ? false : true}
                   />
                 </div>
               </div>

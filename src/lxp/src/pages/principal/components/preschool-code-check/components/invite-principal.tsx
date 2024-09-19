@@ -27,6 +27,7 @@ import { FieldError } from 'react-hook-form';
 import { useAppDispatch } from '@/store';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { useTenant } from '@/hooks/useTenant';
+import TransparentLayer from '../../../../../assets/TransparentLayer.png';
 
 export const InvitePrincipal: React.FC<{
   onNext: OnNext;
@@ -104,7 +105,7 @@ export const InvitePrincipal: React.FC<{
         subTitle={'Step 1 of 2'}
         displayOffline={!isOnline}
         className={'relative'}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         size={'large'}
         renderBorder={true}
         showBackground={true}

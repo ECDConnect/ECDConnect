@@ -49,9 +49,15 @@ export default function ProgrammeWrapper() {
   }, [i18n, previousLanguage, previousStepIndex, stepIndex]);
 
   const disableNextButton =
-    stepIndex === 0 || stepIndex === 1 || stepIndex === 4;
+    stepIndex === 0 ||
+    stepIndex === 1 ||
+    stepIndex === 4 ||
+    stepIndex === 6 ||
+    stepIndex === 7 ||
+    stepIndex === 8;
 
   const steps: StepType[] = [
+    // 0
     {
       target: '#walkthrough-start',
       content: t('Tap here to add at a theme!'),
@@ -59,10 +65,8 @@ export default function ProgrammeWrapper() {
       offset: 10,
       disableBeacon: true,
       disableOverlay: false,
-      // spotlightClicks: false,
-      // disableOverlayClose: false,
-      // disableCloseOnEsc: false,
     },
+    // 1
     {
       target: '#walkthrough-nature-theme',
       content: t("I'll show you an example - tap the Nature theme"),
@@ -71,6 +75,7 @@ export default function ProgrammeWrapper() {
       disableBeacon: true,
       disableOverlay: false,
     },
+    // 2
     {
       target: '#walkthrough-theme-timing',
       content: t('You can choose a start date and end date for this theme.'),
@@ -79,6 +84,7 @@ export default function ProgrammeWrapper() {
       disableBeacon: true,
       disableOverlay: false,
     },
+    // 3
     {
       target: '#walkthrough-classroom-language',
       content: t(
@@ -89,6 +95,7 @@ export default function ProgrammeWrapper() {
       disableBeacon: true,
       disableOverlay: false,
     },
+    // 4
     {
       target: '#walkthrough-plan-activity',
       content: t(
@@ -99,6 +106,7 @@ export default function ProgrammeWrapper() {
       disableBeacon: true,
       disableOverlay: false,
     },
+    // 5
     {
       target: '#walkthrough-activity-detail',
       content: t(
@@ -109,6 +117,7 @@ export default function ProgrammeWrapper() {
       disableBeacon: true,
       disableOverlay: false,
     },
+    // 6
     {
       target: '#walkthrough-add-activity',
       content: t(
@@ -118,9 +127,30 @@ export default function ProgrammeWrapper() {
       offset: 10,
       disableBeacon: true,
       disableOverlay: false,
-      disableOverlayClose: true,
-      disableCloseOnEsc: true,
     },
+    // 7
+    // new start
+    {
+      target: '#walkthrough-small-group-activity',
+      content: t('Tap the box to choose the activity'),
+      placement: 'auto',
+      offset: 10,
+      disableBeacon: true,
+      disableOverlay: false,
+    },
+    // 8
+    {
+      target: '#walkthrough-small-group-activity-learn',
+      content: t(
+        'Great! Now the activity is selected. When you want to learn more about an activity, you can tap the blue “i” icon.'
+      ),
+      placement: 'auto',
+      offset: 10,
+      disableBeacon: true,
+      disableOverlay: false,
+    },
+    // new end
+    // 9
     {
       target: '#walkthrough-last-step',
       content: t("Great, you're ready to start!"),
@@ -196,7 +226,7 @@ export default function ProgrammeWrapper() {
       setState({ run: true, stepIndex: 3 });
     } else if (type === 'step:after' && index === 3) {
       setState({ run: true, stepIndex: 4 });
-      // redirect back to activities page
+      // redirect back to activities page'
       history.push(ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT);
     } else if (type === 'step:after' && index === 4) {
       setState({ run: true, stepIndex: 5 });
@@ -211,6 +241,10 @@ export default function ProgrammeWrapper() {
     } else if (type === 'step:after' && index === 6) {
       setState({ run: true, stepIndex: 7 });
     } else if (type === 'step:after' && index === 7) {
+      setState({ run: true, stepIndex: 8 });
+    } else if (type === 'step:after' && index === 8) {
+      setState({ run: true, stepIndex: 9 });
+    } else if (type === 'step:after' && index === 9) {
       setState({ run: false, stepIndex: 0, tourActive: false });
       window.sessionStorage.removeItem('i18nLanguage');
       history.push(ROUTES.CLASSROOM.ROOT, {
@@ -234,10 +268,10 @@ export default function ProgrammeWrapper() {
         disableOverlayClose
         styles={{
           options: {
-            arrowColor: stepIndex === 7 ? 'transparent' : 'white',
+            arrowColor: stepIndex === 9 ? 'transparent' : 'white',
           },
           spotlight:
-            stepIndex === 7
+            stepIndex === 9
               ? {}
               : {
                   borderWidth: 4,

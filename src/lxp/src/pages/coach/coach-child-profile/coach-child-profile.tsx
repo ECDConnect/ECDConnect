@@ -55,6 +55,7 @@ import {
   progressTrackingActions,
   progressTrackingSelectors,
 } from '@/store/progress-tracking';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const CoachChildProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -343,7 +344,7 @@ export const CoachChildProfile: React.FC = () => {
     <div className={styles.contentWrapper}>
       <BannerWrapper
         showBackground={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         title={`${child?.user?.firstName} ${child?.user?.surname}’s Profile`}
         color={'primary'}
         size="medium"

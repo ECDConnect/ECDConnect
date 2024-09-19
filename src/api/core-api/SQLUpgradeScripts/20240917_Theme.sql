@@ -1,0 +1,2 @@
+INSERT INTO "ContentTypeField" ("Id","FieldOrder","FieldName","FieldTypeId","IsActive","DataLinkName","ContentTypeId","InsertedDate","UpdatedDate","UpdatedBy","TenantId","DisplayName","DisplayMainTable","DisplayPage","IsRequired") VALUES
+(nextval('public."ContentTypeField_Id_seq"'),7,'themeLogo',3,true,'',8,current_date,current_date,NULL,NULL,'Theme logo',false,true,true);

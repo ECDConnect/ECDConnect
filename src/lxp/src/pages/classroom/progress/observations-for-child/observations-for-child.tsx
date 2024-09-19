@@ -61,13 +61,15 @@ export const ObservationsForChild: React.FC = () => {
       ? Math.ceil(
           currentObservations.findIndex(
             (x) => x.id === routeState.jumpToSkillId
-          ) || 1 / 5
+          ) / 5 || 1 / 5
         )
       : 1
   );
 
   const negativeSkills =
-    currentReport?.skillObservations.filter((x) => x.isNegative) || [];
+    currentReport?.skillObservations.filter(
+      (x) => x.isNegative || !x?.isPositive
+    ) || [];
 
   const skillsToChoose = negativeSkills.length < 4 ? negativeSkills.length : 4;
 

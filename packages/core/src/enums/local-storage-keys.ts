@@ -23,4 +23,5 @@ export enum LocalStorageKeys {
   practitionerInvitedPrincipalUserId = 'practitionerInvitedPrincipalUserId',
   firstTimeOnCommunityDashboard = 'firstTimeOnCommunityDashboard',
   classroomForInvitedUser = 'classroomForInvitedUser',
+  hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod = 'hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod',
 }
