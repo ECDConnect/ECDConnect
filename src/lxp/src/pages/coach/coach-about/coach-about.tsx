@@ -50,6 +50,7 @@ import { usePrevious } from 'react-use';
 import { BackToCommunityDialog } from './components/back-to-community-dialog/indext';
 import { VerifyPhoneNumberAuthCode } from '@/components/user-registration/components/verify-phone-number';
 import { AuthService } from '@/services/AuthService';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const CoachAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
@@ -397,7 +398,7 @@ export const CoachAbout: React.FC = () => {
     <div className={styles.container}>
       <BannerWrapper
         showBackground={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         title={'About me'}
         color={'primary'}

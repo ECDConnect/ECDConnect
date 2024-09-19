@@ -1,23 +1,39 @@
 import {
+  ActionModal,
   Alert,
   Button,
   Card,
+  DialogPosition,
   Divider,
   ListItem,
   Typography,
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
+import {
+  ChildDto,
+  ContentTypeEnum,
+  LanguageDto,
+  ProgressTrackingAgeGroupDto,
+  useDialog,
+} from '@ecdlink/core';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { differenceInMonths, format, isBefore } from 'date-fns';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { useMemo, useState } from 'react';
 import { ChildProgressDetailedReport } from '@/models/progress/child-progress-report';
 import { useSelector } from 'react-redux';
-import { progressTrackingSelectors } from '@/store/progress-tracking';
+import {
+  progressTrackingActions,
+  progressTrackingSelectors,
+  progressTrackingThunkActions,
+} from '@/store/progress-tracking';
 import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 import { useAppContext } from '@/walkthrougContext';
+import LanguageSelector from '@/components/language-selector/language-selector';
+import { ContentService } from '@/services/ContentService';
+import { authSelectors } from '@/store/auth';
+import { useAppDispatch } from '@/store';
 
 export type ObservationsForChildLandingCompleteProps = {
   childId: string;
@@ -42,6 +58,62 @@ export const ObservationsForChildLandingComplete: React.FC<
   const {
     state: { run: isWalkthrough },
   } = useAppContext();
+
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
+  const dialog = useDialog();
+
+  const changeLanguage = async (language: LanguageDto) => {
+    const hasTranslations = await new ContentService(
+      userAuth?.auth_token ?? ''
+    ).hasContentTypeBeenTranslated(
+      ContentTypeEnum.ProgressTrackingCategory,
+      language.id ?? ''
+    );
+
+    if (hasTranslations) {
+      await appDispatch(
+        progressTrackingThunkActions.getProgressTrackingContent({
+          locale: language.locale,
+        })
+      ).unwrap();
+      await appDispatch(
+        progressTrackingActions.setLocale({ localeId: language.locale })
+      );
+    } else {
+      presentUnavailableAlert();
+    }
+  };
+
+  const presentUnavailableAlert = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, close) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="No content found"
+            paragraphs={[
+              'Could not find any content for the selected language, please select another.',
+            ]}
+            icon={'InformationCircleIcon'}
+            iconColor={'infoDark'}
+            iconBorderColor={'infoBb'}
+            actionButtons={[
+              {
+                text: 'Close',
+                colour: 'quatenary',
+                onClick: close,
+                type: 'filled',
+                textColour: 'white',
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
 
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories()
@@ -219,6 +291,15 @@ export const ObservationsForChildLandingComplete: React.FC<
           icon={showDetails ? 'EyeOffIcon' : 'EyeIcon'}
           text={showDetails ? 'Hide details' : 'Show details'}
           textColor="quatenary"
+        />
+        <LanguageSelector
+          labelText="Progress tracker language:"
+          labelClassName="font-medium font-body text-textDark pr-8"
+          currentLocale="en-za"
+          className="mb-2 w-full px-0"
+          selectLanguage={(data) => {
+            changeLanguage(data);
+          }}
         />
       </div>
       {!isWalkthrough && showDetails && (

@@ -27,6 +27,7 @@ import { PractitionerShareDetails } from './components/practitioner-share-detail
 import { useTenant } from '@/hooks/useTenant';
 import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
 import { classroomsThunkActions } from '@/store/classroom';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -246,9 +247,9 @@ export const EditPractitionerProfile: React.FC = () => {
           subTitle={label}
           onBack={onBack}
           onClose={exitPrompt}
-          backgroundColour={'white'}
+          backgroundImageColour={'primary'}
           className={'relative'}
-          backgroundUrl={theme?.images.graphicOverlayUrl}
+          backgroundUrl={TransparentLayer}
           displayOffline={!isOnline}
         >
           <div className={'h-screen px-4'}>{steps(activeStep)}</div>

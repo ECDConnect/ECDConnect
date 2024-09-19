@@ -239,7 +239,7 @@ namespace EcdLink.Api.CoreApi
 
         bool TelemtryEnabled()
         {
-            var aiConnString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING1");
+            var aiConnString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
             if (!string.IsNullOrEmpty(aiConnString)) return true;
             var aiConfig = Configuration.GetSection("ApplicationInsights");
             if (aiConfig == null) return false;

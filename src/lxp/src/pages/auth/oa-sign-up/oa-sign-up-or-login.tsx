@@ -29,6 +29,7 @@ import ROUTES from '@/routes/routes';
 import Banner1 from '../../../assets/banner-ss2.svg';
 import Banner3 from '../../../assets/banner2-ss-svg.svg';
 import { AuthService } from '@/services/AuthService';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -124,7 +125,7 @@ export const OASignUpOrLogin: React.FC = () => {
       <BannerWrapper
         color={'primary'}
         showBackground={isWhitelabel ? false : true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundUrl={TransparentLayer}
         backgroundImageColour={'primary'}
         className={styles.contentWrapper}
         size={'signup'}

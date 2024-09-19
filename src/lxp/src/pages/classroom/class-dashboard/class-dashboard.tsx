@@ -51,6 +51,7 @@ import { useAppContext } from '@/walkthrougContext';
 import { PractitionerListRouteState } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { Resources } from '../resources/resources';
+import { ProgressInfoPage } from '../progress/info/progress-info-page';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -84,6 +85,7 @@ export const ClassDashboard: React.FC = () => {
   const appName = tenant?.tenant?.applicationName;
   const { attendanceEnabled, classroomActivitiesEnabled, progressEnabled } =
     useTenantModules();
+  const [showProgressInfo, setShowProgressInfo] = useState(false);
 
   const { setState } = useAppContext();
 
@@ -183,10 +185,14 @@ export const ClassDashboard: React.FC = () => {
   };
 
   const displayTutorial = (type?: string) => {
+    console.log({ type });
     switch (type) {
       case NavigationNames.Classroom.Attendance:
         setAttendanceTutorialActive(!!hasPermissionToEdit);
-        break;
+        return;
+      case NavigationNames.Classroom.Progress:
+        setShowProgressInfo(true);
+        return;
       default:
         break;
     }
@@ -195,7 +201,8 @@ export const ClassDashboard: React.FC = () => {
   const displayHelp =
     hasPermissionToEdit &&
     (currentTab?.title === NavigationNames.Classroom.Attendance ||
-      currentTab?.title === NavigationNames.Classroom.Programme);
+      currentTab?.title === NavigationNames.Classroom.Programme ||
+      currentTab?.title === NavigationNames.Classroom.Progress);
 
   const closeAttendanceTutorial = useCallback(() => {
     if (!attendanceTutorialComplete && previousTabIndex) {
@@ -449,6 +456,15 @@ export const ClassDashboard: React.FC = () => {
           />
         </div>
       </Dialog>
+      <div className={styles.dialogContent}>
+        <Dialog
+          fullScreen={true}
+          visible={showProgressInfo}
+          position={DialogPosition.Full}
+        >
+          <ProgressInfoPage onClose={() => setShowProgressInfo(false)} />
+        </Dialog>
+      </div>
       <Dialog
         visible={showAttendanceWalkthrough}
         position={DialogPosition.Middle}

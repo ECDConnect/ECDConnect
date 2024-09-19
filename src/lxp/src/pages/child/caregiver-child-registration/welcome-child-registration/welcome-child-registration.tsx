@@ -10,6 +10,7 @@ import { ChildRegistrationDetails } from '../caregiver-child-registration.types'
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { ReactComponent as Balloons } from '@/assets/balloons_bg_blue.svg';
+import TransparentLayer from '../../../../assets/TransparentLayer.png';
 
 interface WelcomeChildRegistrationProps extends ComponentBaseProps {
   childDetails: ChildRegistrationDetails;
@@ -30,7 +31,7 @@ export const WelcomeChildRegistration: React.FC<
       size="large"
       title={`${childDetails.child.firstname}'s registration`}
       showBackground={true}
-      backgroundUrl={theme.theme?.images.graphicOverlayUrl}
+      backgroundUrl={TransparentLayer}
       className="flex h-full flex-col p-4"
       renderOverflow
       titleOverrideRender={() => (

@@ -20,6 +20,7 @@ export interface TenantModel {
   } | null;
   googleAnalyticsTag: string;
   googleTagManager: string;
+  blobStorageAddress: string;
 }
 
 export enum TenantType {

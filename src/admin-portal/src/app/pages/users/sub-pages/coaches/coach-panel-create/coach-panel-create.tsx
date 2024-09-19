@@ -259,7 +259,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const saveCoach = async (userId: string, siteAddressId?: string) => {
     const coachForm = coachGetValues();
     const coachInputModel: CoachInput = {
-      Id: undefined,
+      Id: userId, // this must be the same as the userId
       UserId: userId,
       AreaOfOperation: coachForm.areaOfOperation,
       SecondaryAreaOfOperation: coachForm.secondaryAreaOfOperation,

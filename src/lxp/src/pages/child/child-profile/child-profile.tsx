@@ -113,6 +113,7 @@ export const ChildProfile: React.FC = () => {
   const dialog = useDialog();
   const location = useLocation<ChildProfileRouteState>();
   const childId = location.state.childId;
+  const isFromInfoPage = location?.state?.isFromInfoPage;
   const practitionerIsOnLeave = location.state?.practitionerIsOnLeave;
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
@@ -575,6 +576,12 @@ export const ChildProfile: React.FC = () => {
 
   const [showProgressWalkthroughStart, setShowProgressWalkthroughStart] =
     useState<boolean>(false);
+
+  useEffect(() => {
+    if (isFromInfoPage) {
+      setShowProgressWalkthroughStart(true);
+    }
+  }, [isFromInfoPage]);
 
   const options = useMemo((): ListItemProps[] => {
     const attendancePercentage = attendanceReport?.attendancePercentage;
