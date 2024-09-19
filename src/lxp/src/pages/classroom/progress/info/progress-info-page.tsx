@@ -28,8 +28,6 @@ export const ProgressInfoPage: React.FC<ProgressInfoPageProps> = ({
   const history = useHistory();
   const children = useSelector(childrenSelectors.getChildren);
 
-  console.log({ children });
-
   useEffect(() => {
     new InfoService()
       .getMoreInformation(MoreInformationTypeEnum.Points, selectedLanguage)
