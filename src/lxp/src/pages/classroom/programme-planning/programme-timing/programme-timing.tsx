@@ -248,6 +248,8 @@ const ProgrammeTiming: React.FC = () => {
     }
   }, [setValue, state.initialDate]);
 
+  console.log('theme', selectedTheme);
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -281,6 +283,12 @@ const ProgrammeTiming: React.FC = () => {
             type="h4"
             text={selectedTheme?.name || 'No theme'}
             color="textDark"
+            className="w-full"
+          />
+          <img
+            src={selectedTheme?.themeLogo}
+            alt="Theme icon"
+            className="w-9 rounded-full"
           />
         </div>
         {!selectedTheme && (
