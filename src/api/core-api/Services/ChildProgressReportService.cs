@@ -20,7 +20,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static HotChocolate.ErrorCodes;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -165,21 +164,28 @@ namespace EcdLink.Api.CoreApi.Services
                 if (input.DateCompleted != null)
                 {
                     existingReport.DateCompleted = input.DateCompleted;
-                    // generate points for creating a new report
-                    _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
                 }
 
                 if (input.ObservationsCompleteDate != null)
                 {
                     existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
-                    _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
                 }
 
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
                 existingReport.UserId = _contextUserId;
 
                 _childProgressReportRepo.Update(existingReport);
-                
+
+                // Call points engine after update
+                if (input.DateCompleted != null)
+                {
+                    _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
+                }
+                if (input.ObservationsCompleteDate != null)
+                {
+                    _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
+                }
+
             }
             else
             {
