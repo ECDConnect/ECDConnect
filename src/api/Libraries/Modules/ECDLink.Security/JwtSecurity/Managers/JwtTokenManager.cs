@@ -70,7 +70,7 @@ namespace ECDLink.Security.JwtSecurity.Managers
 
         public async Task<bool> CanRefreshToken(string token)
         {
-            var result = GetValidClaimPrincipal(token, out var principal);
+            var result = GetValidClaimPrincipal(token, false, out var principal);
 
             if (!result)
             {
@@ -89,8 +89,19 @@ namespace ECDLink.Security.JwtSecurity.Managers
 
         public bool GetValidClaimPrincipal(string jwt, out ClaimsPrincipal principal)
         {
+            return GetValidClaimPrincipal(jwt, true, out principal);
+        }
+
+        public bool GetValidClaimPrincipal(string jwt, bool validateLifetime, out ClaimsPrincipal principal)
+        {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
-            principal = jwtTokenHandler.ValidateToken(jwt, _parameters, out var validatedToken);
+            var parameters = _parameters;
+            if (!validateLifetime && _parameters.ValidateLifetime)
+            {
+                parameters = _parameters.Clone();
+                parameters.ValidateLifetime = false;
+            }
+            principal = jwtTokenHandler.ValidateToken(jwt, parameters, out var validatedToken);
 
             if (principal == default)
             {
@@ -102,13 +113,24 @@ namespace ECDLink.Security.JwtSecurity.Managers
 
         public bool GetValidUserWithToken(string jwt, out IdentityUser<Guid> user)
         {
+            return GetValidUserWithToken(jwt, true, out user);
+        }
+
+        public bool GetValidUserWithToken(string jwt, bool validateLifetime, out IdentityUser<Guid> user)
+        {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             user = null;
 
             try
             {
                 // Validation 1 - Validation JWT token format
-                var tokenInVerification = jwtTokenHandler.ValidateToken(jwt, _parameters, out var validatedToken);
+                var parameters = _parameters;
+                if (!validateLifetime && parameters.ValidateLifetime)
+                {
+                    parameters = _parameters.Clone();
+                    parameters.ValidateLifetime = false;
+                }
+                var tokenInVerification = jwtTokenHandler.ValidateToken(jwt, parameters, out var validatedToken);
 
                 // Validation 2 - Validate encryption alg
                 if (validatedToken is JwtSecurityToken jwtSecurityToken)

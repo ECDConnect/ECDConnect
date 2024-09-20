@@ -200,7 +200,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return string.Empty;
             }
 
-            if (!_jwtTokenManager.GetValidUserWithToken(token, out var user))
+            if (!_jwtTokenManager.GetValidUserWithToken(token, false, out var user))
             {
                 return string.Empty;
             }
