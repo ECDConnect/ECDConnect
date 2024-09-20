@@ -73,26 +73,36 @@ const ProgrammeTheme: React.FC = () => {
 
   const handleDialog = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
-            importantText={`Themes`}
-            detailText={`It is helpful to plan your weeks or months by theme. Observe and listen to the children in your programme and choose themes that they are interested in.\n
-            We have provided 2 themes with activities planned for Mondays through Thursdays. Fridays are mahala days, so get creative and choose your own activities!\n
-            You are welcome to change activities or create your own to match your children's interests, the time of the year, or other things happening around you.`}
-            textAlignment="left"
+            title="Themes"
+            icon={'InformationCircleIcon'}
+            iconColor={'infoDark'}
+            iconBorderColor={'infoBb'}
             actionButtons={[
               {
                 text: 'Close',
-                textColour: 'white',
                 colour: 'primary',
-                type: 'filled',
                 onClick: () => onSubmit(),
+                type: 'filled',
+                textColour: 'white',
                 leadingIcon: 'XIcon',
               },
             ]}
-          />
+          >
+            <Typography
+              type="markdown"
+              fontSize={'16'}
+              text={`It is helpful to plan your weeks or months by theme. Observe and listen to the children in your programme and choose themes that they are interested in.<br><br>
+                We have provided 6 themes with activities planned for 20 days.<br><br>
+                You are welcome to change activities or create your own to match your children's interests, the time of the year, or other things happening around you.`}
+              color={'textDark'}
+              className="font-h1 text-textMid mb-2 text-center text-base font-normal"
+            />
+          </ActionModal>
         );
       },
     });
