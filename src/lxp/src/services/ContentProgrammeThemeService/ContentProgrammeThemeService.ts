@@ -18,6 +18,7 @@ class ContentProgrammeThemeService {
             name
             color
             imageUrl
+            themeLogo
             themeDays {
               id
               day
