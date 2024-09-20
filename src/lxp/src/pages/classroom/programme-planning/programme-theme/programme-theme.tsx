@@ -117,6 +117,7 @@ const ProgrammeTheme: React.FC = () => {
       ? 'transparent'
       : getAvatarColor(),
     profileDataUrl: theme.imageUrl,
+    themeLogo: theme.themeLogo,
     hideAlertSeverity: true,
     onActionClick: () => handelThemeSelected(theme),
   }));
