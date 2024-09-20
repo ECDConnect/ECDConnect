@@ -24,9 +24,9 @@ export const getProgressTrackingCategories = () =>
       progressContent: ProgressTrackingCategoriesByLocale
     ) => {
       if (!!progressContent[currentLocale]) {
-        return progressContent[currentLocale].data;
+        return progressContent[currentLocale]?.data;
       } else {
-        return progressContent['en-za'].data;
+        return progressContent['en-za']?.data;
       }
     }
   );

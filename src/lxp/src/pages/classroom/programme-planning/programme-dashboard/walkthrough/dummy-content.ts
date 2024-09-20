@@ -7,6 +7,7 @@ export const dummyThemes = [
     name: 'Nature',
     color: '#FFD700',
     imageUrl: '',
+    themeLogo: '',
     themeDays: [],
   },
 ];

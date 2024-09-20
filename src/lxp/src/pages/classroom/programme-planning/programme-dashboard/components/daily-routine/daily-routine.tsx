@@ -230,21 +230,16 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     });
   };
 
-  const regex = /(<([^>]+)>)/gi;
-  const secondRegEx = /((&nbsp;))*/gim;
-
   const openInfoItem = (routineItem: ProgrammeRoutineItemDto) => {
     dialog({
       position: DialogPosition.Middle,
+      color: 'bg-white',
       render: (onSubmit, onClose) => {
         return (
           <ActionModal
             className={'mx-4'}
             title={routineItem.name}
             importantText={`${routineItem.timeSpan}`}
-            detailText={routineItem.description
-              .replace(regex, '')
-              .replace(secondRegEx, '')}
             icon={'InformationCircleIcon'}
             iconColor={'infoDark'}
             iconBorderColor={'infoBb'}
@@ -258,7 +253,15 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 leadingIcon: 'XIcon',
               },
             ]}
-          />
+          >
+            <Typography
+              type="markdown"
+              fontSize={'16'}
+              text={routineItem.description}
+              color={'textDark'}
+              className="font-h1 text-textMid mb-2 text-left text-base font-normal"
+            />
+          </ActionModal>
         );
       },
     });
@@ -461,9 +464,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   useEffect(() => {
     // Celebrate message
     if (plannedWeeksCount > 1) {
-      setCelebrateMessage(
-        `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
-      );
+      if (hasPermissionToPlanClassroomActivities) {
+        setCelebrateMessage(
+          `Wow, great job ${userData?.firstName}! You have planned for ${plannedWeeksCount} weeks in a row. Keep it up!`
+        );
+      }
     } else if (selectedDate && isWholeWeekPlanned) {
       setCelebrateMessage(
         `Great job ${userData?.firstName}! Your whole week is planned.`
@@ -491,6 +496,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       }
     }
   }, [
+    hasPermissionToPlanClassroomActivities,
     improveProgrammeMessage,
     isWholeWeekPlanned,
     plannedActivities,

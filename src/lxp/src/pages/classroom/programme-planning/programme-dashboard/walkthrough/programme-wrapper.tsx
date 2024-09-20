@@ -142,7 +142,7 @@ export default function ProgrammeWrapper() {
     {
       target: '#walkthrough-small-group-activity-learn',
       content: t(
-        'Great! Now the activity is selected. When you want to learn more about an activity, you can tap this icon'
+        'Great! Now the activity is selected. When you want to learn more about an activity, you can tap the blue “i” icon.'
       ),
       placement: 'auto',
       offset: 10,

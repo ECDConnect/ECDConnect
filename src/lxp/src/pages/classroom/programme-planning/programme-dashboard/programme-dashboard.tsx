@@ -1,5 +1,5 @@
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
-import { isAfter, isSameDay, isSameWeek, isToday } from 'date-fns';
+import { format, isSameDay, isSameWeek } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import { programmeSelectors } from '@store/programme';
@@ -42,6 +42,7 @@ import { StoryBookActions } from '@/store/content/story-book/story-book.actions'
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
+import { replaceSkillText } from '@/utils/child/child-progress-report.utils';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -96,6 +97,14 @@ export const ProgrammeDashboard: React.FC = () => {
   );
 
   const previousSelectedDate = usePrevious(selectedDate);
+
+  const currentReportingPeriod = useSelector(
+    classroomsSelectors.getCurrentProgressReportPeriod()
+  );
+
+  const lastProgressReportPeriodHasPassed =
+    currentReportingPeriod?.endDate &&
+    new Date() > new Date(currentReportingPeriod?.endDate);
 
   const currentProgramme = useSelector(
     programmeSelectors.getProgrammeByDateAndClassroomGroupId({
@@ -154,13 +163,18 @@ export const ProgrammeDashboard: React.FC = () => {
     setTimeout(() => setShowReport(false), 600);
   }, [setShowReport, toPDF]);
 
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const tomorrowUnplannedActivity = dailyProgrammesUnplanned.find(
+    (x) => format(x.date, 'EEEE, d LLLL') === format(tomorrow, 'EEEE, d LLLL')
+  );
+
   const showStartPlanning = useCallback(() => {
     if (
       hasPermissionToEdit &&
       !isWholeWeekPlanned &&
-      dailyProgrammesUnplanned.every(
-        (day) => isToday(day.date) || isAfter(day.date, new Date())
-      ) &&
+      tomorrowUnplannedActivity &&
       (!previousSelectedDate || !isSameWeek(selectedDate, previousSelectedDate))
     ) {
       dialog({
@@ -216,12 +230,13 @@ export const ProgrammeDashboard: React.FC = () => {
     }
   }, [
     classroomGroupId,
-    dailyProgrammesUnplanned,
     dialog,
+    hasPermissionToEdit,
     history,
     isWholeWeekPlanned,
     previousSelectedDate,
     selectedDate,
+    tomorrowUnplannedActivity,
     user?.firstName,
   ]);
 
@@ -278,10 +293,17 @@ export const ProgrammeDashboard: React.FC = () => {
               actionButtons={[
                 {
                   text: 'Download the full summary',
-                  colour: 'primary',
+                  colour: 'quatenary',
                   onClick: () => {
-                    downloadPdf();
-                    setTimeout(() => onCancel(), 600);
+                    // downloadPdf();
+                    // setTimeout(() => onCancel(), 600);
+                    history?.push(
+                      ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+                      {
+                        report: 'completed-all',
+                      }
+                    );
+                    onCancel();
                   },
                   type: 'filled',
                   textColour: 'white',
@@ -289,8 +311,8 @@ export const ProgrammeDashboard: React.FC = () => {
                 },
                 {
                   text: 'Close',
-                  textColour: 'primary',
-                  colour: 'primary',
+                  textColour: 'quatenary',
+                  colour: 'quatenary',
                   type: 'outlined',
                   onClick: () => onCancel(),
                   leadingIcon: 'XIcon',
@@ -379,6 +401,144 @@ export const ProgrammeDashboard: React.FC = () => {
       }
     }
   }, [fetchData, progressSummary, downloadPdf, dialog]);
+
+  const hasClickedAfterEndOfProgressReportPeriodEnded = getStorageItem(
+    LocalStorageKeys?.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
+  );
+
+  const allSkills = useSelector(
+    progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
+  );
+
+  const baseReports = useSelector(
+    progressTrackingSelectors.getProgressReportsForReportingPeriod(
+      currentReportingPeriod?.id || ''
+    )
+  );
+
+  const skillsToWorkOnBaseOnPeriod = baseReports?.map((item) =>
+    item?.skillsToWorkOn?.map((item2) => item2?.skillId)
+  );
+
+  // const firstSkillOfTwoFirstReports = skillsToWorkOnBaseOnPeriod?.map(item => item?.)
+  const flattenedArray: number[] = skillsToWorkOnBaseOnPeriod.flat();
+
+  // Step 2: Count the occurrences of each number
+  const countOccurrences: Record<number, number> = {};
+  flattenedArray.forEach((num: number) => {
+    countOccurrences[num] = (countOccurrences[num] || 0) + 1;
+  });
+
+  // Step 3: Extract the numbers that appear more than once and their counts
+  const duplicatesWithCounts: { number: number; count: number }[] =
+    Object.entries(countOccurrences)
+      .filter(([_, count]) => count > 1)
+      .map(([num, count]) => ({ number: Number(num), count }));
+
+  function getRandomValues(arr: number[], n: number): number[] {
+    const shuffled = [...arr].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, n);
+  }
+
+  const randomValues = getRandomValues(flattenedArray, 2);
+
+  const listOfWorkingOnActivities =
+    duplicatesWithCounts?.length > 0
+      ? allSkills.filter((skill) =>
+          duplicatesWithCounts.some((l) => skill?.id === l?.number)
+        )
+      : allSkills.filter((skill) => randomValues.some((l) => skill?.id === l));
+
+  const showProgressReportEndedDialog = useCallback(async () => {
+    dialog({
+      // blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <ActionModal
+          className={'mx-4 bg-white'}
+          title="What are children working on?"
+          customDetailText={
+            <div className="text-textMid">
+              {`Base on Report ${currentReportingPeriod?.reportNumber}, here are some areas that children are working on:`}
+              <div>
+                {listOfWorkingOnActivities?.map((item) => (
+                  <div className="mt-2">{`\u00A0\u00A0\u00A0\u00A0• ${replaceSkillText(
+                    item?.name,
+                    'Child'
+                  )}`}</div>
+                ))}
+                <div className="mt-8 mb-2">{`Think about adding activities to work on these areas. Download the full summary.`}</div>
+              </div>
+            </div>
+          }
+          customIcon={
+            <div
+              className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"
+              style={{ width: 85 }}
+            >
+              <img src={iconRobotImage} alt="card" />
+            </div>
+          }
+          actionButtons={[
+            {
+              text: 'Download the full summary',
+              colour: 'quatenary',
+              onClick: () => {
+                history?.push(
+                  ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+                  {
+                    report: 'completed-all',
+                  }
+                );
+                setStorageItem(
+                  true,
+                  LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
+                );
+                onCancel();
+              },
+              type: 'filled',
+              textColour: 'white',
+              leadingIcon: 'DownloadIcon',
+            },
+            {
+              text: 'Close',
+              textColour: 'quatenary',
+              colour: 'quatenary',
+              type: 'outlined',
+              onClick: () => {
+                setStorageItem(
+                  true,
+                  LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
+                );
+                onCancel();
+              },
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [
+    currentReportingPeriod?.reportNumber,
+    dialog,
+    history,
+    listOfWorkingOnActivities,
+  ]);
+
+  useEffect(() => {
+    if (
+      lastProgressReportPeriodHasPassed &&
+      !hasClickedAfterEndOfProgressReportPeriodEnded &&
+      baseReports?.length > 0
+    ) {
+      showProgressReportEndedDialog();
+    }
+  }, [
+    baseReports?.length,
+    hasClickedAfterEndOfProgressReportPeriodEnded,
+    lastProgressReportPeriodHasPassed,
+    showProgressReportEndedDialog,
+  ]);
 
   return (
     <BannerWrapper

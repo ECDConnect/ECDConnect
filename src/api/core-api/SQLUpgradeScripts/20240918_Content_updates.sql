@@ -1,0 +1,10 @@
+update "ContentValue" set "Value" = '1' where "Value" = 'Part 1';
+update "ContentValue" set "Value" = '1' where "Value" = 'Part 1 ';
+update "ContentValue" set "Value" = '2' where "Value" = 'Part 2';
+update "ContentValue" set "Value" = '3' where "Value" = 'Part 3';
+update "ContentValue" set "Value" = '4' where "Value" = 'Part 4';
+update "ContentValue" set "Value" = '5' where "Value" = 'Part 5';
+update "ContentValue" set "Value" = '6' where "Value" = 'Part 6';
+update "ContentValue" set "Value" = '7' where "Value" = 'Part 7';
+update "ContentValue" set "Value" = '8' where "Value" = 'Part 8';
+update "ContentValue" set "Value" = '9' where "Value" = 'Part 9';

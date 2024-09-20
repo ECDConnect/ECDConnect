@@ -182,7 +182,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
       (item) => item.id === language.id
     );
 
-    if (hasTranslations && language.locale !== 'en-za') {
+    if (hasTranslations) {
       let storyBooks: StoryBookDto[] | undefined;
 
       storyBooks = await new ContentStoryBookService(
@@ -667,7 +667,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
       (item) => item.id === language.id
     );
 
-    if (hasTranslations && language.locale !== 'en-za') {
+    if (hasTranslations) {
       let activities: ActivityDto[] | undefined;
 
       activities = await new ContentActivityService(

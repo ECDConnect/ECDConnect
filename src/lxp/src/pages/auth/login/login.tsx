@@ -33,6 +33,7 @@ import { syncThunkActions } from '@/store/sync';
 import { userThunkActions } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { useTenant } from '@/hooks/useTenant';
+import TransparentLayer from '../../../assets/TransparentLayer.png';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -244,7 +245,7 @@ export const Login: React.FC = () => {
   return (
     <BannerWrapper
       showBackground={true}
-      backgroundUrl={theme?.images?.graphicOverlayUrl}
+      backgroundUrl={TransparentLayer}
       backgroundImageColour={'primary'}
       color="primary"
       size="sub-normal"
