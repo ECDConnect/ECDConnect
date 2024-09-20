@@ -48,7 +48,9 @@ namespace ECDLink.Abstractrions.Constants
         // row 15
         public const string UnassignedClasses = "unassigned-classes"; // hub, push
         // row 16
-        public const string PractitionerMarkedOnLeave = "marked-onleave"; // push
+        public const string PrincipalMarkedOnLeave = "marked-onleave"; // push
+        // row 17
+        public const string PractitionerMarkedOnLeave = "practitioner-marked-onleave"; // push
         // row 19
         public const string ChildNotAssignedToClass = "child-unassigned-to-class"; // hub, push
         // row 20
