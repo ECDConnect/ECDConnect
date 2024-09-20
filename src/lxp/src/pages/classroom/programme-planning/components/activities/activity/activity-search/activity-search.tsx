@@ -136,7 +136,8 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     return filteredActivities.find(
       (activity) =>
         activity.id === duplicatedDailyProgramme?.storyActivityId ||
-        activity.id === duplicatedDailyProgramme?.smallGroupActivityId
+        activity.id === duplicatedDailyProgramme?.smallGroupActivityId ||
+        activity.id === duplicatedDailyProgramme?.largeGroupActivityId
     );
   }, [duplicatedDailyProgramme, filteredActivities]);
 
