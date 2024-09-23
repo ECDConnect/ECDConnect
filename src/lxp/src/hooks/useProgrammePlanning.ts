@@ -194,7 +194,7 @@ export const useProgrammePlanning = () => {
       startDate
     );
 
-    while (dailyProgrammes.length <= diffDays) {
+    while (dailyProgrammes.length <= diffDays - 1) {
       if (dailyProgrammes.length > 0) {
         dayDate = getNextValidDate(dayDate);
       }
