@@ -216,10 +216,18 @@ export const useProgrammePlanning = () => {
       const thDay = theme.themeDays.find((x) => +x.day === day);
 
       if (thDay) {
-        dailyProg.largeGroupActivityId = thDay.largeGroupActivity[0].id;
-        dailyProg.smallGroupActivityId = thDay.smallGroupActivity[0].id;
-        dailyProg.storyActivityId = thDay.storyActivity[0].id;
-        dailyProg.storyBookId = thDay.storyBook[0].id;
+        dailyProg.largeGroupActivityId =
+          thDay.largeGroupActivity.length > 0
+            ? thDay.largeGroupActivity[0].id
+            : 0;
+        dailyProg.smallGroupActivityId =
+          thDay.smallGroupActivity.length > 0
+            ? thDay.smallGroupActivity[0].id
+            : 0;
+        dailyProg.storyActivityId =
+          thDay.storyActivity.length > 0 ? thDay.storyActivity[0].id : 0;
+        dailyProg.storyBookId =
+          thDay.storyBook.length > 0 ? thDay.storyBook[0].id : 0;
       }
 
       themeAppliedDailyProgrammes.push(dailyProg);

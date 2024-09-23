@@ -248,8 +248,6 @@ const ProgrammeTiming: React.FC = () => {
     }
   }, [setValue, state.initialDate]);
 
-  console.log('theme', selectedTheme);
-
   return (
     <BannerWrapper
       showBackground={false}
