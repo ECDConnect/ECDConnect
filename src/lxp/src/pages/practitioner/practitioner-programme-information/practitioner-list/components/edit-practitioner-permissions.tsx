@@ -25,10 +25,12 @@ export const EditPractitionerPermissions = ({
   setEditPractitionerModal,
   setEditPractitionerPermissions,
   practitioner,
+  isFromProfileSection,
 }: {
   setEditPractitionerModal: (item: boolean) => void;
   setEditPractitionerPermissions: (item: boolean) => void;
   practitioner?: PractitionerDto;
+  isFromProfileSection?: boolean;
 }) => {
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -165,11 +167,13 @@ export const EditPractitionerPermissions = ({
           color={'textDark'}
           className="mt-2"
         />
-        <Typography
-          type={'body'}
-          text={`You can edit this in future by going to the Classroom then Practitioners tab.`}
-          color={'textMid'}
-        />
+        {isFromProfileSection && (
+          <Typography
+            type={'body'}
+            text={`You can edit this in future by going to the Classroom then Practitioners tab.`}
+            color={'textMid'}
+          />
+        )}
       </div>
       <div className="w-full p-4">
         {premissionsFilteredByTenantModules?.map((item, index) => (
