@@ -53,8 +53,7 @@ export default function ProgrammeWrapper() {
     stepIndex === 1 ||
     stepIndex === 4 ||
     stepIndex === 6 ||
-    stepIndex === 7 ||
-    stepIndex === 8;
+    stepIndex === 7;
 
   const steps: StepType[] = [
     // 0
@@ -129,7 +128,6 @@ export default function ProgrammeWrapper() {
       disableOverlay: false,
     },
     // 7
-    // new start
     {
       target: '#walkthrough-small-group-activity',
       content: t('Tap the box to choose the activity'),
