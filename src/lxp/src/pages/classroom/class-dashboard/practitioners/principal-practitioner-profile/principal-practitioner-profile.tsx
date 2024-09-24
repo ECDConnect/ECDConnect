@@ -568,6 +568,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               setEditPractitionerModal={() => {}}
               setEditPractitionerPermissions={setEditPermissionsVisible}
               practitioner={practitioner}
+              isFromProfileSection={true}
             />
           </Dialog>
         </div>
