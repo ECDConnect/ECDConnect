@@ -256,9 +256,11 @@ export const ProgrammeDashboard: React.FC = () => {
 
   useEffect(() => {
     if (!isWalkthrough) {
-      showStartPlanning();
+      if (!isHoliday) {
+        showStartPlanning();
+      }
     }
-  }, [isWalkthrough, showStartPlanning]);
+  }, [isHoliday, isWalkthrough, showStartPlanning]);
 
   // useEffect(() => {
   //   if (!progressSummary) {
