@@ -187,16 +187,11 @@ class ProgressTrackingService {
       },
     });
 
-    console.log('response', response);
     if (response.status !== 200) {
       throw new Error(
         'Get Progress Tracking Levels failed - Server connection error'
       );
     }
-    console.log(
-      'response.data.data.GetAllResourceLink',
-      response.data.data.GetAllResourceLink
-    );
     return response.data.data.GetAllResourceLink;
   }
 
