@@ -85,7 +85,7 @@ export const RemovePractitionerFromProgramme: React.FC<
     // Push it to the last position
     tempReasonsForLeaving?.push(itemToMove);
   }
-  console.log({ tempReasonsForLeaving });
+
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
