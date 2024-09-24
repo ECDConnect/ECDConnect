@@ -78,7 +78,7 @@ class ResourcesService {
     return response.data.data.resources;
   }
 
-  async getResourceLikedStatusForUser(contentId: number): Promise<any[]> {
+  async getResourceLikedStatusForUser(contentId: number): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -105,7 +105,11 @@ class ResourcesService {
     return response.data.data.resourceLikedStatusForUser;
   }
 
-  async updateResourceLikes(contentId: number): Promise<any[]> {
+  async updateResourceLikes(
+    contentId: number,
+    contentTypeId: number,
+    liked: boolean
+  ): Promise<any[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -120,6 +124,8 @@ class ResourcesService {
           `,
       variables: {
         contentId,
+        contentTypeId,
+        liked,
       },
     });
 

@@ -10,12 +10,13 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { ResourcesService } from '@/services/Resources';
+import { ResourcesService } from '@/services/ResourcesService';
 import { ThumbUpIcon } from '@heroicons/react/solid';
 import { ResourcesNames } from '../resources.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
+import { ContentTypeEnum } from '@ecdlink/core';
 
 interface ResourceItemProps {
   resource: any;
@@ -30,20 +31,41 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
   const userAuth = useSelector(authSelectors.getAuthUser);
 
   const [isLiked, setIsLiked] = useState(false);
+  console.log({ isLiked });
 
   const handleCheckIfUserLiked = useCallback(async () => {
     const response = await new ResourcesService(
       userAuth?.auth_token!
     )?.getResourceLikedStatusForUser(resource?.id);
     console.log({ response });
-    // if (response) {
-    //   setResources(response);
-    // }
+    if (response) {
+      setIsLiked(response?.isActive);
+    }
   }, [resource?.id, userAuth?.auth_token]);
 
   useEffect(() => {
     handleCheckIfUserLiked();
   }, []);
+
+  const handleUpdateResourceLike = useCallback(async () => {
+    const response = await new ResourcesService(
+      userAuth?.auth_token!
+    )?.updateResourceLikes(
+      resource?.id,
+      ContentTypeEnum?.ClassroomBusinessResource,
+      isLiked
+    );
+    console.log({ response });
+    // if (response) {
+    //   setResources(response);
+    // }
+  }, [isLiked, resource?.id, userAuth?.auth_token]);
+
+  // useEffect(() => {
+  //   if (isLiked) {
+  //     handleUpdateResourceLike();
+  //   }
+  // }, [handleUpdateResourceLike, isLiked]);
 
   const getChipStatusColor = (resourceType: string) => {
     switch (resourceType) {
@@ -178,9 +200,11 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
           key={'1'}
           title={'Like this resource'}
           titleWeight="normal"
-          //   checked={answers?.some((option) => item.includes(option))}
-          //   value={item}
-          //   onChange={onCheckboxChange}
+          checked={isLiked}
+          onChange={(e) => {
+            setIsLiked(e?.checked);
+            handleUpdateResourceLike();
+          }}
         />
         <Divider dividerType="dashed" className="my-4" />
         <Button

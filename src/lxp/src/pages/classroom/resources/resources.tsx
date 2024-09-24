@@ -8,7 +8,7 @@ import {
 } from '@ecdlink/ui';
 import { ResourcesIcons, ResourcesNames } from './resources.types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ResourcesService } from '@/services/Resources';
+import { ResourcesService } from '@/services/ResourcesService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { AllResources } from './all-resources/all-resources';

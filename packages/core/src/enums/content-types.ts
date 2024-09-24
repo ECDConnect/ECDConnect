@@ -38,4 +38,5 @@ export enum ContentTypeEnum {
   Connect = 27,
   ConnectItem = 28,
   MoreInformation = 15,
+  ClassroomBusinessResource = 39,
 }
