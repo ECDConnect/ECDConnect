@@ -192,10 +192,6 @@ class ProgressTrackingService {
         'Get Progress Tracking Levels failed - Server connection error'
       );
     }
-    console.log(
-      'response.data.data.GetAllResourceLink',
-      response.data.data.GetAllResourceLink
-    );
     return response.data.data.GetAllResourceLink;
   }
 
