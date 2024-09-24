@@ -192,6 +192,7 @@ export const EditPractitionerModal = ({
           setEditPractitionerModal={setEditPractitionerModal}
           setEditPractitionerPermissions={setEditPractitionerPermissions}
           practitioner={practitioner}
+          isFromProfileSection={true}
         />
       </Dialog>
     </div>
