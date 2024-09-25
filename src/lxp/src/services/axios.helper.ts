@@ -78,7 +78,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           if (decodedToken.exp * 1000 < currentDate.getTime()) {
             await store.dispatch(refreshToken({}));
             if (config?.headers) {
-              config.headers['authorization'] = `Bearer ${
+              config.headers['Authorization'] = `Bearer ${
                 store?.getState()?.auth?.userAuth?.auth_token
               }`;
             }

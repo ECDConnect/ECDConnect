@@ -71,6 +71,21 @@ export const RemovePractitionerFromProgramme: React.FC<
     practitionerSelectors.getPractitioner
   );
 
+  const tempReasonsForLeaving = [...reasonsForLeavingProgramme!];
+
+  const itemToMove = tempReasonsForLeaving?.find(
+    (item) => item?.description === 'Other'
+  );
+
+  if (itemToMove) {
+    // Remove the item from its current position
+    const index = tempReasonsForLeaving?.indexOf(itemToMove);
+    tempReasonsForLeaving?.splice(index!, 1);
+
+    // Push it to the last position
+    tempReasonsForLeaving?.push(itemToMove);
+  }
+
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -314,8 +329,8 @@ export const RemovePractitionerFromProgramme: React.FC<
                 fullWidth
                 fillType="clear"
                 list={
-                  (reasonsForLeavingProgramme &&
-                    reasonsForLeavingProgramme.map((x: ReasonForLeavingDto) => {
+                  (tempReasonsForLeaving &&
+                    tempReasonsForLeaving.map((x: ReasonForLeavingDto) => {
                       return { label: x.description, value: x.id || '' };
                     })) ||
                   []

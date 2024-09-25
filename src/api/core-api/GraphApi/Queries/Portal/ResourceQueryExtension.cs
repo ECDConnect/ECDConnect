@@ -1,12 +1,9 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -205,6 +202,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var userResourceLikesRepo = repoFactory.CreateRepository<UserResourceLikes>();
             return userResourceLikesRepo.GetByUserId(uId);
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<UserResourcesModel> GetAllResourceLikesForUser(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var userResourceLikesRepo = repoFactory.CreateRepository<UserResourceLikes>();
+            return userResourceLikesRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).Select(x => new UserResourcesModel() { IsActive = x.IsActive, ContentId = x.ContentId}).ToList();
         }
     }
 }

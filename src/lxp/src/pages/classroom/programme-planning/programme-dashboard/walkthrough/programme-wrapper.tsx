@@ -53,8 +53,7 @@ export default function ProgrammeWrapper() {
     stepIndex === 1 ||
     stepIndex === 4 ||
     stepIndex === 6 ||
-    stepIndex === 7 ||
-    stepIndex === 8;
+    stepIndex === 7;
 
   const steps: StepType[] = [
     // 0
@@ -129,7 +128,6 @@ export default function ProgrammeWrapper() {
       disableOverlay: false,
     },
     // 7
-    // new start
     {
       target: '#walkthrough-small-group-activity',
       content: t('Tap the box to choose the activity'),
@@ -244,6 +242,7 @@ export default function ProgrammeWrapper() {
       setState({ run: true, stepIndex: 8 });
     } else if (type === 'step:after' && index === 8) {
       setState({ run: true, stepIndex: 9 });
+      history.push(ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT);
     } else if (type === 'step:after' && index === 9) {
       setState({ run: false, stepIndex: 0, tourActive: false });
       window.sessionStorage.removeItem('i18nLanguage');

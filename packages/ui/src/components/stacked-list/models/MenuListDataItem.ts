@@ -21,4 +21,5 @@ export interface MenuListDataItem<T = {}> extends Omit<ListItem, 'subTitle'> {
   extraData?: T;
   subTitle?: string | ReactElement;
   hideRightIcon?: boolean;
+  likesItem?: ReactElement;
 }

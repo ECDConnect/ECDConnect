@@ -242,9 +242,10 @@ namespace ECDLink.Security.Api
             // scheme will be "Bearer"
             // parmameter will be the token itself.
 
-            var result = await _securityManager.RefreshJwtToken(authorization);
-
-            return new OkObjectResult(result);
+            var jwt = await _securityManager.RefreshJwtToken(authorization);
+            var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
+            var package = new OkObjectResult(jwtObj);
+            return package;
         }
 
         //[Route("online-check")]
