@@ -75,7 +75,7 @@ namespace ECDLink.ContentManagement.Repositories
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // Get the complete content for null tenant and current tenants.
                 var contentType = _context.ContentTypes
-                  .Include(ct => ct.Content)
+                  .Include(ct => ct.Content.Where(x => x.IsActive))
                       .ThenInclude(c => c.ContentValues.Where(c => c.LocaleId == localeId))
                         .ThenInclude(c => c.ContentTypeField)
                   .Where(x => x.Id == contentTypeId

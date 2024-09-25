@@ -6,6 +6,7 @@ export interface ProgrammeThemeDto {
   name: string;
   color: string;
   imageUrl: string;
+  themeLogo: string;
   themeDays: ProgrammeThemeDayDto[];
 }
 

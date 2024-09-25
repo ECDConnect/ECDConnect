@@ -40,4 +40,5 @@ export type Colours =
   | 'pointsCardBg'
   | 'pointsCardBarBg'
   | 'quatenaryBg'
-  | 'adminBackground';
+  | 'adminBackground'
+  | 'warningBg';

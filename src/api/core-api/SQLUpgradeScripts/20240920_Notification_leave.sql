@@ -1,0 +1,5 @@
+INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
+	 ('7d3b08fa-7850-4683-8b88-43c045704fa8'::uuid,true,current_date,current_date,NULL,'push','practitioner-marked-onleave','[[PrincipalName]] marked you on leave from [[AbsentStartDate]] to [[AbsentEndDate]]. Reach out to [[PrincipalName]] if you have any questions.',NULL,'You are on leave','[[ContactPrincipal]]','Contact [[PrincipalName]]',NULL,'amber',10.5,'{"url":"/principal/contact-practitioner", "state":{"practitionerId":"[[PractitionerUserId]]"}}'),
+	 ('0d963d2e-e88e-4bf4-b760-7b5eff50306d'::uuid,true,current_date,current_date,NULL,'hub', 'practitioner-marked-onleave','[[PrincipalName]] marked you on leave from [[AbsentStartDate]] to [[AbsentEndDate]]. Reach out to [[PrincipalName]] if you have any questions.',NULL,'You are on leave','[[ContactPrincipal]]','Contact [[PrincipalName]]',NULL,'amber',10.5,'{"url":"/principal/contact-practitioner", "state":{"practitionerId":"[[PractitionerUserId]]"}}');
+
+
