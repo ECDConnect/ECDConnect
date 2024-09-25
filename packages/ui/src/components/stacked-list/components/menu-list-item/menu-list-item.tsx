@@ -96,6 +96,7 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({
               {item?.subItem}
             </p>
           )}
+          {item?.likesItem && <div>{item?.likesItem}</div>}
           {item?.rightIcon ? (
             renderIcon(item.rightIcon, item.rightIconClassName)
           ) : item?.hideRightIcon ? null : (

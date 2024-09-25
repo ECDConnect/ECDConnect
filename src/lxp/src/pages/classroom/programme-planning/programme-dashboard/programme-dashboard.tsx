@@ -1,5 +1,5 @@
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
-import { addDays, isAfter, isSameDay, isSameWeek, isToday } from 'date-fns';
+import { format, isSameDay, isSameWeek } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import { programmeSelectors } from '@store/programme';
@@ -163,13 +163,18 @@ export const ProgrammeDashboard: React.FC = () => {
     setTimeout(() => setShowReport(false), 600);
   }, [setShowReport, toPDF]);
 
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const tomorrowUnplannedActivity = dailyProgrammesUnplanned.find(
+    (x) => format(x.date, 'EEEE, d LLLL') === format(tomorrow, 'EEEE, d LLLL')
+  );
+
   const showStartPlanning = useCallback(() => {
     if (
       hasPermissionToEdit &&
       !isWholeWeekPlanned &&
-      dailyProgrammesUnplanned.every(
-        (day) => isToday(day.date) || isAfter(day.date, new Date())
-      ) &&
+      tomorrowUnplannedActivity &&
       (!previousSelectedDate || !isSameWeek(selectedDate, previousSelectedDate))
     ) {
       dialog({
@@ -225,12 +230,13 @@ export const ProgrammeDashboard: React.FC = () => {
     }
   }, [
     classroomGroupId,
-    dailyProgrammesUnplanned,
     dialog,
+    hasPermissionToEdit,
     history,
     isWholeWeekPlanned,
     previousSelectedDate,
     selectedDate,
+    tomorrowUnplannedActivity,
     user?.firstName,
   ]);
 
@@ -250,151 +256,153 @@ export const ProgrammeDashboard: React.FC = () => {
 
   useEffect(() => {
     if (!isWalkthrough) {
-      showStartPlanning();
-    }
-  }, [isWalkthrough, showStartPlanning]);
-
-  useEffect(() => {
-    if (!progressSummary) {
-      const today = new Date();
-      const reportDate =
-        today.getMonth() >= 0 && today.getMonth() <= 6
-          ? 'June'
-          : 'November' + today.getFullYear();
-      fetchData(reportDate);
-    } else {
-      let total: number = 0;
-      const skills: iSkills[] = [];
-      const dMessage = [];
-
-      const showProgressReportDialog = async (dMessage: string[]) => {
-        dialog({
-          // blocking: true,
-          position: DialogPosition.Middle,
-          render: (onSubmit: any, onCancel: any) => (
-            <ActionModal
-              className={'mx-4'}
-              title="What are children working on?"
-              paragraphs={dMessage}
-              customIcon={
-                <div
-                  className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"
-                  style={{ width: 85 }}
-                >
-                  <img src={iconRobotImage} alt="card" />
-                </div>
-              }
-              actionButtons={[
-                {
-                  text: 'Download the full summary',
-                  colour: 'quatenary',
-                  onClick: () => {
-                    // downloadPdf();
-                    // setTimeout(() => onCancel(), 600);
-                    history?.push(
-                      ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
-                      {
-                        report: 'completed-all',
-                      }
-                    );
-                    onCancel();
-                  },
-                  type: 'filled',
-                  textColour: 'white',
-                  leadingIcon: 'DownloadIcon',
-                },
-                {
-                  text: 'Close',
-                  textColour: 'quatenary',
-                  colour: 'quatenary',
-                  type: 'outlined',
-                  onClick: () => onCancel(),
-                  leadingIcon: 'XIcon',
-                },
-              ]}
-            />
-          ),
-        });
-      };
-
-      progressSummary?.classSummaries?.forEach((item) => {
-        total = item.childCount || 0;
-        item?.categories?.forEach((subItem) => {
-          subItem?.subCategories?.forEach((subCategoriesItem) => {
-            subCategoriesItem?.childrenPerSkill?.forEach((skillItem) => {
-              let childSkill: string = skillItem?.skill || '';
-              let childCount: number = skillItem?.childCount || 0;
-              const existing = skills.find((n) => n.skill === childSkill);
-              if (existing) {
-                childCount = existing.totalChildren + childCount;
-              }
-              skills.push({ skill: childSkill, totalChildren: childCount });
-            });
-          });
-        });
-      });
-
-      const today = new Date();
-      const thisYear31July = new Date(today.getFullYear(), 6, 31);
-      const thisYear20Dec = new Date(today.getFullYear(), 11, 20);
-      const nextYear31July = new Date(today.getFullYear() + 1, 6, 31);
-      const reportMonth = today.getMonth() >= 6 ? 'June' : 'November';
-
-      if (skills.length === 0) {
-        dMessage.push('None of the children are working on skills.');
-      } else {
-        dMessage.push(
-          'Based on your ' +
-            reportMonth +
-            ' progress reports, here are some areas that children are working on:'
-        );
-
-        skills.sort((a, b) => a.totalChildren - b.totalChildren);
-        skills.forEach((item, index) => {
-          if (index <= 2) {
-            dMessage.push(
-              '- ' +
-                item.skill +
-                ' (' +
-                item.totalChildren +
-                (item.totalChildren === 1 ? ' child)' : ' children)')
-            );
-          }
-        });
-
-        dMessage.push(
-          'Think about adding activities to work on these areas. Download the full summary.'
-        );
-      }
-
-      const storageItemJuly = getStorageItem<number>(
-        LocalStorageKeys.hasViewedJulProgressReport
-      );
-      const storageItemDecember = getStorageItem<number>(
-        LocalStorageKeys.hasViewedDecProgressReport
-      );
-
-      if (total > 0) {
-        if (today >= thisYear31July && today < thisYear20Dec) {
-          if (!storageItemJuly || storageItemJuly === 0) {
-            setStorageItem(
-              today.getTime(),
-              LocalStorageKeys.hasViewedJulProgressReport
-            );
-            showProgressReportDialog(dMessage);
-          }
-        } else if (today >= thisYear20Dec && today < nextYear31July) {
-          if (!storageItemDecember || storageItemDecember === 0) {
-            showProgressReportDialog(dMessage);
-            setStorageItem(
-              today.getTime(),
-              LocalStorageKeys.hasViewedDecProgressReport
-            );
-          }
-        }
+      if (!isHoliday) {
+        showStartPlanning();
       }
     }
-  }, [fetchData, progressSummary, downloadPdf, dialog]);
+  }, [isHoliday, isWalkthrough, showStartPlanning]);
+
+  // useEffect(() => {
+  //   if (!progressSummary) {
+  //     const today = new Date();
+  //     const reportDate =
+  //       today.getMonth() >= 0 && today.getMonth() <= 6
+  //         ? 'June'
+  //         : 'November' + today.getFullYear();
+  //     fetchData(reportDate);
+  //   } else {
+  //     let total: number = 0;
+  //     const skills: iSkills[] = [];
+  //     const dMessage = [];
+
+  //     const showProgressReportDialog = async (dMessage: string[]) => {
+  //       dialog({
+  //         // blocking: true,
+  //         position: DialogPosition.Middle,
+  //         render: (onSubmit: any, onCancel: any) => (
+  //           <ActionModal
+  //             className={'mx-4'}
+  //             title="What are children working on?"
+  //             paragraphs={dMessage}
+  //             customIcon={
+  //               <div
+  //                 className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"
+  //                 style={{ width: 85 }}
+  //               >
+  //                 <img src={iconRobotImage} alt="card" />
+  //               </div>
+  //             }
+  //             actionButtons={[
+  //               {
+  //                 text: 'Download the full summary',
+  //                 colour: 'quatenary',
+  //                 onClick: () => {
+  //                   // downloadPdf();
+  //                   // setTimeout(() => onCancel(), 600);
+  //                   history?.push(
+  //                     ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+  //                     {
+  //                       report: 'completed-all',
+  //                     }
+  //                   );
+  //                   onCancel();
+  //                 },
+  //                 type: 'filled',
+  //                 textColour: 'white',
+  //                 leadingIcon: 'DownloadIcon',
+  //               },
+  //               {
+  //                 text: 'Close',
+  //                 textColour: 'quatenary',
+  //                 colour: 'quatenary',
+  //                 type: 'outlined',
+  //                 onClick: () => onCancel(),
+  //                 leadingIcon: 'XIcon',
+  //               },
+  //             ]}
+  //           />
+  //         ),
+  //       });
+  //     };
+
+  //     progressSummary?.classSummaries?.forEach((item) => {
+  //       total = item.childCount || 0;
+  //       item?.categories?.forEach((subItem) => {
+  //         subItem?.subCategories?.forEach((subCategoriesItem) => {
+  //           subCategoriesItem?.childrenPerSkill?.forEach((skillItem) => {
+  //             let childSkill: string = skillItem?.skill || '';
+  //             let childCount: number = skillItem?.childCount || 0;
+  //             const existing = skills.find((n) => n.skill === childSkill);
+  //             if (existing) {
+  //               childCount = existing.totalChildren + childCount;
+  //             }
+  //             skills.push({ skill: childSkill, totalChildren: childCount });
+  //           });
+  //         });
+  //       });
+  //     });
+
+  //     const today = new Date();
+  //     const thisYear31July = new Date(today.getFullYear(), 6, 31);
+  //     const thisYear20Dec = new Date(today.getFullYear(), 11, 20);
+  //     const nextYear31July = new Date(today.getFullYear() + 1, 6, 31);
+  //     const reportMonth = today.getMonth() >= 6 ? 'June' : 'November';
+
+  //     if (skills.length === 0) {
+  //       dMessage.push('None of the children are working on skills.');
+  //     } else {
+  //       dMessage.push(
+  //         'Based on your ' +
+  //           reportMonth +
+  //           ' progress reports, here are some areas that children are working on:'
+  //       );
+
+  //       skills.sort((a, b) => a.totalChildren - b.totalChildren);
+  //       skills.forEach((item, index) => {
+  //         if (index <= 2) {
+  //           dMessage.push(
+  //             '- ' +
+  //               item.skill +
+  //               ' (' +
+  //               item.totalChildren +
+  //               (item.totalChildren === 1 ? ' child)' : ' children)')
+  //           );
+  //         }
+  //       });
+
+  //       dMessage.push(
+  //         'Think about adding activities to work on these areas. Download the full summary.'
+  //       );
+  //     }
+
+  //     const storageItemJuly = getStorageItem<number>(
+  //       LocalStorageKeys.hasViewedJulProgressReport
+  //     );
+  //     const storageItemDecember = getStorageItem<number>(
+  //       LocalStorageKeys.hasViewedDecProgressReport
+  //     );
+
+  //     if (total > 0) {
+  //       if (today >= thisYear31July && today < thisYear20Dec) {
+  //         if (!storageItemJuly || storageItemJuly === 0) {
+  //           setStorageItem(
+  //             today.getTime(),
+  //             LocalStorageKeys.hasViewedJulProgressReport
+  //           );
+  //           showProgressReportDialog(dMessage);
+  //         }
+  //       } else if (today >= thisYear20Dec && today < nextYear31July) {
+  //         if (!storageItemDecember || storageItemDecember === 0) {
+  //           showProgressReportDialog(dMessage);
+  //           setStorageItem(
+  //             today.getTime(),
+  //             LocalStorageKeys.hasViewedDecProgressReport
+  //           );
+  //         }
+  //       }
+  //     }
+  //   }
+  // }, [fetchData, progressSummary, downloadPdf, dialog]);
 
   const hasClickedAfterEndOfProgressReportPeriodEnded = getStorageItem(
     LocalStorageKeys?.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod

@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { activitySelectors } from '@store/content/activity';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { getAllGroupActivityIds } from '@utils/classroom/programme-planning/programmes.utils';
-import { getDay, isBefore, parseISO } from 'date-fns';
+import { format, getDay, isBefore, parseISO } from 'date-fns';
 import { ActivityType } from '@/constants/ActivitySearch';
 
 export type RecommendedActivity = {
@@ -32,13 +32,15 @@ export const useProgrammePlanningRecommendations = () => {
     // at least 10 small group & large group activities planned
     if (plannedActivities.length < 10) return [];
 
+    // 1. Theme activity - the activity chosen for that day for the theme; on Mondays to Fridays within a theme,
+    // always show the activity or story selected on that day as the recommended one. ""This is the theme activity for the day!""
     const filteredDailyProgrammes = programme?.dailyProgrammes?.filter(
       (day) => {
-        const dayDate = parseISO(day.dayDate.replace('Z', ''));
-
+        // const dayDate = parseISO(day.dayDate.replace('Z', ''));
+        const dayDate = new Date(day.dayDate);
         return (
-          isBefore(dayDate, selectedDate) &&
-          getDay(dayDate) === getDay(selectedDate)
+          // isBefore(dayDate, selectedDate) &&
+          format(dayDate, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
         );
       }
     );

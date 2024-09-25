@@ -27,6 +27,7 @@ import { useDialog } from '@ecdlink/core';
 import { ProgrammeTimingRouteState } from '../../programme-timing/programme-timing.types';
 import { ProgrammeThemeRouteState } from '../../programme-theme/programme-theme.types';
 import { useAppContext } from '@/walkthrougContext';
+import axios from 'axios';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -56,6 +57,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     return isSameDay(new Date(item?.dayDate), new Date(selectedDate!));
   });
   const [month, setMonth] = useState<string | undefined>();
+  const [svgImageBase64, setSvgImageBase64] = useState<string | undefined>();
 
   const classroomGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classroomGroupId)
@@ -213,6 +215,34 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     [newMonthYearList, selectedDate, setSelectedDate]
   );
 
+  const setBase64String = async (imageUrl: string) => {
+    const response = await axios
+      .get(imageUrl, { responseType: 'arraybuffer' })
+      .then((response) =>
+        new Buffer(response.data, 'binary').toString('base64')
+      );
+    if (imageUrl.indexOf('.svg') !== -1) {
+      setSvgImageBase64('data:image/svg+xml;base64,' + response);
+    } else if (
+      imageUrl.indexOf('.jpg') !== -1 ||
+      imageUrl.indexOf('.jpeg') !== -1
+    ) {
+      setSvgImageBase64('data:image/jpg;base64,' + response);
+    } else {
+      setSvgImageBase64('data:image/png;base64,' + response);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      chosenTheme &&
+      chosenTheme.imageUrl !== undefined &&
+      chosenTheme.imageUrl !== ''
+    ) {
+      setBase64String(chosenTheme.imageUrl);
+    }
+  }, [chosenTheme]);
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -280,11 +310,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             onClick={onClickTheme}
           >
             {chosenTheme && (
-              <img
-                src={chosenTheme?.imageUrl}
-                alt="theme"
-                className="ml-4 h-8 w-8"
-              />
+              <img src={svgImageBase64} alt="theme" className="ml-4 h-8 w-8" />
             )}
             {dailyProgramme && theme?.dailyProgrammes?.length ? (
               <Typography
