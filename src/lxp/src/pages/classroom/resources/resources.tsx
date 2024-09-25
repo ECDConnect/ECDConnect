@@ -2,6 +2,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
+  LoadingSpinner,
   StackedList,
   StackedListItemType,
   Typography,
@@ -12,15 +13,19 @@ import { ResourcesService } from '@/services/ResourcesService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { AllResources } from './all-resources/all-resources';
+import { userSelectors } from '@/store/user';
 
 export const Resources = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const user = useSelector(userSelectors.getUser);
   const [locale, setLocale] = useState<string>(
     '9688cd08-adef-408c-9d34-5d75ae5c44df'
   );
   const [resources, setResources] = useState<any[]>([]);
+  const [resourcesLikedByUser, setResourcesLikedByUser] = useState<any[]>([]);
   const [viewAllResources, setViewAllResources] = useState(false);
   const [resourceTypeItem, setResourceTypeItem] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const activitiesResources = useMemo(
     () =>
@@ -59,8 +64,25 @@ export const Resources = () => {
     }
   }, [locale, userAuth?.auth_token]);
 
+  const handleGetResourcesLikedByUser = useCallback(async () => {
+    const response = await new ResourcesService(
+      userAuth?.auth_token!
+    )?.allResourceLikesForUser(user?.id!);
+
+    if (response) {
+      setResourcesLikedByUser(response);
+    }
+  }, [user?.id, userAuth?.auth_token]);
+
+  const handleGetResourcesQueries = useCallback(async () => {
+    setIsLoading(true);
+    await handleGetResources();
+    await handleGetResourcesLikedByUser();
+    setIsLoading(false);
+  }, [handleGetResources, handleGetResourcesLikedByUser]);
+
   useEffect(() => {
-    handleGetResources();
+    handleGetResourcesQueries();
   }, []);
 
   const handleOpenResources = useCallback(() => {
@@ -128,11 +150,21 @@ export const Resources = () => {
         color="textDark"
         text={`What type of resource would you like to see?`}
       />
-      <StackedList
-        className="my-4 flex w-full flex-col gap-1 rounded-2xl"
-        type="TitleList"
-        listItems={resourceItems}
-      />
+      {isLoading ? (
+        <LoadingSpinner
+          className="mt-6"
+          size={'medium'}
+          spinnerColor={'quatenary'}
+          backgroundColor={'uiBg'}
+        />
+      ) : (
+        <StackedList
+          className="my-4 flex w-full flex-col gap-1 rounded-2xl"
+          type="TitleList"
+          listItems={resourceItems}
+        />
+      )}
+
       <Button
         onClick={() => setViewAllResources(true)}
         className="mt-12 w-full rounded-2xl"
@@ -154,6 +186,8 @@ export const Resources = () => {
           setViewAllResources={setViewAllResources}
           setResourceTypeItem={setResourceTypeItem}
           resourceTypeItem={resourceTypeItem}
+          resourcesLikedByUser={resourcesLikedByUser}
+          handleGetResourcesQueries={handleGetResourcesQueries}
         />
       </Dialog>
     </div>

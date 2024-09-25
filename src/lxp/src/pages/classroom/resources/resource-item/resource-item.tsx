@@ -6,7 +6,6 @@ import {
   Button,
   CheckboxGroup,
   Divider,
-  Radio,
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
@@ -21,23 +20,24 @@ import { ContentTypeEnum } from '@ecdlink/core';
 interface ResourceItemProps {
   resource: any;
   onClose: () => void;
+  handleGetResourcesQueries: any;
 }
 
 export const ResourceItem: React.FC<ResourceItemProps> = ({
   resource,
   onClose,
+  handleGetResourcesQueries,
 }) => {
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
 
   const [isLiked, setIsLiked] = useState(false);
-  console.log({ isLiked });
 
   const handleCheckIfUserLiked = useCallback(async () => {
     const response = await new ResourcesService(
       userAuth?.auth_token!
     )?.getResourceLikedStatusForUser(resource?.id);
-    console.log({ response });
+
     if (response) {
       setIsLiked(response?.isActive);
     }
@@ -47,25 +47,22 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
     handleCheckIfUserLiked();
   }, []);
 
-  const handleUpdateResourceLike = useCallback(async () => {
-    const response = await new ResourcesService(
-      userAuth?.auth_token!
-    )?.updateResourceLikes(
-      resource?.id,
-      ContentTypeEnum?.ClassroomBusinessResource,
-      isLiked
-    );
-    console.log({ response });
-    // if (response) {
-    //   setResources(response);
-    // }
-  }, [isLiked, resource?.id, userAuth?.auth_token]);
+  const handleUpdateResourceLike = useCallback(
+    async (isLikedByUser) => {
+      const response = await new ResourcesService(
+        userAuth?.auth_token!
+      )?.updateResourceLikes(
+        resource?.id,
+        ContentTypeEnum?.ClassroomBusinessResource,
+        isLikedByUser
+      );
 
-  // useEffect(() => {
-  //   if (isLiked) {
-  //     handleUpdateResourceLike();
-  //   }
-  // }, [handleUpdateResourceLike, isLiked]);
+      if (response) {
+        handleGetResourcesQueries();
+      }
+    },
+    [handleGetResourcesQueries, resource?.id, userAuth?.auth_token]
+  );
 
   const getChipStatusColor = (resourceType: string) => {
     switch (resourceType) {
@@ -122,12 +119,18 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
     <div>
       <BannerWrapper
         size="small"
-        onBack={() => onClose()}
+        onBack={() => {
+          onClose();
+          handleGetResourcesQueries();
+        }}
         color="primary"
         className={'h-full'}
         title={resource?.title}
         displayOffline={!isOnline}
-        onClose={() => onClose()}
+        onClose={() => {
+          onClose();
+          handleGetResourcesQueries();
+        }}
       />
       <LanguageSelector
         labelText="Change language:"
@@ -203,7 +206,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
           checked={isLiked}
           onChange={(e) => {
             setIsLiked(e?.checked);
-            handleUpdateResourceLike();
+            handleUpdateResourceLike(e?.checked);
           }}
         />
         <Divider dividerType="dashed" className="my-4" />

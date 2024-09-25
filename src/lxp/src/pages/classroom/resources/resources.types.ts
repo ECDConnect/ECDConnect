@@ -17,9 +17,14 @@ export const DataType = {
   notDataFree: 'Not Data Free',
 };
 
-export const DataTypeFilterOption = {
+export const DataSortFilterOption = {
   mostLiked: 'Most liked',
   newest: 'Newest',
   oldest: 'Oldest',
   title: 'Title',
+};
+
+export const LikedFilterOption = {
+  liked: 'Liked',
+  notLiked: 'Not liked',
 };
