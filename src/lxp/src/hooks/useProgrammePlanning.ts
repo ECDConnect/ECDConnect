@@ -189,12 +189,18 @@ export const useProgrammePlanning = () => {
 
     const dailyProgrammes: DailyProgrammeDto[] = [];
     let themeDay = 1;
-    const diffDays = differenceInBusinessDays(
-      new Date(programme?.endDate),
-      startDate
-    );
 
-    while (dailyProgrammes.length <= diffDays - 1) {
+    // get total holidays for period to be subtracted from business days
+    const totalHolidays = holiday.holidays.filter((item) => {
+      let date = new Date(item.day);
+      return date >= startDate && date <= new Date(programme?.endDate);
+    }).length;
+
+    const diffDays =
+      differenceInBusinessDays(new Date(programme?.endDate), startDate) -
+      totalHolidays;
+
+    while (dailyProgrammes.length <= diffDays) {
       if (dailyProgrammes.length > 0) {
         dayDate = getNextValidDate(dayDate);
       }

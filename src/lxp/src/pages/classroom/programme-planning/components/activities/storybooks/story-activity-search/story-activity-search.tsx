@@ -466,7 +466,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       >
         <ActionModal
           title={'Story & activity'}
-          importantText={`${routineItem.timeSpan} minutes`}
+          // importantText={`${routineItem.timeSpan} minutes`}
           icon={'InformationCircleIcon'}
           iconColor={'infoDark'}
           iconBorderColor={'infoBb'}
