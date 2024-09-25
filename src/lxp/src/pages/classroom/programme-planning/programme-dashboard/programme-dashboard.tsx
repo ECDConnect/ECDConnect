@@ -172,6 +172,7 @@ export const ProgrammeDashboard: React.FC = () => {
 
   const showStartPlanning = useCallback(() => {
     if (
+      !isWalkthrough &&
       hasPermissionToEdit &&
       !isWholeWeekPlanned &&
       tomorrowUnplannedActivity &&
@@ -233,6 +234,7 @@ export const ProgrammeDashboard: React.FC = () => {
     dialog,
     hasPermissionToEdit,
     history,
+    isWalkthrough,
     isWholeWeekPlanned,
     previousSelectedDate,
     selectedDate,

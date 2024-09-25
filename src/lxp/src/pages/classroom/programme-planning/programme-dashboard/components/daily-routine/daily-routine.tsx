@@ -239,7 +239,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           <ActionModal
             className={'mx-4'}
             title={routineItem.name}
-            importantText={`${routineItem.timeSpan}`}
+            // importantText={`${routineItem.timeSpan}`}
             icon={'InformationCircleIcon'}
             iconColor={'infoDark'}
             iconBorderColor={'infoBb'}
