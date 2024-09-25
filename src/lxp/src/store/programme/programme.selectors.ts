@@ -7,9 +7,19 @@ export const getProgrammes = (state: RootState): ProgrammeDto[] =>
   [...(state.programmeData.programmes || [])]
     ?.map((programme) => ({
       ...programme,
-      dailyProgrammes: programme?.dailyProgrammes?.filter(
-        (day) => day?.isActive === undefined || day?.isActive !== false
-      ),
+      dailyProgrammes: programme?.dailyProgrammes
+        ?.filter(
+          (day) => day?.isActive === undefined || day?.isActive !== false
+        )
+        .sort((a, b) => {
+          const dateA = a?.dayDate
+            ? parseISO(a.dayDate as string)
+            : new Date(0);
+          const dateB = b?.dayDate
+            ? parseISO(b.dayDate as string)
+            : new Date(0);
+          return compareDesc(dateB, dateA);
+        }),
     }))
     ?.sort((a, b) => {
       const dateA = a?.insertedDate

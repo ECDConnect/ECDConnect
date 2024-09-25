@@ -108,8 +108,6 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [template]);
 
-  console.log('fields', fields);
-
   const renderFields = useCallback(
     (fields: FormTemplateField[]) => {
       const isEdit = fields.some((f) => !!f.contentValue);

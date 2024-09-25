@@ -14,7 +14,7 @@ export default function GeneralDashboard() {
     if (data) {
       var url =
         data.settings.Grafana.GeneralDashboard +
-        '?from=now-6M&to=now&orgId=1&kiosk&var-TenantId=' +
+        '&from=now-6M&to=now&orgId=1&kiosk&var-TenantId=' +
         tenant.tenant.id;
       setGeneratlURL(url);
     }

@@ -8,7 +8,7 @@ import {
 } from '@ecdlink/core';
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
@@ -37,6 +37,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
 
   //check password strength
   const password = watch('password');
+  const username = watch('username');
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
@@ -76,12 +77,14 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
         setIsLoading(false);
         setDisplayError(true);
       }
-
-      setTimeout(() => {
-        setDisplayError(false);
-      }, 5000);
     }
   };
+
+  useEffect(() => {
+    if (username) {
+      setDisplayError(false);
+    }
+  }, [username]);
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
@@ -144,9 +147,10 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               {displayError && (
                 <Alert
                   className={'mt-5 mb-3'}
-                  message={
-                    'Oh no! There are 2 problems above. Please fix them:'
-                  }
+                  title={'Oh no! There is 1 problem above. Please fix them:'}
+                  titleColor="errorMain"
+                  message="Your email address was not recognised. Please use the email address from your invitation. If you need assistance, contact your administrator."
+                  messageColor="textDark"
                   type={'error'}
                 />
               )}
