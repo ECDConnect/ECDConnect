@@ -18,17 +18,18 @@ import SearchHeader, {
 } from '@/components/search-header/search-header';
 import {
   DataType,
-  DataTypeFilterOption,
+  DataSortFilterOption,
   ResourcesNames,
+  LikedFilterOption,
 } from '../resources.types';
-import { filterActivitiesByType } from '@/utils/classroom/programme-planning/activity-search.utils';
-import { sortByOptions } from '@/pages/community-old/clubs-tab/index.filters';
 
 interface AllResourcesprops {
   resources: any[];
+  resourcesLikedByUser?: any[];
   setViewAllResources: (item: boolean) => void;
   setResourceTypeItem?: (item: string) => void;
   resourceTypeItem?: string;
+  handleGetResourcesQueries: any;
 }
 
 const SortByResourcesTypes: SearchDropDownOption<string>[] = [
@@ -52,10 +53,19 @@ const SortByTypeOfData: SearchDropDownOption<string>[] = [
 }));
 
 const SortByFilterOption: SearchDropDownOption<string>[] = [
-  DataTypeFilterOption?.mostLiked,
-  DataTypeFilterOption?.newest,
-  DataTypeFilterOption?.oldest,
-  DataTypeFilterOption?.title,
+  DataSortFilterOption?.mostLiked,
+  DataSortFilterOption?.newest,
+  DataSortFilterOption?.oldest,
+  DataSortFilterOption?.title,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+const FilterByUserLiked: SearchDropDownOption<string>[] = [
+  LikedFilterOption?.liked,
+  LikedFilterOption?.notLiked,
 ].map((item) => ({
   id: item,
   label: item,
@@ -64,9 +74,11 @@ const SortByFilterOption: SearchDropDownOption<string>[] = [
 
 export const AllResources: React.FC<AllResourcesprops> = ({
   resources,
+  resourcesLikedByUser,
   setViewAllResources,
   setResourceTypeItem,
   resourceTypeItem,
+  handleGetResourcesQueries,
 }) => {
   const { isOnline } = useOnlineStatus();
   const listItems: MenuListDataItem[] = [];
@@ -74,16 +86,67 @@ export const AllResources: React.FC<AllResourcesprops> = ({
   const [resourcesTypesFilter, setResourcesTypesFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
+  const [likedByUserFilter, setLikedByUserFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+
+  const likedByUserFormatted = useMemo(
+    () => likedByUserFilter?.map((item) => item?.id),
+    [likedByUserFilter]
+  );
+
+  const resourcesLiked = resources?.filter((item1) =>
+    resourcesLikedByUser?.find((item2) => item1.id === item2.contentId)
+  );
+  const resourcesNotLiked = resources?.filter(
+    (item1) =>
+      !resourcesLikedByUser?.find((item2) => item1.id === item2.contentId)
+  );
+
+  const filteredByUserLiked = useMemo(() => {
+    if (
+      likedByUserFormatted?.find((item) => item === LikedFilterOption.liked) &&
+      likedByUserFormatted?.find((item) => item === LikedFilterOption.notLiked)
+    ) {
+      return resources;
+    }
+    if (
+      likedByUserFormatted?.find((item) => item === LikedFilterOption.liked)
+    ) {
+      return resourcesLiked;
+    }
+
+    if (
+      likedByUserFormatted?.find((item) => item === LikedFilterOption.notLiked)
+    ) {
+      return resourcesNotLiked;
+    }
+
+    return resources;
+  }, [likedByUserFormatted, resources]);
 
   const filteredByType = useMemo(
-    () => resources?.filter((item) => item?.resourceType === resourceTypeItem),
-    [resourceTypeItem, resources]
+    () =>
+      filteredByUserLiked?.length > 0
+        ? filteredByUserLiked?.filter(
+            (item) => item?.resourceType === resourceTypeItem
+          )
+        : resources?.filter((item) => item?.resourceType === resourceTypeItem),
+    [filteredByUserLiked, resourceTypeItem, resources]
   );
 
   const resourcesSorted = useMemo(
     () =>
       resourceTypeItem
         ? filteredByType?.sort((a, b) =>
+            Number(a.numberLikes) > Number(b.numberLikes)
+              ? -1
+              : Number(a.numberLikes) < Number(b.numberLikes)
+              ? 1
+              : 0
+          )
+        : filteredByUserLiked?.length > 0
+        ? filteredByUserLiked?.sort((a, b) =>
             Number(a.numberLikes) > Number(b.numberLikes)
               ? -1
               : Number(a.numberLikes) < Number(b.numberLikes)
@@ -97,7 +160,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
               ? 1
               : 0
           ),
-    [filteredByType, resourceTypeItem, resources]
+    [filteredByType, filteredByUserLiked, resourceTypeItem, resources]
   );
 
   const [resourcesData, setResourcesData] = useState(resourcesSorted);
@@ -108,6 +171,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
   const [sortOptionFilter, setsortOptionFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
+
   const activitiesFormatted = useMemo(
     () => resourcesTypesFilter?.map((item) => item?.id),
     [resourcesTypesFilter]
@@ -145,7 +209,11 @@ export const AllResources: React.FC<AllResourcesprops> = ({
             dialog({
               position: DialogPosition.Full,
               render: (onClose) => (
-                <ResourceItem resource={item} onClose={onClose} />
+                <ResourceItem
+                  resource={item}
+                  onClose={onClose}
+                  handleGetResourcesQueries={handleGetResourcesQueries}
+                />
               ),
             });
           },
@@ -185,7 +253,11 @@ export const AllResources: React.FC<AllResourcesprops> = ({
             dialog({
               position: DialogPosition.Full,
               render: (onClose) => (
-                <ResourceItem resource={item} onClose={onClose} />
+                <ResourceItem
+                  resource={item}
+                  onClose={onClose}
+                  handleGetResourcesQueries={handleGetResourcesQueries}
+                />
               ),
             });
           },
@@ -237,7 +309,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
     if (filterByFormatted?.length) {
       const sortedBy = filterByFormatted?.find((item) => item);
 
-      if (sortedBy === DataTypeFilterOption?.mostLiked) {
+      if (sortedBy === DataSortFilterOption?.mostLiked) {
         if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
           const sorted = resourcesListFormatted?.sort((a, b) =>
             Number(a.numberLikes) > Number(b.numberLikes)
@@ -259,7 +331,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
         }
       }
 
-      if (sortedBy === DataTypeFilterOption?.newest) {
+      if (sortedBy === DataSortFilterOption?.newest) {
         if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
           const sorted = resourcesListFormatted?.sort((a, b) =>
             new Date(a.insertedDate) > new Date(b.insertedDate)
@@ -281,7 +353,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
         }
       }
 
-      if (sortedBy === DataTypeFilterOption?.oldest) {
+      if (sortedBy === DataSortFilterOption?.oldest) {
         if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
           const sorted = resourcesListFormatted?.sort((a, b) =>
             new Date(a.insertedDate) < new Date(b.insertedDate)
@@ -302,7 +374,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
           setResourcesData(sorted);
         }
       }
-      if (sortedBy === DataTypeFilterOption?.title) {
+      if (sortedBy === DataSortFilterOption?.title) {
         if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
           const sorted = resourcesListFormatted?.sort((a, b) =>
             a.title < b.title ? -1 : a.title > b.title ? 1 : 0
@@ -320,11 +392,7 @@ export const AllResources: React.FC<AllResourcesprops> = ({
         }
       }
     } else {
-      if (activitiesFormatted?.length > 0 || dataTypesFormatted?.length > 0) {
-        setResourcesListFormatted(resourcesData);
-      } else {
-        setResourcesData(resourcesSorted);
-      }
+      setResourcesData(resourcesSorted);
     }
   }, [
     activitiesFormatted?.length,
@@ -417,6 +485,24 @@ export const AllResources: React.FC<AllResourcesprops> = ({
             placeholder={'Data free'}
             info={{
               name: `Filter by: Data Free`,
+            }}
+            multiple={true}
+            color={'quatenary'}
+            preventCloseOnClick={true}
+          />
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            className={'mr-1'}
+            menuItemClassName={
+              'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+            }
+            overlayTopOffset={'3'}
+            options={FilterByUserLiked}
+            selectedOptions={likedByUserFilter}
+            onChange={setLikedByUserFilter}
+            placeholder={'Liked'}
+            info={{
+              name: `Filter by: Your liked resources`,
             }}
             multiple={true}
             color={'quatenary'}
