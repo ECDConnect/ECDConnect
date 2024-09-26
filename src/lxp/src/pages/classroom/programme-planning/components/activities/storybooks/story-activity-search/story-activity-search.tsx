@@ -461,7 +461,6 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       <Dialog
         visible={displayHelp}
         position={DialogPosition.Middle}
-        stretch
         className="px-4"
       >
         <ActionModal
