@@ -156,13 +156,6 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
   const { setState } = useAppContext();
 
   const handleWalkthroughLanguage = useCallback(() => {
-    history.push(
-      ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
-        ':classroomGroupId',
-        classroomGroupId
-      )
-    );
-
     return dialog({
       blocking: true,
       position: DialogPosition.Middle,
@@ -171,6 +164,12 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
         <WalkthroughModal
           onStart={() => {
             setState({ run: true, tourActive: true, stepIndex: 0 });
+            history.push(
+              ROUTES.CLASSROOM.ACTIVITIES.PROGRAMME_DASHBOARD.ROOT.replace(
+                ':classroomGroupId',
+                classroomGroupId
+              )
+            );
             onClose();
           }}
         />

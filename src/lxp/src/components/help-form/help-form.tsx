@@ -91,7 +91,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     const isValid = isEmail(inputValue);
     setIsValidEmail(isValid);
     if (isValid) {
-      setContactValue(email);
+      setContactValue(inputValue);
     }
   };
 
@@ -107,7 +107,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     setIsValidCellphone(isValid);
 
     if (isValid) {
-      setContactValue(cellphone);
+      setContactValue(inputValue);
     }
   };
 

@@ -11,6 +11,9 @@ import { useAppContext } from '@/walkthrougContext';
 import { dummyActivityDetails } from '@/pages/classroom/programme-planning/programme-dashboard/walkthrough/dummy-content';
 import ProgrammeWrapper from '../../../../programme-dashboard/walkthrough/programme-wrapper';
 import { LanguageCode } from '@/i18n/types';
+import { ActivityDto, LanguageDto } from '@ecdlink/core';
+import { ContentActivityService } from '@/services/ContentActivityService';
+import { authSelectors } from '@/store/auth';
 
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   activityId,
@@ -23,12 +26,14 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 }) => {
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
   const { isOnline } = useOnlineStatus();
+  const authUser = useSelector(authSelectors.getAuthUser);
 
   const { state } = useAppContext();
   const isWalkthrough = state?.run;
 
   const [language, setLanguage] = useState({ locale: 'en-za' });
   const [languages, setLanguages] = useState([language.locale as LanguageCode]);
+  const [currentActivity, setCurrentActivity] = useState<ActivityDto>();
 
   useEffect(() => {
     if (availableLanguages !== undefined) {
@@ -46,7 +51,14 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
     activitySelectors.getActivityById(activityId)
   );
 
-  const activityDetail = isWalkthrough ? dummyActivityDetails : activityById;
+  useEffect(() => {
+    if (isWalkthrough) {
+      setCurrentActivity(dummyActivityDetails);
+    } else {
+      setCurrentActivity(activityById);
+    }
+  }, [activityById, isWalkthrough]);
+
   const date = new Date();
 
   const handleActivityChanged = () => {
@@ -63,7 +75,21 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
     }
   }, [isWalkthrough, onActivityChanged, state.stepIndex]);
 
-  if (!activityDetail) return <></>;
+  const getDataByLanguage = async (language: LanguageDto) => {
+    let activities: ActivityDto[] | undefined;
+
+    activities = await new ContentActivityService(
+      authUser?.auth_token || ''
+    ).getActivities(language.locale);
+
+    const translatedActivity = activities?.find(
+      (item) => item.id === currentActivity?.id
+    );
+
+    setCurrentActivity(translatedActivity || currentActivity);
+  };
+
+  if (!currentActivity) return <></>;
 
   return (
     <>
@@ -72,7 +98,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
         showBackground={false}
         size="medium"
         renderBorder={true}
-        title={activityDetail.name}
+        title={currentActivity.name}
         subTitle={`${date.toDateString()}`}
         color={'primary'}
         backgroundColour="white"
@@ -89,9 +115,9 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
             <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
           </div>
         )}
-        {activityDetail.image && activityDetail.image?.length > 0 && (
+        {currentActivity.image && currentActivity.image?.length > 0 && (
           <img
-            src={activityDetail.image}
+            src={currentActivity.image}
             className="mx-auto h-40 w-full rounded-md"
             alt=""
           />
@@ -99,12 +125,16 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 
         <LanguageSelector
           currentLocale={'en-za'}
-          selectLanguage={() => {}}
+          selectLanguage={getDataByLanguage}
           availableLanguages={languages}
         />
         <Divider />
         <div className="px-4 py-3">
-          <Typography type="h1" text={activityDetail.name} color={'textDark'} />
+          <Typography
+            type="h1"
+            text={currentActivity.name}
+            color={'textDark'}
+          />
 
           {!disabled &&
             (isSelected ? (
@@ -142,7 +172,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
             className="mt-5"
           />
           <Card className="border-primary mt-2 rounded-lg border">
-            {activityDetail.subCategories?.map((subCategory, idx) => (
+            {currentActivity.subCategories?.map((subCategory, idx) => (
               <ActivitySubCategoryCard
                 key={`activity-details-sub-category-${idx}`}
                 subCategory={subCategory}
@@ -162,7 +192,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
             <Typography
               type="body"
               fontSize={'16'}
-              text={activityDetail.materials}
+              text={currentActivity.materials}
               color={'textMid'}
             />
             <Typography
@@ -177,7 +207,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
             <Typography
               type="markdown"
               fontSize={'16'}
-              text={activityDetail.description}
+              text={currentActivity.description}
               color={'textDark'}
             />
           </div>
@@ -193,7 +223,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
           <Typography
             type="markdown"
             fontSize={'16'}
-            text={activityDetail.notes}
+            text={currentActivity.notes}
             color={'textDark'}
           />
         </div>
