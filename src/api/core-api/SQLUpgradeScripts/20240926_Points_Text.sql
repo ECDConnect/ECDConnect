@@ -1,0 +1,17 @@
+update "PointsActivity" set "Name" ='Attendance registers saved' where "Id" = 'af31301f-2791-438f-8341-d605af9b4616';
+update "PointsActivity" set "Name" ='Children registered' where "Id" = 'a012de24-582e-4631-9612-c847c9d166b1';
+update "PointsActivity" set "Name" ='Children removed from preschool' where "Id" = 'ecff0efb-441d-4075-8ca4-82c0545d64e0';
+update "PointsActivity" set "Name" ='Themes planned' where "Id" = 'b16ca985-7b54-4968-9e43-d08e301f438b';
+update "PointsActivity" set "Name" ='Classroom days planned' where "Id" = 'd0f30701-24c6-4a92-ab23-7db49edb9452';
+update "PointsActivity" set "Name" ='Practitioners added' where "Id" = '9bf3b569-7518-47a2-9219-38d4040f2c72';
+update "PointsActivity" set "Name" ='Classes added' where "Id" = '1f0e6a37-62f8-4f1b-af82-4b3311c895c6';
+update "PointsActivity" set "Name" ='Income statements downloaded' where "Id" = '8a6f8457-3cda-4b3f-b32a-0d2e3694069e';
+update "PointsActivity" set "Name" ='Income/expenses added' where "Id" = '1be2ffb2-b119-4c9c-9991-6ec4e9686db8';
+update "PointsActivity" set "Name" ='Caregiver preschool fees tracked' where "Id" = '913871dd-0199-427e-8158-d1453bbbd568';
+update "PointsActivity" set "Name" ='Children’s progress observations complete' where "Id" = '959dbdce-6264-4bef-9d47-5d75e284162c';
+update "PointsActivity" set "Name" ='Progress reports created' where "Id" = '0ae80716-6355-432f-8680-5df42c6ea677';
+update "PointsActivity" set "Name" ='Progress summaries downloaded' where "Id" = 'a320a46f-3e00-4a8e-b7c7-f09629ed5d07';
+update "PointsActivity" set "Name" ='Training courses completed' where "Id" = 'a6090402-766c-4298-a47d-3f4329276ca1';
+update "PointsActivity" set "Name" ='Short description added in community' where "Id" = '06edbd89-60ca-409d-a65d-a8fc6283cc53';
+update "PointsActivity" set "Name" ='Community profile complete' where "Id" = 'affdd04f-85bc-4bb3-b123-e9a80bcbd56e';
+update "PointsActivity" set "Name" ='New connections in community' where "Id" = '87da9e98-c977-4a72-9da0-9e3df7932c4b';
