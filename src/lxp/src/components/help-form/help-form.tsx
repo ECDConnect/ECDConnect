@@ -49,8 +49,8 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     const input: HelpFormModel = {
       subject: helpType,
       description: problemValue,
-      cellNumber: isPhoneSelected ? cellphone : '',
-      email: isPhoneSelected === false ? email : '',
+      cellNumber: isPhoneSelected ? contactValue : '',
+      email: isPhoneSelected === false ? contactValue : '',
       isLoggedIn: false,
       contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
       userId: null,
@@ -91,7 +91,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     const isValid = isEmail(inputValue);
     setIsValidEmail(isValid);
     if (isValid) {
-      setContactValue(email);
+      setContactValue(inputValue);
     }
   };
 
@@ -107,7 +107,7 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     setIsValidCellphone(isValid);
 
     if (isValid) {
-      setContactValue(cellphone);
+      setContactValue(inputValue);
     }
   };
 
