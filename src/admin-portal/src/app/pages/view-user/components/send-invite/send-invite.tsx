@@ -102,7 +102,7 @@ export const SendInvite: React.FC<SendInviteProps> = ({
     sendInviteToApplication({
       variables: {
         userId: userData?.id,
-        inviteToPortal: false,
+        inviteToPortal: isFromAdministratorTable,
       },
     }).then(() => {
       setNotification({
