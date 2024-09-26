@@ -8,7 +8,6 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
-using HotChocolate.Language;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
