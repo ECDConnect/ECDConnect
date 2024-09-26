@@ -30,8 +30,12 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const [locale, setLocale] = useState<string>(
+    '9688cd08-adef-408c-9d34-5d75ae5c44df'
+  );
 
   const [isLiked, setIsLiked] = useState(false);
+  const [resourceItem, setResourceItem] = useState(resource);
 
   const handleCheckIfUserLiked = useCallback(async () => {
     const response = await new ResourcesService(
@@ -63,6 +67,26 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
     },
     [handleGetResourcesQueries, resource?.id, userAuth?.auth_token]
   );
+
+  const handleGetResourceByLanguage = useCallback(async () => {
+    const response = await new ResourcesService(
+      userAuth?.auth_token!
+    )?.resourceByLanguage(
+      resource?.id,
+      ContentTypeEnum?.ClassroomBusinessResource,
+      locale
+    );
+
+    if (response) {
+      setResourceItem(response);
+    }
+  }, [locale, resource?.id, userAuth?.auth_token]);
+
+  useEffect(() => {
+    if (locale) {
+      handleGetResourceByLanguage();
+    }
+  }, [handleGetResourceByLanguage, locale]);
 
   const getChipStatusColor = (resourceType: string) => {
     switch (resourceType) {
@@ -125,7 +149,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
         }}
         color="primary"
         className={'h-full'}
-        title={resource?.title}
+        title={resourceItem?.title}
         displayOffline={!isOnline}
         onClose={() => {
           onClose();
@@ -136,39 +160,43 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
         labelText="Change language:"
         labelClassName="font-medium font-body text-textDark pr-2"
         currentLocale="en-za"
-        selectLanguage={(data) => {}}
+        selectLanguage={(data) => {
+          setLocale(data?.id!);
+        }}
       />
       <div className="p-4">
-        <Typography type="h2" text={resource?.title} color="textDark" />
+        <Typography type="h2" text={resourceItem?.title} color="textDark" />
         <div className="my-2 flex items-center gap-4">
           <StatusChip
-            backgroundColour={getChipStatusColor(resource?.resourceType)}
-            borderColour={getChipStatusColor(resource?.resourceType)}
+            backgroundColour={getChipStatusColor(resourceItem?.resourceType)}
+            borderColour={getChipStatusColor(resourceItem?.resourceType)}
             textColour={'textDark'}
             textType={'body'}
-            text={resource?.resourceType}
+            text={resourceItem?.resourceType}
             className="w-max py-2"
           />
           <div
             className={`${
-              Number(resource?.numberLikes) > 0
+              Number(resourceItem?.numberLikes) > 0
                 ? 'bg-successMain'
                 : 'bg-infoMain'
             }  full mr-4 flex items-center gap-2 rounded-full px-3 py-0.5`}
           >
             <ThumbUpIcon className="h-5 w-5 text-white" />
-            <div>{resource?.numberLikes ? resource?.numberLikes : 0}</div>
+            <div>
+              {resourceItem?.numberLikes ? resourceItem?.numberLikes : 0}
+            </div>
           </div>
         </div>
         <Typography
           type="help"
-          text={resource?.shortDescription}
+          text={resourceItem?.shortDescription}
           color="textMid"
           className="my-4"
         />
         <div>{renderResourceDataType}</div>
         <Button
-          onClick={() => window.open(resource?.link, '_blank')}
+          onClick={() => window.open(resourceItem?.link, '_blank')}
           className="mt-2 w-full rounded-2xl"
           size="normal"
           color="quatenary"
@@ -179,7 +207,10 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
         />
         <Typography
           type="help"
-          text={resource?.longDescription}
+          text={resourceItem?.longDescription?.replace(
+            /<\/?[a-z][a-z0-9]*[^<>]*>/gi,
+            ''
+          )}
           color="textMid"
           className="my-4"
         />
