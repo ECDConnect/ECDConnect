@@ -190,7 +190,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var item = (IDictionary<string, object>)resourceData;
                 item.TryGetValue("numberLikes", out var numberLikes);
 
-                if (string.IsNullOrEmpty(numberLikes.ToString()))
+                if (numberLikes == null)
                 {
                     if (liked)
                     {
