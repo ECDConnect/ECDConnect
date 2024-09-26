@@ -94,11 +94,6 @@ export function ContentManagement() {
         id: 1,
       },
       {
-        name: ContentManagementTabs.PROCESS.name,
-        // href: '/',
-        id: ContentManagementTabs.PROCESS.id,
-      },
-      {
         name: ContentManagementTabs.PROGRAMMES.name,
         // href: '/',
         id: ContentManagementTabs.PROGRAMMES.id,

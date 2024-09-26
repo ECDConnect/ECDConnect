@@ -42,12 +42,14 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function init() {
-      await initializeServices();
-      return () => {
-        stopService();
-      };
+      if (user !== undefined) {
+        await initializeServices();
+      }
     }
     init().catch(console.error);
+    return () => {
+      stopService();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

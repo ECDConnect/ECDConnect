@@ -559,7 +559,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
       >
         <ActionModal
           title={routineItem.name}
-          importantText={`${routineItem.timeSpan} minutes`}
+          // importantText={`${routineItem.timeSpan} minutes`}
           icon={'InformationCircleIcon'}
           iconColor={'infoDark'}
           iconBorderColor={'infoBb'}
