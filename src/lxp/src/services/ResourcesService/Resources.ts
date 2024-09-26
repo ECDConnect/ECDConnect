@@ -162,6 +162,45 @@ class ResourcesService {
 
     return response.data.data.allResourceLikesForUser;
   }
+
+  async resourceByLanguage(
+    contentId: number,
+    contentTypeId: number,
+    localeId: string
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+     query GetResourceByLanguage($contentId: Int!, $contentTypeId: Int!, $localeId: UUID!) {
+    resourceByLanguage(contentId: $contentId, contentTypeId: $contentTypeId, localeId: $localeId) {
+        resourceType
+        title
+        shortDescription
+        link
+        longDescription
+        dataFree
+        sectionType
+        numberLikes
+        availableLanguages
+        
+    }
+}
+          `,
+      variables: {
+        contentId,
+        contentTypeId,
+        localeId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Resource by locale Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.resourceByLanguage;
+  }
 }
 
 export default ResourcesService;
