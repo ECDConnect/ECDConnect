@@ -49,8 +49,8 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
     const input: HelpFormModel = {
       subject: helpType,
       description: problemValue,
-      cellNumber: isPhoneSelected ? contactValue : '',
-      email: isPhoneSelected === false ? contactValue : '',
+      cellNumber: isPhoneSelected ? cellphone : '',
+      email: isPhoneSelected === false ? email : '',
       isLoggedIn: false,
       contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
       userId: null,
