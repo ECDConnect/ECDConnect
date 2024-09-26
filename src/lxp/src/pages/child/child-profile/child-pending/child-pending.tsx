@@ -4,6 +4,7 @@ import {
   BannerWrapper,
   Button,
   DialogPosition,
+  Divider,
   Typography,
 } from '@ecdlink/ui';
 import { format, addDays } from 'date-fns';
@@ -32,6 +33,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { ChildListRouteState } from '@/pages/classroom/child-list/child-list.types';
 import { ChildProfileRouteState } from '../child-profile.types';
+import childRegistrationForm from '@/assets/ECD_connect_registration_form.pdf';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
@@ -156,6 +158,15 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     });
   };
 
+  const onDownloadChildForm = () => {
+    const pdfUrl = childRegistrationForm;
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', 'child_registration_form.pdf');
+    document.body.appendChild(link);
+    link.click();
+  };
+
   return (
     <BannerWrapper
       onBack={() => {
@@ -219,16 +230,28 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
               iconPosition="start"
               onClick={onSendCaregiverLink}
             />
+            <Divider title="OR" dividerType="solid" className="my-4" />
 
             <Button
               type="outlined"
-              className="mt-4 w-full"
+              className="mt-2 w-full"
               color="quatenary"
               text="Fill child's registration form"
               textColor="quatenary"
               icon="DocumentDuplicateIcon"
               iconPosition="start"
               onClick={completeRegistration}
+            />
+            <Divider title="OR" dividerType="solid" className="my-4" />
+            <Button
+              type="outlined"
+              className="mt-2 w-full"
+              color="quatenary"
+              text="Download form"
+              textColor="quatenary"
+              icon="DownloadIcon"
+              iconPosition="start"
+              onClick={onDownloadChildForm}
             />
           </div>
         )}
