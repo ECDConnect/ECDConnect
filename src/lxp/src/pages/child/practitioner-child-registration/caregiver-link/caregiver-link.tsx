@@ -31,6 +31,7 @@ import {
   TabsItems,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { ClassDashboardRouteState } from '@/pages/business/business.types';
+import childRegistrationForm from '@/assets/ECD_connect_registration_form.pdf';
 
 export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;
@@ -202,6 +203,15 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     );
   };
 
+  const onDownloadChildForm = () => {
+    const pdfUrl = childRegistrationForm;
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', 'child_registration_form.pdf');
+    document.body.appendChild(link);
+    link.click();
+  };
+
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
       <Typography
@@ -255,6 +265,28 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
         isLoading={loadingManualUpload}
         disabled={loadingManualUpload}
         onClick={onUploadSelf}
+      />
+      <Divider title="OR" dividerType="solid" className="mt-8 mb-6" />
+      <Typography
+        type="h4"
+        color="textDark"
+        text="Download and print the form for the caregiver."
+      />
+      <Typography
+        type="body"
+        className="mt-2"
+        color="textMid"
+        text={`When they give you the signed form, you can add the child's details in the app.`}
+      />
+      <Button
+        type="outlined"
+        className="mt-4"
+        color="quatenary"
+        text="Download form"
+        textColor="quatenary"
+        icon="DownloadIcon"
+        iconPosition="start"
+        onClick={onDownloadChildForm}
       />
     </div>
   );

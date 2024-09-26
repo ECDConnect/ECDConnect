@@ -1,1 +1,0 @@
-update "PointsActivity" pa set "Name" = 'Children’s progress observations complete' where "Name" = 'Caregiver preschool fees tracked';

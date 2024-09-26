@@ -461,12 +461,11 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       <Dialog
         visible={displayHelp}
         position={DialogPosition.Middle}
-        stretch
         className="px-4"
       >
         <ActionModal
           title={'Story & activity'}
-          importantText={`${routineItem.timeSpan} minutes`}
+          // importantText={`${routineItem.timeSpan} minutes`}
           icon={'InformationCircleIcon'}
           iconColor={'infoDark'}
           iconBorderColor={'infoBb'}

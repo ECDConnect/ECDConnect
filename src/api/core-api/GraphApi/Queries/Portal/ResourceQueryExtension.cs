@@ -201,7 +201,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var userResourceLikesRepo = repoFactory.CreateRepository<UserResourceLikes>();
-            return userResourceLikesRepo.GetByUserId(uId);
+            return userResourceLikesRepo.GetAll().Where(x => x.UserId == uId && x.ContentId == contentId).FirstOrDefault();
         }
 
 

@@ -87,12 +87,12 @@ export const dummyActivity: ActivityDto = {
   subCategories: [],
 };
 
-export const dummyActivityDetails = {
+export const dummyActivityDetails: ActivityDto = {
   id: 215,
   name: 'Animal towers',
   type: 'Small group',
-  subType: null,
-  image: null,
+  subType: '',
+  image: '',
   materials: 'Wooden blocks; One plastic animal per child',
   description:
     '<p>1. Give each child some wooden blocks and an animal </p><p>2. Ask them to balance all the blocks on top of each other to make a tower </p><p>3. They can make any type of tower they like </p>',
@@ -102,9 +102,11 @@ export const dummyActivityDetails = {
     {
       id: '9688cd08-adef-408c-9d34-5d75ae5c44df',
       description: 'English',
+      locale: 'en-za',
     },
   ],
   subCategories: [],
+  themes: [],
 };
 
 export const dummyStoryBook = {
