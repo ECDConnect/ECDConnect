@@ -14288,6 +14288,7 @@ export type Query = {
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipals?: Maybe<Array<Maybe<Principal>>>;
+  allResourceLikesForUser?: Maybe<Array<Maybe<UserResourcesModel>>>;
   allTeamLeads?: Maybe<Array<Maybe<PortalUsersTlModel>>>;
   allTemplates?: Maybe<Array<Maybe<MessageTemplate>>>;
   allWards?: Maybe<Array<Maybe<WardModel>>>;
@@ -14568,6 +14569,7 @@ export type Query = {
   removeHolidays?: Maybe<Array<Scalars['DateTime']>>;
   removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
   reportDetailsForPractitioner?: Maybe<PractitionerReportDetails>;
+  resourceByLanguage?: Maybe<ResourceModel>;
   resourceLikedStatusForUser?: Maybe<UserResourceLikes>;
   resources: Array<Maybe<ClassroomBusinessResource>>;
   roleForUser?: Maybe<Scalars['String']>;
@@ -16556,6 +16558,10 @@ export type QueryAllPractitionersForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllResourceLikesForUserArgs = {
+  userId: Scalars['UUID'];
+};
+
 export type QueryAllTeamLeadsArgs = {
   clinicSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -17784,6 +17790,12 @@ export type QueryReportDetailsForPractitionerArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryResourceByLanguageArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  localeId: Scalars['UUID'];
+};
+
 export type QueryResourceLikedStatusForUserArgs = {
   contentId: Scalars['Int'];
 };
@@ -18188,6 +18200,19 @@ export type ResourceLinkInput = {
   description?: InputMaybe<Scalars['String']>;
   link?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+export type ResourceModel = {
+  __typename?: 'ResourceModel';
+  availableLanguages?: Maybe<Array<Scalars['UUID']>>;
+  dataFree?: Maybe<Scalars['String']>;
+  link?: Maybe<Scalars['String']>;
+  longDescription?: Maybe<Scalars['String']>;
+  numberLikes?: Maybe<Scalars['String']>;
+  resourceType?: Maybe<Scalars['String']>;
+  sectionType?: Maybe<Scalars['String']>;
+  shortDescription?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
 };
 
 export type SsChecklistVisitModelInput = {
@@ -20458,6 +20483,12 @@ export type UserResourceLikesSortInput = {
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   userId?: InputMaybe<SortEnumType>;
+};
+
+export type UserResourcesModel = {
+  __typename?: 'UserResourcesModel';
+  contentId: Scalars['Int'];
+  isActive: Scalars['Boolean'];
 };
 
 export type UserTrainingCourse = {
