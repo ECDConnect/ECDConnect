@@ -20,6 +20,7 @@ import { InfoPage } from './money/submit-income-statements/components/info-page'
 import { NavigationNames } from '../navigation';
 import PractitionersList from '../classroom/class-dashboard/practitioners/practitioners-list/practitioners-list';
 import { MoreInformationTypeEnum } from '@ecdlink/core';
+import { ComingSoon } from './components/coming-soon/coming-soon';
 
 export const Business: React.FC = () => {
   const history = useHistory();
@@ -73,7 +74,7 @@ export const Business: React.FC = () => {
       initActive: false,
       child: (
         <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
+          <ComingSoon />
         </div>
       ),
     },
