@@ -7,6 +7,7 @@ using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,15 @@ namespace EcdLink.Api.CoreApi.Services
                                                 .OrderByDescending(x => x.LastSeen)
                                                 .ToList();
 
+            var replacements = new List<TagsReplacements>
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "ApplicationName",
+                    ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                }
+            };
+
             foreach (var user in practitioners)
             {
                 TimeSpan daysToCheck = DateTime.Now - user.LastSeen;
@@ -73,12 +83,12 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, null, null, false, false, null,
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
                             relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
                     }
                     else if (daysToCheck.Days >= 30)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, user, "", null, null, null, false, false, null,
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
                             relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
                     }
                 }
@@ -99,12 +109,12 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     if (daysToCheck.Days >= 14 && daysToCheck.Days < 21)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourteenDaysNotLoggedOn, DateTime.Now.Date, user, "", null, null, null, false, false, null,
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourteenDaysNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
                     }
                     else if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, null, null, false, false, null,
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, null, replacements, false, false, null,
                             relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
                     }
                 }
