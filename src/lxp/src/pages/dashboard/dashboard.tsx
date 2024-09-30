@@ -1293,8 +1293,6 @@ export const Dashboard: React.FC = () => {
     }
   }
 
-  console.log('dashboardNotification', dashboardNotification);
-
   return (
     <>
       <DashboardWrapper />
