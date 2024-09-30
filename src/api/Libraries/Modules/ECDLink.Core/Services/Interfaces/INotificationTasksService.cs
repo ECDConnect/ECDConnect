@@ -5,10 +5,7 @@ namespace ECDLink.Core.Services.Interfaces
 {
     public interface INotificationTasksService
     {
-        //daily
-        //Task MonthlyTopPointsEarnerNotification();
-        //Task MonthlyEarnMorePointsNotification();
-        //Task YearlyPointsSummaryNotification();
         Task DailyUserOfflineNotification();
+        Task RemoveCoachNotification(Guid coachUserId);
     }
 }

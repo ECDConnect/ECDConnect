@@ -21,7 +21,7 @@ namespace ECDLink.AutomatedJobs.Notifications
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            var dbContext = Scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
+            /*var dbContext = Scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
 
             var twoOne = DateTime.UtcNow.AddDays(-21).Date;
             var threeZero = DateTime.UtcNow.AddDays(-30).Date;
@@ -84,7 +84,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                 }
             }
 
-            dbContext.SaveChanges();
+            dbContext.SaveChanges();*/
         }
     }
 }

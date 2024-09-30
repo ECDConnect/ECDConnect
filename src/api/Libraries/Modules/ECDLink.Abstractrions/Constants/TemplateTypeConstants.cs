@@ -40,9 +40,9 @@ namespace ECDLink.Abstractrions.Constants
         // row 10
         public const string RejectedInvitation = "rejected-invitation"; // sms, hub, push
         // row 11
-        public const string FourWeekNotLoggedOn = "four-week-notification"; // sms (RequestLogOnNotification)
+        public const string FourWeekNotLoggedOn = "four-week-notification"; // sms (DailyUserOfflineNotification)
         // row 12
-        public const string ThreeWeekNotLoggedOn = "three-week-notification"; // sms in back-end (RequestLogOnNotification), hub & push in FE
+        public const string ThreeWeekNotLoggedOn = "three-week-notification"; // sms in back-end (DailyUserOfflineNotification), hub & push in FE
         // row 14
         public const string PractitionerJoinedWithPreschoolCode = "practitioner-joined-with-preschool-code"; // hub, push
         // row 15
@@ -69,6 +69,12 @@ namespace ECDLink.Abstractrions.Constants
         public const string OpenCommunityConnections = "open-community-connections"; // push
         // row 38
         public const string FeedbackNotification = "feedback-notification";// hub, push
+
+        // Coaches
+        // row 4
+        public const string CoachNewPractitionersLinked = "coach-new-practitioners-linked";
+        // row 5
+        public const string FourteenDaysNotLoggedOn = "four-teen-days-notification"; // sms (DailyUserOfflineNotification)
 
 
         // Uncertain
@@ -131,7 +137,7 @@ namespace ECDLink.Abstractrions.Constants
          // public const string CoachNewTrainees = "coach-new-trainees";
          // public const string CoachVisitRequested = "coach-visit-requested";
          // public const string CoachAddresUpdatedScheduleVisit = "coach-address-updated-schedule-visit";
-         // public const string CoachNewPractitionersLinked = "coach-new-practitioners-linked";
+         // 
          // public const string CoachTraineeReadySmartspaceCheck = "coach-trainee-ready-smartspace-check";
          // public const string CoachSelfAssessmentFormReminder = "coach-fillin-self-asessment-form";
          */

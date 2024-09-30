@@ -1,8 +1,6 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
-using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 

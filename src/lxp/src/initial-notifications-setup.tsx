@@ -11,6 +11,7 @@ import { settingSelectors } from './store/settings';
 import { userSelectors } from './store/user';
 import { authSelectors } from './store/auth';
 import Loader from './components/loader/loader';
+import { useTenant } from './hooks/useTenant';
 
 type IntialNotificationSetupContextValues = {
   startService: () => void;
@@ -25,6 +26,7 @@ export const IntialNotificationSetupContext =
 const InitialNotificationSetup: React.FC = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
+  const tenant = useTenant();
 
   const user = useSelector(userSelectors.getUser);
   const auth = useSelector(authSelectors.getAuthUser);
@@ -76,7 +78,10 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
         user
       );
     }
-    notificationServiceRef.current.registerValidators(store);
+    notificationServiceRef.current.registerValidators(
+      store,
+      tenant.tenant?.applicationName || ''
+    );
 
     notificationServiceRef.current.onNotificationsReceived = (
       messages: Message[]
@@ -90,6 +95,7 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
     auth?.auth_token,
     notificationPollInterval,
     onNotificationsRecieved,
+    tenant.tenant?.applicationName,
     user,
   ]);
 

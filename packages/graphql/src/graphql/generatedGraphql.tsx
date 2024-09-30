@@ -12750,6 +12750,7 @@ export type Practitioner = {
   clickedCommunityTab?: Maybe<Scalars['Boolean']>;
   coach?: Maybe<Coach>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
+  coachLinkDate?: Maybe<Scalars['DateTime']>;
   communitySectionViewDate?: Maybe<Scalars['DateTime']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
   dateAccepted?: Maybe<Scalars['DateTime']>;
@@ -12869,6 +12870,7 @@ export type PractitionerFilterInput = {
   clickedCommunityTab?: InputMaybe<BooleanOperationFilterInput>;
   coach?: InputMaybe<CoachFilterInput>;
   coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  coachLinkDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   communitySectionViewDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
   dateAccepted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -12922,6 +12924,7 @@ export type PractitionerInput = {
   ClickedCommunityTab?: InputMaybe<Scalars['Boolean']>;
   Coach?: InputMaybe<CoachInput>;
   CoachHierarchy?: InputMaybe<Scalars['UUID']>;
+  CoachLinkDate?: InputMaybe<Scalars['DateTime']>;
   CommunitySectionViewDate?: InputMaybe<Scalars['DateTime']>;
   ConsentForPhoto?: InputMaybe<Scalars['Boolean']>;
   DateAccepted?: InputMaybe<Scalars['DateTime']>;
@@ -13133,6 +13136,7 @@ export type PractitionerSortInput = {
   clickedCommunityTab?: InputMaybe<SortEnumType>;
   coach?: InputMaybe<CoachSortInput>;
   coachHierarchy?: InputMaybe<SortEnumType>;
+  coachLinkDate?: InputMaybe<SortEnumType>;
   communitySectionViewDate?: InputMaybe<SortEnumType>;
   consentForPhoto?: InputMaybe<SortEnumType>;
   dateAccepted?: InputMaybe<SortEnumType>;

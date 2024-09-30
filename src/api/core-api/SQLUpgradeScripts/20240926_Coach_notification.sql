@@ -1,0 +1,2 @@
+INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering","Action") VALUES
+	 ('d6b42d55-ae85-49ec-87d3-3347378842ed'::uuid,true,current_date,'0001-01-01 00:00:00.000',NULL,'sms','four-teen-days-notification','You haven''t gone online on [[ApplicationName]] in 2 weeks! Log in and go online to keep using the app: [[LoginLink:shorturl]]',NULL,'[[ApplicationName]]: Two week Reminder',NULL,NULL,3,NULL,7.5,'{"url":"/login ');
