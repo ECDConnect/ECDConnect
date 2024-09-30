@@ -129,6 +129,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (practitioner != null)
             {
                 practitioner.CoachHierarchy = Guid.Parse(coachId);
+                practitioner.CoachLinkDate = DateTime.Now.Date;
                 var updateResult = practitionerRepo.Update(practitioner);
                 return practitioner;
             }
@@ -150,6 +151,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (practitioner != null)
             {
                 practitioner.CoachHierarchy = null;
+                practitioner.CoachLinkDate = null;
                 var updateResult = practitionerRepo.Update(practitioner);
             }
 

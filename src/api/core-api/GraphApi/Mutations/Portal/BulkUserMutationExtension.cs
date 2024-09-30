@@ -159,7 +159,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         InsertedDate = insertedDate,
                         TenantId = tenantId,
                         IsActive = true,
-                        CoachHierarchy = coachHierarchy == Guid.Empty ? null : coachHierarchy
+                        CoachHierarchy = coachHierarchy == Guid.Empty ? null : coachHierarchy,
+                        CoachLinkDate = coachHierarchy == Guid.Empty ? null : DateTime.Now.Date
                     });
             }
 

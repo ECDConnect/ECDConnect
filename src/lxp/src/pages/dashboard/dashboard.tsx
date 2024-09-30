@@ -1293,6 +1293,8 @@ export const Dashboard: React.FC = () => {
     }
   }
 
+  console.log('dashboardNotification', dashboardNotification);
+
   return (
     <>
       <DashboardWrapper />
@@ -1420,44 +1422,6 @@ export const Dashboard: React.FC = () => {
               textPosition="left"
             />
           ) : null}
-          {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (
-          <ScoreCard
-            className="h-20"
-            mainText={clubCard.mainText}
-            hint={clubCard.hint}
-            hintClassName={clubCard.hintClassName}
-            textPosition="left"
-            currentPoints={clubCard.currentPoints}
-            maxPoints={clubCard.maxPoints}
-            onClick={clubCard.onClick}
-            barBgColour={clubCard.barBgColour}
-            barColour={clubCard.barColour}
-            bgColour={clubCard.bgColour}
-            image={clubCard.image}
-            textColour={clubCard.textColour}
-          />
-        )} */}
-          {/* {isPractitioner &&
-          (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
-            <div className="mt-1">
-              <TitleListItem
-                item={{
-                  title: !!club ? club?.name : 'Community',
-                  titleIcon: 'UserGroupIcon',
-                  titleIconClassName: styles.communityIcon,
-                  classNames: 'bg-uiBg',
-                  onActionClick: () =>
-                    history.push(
-                      isPractitionerAcceptAgreementNotification
-                        ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
-                        : ROUTES.PRACTITIONER.COMMUNITY[
-                            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
-                          ]
-                    ),
-                }}
-              />
-            </div>
-          )} */}
         </div>
       </BannerWrapper>
     </>

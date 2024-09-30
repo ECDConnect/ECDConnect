@@ -225,6 +225,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
            Guid localeId)
         {
             var result = new ResourceModel();
+            var languageIds = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            if (!languageIds.Contains(localeId))
+            {
+                return null;
+            }
+
             var resource = contentRepo.GetById(contentId, localeId);
 
             var item = (IDictionary<string, object>)resource;
@@ -246,7 +252,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             result.DataFree = dataFree.ToString();
             result.SectionType = sectionType.ToString();
             result.NumberLikes = numberLikes.ToString();
-            result.AvailableLanguages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            result.AvailableLanguages = languageIds;
 
             return result;
 
