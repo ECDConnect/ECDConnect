@@ -120,10 +120,11 @@ export const LinksShared = ({
     const payload = connectItems
       ?.filter((link) => (link.text && link.link) || link.contentId !== -1)
       .map((link) => ({
-        text: link.text,
+        buttonText: link.text,
         link: link.link,
         contentTypeId: link.contentTypeId,
         contentId: link.contentId,
+        linkedConnect: 0,
       }));
     return payload;
   };
