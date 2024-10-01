@@ -970,11 +970,11 @@ export type BulkInvitationResult = {
 };
 
 export type CmsConnectItemModelInput = {
-  buttonText?: InputMaybe<Scalars['String']>;
   contentId: Scalars['Int'];
   contentTypeId: Scalars['Int'];
   link?: InputMaybe<Scalars['String']>;
   linkedConnect: Scalars['Int'];
+  text?: InputMaybe<Scalars['String']>;
 };
 
 export type CmsQuestionInput = {
