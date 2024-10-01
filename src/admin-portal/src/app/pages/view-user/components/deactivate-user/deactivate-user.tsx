@@ -13,12 +13,13 @@ import { useCallback } from 'react';
 interface DeactivateUserProps {
   userData: UserDto;
   refetchUserData?: () => void;
-  isAdministrator?: boolean;
+  isSuperAdmin?: boolean;
 }
 
 export const DeactivateUser: React.FC<DeactivateUserProps> = ({
   userData,
   refetchUserData,
+  isSuperAdmin,
 }) => {
   const dialog = useDialog();
   const { setNotification } = useNotifications();
@@ -65,16 +66,17 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
 
   return (
     <div>
-      <Button
-        className={'w-full rounded-2xl lg:w-56'}
-        type="outlined"
-        // isLoading={isLoading}
-        color="tertiary"
-        onClick={deactivaterUser}
-        icon="TrashIcon"
-        text="Deactivate user"
-        textColor="tertiary"
-      ></Button>
+      {isSuperAdmin && (
+        <Button
+          className={'w-full rounded-2xl lg:w-56'}
+          type="outlined"
+          color="tertiary"
+          onClick={deactivaterUser}
+          icon="TrashIcon"
+          text="Deactivate user"
+          textColor="tertiary"
+        ></Button>
+      )}
     </div>
   );
 };
