@@ -198,6 +198,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 ProgrammeType = practitioner.ProgrammeType,
                 IsTrainee = practitioner.IsTrainee,
                 CoachHierarchy = practitioner.CoachHierarchy,
+                CoachName = practitioner.Coach != null ? practitioner.Coach.User.FullName : "",
                 AttendedChildProgress = practitioner.AttendedChildProgress,
                 UsePhotoInReport = practitioner.UsePhotoInReport,
                 SetupTraineeInitiated = practitioner.SetupTraineeInitiated,

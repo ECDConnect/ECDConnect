@@ -26,6 +26,7 @@ export interface PractitionerDto extends EntityBase {
   principalHierarchy?: string;
   signingSignature?: string;
   coachHierarchy?: string;
+  coachName?: string;
   shareInfo?: boolean;
   isRegistered?: boolean;
   dateLinked?: Date;
@@ -61,6 +62,7 @@ export interface UserPermissionDto {
 }
 
 export interface PractitionerStatsDto {
+  schoolName: string;
   totalPractitionersForSchool: number;
   totalChildrenForSchool: number;
   totalClassesForSchool: number;
