@@ -65,6 +65,9 @@ namespace ECDLink.DataAccessLayer.Entities
         public virtual ICollection<UserPermission> UserPermissions { get; set; }
 
         [NotMapped]
+        public bool isAdminRegistered { get; set; }
+
+        [NotMapped]
         public virtual Franchisor franchisorObjectData { get; set; }
         [NotMapped] 
         public virtual Coach coachObjectData { get; set; }

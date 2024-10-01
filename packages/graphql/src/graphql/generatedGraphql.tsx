@@ -426,6 +426,7 @@ export type ApplicationUser = {
   idNumber?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
   isActive: Scalars['Boolean'];
+  isAdminRegistered: Scalars['Boolean'];
   isImported?: Maybe<Scalars['Boolean']>;
   isSouthAfricanCitizen: Scalars['Boolean'];
   language?: Maybe<Language>;
@@ -489,6 +490,7 @@ export type ApplicationUserFilterInput = {
   idNumber?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isAdminRegistered?: InputMaybe<BooleanOperationFilterInput>;
   isImported?: InputMaybe<BooleanOperationFilterInput>;
   isSouthAfricanCitizen?: InputMaybe<BooleanOperationFilterInput>;
   language?: InputMaybe<LanguageFilterInput>;
@@ -551,6 +553,7 @@ export type ApplicationUserInput = {
   idNumber?: InputMaybe<Scalars['String']>;
   insertedDate?: InputMaybe<Scalars['DateTime']>;
   isActive: Scalars['Boolean'];
+  isAdminRegistered: Scalars['Boolean'];
   isImported?: InputMaybe<Scalars['Boolean']>;
   isSouthAfricanCitizen: Scalars['Boolean'];
   language?: InputMaybe<LanguageInput>;
@@ -611,6 +614,7 @@ export type ApplicationUserSortInput = {
   idNumber?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isAdminRegistered?: InputMaybe<SortEnumType>;
   isImported?: InputMaybe<SortEnumType>;
   isSouthAfricanCitizen?: InputMaybe<SortEnumType>;
   language?: InputMaybe<LanguageSortInput>;
