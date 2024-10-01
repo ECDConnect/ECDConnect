@@ -17,7 +17,6 @@ import { SaveIcon } from '@heroicons/react/solid';
 import { useEffect, useMemo, useState } from 'react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
-  GetAllPortalClinics,
   GetAllPortalCoaches,
   GetAllPortalPractitioners,
   PractitionerInput,
@@ -112,10 +111,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     email: yup.string().email().required('email address is required'),
   });
 
-  const { data: clinicsData } = useQuery(GetAllPortalClinics, {
-    fetchPolicy: 'cache-and-network',
-  });
-
   const coachQueryVariables = useMemo(
     () => ({
       search: '',
@@ -199,10 +194,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     }
   }, [coachData?.allPortalCoaches]);
 
-  const hcwClinic = clinicsData?.allPortalClinics?.find(
-    (item) => item?.id === clinicId
-  );
-
   const {
     register: registerCHW,
     setValue: chwDetailSetValue,
@@ -210,9 +201,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     getValues: chwDetailGetValues,
     handleSubmit: handleSubmitChwDetails,
   } = useForm({
-    resolver: yupResolver(
-      idType === idTypeEnum.idNumber ? chwSchemaIdNr : chwSchemaPassport
-    ),
+    // resolver: yupResolver(
+    //   idType === idTypeEnum.idNumber ? chwSchemaIdNr : chwSchemaPassport
+    // ),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -247,18 +238,12 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const passwordForm = passwordGetValues();
 
   useEffect(() => {
-    // const currentPreferedId = localStorage?.getItem('preferedId');
-    // if (currentPreferedId) {
-    //   if (currentPreferedId === idTypeEnum.passport) {
-    //     setIdType(idTypeEnum.passport);
-    //   }
-    // } else {
-    if (userData?.idNumber?.length === 13) {
+    const idNumberIsNumber = /^\d+$/.test(userData?.idNumber);
+    if (idNumberIsNumber && userData?.idNumber?.length === 13) {
       setIdType(idTypeEnum.idNumber);
     } else {
       setIdType(idTypeEnum.passport);
     }
-    // }
   }, [userData]);
 
   useEffect(() => {
@@ -266,9 +251,9 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       shouldValidate: true,
     });
 
-    chwDetailSetValue('idNumber', userData?.idNumber, {
-      shouldValidate: true,
-    });
+    // chwDetailSetValue('idNumber', userData?.idNumber, {
+    //   shouldValidate: true,
+    // });
 
     chwDetailSetValue('phoneNumber', userData?.phoneNumber, {
       shouldValidate: true,
@@ -549,22 +534,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                           type={'info'}
                         />
                       )}
-                    {/* {!isTeamLead &&
-                      !hcwId &&
-                      !isFromAdministratorTable &&
-                      !isRegistered && (
-                        <div className="my-0 w-6/12 sm:col-span-2">
-                          <PasswordInput
-                            label={'Password'}
-                            nameProp={'password'}
-                            sufficIconColor="black"
-                            value={passwordForm.password}
-                            register={passwordRegister}
-                            strengthMeterVisible={true}
-                            className="mb-9 "
-                          />
-                        </div>
-                      )} */}
                   </div>
                 </div>
               </div>
@@ -660,38 +629,6 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                   </div>
                 )}
               </div>
-              {hcwClinic && (
-                <div className="flex flex-wrap gap-x-12">
-                  <div className="flex gap-2">
-                    <Typography type="h4" color="textMid" text={'Clinic:'} />
-                    <Typography
-                      type="body"
-                      color="textMid"
-                      text={hcwClinic?.name}
-                    />
-                  </div>
-                  <div className="flex flex-wrap gap-x-2">
-                    <Typography type="h4" color="textMid" text={'Location:'} />
-                    <Typography
-                      type="body"
-                      color="textMid"
-                      text={`${hcwClinic?.subDistrict?.name}, `}
-                    />
-                    <Typography
-                      type="body"
-                      color="textMid"
-                      text={`${hcwClinic?.subDistrict?.district?.name}, `}
-                    />
-                    <Typography
-                      type="body"
-                      color="textMid"
-                      text={
-                        hcwClinic?.subDistrict?.district?.province?.description
-                      }
-                    />
-                  </div>
-                </div>
-              )}
             </div>
           ) : (
             <div className="flex flex-row justify-start pt-4 text-current">
