@@ -508,11 +508,13 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                           className="my-2"
                           disabled={
                             component ===
-                            UsersRouteRedirectTypeEnum?.practitioner
+                              UsersRouteRedirectTypeEnum?.practitioner &&
+                            !!practitionerPrincipal
                           }
                         />
                       )}
                     {component === UsersRouteRedirectTypeEnum?.practitioner &&
+                      !!practitionerPrincipal &&
                       isWhiteLabel && (
                         <Alert
                           className={'mt-5 mb-3 rounded-xl'}
