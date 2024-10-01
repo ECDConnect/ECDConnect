@@ -171,7 +171,7 @@ export const Resources = () => {
         textColor="white"
         type="filled"
         icon={'EyeIcon'}
-        text={'See all classroom resources'}
+        text={'See all business resources'}
       />
       <Dialog
         stretch
