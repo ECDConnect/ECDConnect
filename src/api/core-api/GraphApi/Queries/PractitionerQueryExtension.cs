@@ -572,7 +572,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 stats.TotalClassesForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Count();
             }
 
-            var attendanceReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, endDate).SingleOrDefault();
+            var attendanceReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, endDate).FirstOrDefault();
             stats.TotalAttendanceRegistersCompleted = attendanceReport != null ? attendanceReport.NumberOfSessions : 0 ; 
             stats.TotalAttendanceRegistersNotCompleted = attendanceReport != null ? attendanceReport.TotalScheduledSessions : 0;
 
