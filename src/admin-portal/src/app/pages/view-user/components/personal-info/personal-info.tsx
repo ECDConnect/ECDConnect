@@ -505,27 +505,22 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                     {(component === UsersRouteRedirectTypeEnum?.principal ||
                       component === UsersRouteRedirectTypeEnum?.practitioner) &&
                       isWhiteLabel && (
-                        <Dropdown
-                          placeholder={
-                            'Click to select a ' + tenant.modules.coachRoleName
-                          }
-                          className={`mb-4 justify-between ${
-                            component ===
-                            UsersRouteRedirectTypeEnum?.practitioner
-                              ? 'opacity-50'
-                              : ''
-                          }`}
+                        <Dropdown<string>
                           label={tenant.modules.coachRoleName}
-                          isAdminPortalInput={true}
+                          fillType="filled"
+                          textColor="textLight"
+                          fillColor="adminPortalBg"
+                          placeholder={'Type to search...'}
+                          labelColor="textMid"
                           list={coaches || []}
+                          selectedValue={coach || practitionerCoach}
                           onChange={(item) => {
                             setHasCoachChange(true);
                             setCoach(item);
                           }}
-                          fullWidth
-                          labelColor="textMid"
-                          fillColor="adminPortalBg"
-                          selectedValue={coach || practitionerCoach}
+                          showSearch
+                          isAdminPortalInput={true}
+                          className="my-2"
                           disabled={
                             component ===
                             UsersRouteRedirectTypeEnum?.practitioner
