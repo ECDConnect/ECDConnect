@@ -224,7 +224,9 @@ export const AllResources: React.FC<AllResourcesprops> = ({
               } full mr-4 flex items-center gap-2 rounded-full px-3 py-1`}
             >
               <ThumbUpIcon className="h-6 w-6 text-white" />
-              <div>{item?.numberLikes ? item?.numberLikes : 0}</div>
+              <div className="text-white">
+                {item?.numberLikes ? item?.numberLikes : 0}
+              </div>
             </div>
           ),
         });
@@ -426,22 +428,22 @@ export const AllResources: React.FC<AllResourcesprops> = ({
   ]);
 
   return (
-    <div>
-      <BannerWrapper
-        size="small"
-        onBack={() => {
-          setResourceTypeItem && setResourceTypeItem('');
-          setViewAllResources(false);
-        }}
-        color="primary"
-        className={'h-full'}
-        title={`Classroom resources`}
-        displayOffline={!isOnline}
-        onClose={() => {
-          setResourceTypeItem && setResourceTypeItem('');
-          setViewAllResources(false);
-        }}
-      />
+    <BannerWrapper
+      size="small"
+      onBack={() => {
+        setResourceTypeItem && setResourceTypeItem('');
+        setViewAllResources(false);
+      }}
+      color="primary"
+      className={'h-full'}
+      title={resourceTypeItem || `Business resources`}
+      subTitle={resourceTypeItem ? `Business resources` : ''}
+      displayOffline={!isOnline}
+      onClose={() => {
+        setResourceTypeItem && setResourceTypeItem('');
+        setViewAllResources(false);
+      }}
+    >
       {resources && resources.length > 0 && (
         <SearchHeader<MenuListDataItem>
           searchItems={resourcesListFormatted || []}
@@ -454,24 +456,26 @@ export const AllResources: React.FC<AllResourcesprops> = ({
             searchTextActive ? alternativeSearchItems : undefined
           }
         >
-          <SearchDropDown<string>
-            displayMenuOverlay={true}
-            className={'mr-1'}
-            menuItemClassName={
-              'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
-            }
-            overlayTopOffset={'3'}
-            options={SortByResourcesTypes}
-            selectedOptions={resourcesTypesFilter}
-            onChange={setResourcesTypesFilter}
-            placeholder={'Activities'}
-            info={{
-              name: `Filter by: Type`,
-            }}
-            multiple={true}
-            color={'quatenary'}
-            preventCloseOnClick={true}
-          />
+          {!resourceTypeItem && (
+            <SearchDropDown<string>
+              displayMenuOverlay={true}
+              className={'mr-1'}
+              menuItemClassName={
+                'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+              }
+              overlayTopOffset={'3'}
+              options={SortByResourcesTypes}
+              selectedOptions={resourcesTypesFilter}
+              onChange={setResourcesTypesFilter}
+              placeholder={'Type'}
+              info={{
+                name: `Filter by: Type`,
+              }}
+              multiple={true}
+              color={'quatenary'}
+              preventCloseOnClick={true}
+            />
+          )}
           <SearchDropDown<string>
             displayMenuOverlay={true}
             className={'mr-1'}
@@ -540,26 +544,28 @@ export const AllResources: React.FC<AllResourcesprops> = ({
           type="MenuList"
           listItems={listItems}
         />
-        <Button
-          onClick={() =>
-            resourcesIndex < resourcesData.length!
-              ? setResourcesIndex(
-                  resourcesIndex < resourcesData.length!
-                    ? resourcesIndex + resourcesData.length! - resourcesIndex
-                    : resourcesIndex + 5
-                )
-              : {}
-          }
-          className="mt-12 w-full rounded-2xl"
-          size="normal"
-          color="quatenary"
-          textColor="quatenary"
-          type="outlined"
-          icon={'EyeIcon'}
-          text={'See more resources'}
-          disabled={resourcesIndex === resourcesData.length!}
-        />
+        {resourcesIndex < resourcesData.length! && (
+          <Button
+            onClick={() =>
+              resourcesIndex < resourcesData.length!
+                ? setResourcesIndex(
+                    resourcesIndex < resourcesData.length!
+                      ? resourcesIndex + resourcesData.length! - resourcesIndex
+                      : resourcesIndex + 5
+                  )
+                : {}
+            }
+            className="my-8 w-full rounded-2xl"
+            size="normal"
+            color="quatenary"
+            textColor="quatenary"
+            type="outlined"
+            icon={'EyeIcon'}
+            text={'See more resources'}
+            disabled={resourcesIndex === resourcesData.length!}
+          />
+        )}
       </div>
-    </div>
+    </BannerWrapper>
   );
 };
