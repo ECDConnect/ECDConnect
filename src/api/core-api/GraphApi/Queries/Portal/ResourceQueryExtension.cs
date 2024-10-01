@@ -251,7 +251,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             result.LongDescription = longDescription.ToString();
             result.DataFree = dataFree.ToString();
             result.SectionType = sectionType.ToString();
-            result.NumberLikes = numberLikes.ToString();
+            result.NumberLikes = numberLikes == null ? "0" : numberLikes.ToString();
             result.AvailableLanguages = languageIds;
 
             return result;
