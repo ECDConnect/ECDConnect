@@ -41,6 +41,7 @@ import { PractitionerIssuesAndHighlights } from './components/practitioner-issue
 import { CoachSummary } from './components/coach-summary/coach-summary';
 import { CoachIssuesAndHighlights } from './components/coach-issues-and-highlights/coach-issues-and-highlights';
 import { pluralize } from '../pages.utils';
+import { ResetUserPassword } from './components/reset-password/reset-password';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -100,7 +101,7 @@ export function ViewUser(props: any) {
     setEndDate(end);
   };
 
-  let userId_ = localStorage.getItem('selectedUser');
+  // let userId_ = localStorage.getItem('selectedUser');
 
   const paths: BreadcrumbProps['paths'] = [
     { name: 'Users', url: ROUTES.USERS.ALL_ROLES },
@@ -434,20 +435,32 @@ export function ViewUser(props: any) {
       <div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
         {userData?.userById?.isActive && (
           <div className="flex flex-col gap-2 lg:flex-row">
-            {!isRegistered && (
+            {!isRegistered && !isFromAdministratorTable && (
               <SendInvite
                 userData={userData?.userById}
                 refetchUserData={refetchUserData}
                 isFromAdministratorTable={isFromAdministratorTable}
               />
             )}
-            {/* {isRegistered && isAdministrator && (
+
+            {isFromAdministratorTable &&
+              !userData?.userById?.isAdminRegistered && (
+                <SendInvite
+                  userData={userData?.userById}
+                  refetchUserData={refetchUserData}
+                  isFromAdministratorTable={isFromAdministratorTable}
+                />
+              )}
+
+            {isFromAdministratorTable &&
+              userData?.userById?.isAdminRegistered && (
                 <ResetUserPassword userData={userData?.userById} />
-              )} */}
+              )}
+
             <DeactivateUser
               userData={userData?.userById}
               refetchUserData={refetchUserData}
-              isAdministrator={isAdministrator || isSuperAdmin}
+              isSuperAdmin={isSuperAdmin}
             />
           </div>
         )}

@@ -465,7 +465,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             CoachStatsModel stats = new CoachStatsModel();
 
-            var coach = coachRepo.GetById(userId);
+            var coach = coachRepo.GetByUserId(userId);
             var records = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy == userId).ToList();
 
             var principalUserIds = records.Where(x => x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().ToList();
