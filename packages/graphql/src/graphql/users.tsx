@@ -40,6 +40,7 @@ export const GetUserById = gql`
     userById(userId: $userId) {
       id
       isActive
+      isAdminRegistered
       userName
       email
       isSouthAfricanCitizen
