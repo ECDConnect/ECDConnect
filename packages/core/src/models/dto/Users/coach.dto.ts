@@ -16,3 +16,15 @@ export interface CoachDto extends EntityBase {
   franchisorId?: string;
   franchisor?: FranchisorDto;
 }
+
+export interface CoachStatsDto {
+  totalPractitioners: number;
+  totalNewPractitioners: number;
+  totalSiteVisits: number;
+  totalWithNoIncomeExpense: number;
+  totalWithIncomeExpense: number;
+  totalLessThan75AttendanceRegisters: number;
+  totalMoreThan75hAttendanceRegisters: number;
+  totalWithNoProgressReports: number;
+  totalWithProgressReports: number;
+}

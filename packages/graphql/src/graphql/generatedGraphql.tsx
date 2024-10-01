@@ -12988,6 +12988,7 @@ export type PractitionerModel = {
   clubId?: Maybe<Scalars['UUID']>;
   clubName?: Maybe<Scalars['String']>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
+  coachName?: Maybe<Scalars['String']>;
   communitySectionViewDate?: Maybe<Scalars['DateTime']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
   dateAccepted?: Maybe<Scalars['DateTime']>;

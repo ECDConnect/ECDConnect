@@ -634,6 +634,26 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
                     text={userData?.phoneNumber}
                   />
                 </div>
+                {userData?.email && (
+                  <div className="flex gap-2">
+                    <Typography type="h4" color="textMid" text={'Email:'} />
+                    <Typography
+                      type="body"
+                      color="textMid"
+                      text={userData?.email}
+                    />
+                  </div>
+                )}
+                {practitioner?.coachName && (
+                  <div className="flex gap-2">
+                    <Typography type="h4" color="textMid" text={'Coach:'} />
+                    <Typography
+                      type="body"
+                      color="textMid"
+                      text={practitioner?.coachName}
+                    />
+                  </div>
+                )}
                 {userData?.whatsAppNumber && (
                   <div className="flex gap-2">
                     <Typography type="h4" color="textMid" text={'WhatsApp:'} />

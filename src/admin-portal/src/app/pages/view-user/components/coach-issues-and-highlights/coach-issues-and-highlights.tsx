@@ -1,9 +1,9 @@
-import { PractitionerStatsDto } from '@ecdlink/core';
+import { CoachStatsDto } from '@ecdlink/core';
 import { Divider, Typography } from '@ecdlink/ui';
 import { ExclamationCircleIcon, StarIcon } from '@heroicons/react/solid';
 
 interface PractitionerIssuesAndHighlightsProps {
-  summaryData: PractitionerStatsDto;
+  summaryData: CoachStatsDto;
 }
 
 export const CoachIssuesAndHighlights: React.FC<
@@ -37,18 +37,15 @@ export const CoachIssuesAndHighlights: React.FC<
                 hasMarkup
                 fontSize="24"
                 text={
-                  (summaryData?.totalAttendanceRegistersNotCompleted !==
-                    undefined &&
-                    String(
-                      summaryData?.totalAttendanceRegistersNotCompleted
-                    )) ||
+                  (summaryData?.totalWithNoIncomeExpense !== undefined &&
+                    String(summaryData?.totalWithNoIncomeExpense)) ||
                   '0'
                 }
                 color={'errorMain'}
               />
               <Typography
                 type={'body'}
-                text={'attendance registers not completed'}
+                text={'principals did not track income or expenses'}
                 color={'textMid'}
               />
             </div>
@@ -58,16 +55,18 @@ export const CoachIssuesAndHighlights: React.FC<
                 hasMarkup
                 fontSize="24"
                 text={
-                  (summaryData?.totalProgressReportsNotCompleted !==
+                  (summaryData?.totalLessThan75AttendanceRegisters !==
                     undefined &&
-                    String(summaryData?.totalProgressReportsNotCompleted)) ||
+                    String(summaryData?.totalLessThan75AttendanceRegisters)) ||
                   '0'
                 }
                 color={'errorMain'}
               />
               <Typography
                 type={'body'}
-                text={'progress reports not completed'}
+                text={
+                  'practitioners saved less than 75% of their attendance registers'
+                }
                 color={'textMid'}
               />
             </div>
@@ -77,16 +76,18 @@ export const CoachIssuesAndHighlights: React.FC<
                 hasMarkup
                 fontSize="24"
                 text={
-                  (summaryData?.totalIncomeStatementsWithNoItems !==
+                  (summaryData?.totalMoreThan75hAttendanceRegisters !==
                     undefined &&
-                    String(summaryData?.totalIncomeStatementsWithNoItems)) ||
+                    String(summaryData?.totalMoreThan75hAttendanceRegisters)) ||
                   '0'
                 }
                 color={'errorMain'}
               />
               <Typography
                 type={'body'}
-                text={'income statements with no income or expenses tracked'}
+                text={
+                  'practitioners did not create progress reports for all children'
+                }
                 color={'textMid'}
               />
             </div>
@@ -120,16 +121,34 @@ export const CoachIssuesAndHighlights: React.FC<
                 hasMarkup
                 fontSize="24"
                 text={
-                  (summaryData?.totalAttendanceRegistersCompleted !==
+                  (summaryData?.totalWithIncomeExpense !== undefined &&
+                    String(summaryData?.totalWithIncomeExpense)) ||
+                  '0'
+                }
+                color={'successMain'}
+              />
+              <Typography
+                type={'body'}
+                text={'principals tracked income & expenses'}
+                color={'textMid'}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Typography
+                type={'h1'}
+                hasMarkup
+                fontSize="24"
+                text={
+                  (summaryData?.totalMoreThan75hAttendanceRegisters !==
                     undefined &&
-                    String(summaryData?.totalAttendanceRegistersCompleted)) ||
+                    String(summaryData?.totalMoreThan75hAttendanceRegisters)) ||
                   '0'
                 }
                 color={'successMain'}
               />
               <Typography
                 type={'body'}
-                text={'attendance registers completed'}
+                text={'saved 75% or more attendance registers'}
                 color={'textMid'}
               />
             </div>
@@ -139,33 +158,15 @@ export const CoachIssuesAndHighlights: React.FC<
                 hasMarkup
                 fontSize="24"
                 text={
-                  (summaryData?.totalProgressReportsCompleted !== undefined &&
-                    String(summaryData?.totalProgressReportsCompleted)) ||
+                  (summaryData?.totalWithProgressReports !== undefined &&
+                    String(summaryData?.totalWithProgressReports)) ||
                   '0'
                 }
                 color={'successMain'}
               />
               <Typography
                 type={'body'}
-                text={'progress reports created'}
-                color={'textMid'}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Typography
-                type={'h1'}
-                hasMarkup
-                fontSize="24"
-                text={
-                  (summaryData?.totalIncomeStatementsDownloaded !== undefined &&
-                    String(summaryData?.totalIncomeStatementsDownloaded)) ||
-                  '0'
-                }
-                color={'successMain'}
-              />
-              <Typography
-                type={'body'}
-                text={'income statements downloaded'}
+                text={'practitioners created progress reports for all children'}
                 color={'textMid'}
               />
             </div>
