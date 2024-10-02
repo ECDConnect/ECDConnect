@@ -36,18 +36,20 @@ export const CommunityLinks = () => {
   }, []);
 
   if (communityLinks && communityLinks?.length > 0) {
-    communityLinks?.map((item) => {
-      listItems?.push({
-        title: item?.buttonText!,
-        titleStyle: 'text-textDark font-semibold text-base leading-snug',
-        showIcon: false,
-        rightIcon: 'ExternalLinkIcon',
-        rightIconClassName: 'text-textMid w-6 h-6',
-        onActionClick: () => {
-          window.open(item?.link!);
-        },
+    communityLinks
+      ?.filter((item) => item?.buttonText)
+      ?.map((item) => {
+        listItems?.push({
+          title: item?.buttonText!,
+          titleStyle: 'text-textDark font-semibold text-base leading-snug',
+          showIcon: false,
+          rightIcon: 'ExternalLinkIcon',
+          rightIconClassName: 'text-textMid w-6 h-6',
+          onActionClick: () => {
+            window.open(item?.link!);
+          },
+        });
       });
-    });
   }
 
   if (isLoading) {
@@ -64,7 +66,7 @@ export const CommunityLinks = () => {
   return (
     <div className="p-4">
       <div className="flex items-center gap-3">
-        <UsersIcon className="bg-secondary h-12 w-12 rounded-full p-3" />
+        <UsersIcon className="bg-secondary h-12 w-12 rounded-full p-3 text-white" />
         <Typography type="h2" color="textDark" text={`Connect`} />
       </div>
       <Divider dividerType="dashed" className="my-3" />
