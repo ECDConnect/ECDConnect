@@ -56,9 +56,6 @@ class CommunityService {
         GetAllConnectItem(locale: $locale){
           buttonText
           link
-          linkedConnect {
-            name
-          }
         }
       }
       `,
