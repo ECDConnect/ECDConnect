@@ -180,7 +180,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
               Number(resourceItem?.numberLikes) > 0
                 ? 'bg-successMain'
                 : 'bg-infoMain'
-            }  full mr-4 flex items-center gap-2 rounded-full px-3 py-0.5`}
+            }  full mr-4 flex items-center gap-2 rounded-full px-3 py-0.5 text-white`}
           >
             <ThumbUpIcon className="h-5 w-5 text-white" />
             <div>
