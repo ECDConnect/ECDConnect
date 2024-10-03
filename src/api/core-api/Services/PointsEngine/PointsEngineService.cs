@@ -588,7 +588,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                 .SelectMany(x => x.DailyProgrammes)
                                                 .Where(x => x.IsActive && x.DayDate.Year >= today.Year && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
                                                 .ToList()
-                                                .Select(x => new { x.DayDate.Month, x.DayDate })
+                                                .Select(x => new { x.DayDate.Month, x.ProgrammeId }).Distinct()
                                                 .ToList()
                                                 .GroupBy(x => x.Month)
                                                 .Select(x => new { Month = x.Key, Total = x.Count() })
@@ -601,9 +601,8 @@ namespace EcdLink.Api.CoreApi.Services
                                 AddOrUpdatePoints(
                                     PointsActivityConstants.ThemePlannedId,
                                     userId,
-                                    activity.Points,
-                                    item.Total,
-                                    new DateTime(today.Year, item.Month, 01)
+                                    activity.Points * item.Total,
+                                    item.Total
                                 );
                             }
                         }
