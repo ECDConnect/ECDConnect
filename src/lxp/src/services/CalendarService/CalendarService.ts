@@ -46,7 +46,6 @@ class CalendarService {
         'Get Calendar Event Types failed - Server connection error'
       );
     }
-
     return response.data.data.GetAllCalendarEventType;
   }
 

@@ -41,9 +41,11 @@ export const calendarConvert = {
         allDay: input.allDay,
         description: input.description || '',
         end: input.end as string,
+        endTime: input.endTime as string,
         eventType: input.eventType || '',
         name: input.name || '',
         start: input.start as string,
+        startTime: input.startTime as string,
         participants: !input.participants
           ? []
           : input.participants.map((p) => ({
@@ -73,12 +75,17 @@ export const calendarConvert = {
         id: input.id,
         calendarId: '1',
         start: new Date(input.start),
+        startTime: '',
         end: new Date(input.end),
+        endTime: '',
         isAllday: input.allDay,
         title: input.name,
         body: input.description,
         category: input.allDay ? 'allday' : 'time',
-        color: '#ffffff',
+        color: 'black',
+        borderColor:
+          eventTypes.find((et) => et.name === input.eventType)?.colour ||
+          'none',
         backgroundColor:
           eventTypes.find((et) => et.name === input.eventType)?.colour ||
           '#1a80b7',
@@ -95,6 +102,7 @@ export const calendarConvert = {
         allDay: input.allDay,
         description: input.description,
         end: input.end,
+        endTime: input.endTime,
         eventType: input.eventType,
         id: input.id,
         name: input.name,
@@ -107,6 +115,7 @@ export const calendarConvert = {
           },
         })),
         start: input.start,
+        startTime: input.startTime,
         user: {
           firstName: input.user.firstName,
           surname: input.user.surname,
@@ -143,9 +152,11 @@ export const calendarConvert = {
         allDay: input.allDay,
         description: input.description || '',
         end: input.end,
+        endTime: input.endTime || '',
         eventType: input.eventType || '',
         name: input.name || '',
         start: input.start || '',
+        startTime: input.startTime || '',
         participants: !input.participants
           ? []
           : input.participants.map((p) => ({

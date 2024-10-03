@@ -1,25 +1,21 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Constants;
-using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Concurrent;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -55,6 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 calendarEvent.IsActive = true;
                 calendarEvent.Action = input.Action;
                 calendarEvent.UserId = uId;
+                calendarEvent.AllDay = input.AllDay;
                 repoCalendarEvent.Insert(calendarEvent);
 
                 if (input.Participants != null && input.Participants.Count > 0)
@@ -84,6 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 calendarEvent.Description = input.Description;
                 calendarEvent.IsActive = true;
                 calendarEvent.Action = input.Action;
+                calendarEvent.AllDay = input.AllDay;
                 repoCalendarEvent.Update(calendarEvent);
 
                 var inputParticipants = input.Participants;

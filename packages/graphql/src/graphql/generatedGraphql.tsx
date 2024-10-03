@@ -1141,6 +1141,14 @@ export type CalendarEventParticipantSortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
+export type CalendarEventParticipantViewModel = {
+  __typename?: 'CalendarEventParticipantViewModel';
+  id?: Maybe<Scalars['String']>;
+  isActive: Scalars['Boolean'];
+  participantUser?: Maybe<ApplicationUser>;
+  participantUserId: Scalars['UUID'];
+};
+
 export type CalendarEventSortInput = {
   action?: InputMaybe<SortEnumType>;
   allDay?: InputMaybe<SortEnumType>;
@@ -1169,6 +1177,25 @@ export type CalendarEventType = {
 export type CalendarEventTypeInput = {
   colour?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+};
+
+export type CalendarEventViewModel = {
+  __typename?: 'CalendarEventViewModel';
+  action?: Maybe<Scalars['String']>;
+  allDay: Scalars['Boolean'];
+  description?: Maybe<Scalars['String']>;
+  end: Scalars['DateTime'];
+  endTime?: Maybe<Scalars['String']>;
+  eventType?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  participants?: Maybe<Array<Maybe<CalendarEventParticipantViewModel>>>;
+  start: Scalars['DateTime'];
+  startTime?: Maybe<Scalars['String']>;
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['UUID']>;
+  visit?: Maybe<Visit>;
 };
 
 export type Caregiver = {
@@ -14599,7 +14626,7 @@ export type Query = {
   traineeByUserId?: Maybe<Trainee>;
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
-  userCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
+  userCalendarEvents?: Maybe<Array<Maybe<CalendarEventViewModel>>>;
   userClubStanding?: Maybe<UserClubStandingModel>;
   userCountForMessageCriteria: Scalars['Int'];
   userProgrammes?: Maybe<Array<Maybe<Programme>>>;
