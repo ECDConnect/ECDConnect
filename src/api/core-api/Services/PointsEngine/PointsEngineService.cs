@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static EcdLink.Api.CoreApi.Constants;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -583,28 +584,18 @@ namespace EcdLink.Api.CoreApi.Services
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
                         var classroomProgrammes = schoolClasses
                                                 .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name != "No theme")
-                                                .ToList()
-                                                .SelectMany(x => x.DailyProgrammes)
-                                                .Where(x => x.IsActive && x.DayDate.Year >= today.Year && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
-                                                .ToList()
-                                                .Select(x => new { x.DayDate.Month, x.ProgrammeId }).Distinct()
-                                                .ToList()
-                                                .GroupBy(x => x.Month)
-                                                .Select(x => new { Month = x.Key, Total = x.Count() })
+                                                .Where(x => x.IsActive && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month && x.Name != "No theme")
                                                 .ToList();
 
                         if (classroomProgrammes.Count > 0)
                         {
-                            foreach (var item in classroomProgrammes)
-                            {
-                                AddOrUpdatePoints(
-                                    PointsActivityConstants.ThemePlannedId,
-                                    userId,
-                                    activity.Points * item.Total,
-                                    item.Total
-                                );
-                            }
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.ThemePlannedId,
+                                userId,
+                                activity.Points * classroomProgrammes.Count,
+                                classroomProgrammes.Count,
+                                today.GetStartOfMonth()
+                            );
                         }
                     }
                 }
@@ -630,31 +621,26 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
 
-                        var classroomProgrammes = schoolClasses
+                        var dailyProgrammes = schoolClasses
                                                 .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name == "No theme")
+                                                .Where(x => x.IsActive 
+                                                            && (x.InsertedDate.Year == today.Year)
+                                                            && (x.InsertedDate.Month == today.Month) 
+                                                            && x.Name == "No theme")
                                                 .ToList()
                                                 .SelectMany(x => x.DailyProgrammes)
-                                                .Where(x => x.IsActive && x.DayDate.Year >= today.Year && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
-                                                .ToList()
-                                                .Select(x => new { x.DayDate.Month, x.DayDate })
-                                                .ToList()
-                                                .GroupBy(x => x.Month)
-                                                .Select(x => new { Month = x.Key, Total = x.Count() })
+                                                .Where(x => x.IsActive && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
                                                 .ToList();
 
-                        if (classroomProgrammes.Count > 0)
+                        if (dailyProgrammes.Count > 0)
                         {
-                            foreach (var item in classroomProgrammes)
-                            {
-                                AddOrUpdatePoints(
-                                    PointsActivityConstants.NoThemePlannedId,
-                                    userId,
-                                    activity.Points * item.Total,
-                                    item.Total,
-                                    new DateTime(today.Year, item.Month, 01)
-                                    );
-                            }
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.NoThemePlannedId,
+                                userId,
+                                activity.Points * dailyProgrammes.Count,
+                                dailyProgrammes.Count,
+                                today.GetStartOfMonth()
+                                );
                         }
                     }
                 }
