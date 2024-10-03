@@ -474,10 +474,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var records = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy == userId).ToList();
 
             var principalUserIds = records.Where(x => x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().ToList();
-            var practitionerUserIds = records.Where(x => !x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().ToList();
+            var allUserIds = records.Where(x => x.IsRegistered == true).Select(x => x.UserId).Distinct().ToList();
 
-            stats.TotalPractitioners = records.Where(x => !x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().Count();
-            stats.TotalNewPractitioners = records.Where(x => !x.IsPrincipalOrAdmin() && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).Count();
+            stats.TotalPractitioners = records.Select(x => x.UserId).Distinct().Count();
+            stats.TotalNewPractitioners = records.Where(x => x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).Count();
             stats.TotalSiteVisits = coach.PractitionerVisits != null ? coach.PractitionerVisits.Where(x => x.IsActive && x.ActualVisitDate.Value.Date >= startDate.Date && x.ActualVisitDate.Value.Date <= reportEndDate.Date).Count() : 0;
 
             var start = startDate;
@@ -509,7 +509,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var lessThan75 = 0;
             var moreThan75 = 0;
-            foreach (var id in practitionerUserIds)
+            foreach (var id in allUserIds)
             {
                 var attendance = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, reportEndDate).FirstOrDefault();
                 if (attendance == null)
@@ -534,14 +534,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var totalWithNoProgressReports = 0;
             var totalWithProgressReports = 0;
             var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true 
-                                                                      && practitionerUserIds.Contains(x.UserId) 
+                                                                      && allUserIds.Contains(x.UserId) 
                                                                       && x.DateCompleted.HasValue
                                                                       && x.DateCompleted.Value.Date >= startDate.Date 
                                                                       && x.DateCompleted.Value.Date <= reportEndDate.Date).ToList();
 
             if (progressData.Count > 0)
             {
-                foreach (var id in practitionerUserIds)
+                foreach (var id in allUserIds)
                 {
                     // this take the principal vs practitioner role into account
                     var classroomGroups = attendanceService.GetUserClassroomGroups(id.ToString());
@@ -565,7 +565,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             } 
             else 
             {
-                totalWithNoProgressReports = practitionerUserIds.Count;
+                totalWithNoProgressReports = allUserIds.Count;
             }
             
             stats.TotalWithNoProgressReports = totalWithNoProgressReports; // practitioners did not create progress reports for all children
