@@ -476,8 +476,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var principalUserIds = records.Where(x => x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().ToList();
             var practitionerUserIds = records.Where(x => !x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().ToList();
 
-            stats.TotalPractitioners = records.Where(x => !x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().Count();
-            stats.TotalNewPractitioners = records.Where(x => !x.IsPrincipalOrAdmin() && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).Count();
+            stats.TotalPractitioners = records.Select(x => x.UserId).Distinct().Count();
+            stats.TotalNewPractitioners = records.Where(x => x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).Count();
             stats.TotalSiteVisits = coach.PractitionerVisits != null ? coach.PractitionerVisits.Where(x => x.IsActive && x.ActualVisitDate.Value.Date >= startDate.Date && x.ActualVisitDate.Value.Date <= reportEndDate.Date).Count() : 0;
 
             var start = startDate;
