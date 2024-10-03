@@ -1,13 +1,11 @@
-import { PractitionerStatsDto } from '@ecdlink/core';
+import { CoachStatsDto } from '@ecdlink/core';
 import { Divider, Typography } from '@ecdlink/ui';
 
-interface PractitionerSummaryProps {
-  summaryData: PractitionerStatsDto;
+interface CoachSummaryProps {
+  summaryData: CoachStatsDto;
 }
 
-export const CoachSummary: React.FC<PractitionerSummaryProps> = ({
-  summaryData,
-}) => {
+export const CoachSummary: React.FC<CoachSummaryProps> = ({ summaryData }) => {
   return (
     <div className="border-l-secondary border-secondary my-6 rounded-2xl border-2  border-l-8 bg-white lg:min-w-0 lg:flex-1">
       <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
@@ -21,8 +19,8 @@ export const CoachSummary: React.FC<PractitionerSummaryProps> = ({
               hasMarkup
               fontSize="48"
               text={
-                (summaryData?.totalPractitionersForSchool !== undefined &&
-                  String(summaryData?.totalPractitionersForSchool)) ||
+                (summaryData?.totalPractitioners !== undefined &&
+                  String(summaryData?.totalPractitioners)) ||
                 '0'
               }
               color={'textMid'}
@@ -39,8 +37,8 @@ export const CoachSummary: React.FC<PractitionerSummaryProps> = ({
               hasMarkup
               fontSize="48"
               text={
-                (summaryData?.totalChildrenForSchool !== undefined &&
-                  String(summaryData?.totalChildrenForSchool)) ||
+                (summaryData?.totalNewPractitioners !== undefined &&
+                  String(summaryData?.totalNewPractitioners)) ||
                 '0'
               }
               color={'textMid'}
@@ -57,8 +55,8 @@ export const CoachSummary: React.FC<PractitionerSummaryProps> = ({
               hasMarkup
               fontSize="48"
               text={
-                (summaryData?.totalClassesForSchool !== undefined &&
-                  String(summaryData?.totalClassesForSchool)) ||
+                (summaryData?.totalSiteVisits !== undefined &&
+                  String(summaryData?.totalSiteVisits)) ||
                 '0'
               }
               color={'textMid'}

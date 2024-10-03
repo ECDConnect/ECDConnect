@@ -331,7 +331,7 @@ export const GetPractitionerStats = gql`
   query GetPractitionerStats(
     $userId: UUID!
     $startDate: DateTime!
-    $endDate: DateTime!
+    $endDate: DateTime
   ) {
     practitionerStats(
       userId: $userId

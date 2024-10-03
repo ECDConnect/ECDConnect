@@ -420,7 +420,7 @@ export function ViewUser(props: any) {
       )}
 
       {isCoach && isRegistered && (
-        <CoachSummary summaryData={practitionerStatsData?.practitionerStats} />
+        <CoachSummary summaryData={coachStatsData?.coachStats} />
       )}
       {(isPractitioner || isPrincipal) && isRegistered && (
         <PractitionerIssuesAndHighlights
