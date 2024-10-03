@@ -603,7 +603,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     userId,
                                     activity.Points,
                                     item.Total,
-                                    new DateTime(today.Year, item.Month, today.Day)
+                                    new DateTime(today.Year, item.Month, 01)
                                 );
                             }
                         }
@@ -653,7 +653,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     userId,
                                     activity.Points * item.Total,
                                     item.Total,
-                                    new DateTime(today.Year, item.Month, today.Day)
+                                    new DateTime(today.Year, item.Month, 01)
                                     );
                             }
                         }
@@ -723,7 +723,7 @@ namespace EcdLink.Api.CoreApi.Services
                             userId,
                             activity.Points * item.Total,
                             item.Total,
-                            new DateTime(today.Year, item.Month, today.Day)
+                            new DateTime(today.Year, item.Month, 01)
                         );
                     }
                 }
@@ -986,7 +986,7 @@ namespace EcdLink.Api.CoreApi.Services
                         userId,
                         activity.Points,
                         1,
-                        new DateTime(today.Year, today.Month, today.Day)
+                        new DateTime(today.Year, today.Month, 01)
                     );
                 }
             }
