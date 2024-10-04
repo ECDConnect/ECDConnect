@@ -456,7 +456,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             DateTime? endDate = null)
         {
             CoachStatsModel stats = new CoachStatsModel();
-            var reportEndDate = startDate.AddMonths(1);
+            var reportStartDate = startDate.Date;
+            var reportEndDate = reportStartDate.AddMonths(1).Date;
             if (endDate != null)
             {
                 reportEndDate = endDate.Value.Date;
@@ -477,10 +478,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var allUserIds = records.Where(x => x.IsRegistered == true).Select(x => x.UserId).Distinct().ToList();
 
             stats.TotalPractitioners = records.Select(x => x.UserId).Distinct().Count();
-            stats.TotalNewPractitioners = records.Where(x => x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).Count();
-            stats.TotalSiteVisits = coach.PractitionerVisits != null ? coach.PractitionerVisits.Where(x => x.IsActive && x.ActualVisitDate.Value.Date >= startDate.Date && x.ActualVisitDate.Value.Date <= reportEndDate.Date).Count() : 0;
+            stats.TotalNewPractitioners = records.Where(x => x.InsertedDate.Date >= reportStartDate && x.InsertedDate.Date <= reportEndDate.Date).Count();
+            stats.TotalSiteVisits = coach.PractitionerVisits != null ? coach.PractitionerVisits.Where(x => x.IsActive && x.ActualVisitDate.Value.Date >= reportStartDate && x.ActualVisitDate.Value.Date <= reportEndDate.Date).Count() : 0;
 
-            var start = startDate;
+            var start = reportStartDate;
             var end = reportEndDate;
 
             // set end-date to end of month
@@ -511,7 +512,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var moreThan75 = 0;
             foreach (var id in allUserIds)
             {
-                var attendance = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, reportEndDate).FirstOrDefault();
+                var attendance = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(id.ToString(), reportStartDate, reportEndDate).FirstOrDefault();
                 if (attendance == null)
                 {
                     lessThan75++;
