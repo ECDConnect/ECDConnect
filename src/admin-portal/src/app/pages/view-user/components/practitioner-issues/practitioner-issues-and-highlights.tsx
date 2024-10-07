@@ -105,7 +105,7 @@ export const PractitionerIssuesAndHighlights: React.FC<
               type={'h2'}
               hasMarkup
               fontSize="24"
-              text={'Higlights'}
+              text={'Highlights'}
               color={'textMid'}
             />
           </div>

@@ -144,7 +144,7 @@ export const GetCoachStats = gql`
   query GetCoachStats(
     $userId: UUID!
     $startDate: DateTime!
-    $endDate: DateTime!
+    $endDate: DateTime
   ) {
     coachStats(userId: $userId, startDate: $startDate, endDate: $endDate) {
       totalPractitioners

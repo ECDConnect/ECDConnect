@@ -555,8 +555,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             [Service] MonthlyAttendanceReport monthlyAttendanceReport,
             Guid userId,
             DateTime startDate,
-            DateTime endDate)
+            DateTime? endDate = null)
         {
+
+            var reportEndDate = startDate.AddMonths(1);
+            if (endDate != null)
+            {
+                reportEndDate = endDate.Value.Date;
+            }
+
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
             var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: uId);
             var statementsRepo = repoFactory.CreateRepository<StatementsIncomeStatement>(userContext: uId);
@@ -572,15 +579,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 stats.TotalClassesForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Count();
             }
 
-            var attendanceReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, endDate).FirstOrDefault();
+            var attendanceReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, reportEndDate).FirstOrDefault();
             stats.TotalAttendanceRegistersCompleted = attendanceReport != null ? attendanceReport.NumberOfSessions : 0 ; 
             stats.TotalAttendanceRegistersNotCompleted = attendanceReport != null ? attendanceReport.TotalScheduledSessions : 0;
 
-            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).ToList();
+            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).ToList();
             stats.TotalProgressReportsCompleted = progressData.Where(x => x.DateCompleted.HasValue).Count();
             stats.TotalProgressReportsNotCompleted = progressData.Where(x => !x.DateCompleted.HasValue).Count(); ;
 
-            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).ToList();
+            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).ToList();
             stats.TotalIncomeStatementsDownloaded = statementData.Where(x => x.Downloaded == true).Count();
             stats.TotalIncomeStatementsWithNoItems = statementData.Where(x => x.IncomeItems.Count == 0 && x.ExpenseItems.Count == 0).Count();
 

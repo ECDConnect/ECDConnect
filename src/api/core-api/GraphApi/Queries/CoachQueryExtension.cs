@@ -453,8 +453,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             [Service] AttendanceService attendanceService,
             Guid userId,
             DateTime startDate,
-            DateTime endDate)
+            DateTime? endDate = null)
         {
+            CoachStatsModel stats = new CoachStatsModel();
+            var reportStartDate = startDate.Date;
+            var reportEndDate = reportStartDate.AddMonths(1).Date;
+            if (endDate != null)
+            {
+                reportEndDate = endDate.Value.Date;
+            }
+
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -463,28 +471,53 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
             var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
 
-            CoachStatsModel stats = new CoachStatsModel();
-
             var coach = coachRepo.GetByUserId(userId);
             var records = practitionerRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy == userId).ToList();
 
             var principalUserIds = records.Where(x => x.IsPrincipalOrAdmin()).Select(x => x.UserId).Distinct().ToList();
-            var allUserIds = records.Select(x => x.UserId).Distinct().ToList();
+            var allUserIds = records.Where(x => x.IsRegistered == true).Select(x => x.UserId).Distinct().ToList();
 
-            stats.TotalPractitioners = records.Count;
-            stats.TotalNewPractitioners = records.Where(x => x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).Count();
-            stats.TotalSiteVisits = coach.PractitionerVisits != null ? coach.PractitionerVisits.Where(x => x.IsActive && x.ActualVisitDate.Value.Date >= startDate.Date && x.ActualVisitDate.Value.Date <= endDate.Date).Count() : 0;
+            stats.TotalPractitioners = records.Select(x => x.UserId).Distinct().Count();
+            stats.TotalNewPractitioners = records.Where(x => x.InsertedDate.Date >= reportStartDate && x.InsertedDate.Date <= reportEndDate.Date).Count();
+            stats.TotalSiteVisits = coach.PractitionerVisits != null ? coach.PractitionerVisits.Where(x => x.IsActive && x.ActualVisitDate.Value.Date >= reportStartDate && x.ActualVisitDate.Value.Date <= reportEndDate.Date).Count() : 0;
 
-            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && principalUserIds.Contains(x.UserId) && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).ToList();
-            stats.TotalWithNoIncomeExpense = statementData.Where(x => x.IncomeItems.Count == 0 && x.ExpenseItems.Count == 0).Select(x => x.UserId).Distinct().Count();
+            var start = reportStartDate;
+            var end = reportEndDate;
+
+            // set end-date to end of month
+            end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));
+
+            var months = Enumerable.Range(0, Int32.MaxValue)
+                                 .Select(e => start.AddMonths(e))
+                                 .TakeWhile(e => e <= end)
+                                 .Select(e => e.Month).Distinct().ToList();
+
+            var years = Enumerable.Range(0, Int32.MaxValue)
+                                 .Select(e => start.AddMonths(e))
+                                 .TakeWhile(e => e <= end)
+                                 .Select(e => e.Year).Distinct().ToList();
+
+            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true 
+                                                                   && principalUserIds.Contains(x.UserId) 
+                                                                   && years.Contains(x.Year)
+                                                                   && months.Contains(x.Month)).ToList();
+            var usersIdsWithStatements = statementData.Where(x => principalUserIds.Contains(x.UserId)).Select(x => x.UserId).ToList();
+            var usersIdsWithNoStatements = principalUserIds.Where(x => !usersIdsWithStatements.Contains(x)).Count();
+
+
+            stats.TotalWithNoIncomeExpense = statementData.Where(x => x.IncomeItems.Count == 0 && x.ExpenseItems.Count == 0).Select(x => x.UserId).Distinct().Count() + usersIdsWithNoStatements;
             stats.TotalWithIncomeExpense = statementData.Where(x => x.IncomeItems.Count > 0 || x.ExpenseItems.Count > 0).Select(x => x.UserId).Distinct().Count(); ;
 
             var lessThan75 = 0;
             var moreThan75 = 0;
-            foreach ( var id in allUserIds)
+            foreach (var id in allUserIds)
             {
-                var attendance = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, endDate).SingleOrDefault();
-                if (attendance != null)
+                var attendance = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(id.ToString(), reportStartDate, reportEndDate).FirstOrDefault();
+                if (attendance == null)
+                {
+                    lessThan75++;
+                } 
+                else
                 {
                     if (attendance.PercentageAttendance < 75) 
                     {
@@ -501,19 +534,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var totalWithNoProgressReports = 0;
             var totalWithProgressReports = 0;
-            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && allUserIds.Contains(x.UserId) && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Date).ToList();
-            foreach (var id in allUserIds)
+            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true 
+                                                                      && allUserIds.Contains(x.UserId) 
+                                                                      && x.DateCompleted.HasValue
+                                                                      && x.DateCompleted.Value.Date >= startDate.Date 
+                                                                      && x.DateCompleted.Value.Date <= reportEndDate.Date).ToList();
+
+            if (progressData.Count > 0)
             {
-                // this take the principal vs practitioner role into account
-                var classroomGroups = attendanceService.GetUserClassroomGroups(id.ToString());
-                var totalLearners = classroomGroups.SelectMany(x => x.Learners.Where(y => y.IsActive && !y.StoppedAttendance.HasValue)).Count();
-                var totalProgressReports = progressData.Where(x => x.UserId == id).Select(x => x.ChildId).Count();
-                if (totalLearners == totalProgressReports) {
-                    totalWithProgressReports++;
-                } else
+                foreach (var id in allUserIds)
                 {
-                    totalWithNoProgressReports++;
+                    // this take the principal vs practitioner role into account
+                    var classroomGroups = attendanceService.GetUserClassroomGroups(id.ToString());
+                    var totalLearners = classroomGroups.SelectMany(x => x.Learners.Where(y => y.IsActive && !y.StoppedAttendance.HasValue)).Count();
+                    var totalProgressReports = progressData.Where(x => x.UserId == id).Select(x => x.ChildId).Count();
+                    if (totalLearners == 0 && totalProgressReports == 0)
+                    {
+                        totalWithNoProgressReports++;
+                    } 
+                    else
+                    {
+                        if (totalLearners == totalProgressReports) {
+                            totalWithProgressReports++;
+                        } 
+                        else
+                        {
+                            totalWithNoProgressReports++;
+                        }
+                    }
                 }
+            } 
+            else 
+            {
+                totalWithNoProgressReports = allUserIds.Count;
             }
             
             stats.TotalWithNoProgressReports = totalWithNoProgressReports; // practitioners did not create progress reports for all children

@@ -419,10 +419,10 @@ export default function ResourceList({
         case businessResourceOptions?.DBERegistration:
           return 'bg-tertiary';
         default:
-          return 'bg-info';
+          return 'bg-infoMain';
       }
     } else {
-      return 'bg-info';
+      return 'bg-infoMain';
     }
   };
 

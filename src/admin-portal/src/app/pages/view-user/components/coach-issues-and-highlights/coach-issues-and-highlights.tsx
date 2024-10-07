@@ -2,12 +2,12 @@ import { CoachStatsDto } from '@ecdlink/core';
 import { Divider, Typography } from '@ecdlink/ui';
 import { ExclamationCircleIcon, StarIcon } from '@heroicons/react/solid';
 
-interface PractitionerIssuesAndHighlightsProps {
+interface CoachesIssuesAndHighlightsProps {
   summaryData: CoachStatsDto;
 }
 
 export const CoachIssuesAndHighlights: React.FC<
-  PractitionerIssuesAndHighlightsProps
+  CoachesIssuesAndHighlightsProps
 > = ({ summaryData }) => {
   return (
     <div className="mb-6 flex flex-col gap-6 lg:flex-row">
@@ -109,7 +109,7 @@ export const CoachIssuesAndHighlights: React.FC<
               type={'h2'}
               hasMarkup
               fontSize="24"
-              text={'Higlights'}
+              text={'Highlights'}
               color={'textMid'}
             />
           </div>

@@ -583,29 +583,18 @@ namespace EcdLink.Api.CoreApi.Services
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
                         var classroomProgrammes = schoolClasses
                                                 .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name != "No theme")
-                                                .ToList()
-                                                .SelectMany(x => x.DailyProgrammes)
-                                                .Where(x => x.IsActive && x.DayDate.Year >= today.Year && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
-                                                .ToList()
-                                                .Select(x => new { x.DayDate.Month, x.DayDate })
-                                                .ToList()
-                                                .GroupBy(x => x.Month)
-                                                .Select(x => new { Month = x.Key, Total = x.Count() })
+                                                .Where(x => x.IsActive && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month && x.Name != "No theme")
                                                 .ToList();
 
                         if (classroomProgrammes.Count > 0)
                         {
-                            foreach (var item in classroomProgrammes)
-                            {
-                                AddOrUpdatePoints(
-                                    PointsActivityConstants.ThemePlannedId,
-                                    userId,
-                                    activity.Points,
-                                    item.Total,
-                                    new DateTime(today.Year, item.Month, today.Day)
-                                );
-                            }
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.ThemePlannedId,
+                                userId,
+                                activity.Points * classroomProgrammes.Count,
+                                classroomProgrammes.Count,
+                                today.GetStartOfMonth()
+                            );
                         }
                     }
                 }
@@ -620,8 +609,8 @@ namespace EcdLink.Api.CoreApi.Services
         /// <returns></returns>
         public void CalculateNoThemePlanned(Guid userId)
         {
-           if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.ProgressEnabled)
-           {
+            if (TenantExecutionContext.Tenant.Modules != null && TenantExecutionContext.Tenant.Modules.ProgressEnabled)
+            {
                 var practitioner = _practitionerRepo.GetByUserId(userId);
                 if (practitioner != null)
                 {
@@ -653,7 +642,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     userId,
                                     activity.Points * item.Total,
                                     item.Total,
-                                    new DateTime(today.Year, item.Month, today.Day)
+                                    new DateTime(today.Year, item.Month, 01)
                                     );
                             }
                         }
@@ -723,7 +712,7 @@ namespace EcdLink.Api.CoreApi.Services
                             userId,
                             activity.Points * item.Total,
                             item.Total,
-                            new DateTime(today.Year, item.Month, today.Day)
+                            new DateTime(today.Year, item.Month, 01)
                         );
                     }
                 }
@@ -986,7 +975,7 @@ namespace EcdLink.Api.CoreApi.Services
                         userId,
                         activity.Points,
                         1,
-                        new DateTime(today.Year, today.Month, today.Day)
+                        new DateTime(today.Year, today.Month, 01)
                     );
                 }
             }
