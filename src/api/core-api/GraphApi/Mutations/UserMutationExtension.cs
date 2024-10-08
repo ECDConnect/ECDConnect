@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -35,6 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ILogger<UserMutationExtension> _logger,
           [Service] IFileService fileService,
           IGenericRepositoryFactory repoFactory,
+          AuthenticationDbContext dbContext,
           ApplicationUserManager userManager,
           UserModel input)
         {
@@ -70,11 +72,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             
             // Check for existing user.
             var newUsername = input?.IdNumber ?? input.Email ?? Guid.NewGuid().ToString();
-            var existingUser = await userManager.FindByNameAsync(newUsername);
-            existingUser ??= await userManager.FindByIdAsync(input.Id);
-
-            if (existingUser is not null)
-                throw new QueryException("User already exists.");
+            //var existingUser = await userManager.FindByNameAsync(newUsername);
+            //existingUser ??= await userManager.FindByIdAsync(input.Id);
+            // use dbcontext because usernames need to be distinct in table
+            var userExists = dbContext.Users.Where(x => x.UserName == newUsername).FirstOrDefault();
+            if (userExists is not null)
+                throw new QueryException("A user with the same username already exists.");
 
             // Create new user.
             var id = string.IsNullOrEmpty(input.Id) ? Guid.NewGuid() : Guid.Parse(input.Id);

@@ -55,7 +55,7 @@ const App: React.FC = () => {
                 path && path.length > 0
                   ? path[0]?.toString()?.toUpperCase()
                   : 'Server Error!',
-              message: errorMessage,
+              message: message,
               variant: NOTIFICATION.ERROR,
             });
           });

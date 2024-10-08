@@ -1,20 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { PractitionerDto, UserDto } from '@ecdlink/core';
 import { useEffect } from 'react';
 
 import 'react-datepicker/dist/react-datepicker.css';
 import { UseFormRegister, UseFormSetValue, useWatch } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
-import { Button, FormInput, Typography } from '@ecdlink/ui';
+import { Button, Typography } from '@ecdlink/ui';
 import { idTypeEnum } from '../../../view-user/view-user.types';
-import { apolloClient } from '../../../../app';
-import {
-  GetAllPortalCoaches,
-  GetAllPortalPractitioners,
-  PortalCoachModel,
-  PortalUsersHcwModel,
-} from '@ecdlink/graphql';
-import { useQuery } from '@apollo/client';
 
 export interface UserDetailsFormProps {
   formKey: string;
@@ -62,9 +54,14 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
     const hasIdNumber = practitioners?.find(
       (item) => item?.user?.idNumber?.toLowerCase() === idNumber?.toLowerCase()
     );
+    const hasUsername = practitioners?.find(
+      (item) => item?.user?.userName?.toLowerCase() === idNumber?.toLowerCase()
+    );
 
     if (hasIdNumber) {
       setIdentificationInUse(hasIdNumber?.user?.idNumber?.toLocaleLowerCase());
+    } else if (hasUsername) {
+      setIdentificationInUse(hasUsername?.user?.userName?.toLocaleLowerCase());
     } else {
       setIdentificationInUse('');
     }
@@ -80,16 +77,6 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
 
   const isIdentificationInUse =
     !!identificationInUse && identificationInUse === idNumber.toLowerCase();
-
-  const identificationExists = () => {
-    const practitioner = practitioners?.find(
-      (item) => item?.user?.idNumber === idNumber
-    );
-    if (practitioner) {
-      setIdentificationInUse(practitioner?.user?.idNumber);
-      return practitioner?.user?.idNumber;
-    }
-  };
 
   return (
     <form>
@@ -113,17 +100,6 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
               placeholder="Surname/family name"
             />
           </div>
-          {/* {!isCoachForm && (
-            <div className="my-4 sm:col-span-3">
-              <FormField
-                label={'Work email address *'}
-                nameProp={'email'}
-                register={register}
-                error={errors.email?.message}
-                placeholder="e.g name@email.com"
-              />
-            </div>
-          )} */}
           <div className="my-4 sm:col-span-3">
             <FormField
               label={'Cellphone number *'}
@@ -134,15 +110,6 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
               type="text"
             />
           </div>
-          {/* <div className="my-4 sm:col-span-3">
-            <FormField
-              label={'Id number / passport *'}
-              nameProp={'idNumber'}
-              register={register}
-              error={errors.idNumber?.message}
-              placeholder="e.g 6201014800088"
-            />
-          </div> */}
           <div className="my-4 sm:col-span-3">
             <Typography
               text={`Which kind of identification do you have for the ${
