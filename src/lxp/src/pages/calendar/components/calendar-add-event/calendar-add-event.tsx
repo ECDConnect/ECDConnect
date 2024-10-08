@@ -368,7 +368,15 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       list.push(
         ...participantUsers
           .filter((p) => p.userRole === 'Practitioner')
-          .map((p) => mapPractitionerToListDataItem(p))
+          .map((p) =>
+            mapUserToListDataItem(
+              p.firstName,
+              p.surname,
+              p.userId,
+              p.profileImage,
+              p.userRole
+            )
+          )
       );
       list.push(
         ...participantUsers
