@@ -5,6 +5,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -13,6 +14,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,17 +160,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ReplacementValue = calendarEvent.Id.ToString()
                     }
                 };
-                foreach (var participant in calendarEvent.Participants) 
-                { 
-                    if (participant.ParticipantUserId != calendarEvent.UserId)
-                    {
-                        var participantUser = userManager.FindByIdAsync(participant.ParticipantUserId).Result;
-                            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CalendarInvitation, DateTime.Now.Date, participantUser, "", MessageStatusConstants.Blue, replacements, calendarEvent.End,
-                                                                                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(calendarEvent.Id, "CalendarEvent") });
+                if (calendarEvent.Participants.Any())
+                {
+                    foreach (var participant in calendarEvent.Participants) 
+                    { 
+                        if (participant.ParticipantUserId != calendarEvent.UserId)
+                        {
+                            var participantUser = userManager.FindByIdAsync(participant.ParticipantUserId).Result;
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.CalendarInvitation, DateTime.Now.Date, participantUser, "", MessageStatusConstants.Blue, replacements, calendarEvent.End,
+                                                                                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(calendarEvent.Id, "CalendarEvent") });
+                        }
                     }
                 }
             }
         }
+
     }
 }
 

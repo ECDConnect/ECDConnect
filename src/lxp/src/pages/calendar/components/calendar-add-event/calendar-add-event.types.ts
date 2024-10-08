@@ -53,7 +53,8 @@ export interface CalendarAddEventParticipantFormModel {
   userId: string;
   firstName: string;
   surname: string;
-  isClub: boolean;
+  userRole: string;
+  profileImage: string;
 }
 
 export interface CalendarAddEventFormModel {

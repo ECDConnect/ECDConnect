@@ -60,7 +60,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var list = new List<CalendarEventViewModel>();
             list.AddRange(ownEvents);
             list.AddRange(otherEvents);
-            return list;//.OrderBy(e => e.Start);
+            return list;
         }
 
 

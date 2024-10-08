@@ -303,7 +303,10 @@ export const CalendarHome: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className={styles.calendarWrapper}>
+
+          <div
+            style={{ overflowY: 'scroll', overflowX: 'scroll', margin: '10px' }}
+          >
             <Calendar
               ref={calendarRef}
               useFormPopup={false}

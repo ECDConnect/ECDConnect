@@ -3,7 +3,6 @@ using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
@@ -23,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public Guid? UserId { get; set; }
         public ApplicationUser User { get; set; }
         public Visit Visit { get; set; }
-        public virtual ICollection<CalendarEventParticipantViewModel> Participants { get; set; }
+        public virtual ICollection<CalendarEventParticipant> Participants { get; set; }
 
         public CalendarEventViewModel(CalendarEvent calendarEvent)
         {
@@ -41,23 +40,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             UserId = calendarEvent.UserId;
             User = calendarEvent.User;
             Visit = calendarEvent.Visit;
-            Participants = calendarEvent.Participants.Select(x => new CalendarEventParticipantViewModel(x)).ToList();
-        }
-
-    }
-
-    public class CalendarEventParticipantViewModel
-    {
-        public string Id { get; set; }
-        public Guid ParticipantUserId { get; set; }
-        public bool IsActive { get; set; }
-        public ApplicationUser ParticipantUser { get; set; }
-        public CalendarEventParticipantViewModel(CalendarEventParticipant participant)
-        {
-            Id = participant.Id.ToString();
-            ParticipantUserId = (Guid)participant.UserId;
-            IsActive = participant.IsActive;
-            ParticipantUser = participant.ParticipantUser;
+            Participants = calendarEvent.Participants;
         }
     }
+    
 }
