@@ -70,8 +70,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         repoCalendarEventParticipant.Insert(calendarEventParticipant);
                     }
                     calendarEvent.Participants = participants;
+                    NotifyUsers(notificationService, userManager, calendarEvent);
                 }
-                NotifyUsers(notificationService, userManager, calendarEvent);
             }
             else
             {
