@@ -365,40 +365,16 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       }
 
       const list: ListDataItem[] = [];
+
       list.push(
         ...participantUsers
-          .filter((p) => p.userRole === 'Practitioner')
-          .map((p) => mapPractitionerToListDataItem(p))
-      );
-      list.push(
-        ...participantUsers
-          .filter((p) => p.userRole === 'Principal')
-          .map((p) =>
-            mapUserToListDataItem(
-              p.firstName,
-              p.surname,
-              p.userId,
-              p.profileImage,
-              p.userRole
-            )
+          .filter(
+            (p) =>
+              p.userRole === 'Principal' ||
+              p.userRole === 'Practitioner' ||
+              p.userRole === 'Child' ||
+              p.userRole === tenant.tenant?.modules?.coachRoleName
           )
-      );
-      list.push(
-        ...participantUsers
-          .filter((p) => p.userRole === tenant.tenant?.modules?.coachRoleName)
-          .map((p) =>
-            mapUserToListDataItem(
-              p.firstName,
-              p.surname,
-              p.userId,
-              p.profileImage,
-              p.userRole
-            )
-          )
-      );
-      list.push(
-        ...participantUsers
-          .filter((p) => p.userRole === 'Child')
           .map((p) =>
             mapUserToListDataItem(
               p.firstName,
