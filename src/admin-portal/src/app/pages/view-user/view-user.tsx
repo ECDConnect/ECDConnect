@@ -388,29 +388,24 @@ export function ViewUser(props: any) {
         refetchGetPractitionerByUserId={refetchGetPractitionerByUserId}
       />
 
-      {(props.location.state?.component ===
-        (UsersRouteRedirectTypeEnum?.practitioner ||
-          UsersRouteRedirectTypeEnum?.principal) ||
-        props.location.state?.component ===
-          UsersRouteRedirectTypeEnum?.coach) &&
-        isRegistered && (
-          <DatePicker
-            selectsRange
-            selected={startDate}
-            onChange={onChange}
-            startDate={startDate}
-            endDate={endDate}
-            shouldCloseOnSelect
-            colour="secondary"
-            textColour="white"
-            hideCalendarIcon
-            chevronIconColour="white"
-            showChevronIcon
-            isFullWidth={false}
-            className="w-64 self-end rounded-xl"
-            dateFormat={'d MMM yyyy'}
-          />
-        )}
+      {(isPractitioner || isPrincipal || isCoach) && isRegistered && (
+        <DatePicker
+          selectsRange
+          selected={startDate}
+          onChange={onChange}
+          startDate={startDate}
+          endDate={endDate}
+          shouldCloseOnSelect
+          colour="secondary"
+          textColour="white"
+          hideCalendarIcon
+          chevronIconColour="white"
+          showChevronIcon
+          isFullWidth={false}
+          className="w-64 self-end rounded-xl"
+          dateFormat={'d MMM yyyy'}
+        />
+      )}
 
       {(isPractitioner || isPrincipal) && isRegistered && (
         <PractitionerSummary
