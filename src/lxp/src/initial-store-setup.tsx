@@ -63,7 +63,6 @@ import {
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
-import { getClubForUser } from './store/club/club.actions';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
@@ -444,10 +443,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         const oneYearAgo = new Date();
         oneYearAgo.setMonth(currentDate.getMonth() - 12);
 
-        (async () =>
-          await appDispatch(
-            getClubForUser({ userId: userData?.id! })
-          ).unwrap())();
+        // (async () =>
+        //   await appDispatch(
+        //     getClubForUser({ userId: userData?.id! })
+        //   ).unwrap())();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

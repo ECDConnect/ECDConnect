@@ -1015,7 +1015,9 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToCalendar = () => {
-    if (
+    if (isCoach) {
+      history.push(ROUTES.CALENDAR);
+    } else if (
       (((classroom &&
         classroom.id &&
         classroomGroups &&

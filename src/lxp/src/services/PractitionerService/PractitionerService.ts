@@ -348,6 +348,8 @@ class PractitionerService {
             isTrainee
             principalHierarchy
             coachHierarchy
+            coachName
+            coachProfilePic
             attendanceRegisterLink
             maxChildren
             consentForPhoto

@@ -24,9 +24,12 @@ export interface PractitionerDto extends EntityBase {
   isTrainee?: boolean;
   isNewInClub?: boolean;
   principalHierarchy?: string;
+  principalName?: string;
+  principalProfilePic?: string;
   signingSignature?: string;
   coachHierarchy?: string;
   coachName?: string;
+  coachProfilePic?: string;
   shareInfo?: boolean;
   isRegistered?: boolean;
   dateLinked?: Date;

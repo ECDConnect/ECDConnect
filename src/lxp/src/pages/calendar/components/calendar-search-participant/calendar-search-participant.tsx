@@ -13,18 +13,21 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { practitionerSelectors } from '@/store/practitioner';
-import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
+import { UserDto } from '@ecdlink/core';
 import * as styles from './calendar-search-participant.styles';
 import { ListDataItem } from '../calendar.types';
 import {
-  mapClubToListDataItem,
+  mapChildToListDataItem,
+  mapCurrentUserToListDataItem,
   mapPractitionerToListDataItem,
   mapUserToListDataItem,
   sortListDataItems,
 } from '../calendar.utils';
 import { CalendarAddEventParticipantFormModel } from '../calendar-add-event/calendar-add-event.types';
-import { coachSelectors } from '@/store/coach';
 import { useWindowSize } from '@reach/window-size';
+import { childrenSelectors } from '@/store/children';
+import { useTenant } from '@/hooks/useTenant';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
@@ -39,15 +42,21 @@ export const CalendarSearchParticipant: React.FC<
   const [, setAddChildButtonExpanded] = useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState<boolean>(false);
   const [busySaving, setBusySaving] = useState<boolean>(false);
+  const tenant = useTenant();
 
   const { height } = useWindowSize();
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  const isCoach = currentUser?.roles?.some(
-    (role) => role.systemName === RoleSystemNameEnum.Coach
-  );
+  // const isCoach = currentUser?.roles?.some(
+  //   (role) => role.systemName === RoleSystemNameEnum.Coach
+  // );
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const clubs = useSelector(coachSelectors.getCoachClubs);
+  const children = useSelector(childrenSelectors.getChildren);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const principal = useSelector(classroomsSelectors.getPrincipal);
+
+  const isPractitioner = !!practitioner;
+  const isPrincipal = practitioner?.isPrincipal;
 
   const handleListScroll = useCallback((scrollTop: number) => {
     if (scrollTop < 30) {
@@ -129,9 +138,9 @@ export const CalendarSearchParticipant: React.FC<
       userId: x.id || '',
       firstName: x.extraData?.firstName || '',
       surname: x.extraData?.surname || '',
-      isClub: x.extraData?.isClub || false,
+      userRole: x.extraData?.userRole || '',
+      profileImage: x.extraData?.profileImage || '',
     }));
-
     onDone(participantUsers);
   }, [customList, selectedData, onDone]);
 
@@ -139,15 +148,46 @@ export const CalendarSearchParticipant: React.FC<
     if (customList?.length) return;
 
     if (
-      !!practitioners &&
-      practitioners.length > 0 &&
-      (!isCoach || (isCoach && !!clubs))
+      (!!practitioners && practitioners.length > 0) ||
+      (!!children && children.length > 0)
     ) {
-      const list = practitioners.map((p) => mapPractitionerToListDataItem(p));
-      const clubList =
-        isCoach && !!clubs ? clubs.map((c) => mapClubToListDataItem(c)) : [];
+      const list = !!practitioners
+        ? practitioners.map((p) => mapPractitionerToListDataItem(p))
+        : [];
+      const childList = !!children
+        ? children.map((p) => mapChildToListDataItem(p))
+        : [];
 
-      const unselected: ListDataItem[] = clubList;
+      const unselected: ListDataItem[] = childList;
+
+      if (isPractitioner || isPrincipal) {
+        let coachFirstName = '';
+        let coachSurname = '';
+        if (practitioner.coachName) {
+          const coachNameItems = practitioner?.coachName.split(' ');
+          coachFirstName = coachNameItems[0];
+          coachSurname = coachNameItems[1];
+        }
+        const coachListItem = mapUserToListDataItem(
+          coachFirstName,
+          coachSurname,
+          practitioner?.coachHierarchy || '',
+          practitioner?.coachProfilePic || '',
+          tenant.tenant?.modules?.coachRoleName || ''
+        );
+        unselected.push(coachListItem);
+
+        if (isPractitioner) {
+          const principalListItem = mapUserToListDataItem(
+            principal.firstName,
+            principal.surname,
+            principal.userId,
+            principal.profileImageUrl,
+            'Principal'
+          );
+          unselected.push(principalListItem);
+        }
+      }
 
       unselected.push(
         ...list.filter(
@@ -164,7 +204,7 @@ export const CalendarSearchParticipant: React.FC<
       setUnselectedData(unselected);
       setFilteredData(unselected);
 
-      const selected = [mapUserToListDataItem(currentUser)];
+      const selected = [mapCurrentUserToListDataItem(currentUser)];
       selected.push(
         ...list.filter(
           (p) =>
@@ -179,7 +219,7 @@ export const CalendarSearchParticipant: React.FC<
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitioners, clubs, customList]);
+  }, [practitioners, children, customList]);
 
   return (
     <div className="overflow-auto" style={{ height }}>

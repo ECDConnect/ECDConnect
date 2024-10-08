@@ -6,18 +6,19 @@ export type CalendarAddEventInfo = {
   id?: string;
   eventTypeDisabled?: boolean;
   eventType?:
-    | 'SmartSpace'
-    | 'First PQA'
-    | 'PQA follow-up'
-    | 'First site visit'
-    | 'Second site visit'
-    | 'Re-accreditation'
-    | 'General support visit'
-    | 'Coaching circle'
-    | 'Re-accreditation follow-up'
-    | 'Club Monthly Meeting';
+    | 'Site visit'
+    | 'Preschool event'
+    | 'Birthday'
+    | 'Caregiver meeting'
+    | 'Fundraising event'
+    | 'Holiday celebration'
+    | 'Open day'
+    | 'Training'
+    | 'Other';
   start?: string;
+  startTime?: string;
   end?: string;
+  endTime?: string;
   minDate?: string;
   maxDate?: string;
   allDay?: boolean;
@@ -52,13 +53,16 @@ export interface CalendarAddEventParticipantFormModel {
   userId: string;
   firstName: string;
   surname: string;
-  isClub: boolean;
+  userRole: string;
+  profileImage: string;
 }
 
 export interface CalendarAddEventFormModel {
   name: string;
   start: Date;
+  startTime: string;
   end: Date;
+  endTime: string;
   allDay: boolean;
   description: string;
   eventType?: string;
@@ -68,7 +72,9 @@ export interface CalendarAddEventFormModel {
 export const defaultCalendarAddEventFormSchema: CalendarAddEventFormModel = {
   name: '',
   start: new Date(),
+  startTime: '',
   end: new Date(),
+  endTime: '',
   allDay: false,
   description: '',
   eventType: undefined,

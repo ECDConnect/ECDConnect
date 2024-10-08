@@ -1,6 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Constants;
-using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -12,14 +11,13 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Concurrent;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -55,6 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 calendarEvent.IsActive = true;
                 calendarEvent.Action = input.Action;
                 calendarEvent.UserId = uId;
+                calendarEvent.AllDay = input.AllDay;
                 repoCalendarEvent.Insert(calendarEvent);
 
                 if (input.Participants != null && input.Participants.Count > 0)
@@ -84,6 +83,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 calendarEvent.Description = input.Description;
                 calendarEvent.IsActive = true;
                 calendarEvent.Action = input.Action;
+                calendarEvent.AllDay = input.AllDay;
                 repoCalendarEvent.Update(calendarEvent);
 
                 var inputParticipants = input.Participants;
@@ -160,17 +160,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ReplacementValue = calendarEvent.Id.ToString()
                     }
                 };
-                foreach (var participant in calendarEvent.Participants) 
-                { 
-                    if (participant.ParticipantUserId != calendarEvent.UserId)
-                    {
-                        var participantUser = userManager.FindByIdAsync(participant.ParticipantUserId).Result;
-                            notificationService.SendNotificationAsync(null, TemplateTypeConstants.CalendarInvitation, DateTime.Now.Date, participantUser, "", MessageStatusConstants.Blue, replacements, calendarEvent.End,
-                                                                                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(calendarEvent.Id, "CalendarEvent") });
+                if (calendarEvent.Participants.Any())
+                {
+                    foreach (var participant in calendarEvent.Participants) 
+                    { 
+                        if (participant.ParticipantUserId != calendarEvent.UserId)
+                        {
+                            var participantUser = userManager.FindByIdAsync(participant.ParticipantUserId).Result;
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.CalendarInvitation, DateTime.Now.Date, participantUser, "", MessageStatusConstants.Blue, replacements, calendarEvent.End,
+                                                                                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(calendarEvent.Id, "CalendarEvent") });
+                        }
                     }
                 }
             }
         }
+
     }
 }
 

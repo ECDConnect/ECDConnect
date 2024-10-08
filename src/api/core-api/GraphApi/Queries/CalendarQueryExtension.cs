@@ -1,7 +1,7 @@
-﻿using ECDLink.Abstractrions.GraphQL.Enums;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Calendar;
-using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -9,12 +9,10 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -26,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public async Task<IEnumerable<CalendarEvent>> GetUserCalendarEvents(
+        public List<CalendarEventViewModel> GetUserCalendarEvents(
           IGenericRepositoryFactory repoFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
           DateTime? start)
@@ -42,6 +40,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     && e.IsActive
                     && e.Start >= start)
                 .Include(e => e.Participants)
+                .Include(e => e.Visit)
+                .Select(e => new CalendarEventViewModel(e))
                 .ToList();
 
             var otherEventIds = eventParticipantRepo.GetAll()
@@ -53,12 +53,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(e => otherEventIds.Contains(e.Id))
                 .Where(e => e.IsActive && e.Start >= start)
                 .Include(e => e.Participants)
+                .Include(e => e.Visit)
+                .Select(e => new CalendarEventViewModel(e))
                 .ToList();
 
-            var list = new List<CalendarEvent>();
+            var list = new List<CalendarEventViewModel>();
             list.AddRange(ownEvents);
             list.AddRange(otherEvents);
-            return list.OrderBy(e => e.Start);
+            return list;
         }
 
 

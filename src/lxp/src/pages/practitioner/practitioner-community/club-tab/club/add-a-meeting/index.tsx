@@ -67,41 +67,41 @@ export const AddMeeting: React.FC = () => {
   const isScheduleInCalendar = step1?.hasMeetingHappened === false;
   const isNext = !isLastStep && !isScheduleInCalendar;
 
-  const guests = useMemo(
-    (): ListDataItem[] =>
-      club?.clubMembers?.map((member) => ({
-        id: member.userId,
-        profileDataUrl: member.profileImageUrl,
-        title: `${member.firstName ?? ''} ${member.surname ?? ''}`,
-        alertSeverity: 'none',
-        avatarColor: getAvatarColor() || '',
-        hideAlertSeverity: true,
-        extraData: {
-          userId: member.userId,
-          firstName: member.firstName,
-          surname: member.surname,
-          isClub: true,
-        },
-      })) ?? [],
-    [club?.clubMembers]
-  );
+  // const guests = useMemo(
+  //   (): ListDataItem[] =>
+  //     club?.clubMembers?.map((member) => ({
+  //       id: member.userId,
+  //       profileDataUrl: member.profileImageUrl,
+  //       title: `${member.firstName ?? ''} ${member.surname ?? ''}`,
+  //       alertSeverity: 'none',
+  //       avatarColor: getAvatarColor() || '',
+  //       hideAlertSeverity: true,
+  //       extraData: {
+  //         userId: member.userId,
+  //         firstName: member.firstName,
+  //         surname: member.surname,
+  //         isClub: true,
+  //       },
+  //     })) ?? [],
+  //   [club?.clubMembers]
+  // );
 
-  const coachGuest = {
-    id: club?.clubCoach?.userId,
-    profileDataUrl: club?.clubCoach?.profileImageUrl,
-    title: `${club?.clubCoach?.firstName ?? ''} ${
-      club?.clubCoach?.surname ?? ''
-    }`,
-    alertSeverity: 'none',
-    avatarColor: getAvatarColor() || '',
-    hideAlertSeverity: true,
-    extraData: {
-      userId: club?.clubCoach?.userId,
-      firstName: club?.clubCoach?.firstName,
-      surname: club?.clubCoach?.surname,
-      isClub: true,
-    },
-  } as ListDataItem;
+  // const coachGuest = {
+  //   id: club?.clubCoach?.userId,
+  //   profileDataUrl: club?.clubCoach?.profileImageUrl,
+  //   title: `${club?.clubCoach?.firstName ?? ''} ${
+  //     club?.clubCoach?.surname ?? ''
+  //   }`,
+  //   alertSeverity: 'none',
+  //   avatarColor: getAvatarColor() || '',
+  //   hideAlertSeverity: true,
+  //   extraData: {
+  //     userId: club?.clubCoach?.userId,
+  //     firstName: club?.clubCoach?.firstName,
+  //     surname: club?.clubCoach?.surname,
+  //     isClub: true,
+  //   },
+  // } as ListDataItem;
 
   const onAddCollage = () => {
     if (!step3?.createdResource) return;
@@ -217,20 +217,20 @@ export const AddMeeting: React.FC = () => {
       formattedDate.setHours(formattedDate.getHours() + 1);
       const end = formattedDate.toISOString();
 
-      addCalendarEvent({
-        guests: [coachGuest, ...guests],
-        event: {
-          eventTypeDisabled: true,
-          eventType: 'Club Monthly Meeting',
-          start,
-          end,
-        },
-        onUpdated: async () => {
-          await handleScheduledEvents();
-          onSuccess();
-          history.goBack();
-        },
-      });
+      // addCalendarEvent({
+      //   guests: [coachGuest, ...guests],
+      //   event: {
+      //     eventTypeDisabled: true,
+      //     eventType: 'Club Monthly Meeting',
+      //     start,
+      //     end,
+      //   },
+      //   onUpdated: async () => {
+      //     await handleScheduledEvents();
+      //     onSuccess();
+      //     history.goBack();
+      //   },
+      // });
     } else {
       onSubmit();
     }

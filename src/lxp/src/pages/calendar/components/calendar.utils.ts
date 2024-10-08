@@ -1,7 +1,7 @@
 import {
   CalendarEventActionModel,
   CalendarEventModel,
-  ClubDto,
+  ChildDto,
   PractitionerDto,
   UserDto,
   getAvatarColor,
@@ -15,7 +15,7 @@ export const mapPractitionerToListDataItem = (
     id: practitioner.userId || '',
     profileDataUrl: practitioner.user?.profileImageUrl,
     title: `${practitioner.user?.firstName} ${practitioner.user?.surname}`,
-    subTitle: practitioner.isTrainee ? 'Trainee' : 'Practitioner',
+    subTitle: practitioner.isPrincipal ? 'Principal' : 'Practitioner',
     profileText: `${
       practitioner.user?.firstName && practitioner.user?.firstName[0]
     }${practitioner.user?.surname && practitioner.user?.surname[0]}`,
@@ -26,13 +26,37 @@ export const mapPractitionerToListDataItem = (
       userId: practitioner.user?.id || '',
       firstName: practitioner.user?.firstName || '',
       surname: practitioner.user?.surname || '',
-      isClub: false,
+      userRole: practitioner.isPrincipal ? 'Principal' : 'Practitioner',
+      profileImage: practitioner.user?.profileImageUrl!,
     },
     rightIcon: '',
   };
 };
 
-export const mapUserToListDataItem = (user: UserDto): ListDataItem => {
+export const mapChildToListDataItem = (child: ChildDto): ListDataItem => {
+  return {
+    id: child.userId || '',
+    profileDataUrl: child.user?.profileImageUrl,
+    title: `${child.user?.firstName} ${child.user?.surname}`,
+    subTitle: 'Child',
+    profileText: `${child.user?.firstName && child.user?.firstName[0]}${
+      child.user?.surname && child.user?.surname[0]
+    }`,
+    hideAlertSeverity: true,
+    alertSeverity: 'none',
+    avatarColor: getAvatarColor() || '',
+    extraData: {
+      userId: child.user?.id || '',
+      firstName: child.user?.firstName || '',
+      surname: child.user?.surname || '',
+      userRole: 'Child',
+      profileImage: child.user?.profileImageUrl!,
+    },
+    rightIcon: '',
+  };
+};
+
+export const mapCurrentUserToListDataItem = (user: UserDto): ListDataItem => {
   return {
     id: user.id,
     profileDataUrl: user.profileImageUrl,
@@ -48,27 +72,36 @@ export const mapUserToListDataItem = (user: UserDto): ListDataItem => {
       userId: user.id || '',
       firstName: user.firstName || '',
       surname: user.surname || '',
-      isClub: false,
+      userRole: 'You',
+      profileImage: user.profileImageUrl!,
     },
     rightIcon: '',
     noClick: true,
   };
 };
 
-export const mapClubToListDataItem = (club: ClubDto): ListDataItem => {
+export const mapUserToListDataItem = (
+  firstName: string,
+  surname: string,
+  userId: string,
+  profileImageUrl: string,
+  roleName: string
+): ListDataItem => {
   return {
-    id: club.id,
-    title: club.name,
-    subTitle: 'Club',
-    profileText: club.name,
+    id: userId || '',
+    profileDataUrl: profileImageUrl,
+    title: `${firstName} ${surname}`,
+    subTitle: roleName,
+    profileText: `${firstName && firstName[0]}${surname && surname[0]}`,
     hideAlertSeverity: true,
     alertSeverity: 'none',
     avatarColor: getAvatarColor() || '',
     extraData: {
-      userId: '',
-      firstName: club.name,
+      userId: userId,
+      firstName: firstName + '' + surname || '',
       surname: '',
-      isClub: true,
+      userRole: roleName,
+      profileImage: profileImageUrl,
     },
     rightIcon: '',
   };
@@ -76,9 +109,9 @@ export const mapClubToListDataItem = (club: ClubDto): ListDataItem => {
 
 export const sortListDataItems = (items: ListDataItem[]) => {
   items.sort((a, b) => {
-    if (a.extraData?.isClub === true && b.extraData?.isClub === false)
+    if (a.extraData?.userRole === 'Child' && b.extraData?.userRole === 'Child')
       return -1;
-    if (a.extraData?.isClub === b.extraData?.isClub) {
+    if (a.extraData?.userRole === b.extraData?.userRole) {
       if (a.title.toLowerCase() < b.title.toLowerCase()) return -1;
     }
     return 1;

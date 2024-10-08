@@ -18,16 +18,18 @@ import {
   Checkbox,
   Dialog,
   DialogPosition,
+  Divider,
   Dropdown,
   FormInput,
   StackedList,
   Typography,
   classNames,
   renderIcon,
+  DatePicker,
 } from '@ecdlink/ui';
-import { addMilliseconds, format, subMilliseconds } from 'date-fns';
+import { addMilliseconds, format, sub, subMilliseconds } from 'date-fns';
 import { newGuid } from '@/utils/common/uuid.utils';
-import DatePicker from 'react-datepicker';
+// import DatePicker from 'react-datepicker';
 import { calendarSelectors, calendarThunkActions } from '@/store/calendar';
 import {
   CalendarEventModel,
@@ -44,13 +46,15 @@ import { userSelectors } from '@/store/user';
 import { ListDataItem } from '../calendar.types';
 import {
   mapPractitionerToListDataItem,
-  mapUserToListDataItem,
+  mapCurrentUserToListDataItem,
   sortListDataItems,
+  mapUserToListDataItem,
 } from '../calendar.utils';
-import { clubThunkActions } from '@/store/club';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CalendarActions } from '@/store/calendar/calendar.actions';
 import { useWindowSize } from '@reach/window-size';
+import FormField from '@/components/form-field/form-field';
+import { useTenant } from '@/hooks/useTenant';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
@@ -62,6 +66,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   onCancel,
 }) => {
   const [model, setModel] = useState<CalendarEventModel>();
+  const tenant = useTenant();
 
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -114,9 +119,11 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     allDay: eventProps?.allDay || false,
     description: eventProps?.description || '',
     end: eventProps?.end || '',
+    endTime: eventProps?.endTime || '',
     eventType: eventProps?.eventType || '',
     name: eventProps?.name || '',
     start: eventProps?.start || '',
+    startTime: eventProps?.startTime || '',
     participants: eventPropParticipants || [],
     action: eventProps?.action || null,
     userId: currentUser.id || '',
@@ -160,6 +167,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           0
         )
       : startDate,
+    startTime: '',
     end: event.allDay
       ? new Date(
           endDate.getFullYear(),
@@ -171,6 +179,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           0
         )
       : endDate,
+    endTime: '',
     allDay: event.allDay,
     description: event.description || '',
     eventType: !event.eventType ? undefined : event.eventType,
@@ -178,7 +187,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       userId: p.participantUserId,
       firstName: p.participantUser.firstName,
       surname: p.participantUser.surname,
-      isClub: false,
+      userRole: 'child',
+      profileImage: '',
     })),
   };
   const {
@@ -235,18 +245,41 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             };
           });
 
+      let startDate = new Date(
+        formValues.start.setHours(12, 0, 0, 0)
+      ).toISOString();
+      if (formValues.startTime !== '') {
+        const startItems = formValues.startTime.split(':');
+        const hour: number = parseInt(startItems[0]);
+        const minutes: number = parseInt(startItems[1]);
+        startDate = new Date(
+          formValues.start.setHours(hour, minutes, 0, 0)
+        ).toISOString();
+      }
+
+      let endDate = new Date(
+        formValues.end.setHours(12, 0, 0, 0)
+      ).toISOString();
+
+      if (formValues.endTime !== '') {
+        const endItems = formValues.endTime.split(':');
+        const hour: number = parseInt(endItems[0]);
+        const minutes: number = parseInt(endItems[1]);
+        endDate = new Date(
+          formValues.end.setHours(hour, minutes, 0, 0)
+        ).toISOString();
+      }
+
       const currentModel: CalendarEventModel = {
         id: id,
         allDay: formValues.allDay,
         description: formValues.description,
-        end: formValues.allDay
-          ? new Date(formValues.end.setHours(12, 0, 0, 0)).toISOString()
-          : formValues.end.toISOString(),
+        end: endDate,
+        endTime: formValues.endTime,
         eventType: formValues.eventType || '',
         name: formValues.name,
-        start: formValues.allDay
-          ? new Date(formValues.start.setHours(12, 0, 0, 0)).toISOString()
-          : formValues.start.toISOString(),
+        start: startDate,
+        startTime: formValues.startTime,
         participants: participants,
         action: event.action,
         userId: currentUser.id || '',
@@ -290,39 +323,10 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         return setEventFormValue('participants', participantUsers);
       }
 
-      const clubIds: string[] = participantUsers
-        .filter((x) => x.isClub)
-        .map((x) => x.userId);
-
-      if (clubIds.length > 0) {
-        const clubMembers = await appDispatch(
-          clubThunkActions.getClubsMembers({ clubIds })
-        ).unwrap();
-        if (!!clubMembers && clubMembers.length > 0) {
-          const clubUsers = clubMembers
-            .filter(
-              (x) =>
-                !!x.practitioner &&
-                !!x.practitioner.user &&
-                x.practitioner.user.isActive
-            )
-            .map((x) => {
-              return {
-                userId: x.practitioner?.user?.id || '',
-                firstName: x.practitioner?.user?.firstName || '',
-                surname: x.practitioner?.user?.surname || '',
-                isClub: false,
-              };
-            });
-          if (clubUsers.length > 0) participantUsers.push(...clubUsers);
-        }
-      }
-      participantUsers = participantUsers.filter((p) => !p.isClub);
-
       setSearchParticipantsVisible(false);
       setEventFormValue('participants', participantUsers);
     },
-    [appDispatch, filteredGuests, setEventFormValue]
+    [filteredGuests, setEventFormValue]
   );
 
   const onAddParticipant = useCallback(() => {
@@ -348,7 +352,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     (
       participantUsers: CalendarAddEventParticipantFormModel[]
     ): ListDataItem[] => {
-      const mappedCurrentUser = mapUserToListDataItem(currentUser);
+      const mappedCurrentUser = mapCurrentUserToListDataItem(currentUser);
       mappedCurrentUser.noClick = true;
 
       if (!!filteredGuests?.length) {
@@ -361,22 +365,57 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       }
 
       const list: ListDataItem[] = [];
-      if (!!practitioners) {
-        list.push(
-          ...practitioners
-            .filter(
-              (p) =>
-                participantUsers.findIndex((u) => u.userId === p.userId) >= 0
+      list.push(
+        ...participantUsers
+          .filter((p) => p.userRole === 'Practitioner')
+          .map((p) => mapPractitionerToListDataItem(p))
+      );
+      list.push(
+        ...participantUsers
+          .filter((p) => p.userRole === 'Principal')
+          .map((p) =>
+            mapUserToListDataItem(
+              p.firstName,
+              p.surname,
+              p.userId,
+              p.profileImage,
+              p.userRole
             )
-            .map((p) => mapPractitionerToListDataItem(p))
-        );
-        list.forEach((x) => (x.rightIcon = 'XIcon'));
-        sortListDataItems(list);
-      }
+          )
+      );
+      list.push(
+        ...participantUsers
+          .filter((p) => p.userRole === tenant.tenant?.modules?.coachRoleName)
+          .map((p) =>
+            mapUserToListDataItem(
+              p.firstName,
+              p.surname,
+              p.userId,
+              p.profileImage,
+              p.userRole
+            )
+          )
+      );
+      list.push(
+        ...participantUsers
+          .filter((p) => p.userRole === 'Child')
+          .map((p) =>
+            mapUserToListDataItem(
+              p.firstName,
+              p.surname,
+              p.userId,
+              p.profileImage,
+              p.userRole
+            )
+          )
+      );
+
+      list.forEach((x) => (x.rightIcon = 'XIcon'));
+      sortListDataItems(list);
 
       return [mappedCurrentUser, ...list];
     },
-    [currentUser, filteredGuests, practitioners]
+    [currentUser, filteredGuests, tenant.tenant?.modules?.coachRoleName]
   );
 
   const formValue_end = getEventFormValues().end;
@@ -418,17 +457,22 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         displayOffline={!isOnline}
         className="px-4 pt-4"
       >
+        <Typography
+          type="h2"
+          text="New event"
+          className="mb-4 w-full overflow-auto truncate"
+        />
         <FormInput<CalendarAddEventFormModel>
           className="mb-4"
           label="Name your event"
           register={eventFormRegister}
           nameProp={'name'}
           maxLength={50}
-          placeholder="Name your event"
+          placeholder="Add a name"
         />
         <Dropdown
           className="mb-4"
-          placeholder={'Tap to choose event type'}
+          placeholder={'Select event type'}
           list={calendarEventTypes
             .filter(
               (type) => !optionsToHide?.some((option) => option === type.name)
@@ -447,50 +491,90 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           }}
         />
         <div className="text-md text-textDark mb-4 block font-semibold">
+          <Divider dividerType="dotted" className="my-2" />
           <Checkbox<CalendarAddEventFormModel>
             register={eventFormRegister}
             nameProp="allDay"
             className="flex-1"
             description="All day"
           />
+
+          <Divider dividerType="dotted" className="my-2" />
         </div>
-        <div className="mb-4">
-          <label className="text-md text-textDark mb-1 block font-semibold">
-            {`Start date${getEventFormValues().allDay ? '' : ' and time'}`}
-          </label>
-          <DatePicker
-            className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-            wrapperClassName="text-center"
-            selected={getEventFormValues().start}
-            onChange={onChangeStartDate}
-            dateFormat={
-              getEventFormValues().allDay
-                ? 'EEE, dd MMM yyyy'
-                : 'EEE, dd MMM yyyy  HH:mm'
-            }
-            minDate={minDate}
-            maxDate={maxDate}
-            showTimeInput={!getEventFormValues().allDay}
-          />
+        <div className="mb-4 flex gap-4">
+          <div>
+            <label className="text-md text-textDark mb-1 block font-semibold">
+              {`Start date`}
+            </label>
+            <DatePicker
+              isFullWidth={false}
+              minDate={minDate}
+              maxDate={maxDate}
+              colour="uiBg"
+              textColour="black"
+              onChange={(update) => {
+                onChangeStartDate(update!);
+              }}
+              selected={getEventFormValues().start}
+              showTimeInput={false}
+              dateFormat={'EEE, dd MMM yyyy'}
+              wrapperClassName="text-center"
+            />
+          </div>
+          {!getEventFormValues().allDay && (
+            <>
+              <div>
+                <label className="text-md text-textDark mb-1 block font-semibold">
+                  {`Start time`}
+                </label>
+                <FormField
+                  label={''}
+                  nameProp={'startTime'}
+                  type="time"
+                  register={eventFormRegister}
+                  placeholder="hh:mm"
+                />
+              </div>
+            </>
+          )}
         </div>
-        <div className="mb-4">
-          <label className="text-md text-textDark block font-semibold">
-            {`End date${getEventFormValues().allDay ? '' : ' and time'}`}
-          </label>
-          <DatePicker
-            wrapperClassName="text-center"
-            className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-            selected={getEventFormValues().end}
-            onChange={onChangeEndDate}
-            dateFormat={
-              getEventFormValues().allDay
-                ? 'EEE, dd MMM yyyy'
-                : 'EEE, dd MMM yyyy  HH:mm'
-            }
-            minDate={minDate}
-            maxDate={maxDate}
-            showTimeInput={!getEventFormValues().allDay}
-          />
+        <div className="mb-4 flex gap-4">
+          <div>
+            <label className="text-md text-textDark block font-semibold">
+              {`End date`}
+            </label>
+            <DatePicker
+              isFullWidth={false}
+              minDate={minDate}
+              maxDate={maxDate}
+              colour="uiBg"
+              textColour="black"
+              onChange={(update) => {
+                onChangeEndDate(update!);
+              }}
+              selected={getEventFormValues().end}
+              showTimeInput={false}
+              dateFormat={'EEE, dd MMM yyyy'}
+              wrapperClassName="text-center"
+            />
+          </div>
+
+          {!getEventFormValues().allDay && (
+            <>
+              <div>
+                <label className="text-md text-textDark block font-semibold">
+                  {`End time`}
+                </label>
+                <FormField
+                  label={''}
+                  nameProp={'endTime'}
+                  type="time"
+                  register={eventFormRegister}
+                  placeholder="hh:mm"
+                />
+              </div>
+            </>
+          )}
         </div>
         <div className="mb-4">
           <StackedList
@@ -503,18 +587,15 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             <Button
               size="small"
               type="filled"
-              color="primary"
-              className={`mx-auto w-4/12 rounded-xl`}
-              onClick={onAddParticipant}
-            >
-              {renderIcon('PlusIcon', 'h-4 w-4 text-white mr-1')}
-              <Typography
-                type="buttonSmall"
-                color="white"
-                text={'Add participants'}
-                className={'w-full whitespace-nowrap'}
-              />
-            </Button>
+              color="quatenary"
+              textColor="white"
+              text="Add participants"
+              icon="PlusIcon"
+              className={'mt-4 mb-4 mr-4 rounded-xl'}
+              onClick={() => {
+                onAddParticipant();
+              }}
+            />
           )}
         </div>
         <div className="mb-4">
@@ -533,7 +614,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             onClick={() => handleFormSubmit(getEventFormValues())}
             className="w-full"
             size="small"
-            color="primary"
+            color="quatenary"
             type="filled"
             disabled={!isValid || isLoading}
             isLoading={isLoading}

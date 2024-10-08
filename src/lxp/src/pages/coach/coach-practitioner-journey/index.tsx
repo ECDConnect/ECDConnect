@@ -203,7 +203,8 @@ export const CoachPractitionerJourney = () => {
     visitTypeName,
   }: ScheduleProps) => {
     const today = new Date();
-    const event: CalendarAddEventInfo = !!visitEventId
+    //const event: CalendarAddEventInfo = !!visitEventId
+    const event: any = !!visitEventId
       ? {
           id: visitEventId,
         }
