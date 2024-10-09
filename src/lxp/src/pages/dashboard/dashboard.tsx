@@ -451,13 +451,6 @@ export const Dashboard: React.FC = () => {
    */
   useEffect(() => {
     if (isOnline && !!userData) {
-      (async () =>
-        await appDispatch(
-          pointsThunkActions.getPointsLibrary({
-            userId: userData?.id!,
-          })
-        ).unwrap())();
-
       if (
         userData.roles?.some(
           (role) =>
