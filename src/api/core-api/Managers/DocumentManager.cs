@@ -1,11 +1,9 @@
 ﻿using DinkToPdf;
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
@@ -15,7 +13,6 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -90,13 +87,13 @@ namespace EcdLink.Api.CoreApi.Managers
             var _headerAddress = "";
             ApplicationUser user = userManager.FindByIdAsync(pdfDocumentHeader.UserId).Result;
 
-            string siteAddress = pdfDocumentHeader.SiteAddress.IsNullOrEmpty() ? "-" : pdfDocumentHeader.SiteAddress;
+            string siteAddress = string.IsNullOrEmpty(pdfDocumentHeader.SiteAddress) ? "-" : pdfDocumentHeader.SiteAddress;
             string firstName = user?.FirstName + " " + user?.Surname;
-            string phoneNumber = user.PhoneNumber.IsNullOrEmpty() ? "-" : user?.PhoneNumber;
-            string idNumber = user.IdNumber.IsNullOrEmpty() ? "-" : user?.IdNumber;
-            string classNames = pdfDocumentHeader.ClassName.IsNullOrEmpty() ? "-" : pdfDocumentHeader.ClassName;
-            string programmeDays = pdfDocumentHeader.ProgrammeDays.IsNullOrEmpty() ? "-" : pdfDocumentHeader.ProgrammeDays;
-            string programmeType = pdfDocumentHeader.ProgrammeType.IsNullOrEmpty() ? "-" : pdfDocumentHeader.ProgrammeType;
+            string phoneNumber = string.IsNullOrEmpty(user.PhoneNumber) ? "-" : user?.PhoneNumber;
+            string idNumber = string.IsNullOrEmpty(user?.IdNumber) ? "-" : user?.IdNumber;
+            string classNames = string.IsNullOrEmpty(pdfDocumentHeader.ClassName) ? "-" : pdfDocumentHeader.ClassName;
+            string programmeDays = string.IsNullOrEmpty(pdfDocumentHeader.ProgrammeDays) ? "-" : pdfDocumentHeader.ProgrammeDays;
+            string programmeType = string.IsNullOrEmpty(pdfDocumentHeader.ProgrammeType) ? "-" : pdfDocumentHeader.ProgrammeType;
 
             if (pdfDocumentHeader.ReportType == "StatementsPDF")
             {

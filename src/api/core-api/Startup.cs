@@ -49,7 +49,6 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -98,7 +97,7 @@ namespace EcdLink.Api.CoreApi
                             .WithOrigins(corsAllowedDomains)
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
-            
+
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
             //PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);

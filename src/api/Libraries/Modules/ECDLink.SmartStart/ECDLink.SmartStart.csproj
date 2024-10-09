@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net7.0</TargetFramework>
+	<TargetFramework>net8.0</TargetFramework>
 	<Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
 	  <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
-	  <PackageReference Include="HotChocolate.Abstractions" Version="12.12.1" />
+	  <PackageReference Include="HotChocolate.Abstractions" Version="13.9.14" />
   </ItemGroup>
 
   <ItemGroup>
