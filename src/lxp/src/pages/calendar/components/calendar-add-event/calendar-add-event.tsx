@@ -384,7 +384,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
       return [mappedCurrentUser, ...list];
     },
-    [currentUser, filteredGuests, tenant.tenant?.modules?.coachRoleName]
+    [currentUser, filteredGuests]
   );
 
   const formValue_end = getEventFormValues().end;
@@ -608,24 +608,28 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           icon={'InformationCircleIcon'}
           iconColor="alertMain"
           iconBorderColor="alertBg"
-          importantText={`You have unsaved changes?`}
-          detailText={'If you exit now your changes will not be saved.'}
+          importantText={`Are you sure you want to leave without saving your changes?`}
+          detailText={'If you leave now, you will lose all of your changes'}
           actionButtons={[
             {
-              text: 'Save event',
-              textColour: 'white',
-              colour: 'primary',
+              leadingIcon: 'TrashIcon',
+              text: 'Delete changes',
               type: 'filled',
-              onClick: () => handleFormSubmit(getEventFormValues()),
-              leadingIcon: 'SaveIcon',
+              colour: 'primary',
+              textColour: 'white',
+              onClick: () => {
+                exitUpdateEvent();
+              },
             },
             {
-              text: 'Exit',
-              textColour: 'primary',
-              colour: 'primary',
+              leadingIcon: 'PencilIcon',
+              text: 'Keep editing',
               type: 'outlined',
-              onClick: () => exitUpdateEvent(),
-              leadingIcon: 'LogoutIcon',
+              colour: 'primary',
+              textColour: 'primary',
+              onClick: () => {
+                setConfirmGoBackPromptVisible(false);
+              },
             },
           ]}
         />
