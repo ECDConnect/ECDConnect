@@ -1141,14 +1141,6 @@ export type CalendarEventParticipantSortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
-export type CalendarEventParticipantViewModel = {
-  __typename?: 'CalendarEventParticipantViewModel';
-  id?: Maybe<Scalars['String']>;
-  isActive: Scalars['Boolean'];
-  participantUser?: Maybe<ApplicationUser>;
-  participantUserId: Scalars['UUID'];
-};
-
 export type CalendarEventSortInput = {
   action?: InputMaybe<SortEnumType>;
   allDay?: InputMaybe<SortEnumType>;
@@ -1177,25 +1169,6 @@ export type CalendarEventType = {
 export type CalendarEventTypeInput = {
   colour?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
-};
-
-export type CalendarEventViewModel = {
-  __typename?: 'CalendarEventViewModel';
-  action?: Maybe<Scalars['String']>;
-  allDay: Scalars['Boolean'];
-  description?: Maybe<Scalars['String']>;
-  end: Scalars['DateTime'];
-  endTime?: Maybe<Scalars['String']>;
-  eventType?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  isActive: Scalars['Boolean'];
-  name?: Maybe<Scalars['String']>;
-  participants?: Maybe<Array<Maybe<CalendarEventParticipantViewModel>>>;
-  start: Scalars['DateTime'];
-  startTime?: Maybe<Scalars['String']>;
-  user?: Maybe<ApplicationUser>;
-  userId?: Maybe<Scalars['UUID']>;
-  visit?: Maybe<Visit>;
 };
 
 export type Caregiver = {
@@ -13020,6 +12993,7 @@ export type PractitionerModel = {
   clubName?: Maybe<Scalars['String']>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
   coachName?: Maybe<Scalars['String']>;
+  coachProfilePic?: Maybe<Scalars['String']>;
   communitySectionViewDate?: Maybe<Scalars['DateTime']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
   dateAccepted?: Maybe<Scalars['DateTime']>;
@@ -14568,7 +14542,6 @@ export type Query = {
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
   pointActivities?: Maybe<Array<Maybe<PointsActivity>>>;
   pointsForHealthCareWorker?: Maybe<Array<Maybe<PointsActivityModel>>>;
-  pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
   pointsTodoItems?: Maybe<PointsToDoItemModel>;
   portalHealthCareWorkersById?: Maybe<PortalUsersHcwModel>;
@@ -14626,7 +14599,7 @@ export type Query = {
   traineeByUserId?: Maybe<Trainee>;
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
-  userCalendarEvents?: Maybe<Array<Maybe<CalendarEventViewModel>>>;
+  userCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
   userClubStanding?: Maybe<UserClubStandingModel>;
   userCountForMessageCriteria: Scalars['Int'];
   userProgrammes?: Maybe<Array<Maybe<Programme>>>;
@@ -16768,7 +16741,7 @@ export type QueryCoachNameByUserIdArgs = {
 };
 
 export type QueryCoachStatsArgs = {
-  endDate: Scalars['DateTime'];
+  endDate?: InputMaybe<Scalars['DateTime']>;
   startDate: Scalars['DateTime'];
   userId: Scalars['UUID'];
 };
@@ -17747,7 +17720,7 @@ export type QueryPractitionerProgressReportSummaryArgs = {
 };
 
 export type QueryPractitionerStatsArgs = {
-  endDate: Scalars['DateTime'];
+  endDate?: InputMaybe<Scalars['DateTime']>;
   startDate: Scalars['DateTime'];
   userId: Scalars['UUID'];
 };

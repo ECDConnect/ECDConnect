@@ -45,7 +45,6 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
 import { ListDataItem } from '../calendar.types';
 import {
-  mapPractitionerToListDataItem,
   mapCurrentUserToListDataItem,
   sortListDataItems,
   mapUserToListDataItem,
@@ -185,8 +184,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     eventType: !event.eventType ? undefined : event.eventType,
     participants: event.participants.map((p) => ({
       userId: p.participantUserId,
-      firstName: p.participantUser.firstName,
-      surname: p.participantUser.surname,
+      firstName: p.participantUser.firstName || '',
+      surname: p.participantUser.surname || '',
       userRole: 'child',
       profileImage: '',
     })),
@@ -239,8 +238,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
                 )?.id || newGuid(),
               participantUserId: participantUser.userId,
               participantUser: {
-                firstName: participantUser.firstName,
-                surname: participantUser.surname,
+                firstName: participantUser.firstName || '',
+                surname: participantUser.surname || '',
               },
             };
           });
@@ -368,17 +367,11 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
       list.push(
         ...participantUsers
-          .filter(
-            (p) =>
-              p.userRole === 'Principal' ||
-              p.userRole === 'Practitioner' ||
-              p.userRole === 'Child' ||
-              p.userRole === tenant.tenant?.modules?.coachRoleName
-          )
+          .filter((p) => p.userRole !== 'You')
           .map((p) =>
             mapUserToListDataItem(
-              p.firstName,
-              p.surname,
+              p.firstName || '',
+              p.surname || '',
               p.userId,
               p.profileImage,
               p.userRole

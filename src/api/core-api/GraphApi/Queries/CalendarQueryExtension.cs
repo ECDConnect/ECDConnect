@@ -1,5 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.Abstractrions.GraphQL.Enums;
+﻿using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -24,7 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<CalendarEventViewModel> GetUserCalendarEvents(
+        public List<CalendarEvent> GetUserCalendarEvents(
           IGenericRepositoryFactory repoFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
           DateTime? start)
@@ -41,7 +40,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     && e.Start >= start)
                 .Include(e => e.Participants)
                 .Include(e => e.Visit)
-                .Select(e => new CalendarEventViewModel(e))
                 .ToList();
 
             var otherEventIds = eventParticipantRepo.GetAll()
@@ -54,10 +52,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(e => e.IsActive && e.Start >= start)
                 .Include(e => e.Participants)
                 .Include(e => e.Visit)
-                .Select(e => new CalendarEventViewModel(e))
                 .ToList();
 
-            var list = new List<CalendarEventViewModel>();
+            var list = new List<CalendarEvent>();
             list.AddRange(ownEvents);
             list.AddRange(otherEvents);
             return list;
