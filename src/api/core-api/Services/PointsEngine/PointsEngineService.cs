@@ -625,7 +625,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                 .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name == "No theme")
                                                 .ToList()
                                                 .SelectMany(x => x.DailyProgrammes)
-                                                .Where(x => x.IsActive && x.DayDate.Year >= today.Year && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
+                                                .Where(x => x.IsActive && x.DayDate.Year >= today.Year && x.DayDate.Month >= today.Month && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
                                                 .ToList()
                                                 .Select(x => new { x.DayDate.Month, x.DayDate })
                                                 .ToList()
@@ -635,16 +635,14 @@ namespace EcdLink.Api.CoreApi.Services
 
                         if (classroomProgrammes.Count > 0)
                         {
-                            foreach (var item in classroomProgrammes)
-                            {
-                                AddOrUpdatePoints(
-                                    PointsActivityConstants.NoThemePlannedId,
-                                    userId,
-                                    activity.Points * item.Total,
-                                    item.Total,
-                                    new DateTime(today.Year, item.Month, 01)
-                                    );
-                            }
+                            var sumTotals = classroomProgrammes.Select(x => x.Total).Sum();
+
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.NoThemePlannedId,
+                                userId,
+                                activity.Points * sumTotals,
+                                sumTotals
+                                );
                         }
                     }
                 }
