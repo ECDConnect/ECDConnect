@@ -1266,17 +1266,17 @@ export const Dashboard: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
-  const practitionerWithAttendancePermissionPointsToDo =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo < 4
-      : getCurrentPointsToDo < 3;
+  // const practitionerWithAttendancePermissionPointsToDo =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo < 4
+  //     : getCurrentPointsToDo < 3;
 
-  const practitionerWithAttendancePermissionPoints =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo === 4
-      : getCurrentPointsToDo === 3;
+  // const practitionerWithAttendancePermissionPoints =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo === 4
+  //     : getCurrentPointsToDo === 3;
 
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
@@ -1370,8 +1370,6 @@ export const Dashboard: React.FC = () => {
           {totalYearPoints &&
           totalYearPoints >= 10 &&
           !!pointsScoreProps &&
-          !isCoach &&
-          practitionerWithAttendancePermissionPoints &&
           !isCoach ? (
             <ScoreCard
               className="mt-5 mb-1 h-20"
@@ -1389,9 +1387,7 @@ export const Dashboard: React.FC = () => {
               textPosition={pointsScoreProps?.textPosition!}
             />
           ) : null}
-          {(practitionerWithAttendancePermissionPointsToDo ||
-            !totalYearPoints ||
-            (totalYearPoints && totalYearPoints < 10)) &&
+          {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
           !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
