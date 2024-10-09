@@ -356,17 +356,17 @@ export const PointsSummary: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
-  const practitionerWithAttendancePermissionPointsToDo =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo < 4
-      : getCurrentPointsToDo < 3;
+  // const practitionerWithAttendancePermissionPointsToDo =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo < 4
+  //     : getCurrentPointsToDo < 3;
 
-  const practitionerWithAttendancePermissionPoints =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo === 4
-      : getCurrentPointsToDo === 3;
+  // const practitionerWithAttendancePermissionPoints =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo === 4
+  //     : getCurrentPointsToDo === 3;
 
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
@@ -969,8 +969,7 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMMM yyyy')}
           />
-          {(practitionerWithAttendancePermissionPointsToDo ||
-            !pointsTotalForYear ||
+          {(!pointsTotalForYear ||
             (pointsTotalForYear && pointsTotalForYear < 10)) && (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
@@ -1005,9 +1004,7 @@ export const PointsSummary: React.FC = () => {
               className="mt-4"
             />
           ) : null}
-          {practitionerWithAttendancePermissionPoints &&
-          pointsTotalForYear &&
-          pointsTotalForYear >= 10 ? (
+          {pointsTotalForYear && pointsTotalForYear >= 10 ? (
             <ScoreCard
               className="mt-5 py-6"
               mainText={`${monthPoints} points`}
@@ -1041,8 +1038,7 @@ export const PointsSummary: React.FC = () => {
           {isOnline &&
           monthPoints &&
           pointsTotalForYear &&
-          pointsTotalForYear >= 10 &&
-          practitionerWithAttendancePermissionPoints ? (
+          pointsTotalForYear >= 10 ? (
             <CelebrationCard
               image={getEmoji(
                 pointsShareData?.userRankingData
@@ -1065,9 +1061,7 @@ export const PointsSummary: React.FC = () => {
               )}
             />
           ) : null}
-          {!pointsTotalForYear ||
-          pointsTotalForYear < 10 ||
-          practitionerWithAttendancePermissionPointsToDo ? (
+          {!pointsTotalForYear || pointsTotalForYear < 10 ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -1103,8 +1097,7 @@ export const PointsSummary: React.FC = () => {
           {!!todoListFiltered &&
           !!todoListFiltered.length &&
           pointsTotalForYear &&
-          pointsTotalForYear >= 10 &&
-          practitionerWithAttendancePermissionPoints ? (
+          pointsTotalForYear >= 10 ? (
             <Typography
               className="mt-8 mb-4"
               type={'h3'}
@@ -1115,10 +1108,7 @@ export const PointsSummary: React.FC = () => {
               )}:`}
             />
           ) : null}
-          {!!todoListFiltered &&
-          pointsTotalForYear &&
-          pointsTotalForYear >= 10 &&
-          practitionerWithAttendancePermissionPoints
+          {!!todoListFiltered && pointsTotalForYear && pointsTotalForYear >= 10
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
                   <div
@@ -1139,10 +1129,7 @@ export const PointsSummary: React.FC = () => {
             : null}
         </div>
         <div className="flex-column mt-10 justify-end p-4">
-          {practitionerWithAttendancePermissionPoints &&
-          pointsTotalForYear &&
-          pointsTotalForYear >= 10 &&
-          monthPoints > 0 ? (
+          {pointsTotalForYear && pointsTotalForYear >= 10 && monthPoints > 0 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1165,8 +1152,7 @@ export const PointsSummary: React.FC = () => {
               }}
             />
           ) : null}
-          {practitionerWithAttendancePermissionPoints &&
-          pointsTotalForYear &&
+          {pointsTotalForYear &&
           pointsTotalForYear >= 10 &&
           monthPoints === 0 &&
           !practitioner?.coachHierarchy ? (
@@ -1181,8 +1167,7 @@ export const PointsSummary: React.FC = () => {
               onClick={() => setShowInfo(true)}
             />
           ) : null}
-          {practitionerWithAttendancePermissionPoints &&
-          pointsTotalForYear &&
+          {pointsTotalForYear &&
           pointsTotalForYear >= 10 &&
           monthPoints === 0 &&
           practitioner?.coachHierarchy ? (
@@ -1197,9 +1182,7 @@ export const PointsSummary: React.FC = () => {
               onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
             />
           ) : null}
-          {practitionerWithAttendancePermissionPoints &&
-          pointsTotalForYear &&
-          pointsTotalForYear >= 10 ? (
+          {pointsTotalForYear && pointsTotalForYear >= 10 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
