@@ -156,6 +156,62 @@ export const upsertProgrammes = createAsyncThunk<
   }
 );
 
+export const updateProgramme = createAsyncThunk<
+  ProgrammeModelInput[] | undefined,
+  { programmeId: string },
+  ThunkApiType<RootState>
+>(
+  ProgrammeActions.UPDATE_PROGRAMMES,
+  // eslint-disable-next-line no-empty-pattern
+  async ({ programmeId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      programmeData: { programmes },
+      classroomData: { classroom },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!programmes?.length) return undefined;
+        if (!programmeId) return undefined;
+
+        const inputs: ProgrammeModelInput[] = [];
+        const programme = programmes.find((p) => p.id === programmeId);
+
+        if (programme) {
+          const input: ProgrammeModelInput = {
+            id: programme.id,
+            classroomId: programme.classroomId || classroom?.id,
+            classroomGroupId: programme?.classroomGroupId,
+            name: programme.name,
+            startDate: programme.startDate,
+            endDate: programme.endDate,
+            preferredLanguage: programme.preferredLanguage,
+            isActive:
+              isBefore(new Date(), new Date(programme.endDate)) ||
+              isSameDay(new Date(), new Date(programme.endDate)),
+            dailyProgrammes: programme.dailyProgrammes
+              ? formatDailyProgrammes(programme)
+              : undefined,
+          };
+
+          await new ProgrammeService(userAuth?.auth_token).updateProgrammes(
+            input
+          );
+
+          inputs.push(input);
+        }
+
+        return inputs;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const updateProgrammes = createAsyncThunk<
   ProgrammeModelInput[] | undefined,
   // eslint-disable-next-line @typescript-eslint/ban-types
