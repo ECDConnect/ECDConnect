@@ -126,10 +126,8 @@ export const CalendarHome: React.FC = () => {
         start: start.toISOString(),
         end: end.toISOString(),
       },
-      // We will be hiding site visits until development is done
       optionsToHide: isCoach
         ? [
-            'Site visit',
             'Birthday',
             'Caregiver meeting',
             'Fundraising event',

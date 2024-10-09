@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { practitionerSelectors } from '@/store/practitioner';
-import { UserDto } from '@ecdlink/core';
+import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import * as styles from './calendar-search-participant.styles';
 import { ListDataItem } from '../calendar.types';
 import {
@@ -47,9 +47,9 @@ export const CalendarSearchParticipant: React.FC<
   const { height } = useWindowSize();
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  // const isCoach = currentUser?.roles?.some(
-  //   (role) => role.systemName === RoleSystemNameEnum.Coach
-  // );
+  const isCoach = currentUser?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -154,9 +154,11 @@ export const CalendarSearchParticipant: React.FC<
       const list = !!practitioners
         ? practitioners.map((p) => mapPractitionerToListDataItem(p))
         : [];
-      const childList = !!children
-        ? children.map((p) => mapChildToListDataItem(p))
-        : [];
+
+      const childList =
+        !isCoach && !!children
+          ? children.map((p) => mapChildToListDataItem(p))
+          : [];
 
       const unselected: ListDataItem[] = childList;
 
