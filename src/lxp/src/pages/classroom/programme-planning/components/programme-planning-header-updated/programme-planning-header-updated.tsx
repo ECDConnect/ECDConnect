@@ -28,6 +28,8 @@ import { ProgrammeTimingRouteState } from '../../programme-timing/programme-timi
 import { ProgrammeThemeRouteState } from '../../programme-theme/programme-theme.types';
 import { useAppContext } from '@/walkthrougContext';
 import axios from 'axios';
+import { useHolidays } from '@/hooks/useHolidays';
+import { staticDataThunkActions } from '@/store/static-data';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -71,6 +73,8 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
 
   const history = useHistory();
 
+  const holiday = useHolidays();
+
   // Business rule to only go back 3 months and forward 6 months
   const threeMonthsBack: Date = addMonths(selectedDate!, -3);
   const sixMonthsForward: Date = addMonths(selectedDate!, 6);
@@ -94,8 +98,28 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
       } else {
         setSelectedDate(addDays(selectedDate!, 1));
       }
+
+      if (holiday.holidays) {
+        if (
+          selectDate.getFullYear() !==
+          new Date(holiday.holidays[0].day).getFullYear()
+        ) {
+          appDispatch(
+            staticDataThunkActions.getHolidays({
+              year: selectDate.getFullYear(),
+            })
+          );
+        }
+      }
     }
-  }, [selectedDate, setSelectedDate, sixMonthsForward, threeMonthsBack]);
+  }, [
+    appDispatch,
+    holiday.holidays,
+    selectedDate,
+    setSelectedDate,
+    sixMonthsForward,
+    threeMonthsBack,
+  ]);
 
   const showOnlineOnly = useCallback(() => {
     dialog({
@@ -113,7 +137,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     if (isSameDay(selectDate, new Date()) && !isOnline) {
       return showOnlineOnly();
     }
-
     if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
       // skip weekends
       var dayNr = selectDate.getDay();
@@ -127,7 +150,20 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
         setSelectedDate(subDays(selectedDate!, 1));
       }
     }
+
+    if (holiday.holidays) {
+      if (
+        selectDate.getFullYear() !==
+        new Date(holiday.holidays[0].day).getFullYear()
+      ) {
+        appDispatch(
+          staticDataThunkActions.getHolidays({ year: selectDate.getFullYear() })
+        );
+      }
+    }
   }, [
+    appDispatch,
+    holiday.holidays,
     isOnline,
     selectedDate,
     setSelectedDate,
@@ -211,8 +247,25 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
       var newDate = new Date(year, monthNr, selectedDate?.getDate());
 
       setSelectedDate(newDate);
+
+      if (holiday.holidays) {
+        if (
+          newDate.getFullYear() !==
+          new Date(holiday.holidays[0].day).getFullYear()
+        ) {
+          appDispatch(
+            staticDataThunkActions.getHolidays({ year: newDate.getFullYear() })
+          );
+        }
+      }
     },
-    [newMonthYearList, selectedDate, setSelectedDate]
+    [
+      appDispatch,
+      holiday.holidays,
+      newMonthYearList,
+      selectedDate,
+      setSelectedDate,
+    ]
   );
 
   const setBase64String = async (imageUrl: string) => {
