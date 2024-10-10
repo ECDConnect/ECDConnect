@@ -48,7 +48,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private readonly IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
         private readonly IGenericRepository<Programme, Guid> _programmeRepo;
-
+        
         private MonthlyAttendanceReport _monthlyAttendanceReportService;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
@@ -620,31 +620,23 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
 
-                        var classroomProgrammes = schoolClasses
+                        var totalCompletedDays = schoolClasses
                                                 .SelectMany(x => x.Programmes)
                                                 .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name == "No theme")
                                                 .ToList()
                                                 .SelectMany(x => x.DailyProgrammes)
-                                                .Where(x => x.IsActive && x.DayDate.Year >= today.Year && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
                                                 .ToList()
-                                                .Select(x => new { x.DayDate.Month, x.DayDate })
-                                                .ToList()
-                                                .GroupBy(x => x.Month)
-                                                .Select(x => new { Month = x.Key, Total = x.Count() })
-                                                .ToList();
-
-                        if (classroomProgrammes.Count > 0)
+                                                .Where(x => x.IsActive && x.DateCompleted.HasValue && x.DateCompleted.Value.Year == today.Year && x.DateCompleted.Value.Month == today.Month)
+                                                .Select(x => x.Id)
+                                                .Count();
+                       if (totalCompletedDays > 0)
                         {
-                            foreach (var item in classroomProgrammes)
-                            {
-                                AddOrUpdatePoints(
-                                    PointsActivityConstants.NoThemePlannedId,
-                                    userId,
-                                    activity.Points * item.Total,
-                                    item.Total,
-                                    new DateTime(today.Year, item.Month, 01)
-                                    );
-                            }
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.NoThemePlannedId,
+                                userId,
+                                activity.Points * totalCompletedDays,
+                                totalCompletedDays
+                                );
                         }
                     }
                 }
