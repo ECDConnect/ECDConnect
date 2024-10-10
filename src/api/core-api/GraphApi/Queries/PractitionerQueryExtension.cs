@@ -25,6 +25,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.SmartStart.Reports;
+using ECDLink.SmartStart.Reports.Models;
 using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using HotChocolate;
@@ -557,11 +558,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             DateTime startDate,
             DateTime? endDate = null)
         {
-
-            var reportEndDate = startDate.AddMonths(1);
-            if (endDate != null)
+            if (endDate == null)
             {
-                reportEndDate = endDate.Value.Date;
+                endDate = startDate.AddMonths(1);
             }
 
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
@@ -579,15 +578,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 stats.TotalClassesForSchool = classroom.ClassroomGroups.Where(x => x.IsActive).Count();
             }
 
-            var attendanceReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), startDate, reportEndDate).FirstOrDefault();
-            stats.TotalAttendanceRegistersCompleted = attendanceReport != null ? attendanceReport.NumberOfSessions : 0 ; 
-            stats.TotalAttendanceRegistersNotCompleted = attendanceReport != null ? attendanceReport.TotalScheduledSessions : 0;
+            var start = startDate.Date;
+            var end = endDate.Value;
+            // set end-date to end of month
+            end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));
+            var months = Enumerable.Range(0, Int32.MaxValue)
+                        .Select(e => start.AddMonths(e))
+                        .TakeWhile(e => e <= end)
+                        .Select(e => e.Month).Distinct().ToList();
 
-            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).ToList();
+            var monthReports = new List<MonthlyAttendanceReportModel>();
+            var attendanceStart = startDate.Date;
+            foreach (var month in months)
+            {
+                var monthReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), attendanceStart.GetStartOfMonth(), attendanceStart.GetEndOfMonth()).FirstOrDefault();
+                if (monthReport != null) 
+                {
+                    monthReports.Add(monthReport);
+                }
+                attendanceStart = attendanceStart.AddMonths(1);
+            }
+
+            stats.TotalAttendanceRegistersCompleted = monthReports.Select(x => x.NumberOfSessions).Sum(); 
+            stats.TotalAttendanceRegistersNotCompleted = monthReports.Select(x => x.TotalScheduledSessions).Sum();
+
+            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Value.Date).ToList();
             stats.TotalProgressReportsCompleted = progressData.Where(x => x.DateCompleted.HasValue).Count();
             stats.TotalProgressReportsNotCompleted = progressData.Where(x => !x.DateCompleted.HasValue).Count(); ;
 
-            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= reportEndDate.Date).ToList();
+            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Value.Date).ToList();
             stats.TotalIncomeStatementsDownloaded = statementData.Where(x => x.Downloaded == true).Count();
             stats.TotalIncomeStatementsWithNoItems = statementData.Where(x => x.IncomeItems.Count == 0 && x.ExpenseItems.Count == 0).Count();
 
