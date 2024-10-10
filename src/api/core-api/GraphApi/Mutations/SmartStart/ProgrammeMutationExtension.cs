@@ -131,7 +131,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 // get day ids which are completed
                 var ids = programmeInput.dailyProgrammes.Where(d => d.SmallGroupActivityId != 0 && d.LargeGroupActivityId != 0 && d.StoryBookId != 0 && d.StoryActivityId != 0).Select(d => d.Id).Distinct().ToList();
-                var completedDays = dbRepoDaily.GetAll().Where(x => ids.Contains(x.Id)).ToList();
+                var completedDays = dbRepoDaily.GetAll().Where(x => ids.Contains(x.Id) && !x.DateCompleted.HasValue).ToList();
                 if (completedDays.Count > 0)
                 {
                     foreach (var item in completedDays)

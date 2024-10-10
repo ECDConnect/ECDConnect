@@ -4386,6 +4386,7 @@ export type CreateContentDefinitionModelInput = {
 
 export type DailyProgramme = {
   __typename?: 'DailyProgramme';
+  dateCompleted?: Maybe<Scalars['DateTime']>;
   day: Scalars['Int'];
   dayDate: Scalars['DateTime'];
   id: Scalars['UUID'];
@@ -4404,6 +4405,7 @@ export type DailyProgramme = {
 
 export type DailyProgrammeFilterInput = {
   and?: InputMaybe<Array<DailyProgrammeFilterInput>>;
+  dateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   day?: InputMaybe<ComparableInt32OperationFilterInput>;
   dayDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -4422,6 +4424,7 @@ export type DailyProgrammeFilterInput = {
 };
 
 export type DailyProgrammeInput = {
+  DateCompleted?: InputMaybe<Scalars['DateTime']>;
   Day: Scalars['Int'];
   DayDate: Scalars['DateTime'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -4449,6 +4452,7 @@ export type DailyProgrammeModelInput = {
 };
 
 export type DailyProgrammeSortInput = {
+  dateCompleted?: InputMaybe<SortEnumType>;
   day?: InputMaybe<SortEnumType>;
   dayDate?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
