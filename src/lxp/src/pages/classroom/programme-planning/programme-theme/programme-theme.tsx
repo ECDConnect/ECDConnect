@@ -96,9 +96,13 @@ const ProgrammeTheme: React.FC = () => {
             <Typography
               type="markdown"
               fontSize={'16'}
-              text={`It is helpful to plan your weeks or months by theme. Observe and listen to the children in your programme and choose themes that they are interested in.<br><br>
-                We have provided 6 themes with activities planned for 20 days.<br><br>
-                You are welcome to change activities or create your own to match your children's interests, the time of the year, or other things happening around you.`}
+              text={
+                `It is helpful to plan your weeks or months by theme. Observe and listen to the children in your programme and choose themes that they are interested in.<br><br>
+                We have provided ` +
+                themes.length +
+                ` themes with activities planned for 20 days.<br><br>
+                You are welcome to change activities or create your own to match your children's interests, the time of the year, or other things happening around you.`
+              }
               color={'textDark'}
               className="font-h1 text-textMid mb-2 text-center text-base font-normal"
             />
