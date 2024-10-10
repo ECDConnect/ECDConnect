@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -127,7 +128,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
                 // points calculations for themes
                 pointsService.CalculateThemePlanned(uId);
-                pointsService.CalculateNoThemePlanned(uId);
+
+                // get day ids which are completed
+                var ids = programmeInput.dailyProgrammes.Where(d => d.SmallGroupActivityId != 0 && d.LargeGroupActivityId != 0 && d.StoryBookId != 0 && d.StoryActivityId != 0).Select(d => d.Id).Distinct().ToList();
+                var completedDays = dbRepoDaily.GetAll().Where(x => ids.Contains(x.Id)).ToList();
+                if (completedDays.Count > 0)
+                {
+                    foreach (var item in completedDays)
+                    {
+                        item.DateCompleted = DateTime.Now.Date;
+                        dbRepoDaily.Update(item);
+                    }
+                    pointsService.CalculateNoThemePlanned(uId);
+                }
                                   
                 return true;
             }

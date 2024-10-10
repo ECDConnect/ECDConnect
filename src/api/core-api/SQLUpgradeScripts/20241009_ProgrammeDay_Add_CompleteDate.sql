@@ -1,0 +1,1 @@
+alter table "ProgrammeDay" add column "DateCompleted" timestamp
