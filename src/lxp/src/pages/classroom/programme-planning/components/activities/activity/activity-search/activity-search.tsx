@@ -454,7 +454,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                         programme?.startDate,
                         programme?.endDate
                       )}`
-                    : ''
+                    : 'This is the theme activity for the day!'
                 }
                 onSelected={() => {
                   if (isWalkthrough) {

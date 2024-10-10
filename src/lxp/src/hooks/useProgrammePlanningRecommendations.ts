@@ -127,7 +127,7 @@ export const useProgrammePlanningRecommendations = () => {
             (selectedSubCategories.length || 1)) *
           100;
 
-        if (subCategoryPercentage < 5) {
+        if (Math.round(subCategoryPercentage) < 5) {
           // exclude existing planned activities
           const recommendedActivity = activities.find(
             (activity) =>
