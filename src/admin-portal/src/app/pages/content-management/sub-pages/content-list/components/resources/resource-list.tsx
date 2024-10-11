@@ -412,11 +412,11 @@ export default function ResourceList({
           return 'bg-secondary';
         case classroomResourceOptions?.TeachingTips:
           return 'bg-tertiary';
-        case businessResourceOptions?.Financial:
+        case businessResourceOptions?.Finances:
           return 'bg-primary';
-        case businessResourceOptions?.AdministrationPolicies:
+        case businessResourceOptions?.Marketing:
           return 'bg-secondary';
-        case businessResourceOptions?.DBERegistration:
+        case businessResourceOptions?.Safety:
           return 'bg-tertiary';
         default:
           return 'bg-infoMain';
