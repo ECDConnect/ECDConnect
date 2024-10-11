@@ -139,6 +139,34 @@ export default function ContentCompare({
             </div>
           </>
         );
+      case ContentTypes.CLASSROOMBUSINESSRESOURCE:
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateResource
+                        key={'firstLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedFirstLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                        choosedSectionTitle={choosedSectionTitle}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
       case 'ProgressTrackingCategory':
         return (
           <>
@@ -147,7 +175,6 @@ export default function ContentCompare({
                 <div className="relative h-full" style={{ minHeight: '36rem' }}>
                   <div className="rounded-lg border-b py-5">
                     <div key={selectedLanguageId}>
-                      firstLanguageContent{selectedFirstLanguageId}
                       <EditCategory
                         key={'firstLanguageContent'}
                         optionDefinitions={optionDefinitions}
@@ -291,7 +318,6 @@ export default function ContentCompare({
                 <div className="relative h-full" style={{ minHeight: '36rem' }}>
                   <div className="rounded-lg border-b py-5">
                     <div key={selectedLanguageId}>
-                      secondLanguageContent {selectedSecondLanguageId}
                       <EditCategory
                         key={'secondLanguageContent'}
                         optionDefinitions={optionDefinitions}
