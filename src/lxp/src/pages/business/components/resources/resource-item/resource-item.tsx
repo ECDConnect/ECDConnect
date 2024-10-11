@@ -16,6 +16,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { ContentTypeEnum } from '@ecdlink/core';
+import { staticDataSelectors } from '@/store/static-data';
+import { LanguageCode } from '@/i18n/types';
 
 interface ResourceItemProps {
   resource: any;
@@ -33,9 +35,20 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
   const [locale, setLocale] = useState<string>(
     '9688cd08-adef-408c-9d34-5d75ae5c44df'
   );
-
+  const [language, setLanguage] = useState({ locale: 'en-za' });
+  const languages = useSelector(staticDataSelectors.getLanguages);
   const [isLiked, setIsLiked] = useState(false);
   const [resourceItem, setResourceItem] = useState(resource);
+
+  const resourceLanguages = languages.filter((item) =>
+    resourceItem['availableLanguages'].map((x: any) => x).includes(item.id)
+  );
+
+  const availableLanguages: LanguageCode[] = resourceLanguages
+    ? resourceLanguages?.map((item) => {
+        return item?.locale as LanguageCode;
+      })
+    : [language?.locale as LanguageCode];
 
   const handleCheckIfUserLiked = useCallback(async () => {
     const response = await new ResourcesService(
@@ -160,6 +173,7 @@ export const ResourceItem: React.FC<ResourceItemProps> = ({
         labelText="Change language:"
         labelClassName="font-medium font-body text-textDark pr-2"
         currentLocale="en-za"
+        availableLanguages={availableLanguages}
         selectLanguage={(data) => {
           setLocale(data?.id!);
         }}
