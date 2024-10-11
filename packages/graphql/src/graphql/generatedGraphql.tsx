@@ -7411,7 +7411,6 @@ export type Mutation = {
   addPractitionerToCoach?: Maybe<Practitioner>;
   addPractitionerToPrincipal?: Maybe<Practitioner>;
   addReAccreditationFollowUpVisitForPractitioner?: Maybe<Visit>;
-  addReAccreditationVisitForPractitioner?: Maybe<Visit>;
   addReassignmentForPractitionerService: Scalars['Boolean'];
   addRole?: Maybe<ApplicationIdentityRole>;
   addSSChecklistForTrainee?: Maybe<Visit>;
@@ -11273,9 +11272,9 @@ export type NatalInfo = {
   contentSectionB?: Maybe<Scalars['String']>;
   contentSectionC?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
-  lightBulbSectionA?: Maybe<Scalars['String']>;
-  lightBulbSectionB?: Maybe<Scalars['String']>;
-  lightBulbSectionC?: Maybe<Scalars['String']>;
+  lightBuldSectionA?: Maybe<Scalars['String']>;
+  lightBuldSectionB?: Maybe<Scalars['String']>;
+  lightBuldSectionC?: Maybe<Scalars['String']>;
   pollyTipContent?: Maybe<Scalars['String']>;
   pollyTipText?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
@@ -11289,9 +11288,9 @@ export type NatalInfoInput = {
   contentSectionA?: InputMaybe<Scalars['String']>;
   contentSectionB?: InputMaybe<Scalars['String']>;
   contentSectionC?: InputMaybe<Scalars['String']>;
-  lightBulbSectionA?: InputMaybe<Scalars['String']>;
-  lightBulbSectionB?: InputMaybe<Scalars['String']>;
-  lightBulbSectionC?: InputMaybe<Scalars['String']>;
+  lightBuldSectionA?: InputMaybe<Scalars['String']>;
+  lightBuldSectionB?: InputMaybe<Scalars['String']>;
+  lightBuldSectionC?: InputMaybe<Scalars['String']>;
   pollyTipContent?: InputMaybe<Scalars['String']>;
   pollyTipText?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
@@ -18290,11 +18289,6 @@ export type Setting_IncomeStatementSubmitStart = {
   IncomeStatementSubmitStart: Scalars['String'];
 };
 
-export type Setting_IntegrationDelay = {
-  __typename?: 'Setting_IntegrationDelay';
-  IntegrationDelay: Scalars['String'];
-};
-
 export type Setting_InvitationCutoffDelay = {
   __typename?: 'Setting_InvitationCutoffDelay';
   InvitationCutoffDelay: Scalars['String'];
@@ -18303,8 +18297,6 @@ export type Setting_InvitationCutoffDelay = {
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
-  PreSchoolInvitation: Scalars['String'];
-  PrincipalInvitation: Scalars['String'];
   PrincipalSignup: Scalars['String'];
   Signup: Scalars['String'];
 };
@@ -18326,13 +18318,6 @@ export type Setting_RapidApi = {
 export type Setting_Reporting = {
   __typename?: 'Setting_Reporting';
   ChildProgressReportMonths: Scalars['String'];
-};
-
-export type Setting_SmsPortal = {
-  __typename?: 'Setting_SMSPortal';
-  ApiKey: Scalars['String'];
-  ApiSecret: Scalars['String'];
-  BaseUrl: Scalars['String'];
 };
 
 export type Setting_Security = {
@@ -18406,13 +18391,11 @@ export type SettingsType = {
   Grafana: Setting_Grafana;
   IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
   IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
-  IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
   Jwts: Setting_Jwts;
   RapidApi: Setting_RapidApi;
   Reporting: Setting_Reporting;
-  SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
   SmartLinkApi: Setting_SmartLinkApi;
   Sms: Setting_Sms;

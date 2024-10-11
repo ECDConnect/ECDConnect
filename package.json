@@ -138,6 +138,7 @@
     "zxcvbn-typescript": "^5.0.1"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object":"^7.21.0",
     "@capacitor/cli": "3.3.1",
     "@commitlint/cli": "^16.2.3",
     "@commitlint/config-conventional": "^16.2.1",
