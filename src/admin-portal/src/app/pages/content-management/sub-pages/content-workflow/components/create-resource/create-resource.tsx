@@ -18,10 +18,16 @@ import {
   ResourcesTitles,
 } from '../../../../content-management-models';
 import { DialogPosition } from '@ecdlink/ui';
-import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
+import {
+  BookOpenIcon,
+  SaveIcon,
+  TrashIcon,
+  XIcon,
+} from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateResourceForm from './create-resource-form';
 import { UpdateResourceTypesAndDataFree } from '@ecdlink/graphql';
+import { LanguageId } from '../../../../../../constants/language';
 
 export interface ContentViewProps {
   content: any;
@@ -49,8 +55,7 @@ export default function CreateResource({
   choosedSectionTitle,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control, getValues } =
-    useForm();
+  const { register, formState, setValue, control, getValues } = useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
@@ -59,6 +64,9 @@ export default function CreateResource({
   };
 
   const { type: formType } = useWatch({ control });
+
+  const urlRegex =
+    /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
 
   const updateMutationName = `update${contentType?.name}`;
   const creationMutationName = `create${contentType?.name}`;
@@ -93,6 +101,7 @@ export default function CreateResource({
   );
 
   const dialog = useDialog();
+  const formValues = getValues();
 
   const deleteAndRefresh = async (event: MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
@@ -215,9 +224,9 @@ export default function CreateResource({
     return returnField;
   };
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async () => {
     setLoading(true);
-    const model = { ...values };
+    const model = { ...formValues };
 
     model.sectionType =
       choosedSectionTitle === ResourcesTitles.ClassroomResources
@@ -244,15 +253,17 @@ export default function CreateResource({
         setLoading(false);
       });
 
-      await saveResouceTypesAndDataFree({
-        variables: {
-          contentId: +content.id,
-          contentTypeId: +contentType.id,
-          localeId: selectedLanguageId.toString(),
-          resourceType: model.resourceType,
-          dataFree: model.dataFree,
-        },
-      });
+      if (selectedLanguageId === LanguageId.enZa) {
+        await saveResouceTypesAndDataFree({
+          variables: {
+            contentId: +content.id,
+            contentTypeId: +contentType.id,
+            localeId: selectedLanguageId.toString(),
+            resourceType: model.resourceType,
+            dataFree: model.dataFree,
+          },
+        });
+      }
     }
 
     setNotification({
@@ -262,20 +273,28 @@ export default function CreateResource({
 
     savedContent();
     setLoading(false);
-    cancelEdit();
+    if (cancelEdit) {
+      cancelEdit();
+    }
   };
 
-  const formValues = getValues();
-
-  const disableButtonItems = template?.fields?.filter(
-    (item) =>
-      item?.required.value &&
-      formValues?.hasOwnProperty(item?.propName) &&
-      !formValues[item?.propName]
-  );
+  const disableForm =
+    selectedLanguageId === LanguageId.enZa
+      ? !formValues?.resourceType ||
+        !formValues?.title ||
+        !formValues?.shortDescription ||
+        !formValues?.longDescription ||
+        !formValues?.link ||
+        !urlRegex.test(formValues?.link) ||
+        !formValues?.dataFree
+      : !formValues?.title ||
+        !formValues?.shortDescription ||
+        !formValues?.longDescription ||
+        !formValues?.link ||
+        !urlRegex.test(formValues?.link);
 
   const disbleButtonStyles = `bg-secondary ${
-    disableButtonItems && disableButtonItems.length > 0 ? 'opacity-25' : ''
+    disableForm ? 'opacity-25' : ''
   } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   if (
@@ -287,65 +306,78 @@ export default function CreateResource({
   ) {
     return (
       <div className="flex flex-col rounded-md ">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
-          <div className="ml-4 mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-            <div className="ml-4 mt-2">
-              <h3 className="text-xl font-semibold leading-6 text-gray-900">
-                {cancelEdit &&
-                  camelCaseToSentanceCase(
-                    choosedSectionTitle === ResourcesTitles.ClassroomResources
-                      ? 'Classroom resource'
-                      : 'Business resource'
-                  )}
-              </h3>
-            </div>
-            <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelEdit && (
-                <button
-                  onClick={cancelDialog}
-                  type="button"
-                  className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
-                >
-                  Cancel
-                  <XIcon width="22px" className="pl-1" />
-                </button>
-              )}
-            </div>
+        {/* <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4"> */}
+        <div className="ml-4 mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+          <div className="ml-4 mt-2">
+            <h3 className="text-xl font-semibold leading-6 text-gray-900">
+              {cancelEdit &&
+                camelCaseToSentanceCase(
+                  choosedSectionTitle === ResourcesTitles.ClassroomResources
+                    ? 'Classroom resource'
+                    : 'Business resource'
+                )}
+            </h3>
           </div>
-          <div className="w-full rounded-xl bg-white p-12 px-12 pt-6 pb-8">
-            <CreateResourceForm
-              key={choosedSectionTitle}
-              template={template}
-              handleform={handleform}
-              setValue={setValue}
-              defaultLanguageId={defaultLanguageId}
-              choosedSectionTitle={choosedSectionTitle}
-              formType={formType}
-              getValues={getValues}
-            />
-          </div>
-
-          <div className="flex flex-row">
-            <button
-              type="submit"
-              disabled={disableButtonItems && disableButtonItems.length > 0}
-              className={disbleButtonStyles}
-            >
-              <SaveIcon width="22px" className="mr-2" />
-              Save & publish
-            </button>
-
-            {content?.id && (
+          <div className="ml-4 mt-2 flex-shrink-0">
+            {!!cancelCompare && (
               <button
-                onClick={deleteAndRefresh}
-                className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+                type="button"
+                onClick={cancelCompare}
+                className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
               >
-                <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
-                Delete {content?.name}
+                Compare Languages
+                <BookOpenIcon width="20px" className="pl-1" />
+              </button>
+            )}
+            {!!cancelEdit && (
+              <button
+                onClick={cancelDialog}
+                type="button"
+                className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
+              >
+                Cancel
+                <XIcon width="22px" className="pl-1" />
               </button>
             )}
           </div>
-        </form>
+        </div>
+        <div className="w-full rounded-xl bg-white p-12 px-12 pt-6 pb-8">
+          <CreateResourceForm
+            key={choosedSectionTitle}
+            template={template}
+            handleform={handleform}
+            setValue={setValue}
+            defaultLanguageId={defaultLanguageId}
+            selectedLanguageId={selectedLanguageId}
+            choosedSectionTitle={choosedSectionTitle}
+            formType={formType}
+            getValues={getValues}
+            urlRegex={urlRegex}
+          />
+        </div>
+
+        <div className="flex flex-row">
+          <button
+            type="submit"
+            disabled={disableForm}
+            className={disbleButtonStyles}
+            onClick={onSubmit}
+          >
+            <SaveIcon width="22px" className="mr-2" />
+            Save & publish
+          </button>
+
+          {content?.id && (
+            <button
+              onClick={deleteAndRefresh}
+              className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+            >
+              <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
+              Delete {content?.name}
+            </button>
+          )}
+        </div>
+        {/* </form> */}
       </div>
     );
   } else {
