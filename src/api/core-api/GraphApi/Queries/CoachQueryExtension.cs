@@ -466,6 +466,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var childProgressReportRepo = repoFactory.CreateGenericRepository<ChildProgressReport>(userContext: uId);
+            var childProgressReportPeriodRepo = repoFactory.CreateRepository<ChildProgressReportPeriod>(userContext: uId);
             var statementsRepo = repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: uId);
             var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
             var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
@@ -550,39 +551,40 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var totalWithNoProgressReports = 0;
             var totalWithProgressReports = 0;
-            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true 
-                                                                      && allUserIds.Contains(x.UserId) 
-                                                                      && x.DateCompleted.HasValue
-                                                                      && x.DateCompleted.Value.Date >= startDate.Date 
-                                                                      && x.DateCompleted.Value.Date <= endDate.Value.Date).ToList();
-
-            if (progressData.Count > 0)
+            foreach (var id in allUserIds)
             {
-                foreach (var id in allUserIds)
+                var classroom = classroomService.GetClassroomForUser((Guid)id);
+                var progressPeriodIds = childProgressReportPeriodRepo.GetAll()
+                                                                 .Where(x => x.IsActive
+                                                                    && x.ClassroomId == classroom.Id
+                                                                    && ((x.StartDate.Date >= startDate.Date && x.StartDate.Date <= endDate.Value.Date)
+                                                                    || (x.EndDate.Date >= startDate.Date && x.EndDate.Date <= endDate.Value.Date)))
+                                                                 .Select(x => x.Id)
+                                                                 .ToList();
+
+                // this take the principal vs practitioner role into account
+                var classroomGroups = attendanceService.GetUserClassroomGroups(id.ToString());
+                var totalLearners = classroomGroups.SelectMany(x => x.Learners.Where(y => y.IsActive && !y.StoppedAttendance.HasValue)).Count();
+                
+                foreach (var periodId in progressPeriodIds)
                 {
-                    // this take the principal vs practitioner role into account
-                    var classroomGroups = attendanceService.GetUserClassroomGroups(id.ToString());
-                    var totalLearners = classroomGroups.SelectMany(x => x.Learners.Where(y => y.IsActive && !y.StoppedAttendance.HasValue)).Count();
-                    var totalProgressReports = progressData.Where(x => x.UserId == id).Select(x => x.ChildId).Count();
-                    if (totalLearners == 0 && totalProgressReports == 0)
+                    var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.ChildProgressReportPeriodId == periodId).ToList();
+                    if (progressData.Count == 0)
                     {
                         totalWithNoProgressReports++;
-                    } 
+                    }
                     else
                     {
-                        if (totalLearners == totalProgressReports) {
+                        if (progressData.Count == totalLearners)
+                        {
                             totalWithProgressReports++;
-                        } 
+                        }
                         else
                         {
                             totalWithNoProgressReports++;
                         }
                     }
                 }
-            } 
-            else 
-            {
-                totalWithNoProgressReports = allUserIds.Count;
             }
             
             stats.TotalWithNoProgressReports = totalWithNoProgressReports; // practitioners did not create progress reports for all children

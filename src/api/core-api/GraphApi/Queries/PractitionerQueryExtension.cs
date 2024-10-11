@@ -565,6 +565,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
             var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: uId);
+            var childProgressReportPeriodRepo = repoFactory.CreateRepository<ChildProgressReportPeriod>(userContext: uId);
             var statementsRepo = repoFactory.CreateRepository<StatementsIncomeStatement>(userContext: uId);
 
             PractitionerStatsModel stats = new PractitionerStatsModel();
@@ -602,9 +603,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             stats.TotalAttendanceRegistersCompleted = monthReports.Select(x => x.NumberOfSessions).Sum(); 
             stats.TotalAttendanceRegistersNotCompleted = monthReports.Select(x => x.TotalScheduledSessions).Sum();
 
-            var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Value.Date).ToList();
-            stats.TotalProgressReportsCompleted = progressData.Where(x => x.DateCompleted.HasValue).Count();
-            stats.TotalProgressReportsNotCompleted = progressData.Where(x => !x.DateCompleted.HasValue).Count(); ;
+            var progressPeriodIds = childProgressReportPeriodRepo.GetAll()
+                                                                 .Where(x => x.IsActive
+                                                                    && x.ClassroomId == classroom.Id
+                                                                    && ((x.StartDate.Date >= startDate.Date && x.StartDate.Date <= endDate.Value.Date)
+                                                                    || (x.EndDate.Date >= startDate.Date && x.EndDate.Date <= endDate.Value.Date)))
+                                                                 .Select(x => x.Id)
+                                                                 .ToList();
+            var totalProgressReportsNotCompleted = 0;
+            var totalProgressReportsCompleted = 0;
+            foreach (var id in progressPeriodIds)
+            {
+                var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.ChildProgressReportPeriodId == id).FirstOrDefault();
+                if (progressData == null)
+                {
+                    totalProgressReportsNotCompleted++;
+                }
+                else
+                {
+                    if (progressData.DateCompleted.HasValue)
+                    {
+                        totalProgressReportsCompleted++;
+                    } else
+                    {
+                        totalProgressReportsNotCompleted++;
+                    }
+                }
+            }
+
+            stats.TotalProgressReportsCompleted = totalProgressReportsCompleted;
+            stats.TotalProgressReportsNotCompleted = totalProgressReportsNotCompleted;
 
             var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Value.Date).ToList();
             stats.TotalIncomeStatementsDownloaded = statementData.Where(x => x.Downloaded == true).Count();
