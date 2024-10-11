@@ -242,7 +242,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             item.TryGetValue("dataFree", out var dataFree);
             item.TryGetValue("sectionType", out var sectionType);
             item.TryGetValue("numberLikes", out var numberLikes);
-            item.TryGetValue("availableLanguages", out var insertedDate);
 
             result.ResourceType = resourceType.ToString();
             result.Title = title.ToString();
