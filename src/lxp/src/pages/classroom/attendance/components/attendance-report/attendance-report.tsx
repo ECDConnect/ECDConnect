@@ -20,9 +20,6 @@ import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { AttendanceActions } from '@/store/attendance/attendance.actions';
 import {
-  AttendanceDto,
-  ClassProgrammeDto,
-  LearnerDto,
   MonthlyAttendanceRecord,
   useDialog,
   usePrevious,
@@ -34,7 +31,6 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
-import { OfflineUpdate } from '@/models/sync/offline-update';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -47,12 +43,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const { isOnline } = useOnlineStatus();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-
-  const attendanceData = useSelector(attendanceSelectors.getAttendance);
-
-  const [offlineAttendanceData, setOfflineAttendanceData] = useState<
-    MonthlyAttendanceRecord[]
-  >([]);
 
   const { hasPermissionToTakeAttendance } = useUserPermissions();
   const isTrialPeriod = useIsTrialPeriod();
@@ -95,24 +85,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const { showMessage } = useSnackbar();
   const dialog = useDialog();
 
-  const convertMonthNumberToMonthName = (monthNumber: number): string => {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return months[monthNumber - 1];
-  };
-
   const isInitialStartDate =
     lastStartOfPeriod && isSameDay(fourthRecentMonth, lastStartOfPeriod);
   const isToShowSeeMoreButton =
@@ -128,158 +100,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
 
     return copy;
   }, [attendanceSummary, isInitialStartDate]);
-
-  /**
-   * Calculate all the days of class for a programme from the start date till the end of the month
-   * Takes into account the meeting day of the programme
-   *
-   * @param {*} programme // The programme object to get the total days of class for
-   * @param {*} month // 1 - 12 To limit the days to the month a programme can run till
-   */
-  const getProgrammeTotalDaysForMonth = (
-    programme: ClassProgrammeDto & OfflineUpdate,
-    month: number
-  ) => {
-    const programmeStartDate = new Date(programme.programmeStartDate);
-    const currentDate = new Date();
-    const meetingDay = programme.meetingDay;
-
-    const totalDaysInMonth = new Date(
-      programmeStartDate.getFullYear(),
-      month,
-      0
-    ).getDate();
-    const daysOfClass = [];
-
-    for (let i = 1; i <= totalDaysInMonth; i++) {
-      const dayInMonth = new Date(
-        programmeStartDate.getFullYear(),
-        month - 1,
-        i
-      );
-      if (
-        dayInMonth.getDay() === meetingDay &&
-        dayInMonth >= programmeStartDate &&
-        dayInMonth <= currentDate
-      ) {
-        daysOfClass.push(dayInMonth.toUTCString());
-      }
-    }
-
-    return daysOfClass;
-  };
-
-  const getLearnerCount = (data: LearnerDto[], daysOfClass: string[]) =>
-    data.filter((learner) => {
-      const learnerStartDate = new Date(learner.startedAttendance);
-      const learnerEndDate = learner.stoppedAttendance
-        ? new Date(learner.stoppedAttendance)
-        : null;
-      const firstDayOfClass = new Date(daysOfClass[0]);
-      const lastDayOfClass = new Date(daysOfClass[daysOfClass.length - 1]);
-      return (
-        learnerStartDate <= lastDayOfClass &&
-        (!learnerEndDate || learnerEndDate >= firstDayOfClass)
-      );
-    });
-
-  /**
-   * Format the attendance for offline use. Does a crude calculation of the percentage attendance
-   * on the frontend
-   *
-   * @param {AttendanceDto[]} attendanceData
-   * @param {ClassroomGroupDto[]} classroomGroups
-   * @return {*}
-   */
-  const formattedOfflineAttendanceData = (
-    attendanceData: AttendanceDto[],
-    classroomGroups: ClassroomGroupDto[]
-  ) => {
-    // Empty array to store formatted data
-    const formattedData: any = [];
-
-    // Filter attendance data set to only have data for learners in the classroom groups
-    const learners = classroomGroups
-      .map((group) => group.learners.map((learner) => learner))
-      .flat();
-    const learnerIds = learners.map((learner) => learner.childUserId);
-    const usersData = attendanceData.filter((item) =>
-      learnerIds.includes(item.userId!)
-    );
-
-    // Get all applicable months
-    const months = [
-      ...new Set(
-        usersData.map(
-          (item) =>
-            item.monthOfYear || new Date(item.attendanceDate!).getMonth() + 1
-        )
-      ),
-    ].sort((a, b) => a - b);
-
-    // Loop through each month so final data is grouped by month
-    months.forEach((month) => {
-      let totalScheduledSessions = 0;
-      let numberOfSessions = 0;
-
-      // Get all the days of class for each programme from programme start date till end of the month
-      classroomGroups.forEach((group) => {
-        const groupLearners = group.learners.map((learner) => learner);
-
-        // Loop through programmes in the group
-        group.classProgrammes.forEach((programme) => {
-          const daysOfClass = getProgrammeTotalDaysForMonth(programme, month);
-          const learners = getLearnerCount(groupLearners, daysOfClass);
-
-          if (daysOfClass.length > 0 && learners.length > 0) {
-            const attendanceForPeriod = usersData.filter((item) => {
-              return (
-                item.classroomProgrammeId === programme.id &&
-                item.monthOfYear === month &&
-                item.year === usersData[0].year
-              );
-            });
-            numberOfSessions += attendanceForPeriod.length / learners.length;
-            totalScheduledSessions += daysOfClass.length;
-          }
-        });
-      });
-
-      const percentageAttendance = Math.floor(
-        numberOfSessions > 0
-          ? (numberOfSessions / (totalScheduledSessions * 1.0)) * 100
-          : 0
-      );
-
-      formattedData.push({
-        month: convertMonthNumberToMonthName(month),
-        monthOfYear: month,
-        year: usersData[0].year,
-        percentageAttendance,
-        numberOfSessions,
-        totalScheduledSessions,
-      });
-    });
-
-    return formattedData.sort(
-      (a: any, b: any) => b.monthOfYear - a.monthOfYear
-    );
-  };
-
-  useEffect(() => {
-    if (
-      attendanceData &&
-      offlineAttendanceData.length === 0 &&
-      !isOnline &&
-      classroomGroups
-    ) {
-      const offlineData = formattedOfflineAttendanceData(
-        attendanceData,
-        classroomGroups
-      );
-      setOfflineAttendanceData(offlineData);
-    }
-  }, [attendanceData, offlineAttendanceData]);
 
   const onSeeMoreRegisters = () => {
     if (!isOnline) {
@@ -365,45 +185,12 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     );
   }
 
-  const renderNoAttendanceOrOfflineAttendance = () => {
-    return offlineAttendanceData.length > 0 ? (
-      <>
-        <AttendanceMonthlyReport attendanceSummary={offlineAttendanceData} />
-        {isToShowSeeMoreButton && (
-          <Button
-            className="mt-6"
-            type="outlined"
-            color="quatenary"
-            textColor="quatenary"
-            icon="EyeIcon"
-            text="See more registers"
-            onClick={onSeeMoreRegisters}
-          ></Button>
-        )}
-      </>
-    ) : (
-      <IconInformationIndicator
-        title={
-          hasPermissionToEdit
-            ? 'You don’t have any attendance registers yet!'
-            : 'No registers to view yet!'
-        }
-        subTitle={
-          hasPermissionToEdit
-            ? 'Tap "Take attendance" to get started'
-            : "When attendance registers are added for your class, you'll be able to see them here"
-        }
-      />
-    );
-  };
-
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto p-4">
       <div className={'flex flex-col'}>
         {(formattedAttendanceSummary.length > 1 ||
           (formattedAttendanceSummary?.length === 1 &&
-            formattedAttendanceSummary[0].percentageAttendance !== 0) ||
-          offlineAttendanceData.length > 0) && (
+            formattedAttendanceSummary[0].percentageAttendance !== 0)) && (
           <>
             <Typography
               type="h2"
@@ -422,7 +209,18 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         {!formattedAttendanceSummary.length ||
         (formattedAttendanceSummary?.length === 1 &&
           formattedAttendanceSummary[0].percentageAttendance === 0) ? (
-          renderNoAttendanceOrOfflineAttendance()
+          <IconInformationIndicator
+            title={
+              hasPermissionToEdit
+                ? 'You don’t have any attendance registers yet!'
+                : 'No registers to view yet!'
+            }
+            subTitle={
+              hasPermissionToEdit
+                ? 'Tap "Take attendance" to get started'
+                : "When attendance registers are added for your class, you'll be able to see them here"
+            }
+          />
         ) : (
           <>
             <AttendanceMonthlyReport

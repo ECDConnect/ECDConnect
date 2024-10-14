@@ -10,7 +10,6 @@ using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -72,20 +71,12 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
         public async Task<ApplicationUser> LogInWithUsernameAsync(string username, string password)
         {
-            // get the user to verify
+            // get the user to verifty
             var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.UserName, username)
                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
-            if (userToVerify == null)
-            {
-                userToVerify = _userManager.Users.FirstOrDefault(user => user.Email == username
+            userToVerify ??= _userManager.Users.FirstOrDefault(user => user.Email == username
                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-            }
-
-            if (userToVerify == null)
-            {
-                return null;
-            }
 
             if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
             {
