@@ -33,6 +33,7 @@ export interface ContentCompareProps {
   cancelCompare: () => void;
   savedContent: () => void;
   choosedSectionTitle?: string;
+  goBack?: () => void;
 }
 
 export default function ContentCompare({
@@ -45,6 +46,7 @@ export default function ContentCompare({
   cancelCompare,
   savedContent,
   choosedSectionTitle,
+  goBack,
 }: ContentCompareProps) {
   const [selectedFirstLanguageId, setSelectedFirstLanguageId] =
     useState<string>(selectedLanguageId);
@@ -159,6 +161,7 @@ export default function ContentCompare({
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
                         choosedSectionTitle={choosedSectionTitle}
+                        cancelEdit={goBack}
                       />
                     </div>
                   </div>
@@ -302,6 +305,7 @@ export default function ContentCompare({
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
                         choosedSectionTitle={choosedSectionTitle}
+                        cancelEdit={goBack}
                       />
                     </div>
                   </div>

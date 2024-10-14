@@ -170,7 +170,9 @@ export default function ContentWorkflow({
                         cancelEdit={() => goBack()}
                         savedContent={savedContent}
                         defaultLanguageId={selectedLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => {
+                          setIsCompareMode(!isEdit);
+                        }}
                         choosedSectionTitle={choosedSectionTitle}
                       />
                     </div>
@@ -323,6 +325,7 @@ export default function ContentWorkflow({
               cancelCompare={() => setIsCompareMode(!isCompareMode)}
               savedContent={savedContent}
               choosedSectionTitle={choosedSectionTitle}
+              goBack={() => goBack()}
             />
           )}
         </div>
