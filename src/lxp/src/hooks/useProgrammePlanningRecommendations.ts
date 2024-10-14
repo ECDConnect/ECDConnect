@@ -160,11 +160,14 @@ export const useProgrammePlanningRecommendations = () => {
         selectedDate
       );
 
-    if (recommendedActivitiesByThemeActivity.length) {
-      return recommendedActivitiesByThemeActivity;
+    const recommendedActivitiesByThemeActivityBySubCat =
+      getCurrentProgrammeRecommendedActivitiesBySubcategory(programme);
+
+    if (recommendedActivitiesByThemeActivityBySubCat.length) {
+      return recommendedActivitiesByThemeActivityBySubCat;
     }
 
-    return getCurrentProgrammeRecommendedActivitiesBySubcategory(programme);
+    return recommendedActivitiesByThemeActivity;
   };
 
   const getAdditionalRecommendedSubCategories = (

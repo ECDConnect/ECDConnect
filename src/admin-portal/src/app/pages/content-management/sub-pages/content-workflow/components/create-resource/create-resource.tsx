@@ -1,4 +1,4 @@
-import { gql, useMutation } from '@apollo/client';
+import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
@@ -17,7 +17,7 @@ import {
   FormTemplateField,
   ResourcesTitles,
 } from '../../../../content-management-models';
-import { DialogPosition } from '@ecdlink/ui';
+import { DialogPosition, StatusChip } from '@ecdlink/ui';
 import {
   BookOpenIcon,
   SaveIcon,
@@ -26,7 +26,7 @@ import {
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateResourceForm from './create-resource-form';
-import { UpdateResourceTypesAndDataFree } from '@ecdlink/graphql';
+import { GetResources, UpdateResourceTypesAndDataFree } from '@ecdlink/graphql';
 import { LanguageId } from '../../../../../../constants/language';
 
 export interface ContentViewProps {
@@ -308,7 +308,7 @@ export default function CreateResource({
       <div className="flex flex-col rounded-md ">
         {/* <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4"> */}
         <div className="ml-4 mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-          <div className="ml-4 mt-2">
+          <div className="ml-4 mt-2 mb-4">
             <h3 className="text-xl font-semibold leading-6 text-gray-900">
               {cancelEdit &&
                 camelCaseToSentanceCase(
@@ -317,6 +317,13 @@ export default function CreateResource({
                     : 'Business resource'
                 )}
             </h3>
+            <StatusChip
+              className="w-20"
+              borderColour="primary"
+              backgroundColour="primary"
+              textColour="white"
+              text={content?.numberLikes.toString() + ` likes`}
+            />
           </div>
           <div className="ml-4 mt-2 flex-shrink-0">
             {!!cancelCompare && (
