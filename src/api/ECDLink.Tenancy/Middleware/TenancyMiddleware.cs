@@ -58,6 +58,7 @@ namespace ECDLink.Tenancy.Middleware
             {
                 // Check url making request
                 var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (context.Request.Host.HasValue ? context.Request.Host.Value : String.Empty);
+
                 if (!string.IsNullOrWhiteSpace(refererUrl))
                 {
                     tenant = tenancyService.GetTenantByUrl(refererUrl);

@@ -3,16 +3,13 @@ import {
   ComponentBaseProps,
   classNames,
   renderIcon,
-  DialogPosition,
 } from '@ecdlink/ui';
 import * as styles from './attendance-monthly-report.styles';
 import { getYear } from 'date-fns';
-import { MonthlyAttendanceRecord, useDialog } from '@ecdlink/core';
+import { MonthlyAttendanceRecord } from '@ecdlink/core';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { MonthlyAttendanceReportRouteState } from './attendance-report.types';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: MonthlyAttendanceRecord[];
@@ -22,25 +19,6 @@ export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
 > = ({ attendanceSummary }) => {
   const history = useHistory();
-  const { isOnline } = useOnlineStatus();
-  const dialog = useDialog();
-
-  const handleClick = (attendanceItem: MonthlyAttendanceRecord) => {
-    if (!isOnline) {
-      return dialog({
-        color: 'bg-white',
-        position: DialogPosition.Middle,
-        render: (onSubmit) => {
-          return <OnlineOnlyModal onSubmit={onSubmit} />;
-        },
-      });
-    } else {
-      if (attendanceItem.totalScheduledSessions === 0) return;
-      history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
-        selectedMonth: attendanceItem,
-      } as MonthlyAttendanceReportRouteState);
-    }
-  };
 
   return (
     <div className={styles.wrapper}>
@@ -48,7 +26,12 @@ export const AttendanceMonthlyReport: React.FC<
         attendanceSummary.map((attendanceItem, idx) => {
           return (
             <div
-              onClick={() => handleClick(attendanceItem)}
+              onClick={() => {
+                if (attendanceItem.totalScheduledSessions === 0) return;
+                history.push(ROUTES.CLASSROOM.ATTENDANCE.MONTHLY_REPORT, {
+                  selectedMonth: attendanceItem,
+                } as MonthlyAttendanceReportRouteState);
+              }}
               key={`attendance-summary-item-${idx}`}
               className={classNames(
                 styles.attendanceItemWrapper(

@@ -137,11 +137,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     }
   }, [dialog, currentReportingPeriod]);
 
-  const comingSoon = true;
-
-  if (comingSoon) {
-    return <Typography color="textDark" text={`Coming soon`} type={'h2'} />;
-  }
   return (
     <>
       {/* No report periods defined and principal */}

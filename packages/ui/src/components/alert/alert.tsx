@@ -111,13 +111,8 @@ export const Alert: React.FC<AlertProps> = ({
             className="items-top mb-2 flex pr-1"
             style={{ marginLeft: 'auto' }}
           >
-            <div onClick={onDismiss}>
-              {renderIcon(
-                'XIcon',
-                `h-4 w-4 text-${
-                  titleColor || styles.alertTextColor(type, variant)
-                }`
-              )}
+            <div onClick={onDismiss} >
+              {renderIcon('XIcon', `h-4 w-4 text-${titleColor || styles.alertTextColor(type, variant)}`)}
             </div>
           </div>
         )}
