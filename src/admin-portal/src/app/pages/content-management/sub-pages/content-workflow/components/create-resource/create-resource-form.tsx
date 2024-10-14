@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Editor from '../../../../../../components/form-markdown-editor/form-markdown-editor';
 import {
   DynamicFormTemplate,
@@ -14,19 +14,15 @@ import {
   CoreRadioGroup,
   Alert,
 } from '@ecdlink/ui';
-import { useWatch } from 'react-hook-form';
-import { LanguageId } from '../../../../../../constants/language';
 
 export interface CreateResourceFormProps {
   template: DynamicFormTemplate;
   handleform: any;
   setValue: any;
-  selectedLanguageId: string;
   defaultLanguageId: string;
   formType?: string;
   choosedSectionTitle: string;
   getValues?: any;
-  urlRegex: any;
 }
 
 const contentWrapper = '';
@@ -43,17 +39,13 @@ export const classroomOptions = [
 ];
 
 export const businessOptions = [
-  { id: 0, label: 'Finances', value: 'Finances' },
+  { id: 0, label: 'Financial', value: 'Financial' },
   {
     id: 1,
-    label: 'Marketing, recruitment & communication',
-    value: 'Marketing, recruitment & communication',
+    label: 'Administration & policies',
+    value: 'Administration & policies',
   },
-  {
-    id: 2,
-    label: 'Safety, hygiene & nutrition',
-    value: 'Safety, hygiene & nutrition',
-  },
+  { id: 2, label: 'DBE registration', value: 'DBE registration' },
   { id: 3, label: 'Other', value: 'Other' },
 ];
 
@@ -62,175 +54,135 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
   handleform,
   setValue,
   defaultLanguageId,
-  selectedLanguageId,
   choosedSectionTitle,
   getValues,
-  urlRegex,
 }) => {
   const { register, control, errors } = handleform;
   const formValues = getValues();
   const [selectedResourceType, setSelectedResourceType] = useState<string>();
 
-  const [fields, setFields] = useState<any>();
-  const showEditableFields = selectedLanguageId === LanguageId.enZa;
-  const watchFields = useWatch({ control });
+  const onStateChange = (name: string, state: any) => {
+    setValue(name, state);
+  };
 
-  const initialValues = getValues();
+  const [fields, setFields] = useState<any>();
 
   useEffect(() => {
-    if (template && watchFields) {
-      const fields = renderFields(template?.fields, showEditableFields);
+    if (template) {
+      const fields = renderFields(template.fields);
       setFields(fields);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template, watchFields]);
+  }, [template]);
 
-  // const renderFields = useCallback((fields: FormTemplateField[], showEditableFields: boolean) => {
-  const renderFields = (
-    fields: FormTemplateField[],
-    showEditableFields: boolean
-  ) => {
+  const renderFields = useCallback((fields: FormTemplateField[]) => {
+    const isEdit = fields.some((f) => !!f.contentValue);
     return fields.map((field) => {
-      const isEdit = fields.some((f) => !!f.contentValue);
-      const { type, title, propName, required } = field;
+      const { type, title, propName, required, validation, isRequired } = field;
       register(propName, { required: required });
-
       switch (type) {
         case FieldType.Text:
           if (propName === 'dataFree') {
             return (
               <div key={propName} className={contentWrapper}>
-                {showEditableFields ? (
-                  <>
-                    <div className="flex">
-                      <Typography
-                        type={'body'}
-                        weight={'bold'}
-                        color={'textMid'}
-                        text={field?.title + ` *`}
-                      />
-                    </div>
-                    <Typography
-                      type={'body'}
-                      color={'textMid'}
-                      text={`If accessing this link requires data, please select "No".`}
-                    />
-
-                    {isEdit && (
-                      <Alert
-                        className="mt-2 mb-2 rounded-md"
-                        message={`Editing this response will update this data free response for all translations of this page`}
-                        type="warning"
-                      />
-                    )}
-                    <ButtonGroup<string>
-                      color="tertiary"
-                      textColor="tertiary"
-                      notSelectedColor="tertiaryAccent2"
-                      type={ButtonGroupTypes.Button}
-                      options={dataFreeOptions}
-                      onOptionSelected={(value) => {
-                        setValue(propName, value);
-                      }}
-                      selectedOptions={
-                        field.contentValue
-                          ? field.contentValue.value
-                          : undefined
-                      }
-                    />
-                    {required.value &&
-                      initialValues?.hasOwnProperty(propName) &&
-                      !initialValues[propName] && (
-                        <Typography
-                          type="help"
-                          color="errorMain"
-                          text={`Select data free option`}
-                        />
-                      )}
-                  </>
-                ) : (
-                  <div key={propName} className={contentWrapper}></div>
+                <div className="flex">
+                  <Typography
+                    type={'body'}
+                    weight={'bold'}
+                    color={'textMid'}
+                    text={field?.title + ` *`}
+                  />
+                </div>
+                <Typography
+                  type={'body'}
+                  color={'textMid'}
+                  text={`If accessing this link requires data, please select "No".`}
+                />
+                {isEdit && (
+                  <Alert
+                    className="mt-2 mb-2 rounded-md"
+                    message={`Editing this response will update this data free response for all translations of this page`}
+                    type="warning"
+                  />
                 )}
+                <ButtonGroup<string>
+                  color="tertiary"
+                  textColor="tertiary"
+                  notSelectedColor="tertiaryAccent2"
+                  type={ButtonGroupTypes.Button}
+                  options={dataFreeOptions}
+                  onOptionSelected={(value) => {
+                    onStateChange(propName, value);
+                  }}
+                  selectedOptions={
+                    field.contentValue ? field.contentValue.value : undefined
+                  }
+                />
               </div>
             );
           }
           if (propName === 'resourceType') {
             return (
               <div key={propName} className={contentWrapper}>
-                {showEditableFields ? (
-                  <>
-                    <div className="flex">
-                      <Typography
-                        type={'body'}
-                        weight={'bold'}
-                        color={'textMid'}
-                        text={field?.title + ` *`}
-                      />
-                    </div>
-                    {isEdit && (
-                      <Alert
-                        className="mt-2 mb-2 rounded-md"
-                        message={`Editing this resource type here will update the resource type for all translations of this page`}
-                        type="warning"
-                      />
-                    )}
-                    <fieldset className="flex flex-col gap-1">
-                      {choosedSectionTitle ===
-                        ResourcesTitles.ClassroomResources && (
-                        <CoreRadioGroup
-                          options={classroomOptions.map((x) => ({
-                            id: x.id,
-                            label: x.label,
-                            value: x.value,
-                          }))}
-                          currentValue={
-                            field.contentValue
-                              ? field.contentValue.value
-                              : selectedResourceType
-                          }
-                          colour={'quatenary'}
-                          selectedOptionBackgroundColor="uiBg"
-                          onChange={(val: string) => {
-                            setSelectedResourceType(val);
-                            setValue(propName, val);
-                          }}
-                        />
-                      )}
-                      {choosedSectionTitle ===
-                        ResourcesTitles.BusinessResources && (
-                        <CoreRadioGroup
-                          options={businessOptions.map((x) => ({
-                            id: x.id,
-                            label: x.label,
-                            value: x.value,
-                          }))}
-                          currentValue={
-                            field.contentValue
-                              ? field.contentValue.value
-                              : selectedResourceType
-                          }
-                          colour={'quatenary'}
-                          selectedOptionBackgroundColor="uiBg"
-                          onChange={(val: string) => {
-                            setSelectedResourceType(val);
-                            setValue(propName, val);
-                          }}
-                        />
-                      )}
-                    </fieldset>
-                    {required.value &&
-                      initialValues?.hasOwnProperty(propName) &&
-                      !initialValues[propName] && (
-                        <Typography
-                          type="help"
-                          color="errorMain"
-                          text={`Select resource type`}
-                        />
-                      )}
-                  </>
-                ) : (
-                  <div key={propName} className={contentWrapper}></div>
+                <div className="flex">
+                  <Typography
+                    type={'body'}
+                    weight={'bold'}
+                    color={'textMid'}
+                    text={field?.title + ` *`}
+                  />
+                </div>
+                {isEdit && (
+                  <Alert
+                    className="mt-2 mb-2 rounded-md"
+                    message={`Editing this resource type here will update the resource type for all translations of this page`}
+                    type="warning"
+                  />
                 )}
+                <fieldset className="flex flex-col gap-1">
+                  {choosedSectionTitle ===
+                    ResourcesTitles.ClassroomResources && (
+                    <CoreRadioGroup
+                      options={classroomOptions.map((x) => ({
+                        id: x.id,
+                        label: x.label,
+                        value: x.value,
+                      }))}
+                      currentValue={
+                        field.contentValue
+                          ? field.contentValue.value
+                          : selectedResourceType
+                      }
+                      colour={'quatenary'}
+                      selectedOptionBackgroundColor="uiBg"
+                      onChange={(val: string) => {
+                        setSelectedResourceType(val);
+                        onStateChange(propName, val);
+                      }}
+                    />
+                  )}
+                  {choosedSectionTitle ===
+                    ResourcesTitles.BusinessResources && (
+                    <CoreRadioGroup
+                      options={businessOptions.map((x) => ({
+                        id: x.id,
+                        label: x.label,
+                        value: x.value,
+                      }))}
+                      currentValue={
+                        field.contentValue
+                          ? field.contentValue.value
+                          : selectedResourceType
+                      }
+                      colour={'quatenary'}
+                      selectedOptionBackgroundColor="uiBg"
+                      onChange={(val: string) => {
+                        setSelectedResourceType(val);
+                        onStateChange(propName, val);
+                      }}
+                    />
+                  )}
+                </fieldset>
               </div>
             );
           }
@@ -246,19 +198,12 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                   subLabel="Character limit: 40 characters."
                   maxCharacters={40}
                   maxLength={40}
-                  isAdminPortalField={true}
                   register={register}
                   value={formValues[propName]}
-                  error={
-                    required.value &&
-                    initialValues?.hasOwnProperty(propName) &&
-                    !initialValues[propName]
-                      ? 'This field is required'
-                      : errors[propName]?.message
+                  error={errors[propName]?.message}
+                  onChange={(data) =>
+                    onStateChange(propName, data.target.value)
                   }
-                  onChange={(data) => {
-                    setValue(propName, data.target.value);
-                  }}
                 />
               </div>
             );
@@ -274,15 +219,11 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                   maxCharacters={50}
                   maxLength={50}
                   register={register}
+                  error={errors[propName]?.message}
                   value={formValues[propName]}
-                  error={
-                    required.value &&
-                    initialValues?.hasOwnProperty(propName) &&
-                    !initialValues[propName]
-                      ? 'This field is required'
-                      : errors[propName]?.message
+                  onChange={(data) =>
+                    onStateChange(propName, data.target.value)
                   }
-                  onChange={(data) => setValue(propName, data.target.value)}
                 />
               </div>
             );
@@ -297,26 +238,11 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
                   subLabel="Before adding a link, please test it to make sure it works."
                   value={formValues[propName]}
                   register={register}
-                  error={
-                    required.value &&
-                    initialValues?.hasOwnProperty(propName) &&
-                    !initialValues[propName]
-                      ? 'This field is required'
-                      : errors[propName]?.message
+                  error={errors[propName]?.message}
+                  onChange={(data) =>
+                    onStateChange(propName, data.target.value)
                   }
-                  onChange={(e) => {
-                    setValue(propName, e.target.value);
-                  }}
                 />
-
-                {formValues[propName] !== '' &&
-                  !urlRegex.test(formValues[propName]) && (
-                    <Typography
-                      type="help"
-                      color="errorMain"
-                      text={`Invalid URL`}
-                    />
-                  )}
               </div>
             );
           }
@@ -337,23 +263,12 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <Editor
-                  label={required.value ? title + ' *' : title}
-                  currentValue={
-                    field.contentValue ? field.contentValue.value : undefined
-                  }
-                  onStateChange={(data) => setValue(propName, data)}
+                  label={title + ` *`}
                   subLabel={`How will this resource help practitioners? `}
+                  currentValue={formValues[propName]}
+                  onStateChange={(data) => onStateChange(propName, data)}
                 />
               </div>
-              {required.value &&
-                initialValues?.hasOwnProperty(propName) &&
-                !initialValues[propName] && (
-                  <Typography
-                    type="help"
-                    color="errorMain"
-                    text={`Add description`}
-                  />
-                )}
             </div>
           );
         default:
@@ -364,7 +279,7 @@ const CreateResourceForm: React.FC<CreateResourceFormProps> = ({
           );
       }
     });
-  };
+  }, []);
 
   return (
     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
