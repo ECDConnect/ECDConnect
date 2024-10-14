@@ -6,9 +6,9 @@ export enum classroomResourceOptions {
 }
 
 export enum businessResourceOptions {
-  Finances = 'Finances',
-  Marketing = 'Marketing, recruitment & communication',
-  Safety = 'Safety, hygiene & nutrition',
+  Financial = 'Financial',
+  AdministrationPolicies = 'Administration & policies',
+  DBERegistration = 'DBE registration',
   Other = 'Other',
 }
 
