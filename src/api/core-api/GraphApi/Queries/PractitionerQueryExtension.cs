@@ -587,10 +587,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         .Select(e => start.AddMonths(e))
                         .TakeWhile(e => e <= end)
                         .Select(e => e.Month).Distinct().ToList();
-            var years = Enumerable.Range(0, Int32.MaxValue)
-                        .Select(e => start.AddMonths(e))
-                        .TakeWhile(e => e <= end)
-                        .Select(e => e.Year).Distinct().ToList();
 
             var monthReports = new List<MonthlyAttendanceReportModel>();
             var attendanceStart = startDate.Date;
@@ -638,14 +634,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             stats.TotalProgressReportsCompleted = totalProgressReportsCompleted;
             stats.TotalProgressReportsNotCompleted = totalProgressReportsNotCompleted;
 
-
-            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true
-                                                                   && x.UserId == userId
-                                                                   && years.Contains(x.Year)
-                                                                   && months.Contains(x.Month)).ToList();
-
+            var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true && x.UserId == userId && x.InsertedDate.Date >= startDate.Date && x.InsertedDate.Date <= endDate.Value.Date).ToList();
             stats.TotalIncomeStatementsDownloaded = statementData.Where(x => x.Downloaded == true).Count();
-            stats.TotalIncomeStatementsWithNoItems = statementData.Where(x => x.IncomeItems.Count == 0 || x.ExpenseItems.Count == 0).Count();
+            stats.TotalIncomeStatementsWithNoItems = statementData.Where(x => x.IncomeItems.Count == 0 && x.ExpenseItems.Count == 0).Count();
 
             return stats;
         }
