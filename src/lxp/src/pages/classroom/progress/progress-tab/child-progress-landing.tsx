@@ -194,7 +194,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
               text={`${format(
                 new Date(currentReportingPeriod?.startDate || ''),
                 'd MMM'
-              )} and ${format(
+              )} - ${format(
                 new Date(currentReportingPeriod?.endDate || ''),
                 'd MMM yyyy'
               )}`}
