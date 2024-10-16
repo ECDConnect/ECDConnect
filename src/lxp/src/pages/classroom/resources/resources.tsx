@@ -143,6 +143,17 @@ export const Resources = () => {
       },
     });
   }
+
+  const isComingSoon = true;
+
+  if (isComingSoon) {
+    return (
+      <div className="mt-2 flex flex-col p-4">
+        <Typography color="textDark" text={`Coming soon`} type={'h2'} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       {isLoading ? (
