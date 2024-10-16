@@ -142,7 +142,7 @@ export const Resources = () => {
     });
   }
 
-  const isComingSoon = true;
+  const isComingSoon = false;
 
   if (isComingSoon) {
     return <Typography color="textDark" text={`Coming soon`} type={'h2'} />;

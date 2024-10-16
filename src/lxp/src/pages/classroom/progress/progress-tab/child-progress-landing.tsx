@@ -137,7 +137,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     }
   }, [dialog, currentReportingPeriod]);
 
-  const isComingSoon = true;
+  const isComingSoon = false;
 
   if (isComingSoon) {
     return (

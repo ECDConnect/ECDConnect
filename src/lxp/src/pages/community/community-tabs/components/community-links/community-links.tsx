@@ -52,7 +52,7 @@ export const CommunityLinks = () => {
       });
   }
 
-  const isComingSoon = true;
+  const isComingSoon = false;
 
   if (isComingSoon) {
     return (
