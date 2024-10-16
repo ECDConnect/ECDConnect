@@ -20,6 +20,7 @@ using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -81,10 +82,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             [Service] IHttpContextAccessor contextAccessor,
             AuthenticationDbContext dbContext,
             IGenericRepositoryFactory repoFactory,
+            ApplicationUserManager userManager,
+            [Service] IClassroomService classroomService,
             string idNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
-            
+
             if (uId is null)
                 throw new System.Exception("No active user found.");
 
@@ -99,21 +102,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 if (practitionerUser != null)
                 {
                     var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+                    ApplicationUser currentUser = userManager.FindByIdAsync(practitionerUser.Id.ToString()).Result;
+                    Classroom classroom = dbContext.Classrooms.Where(classroom => classroom.UserId == practitionerUser.Id).FirstOrDefault();
                     var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
+
                     if (practitioner != null)
                     {
+
+                        practitioner.User = currentUser;
+
                         if (practitioner.PrincipalHierarchy == null)
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, IsRegistered = practitioner.IsRegistered };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, IsRegistered = practitioner.IsRegistered, BelongsToPreschool = classroom != null, Note = classroom != null ? "This practitioner is linked to a different SmartStart programme" : null };
                         }
                         else
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme", IsRegistered = practitioner.IsRegistered };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme", IsRegistered = classroom != null };
                         }
                     }
                     else
                     {
-                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", IsRegistered = false };
+                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", IsRegistered = false, BelongsToPreschool = false };
                     }
                 }
             }
@@ -191,18 +200,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var classroom = classroomService.GetClassroomForUser(Guid.Parse(userId));
             var classroomGroup = classroomService.GetClassroomGroupsForUser(Guid.Parse(userId)).FirstOrDefault();
 
-            var details = new PractitionerReportDetails() { 
-                ClassroomGroupId = classroomGroup?.Id.ToString(), 
-                ClassroomGroupName = classroomGroup?.Name, 
-                Id = classroom.Id.ToString(), 
-                IdNumber = practitioner.User.IdNumber, 
-                InsertedDate = classroom.InsertedDate, 
-                Name = practitioner.User.FullName, 
-                Phone = practitioner.User.PhoneNumber, 
-                PrincipalName = $"{classroom.User.FirstName} {classroom.User.Surname}", 
-                ProgrammeDays = "Monday to Friday", 
+            var details = new PractitionerReportDetails()
+            {
+                ClassroomGroupId = classroomGroup?.Id.ToString(),
+                ClassroomGroupName = classroomGroup?.Name,
+                Id = classroom.Id.ToString(),
+                IdNumber = practitioner.User.IdNumber,
+                InsertedDate = classroom.InsertedDate,
+                Name = practitioner.User.FullName,
+                Phone = practitioner.User.PhoneNumber,
+                PrincipalName = $"{classroom.User.FirstName} {classroom.User.Surname}",
+                ProgrammeDays = "Monday to Friday",
                 ProgrammeTypeName = classroomGroup?.ProgrammeType?.Description,
-                ClassSiteAddress = classroom.SiteAddress != null 
+                ClassSiteAddress = classroom.SiteAddress != null
                     ? classroom.SiteAddress.Name + " " + classroom.SiteAddress.AddressLine1 + " " + classroom.SiteAddress.AddressLine2 + " " + classroom.SiteAddress.AddressLine3 + " " + (classroom.SiteAddress.Province != null ? classroom.SiteAddress.Province.Description : string.Empty) + " " + classroom.SiteAddress.PostalCode
                     : ""
             };
@@ -266,7 +276,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                                 practiClassroomNames = string.Join(",", classNames);
                             }
 
-                             practitionerColleagues.Add(new PractitionerColleagues() { Name = practiName, NickName = practiNickName, Title = practiType, ProfilePhoto = practiProfile, ContactNumber = practiNumber, ClassroomNames = practiClassroomNames, UserId = practitioner.User.Id.ToString() });
+                            practitionerColleagues.Add(new PractitionerColleagues() { Name = practiName, NickName = practiNickName, Title = practiType, ProfilePhoto = practiProfile, ContactNumber = practiNumber, ClassroomNames = practiClassroomNames, UserId = practitioner.User.Id.ToString() });
                         }
                     }
                 }
@@ -320,7 +330,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public PractitionerRemovalHistory GetRemovalDetailsForPractitioner(
             [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory, 
+            IGenericRepositoryFactory repoFactory,
             string userId)
         {
             if (userId == null)
@@ -428,21 +438,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var invitationDates = invitations.ToDictionary(x => x.Key, x => x.Last().InsertedDate);
             var invitationNotifications = invitations.ToDictionary(x => x.Key, x => x.Last().NotificationResult);
 
-             var practitionerModels = practitionerQuery
-                .Select(item => new PortalPractitionerModel
-                {
-                    Id = item.Id,
-                    IsRegistered = (item.IsRegistered == null ? false: (bool)item.IsRegistered),
-                    UserId = item.UserId,
-                    IsPrincipal = item.IsPrincipal,
-                    IsFundaAppAdmin = item.IsFundaAppAdmin,
-                    InsertedDate = item.InsertedDate.Date,
-                    User = new PortalPractitionerUserModel(item.User, 
-                                                           (item.IsRegistered == null ? false : (bool)item.IsRegistered), 
-                                                           invitationDates.ContainsKey(item.UserId) ? invitationDates[item.UserId] : null,
-                                                           invitationNotifications.ContainsKey(item.UserId) ? invitationNotifications[item.UserId] : null)
-                })
-                .ToList();
+            var practitionerModels = practitionerQuery
+               .Select(item => new PortalPractitionerModel
+               {
+                   Id = item.Id,
+                   IsRegistered = (item.IsRegistered == null ? false : (bool)item.IsRegistered),
+                   UserId = item.UserId,
+                   IsPrincipal = item.IsPrincipal,
+                   IsFundaAppAdmin = item.IsFundaAppAdmin,
+                   InsertedDate = item.InsertedDate.Date,
+                   User = new PortalPractitionerUserModel(item.User,
+                                                          (item.IsRegistered == null ? false : (bool)item.IsRegistered),
+                                                          invitationDates.ContainsKey(item.UserId) ? invitationDates[item.UserId] : null,
+                                                          invitationNotifications.ContainsKey(item.UserId) ? invitationNotifications[item.UserId] : null)
+               })
+               .ToList();
 
             List<PortalPractitionerModel> filteredUsers = new List<PortalPractitionerModel>();
             if (connectUsageSearch != null && connectUsageSearch.Contains(Constants.PortalSettings.usage_invitation_active))
@@ -597,14 +607,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             foreach (var month in months)
             {
                 var monthReport = monthlyAttendanceReport.GenerateMonthlyAttendanceReport(userId.ToString(), attendanceStart.GetStartOfMonth(), attendanceStart.GetEndOfMonth()).FirstOrDefault();
-                if (monthReport != null) 
+                if (monthReport != null)
                 {
                     monthReports.Add(monthReport);
                 }
                 attendanceStart = attendanceStart.AddMonths(1);
             }
 
-            stats.TotalAttendanceRegistersCompleted = monthReports.Select(x => x.NumberOfSessions).Sum(); 
+            stats.TotalAttendanceRegistersCompleted = monthReports.Select(x => x.NumberOfSessions).Sum();
             stats.TotalAttendanceRegistersNotCompleted = monthReports.Select(x => x.TotalScheduledSessions).Sum();
 
             var progressPeriodIds = childProgressReportPeriodRepo.GetAll()
@@ -628,7 +638,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     if (progressData.DateCompleted.HasValue)
                     {
                         totalProgressReportsCompleted++;
-                    } else
+                    }
+                    else
                     {
                         totalProgressReportsNotCompleted++;
                     }
