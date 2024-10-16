@@ -144,10 +144,10 @@ export const ProgressReportingPeriods: React.FC = () => {
                   <Typography
                     type="body"
                     color="textMid"
-                    text={`${format(
-                      new Date(p.startDate),
-                      'd MMM'
-                    )} and ${format(new Date(p.endDate), 'd MMM yyyy')}`}
+                    text={`${format(new Date(p.startDate), 'd MMM')} - ${format(
+                      new Date(p.endDate),
+                      'd MMM yyyy'
+                    )}`}
                   />
                 </div>
               ))}
