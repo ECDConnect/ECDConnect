@@ -1,7 +1,6 @@
 import { ActionModal, Button, DialogPosition } from '@ecdlink/ui';
 import {
   NOTIFICATION,
-  RoleSystemNameEnum,
   UserDto,
   useDialog,
   useNotifications,
@@ -35,13 +34,6 @@ export const SendInvite: React.FC<SendInviteProps> = ({
   });
 
   const { setNotification } = useNotifications();
-
-  const isAdminUser = userData?.roles?.some(
-    (role: any) =>
-      role.systemName === RoleSystemNameEnum.Administrator ||
-      role.systemName === RoleSystemNameEnum.SuperAdmin ||
-      role.systemName === RoleSystemNameEnum.TeamLead
-  );
 
   const sendInvite = async () => {
     dialog({

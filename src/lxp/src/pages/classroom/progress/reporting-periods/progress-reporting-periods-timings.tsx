@@ -190,7 +190,7 @@ export const ProgressReportingPeriodsTimings: React.FC<
                     `Check the dates - you might not have enough time to finish all reports between ${format(
                       new Date(reportingPeriod.startDate),
                       'd MMM'
-                    )} and ${format(
+                    )} - ${format(
                       new Date(reportingPeriod.endDate),
                       'd MMM'
                     )}.`,

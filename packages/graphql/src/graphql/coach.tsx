@@ -144,18 +144,18 @@ export const GetCoachStats = gql`
   query GetCoachStats(
     $userId: UUID!
     $startDate: DateTime!
-    $endDate: DateTime!
+    $endDate: DateTime
   ) {
     coachStats(userId: $userId, startDate: $startDate, endDate: $endDate) {
-      totalPractitionersForSchool
-      totalChildrenForSchool
-      totalClassesForSchool
-      totalAttendanceRegistersCompleted
-      totalAttendanceRegistersNotCompleted
-      totalProgressReportsCompleted
-      totalProgressReportsNotCompleted
-      totalIncomeStatementsDownloaded
-      totalIncomeStatementsWithNoItems
+      totalPractitioners
+      totalNewPractitioners
+      totalSiteVisits
+      totalWithNoIncomeExpense
+      totalWithIncomeExpense
+      totalLessThan75AttendanceRegisters
+      totalMoreThan75hAttendanceRegisters
+      totalWithNoProgressReports
+      totalWithProgressReports
     }
   }
 `;

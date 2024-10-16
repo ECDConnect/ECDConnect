@@ -137,6 +137,16 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     }
   }, [dialog, currentReportingPeriod]);
 
+  const isComingSoon = true;
+
+  if (isComingSoon) {
+    return (
+      <div className="mt-2 flex flex-col p-4">
+        <Typography color="textDark" text={`Coming soon`} type={'h2'} />
+      </div>
+    );
+  }
+
   return (
     <>
       {/* No report periods defined and principal */}
@@ -194,7 +204,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
               text={`${format(
                 new Date(currentReportingPeriod?.startDate || ''),
                 'd MMM'
-              )} and ${format(
+              )} - ${format(
                 new Date(currentReportingPeriod?.endDate || ''),
                 'd MMM yyyy'
               )}`}

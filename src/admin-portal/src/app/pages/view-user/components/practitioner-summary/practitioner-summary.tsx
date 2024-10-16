@@ -3,10 +3,12 @@ import { Divider, Typography } from '@ecdlink/ui';
 
 interface PractitionerSummaryProps {
   summaryData: PractitionerStatsDto;
+  isPractitioner: boolean;
 }
 
 export const PractitionerSummary: React.FC<PractitionerSummaryProps> = ({
   summaryData,
+  isPractitioner,
 }) => {
   return (
     <div className="border-l-secondary border-secondary my-6 rounded-2xl border-2  border-l-8 bg-white lg:min-w-0 lg:flex-1">
@@ -14,7 +16,7 @@ export const PractitionerSummary: React.FC<PractitionerSummaryProps> = ({
         {/* Start main area*/}
         <Typography
           type="h2"
-          text={'Practitioner classroom name'}
+          text={summaryData?.schoolName}
           color={'textMid'}
         />
         <Divider dividerType="dashed" className="my-4" />

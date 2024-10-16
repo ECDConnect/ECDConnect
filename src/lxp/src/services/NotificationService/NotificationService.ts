@@ -10,7 +10,7 @@ import { UserLastLoginNotificationValidator } from './validators/user/userLastLo
 import { NotificationValidator } from './NotificationService.types';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
-import { UserDto } from '@ecdlink/core';
+import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import { BackendNotificationsValidator } from './validators/backend-notifications/backendNotificationsValidador';
 import { PointsNotificationValidator } from './validators/points/pointsNotificationValidator';
 import { PractitionerNotificationValidator } from './validators/practitionerNotificationsValidator.ts/practitionerNotificationsValidator';
@@ -76,7 +76,13 @@ export class NotificationService {
     return notifications;
   };
 
-  registerValidators = (store: EnhancedStore<RootState, any>) => {
+  registerValidators = (
+    store: EnhancedStore<RootState, any>,
+    applicationName: String
+  ) => {
+    const isCoach = this.user?.roles?.some(
+      (role) => role.systemName === RoleSystemNameEnum.Coach
+    );
     const currentDate = new Date();
     this.validators = [
       new ChildDocumentsNotificationValidator(store),
@@ -85,7 +91,12 @@ export class NotificationService {
       new IncompleteTrackAttendanceNotificationValidator(store, currentDate),
       new ProgrammePlanningNotificationValidator(store, currentDate),
       new ChildProgressReportNotificationValidator(store, currentDate),
-      new UserLastLoginNotificationValidator(store, currentDate),
+      new UserLastLoginNotificationValidator(
+        store,
+        currentDate,
+        applicationName,
+        isCoach || false
+      ),
       new PointsNotificationValidator(store, currentDate),
       new PractitionerNotificationValidator(store, currentDate),
     ];

@@ -279,6 +279,7 @@ export const GetPractitionerByUserId = gql`
       isTrainee
       principalHierarchy
       coachHierarchy
+      coachName
       attendanceRegisterLink
       maxChildren
       consentForPhoto
@@ -330,13 +331,14 @@ export const GetPractitionerStats = gql`
   query GetPractitionerStats(
     $userId: UUID!
     $startDate: DateTime!
-    $endDate: DateTime!
+    $endDate: DateTime
   ) {
     practitionerStats(
       userId: $userId
       startDate: $startDate
       endDate: $endDate
     ) {
+      schoolName
       totalPractitionersForSchool
       totalChildrenForSchool
       totalClassesForSchool

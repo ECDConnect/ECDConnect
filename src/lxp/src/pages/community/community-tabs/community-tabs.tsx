@@ -5,6 +5,7 @@ import { useState } from 'react';
 import format from 'date-fns/format';
 import ROUTES from '@/routes/routes';
 import { CommunityItem } from './components/community-item/community-item';
+import { CommunityLinks } from './components/community-links/community-links';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,
@@ -38,7 +39,7 @@ export const CommunityTabs = ({
     {
       title: 'Resources',
       initActive: false,
-      child: <div className="text-textDark p-4">Coming soon</div>,
+      child: <CommunityLinks />,
     },
   ];
 

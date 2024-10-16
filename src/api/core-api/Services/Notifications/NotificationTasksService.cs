@@ -1,20 +1,21 @@
 ﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -24,76 +25,119 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly ApplicationUserManager _userManager;
         private readonly INotificationService _notificationService;
-        private ILogger<NotificationTasksService> _logger;
+
+        private IHttpContextAccessor _contextAccessor;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private IGenericRepository<Coach, Guid> _coachRepo;
+        private Guid _applicationUserId;
 
         public NotificationTasksService(
+            IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager,
-            [Service] ILogger<NotificationTasksService> logger,
             HierarchyEngine hierarchyEngine)
         {
+            _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
+
+            _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+            _coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
+
             _notificationService = notificationService;
             _userManager = userManager;
-            _logger = logger;
+
         }
 
         public async Task DailyUserOfflineNotification()
         {
-            /*_logger.LogInformation("DailyUserOfflineNotification started at " + DateTime.Now);
 
-            try
+            DateTime today = DateTime.Today;
+            var twentyOneDaysAgo = today.AddDays(-21).Date;
+            var thirtyDaysAgo = today.AddDays(-30).Date;
+
+            var practitioners = _practitionerRepo.GetAll()
+                                                .Where(x => x.IsActive == true && x.IsRegistered.HasValue && x.IsRegistered.Value)
+                                                .Include(x => x.User)
+                                                .Where(x => x.User.LastSeen.Date == twentyOneDaysAgo || x.User.LastSeen.Date == thirtyDaysAgo)
+                                                .Select(x => x.User)
+                                                .OrderByDescending(x => x.LastSeen)
+                                                .ToList();
+
+            var replacements = new List<TagsReplacements>
             {
-                var adminId = _hierarchyEngine.GetAdminUserId();
-
-                _logger.LogInformation("DailyUserOfflineNotification adminId: " + adminId);
-
-                DateTime today = DateTime.Today;
-                var twentyOneDaysAgo = today.AddDays(-21);
-
-                var healthCareWorkerRepo = _repositoryFactory.CreateGenericRepository<HealthCareWorker>(userContext: adminId);
-                var offlineHcws = healthCareWorkerRepo.GetAll()
-                   .Include(u => u.User)
-                   .Where(x => x.User.IsActive == true && x.User.PhoneNumber.Length > 0 && x.User.LastSeen.Date <= twentyOneDaysAgo.Date).OrderByDescending(x => x.User.LastSeen).ToList();//
-
-                _logger.LogInformation("DailyUserOfflineNotification offline HCWS: " + offlineHcws.Count());
-
-                foreach (var hcw in offlineHcws)
+                new TagsReplacements()
                 {
-                    TimeSpan daysToCheck = DateTime.Now - hcw.User.LastSeen;
-                    if (daysToCheck.Days >= 21)
-                    {
-                        List<TagsReplacements> replacements = new List<TagsReplacements>();
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "FirstName",
-                            ReplacementValue = hcw.User.FirstName,
-                        });
+                    FindValue = "ApplicationName",
+                    ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                }
+            };
 
-                        if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
-                        {                   
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGThreeWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, replacements, DateTime.Now.AddDays(1), false, false, null,
-                                relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.UserId.Value, "ApplicationUser") });
-                        }
-                        else if (daysToCheck.Days >= 30)
-                        {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGFourWeekNotLoggedOn, DateTime.Now.Date, hcw.User, "", null, replacements, DateTime.Now.AddDays(1), false, false, null,
-                                relatedEntities: new List<RelatedEntity> { new RelatedEntity(hcw.UserId.Value, "ApplicationUser") });
-                        }
+            foreach (var user in practitioners)
+            {
+                TimeSpan daysToCheck = DateTime.Now - user.LastSeen;
+
+                if (daysToCheck.Days >= 21)
+                {
+                    if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
+                    {
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                    }
+                    else if (daysToCheck.Days >= 30)
+                    {
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError("Issue in DailyUserOfflineNotification" + ex.Message, ex);
-            }
-            _logger.LogInformation("DailyUserOfflineNotification stopped at " + DateTime.Now);
 
-            */
+            var coaches = _coachRepo.GetAll()
+                                    .Where(x => x.IsActive == true && x.IsRegistered.HasValue && x.IsRegistered.Value)
+                                    .Include(x => x.User)
+                                    .Where(x => x.User.LastSeen.Date == twentyOneDaysAgo)
+                                    .Select(x => x.User)
+                                    .OrderByDescending(x => x.LastSeen)
+                                    .ToList();
+
+            foreach (var user in coaches)
+            {
+                TimeSpan daysToCheck = DateTime.Now - user.LastSeen;
+                if (daysToCheck.Days >= 14)
+                {
+                    if (daysToCheck.Days >= 14 && daysToCheck.Days < 21)
+                    {
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourteenDaysNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                                relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                    }
+                    else if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
+                    {
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                    }
+                }
+            }
         }
 
-        
+        /// <summary>
+        /// Remove notification for coach when all practitioners linked, are registered
+        /// </summary>
+        /// <param name="coachUserId"></param>
+        /// <returns></returns>
+        public async Task RemoveCoachNotification(Guid coachUserId)
+        {
+            var practitionerCount = _practitionerRepo.GetAll()
+                                                     .Where(x => x.IsActive == true && x.IsRegistered == false && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == coachUserId)
+                                                     .Count();
+            if (practitionerCount == 0 )
+            {
+                await _notificationService.ExpireNotificationsTypesForUser(coachUserId.ToString(), TemplateTypeConstants.CoachNewPractitionersLinked);
+            }
+
+        }
+
+
     }
 }

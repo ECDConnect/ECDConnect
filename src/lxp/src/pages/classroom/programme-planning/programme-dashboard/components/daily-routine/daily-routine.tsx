@@ -31,7 +31,11 @@ import ActivityDetails from '../../../components/activities/activity/activity-de
 import StoryActivityDetails from '../../../components/activities/storybooks/story-activity-details/story-activity-details';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../../modals/offline-sync/online-only-modal';
-import { programmeActions, programmeSelectors } from '@store/programme';
+import {
+  programmeActions,
+  programmeSelectors,
+  programmeThunkActions,
+} from '@store/programme';
 import { useAppDispatch } from '@store';
 import ActivitySearch from '../../../components/activities/activity/activity-search/activity-search';
 import { getFirstActivityByType } from '@utils/classroom/programme-planning/activity-search.utils';
@@ -574,6 +578,15 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         programmeDay: day,
       })
     );
+
+    // send data to backend
+    if (programme) {
+      appDispatch(
+        programmeThunkActions.updateProgramme({
+          programmeId: programme?.id!,
+        })
+      ).unwrap();
+    }
   };
 
   if (

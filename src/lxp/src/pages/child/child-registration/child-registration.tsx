@@ -521,15 +521,15 @@ export const ChildRegistration: React.FC = () => {
             {
               text: 'Exit',
               textColour: 'white',
-              colour: 'primary',
+              colour: 'quatenary',
               type: 'filled',
               onClick: () => exitRegistration(),
               leadingIcon: 'ArrowLeftIcon',
             },
             {
               text: 'Continue editing',
-              textColour: 'primary',
-              colour: 'primary',
+              textColour: 'quatenary',
+              colour: 'quatenary',
               type: 'outlined',
               onClick: () => setExitRegistrationPromptVisible(false),
               leadingIcon: 'PencilIcon',

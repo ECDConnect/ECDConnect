@@ -36,6 +36,8 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public int StoryBookId { get; set; }
 
         public int StoryActivityId { get; set; }
+
+        public DateTime? DateCompleted { get; set; }
     }
 
     public interface DailyProgrammeJoin<TKey>

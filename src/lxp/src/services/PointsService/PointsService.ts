@@ -57,38 +57,6 @@ class PointsService {
 
     return response.data.data.pointsSummaryForUser;
   }
-
-  async getPointsLibrary(): Promise<PointsLibrary[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<{
-      data: { pointsLibrary: PointsLibrary[] };
-      errors?: {};
-    }>(``, {
-      query: `
-        query pointsLibrary() {
-            pointsLibrary() {
-              id
-              activity
-              subActivity
-              description
-              todoDescription
-              points
-              maxPointsIndividualMonthly
-              maxPointsNonPrincipalMonthly
-              maxPointsNonPrincipalYearly
-              maxPointsPrincipalMonthly
-              maxPointsPrincipalYearly
-            }
-        }`,
-    });
-
-    if (response.status !== 200 || !!response.data.errors) {
-      throw new Error('Get Points library Failed - Server connection error');
-    }
-
-    return response.data.data.pointsLibrary;
-  }
-
   async getUserClubStanding(userId: string): Promise<UserClubStandingModel> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{

@@ -25,11 +25,9 @@ import type { EventObject } from '@toast-ui/calendar';
 import { useCalendarAddEvent } from './components/calendar-add-event/calendar-add-event';
 import { useSelector } from 'react-redux';
 import { calendarSelectors } from '@/store/calendar';
-import { CalendarEventModel } from '@ecdlink/core';
+import { CalendarEventModel, RoleSystemNameEnum } from '@ecdlink/core';
 import { useCalendarViewEvent } from './components/calendar-view-event/calendar-view-event';
-import { CalendarAddEventInfo } from './components/calendar-add-event/calendar-add-event.types';
 import ROUTES from '@/routes/routes';
-import { clubSelectors } from '@/store/club';
 import { userSelectors } from '@/store/user';
 
 export const CalendarHome: React.FC = () => {
@@ -51,15 +49,11 @@ export const CalendarHome: React.FC = () => {
   const eventById = useSelector(
     calendarSelectors.getCalendarEventById(selectedEventId)
   );
+
   const user = useSelector(userSelectors.getUser);
-  const club = useSelector(clubSelectors.getClubForPractitionerSelector);
-
-  const isClubLeader = club?.clubLeader?.userId === user?.id;
-  const isClubSupport = club?.clubSupport?.userId === user?.id;
-
-  const isClubMonthlyMeeting =
-    (eventById?.eventType as CalendarAddEventInfo['eventType']) ===
-    'Club Monthly Meeting';
+  const isCoach = user?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
 
   const calendarAddEvent = useCalendarAddEvent();
   const calendarViewEvent = useCalendarViewEvent();
@@ -132,9 +126,15 @@ export const CalendarHome: React.FC = () => {
         start: start.toISOString(),
         end: end.toISOString(),
       },
-      // Added this blocking because it's necessary to know the club member list
-      // and in this generic event creation we don't have that information
-      optionsToHide: ['Club Monthly Meeting'],
+      optionsToHide: isCoach
+        ? [
+            'Birthday',
+            'Caregiver meeting',
+            'Fundraising event',
+            'Holiday celebration',
+            'Open day',
+          ]
+        : ['Site visit', 'Preschool event'],
       onCancel: onCalendarAddEventBack,
       onUpdated: onCalendarAddEventUpdate,
     });
@@ -146,23 +146,23 @@ export const CalendarHome: React.FC = () => {
     calendarViewEvent({
       event: event.id,
       // Added this blocking because this type of event is linked to a club and cannot be changed
-      eventTypeDisabled: isClubMonthlyMeeting,
-      hideAddParticipantsButton: isClubMonthlyMeeting,
-      actionButton:
-        (isClubLeader || isClubSupport) && isClubMonthlyMeeting
-          ? {
-              name: 'Record meeting',
-              icon: 'ArrowCircleRightIcon',
-              onClick: () => {
-                history.push(
-                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
-                    ':eventId',
-                    event.id
-                  )
-                );
-              },
-            }
-          : undefined,
+      // eventTypeDisabled: isClubMonthlyMeeting,
+      // hideAddParticipantsButton: isClubMonthlyMeeting,
+      actionButton: undefined,
+      // (isClubLeader || isClubSupport) && isClubMonthlyMeeting
+      //   ? {
+      //       name: 'Record meeting',
+      //       icon: 'ArrowCircleRightIcon',
+      //       onClick: () => {
+      //         history.push(
+      //           ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
+      //             ':eventId',
+      //             event.id
+      //           )
+      //         );
+      //       },
+      //     }
+      //   : undefined,
     });
   };
 
@@ -221,60 +221,57 @@ export const CalendarHome: React.FC = () => {
             <div className={'ml-4 mr-4 flex flex-row'}>
               <div>
                 <Button
-                  shape="normal"
-                  color="primary"
+                  size="small"
                   type="filled"
+                  color="secondaryAccent2"
+                  textColor="secondary"
+                  text="Back"
+                  icon="ChevronLeftIcon"
+                  className={'mt-4 mb-4 mr-4 rounded-xl'}
                   onClick={() => {
                     advanceCurrentPeriod(-1);
                   }}
-                  className={'mt-4 mb-4 mr-4 rounded-xl'}
-                >
-                  {renderIcon('ChevronLeftIcon', 'h-5 w-5 text-white')}
-                </Button>
-              </div>
-              {/* <div>
-                <Typography
-                  type='h3'
-                  text='June'
-                  className='mt-6 mb-4'
                 />
-              </div> */}
+              </div>
               <div>
                 <Dropdown<string>
                   list={VIEW_OPTIONS}
-                  className={'mt-3 mb-4'}
-                  textColor="textDark"
+                  className={'w-26 mt-3 mb-4'}
                   selectedValue={calendarView}
                   onChange={(item: any) => {
                     changeView(item);
                   }}
+                  fillColor="quatenary"
+                  textColor="white"
+                  fillType="filled"
+                  labelColor="white"
                 />
               </div>
+              <div className="w-full"></div>
               <div>
-                <Button
-                  shape="normal"
-                  color="primary"
-                  type="filled"
+                <button
+                  className="bg-secondary mt-5 mb-4 ml-4 flex h-8 w-8 items-center justify-center rounded-full"
                   onClick={() => {
                     advanceToday();
                   }}
-                  className={'mt-4 mb-4 ml-4 rounded-xl'}
                 >
                   {renderIcon('CalendarIcon', 'h-5 w-5 text-white')}
-                </Button>
+                </button>
               </div>
               <div>
                 <Button
-                  shape="normal"
-                  color="primary"
+                  size="small"
                   type="filled"
+                  color="secondaryAccent2"
+                  textColor="secondary"
+                  text="Next"
+                  icon="ChevronRightIcon"
+                  iconPosition="end"
                   onClick={() => {
                     advanceCurrentPeriod(1);
                   }}
                   className={'mt-4 mb-4 ml-4 rounded-xl'}
-                >
-                  {renderIcon('ChevronRightIcon', 'h-5 w-5 text-white')}
-                </Button>
+                />
               </div>
               <div
                 style={{
@@ -286,7 +283,7 @@ export const CalendarHome: React.FC = () => {
               >
                 <Button
                   shape="normal"
-                  color="primary"
+                  color="quatenary"
                   type="filled"
                   onClick={() => {
                     addEvent(calendarDate, calendarDate, true);
@@ -304,7 +301,10 @@ export const CalendarHome: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className={styles.calendarWrapper}>
+
+          <div
+            style={{ overflowY: 'scroll', overflowX: 'scroll', margin: '10px' }}
+          >
             <Calendar
               ref={calendarRef}
               useFormPopup={false}
@@ -312,14 +312,9 @@ export const CalendarHome: React.FC = () => {
               usageStatistics={false}
               view={'day'}
               week={WEEK_OPTIONS}
-              template={
-                {
-                  // milestone: (event: any) => { return (<span>hello</span>)},
-                  // milestoneTitle: () => { return (<span>title</span>)}
-                }
-              }
               events={events}
               calendars={CALENDARS}
+              isReadOnly={true}
             />
           </div>
         </div>

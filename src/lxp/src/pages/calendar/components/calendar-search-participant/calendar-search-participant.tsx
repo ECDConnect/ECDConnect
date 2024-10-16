@@ -17,14 +17,17 @@ import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import * as styles from './calendar-search-participant.styles';
 import { ListDataItem } from '../calendar.types';
 import {
-  mapClubToListDataItem,
+  mapChildToListDataItem,
+  mapCurrentUserToListDataItem,
   mapPractitionerToListDataItem,
   mapUserToListDataItem,
   sortListDataItems,
 } from '../calendar.utils';
 import { CalendarAddEventParticipantFormModel } from '../calendar-add-event/calendar-add-event.types';
-import { coachSelectors } from '@/store/coach';
 import { useWindowSize } from '@reach/window-size';
+import { childrenSelectors } from '@/store/children';
+import { useTenant } from '@/hooks/useTenant';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
@@ -39,6 +42,7 @@ export const CalendarSearchParticipant: React.FC<
   const [, setAddChildButtonExpanded] = useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState<boolean>(false);
   const [busySaving, setBusySaving] = useState<boolean>(false);
+  const tenant = useTenant();
 
   const { height } = useWindowSize();
 
@@ -47,7 +51,11 @@ export const CalendarSearchParticipant: React.FC<
     (role) => role.systemName === RoleSystemNameEnum.Coach
   );
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const clubs = useSelector(coachSelectors.getCoachClubs);
+  const children = useSelector(childrenSelectors.getChildren);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const principal = useSelector(classroomsSelectors.getPrincipal);
+
+  const isPrincipal = practitioner?.isPrincipal;
 
   const handleListScroll = useCallback((scrollTop: number) => {
     if (scrollTop < 30) {
@@ -77,12 +85,12 @@ export const CalendarSearchParticipant: React.FC<
     setSearchTextActive(true);
   }, [unselectedData]);
 
-  const onPractitionerAdd = useCallback(
+  const onParticipantAdd = useCallback(
     (item: any) => {
-      const practitionerUserId = (item as UserAlertListDataItem).id;
-      if (practitionerUserId === currentUser.id) return;
+      const participantUserId = (item as UserAlertListDataItem).id;
+      if (participantUserId === currentUser.id) return;
       const unselected = [...unselectedData];
-      const index = unselected.findIndex((x) => x.id === practitionerUserId);
+      const index = unselected.findIndex((x) => x.id === participantUserId);
       if (index === -1) return;
       const practitionerItem = unselected[index];
       practitionerItem.rightIcon = 'XIcon';
@@ -91,7 +99,7 @@ export const CalendarSearchParticipant: React.FC<
       sortListDataItems(selected);
       const filtered = [...filteredData];
       const filteredIndex = filtered.findIndex(
-        (x) => x.id === practitionerUserId
+        (x) => x.id === participantUserId
       );
       if (filteredIndex !== -1) filtered.splice(filteredIndex, 1);
       setUnselectedData(unselected);
@@ -103,12 +111,12 @@ export const CalendarSearchParticipant: React.FC<
     [unselectedData, selectedData, filteredData, currentUser.id]
   );
 
-  const onPractitionerRemove = useCallback(
+  const onParticipantRemove = useCallback(
     (item: any) => {
-      const practitionerUserId = (item as UserAlertListDataItem).id;
-      if (practitionerUserId === currentUser.id) return;
+      const participantUserId = (item as UserAlertListDataItem).id;
+      if (participantUserId === currentUser.id) return;
       const selected = [...selectedData];
-      const index = selected.findIndex((x) => x.id === practitionerUserId);
+      const index = selected.findIndex((x) => x.id === participantUserId);
       if (index === -1) return;
       const practitionerItem = selected[index];
       practitionerItem.rightIcon = 'PlusCircleIcon';
@@ -129,9 +137,9 @@ export const CalendarSearchParticipant: React.FC<
       userId: x.id || '',
       firstName: x.extraData?.firstName || '',
       surname: x.extraData?.surname || '',
-      isClub: x.extraData?.isClub || false,
+      userRole: x.extraData?.userRole || '',
+      profileImage: x.extraData?.profileImage || '',
     }));
-
     onDone(participantUsers);
   }, [customList, selectedData, onDone]);
 
@@ -139,15 +147,50 @@ export const CalendarSearchParticipant: React.FC<
     if (customList?.length) return;
 
     if (
-      !!practitioners &&
-      practitioners.length > 0 &&
-      (!isCoach || (isCoach && !!clubs))
+      practitioner ||
+      (!!practitioners && practitioners.length > 0) ||
+      (!!children && children.length > 0)
     ) {
-      const list = practitioners.map((p) => mapPractitionerToListDataItem(p));
-      const clubList =
-        isCoach && !!clubs ? clubs.map((c) => mapClubToListDataItem(c)) : [];
+      const list = !!practitioners
+        ? practitioners.map((p) => mapPractitionerToListDataItem(p))
+        : [];
 
-      const unselected: ListDataItem[] = clubList;
+      const childList =
+        !isCoach && !!children
+          ? children.map((p) => mapChildToListDataItem(p))
+          : [];
+
+      const unselected: ListDataItem[] = childList;
+
+      if (practitioner) {
+        if (practitioner.coachHierarchy) {
+          let coachFirstName = '';
+          let coachSurname = '';
+          if (practitioner.coachName) {
+            const coachNameItems = practitioner?.coachName.split(' ');
+            coachFirstName = coachNameItems[0];
+            coachSurname = coachNameItems[1];
+          }
+          const coachListItem = mapUserToListDataItem(
+            coachFirstName,
+            coachSurname,
+            practitioner?.coachHierarchy || '',
+            practitioner?.coachProfilePic || '',
+            tenant.tenant?.modules?.coachRoleName || ''
+          );
+          unselected.push(coachListItem);
+        }
+        if (!isPrincipal && currentUser.id !== principal.userId) {
+          const principalListItem = mapUserToListDataItem(
+            principal.firstName,
+            principal.surname,
+            principal.userId,
+            principal.profileImageUrl,
+            'Principal'
+          );
+          unselected.push(principalListItem);
+        }
+      }
 
       unselected.push(
         ...list.filter(
@@ -164,7 +207,7 @@ export const CalendarSearchParticipant: React.FC<
       setUnselectedData(unselected);
       setFilteredData(unselected);
 
-      const selected = [mapUserToListDataItem(currentUser)];
+      const selected = [mapCurrentUserToListDataItem(currentUser)];
       selected.push(
         ...list.filter(
           (p) =>
@@ -179,7 +222,7 @@ export const CalendarSearchParticipant: React.FC<
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitioners, clubs, customList]);
+  }, [practitioners, children, customList]);
 
   return (
     <div className="overflow-auto" style={{ height }}>
@@ -198,7 +241,7 @@ export const CalendarSearchParticipant: React.FC<
           isTextSearchActive={searchTextActive}
           onBack={onSearchDone}
           onSearchButtonClick={onSearch}
-          onClickItem={onPractitionerAdd}
+          onClickItem={onParticipantAdd}
         >
           <div></div>
         </SearchHeader>
@@ -208,7 +251,7 @@ export const CalendarSearchParticipant: React.FC<
               className={styles.stackedList}
               listItems={selectedData}
               type={'UserAlertList'}
-              onClickItem={onPractitionerRemove}
+              onClickItem={onParticipantRemove}
             />
           </div>
           <div>

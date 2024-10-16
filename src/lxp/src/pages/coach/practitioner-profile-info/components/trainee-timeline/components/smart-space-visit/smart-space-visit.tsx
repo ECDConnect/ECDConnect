@@ -44,7 +44,8 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
       0,
       0
     );
-    const event: CalendarAddEventInfo = !!visitEventId
+    //const event: CalendarAddEventInfo = !!visitEventId
+    const event: any = !!visitEventId
       ? {
           id: visitEventId,
         }

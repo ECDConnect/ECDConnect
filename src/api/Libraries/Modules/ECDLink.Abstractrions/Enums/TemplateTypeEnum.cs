@@ -25,6 +25,7 @@ namespace ECDLink.Abstractrions.Enums
         PrincipalInvitation = 20,
         PreSchoolInvitation = 21,
         NewTenantSetupInfoReceived = 22,
-        WelcomeEmailToNewSuperAdmin = 23
+        WelcomeEmailToNewSuperAdmin = 23,
+        FourteenDaysNotLoggedOn = 24
     }
 }

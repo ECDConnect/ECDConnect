@@ -109,7 +109,7 @@ export const ProgressViewReport: React.FC = () => {
           text={`${format(
             new Date(report?.reportingPeriodStartDate || ''),
             'd MMM'
-          )} and ${format(
+          )} - ${format(
             new Date(report?.reportingPeriodEndDate || ''),
             'd MMM yyyy'
           )}`}

@@ -4,7 +4,7 @@ export interface CalendarEventParticipantModel {
   participantUser: {
     firstName: string;
     surname: string;
-    type?: 'infant' | 'mother' | 'clinic' | 'teamLead' | 'healthCareWorker';
+    type?: 'practitioner' | 'principal' | 'coach' | 'child';
   };
 }
 
@@ -21,9 +21,11 @@ export interface CalendarEventModel {
   allDay: boolean;
   description: string;
   end: string;
+  endTime: string;
   eventType: string;
   name: string;
   start: string;
+  startTime: string;
   participants: CalendarEventParticipantModel[];
   action: CalendarEventActionModel | null;
   userId: string;
@@ -51,9 +53,11 @@ export interface CalendarEventModelInputModel {
   allDay: boolean;
   description: string;
   end: string;
+  endTime: string;
   eventType: string;
   name: string;
   start: string;
+  startTime: string;
   participants: CalendarEventParticipantModelInputModel[];
   action: string | null;
   userId?: string;

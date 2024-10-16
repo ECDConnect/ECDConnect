@@ -15,6 +15,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public Guid? PrincipalHierarchy { get; set; }
         public bool IsActive { get; set; }
         public Guid? CoachHierarchy { get; set; }
+        public string CoachName { get; set; }
+        public string CoachProfilePic { get; set; }
         public bool? IsRegistered { get; set; }
         public bool? ShareInfo { get; set; }
         public string SigningSignature { get; set; }
@@ -50,5 +52,4 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public DateTime? CommunitySectionViewDate { get; set; }
         public bool ProgressWalkthroughComplete { get; set; }
     }
-
 }

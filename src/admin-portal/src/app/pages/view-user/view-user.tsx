@@ -21,6 +21,7 @@ import {
   GetUserById,
   GetPractitionerByUserId,
   GetPractitionerStats,
+  GetCoachStats,
 } from '@ecdlink/graphql';
 import { subDays } from 'date-fns';
 import {
@@ -34,14 +35,13 @@ import { ReactivateUser } from './components/reactivate-user/reactivate-user';
 import { PersonalInfo } from './components/personal-info/personal-info';
 import ROUTES from '../../routes/app.routes-constants';
 import { useUserRole } from '../../hooks/useUserRole';
-import { TeamLeadClinics } from './components/team-lead-clinics/team-lead-clinics';
-import { RoleSystemNameEnum } from '@ecdlink/core';
 import { useTenant } from '../../hooks/useTenant';
 import { PractitionerSummary } from './components/practitioner-summary/practitioner-summary';
 import { PractitionerIssuesAndHighlights } from './components/practitioner-issues/practitioner-issues-and-highlights';
 import { CoachSummary } from './components/coach-summary/coach-summary';
 import { CoachIssuesAndHighlights } from './components/coach-issues-and-highlights/coach-issues-and-highlights';
 import { pluralize } from '../pages.utils';
+import { ResetUserPassword } from './components/reset-password/reset-password';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -78,7 +78,7 @@ export function ViewUser(props: any) {
   const isPractitioner =
     props.location.state?.component ===
     UsersRouteRedirectTypeEnum?.practitioner;
-  const practitionerUserId = props?.location?.state?.userId;
+  const selectedUserId = props?.location?.state?.userId;
   const isPrincipal =
     props.location.state?.component === UsersRouteRedirectTypeEnum?.principal;
   const isCoach =
@@ -90,11 +90,7 @@ export function ViewUser(props: any) {
   const [successNotification] = useState<boolean>(false);
   const tenant = useTenant();
 
-  const {
-    isTeamLead: isTeamLeadRole,
-    isAdministrator,
-    isSuperAdmin,
-  } = useUserRole();
+  const { isAdministrator, isSuperAdmin } = useUserRole();
 
   const [startDate, setStartDate] = useState(startDate1);
   const [endDate, setEndDate] = useState(endDate1);
@@ -105,7 +101,7 @@ export function ViewUser(props: any) {
     setEndDate(end);
   };
 
-  let userId = localStorage.getItem('selectedUser');
+  // let userId_ = localStorage.getItem('selectedUser');
 
   const paths: BreadcrumbProps['paths'] = [
     { name: 'Users', url: ROUTES.USERS.ALL_ROLES },
@@ -131,14 +127,10 @@ export function ViewUser(props: any) {
 
   const [
     getPractitionerByUserId,
-    {
-      data: practitionerData,
-      loading: loadingPractitioner,
-      refetch: refetchGetPractitionerByUserId,
-    },
+    { data: practitionerData, refetch: refetchGetPractitionerByUserId },
   ] = useLazyQuery(GetPractitionerByUserId, {
     variables: {
-      userId: practitionerUserId,
+      userId: selectedUserId,
     },
     fetchPolicy: 'cache-and-network',
   });
@@ -153,7 +145,19 @@ export function ViewUser(props: any) {
     GetPractitionerStats,
     {
       variables: {
-        userId: practitionerUserId,
+        userId: selectedUserId,
+        startDate: startDate?.[0]?.toISOString() ?? startDate?.toISOString(),
+        endDate: endDate?.[1]?.toISOString() ?? endDate?.toISOString(),
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+
+  const [getCoachStats, { data: coachStatsData }] = useLazyQuery(
+    GetCoachStats,
+    {
+      variables: {
+        userId: selectedUserId,
         startDate: startDate?.[0]?.toISOString() ?? startDate?.toISOString(),
         endDate: endDate?.[1]?.toISOString() ?? endDate?.toISOString(),
       },
@@ -165,7 +169,16 @@ export function ViewUser(props: any) {
     if (isPractitioner || isPrincipal) {
       getPractitionerStats();
     }
-  }, [getPractitionerStats, isPractitioner, isPrincipal]);
+    if (isCoach) {
+      getCoachStats();
+    }
+  }, [
+    getCoachStats,
+    getPractitionerStats,
+    isCoach,
+    isPractitioner,
+    isPrincipal,
+  ]);
 
   const {
     data: userData,
@@ -173,16 +186,12 @@ export function ViewUser(props: any) {
     loading: loadingUser,
   } = useQuery(GetUserById, {
     variables: {
-      userId: props.location.state.userId ?? userId,
+      userId: props.location.state.userId ?? selectedUserId,
     },
     fetchPolicy: 'cache-and-network',
   });
 
   const isLoading = loadingUser;
-
-  let isCHWRole = userData?.userById?.roles?.some(
-    (role: any) => role.systemName === RoleSystemNameEnum.CHW
-  );
 
   const getRoleStatusChip = (status: string) => {
     switch (status) {
@@ -379,66 +388,74 @@ export function ViewUser(props: any) {
         refetchGetPractitionerByUserId={refetchGetPractitionerByUserId}
       />
 
-      {(props.location.state?.component ===
-        UsersRouteRedirectTypeEnum?.practitioner ||
-        props.location.state?.component ===
-          UsersRouteRedirectTypeEnum?.coach) &&
-        isRegistered && (
-          <DatePicker
-            selectsRange
-            selected={startDate}
-            onChange={onChange}
-            startDate={startDate}
-            endDate={endDate}
-            shouldCloseOnSelect
-            colour="secondary"
-            textColour="white"
-            hideCalendarIcon
-            chevronIconColour="white"
-            showChevronIcon
-            isFullWidth={false}
-            className="w-64 self-end rounded-xl"
-            dateFormat={'d MMM yyyy'}
-          />
-        )}
+      {(isPractitioner || isPrincipal || isCoach) && isRegistered && (
+        <DatePicker
+          selectsRange
+          selected={startDate}
+          onChange={onChange}
+          startDate={startDate}
+          endDate={endDate}
+          shouldCloseOnSelect
+          colour="secondary"
+          textColour="white"
+          hideCalendarIcon
+          chevronIconColour="white"
+          showChevronIcon
+          isFullWidth={false}
+          className="w-64 self-end rounded-xl"
+          dateFormat={'d MMM yyyy'}
+        />
+      )}
 
       {(isPractitioner || isPrincipal) && isRegistered && (
         <PractitionerSummary
           summaryData={practitionerStatsData?.practitionerStats}
+          isPractitioner={isPractitioner}
         />
       )}
 
       {isCoach && isRegistered && (
-        <CoachSummary summaryData={practitionerStatsData?.practitionerStats} />
+        <CoachSummary summaryData={coachStatsData?.coachStats} />
       )}
       {(isPractitioner || isPrincipal) && isRegistered && (
         <PractitionerIssuesAndHighlights
           summaryData={practitionerStatsData?.practitionerStats}
+          isPractitioner={isPractitioner}
         />
       )}
       {isCoach && isRegistered && (
-        <CoachIssuesAndHighlights
-          summaryData={practitionerStatsData?.practitionerStats}
-        />
+        <CoachIssuesAndHighlights summaryData={coachStatsData?.coachStats} />
       )}
 
       <div className="flex w-full flex-col justify-between gap-4 lg:flex-row">
         {userData?.userById?.isActive && (
           <div className="flex flex-col gap-2 lg:flex-row">
-            {!isRegistered && (
+            {!isRegistered && !isFromAdministratorTable && (
               <SendInvite
                 userData={userData?.userById}
                 refetchUserData={refetchUserData}
                 isFromAdministratorTable={isFromAdministratorTable}
               />
             )}
-            {/* {isRegistered && isAdministrator && (
+
+            {isFromAdministratorTable &&
+              !userData?.userById?.isAdminRegistered && (
+                <SendInvite
+                  userData={userData?.userById}
+                  refetchUserData={refetchUserData}
+                  isFromAdministratorTable={isFromAdministratorTable}
+                />
+              )}
+
+            {isFromAdministratorTable &&
+              userData?.userById?.isAdminRegistered && (
                 <ResetUserPassword userData={userData?.userById} />
-              )} */}
+              )}
+
             <DeactivateUser
               userData={userData?.userById}
               refetchUserData={refetchUserData}
-              isAdministrator={isAdministrator || isSuperAdmin}
+              isSuperAdmin={isSuperAdmin}
             />
           </div>
         )}
