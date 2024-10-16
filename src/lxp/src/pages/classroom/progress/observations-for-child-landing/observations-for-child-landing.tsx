@@ -63,7 +63,7 @@ export const ObservationsForChildLanding: React.FC = () => {
               text={`${format(
                 new Date(currentObservationPeriod?.startDate || ''),
                 'd MMM'
-              )} and ${format(
+              )} - ${format(
                 new Date(currentObservationPeriod?.endDate || ''),
                 'd MMM yyyy'
               )}`}
