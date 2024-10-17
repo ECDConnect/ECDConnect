@@ -583,7 +583,7 @@ export const ChildProfile: React.FC = () => {
     }
   }, [isFromInfoPage]);
 
-  const isComingSoon = true;
+  const isComingSoon = false;
 
   const options = useMemo((): ListItemProps[] => {
     const attendancePercentage = attendanceReport?.attendancePercentage;
@@ -625,7 +625,7 @@ export const ChildProfile: React.FC = () => {
       },
       {
         key: 'progress',
-        title: `Progress reports${isComingSoon && ' - Coming soon'}`,
+        title: `Progress reports${isComingSoon ? ' - Coming soon' : ''}`,
         buttonType: 'filled',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',

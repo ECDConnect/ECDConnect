@@ -803,7 +803,7 @@ export const CoachPractitionerJourney = () => {
   }
 
   //add coming soon
-  const isComingSoon = true;
+  const isComingSoon = false;
 
   if (isComingSoon) {
     return (
