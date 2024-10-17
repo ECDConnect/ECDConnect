@@ -625,7 +625,7 @@ export const ChildProfile: React.FC = () => {
       },
       {
         key: 'progress',
-        title: `Progress reports${isComingSoon && ' - Coming soon'}`,
+        title: `Progress reports${isComingSoon ? ' - Coming soon' : ''}`,
         buttonType: 'filled',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
