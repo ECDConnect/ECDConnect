@@ -75,6 +75,7 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
             borderColor: category.color,
             backgroundColor: getCategoryBg(category.name),
           }}
+          key={category.id}
         >
           <div className="flex flex-row">
             <img src={category.imageUrl} className="mr-4 h-14 w-14" />
@@ -94,10 +95,11 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
           )}
           {category.skills
             .filter((x) => x.isPositive)
-            .map((skill) => (
+            .map((skill, index) => (
               <p
                 className="font-small text-textDark"
                 style={{ fontSize: '12px' }}
+                key={index}
               >
                 <span>&#8226;</span> {skill.skillDescription}
               </p>
