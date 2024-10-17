@@ -194,9 +194,9 @@ hosted on Azure infrastructure.
 ## Migration Scripts that ran after Meraki handover to Swipe SQLUpgradeScripts
 ### The last script Amanda ran on prod was on the 26/09/2024
 
-| Environment | Scripts |
-|-------------|---------|
-| **DEV**     | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql |
-| **QA**      | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql |
-| **STAGING** |         |
-| **PRODUCTION** |      |
+| Environment   | Scripts                                                                                                           | Executed |
+|---------------|-------------------------------------------------------------------------------------------------------------------|----------|
+| **DEV**       | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |
+| **QA**        | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |
+| **STAGING**   | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | No       |
+| **PRODUCTION**| - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | No       |
