@@ -60,18 +60,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return pointsService.GetSharedData(userId, isMonthly);
         }
 
-
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<PointsLibrary> GetPointsLibrary(
-            [Service] IPointsEngineService pointsService)
-        {
-            // TODO: REMOVE
-            //var pointsLibrary = pointsService.GetPointsLibraryForTenant();
-            //return pointsLibrary;
-            return null;
-        }
-        
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public UserClubStandingModel GetUserClubStanding(
             [Service] IPointsEngineService pointsService,

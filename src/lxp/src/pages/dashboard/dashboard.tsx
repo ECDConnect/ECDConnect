@@ -451,13 +451,6 @@ export const Dashboard: React.FC = () => {
    */
   useEffect(() => {
     if (isOnline && !!userData) {
-      (async () =>
-        await appDispatch(
-          pointsThunkActions.getPointsLibrary({
-            userId: userData?.id!,
-          })
-        ).unwrap())();
-
       if (
         userData.roles?.some(
           (role) =>
@@ -1015,7 +1008,9 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToCalendar = () => {
-    if (
+    if (isCoach) {
+      history.push(ROUTES.CALENDAR);
+    } else if (
       (((classroom &&
         classroom.id &&
         classroomGroups &&
@@ -1271,17 +1266,17 @@ export const Dashboard: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
-  const practitionerWithAttendancePermissionPointsToDo =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo < 4
-      : getCurrentPointsToDo < 3;
+  // const practitionerWithAttendancePermissionPointsToDo =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo < 4
+  //     : getCurrentPointsToDo < 3;
 
-  const practitionerWithAttendancePermissionPoints =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo === 4
-      : getCurrentPointsToDo === 3;
+  // const practitionerWithAttendancePermissionPoints =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo === 4
+  //     : getCurrentPointsToDo === 3;
 
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
@@ -1375,11 +1370,9 @@ export const Dashboard: React.FC = () => {
           {totalYearPoints &&
           totalYearPoints >= 10 &&
           !!pointsScoreProps &&
-          !isCoach &&
-          practitionerWithAttendancePermissionPoints &&
           !isCoach ? (
             <ScoreCard
-              className="mt-5 mb-1 h-20"
+              className="mt-1 mb-1 h-20"
               progressBarClassName="flex pt-2"
               mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}
@@ -1394,9 +1387,7 @@ export const Dashboard: React.FC = () => {
               textPosition={pointsScoreProps?.textPosition!}
             />
           ) : null}
-          {(practitionerWithAttendancePermissionPointsToDo ||
-            !totalYearPoints ||
-            (totalYearPoints && totalYearPoints < 10)) &&
+          {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
           !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
@@ -1420,44 +1411,6 @@ export const Dashboard: React.FC = () => {
               textPosition="left"
             />
           ) : null}
-          {/* {isPractitioner && !!club && !!club?.league?.id && isOnline && (
-          <ScoreCard
-            className="h-20"
-            mainText={clubCard.mainText}
-            hint={clubCard.hint}
-            hintClassName={clubCard.hintClassName}
-            textPosition="left"
-            currentPoints={clubCard.currentPoints}
-            maxPoints={clubCard.maxPoints}
-            onClick={clubCard.onClick}
-            barBgColour={clubCard.barBgColour}
-            barColour={clubCard.barColour}
-            bgColour={clubCard.bgColour}
-            image={clubCard.image}
-            textColour={clubCard.textColour}
-          />
-        )} */}
-          {/* {isPractitioner &&
-          (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
-            <div className="mt-1">
-              <TitleListItem
-                item={{
-                  title: !!club ? club?.name : 'Community',
-                  titleIcon: 'UserGroupIcon',
-                  titleIconClassName: styles.communityIcon,
-                  classNames: 'bg-uiBg',
-                  onActionClick: () =>
-                    history.push(
-                      isPractitionerAcceptAgreementNotification
-                        ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
-                        : ROUTES.PRACTITIONER.COMMUNITY[
-                            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
-                          ]
-                    ),
-                }}
-              />
-            </div>
-          )} */}
         </div>
       </BannerWrapper>
     </>

@@ -35,7 +35,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
-          //IntegrationHelperManager integrationHelperManager,
           Guid? id,
           Practitioner input)
         {
@@ -49,7 +48,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (practitioner != null)
                 {
 
-                    if (input.CoachHierarchy != null) practitioner.CoachHierarchy = input.CoachHierarchy;
+                    if (input.CoachHierarchy != null)
+                    {
+                        practitioner.CoachHierarchy = input.CoachHierarchy;
+                        practitioner.CoachLinkDate = DateTime.Now.Date;
+                    }
                     practitioner.IsActive = input.IsActive;
                     if (input.AttendanceRegisterLink != null) practitioner.AttendanceRegisterLink = input.AttendanceRegisterLink;
                     if (input.MaxChildren != null) practitioner.MaxChildren = input.MaxChildren;
@@ -108,6 +111,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             foreach (var item in linkedPractitioners)
                             {
                                 item.CoachHierarchy = practitioner.CoachHierarchy;
+                                item.CoachLinkDate = DateTime.Now.Date;
                                 dbRepo.Update(item);
                             }
                         }
@@ -145,8 +149,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return bReturn;
         }
 
-        public bool UpdatePractitionerRegistered([Service] IHttpContextAccessor contextAccessor,
+        public bool UpdatePractitionerRegistered(
+            [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            [Service] INotificationTasksService notificationTasksService,
             string practitionerId, bool status = false)
 
         {
@@ -158,6 +164,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     practitioner.IsRegistered = status;
                     practitionerRepo.Update(practitioner);
+                    if (practitioner.CoachHierarchy.HasValue && practitioner.IsRegistered == true)
+                    {
+                        notificationTasksService.RemoveCoachNotification(practitioner.CoachHierarchy.Value);
+                    }
                     return true;
                 }
             }

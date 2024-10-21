@@ -268,6 +268,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         practi.PrincipalHierarchy = newPrincipal.UserId;
                         practi.CoachHierarchy = newPrincipal.CoachHierarchy;
                         practi.ShareInfo = true;
+                        practi.CoachLinkDate = DateTime.Now.Date;
                         practitionerRepo.Update(practi);
                     }
                 }
@@ -392,6 +393,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 practitioner.PrincipalHierarchy = principal.UserId;
                 practitioner.CoachHierarchy = principal.CoachHierarchy;
+                practitioner.CoachLinkDate = DateTime.Now;
                 practitioner.DateToBeRemoved = null;
                 practitioner.DateAccepted = DateTime.Now;
                 practitioner.IsLeaving = false;

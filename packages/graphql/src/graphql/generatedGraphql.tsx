@@ -426,6 +426,7 @@ export type ApplicationUser = {
   idNumber?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
   isActive: Scalars['Boolean'];
+  isAdminRegistered: Scalars['Boolean'];
   isImported?: Maybe<Scalars['Boolean']>;
   isSouthAfricanCitizen: Scalars['Boolean'];
   language?: Maybe<Language>;
@@ -489,6 +490,7 @@ export type ApplicationUserFilterInput = {
   idNumber?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isAdminRegistered?: InputMaybe<BooleanOperationFilterInput>;
   isImported?: InputMaybe<BooleanOperationFilterInput>;
   isSouthAfricanCitizen?: InputMaybe<BooleanOperationFilterInput>;
   language?: InputMaybe<LanguageFilterInput>;
@@ -551,6 +553,7 @@ export type ApplicationUserInput = {
   idNumber?: InputMaybe<Scalars['String']>;
   insertedDate?: InputMaybe<Scalars['DateTime']>;
   isActive: Scalars['Boolean'];
+  isAdminRegistered: Scalars['Boolean'];
   isImported?: InputMaybe<Scalars['Boolean']>;
   isSouthAfricanCitizen: Scalars['Boolean'];
   language?: InputMaybe<LanguageInput>;
@@ -611,6 +614,7 @@ export type ApplicationUserSortInput = {
   idNumber?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isAdminRegistered?: InputMaybe<SortEnumType>;
   isImported?: InputMaybe<SortEnumType>;
   isSouthAfricanCitizen?: InputMaybe<SortEnumType>;
   language?: InputMaybe<LanguageSortInput>;
@@ -4382,6 +4386,7 @@ export type CreateContentDefinitionModelInput = {
 
 export type DailyProgramme = {
   __typename?: 'DailyProgramme';
+  dateCompleted?: Maybe<Scalars['DateTime']>;
   day: Scalars['Int'];
   dayDate: Scalars['DateTime'];
   id: Scalars['UUID'];
@@ -4400,6 +4405,7 @@ export type DailyProgramme = {
 
 export type DailyProgrammeFilterInput = {
   and?: InputMaybe<Array<DailyProgrammeFilterInput>>;
+  dateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   day?: InputMaybe<ComparableInt32OperationFilterInput>;
   dayDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -4418,6 +4424,7 @@ export type DailyProgrammeFilterInput = {
 };
 
 export type DailyProgrammeInput = {
+  DateCompleted?: InputMaybe<Scalars['DateTime']>;
   Day: Scalars['Int'];
   DayDate: Scalars['DateTime'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -4445,6 +4452,7 @@ export type DailyProgrammeModelInput = {
 };
 
 export type DailyProgrammeSortInput = {
+  dateCompleted?: InputMaybe<SortEnumType>;
   day?: InputMaybe<SortEnumType>;
   dayDate?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -12749,6 +12757,7 @@ export type Practitioner = {
   clickedCommunityTab?: Maybe<Scalars['Boolean']>;
   coach?: Maybe<Coach>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
+  coachLinkDate?: Maybe<Scalars['DateTime']>;
   communitySectionViewDate?: Maybe<Scalars['DateTime']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
   dateAccepted?: Maybe<Scalars['DateTime']>;
@@ -12868,6 +12877,7 @@ export type PractitionerFilterInput = {
   clickedCommunityTab?: InputMaybe<BooleanOperationFilterInput>;
   coach?: InputMaybe<CoachFilterInput>;
   coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  coachLinkDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   communitySectionViewDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
   dateAccepted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -12921,6 +12931,7 @@ export type PractitionerInput = {
   ClickedCommunityTab?: InputMaybe<Scalars['Boolean']>;
   Coach?: InputMaybe<CoachInput>;
   CoachHierarchy?: InputMaybe<Scalars['UUID']>;
+  CoachLinkDate?: InputMaybe<Scalars['DateTime']>;
   CommunitySectionViewDate?: InputMaybe<Scalars['DateTime']>;
   ConsentForPhoto?: InputMaybe<Scalars['Boolean']>;
   DateAccepted?: InputMaybe<Scalars['DateTime']>;
@@ -12984,6 +12995,8 @@ export type PractitionerModel = {
   clubId?: Maybe<Scalars['UUID']>;
   clubName?: Maybe<Scalars['String']>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
+  coachName?: Maybe<Scalars['String']>;
+  coachProfilePic?: Maybe<Scalars['String']>;
   communitySectionViewDate?: Maybe<Scalars['DateTime']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
   dateAccepted?: Maybe<Scalars['DateTime']>;
@@ -13132,6 +13145,7 @@ export type PractitionerSortInput = {
   clickedCommunityTab?: InputMaybe<SortEnumType>;
   coach?: InputMaybe<CoachSortInput>;
   coachHierarchy?: InputMaybe<SortEnumType>;
+  coachLinkDate?: InputMaybe<SortEnumType>;
   communitySectionViewDate?: InputMaybe<SortEnumType>;
   consentForPhoto?: InputMaybe<SortEnumType>;
   dateAccepted?: InputMaybe<SortEnumType>;
@@ -14287,6 +14301,7 @@ export type Query = {
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipals?: Maybe<Array<Maybe<Principal>>>;
+  allResourceLikesForUser?: Maybe<Array<Maybe<UserResourcesModel>>>;
   allTeamLeads?: Maybe<Array<Maybe<PortalUsersTlModel>>>;
   allTemplates?: Maybe<Array<Maybe<MessageTemplate>>>;
   allWards?: Maybe<Array<Maybe<WardModel>>>;
@@ -14530,7 +14545,6 @@ export type Query = {
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
   pointActivities?: Maybe<Array<Maybe<PointsActivity>>>;
   pointsForHealthCareWorker?: Maybe<Array<Maybe<PointsActivityModel>>>;
-  pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
   pointsTodoItems?: Maybe<PointsToDoItemModel>;
   portalHealthCareWorkersById?: Maybe<PortalUsersHcwModel>;
@@ -14567,6 +14581,7 @@ export type Query = {
   removeHolidays?: Maybe<Array<Scalars['DateTime']>>;
   removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
   reportDetailsForPractitioner?: Maybe<PractitionerReportDetails>;
+  resourceByLanguage?: Maybe<ResourceModel>;
   resourceLikedStatusForUser?: Maybe<UserResourceLikes>;
   resources: Array<Maybe<ClassroomBusinessResource>>;
   roleForUser?: Maybe<Scalars['String']>;
@@ -16555,6 +16570,10 @@ export type QueryAllPractitionersForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllResourceLikesForUserArgs = {
+  userId: Scalars['UUID'];
+};
+
 export type QueryAllTeamLeadsArgs = {
   clinicSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   connectUsageSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -16725,7 +16744,7 @@ export type QueryCoachNameByUserIdArgs = {
 };
 
 export type QueryCoachStatsArgs = {
-  endDate: Scalars['DateTime'];
+  endDate?: InputMaybe<Scalars['DateTime']>;
   startDate: Scalars['DateTime'];
   userId: Scalars['UUID'];
 };
@@ -17704,7 +17723,7 @@ export type QueryPractitionerProgressReportSummaryArgs = {
 };
 
 export type QueryPractitionerStatsArgs = {
-  endDate: Scalars['DateTime'];
+  endDate?: InputMaybe<Scalars['DateTime']>;
   startDate: Scalars['DateTime'];
   userId: Scalars['UUID'];
 };
@@ -17781,6 +17800,12 @@ export type QueryRemoveWeekendDaysArgs = {
 
 export type QueryReportDetailsForPractitionerArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryResourceByLanguageArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  localeId: Scalars['UUID'];
 };
 
 export type QueryResourceLikedStatusForUserArgs = {
@@ -18187,6 +18212,19 @@ export type ResourceLinkInput = {
   description?: InputMaybe<Scalars['String']>;
   link?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+export type ResourceModel = {
+  __typename?: 'ResourceModel';
+  availableLanguages?: Maybe<Array<Scalars['UUID']>>;
+  dataFree?: Maybe<Scalars['String']>;
+  link?: Maybe<Scalars['String']>;
+  longDescription?: Maybe<Scalars['String']>;
+  numberLikes?: Maybe<Scalars['String']>;
+  resourceType?: Maybe<Scalars['String']>;
+  sectionType?: Maybe<Scalars['String']>;
+  shortDescription?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
 };
 
 export type SsChecklistVisitModelInput = {
@@ -20441,6 +20479,12 @@ export type UserResourceLikesSortInput = {
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   userId?: InputMaybe<SortEnumType>;
+};
+
+export type UserResourcesModel = {
+  __typename?: 'UserResourcesModel';
+  contentId: Scalars['Int'];
+  isActive: Scalars['Boolean'];
 };
 
 export type UserTrainingCourse = {

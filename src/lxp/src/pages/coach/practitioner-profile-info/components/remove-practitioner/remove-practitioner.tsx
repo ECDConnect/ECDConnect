@@ -72,6 +72,21 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     (item) => item.userId === practitionerUserId
   );
 
+  const tempReasonsForLeaving = [...reasonsForLeaving!];
+
+  const itemToMove = tempReasonsForLeaving?.find(
+    (item) => item?.description === 'Other'
+  );
+
+  if (itemToMove) {
+    // Remove the item from its current position
+    const index = tempReasonsForLeaving?.indexOf(itemToMove);
+    tempReasonsForLeaving?.splice(index!, 1);
+
+    // Push it to the last position
+    tempReasonsForLeaving?.push(itemToMove);
+  }
+
   const classroomGroups =
     useSelector(
       classroomsForCoachSelectors.getClassroomGroupsForPractitioner(
@@ -248,8 +263,8 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             fullWidth
             fillType="clear"
             list={
-              (reasonsForLeaving &&
-                reasonsForLeaving.map((x: ReasonForLeavingDto) => {
+              (tempReasonsForLeaving &&
+                tempReasonsForLeaving?.map((x: ReasonForLeavingDto) => {
                   return { label: x.description, value: x.id || '' };
                 })) ||
               []

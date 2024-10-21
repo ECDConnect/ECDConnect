@@ -1,3 +1,4 @@
+using Audit.Core;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -214,6 +215,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var userResourceLikesRepo = repoFactory.CreateRepository<UserResourceLikes>();
             return userResourceLikesRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).Select(x => new UserResourcesModel() { IsActive = x.IsActive, ContentId = x.ContentId}).ToList();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public ResourceModel GetResourceByLanguage(
+           [Service] ContentManagementRepository contentRepo,
+           int contentId,
+           int contentTypeId,
+           Guid localeId)
+        {
+            var result = new ResourceModel();
+            var languageIds = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            if (!languageIds.Contains(localeId))
+            {
+                return null;
+            }
+
+            var resource = contentRepo.GetById(contentId, localeId);
+
+            var item = (IDictionary<string, object>)resource;
+            item.TryGetValue("resourceType", out var resourceType);
+            item.TryGetValue("title", out var title);
+            item.TryGetValue("shortDescription", out var shortDescription);
+            item.TryGetValue("link", out var link);
+            item.TryGetValue("longDescription", out var longDescription);
+            item.TryGetValue("dataFree", out var dataFree);
+            item.TryGetValue("sectionType", out var sectionType);
+            item.TryGetValue("numberLikes", out var numberLikes);
+
+            result.ResourceType = resourceType.ToString();
+            result.Title = title.ToString();
+            result.ShortDescription = shortDescription.ToString();
+            result.Link = link.ToString();
+            result.LongDescription = longDescription.ToString();
+            result.DataFree = dataFree.ToString();
+            result.SectionType = sectionType.ToString();
+            result.NumberLikes = numberLikes == null ? "0" : numberLikes.ToString();
+            result.AvailableLanguages = languageIds;
+
+            return result;
+
         }
     }
 }

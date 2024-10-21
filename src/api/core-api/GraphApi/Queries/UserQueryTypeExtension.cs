@@ -278,14 +278,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
             }
-
-            //Child
-            //if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
-            //{
-            //    var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
-            //    user.childObjectData = childRepo.GetByUserId(user.Id);
-            //}
-
+            if (roles.Any(x => x.Name.Contains(Roles.ADMINISTRATOR)))
+            {
+                user.isAdminRegistered = user.PasswordHash != null;
+            }
             return user;
         }
 

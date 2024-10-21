@@ -70,7 +70,7 @@ export const ProgressViewReportsSummarySelectClassroomGroupAndAgeGroup: React.FC
                 text={`${format(
                   new Date(currentReportingPeriod?.startDate || ''),
                   'd MMM'
-                )} and ${format(
+                )} - ${format(
                   new Date(currentReportingPeriod?.endDate || ''),
                   'd MMM yyyy'
                 )}`}

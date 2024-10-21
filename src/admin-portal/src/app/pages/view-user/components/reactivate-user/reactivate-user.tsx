@@ -37,7 +37,7 @@ export const ReactivateUser: React.FC<ReactivateUserProps> = ({
       .then(() => {
         refetchUserData && refetchUserData();
         setNotification({
-          title: 'Successfully to reactivate User!',
+          title: userData.firstName + ' has been reactivated!',
           variant: NOTIFICATION.SUCCESS,
         });
       })
@@ -47,7 +47,13 @@ export const ReactivateUser: React.FC<ReactivateUserProps> = ({
           variant: NOTIFICATION.ERROR,
         });
       });
-  }, [reactivateMultipleUser, refetchUserData, setNotification, userData?.id]);
+  }, [
+    reactivateMultipleUser,
+    refetchUserData,
+    setNotification,
+    userData.firstName,
+    userData?.id,
+  ]);
 
   const reactivaterUser = async () => {
     dialog({

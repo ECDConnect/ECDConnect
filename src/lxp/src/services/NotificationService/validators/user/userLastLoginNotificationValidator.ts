@@ -1,5 +1,5 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { addDays, differenceInCalendarDays, getWeek, getYear } from 'date-fns';
+import { differenceInCalendarDays, getWeek, getYear } from 'date-fns';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
@@ -7,7 +7,6 @@ import {
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
-import { useTenant } from '@/hooks/useTenant';
 
 export class UserLastLoginNotificationValidator
   implements NotificationValidator
@@ -16,12 +15,21 @@ export class UserLastLoginNotificationValidator
   lastCheckTimestamp: number;
   store: EnhancedStore<RootState, any>;
   currentDate: Date;
+  applicationName: String;
+  isCoach: boolean;
 
-  constructor(store: EnhancedStore<RootState, any>, currentDate: Date) {
+  constructor(
+    store: EnhancedStore<RootState, any>,
+    currentDate: Date,
+    applicationName: String,
+    isCoach: boolean
+  ) {
     this.store = store;
     this.interval = NotificationIntervals.oneMinute;
     this.lastCheckTimestamp = 0;
     this.currentDate = currentDate;
+    this.applicationName = applicationName;
+    this.isCoach = isCoach;
   }
 
   getNotifications = (): Message[] => {
@@ -32,15 +40,13 @@ export class UserLastLoginNotificationValidator
     const lastSyncDate = new Date(
       settingsState.lastDataSync || this.currentDate
     );
-
     const daysPassed = Math.abs(
       differenceInCalendarDays(lastSyncDate, this.currentDate)
     );
 
     if (daysPassed < 7) return [];
 
-    const tenant = useTenant();
-    let defaultNotification: Message = {
+    const defaultNotification: Message = {
       reference: `${getWeek(this.currentDate)}-${getYear(
         this.currentDate
       )}-sync`,
@@ -59,12 +65,13 @@ export class UserLastLoginNotificationValidator
       viewOnDashboard: true,
       area: 'data-sync',
       icon: 'SwitchVerticalIcon',
-      color: 'primary',
+      color: 'alertMain',
       actionText: 'Sync my app',
       viewType: 'Both',
     };
 
-    if (daysPassed >= 21)
+    // Principal + Practitioner
+    if (daysPassed >= 21 && !this.isCoach) {
       return [
         {
           ...defaultNotification,
@@ -73,36 +80,35 @@ export class UserLastLoginNotificationValidator
           )}-sync-${
             daysPassed > 21 && daysPassed % 2 > 0 ? daysPassed.toString() : '21'
           }`,
-          title:
-            'Go online again to keep using ' +
-            tenant.tenant?.applicationName +
-            '!',
+          title: 'Go online again to keep using ' + this.applicationName + '!',
           message: `You haven't been online for more than 3 weeks. Turn on your wifi or data in the next week or you might lose some of your information!`,
         },
       ];
-
-    if (daysPassed >= 14)
+    }
+    // Principal + Practitioner + Coach
+    if (daysPassed >= 14) {
       return [
         {
           ...defaultNotification,
           reference: `${getWeek(this.currentDate)}-${getYear(
             this.currentDate
           )}-sync-14`,
-          title:
-            'Go online again to keep using ' +
-            tenant.tenant?.applicationName +
-            '!',
+          title: 'Go online again to keep using ' + this.applicationName + '!',
           message: `You haven't been online for more than 2 weeks. Make sure you turn on your wifi or data soon.`,
         },
       ];
+    }
 
-    if (daysPassed >= 7) {
+    // Coach only
+    if (daysPassed >= 7 && this.isCoach) {
       return [
         {
           ...defaultNotification,
           reference: `${getWeek(this.currentDate)}-${getYear(
             this.currentDate
           )}-sync-7`,
+          title: `You haven't been online in over a week!`,
+          message: `Go online to see the most up to date information about your practitioners.`,
         },
       ];
     }

@@ -348,6 +348,8 @@ class PractitionerService {
             isTrainee
             principalHierarchy
             coachHierarchy
+            coachName
+            coachProfilePic
             attendanceRegisterLink
             maxChildren
             consentForPhoto
@@ -551,6 +553,7 @@ class PractitionerService {
             }
             }
             isRegistered
+            belongsToPreschool
             note
           }
         }

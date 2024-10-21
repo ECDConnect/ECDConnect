@@ -1,6 +1,5 @@
-﻿using ECDLink.DataAccessLayer.Entities.Calendar;
+﻿using System;
 using System.Collections.Generic;
-using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
@@ -15,7 +14,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Description { get; set; }
         public string Action { get; set; }
         public virtual ICollection<CalendarEventParticipantModel> Participants { get; set; }
-
     }
 
     public class CalendarEventParticipantModel

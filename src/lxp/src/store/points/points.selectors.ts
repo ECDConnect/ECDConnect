@@ -35,11 +35,6 @@ export const getMonthPointsSummary = (state: RootState) => {
   return pointsTotal;
 };
 
-export const getPointsLibrary = createSelector(
-  (state: RootState) => state.points.pointsLibrary,
-  (pointsLibrary: PointsLibrary[]) => pointsLibrary
-);
-
 export const getPointsSummaryWithLibrary = (date: Date) =>
   createSelector(
     (state: RootState) => state.points.pointsSummary,

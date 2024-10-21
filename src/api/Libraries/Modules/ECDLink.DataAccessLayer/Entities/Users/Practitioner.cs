@@ -80,6 +80,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? ClickedCommunityTab { get; set; } = false;
         public DateTime? CommunitySectionViewDate { get; set; }
         public bool ProgressWalkthroughComplete { get; set; }
+        public DateTime? CoachLinkDate { get; set; }
 
         public bool IsPrincipalOrAdmin()
         {

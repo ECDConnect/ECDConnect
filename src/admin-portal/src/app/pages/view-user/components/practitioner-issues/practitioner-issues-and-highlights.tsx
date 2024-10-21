@@ -4,11 +4,12 @@ import { ExclamationCircleIcon, StarIcon } from '@heroicons/react/solid';
 
 interface PractitionerIssuesAndHighlightsProps {
   summaryData: PractitionerStatsDto;
+  isPractitioner: boolean;
 }
 
 export const PractitionerIssuesAndHighlights: React.FC<
   PractitionerIssuesAndHighlightsProps
-> = ({ summaryData }) => {
+> = ({ summaryData, isPractitioner }) => {
   return (
     <div className="mb-6 flex flex-col gap-6 lg:flex-row">
       <div className="border-l-errorMain  border-errorMain w-full rounded-2xl border-2  border-l-8 bg-white lg:w-1/2">
@@ -66,23 +67,26 @@ export const PractitionerIssuesAndHighlights: React.FC<
                 color={'textMid'}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Typography
-                type={'h1'}
-                hasMarkup
-                fontSize="24"
-                text={
-                  summaryData?.totalIncomeStatementsWithNoItems !== undefined &&
-                  String(summaryData?.totalIncomeStatementsWithNoItems)
-                }
-                color={'errorMain'}
-              />
-              <Typography
-                type={'body'}
-                text={'income statements with no income or expenses tracked'}
-                color={'textMid'}
-              />
-            </div>
+            {!isPractitioner && (
+              <div className="flex items-center gap-2">
+                <Typography
+                  type={'h1'}
+                  hasMarkup
+                  fontSize="24"
+                  text={
+                    summaryData?.totalIncomeStatementsWithNoItems !==
+                      undefined &&
+                    String(summaryData?.totalIncomeStatementsWithNoItems)
+                  }
+                  color={'errorMain'}
+                />
+                <Typography
+                  type={'body'}
+                  text={'income statements with no income or expenses tracked'}
+                  color={'textMid'}
+                />
+              </div>
+            )}
           </div>
           {/* End main area */}
         </div>
@@ -101,7 +105,7 @@ export const PractitionerIssuesAndHighlights: React.FC<
               type={'h2'}
               hasMarkup
               fontSize="24"
-              text={'Higlights'}
+              text={'Highlights'}
               color={'textMid'}
             />
           </div>
@@ -142,23 +146,26 @@ export const PractitionerIssuesAndHighlights: React.FC<
                 color={'textMid'}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Typography
-                type={'h1'}
-                hasMarkup
-                fontSize="24"
-                text={
-                  summaryData?.totalIncomeStatementsDownloaded !== undefined &&
-                  String(summaryData?.totalIncomeStatementsDownloaded)
-                }
-                color={'successMain'}
-              />
-              <Typography
-                type={'body'}
-                text={'income statements downloaded'}
-                color={'textMid'}
-              />
-            </div>
+            {!isPractitioner && (
+              <div className="flex items-center gap-2">
+                <Typography
+                  type={'h1'}
+                  hasMarkup
+                  fontSize="24"
+                  text={
+                    summaryData?.totalIncomeStatementsDownloaded !==
+                      undefined &&
+                    String(summaryData?.totalIncomeStatementsDownloaded)
+                  }
+                  color={'successMain'}
+                />
+                <Typography
+                  type={'body'}
+                  text={'income statements downloaded'}
+                  color={'textMid'}
+                />
+              </div>
+            )}
           </div>
 
           {/* End main area */}
