@@ -292,15 +292,17 @@ export const ObservationsForChildLandingComplete: React.FC<
           text={showDetails ? 'Hide details' : 'Show details'}
           textColor="quatenary"
         />
-        <LanguageSelector
-          labelText="Progress tracker language:"
-          labelClassName="font-medium font-body text-textDark pr-8"
-          currentLocale="en-za"
-          className="mb-2 w-full px-0"
-          selectLanguage={(data) => {
-            changeLanguage(data);
-          }}
-        />
+        {showDetails && (
+          <LanguageSelector
+            labelText="Progress tracker language:"
+            labelClassName="font-medium font-body text-textDark pr-8"
+            currentLocale="en-za"
+            className="mb-2 w-full px-0"
+            selectLanguage={(data) => {
+              changeLanguage(data);
+            }}
+          />
+        )}
       </div>
       {!isWalkthrough && showDetails && (
         <div className="pb-4">
