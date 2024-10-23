@@ -2,6 +2,7 @@ import { jsPDFOptions } from 'jspdf';
 import { UserOptions } from 'jspdf-autotable';
 import { Typography, Button, renderIcon } from '@ecdlink/ui';
 import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export interface GeneratePdfReportButtonProps {
   isLoading?: boolean;
@@ -40,11 +41,12 @@ const GeneratePdfReportButton = ({
   numberOfChildren,
   onClick,
 }: GeneratePdfReportButtonProps) => {
+  const { isOnline } = useOnlineStatus();
   const { generateReport } = useGeneratePdfReport();
   return (
     <Button
       isLoading={isLoading}
-      disabled={isLoading}
+      disabled={isLoading || !isOnline}
       type="filled"
       color="quatenary"
       className={'w-full'}

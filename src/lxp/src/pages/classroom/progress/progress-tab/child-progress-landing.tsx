@@ -361,7 +361,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                       type="filled"
                       icon={generatingReports ? undefined : 'DownloadIcon'}
                       text={generateButtonLabel()}
-                      disabled={generatingReports}
+                      disabled={generatingReports || !isOnline}
                     />
                     <Button
                       onClick={() =>

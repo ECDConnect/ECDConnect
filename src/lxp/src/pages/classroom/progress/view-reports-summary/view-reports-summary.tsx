@@ -208,6 +208,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
           </div>
         </div>
         <Button
+          disabled={!isOnline}
           onClick={() => {
             generateReport(
               shareRef.current!,
