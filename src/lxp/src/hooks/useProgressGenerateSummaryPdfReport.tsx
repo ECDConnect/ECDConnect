@@ -12,7 +12,7 @@ export const useProgressGenerateSummaryPdfReport = () => {
     return doc.html(src, {
       callback: function (doc) {
         // Save the PDF
-        doc.save(`ProgressSummary${filenameSuffix}.pdf`);
+        doc.save(`ProgressSummary${filenameSuffix || ''}.pdf`);
       },
       x: 15,
       y: 15,

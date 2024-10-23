@@ -109,6 +109,8 @@ export const ChildProgressReportsList: React.FC = () => {
       onBack={() =>
         history.replace(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
       }
+      renderBorder={true}
+      displayOffline={!isOnline}
     >
       <ProgressWalkthroughWrapper />
       <div className={'flex h-full flex-col px-4 pb-4'}>
