@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import ROUTES from '@/routes/routes';
 import { useProgressForChild } from '@/hooks/useProgressForChild';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export type ProgressViewReportState = {
   childId: string;
@@ -15,6 +16,8 @@ export type ProgressViewReportState = {
 
 export const ProgressViewReport: React.FC = () => {
   const history = useHistory();
+
+  const { isOnline } = useOnlineStatus();
 
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories()
@@ -93,6 +96,8 @@ export const ProgressViewReport: React.FC = () => {
       ).getFullYear()}`}
       subTitle={`${child?.user?.firstName} ${child?.user?.surname}`}
       onBack={() => history.goBack()}
+      renderBorder={true}
+      displayOffline={!isOnline}
     >
       <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>
         <Typography

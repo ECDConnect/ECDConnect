@@ -6,9 +6,12 @@ import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import ROUTES from '@/routes/routes';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const SelectCategoryToTrack: React.FC = () => {
   const history = useHistory();
+
+  const { isOnline } = useOnlineStatus();
 
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories()
@@ -41,6 +44,8 @@ export const SelectCategoryToTrack: React.FC = () => {
       title={`Track progress - report ${currentReportingPeriod?.reportNumber}`}
       subTitle={`Step ${step} of 2`}
       onBack={() => (step === 2 ? setStep(1) : history.goBack())}
+      renderBorder={true}
+      displayOffline={!isOnline}
     >
       <div className="mt-2 flex h-full flex-col p-4">
         {/* Step 1 */}

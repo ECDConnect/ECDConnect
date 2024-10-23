@@ -85,6 +85,8 @@ export const ObservationsByCategory: React.FC = () => {
           });
         }
       }}
+      renderBorder={true}
+      displayOffline={!isOnline}
       onClose={() => {
         if (isOnline) {
           syncChildProgressReports();
