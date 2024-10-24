@@ -910,9 +910,9 @@ export const Dashboard: React.FC = () => {
       title: NavigationNames.Training,
       titleIcon: 'PresentationChartBarIcon',
       titleIconClassName: styles.trainingIcon,
-      onActionClick: () => {
-        goToTraining();
-      },
+      onActionClick: !isOnline
+        ? () => offlineCommunity()
+        : () => goToTraining(),
       classNames: 'bg-tertiaryAccent2',
     });
 
