@@ -15,6 +15,7 @@ import React, { useState } from 'react';
 import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 export interface BannerWrapperProps extends ComponentBaseProps {
+  contentRef?: React.RefObject<HTMLDivElement>;
   title?: string;
   subTitle?: string;
   avatar?: JSX.Element;
@@ -45,6 +46,7 @@ export interface BannerWrapperProps extends ComponentBaseProps {
 }
 
 export const BannerWrapper: React.FC<BannerWrapperProps> = ({
+  contentRef,
   title,
   subTitle,
   avatar,
@@ -207,7 +209,10 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
           backgroundColor="uiBg"
         />
       ) : (
-        <div className={classNames(styles.content(renderOverflow), className)}>
+        <div
+          ref={contentRef}
+          className={classNames(styles.content(renderOverflow), className)}
+        >
           {showMenu ? (
             <SideMenu
               version={version}
