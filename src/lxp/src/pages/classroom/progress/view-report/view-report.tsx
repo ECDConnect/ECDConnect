@@ -1,4 +1,11 @@
-import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  Divider,
+  ImageWithFallback,
+  Typography,
+} from '@ecdlink/ui';
 import { useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { format } from 'date-fns';
@@ -131,7 +138,7 @@ export const ProgressViewReport: React.FC = () => {
           <div key={category.id}>
             <Card className="border-primary mb-4 rounded-2xl border p-4">
               <div className="flex flex-row items-center">
-                <img
+                <ImageWithFallback
                   src={category.imageUrl}
                   alt="category"
                   className="mr-2 h-12 w-12"
@@ -142,7 +149,7 @@ export const ProgressViewReport: React.FC = () => {
                 <div key={subCategory.id}>
                   <Divider dividerType="dashed" className="mt-2 mb-2" />
                   <div className="flex flex-row items-center">
-                    <img
+                    <ImageWithFallback
                       src={subCategory.imageUrl}
                       alt="category"
                       className="mr-2 h-8 w-8"
@@ -213,7 +220,7 @@ export const ProgressViewReport: React.FC = () => {
               <div key={category.id}>
                 <Card className="bg-uiBg mb-4 rounded-2xl p-4">
                   <div className="flex flex-row items-center">
-                    <img
+                    <ImageWithFallback
                       src={category.imageUrl}
                       alt="category"
                       className="mr-2 h-12 w-12"
@@ -228,7 +235,7 @@ export const ProgressViewReport: React.FC = () => {
                     <div key={subCategory.id}>
                       <Divider dividerType="dashed" className="mt-2 mb-2" />
                       <div className="flex flex-row items-center">
-                        <img
+                        <ImageWithFallback
                           src={subCategory.imageUrl}
                           alt="category"
                           className="mr-2 h-8 w-8"

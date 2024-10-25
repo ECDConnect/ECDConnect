@@ -1,4 +1,11 @@
-import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  Divider,
+  ImageWithFallback,
+  Typography,
+} from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useProgressForClassAndAgeGroup } from '@/hooks/useProgressForClassAndAgeGroup';
 import { useProgressGenerateSummaryPdfReport } from '@/hooks/useProgressGenerateSummaryPdfReport';
@@ -133,7 +140,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
         {reportsSummary.map((category) => (
           <div key={category.id} className="mt-4">
             <div className="mb-4 flex flex-row items-center">
-              <img
+              <ImageWithFallback
                 src={category.imageUrl}
                 alt="category"
                 className="mr-2 h-12 w-12"
@@ -144,7 +151,7 @@ export const ProgressViewReportsSummary: React.FC = () => {
               {category.subCategories.map((subCategory) => (
                 <div key={subCategory.id} className="mb-4">
                   <div className="flex flex-row items-center">
-                    <img
+                    <ImageWithFallback
                       src={subCategory.imageUrl}
                       alt="category"
                       className="mr-2 h-8 w-8"
