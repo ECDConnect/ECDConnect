@@ -1,5 +1,11 @@
 import { classroomsSelectors } from '@/store/classroom';
-import { BannerWrapper, Button, CoreRadioGroup, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  CoreRadioGroup,
+  ImageWithFallback,
+  Typography,
+} from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -85,7 +91,7 @@ export const SelectCategoryToTrack: React.FC = () => {
                 id: x.id,
                 label: x.name,
                 value: x.id,
-                icon: <img src={x.imageUrl} alt="category" />,
+                icon: <ImageWithFallback src={x.imageUrl} alt="category" />,
               }))}
               currentValue={selectedCategory}
               colour={'quatenary'}
