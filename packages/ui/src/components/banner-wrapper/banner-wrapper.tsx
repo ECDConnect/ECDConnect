@@ -45,39 +45,44 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   hasDecoratedBackButton?: boolean;
 }
 
-export const BannerWrapper: React.FC<BannerWrapperProps> = ({
-  contentRef,
-  title,
-  subTitle,
-  avatar,
-  isLoading,
-  showBackground = false,
-  color = 'primary',
-  size = 'normal',
-  children,
-  backgroundUrl,
-  backgroundColour = 'transparent',
-  className,
-  renderBorder = false,
-  renderOverflow = true,
-  displayHelp = false,
-  displayOffline = false,
-  menuItems,
-  menuLogoUrl = '',
-  onAvatarSelect,
-  notificationRender,
-  calendarRender,
-  titleOverrideRender,
-  onNavigation = () => {},
-  onBack,
-  onClose,
-  onHelp,
-  version,
-  id,
-  helpId,
-  style,
-  hasDecoratedBackButton,
-}) => {
+export const BannerWrapper = React.forwardRef<
+  HTMLDivElement,
+  BannerWrapperProps
+>((props, ref) => {
+  const {
+    contentRef,
+    title,
+    subTitle,
+    avatar,
+    isLoading,
+    showBackground = false,
+    color = 'primary',
+    size = 'normal',
+    children,
+    backgroundUrl,
+    backgroundColour = 'transparent',
+    className,
+    renderBorder = false,
+    renderOverflow = true,
+    displayHelp = false,
+    displayOffline = false,
+    menuItems,
+    menuLogoUrl = '',
+    onAvatarSelect,
+    notificationRender,
+    calendarRender,
+    titleOverrideRender,
+    onNavigation = () => {},
+    onBack,
+    onClose,
+    onHelp,
+    version,
+    id,
+    helpId,
+    style,
+    hasDecoratedBackButton,
+  } = props;
+
   const showMenu = (menuItems?.length || 0) > 0;
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -231,6 +236,6 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default BannerWrapper;
