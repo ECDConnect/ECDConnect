@@ -43,6 +43,7 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   version?: string;
   helpId?: string;
   hasDecoratedBackButton?: boolean;
+  children?: any;
 }
 
 export const BannerWrapper = React.forwardRef<
