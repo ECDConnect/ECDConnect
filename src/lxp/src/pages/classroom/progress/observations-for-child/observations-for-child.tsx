@@ -1,6 +1,7 @@
 import { BannerWrapper, Button } from '@ecdlink/ui';
+import React from 'react';
 import { useHistory, useLocation } from 'react-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ObservationsForChildSkills } from './observations-for-child-skills';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ObservationsForChildSkillsToWorkOn } from './observations-for-child-skills-to-work-on';
@@ -24,6 +25,8 @@ export const ObservationsForChild: React.FC = () => {
     setState,
     state: { run: isWalkthrough, stepIndex },
   } = useAppContext();
+
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const { state: routeState } = useLocation<ObservationsForChildState>();
 
@@ -100,6 +103,7 @@ export const ObservationsForChild: React.FC = () => {
 
   return (
     <BannerWrapper
+      contentRef={wrapperRef}
       size={'small'}
       onBack={() =>
         currentStep === 1 ? history.goBack() : setCurrentStep(currentStep - 1)
@@ -170,6 +174,10 @@ export const ObservationsForChild: React.FC = () => {
                 childId: routeState.childId,
               });
             } else {
+              if (wrapperRef.current) {
+                // SCroll div to top
+                wrapperRef.current.scrollTop = 0;
+              }
               setCurrentStep(currentStep + 1);
             }
           }}
