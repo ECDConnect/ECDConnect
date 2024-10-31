@@ -8,12 +8,16 @@ const initialState: UserState = {
   user: undefined,
   userLocalePreference: 'en-za', // DEFAULT IS ENGLISH
   userConsent: undefined,
+  unstableConnection: false,
 };
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
+    updateConnectionStatus: (state, action: PayloadAction<boolean>) => {
+      state.unstableConnection = action.payload;
+    },
     resetUserState: (state) => {
       state.user = initialState.user;
       state.userConsent = initialState.userConsent;
