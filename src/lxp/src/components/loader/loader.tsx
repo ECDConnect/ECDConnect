@@ -5,6 +5,13 @@ import RobotHearts from '../../assets/gifs/robothearts.gif';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import ROUTES from '@routes/routes';
 
+const TIMEOUTS: { [key: string]: number } = {
+  '4g': 20000,
+  '3g': 30000,
+  '2g': 40000,
+  'slow-2g': 50000,
+};
+
 const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const history = useHistory();
   const { resetAuth, resetAppStore } = useStoreSetup();
@@ -12,9 +19,15 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const [showIssue, setShowIssue] = useState<boolean>(false);
 
   useEffect(() => {
+    // Check for connection type and set timeout accordingly.
+    // This gives slower connections more time to not throw false positives for issues.
+    const connectionType: string = (window.navigator as any).connection
+      .effectiveType as string;
+    const issueTimeout = TIMEOUTS[connectionType] || TIMEOUTS['4g'];
+
     const timer = setTimeout(() => {
       setShowIssue(true);
-    }, 20000);
+    }, issueTimeout);
     return () => clearTimeout(timer);
   }, []);
 

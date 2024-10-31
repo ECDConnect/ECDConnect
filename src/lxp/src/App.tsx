@@ -4,7 +4,7 @@ import {
   useDialog,
   useTheme,
 } from '@ecdlink/core';
-import { DialogPosition } from '@ecdlink/ui';
+import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import '@ionic/react/css/core.css';
@@ -30,6 +30,8 @@ import { AppErrorHandler } from '@ecdlink/core';
 import { stopReportingRuntimeErrors } from 'react-error-overlay';
 import { useTenant } from './hooks/useTenant';
 import { Helmet } from 'react-helmet';
+import { userActions, userSelectors } from './store/user';
+import { useOnlineStatus } from './hooks/useOnlineStatus';
 
 if (process.env.NODE_ENV === 'development') {
   stopReportingRuntimeErrors();
@@ -46,6 +48,11 @@ const App: React.FC = () => {
     localStorage?.getItem('userLocalxpiration')!
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const { isOnline } = useOnlineStatus();
+  const userUnstableConnection = useSelector(
+    userSelectors.getUserUnstableConnection
+  );
 
   const [expirationTime, setExpirationTime] = useState<number>();
 
@@ -169,6 +176,51 @@ const App: React.FC = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (userUnstableConnection && isOnline) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        render: (onSubmit, onClose) => {
+          return (
+            <ActionModal
+              icon={'SwitchVerticalIcon'}
+              iconColor="primary"
+              iconBorderColor="errorBg"
+              title={"We've detected an unstable/slow connection"}
+              paragraphs={[
+                'Make sure you have a stable internet connection to avoid data loss, or disable your internet connection to go into offline mode.',
+              ]}
+              actionButtons={[
+                {
+                  text: 'Retry',
+                  textColour: 'white',
+                  colour: 'primary',
+                  type: 'filled',
+                  onClick: () => {
+                    window.location.reload();
+                    dispatch(userActions.updateConnectionStatus(false));
+                    onSubmit();
+                  },
+                },
+                {
+                  text: 'Cancel',
+                  textColour: 'primary',
+                  colour: 'primary',
+                  type: 'outlined',
+                  onClick: () => {
+                    dispatch(userActions.updateConnectionStatus(false));
+                    onSubmit();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  }, [userUnstableConnection]);
 
   const handleSync = async () => {
     if (practitioner?.isPrincipal === true) {
