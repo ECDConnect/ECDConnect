@@ -109,7 +109,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
         }
       }
 
-      config.metadata = { startTime: new Date() };
+      if (config.method === 'get') config.metadata = { startTime: new Date() };
       return config;
     },
     (error) => {
@@ -157,7 +157,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
         }
       }
 
-      updateConfigEndTime(response);
+      if (response.method === 'get') updateConfigEndTime(response);
       return response;
     },
     (error: AxiosError | any) => {
