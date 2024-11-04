@@ -4,13 +4,7 @@ import { useHistory } from 'react-router';
 import RobotHearts from '../../assets/gifs/robothearts.gif';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import ROUTES from '@routes/routes';
-
-const TIMEOUTS: { [key: string]: number } = {
-  '4g': 20000,
-  '3g': 30000,
-  '2g': 40000,
-  'slow-2g': 50000,
-};
+import { TIMEOUTS } from '@/constants/timeouts';
 
 const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const history = useHistory();
@@ -23,7 +17,8 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
     // This gives slower connections more time to not throw false positives for issues.
     const connectionType: string = (window.navigator as any).connection
       .effectiveType as string;
-    const issueTimeout = TIMEOUTS[connectionType] || TIMEOUTS['4g'];
+    const issueTimeout =
+      TIMEOUTS[connectionType].loadIssueTime || TIMEOUTS['4g'].loadIssueTime;
 
     const timer = setTimeout(() => {
       setShowIssue(true);
