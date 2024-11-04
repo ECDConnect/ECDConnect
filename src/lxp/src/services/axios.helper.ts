@@ -5,11 +5,11 @@ import jwt_decode from 'jwt-decode';
 import { store } from '@store';
 import { refreshToken } from '@store/auth/auth.actions';
 import { userActions } from '@/store/user';
+import { TIMEOUTS } from '@/constants/timeouts';
 
 const disableGraphqlErrorAlert =
   process.env.REACT_APP_DISABLE_GRAPHQL_ERROR_ALERT;
 const disableGraphqlLogging = process.env.REACT_APP_DISABLE_GRAPHQL_LOGGING;
-const SPOTTY_CONNECTION_TIMEOUT = 10000; // Duration before a connection is considered to be unreliable.
 
 const logGraphQL = (
   logFunc: (message?: string, ...optionalParams: any[]) => void,
@@ -49,7 +49,13 @@ const updateConfigEndTime = (
   response.duration =
     response.config.metadata.endTime - response.config.metadata.startTime;
 
-  if (response.duration >= SPOTTY_CONNECTION_TIMEOUT && !ignoreTimeoutCheck) {
+  const connectionType: string = (window.navigator as any).connection
+    .effectiveType as string;
+  // Duration before a connection is considered to be unreliable.
+  const spottyConnectionTimeout =
+    TIMEOUTS[connectionType].slowRequestTime || TIMEOUTS['4g'].slowRequestTime;
+
+  if (response.duration >= spottyConnectionTimeout && !ignoreTimeoutCheck) {
     if (store.getState().user.unstableConnection === false) {
       store.dispatch(userActions.updateConnectionStatus(true));
     }
@@ -157,7 +163,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
         }
       }
 
-      updateConfigEndTime(response);
+      updateConfigEndTime(response, response.method === 'post');
       return response;
     },
     (error: AxiosError | any) => {
