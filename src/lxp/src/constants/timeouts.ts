@@ -11,15 +11,15 @@ export const TIMEOUTS: TimeoutType = {
     loadIssueTime: 20000,
   },
   '3g': {
-    slowRequestTime: 15000,
+    slowRequestTime: 10000,
     loadIssueTime: 30000,
   },
   '2g': {
-    slowRequestTime: 20000,
+    slowRequestTime: 10000,
     loadIssueTime: 40000,
   },
   'slow-2g': {
-    slowRequestTime: 20000,
+    slowRequestTime: 10000,
     loadIssueTime: 50000,
   },
 };
