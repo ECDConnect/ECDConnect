@@ -4,7 +4,7 @@ import {
   useDialog,
   useTheme,
 } from '@ecdlink/core';
-import { ActionModal, DialogPosition } from '@ecdlink/ui';
+import { ActionModal, DialogPosition, renderIcon } from '@ecdlink/ui';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import '@ionic/react/css/core.css';
@@ -185,30 +185,21 @@ const App: React.FC = () => {
         render: (onSubmit, onClose) => {
           return (
             <ActionModal
-              icon={'SwitchVerticalIcon'}
-              iconColor="primary"
-              iconBorderColor="errorBg"
-              title={"We've detected an unstable/slow connection"}
-              paragraphs={[
-                'Make sure you have a stable internet connection to avoid data loss, or disable your internet connection to go into offline mode.',
-              ]}
+              customIcon={renderIcon(
+                'ExclamationIcon',
+                `z-20 w-28 h-28 text-alertMain`
+              )}
+              title={'Weak connection'}
+              detailText={
+                'Your internet connection is unstable. Turn off mobile data and Wi-Fi to keep using the app, or connect to a stronger network.'
+              }
               actionButtons={[
                 {
-                  text: 'Retry',
+                  text: 'Okay',
                   textColour: 'white',
                   colour: 'primary',
                   type: 'filled',
-                  onClick: () => {
-                    window.location.reload();
-                    dispatch(userActions.updateConnectionStatus(false));
-                    onSubmit();
-                  },
-                },
-                {
-                  text: 'Cancel',
-                  textColour: 'primary',
-                  colour: 'primary',
-                  type: 'outlined',
+                  leadingIcon: 'CheckCircleIcon',
                   onClick: () => {
                     dispatch(userActions.updateConnectionStatus(false));
                     onSubmit();
