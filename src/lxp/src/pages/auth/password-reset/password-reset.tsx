@@ -97,7 +97,7 @@ export const PasswordReset: React.FC = () => {
 
     const requestSentResponse =
       await new AuthService().SendForgotPasswordRequest({
-        username: formValues.phoneNumber,
+        phoneNumber: formValues.phoneNumber,
       });
     if (requestSentResponse.valid) {
       setUserPhoneNumberEnding(

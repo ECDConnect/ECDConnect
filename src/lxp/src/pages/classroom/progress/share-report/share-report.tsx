@@ -25,6 +25,7 @@ import {
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
 import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export type ProgressShareReportState = {
   childId: string;
@@ -36,6 +37,8 @@ export const ProgressShareReport: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
+
+  const { isOnline } = useOnlineStatus();
 
   const { state: routeState } = useLocation<ProgressShareReportState>();
 
@@ -112,6 +115,8 @@ export const ProgressShareReport: React.FC = () => {
           activeTabIndex: TabsItems.PROGRESS,
         })
       }
+      renderBorder={true}
+      displayOffline={!isOnline}
     >
       <div className="mt-2 flex flex-col p-4">
         <Typography
@@ -204,7 +209,7 @@ export const ProgressShareReport: React.FC = () => {
           type="filled"
           icon={'ShareIcon'}
           text={'Share report'}
-          disabled={!selectedReport}
+          disabled={!selectedReport || !isOnline}
         />
       </div>
       {!!selectedReport && (

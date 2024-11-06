@@ -5,6 +5,7 @@ import {
   Card,
   DialogPosition,
   Divider,
+  ImageWithFallback,
   ListItem,
   Typography,
 } from '@ecdlink/ui';
@@ -292,15 +293,17 @@ export const ObservationsForChildLandingComplete: React.FC<
           text={showDetails ? 'Hide details' : 'Show details'}
           textColor="quatenary"
         />
-        <LanguageSelector
-          labelText="Progress tracker language:"
-          labelClassName="font-medium font-body text-textDark pr-8"
-          currentLocale="en-za"
-          className="mb-2 w-full px-0"
-          selectLanguage={(data) => {
-            changeLanguage(data);
-          }}
-        />
+        {showDetails && (
+          <LanguageSelector
+            labelText="Progress tracker language:"
+            labelClassName="font-medium font-body text-textDark pr-8"
+            currentLocale="en-za"
+            className="mb-2 w-full px-0"
+            selectLanguage={(data) => {
+              changeLanguage(data);
+            }}
+          />
+        )}
       </div>
       {!isWalkthrough && showDetails && (
         <div className="pb-4">
@@ -365,7 +368,7 @@ export const ObservationsForChildLandingComplete: React.FC<
               <div key={category.id}>
                 <Card className="bg-uiBg mb-4 rounded-2xl p-4">
                   <div className="flex flex-row items-center">
-                    <img
+                    <ImageWithFallback
                       src={category.imageUrl}
                       alt="category"
                       className="mr-2 h-12 w-12"
@@ -380,7 +383,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                     <div key={subCategory.id}>
                       <Divider dividerType="dashed" className="mt-2 mb-2" />
                       <div className="flex flex-row items-center">
-                        <img
+                        <ImageWithFallback
                           src={subCategory.imageUrl}
                           alt="category"
                           className="mr-2 h-8 w-8"
@@ -484,7 +487,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                 <div key={category.id}>
                   <Card className="bg-uiBg mb-4 rounded-2xl p-4">
                     <div className="flex flex-row items-center">
-                      <img
+                      <ImageWithFallback
                         src={category.imageUrl}
                         alt="category"
                         className="mr-2 h-12 w-12"
@@ -499,7 +502,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                       <div key={subCategory.id}>
                         <Divider dividerType="dashed" className="mt-2 mb-2" />
                         <div className="flex flex-row items-center">
-                          <img
+                          <ImageWithFallback
                             src={subCategory.imageUrl}
                             alt="category"
                             className="mr-2 h-8 w-8"
