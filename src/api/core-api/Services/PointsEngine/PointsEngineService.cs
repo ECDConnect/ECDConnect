@@ -241,21 +241,22 @@ namespace EcdLink.Api.CoreApi.Services
         private UserRankingPointsModel GetRankingMessagesForUser(UserRankingPointsModel userPointRecord, string roleName, string firstName)
         {
             // COMPARATIVE
-            userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Orange;
-            if (userPointRecord.ComparativeTargetPercentage >= 60 && userPointRecord.ComparativeTargetPercentage <= 79)
-            {
-                userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Blue;
-            }
-            else if (userPointRecord.ComparativeTargetPercentage >= 80)
-            {
-                userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
-            }
+            // userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Orange;
+            // if (userPointRecord.ComparativeTargetPercentage >= 60 && userPointRecord.ComparativeTargetPercentage <= 79)
+            // {
+            //     userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Blue;
+            // }
+            // else if (userPointRecord.ComparativeTargetPercentage >= 80)
+            // {
+            //     userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
+            // }
 
             if (userPointRecord.RankingNr == 1)
             {
                 userPointRecord.MessageNr = 1;
                 userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                 userPointRecord.ComparativeSecondaryMessage = "You are the top points earner so far this month. Keep it up!";
+                userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
             } else
             {
                 if (userPointRecord.ComparativeTargetPercentage < 50)
@@ -263,24 +264,28 @@ namespace EcdLink.Api.CoreApi.Services
                     userPointRecord.MessageNr = 4;
                     userPointRecord.ComparativePrimaryMessage = $"Keep going {firstName}!";
                     userPointRecord.ComparativeSecondaryMessage = $"Most of the practitioners on {TenantExecutionContext.Tenant.ApplicationName} have earned more than {userPointRecord.PointsTotal} points! Earn more points to join them.";
+                    userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Orange;
                 }
                 else if (userPointRecord.ComparativeTargetPercentage >= 50 && userPointRecord.ComparativeTargetPercentage < 75)
                 {
                     userPointRecord.MessageNr = 3;
                     userPointRecord.ComparativePrimaryMessage = $"Wow, great job {firstName}!";
                     userPointRecord.ComparativeSecondaryMessage = $"You have more points than most other {TenantExecutionContext.Tenant.ApplicationName} {roleName}s!";
+                    userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Blue;
                 }
                 else if (userPointRecord.ComparativeTargetPercentage >= 75)
                 {
                     userPointRecord.MessageNr = 2;
                     userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are one of the top {roleName}s on {TenantExecutionContext.Tenant.ApplicationName}!";
                     userPointRecord.ComparativeSecondaryMessage = "You are one of the top points earners so far this month. Keep it up!";
+                    userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
                 } 
                 else if (userPointRecord.ComparativeTargetPercentage == 100)
                 {
                     userPointRecord.MessageNr = 1;
                     userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                     userPointRecord.ComparativeSecondaryMessage = "You are the top points earner so far this month. Keep it up!";
+                    userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
                 }
             }
             
@@ -305,7 +310,7 @@ namespace EcdLink.Api.CoreApi.Services
             else if (userPointRecord.NonComparativeTargetPercentage >= 60 && userPointRecord.NonComparativeTargetPercentage <= 79)
             {
                 userPointRecord.NonComparativePrimaryMessage = $"Wow, great job {firstName}!";
-                userPointRecord.NonComparativeSecondaryMessage = "You’re doing well, keep it up! You can still earn more points this month.";
+                userPointRecord.NonComparativeSecondaryMessage = "Youï¿½re doing well, keep it up! You can still earn more points this month.";
             }
             else if (userPointRecord.PointsTotal > 0 && userPointRecord.NonComparativeTargetPercentage < 60)
             {
