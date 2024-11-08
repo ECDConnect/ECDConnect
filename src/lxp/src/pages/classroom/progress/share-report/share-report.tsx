@@ -26,6 +26,7 @@ import {
 } from '@/store/progress-tracking';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export type ProgressShareReportState = {
   childId: string;
@@ -74,6 +75,15 @@ export const ProgressShareReport: React.FC = () => {
     } else {
       presentUnavailableAlert();
     }
+  };
+
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
   };
 
   const presentUnavailableAlert = () => {
@@ -197,10 +207,14 @@ export const ProgressShareReport: React.FC = () => {
         </div>
         <Button
           onClick={() => {
-            generateReport(
-              shareRef.current!,
-              shareRef.current?.offsetWidth || 750
-            );
+            if (isOnline) {
+              generateReport(
+                shareRef.current!,
+                shareRef.current?.offsetWidth || 750
+              );
+            } else {
+              showOnlineOnly();
+            }
           }}
           className="mt-4 w-full"
           size="small"
@@ -209,7 +223,7 @@ export const ProgressShareReport: React.FC = () => {
           type="filled"
           icon={'ShareIcon'}
           text={'Share report'}
-          disabled={!selectedReport || !isOnline}
+          disabled={!selectedReport}
         />
       </div>
       {!!selectedReport && (
