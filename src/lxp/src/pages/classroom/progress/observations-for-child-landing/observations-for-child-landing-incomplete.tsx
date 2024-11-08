@@ -123,7 +123,7 @@ export const ObservationsForChildLandingIncomplete: React.FC<
         }}
       />
       <div className="mt-4">
-        {currentAgeGroup.startAgeInMonths < 36 && (
+        {currentAgeGroup?.startAgeInMonths < 36 && (
           <Alert
             type={'info'}
             messageColor="textDark"
@@ -132,7 +132,7 @@ export const ObservationsForChildLandingIncomplete: React.FC<
             }
           />
         )}
-        {currentAgeGroup.startAgeInMonths > 35 && (
+        {currentAgeGroup?.startAgeInMonths > 35 && (
           <Alert
             type={'info'}
             title="This progress tracker is based on South Africa's National Curriculum Framework for Children from Birth to Four (NCF) developed by the Department of Basic Education (DBE)."
@@ -144,7 +144,6 @@ export const ObservationsForChildLandingIncomplete: React.FC<
         <Button
           onClick={() => {
             if (isWalkthrough) {
-              console.log('updateing step number');
               setState({ stepIndex: 2 });
             }
             history.push(ROUTES.PROGRESS_OBSERVATIONS, {
