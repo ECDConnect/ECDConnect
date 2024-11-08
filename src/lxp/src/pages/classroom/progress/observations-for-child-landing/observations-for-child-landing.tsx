@@ -32,6 +32,8 @@ export const ObservationsForChildLanding: React.FC = () => {
   const { ageGroup, walkthroughReportingPeriod, walkthroughReport } =
     useProgressWalkthrough();
 
+  const report = isWalkthrough ? walkthroughReport : currentReport;
+
   return (
     <>
       <ProgressWalkthroughWrapper />
@@ -54,24 +56,34 @@ export const ObservationsForChildLanding: React.FC = () => {
           <Typography
             type="h2"
             color="primary"
-            text={`Report ${currentObservationPeriod?.reportNumber}`}
+            text={`Report ${
+              isWalkthrough ? '1' : currentObservationPeriod?.reportNumber
+            }`}
           />
           <div id="progressWalkthroughStep1">
             <Typography
               type="h4"
               color="textMid"
               text={`${format(
-                new Date(currentObservationPeriod?.startDate || ''),
+                new Date(
+                  currentObservationPeriod?.startDate ||
+                    walkthroughReportingPeriod.startDate ||
+                    ''
+                ),
                 'd MMM'
               )} - ${format(
-                new Date(currentObservationPeriod?.endDate || ''),
+                new Date(
+                  currentObservationPeriod?.endDate ||
+                    walkthroughReportingPeriod.endDate ||
+                    ''
+                ),
                 'd MMM yyyy'
               )}`}
             />
           </div>
           {/* Current observations still in progress */}
           {((isWalkthrough && stepIndex < 5) ||
-            !currentReport?.observationsCompleteDate) && (
+            !report?.observationsCompleteDate) && (
             <ObservationsForChildLandingIncomplete
               childId={routeState.childId}
               currentAgeGroup={isWalkthrough ? ageGroup : observationsAgeGroup!}
@@ -79,7 +91,7 @@ export const ObservationsForChildLanding: React.FC = () => {
           )}
           {/* All observations completed for current report period, but we are still outside the window */}
           {(isWalkthrough && stepIndex > 5) ||
-            (!!currentReport && !!currentReport.observationsCompleteDate && (
+            (!!report && !!report.observationsCompleteDate && (
               <ObservationsForChildLandingComplete
                 childId={routeState.childId}
                 childFirstName={
@@ -91,9 +103,7 @@ export const ObservationsForChildLanding: React.FC = () => {
                     ? walkthroughReportingPeriod
                     : currentObservationPeriod!
                 }
-                currentReport={
-                  isWalkthrough ? walkthroughReport : currentReport
-                }
+                currentReport={isWalkthrough ? walkthroughReport : report}
                 currentAgeGroup={
                   isWalkthrough ? ageGroup : observationsAgeGroup
                 }
