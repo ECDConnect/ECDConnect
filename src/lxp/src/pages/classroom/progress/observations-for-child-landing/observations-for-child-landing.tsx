@@ -8,6 +8,7 @@ import ROUTES from '@/routes/routes';
 import ProgressWalkthroughWrapper from '../walkthrough/progress-walkthrough-wrapper';
 import { useAppContext } from '@/walkthrougContext';
 import { useProgressWalkthrough } from '@/hooks/useProgressWalkthrough';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export type ObservationsForChildLandingState = {
   childId: string;
@@ -34,6 +35,8 @@ export const ObservationsForChildLanding: React.FC = () => {
 
   const report = isWalkthrough ? walkthroughReport : currentReport;
 
+  const { isOnline } = useOnlineStatus();
+
   return (
     <>
       <ProgressWalkthroughWrapper />
@@ -51,6 +54,8 @@ export const ObservationsForChildLanding: React.FC = () => {
             : `${child?.user?.firstName} ${child?.user?.surname}`
         }
         renderOverflow
+        renderBorder={true}
+        displayOffline={!isOnline}
       >
         <div className="flex h-full flex-col px-4 pt-4">
           <Typography
