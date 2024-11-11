@@ -79,6 +79,7 @@ export const ProgressCaregiverReportWorkingOnPage: React.FC<
         .filter((x) => !!x.skills.length)
         .map((category) => (
           <div
+            key={category.id}
             className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
             style={{
               borderColor: category.color,
@@ -95,7 +96,7 @@ export const ProgressCaregiverReportWorkingOnPage: React.FC<
               />
             </div>
             {category.skills.map((skill, index) => (
-              <div className="mb-2">
+              <div className="mb-2" key={index}>
                 <Typography
                   type="body"
                   color="textDark"
