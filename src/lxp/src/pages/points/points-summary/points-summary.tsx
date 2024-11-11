@@ -1061,7 +1061,11 @@ export const PointsSummary: React.FC = () => {
               )}
             />
           ) : null}
-          {!pointsTotalForYear || pointsTotalForYear < 10 ? (
+          {!pointsTotalForYear ||
+          pointsTotalForYear < 10 ||
+          (practitioner?.isPrincipal
+            ? getCurrentPointsToDo !== 4
+            : getCurrentPointsToDo !== 3) ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
