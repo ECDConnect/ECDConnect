@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.Security.Models;
 using ECDLink.Abstractrions.Constants;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.PostgresTenancy.Entities;
@@ -27,6 +28,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         private readonly SecurityNotificationManager _notificationManager;
         private readonly ShortUrlManager _shortUrlManager;
 
+        private AuthenticationDbContext _dbContext;
         public ApplicationUserManager _userManager { get; set; }
 
         public IJwtFactory _jwtFactory { get; set; }
@@ -40,7 +42,8 @@ namespace EcdLink.Api.CoreApi.Security.Managers
           SecurityNotificationManager notificationManager,
           ShortUrlManager shortUrlManager,
           IJwtFactory factory,
-          JwtTokenManager tokenManager)
+          JwtTokenManager tokenManager,
+          AuthenticationDbContext dbContext)
         {
             _userManager = userManager;
             _passwordManager = passwordManager;
@@ -49,6 +52,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             _shortUrlManager = shortUrlManager;
             _jwtFactory = factory;
             _jwtTokenManager = tokenManager;
+            _dbContext = dbContext;
         }
 
         public async Task<ApplicationUser> LogInWithPhoneNumberAsync(string phoneNumber, string password)
@@ -69,9 +73,26 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return userToVerify;
         }
 
+        public async Task<ApplicationUser> GetUsernameAsync(string username, string password)
+        {
+            // get the user to verifty
+            var userToVerify = _dbContext.Users.FirstOrDefault(user => string.Equals(user.UserName, username));
+
+            userToVerify ??= _userManager.Users.FirstOrDefault(user => user.Email == username);
+
+            if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
+            {
+                return default(ApplicationUser);
+            }
+            
+            return userToVerify;
+        }
+
+
         public async Task<ApplicationUser> LogInWithUsernameAsync(string username, string password)
         {
             // get the user to verifty
+            var users = _userManager.Users;
             var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.UserName, username)
                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
@@ -110,8 +131,8 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             var tenantId = TenantExecutionContext.Tenant.Id;
             // TODO: Make the user email and tenantId unique
             var firstUserWithThatEmail = await _userManager.Users.FirstOrDefaultAsync(
-                user => user.IsActive == true 
-                    && user.Email == email 
+                user => user.IsActive == true
+                    && user.Email == email
                     && user.TenantId == tenantId);
             return firstUserWithThatEmail;
         }
@@ -154,7 +175,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         {
             var passwordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             var updatedPassword = await _userManager.ResetPasswordAsync(user, passwordToken, newPassword);
-            
+
             if (!updatedPassword.Succeeded)
             {
                 throw new Exception("Unable to update password");
@@ -226,7 +247,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return false;
 
             var emailChangeRequest = await _userManager.ChangeEmailAsync(user, user.PendingEmail, token);
-            
+
             if (emailChangeRequest.Succeeded)
             {
                 user.PendingEmail = "";

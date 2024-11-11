@@ -241,16 +241,6 @@ namespace EcdLink.Api.CoreApi.Services
         private UserRankingPointsModel GetRankingMessagesForUser(UserRankingPointsModel userPointRecord, string roleName, string firstName)
         {
             // COMPARATIVE
-            // userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Orange;
-            // if (userPointRecord.ComparativeTargetPercentage >= 60 && userPointRecord.ComparativeTargetPercentage <= 79)
-            // {
-            //     userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Blue;
-            // }
-            // else if (userPointRecord.ComparativeTargetPercentage >= 80)
-            // {
-            //     userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
-            // }
-
             if (userPointRecord.RankingNr == 1)
             {
                 userPointRecord.MessageNr = 1;
@@ -310,7 +300,7 @@ namespace EcdLink.Api.CoreApi.Services
             else if (userPointRecord.NonComparativeTargetPercentage >= 60 && userPointRecord.NonComparativeTargetPercentage <= 79)
             {
                 userPointRecord.NonComparativePrimaryMessage = $"Wow, great job {firstName}!";
-                userPointRecord.NonComparativeSecondaryMessage = "You�re doing well, keep it up! You can still earn more points this month.";
+                userPointRecord.NonComparativeSecondaryMessage = "You're doing well, keep it up! You can still earn more points this month.";
             }
             else if (userPointRecord.PointsTotal > 0 && userPointRecord.NonComparativeTargetPercentage < 60)
             {
