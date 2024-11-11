@@ -12,14 +12,13 @@ import {
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import {
-  ChildDto,
   ContentTypeEnum,
   LanguageDto,
   ProgressTrackingAgeGroupDto,
   useDialog,
 } from '@ecdlink/core';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
-import { differenceInMonths, format, isBefore } from 'date-fns';
+import { format, isBefore } from 'date-fns';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { useMemo, useState } from 'react';
 import { ChildProgressDetailedReport } from '@/models/progress/child-progress-report';
@@ -35,6 +34,7 @@ import LanguageSelector from '@/components/language-selector/language-selector';
 import { ContentService } from '@/services/ContentService';
 import { authSelectors } from '@/store/auth';
 import { useAppDispatch } from '@/store';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export type ObservationsForChildLandingCompleteProps = {
   childId: string;
@@ -63,6 +63,8 @@ export const ObservationsForChildLandingComplete: React.FC<
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
+
+  const { hasPermissionToCreateProgressReports } = useUserPermissions();
 
   const changeLanguage = async (language: LanguageDto) => {
     const hasTranslations = await new ContentService(
@@ -217,12 +219,14 @@ export const ObservationsForChildLandingComplete: React.FC<
           type="body"
           color="textMid"
           text={
-            'You can edit your observations, add a note, or create the progress report.'
+            hasPermissionToCreateProgressReports
+              ? 'You can edit your observations, add a note, or create the progress report.'
+              : 'You can edit your observations below or ask your principal to create the report.'
           }
           className="mb-4"
         />
       )}
-      {!currentReport.notes && (
+      {!currentReport.notes && hasPermissionToCreateProgressReports && (
         <ListItem
           key={'notes'}
           title={'Add a note'}
@@ -261,25 +265,34 @@ export const ObservationsForChildLandingComplete: React.FC<
             textColor="white"
           />
         )}
-      <div id="reportButtons">
+      <div
+        id="reportButtons"
+        className={
+          hasPermissionToCreateProgressReports ? '' : 'flex flex-grow flex-col'
+        }
+      >
         {(isWalkthrough ||
-          (!isBeforePeriod && currentReport.unknownPercentage < 25)) && (
-          <Button
-            onClick={() => {
-              if (!isWalkthrough) {
-                history.push(ROUTES.PROGRESS_CREATE_REPORT, {
-                  childId: childId,
-                });
-              }
-            }}
-            className="mt-auto mb-4 w-full"
-            size="normal"
-            color="quatenary"
-            type="filled"
-            icon="DocumentReportIcon"
-            text="Create caregiver report"
-            textColor="white"
-          />
+          (!isBeforePeriod && currentReport.unknownPercentage < 25)) &&
+          hasPermissionToCreateProgressReports && (
+            <Button
+              onClick={() => {
+                if (!isWalkthrough) {
+                  history.push(ROUTES.PROGRESS_CREATE_REPORT, {
+                    childId: childId,
+                  });
+                }
+              }}
+              className="mt-auto mb-4 w-full"
+              size="normal"
+              color="quatenary"
+              type="filled"
+              icon="DocumentReportIcon"
+              text="Create caregiver report"
+              textColor="white"
+            />
+          )}
+        {!hasPermissionToCreateProgressReports && (
+          <div className="w-full flex-grow"></div>
         )}
         <Button
           onClick={() => {
