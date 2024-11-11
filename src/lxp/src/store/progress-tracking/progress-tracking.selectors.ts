@@ -148,6 +148,9 @@ export const getActivityCategories = (activity: ActivityDto) =>
     }
   );
 
+export const getCurrentLocaleForReport = (state: RootState): string =>
+  state.progressTracking.currentLocale || 'en-za';
+
 export const getPractitionerProgressReportSummary = (
   state: RootState
 ): PractitionerProgressReportSummaryDto | undefined =>

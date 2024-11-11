@@ -79,6 +79,7 @@ export const ProgressCaregiverReportBuildingPage: React.FC<
         .filter((x) => x.skills.some((y) => y.isNegative))
         .map((category) => (
           <div
+            key={category.id}
             className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
             style={{
               borderColor: category.color,
@@ -98,6 +99,7 @@ export const ProgressCaregiverReportBuildingPage: React.FC<
               .filter((x) => x.isNegative)
               .map((skill) => (
                 <p
+                  key={skill.skillId}
                   className="font-body text-textDark"
                   style={{ fontSize: '12px' }}
                 >

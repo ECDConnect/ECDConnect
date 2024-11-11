@@ -118,6 +118,9 @@ export const ObservationsForChildLandingComplete: React.FC<
     });
   };
 
+  const currentReportLocale = useSelector(
+    progressTrackingSelectors?.getCurrentLocaleForReport
+  );
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories()
   );
@@ -176,15 +179,18 @@ export const ObservationsForChildLandingComplete: React.FC<
 
         return {
           ...category,
-          subCategories: subCats.map((x) => ({
-            ...x,
-            skills: currentReport.skillsToWorkOn.filter(
-              (y) => y.subCategoryId === x.id
+          subCategories: subCats.map((subCat) => ({
+            ...subCat,
+            skills: subCat.skills.filter((x) =>
+              currentReport.skillsToWorkOn.some((y) => x.id === y.skillId)
             ),
+            // skills: currentReport.skillsToWorkOn.filter(
+            //   (y) => y.subCategoryId === subCat.id
+            // ),
           })),
         };
       });
-  }, [categories, subCategories, currentReport]);
+  }, [subCategories, categories, currentReport.skillsToWorkOn]);
 
   const currentObservationsAllPositive = currentReport.skillObservations.every(
     (x) => x.isPositive
@@ -310,7 +316,7 @@ export const ObservationsForChildLandingComplete: React.FC<
           <LanguageSelector
             labelText="Progress tracker language:"
             labelClassName="font-medium font-body text-textDark pr-8"
-            currentLocale="en-za"
+            currentLocale={currentReportLocale}
             className="mb-2 w-full px-0"
             selectLanguage={(data) => {
               changeLanguage(data);
@@ -408,7 +414,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                         />
                       </div>
                       {subCategory.skills.map((skill) => (
-                        <div key={skill.skillId}>
+                        <div key={skill.id}>
                           <Typography
                             type="small"
                             color="textMid"
@@ -419,7 +425,10 @@ export const ObservationsForChildLandingComplete: React.FC<
                             type="body"
                             color="textDark"
                             className="mt-2"
-                            text={skill.skillName}
+                            text={skill.name.replaceAll(
+                              '[childFirstName]',
+                              childFirstName
+                            )}
                           />
                           <Typography
                             type="small"
@@ -431,7 +440,11 @@ export const ObservationsForChildLandingComplete: React.FC<
                             type="body"
                             color="textDark"
                             className="mt-2"
-                            text={skill.howToSupport}
+                            text={
+                              currentReport.skillsToWorkOn.find(
+                                (x) => x.skillId === skill.id
+                              )?.howToSupport
+                            }
                           />
                           <Button
                             onClick={() =>

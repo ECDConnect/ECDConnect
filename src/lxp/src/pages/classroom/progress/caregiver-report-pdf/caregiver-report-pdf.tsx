@@ -1,4 +1,3 @@
-import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ProgressCaregiverReportSummaryPage } from './caregiver-report-pdf-1-summary';
 import { ProgressCaregiverReportSkillsPage } from './caregiver-report-pdf-2-skills';
 import { ProgressCaregiverReportWorkingOnPage } from './caregiver-report-pdf-3-working-on';
