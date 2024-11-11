@@ -111,7 +111,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 .Where(e => e.TenantId == Guid.Empty || e.TenantId == tenantId);
         }
 
-        public List<Attendance> GetAllByDateRangeByClassroom(DateTime startMonth, DateTime endMonth, Guid classroomId, string userId = null)
+        public List<Attendance> GetAllByDateRangeByClassroom(DateTime startMonth, DateTime endMonth, Guid classroomGroupId, string userId = null)
         {
             try
             {
@@ -119,10 +119,10 @@ namespace ECDLink.DataAccessLayer.Repositories
                 var end = endMonth.GetEndOfMonth();
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 //get all programmes under classroom
-                IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId == classroomId).AsQueryable();
+                IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId == classroomGroupId).AsQueryable();
                 IQueryable<Attendance> attendanceQuery = null;
                 if (userId is not null) {
-                    attendanceQuery = _context.Attendances.Where(f => f.UserId.ToString() == userId && f.AttendanceDate >= start && f.AttendanceDate < end);
+                    attendanceQuery = _context.Attendances.Where(f => f.UserId.ToString() == userId && f.AttendanceDate >= start && f.AttendanceDate <= end);
                 } else
                 {
                     attendanceQuery = _context.Attendances.Where(f => f.AttendanceDate >= start && f.AttendanceDate < end);
