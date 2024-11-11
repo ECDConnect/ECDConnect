@@ -411,7 +411,10 @@ export const ObservationsForChildLandingComplete: React.FC<
                             type="body"
                             color="textDark"
                             className="mt-2"
-                            text={skill.name}
+                            text={skill.name.replaceAll(
+                              '[childFirstName]',
+                              childFirstName
+                            )}
                           />
                           <Typography
                             type="small"
