@@ -201,7 +201,14 @@ export const getCurrentProgressReportPeriod = () =>
 
       // Get first in order where end date is after the current date
       const index = currentYearsReportingPeriods.findIndex((x) =>
-        isBefore(new Date(), new Date(x.endDate))
+        isBefore(
+          new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate()
+          ),
+          new Date(x.endDate)
+        )
       );
 
       if (index < 0) {
