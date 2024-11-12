@@ -82,7 +82,7 @@ export const ObservationsForChildSupportLearning: React.FC<
       {!!skillsToWorkOn.length && (
         <div className="mb-4">
           {skillsToWorkOn.map((skill) => (
-            <>
+            <div key={skill.skillId}>
               <Typography
                 type="h4"
                 color="textDark"
@@ -106,7 +106,7 @@ export const ObservationsForChildSupportLearning: React.FC<
                 }
                 value={skill.howToSupport}
               />
-            </>
+            </div>
           ))}
         </div>
       )}
