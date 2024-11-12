@@ -22,6 +22,7 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import {
   progressTrackingActions,
+  progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
 import { useAppDispatch } from '@/store';
@@ -116,6 +117,10 @@ export const ProgressShareReport: React.FC = () => {
     });
   };
 
+  const currentReportLocale = useSelector(
+    progressTrackingSelectors?.getCurrentLocaleForReport
+  );
+
   return (
     <BannerWrapper
       size={'small'}
@@ -174,7 +179,7 @@ export const ProgressShareReport: React.FC = () => {
         <LanguageSelector
           labelText="Choose report language"
           labelClassName="font-medium font-body text-textDark pr-2"
-          currentLocale="en-za"
+          currentLocale={currentReportLocale}
           selectLanguage={(data) => {
             changeLanguage(data);
           }}

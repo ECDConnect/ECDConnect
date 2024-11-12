@@ -237,7 +237,7 @@ namespace EcdLink.Api.CoreApi.Services
             var reports = _childProgressReportRepo.GetAll().Where(x => childIds.Contains(x.ChildId) && allPeriodIds.Contains(x.ChildProgressReportPeriodId)).AsNoTracking().AsQueryable();
 
             var allReports = reports.Where(x => x.ChildProgressReportPeriodId == activeReportPeriodId);
-            allReports.Union(reports.Where(x => x.DateCompleted.HasValue));
+            allReports.Union(reports.Where(x => x.DateCompleted.HasValue)).Distinct();
 
             foreach (var report in allReports) 
             {
