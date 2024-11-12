@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 import { ChildProgressDetailedSkillObservation } from '@/models/progress/child-progress-report';
 import { ProgressTrackingCategoryDto } from '@ecdlink/core';
 import greenFaceImg from '@/assets/progress-reports/green-face.png';
-import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 
 export type ProgressCaregiverReportSkillsPageProps = {
   childFirstName: string;
@@ -24,21 +23,6 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
   totalPages,
   reportingPeriodEndDate,
 }) => {
-  const getCategoryBg = (categoryName: string) => {
-    switch (categoryName) {
-      case 'Social emotional':
-        return '#FFF4F9';
-      case 'Cognitive':
-        return '#F7F8FB';
-      case 'Physical':
-        return '#F9FCF4';
-      case 'Language':
-        return '#FAF6F9';
-      default:
-        return '#000000';
-    }
-  };
-
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
@@ -70,15 +54,15 @@ export const ProgressCaregiverReportSkillsPage: React.FC<
 
       {skillsByCategory.map((category) => (
         <div
-          className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
+          className="bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
           style={{
             borderColor: category.color,
-            backgroundColor: getCategoryBg(category.name),
+            // backgroundColor: category.color,
           }}
           key={category.id}
         >
           <div className="flex flex-row">
-            <img src={category.imageUrl} className="mr-4 h-14 w-14" />
+            <img src={category.imageUrl} className="white mr-4 h-14 w-14" />
             <Typography
               type="h3"
               color="textDark"

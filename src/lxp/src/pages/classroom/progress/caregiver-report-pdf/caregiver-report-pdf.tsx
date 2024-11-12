@@ -187,7 +187,6 @@ export const ProgressCaregiverReportPdf: React.FC<
         </div>
       )}
 
-      {/* Where to get links??? */}
       <div className="mt-12">
         <ProgressCaregiverResourcesPage
           childFirstName={child?.user?.firstName || ''}

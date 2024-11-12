@@ -1429,4 +1429,53 @@ INSERT INTO "ContentValue" ("ContentId","LocaleId","ContentTypeFieldId","Value",
 (684,'9ff6d6ff-4d77-4642-a6c8-9c3d06a40058'::uuid,29,'Ikghono lokusebenzisa imisipha emikhulu',current_date,current_date),
 (684,'9ff6d6ff-4d77-4642-a6c8-9c3d06a40058'::uuid,399,'#83BB26',current_date,current_date),
 (684,'9ff6d6ff-4d77-4642-a6c8-9c3d06a40058'::uuid,28,'',current_date,current_date);
+
+
+insert into "ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "InsertedDate", "UpdatedDate")
+values (12, '03fff220-106f-4ff7-9e06-20c4ec439483', 22, '#d3276c', current_date, current_date),
+(12, '058b9d8e-e472-48d6-8415-ba9408b95395', 22, '#d3276c', current_date, current_date),
+(12, '06370c67-692e-4664-a90a-c2de0621ff4d', 22, '#d3276c', current_date, current_date),
+(12, '0b86af94-d341-435a-b944-7a8c874c385a', 22, '#d3276c', current_date, current_date),
+(12, '7cc62017-7ee7-4f2c-9214-bc9be3f2396a', 22, '#d3276c', current_date, current_date),
+(12, '8de7442b-4c2e-4bc9-8b0f-0a2b3aa27f46', 22, '#d3276c', current_date, current_date),
+(12, '9ff6d6ff-4d77-4642-a6c8-9c3d06a40058', 22, '#d3276c', current_date, current_date),
+(12, 'b603d6d0-8b50-47ec-af3c-c6a2a078e56b', 22, '#d3276c', current_date, current_date),
+(12, 'c45fda51-e967-4414-8916-c39895aeb080', 22, '#d3276c', current_date, current_date),
+(12, 'e3adeb4f-d4ff-4daf-9e4a-9195181ee412', 22, '#d3276c', current_date, current_date);
+
+insert into "ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "InsertedDate", "UpdatedDate")
+values (13, '03fff220-106f-4ff7-9e06-20c4ec439483', 22, '#9e4d8e', current_date, current_date),
+(13, '058b9d8e-e472-48d6-8415-ba9408b95395', 22, '#9e4d8e', current_date, current_date),
+(13, '06370c67-692e-4664-a90a-c2de0621ff4d', 22, '#9e4d8e', current_date, current_date),
+(13, '0b86af94-d341-435a-b944-7a8c874c385a', 22, '#9e4d8e', current_date, current_date),
+(13, '7cc62017-7ee7-4f2c-9214-bc9be3f2396a', 22, '#9e4d8e', current_date, current_date),
+(13, '8de7442b-4c2e-4bc9-8b0f-0a2b3aa27f46', 22, '#9e4d8e', current_date, current_date),
+(13, '9ff6d6ff-4d77-4642-a6c8-9c3d06a40058', 22, '#9e4d8e', current_date, current_date),
+(13, 'b603d6d0-8b50-47ec-af3c-c6a2a078e56b', 22, '#9e4d8e', current_date, current_date),
+(13, 'c45fda51-e967-4414-8916-c39895aeb080', 22, '#9e4d8e', current_date, current_date),
+(13, 'e3adeb4f-d4ff-4daf-9e4a-9195181ee412', 22, '#9e4d8e', current_date, current_date);
+
+insert into "ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "InsertedDate", "UpdatedDate")
+values (685, '03fff220-106f-4ff7-9e06-20c4ec439483', 22, '#6974AF', current_date, current_date),
+(685, '058b9d8e-e472-48d6-8415-ba9408b95395', 22, '#6974AF', current_date, current_date),
+(685, '06370c67-692e-4664-a90a-c2de0621ff4d', 22, '#6974AF', current_date, current_date),
+(685, '0b86af94-d341-435a-b944-7a8c874c385a', 22, '#6974AF', current_date, current_date),
+(685, '7cc62017-7ee7-4f2c-9214-bc9be3f2396a', 22, '#6974AF', current_date, current_date),
+(685, '8de7442b-4c2e-4bc9-8b0f-0a2b3aa27f46', 22, '#6974AF', current_date, current_date),
+(685, '9ff6d6ff-4d77-4642-a6c8-9c3d06a40058', 22, '#6974AF', current_date, current_date),
+(685, 'b603d6d0-8b50-47ec-af3c-c6a2a078e56b', 22, '#6974AF', current_date, current_date),
+(685, 'c45fda51-e967-4414-8916-c39895aeb080', 22, '#6974AF', current_date, current_date),
+(685, 'e3adeb4f-d4ff-4daf-9e4a-9195181ee412', 22, '#6974AF', current_date, current_date);
+
+insert into "ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "InsertedDate", "UpdatedDate")
+values (686, '03fff220-106f-4ff7-9e06-20c4ec439483', 22, '#00B0E0', current_date, current_date),
+(686, '058b9d8e-e472-48d6-8415-ba9408b95395', 22, '#00B0E0', current_date, current_date),
+(686, '06370c67-692e-4664-a90a-c2de0621ff4d', 22, '#00B0E0', current_date, current_date),
+(686, '0b86af94-d341-435a-b944-7a8c874c385a', 22, '#00B0E0', current_date, current_date),
+(686, '7cc62017-7ee7-4f2c-9214-bc9be3f2396a', 22, '#00B0E0', current_date, current_date),
+(686, '8de7442b-4c2e-4bc9-8b0f-0a2b3aa27f46', 22, '#00B0E0', current_date, current_date),
+(686, '9ff6d6ff-4d77-4642-a6c8-9c3d06a40058', 22, '#00B0E0', current_date, current_date),
+(686, 'b603d6d0-8b50-47ec-af3c-c6a2a078e56b', 22, '#00B0E0', current_date, current_date),
+(686, 'c45fda51-e967-4414-8916-c39895aeb080', 22, '#00B0E0', current_date, current_date),
+(686, 'e3adeb4f-d4ff-4daf-9e4a-9195181ee412', 22, '#00B0E0', current_date, current_date);
 */
