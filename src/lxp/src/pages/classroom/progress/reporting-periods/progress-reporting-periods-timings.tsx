@@ -97,8 +97,8 @@ export const ProgressReportingPeriodsTimings: React.FC<
             />
             <DatePicker
               placeholderText={`Please select a date`}
-              wrapperClassName="text-center w-full"
-              className="border-uiLight text-textMid mx-auto w-full rounded-md"
+              wrapperClassName="text-left"
+              className="text-textMid bg-uiBg mt-2 mr-4"
               selected={
                 !!reportingPeriod.startDate
                   ? new Date(reportingPeriod.startDate)
@@ -126,7 +126,7 @@ export const ProgressReportingPeriodsTimings: React.FC<
               dateFormat="EEE, dd MMM yyyy"
               minDate={getPreviousDate(index, true)}
               maxDate={getNextDate(index, true)}
-              withPortal={true}
+              // withPortal={true}
             />
             <Typography
               className="mt-2"
@@ -142,8 +142,8 @@ export const ProgressReportingPeriodsTimings: React.FC<
             />
             <DatePicker
               placeholderText={`Please select a date`}
-              wrapperClassName="text-center w-full"
-              className="border-uiLight text-textMid mx-auto w-full rounded-md"
+              wrapperClassName="text-left"
+              className="text-textMid bg-uiBg mt-2 mr-4"
               selected={
                 !!reportingPeriod.endDate
                   ? new Date(reportingPeriod.endDate)
@@ -171,7 +171,7 @@ export const ProgressReportingPeriodsTimings: React.FC<
               dateFormat="EEE, dd MMM yyyy"
               minDate={getPreviousDate(index, false)}
               maxDate={getNextDate(index, false)}
-              withPortal={true}
+              // withPortal={true}
             />
 
             {!!reportingPeriod.startDate &&
