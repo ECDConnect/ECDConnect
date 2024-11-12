@@ -32,7 +32,6 @@ import walkthroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
 import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
 import { userSelectors } from '@/store/user';
-import { contentReportSelectors } from '@/store/content/report';
 import {
   programmeThemeSelectors,
   programmeThemeThunkActions,
