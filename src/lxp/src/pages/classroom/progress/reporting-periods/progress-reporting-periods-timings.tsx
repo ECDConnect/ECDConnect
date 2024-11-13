@@ -126,7 +126,7 @@ export const ProgressReportingPeriodsTimings: React.FC<
               dateFormat="EEE, dd MMM yyyy"
               minDate={getPreviousDate(index, true)}
               maxDate={getNextDate(index, true)}
-              // withPortal={true}
+              withPortal={true}
             />
             <Typography
               className="mt-2"
@@ -171,7 +171,7 @@ export const ProgressReportingPeriodsTimings: React.FC<
               dateFormat="EEE, dd MMM yyyy"
               minDate={getPreviousDate(index, false)}
               maxDate={getNextDate(index, false)}
-              // withPortal={true}
+              withPortal={true}
             />
 
             {!!reportingPeriod.startDate &&
