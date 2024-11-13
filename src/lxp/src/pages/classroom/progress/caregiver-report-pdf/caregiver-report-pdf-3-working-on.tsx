@@ -83,21 +83,27 @@ export const ProgressCaregiverReportWorkingOnPage: React.FC<
             {category.skills.map((skill, index) => (
               <div className="mb-2" key={index}>
                 <Typography
-                  type="body"
+                  type="help"
                   color="textDark"
                   weight="bold"
                   text={'Skill to work on'}
                 />
-                <p className="font-body text-textDark mb-2">
+                <p
+                  className="font-body text-textDark mb-2"
+                  style={{ fontSize: '12px' }}
+                >
                   <span>&#8226;</span> {skill.skillDescription}
                 </p>
                 <Typography
-                  type="body"
+                  type="help"
                   weight="bold"
                   color="textDark"
                   text={`Together, we can support ${childFirstName} by`}
                 />
-                <p className="font-body text-textDark mb-2">
+                <p
+                  className="font-body text-textDark mb-2"
+                  style={{ fontSize: '12px' }}
+                >
                   <span>&#8226;</span> {skill.howToSupport}
                 </p>
               </div>
