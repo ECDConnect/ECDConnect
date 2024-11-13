@@ -41,7 +41,7 @@ export const ProgressInfoPage: React.FC<ProgressInfoPageProps> = ({
   useEffect(() => {
     new InfoService()
       .getMoreInformation(
-        MoreInformationTypeEnum.DevelopingChildrenHolistically,
+        MoreInformationTypeEnum.TrackingProgress,
         selectedLanguage
       )
       .then((info) => setData(info));
@@ -50,7 +50,7 @@ export const ProgressInfoPage: React.FC<ProgressInfoPageProps> = ({
   return (
     <InfoPage
       title="Tracking progress"
-      section={MoreInformationTypeEnum.DevelopingChildrenHolistically}
+      section={MoreInformationTypeEnum.TrackingProgress}
       closeText="Start tracking progress"
       closeIcon=""
       onClose={onClose}
