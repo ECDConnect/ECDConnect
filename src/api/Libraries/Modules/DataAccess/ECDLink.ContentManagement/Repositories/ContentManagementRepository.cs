@@ -484,7 +484,9 @@ namespace ECDLink.ContentManagement.Repositories
                     //update with fulllist
                     contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                 }
-                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) && contentFieldValuePairs.ContainsKey("description"))
+                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) && 
+                    (contentFieldValuePairs.ContainsKey("description")) || contentFieldValuePairs.ContainsKey("descriptionA")
+                    )
                 {
                     contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
                     contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
