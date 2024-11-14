@@ -484,7 +484,9 @@ namespace ECDLink.ContentManagement.Repositories
                     //update with fulllist
                     contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                 }
-                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) && contentFieldValuePairs.ContainsKey("description"))
+                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) && 
+                    (contentFieldValuePairs.ContainsKey("description")) || contentFieldValuePairs.ContainsKey("descriptionA")
+                    )
                 {
                     contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
                     contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
@@ -776,7 +778,7 @@ namespace ECDLink.ContentManagement.Repositories
             using MemoryStream fileStream = new MemoryStream(bytes);
 
             var fileName = DateTime.Now.Ticks + "_" + fieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
-            var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
+            var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.Unknown)).Result;
             fileStream.Dispose();
 
             return fileUrl.ToString();
