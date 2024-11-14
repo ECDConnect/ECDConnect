@@ -27,8 +27,8 @@ import { useSelector } from 'react-redux';
 import { calendarSelectors } from '@/store/calendar';
 import { CalendarEventModel, RoleSystemNameEnum } from '@ecdlink/core';
 import { useCalendarViewEvent } from './components/calendar-view-event/calendar-view-event';
-import ROUTES from '@/routes/routes';
 import { userSelectors } from '@/store/user';
+import './calendar-home-styles.css';
 
 export const CalendarHome: React.FC = () => {
   const history = useHistory();
