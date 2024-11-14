@@ -253,7 +253,7 @@ export const MoreInformationPage = ({
           )}
           {renderContent}
           {childrenPosition === 'bottom' && children}
-          {footer}
+          {moreInformation && footer}
           <Button
             className="mt-auto mb-4"
             type="filled"
