@@ -488,8 +488,16 @@ namespace ECDLink.ContentManagement.Repositories
                     (contentFieldValuePairs.ContainsKey("description")) || contentFieldValuePairs.ContainsKey("descriptionA")
                     )
                 {
-                    contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
-                    contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
+                    if (contentFieldValuePairs.ContainsKey("description"))
+                    {
+                        contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
+                        contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
+                    }
+                    if (contentFieldValuePairs.ContainsKey("descriptionA"))
+                    {
+                        contentFieldValuePairs["descriptionA"] = contentFieldValuePairs["descriptionA"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
+                        contentFieldValuePairs["descriptionA"] = contentFieldValuePairs["descriptionA"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
+                    }
                 }
                 if (!contentFieldValuePairs.ContainsKey("insertedDate"))
                 {
