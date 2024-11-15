@@ -30,7 +30,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
            List<Guid> languageSearch = null,
            PagedQueryInput pagingInput = null,
            DateTime? startDate = null,
-           DateTime? endDate= null)
+           DateTime? endDate= null,
+           string shareContent = null)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -82,13 +83,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     && typesSearch.Count == 0
                     && themesSearch.Count == 0
                     && skillsSearch.Count == 0
-                    && startDate == null && endDate == null)
+                    && startDate == null 
+                    && endDate == null
+                    && string.IsNullOrEmpty(shareContent))
                 {
                     return records;
                 }
                 else
                 {
-                    var allContentValuePairs = new List<StoryBookViewModel>();
+                    var filteredRecords = new List<StoryBookViewModel>();
 
                     if (!string.IsNullOrEmpty(search))
                     {
@@ -96,7 +99,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         {
                             if (record.Name.ToLower().Contains(search.ToLower()))
                             {
-                                allContentValuePairs.Add(record);
+                                filteredRecords.Add(record);
+                            }
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(shareContent))
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.ShareContent.ToLower().Contains(shareContent.ToLower()))
+                            {
+                                filteredRecords.Add(record);
                             }
                         }
                     }
@@ -107,7 +121,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         {
                             if (typesSearch.Contains(record.Type))
                             {
-                                allContentValuePairs.Add(record);
+                                filteredRecords.Add(record);
                             }
                         }
                     }
@@ -119,7 +133,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                             if (typesSearch.Contains(record.Themes))
                             {
-                                allContentValuePairs.Add(record);
+                                filteredRecords.Add(record);
                             }
                         }
                     }
@@ -130,7 +144,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         {
                             if (typesSearch.Contains(record.Type))
                             {
-                                allContentValuePairs.Add(record);
+                                filteredRecords.Add(record);
                             }
                         }
                     }
@@ -145,14 +159,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                                 {
                                     if (record.InsertedDate >= startDate && record.InsertedDate <= endDate)
                                     {
-                                        allContentValuePairs.Add(record);
+                                        filteredRecords.Add(record);
                                     }
                                 }
                                 else
                                 {
                                     if (record.InsertedDate >= startDate)
                                     {
-                                        allContentValuePairs.Add(record);
+                                        filteredRecords.Add(record);
                                     }
                                 }
                             }
@@ -162,14 +176,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                                 {
                                     if (record.UpdatedDate >= startDate && record.UpdatedDate <= endDate)
                                     {
-                                        allContentValuePairs.Add(record);
+                                        filteredRecords.Add(record);
                                     }
                                 }
                                 else
                                 {
                                     if (record.UpdatedDate >= startDate)
                                     {
-                                        allContentValuePairs.Add(record);
+                                        filteredRecords.Add(record);
                                     }
                                 }
                             }
@@ -177,7 +191,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         }
                     }
 
-                    return allContentValuePairs;
+                    return filteredRecords;
                 }
             }
 

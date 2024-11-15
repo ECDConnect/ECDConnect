@@ -10,10 +10,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Name { get; set; }
         public string Type { get; set; }
         public string Themes { get; set; }
+        public string ShareContent { get; set; }
         public Guid LocaleId { get; set; }
         public DateTime UpdatedDate { get; set; }
         public DateTime? InsertedDate { get; set; }
-        public Guid[] AvailableLanguages { get; set; }
+        public List<Guid> AvailableLanguages { get; set; }
 
         public StoryBookViewModel(Object record, Guid localeId) {
 
@@ -23,14 +24,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             item.TryGetValue("updatedDate", out var updatedDate);
             item.TryGetValue("insertedDate", out var insertedDate);
             item.TryGetValue("availableLanguages", out var availableLanguages);
+            item.TryGetValue("shareContent", out var shareContent);
 
             Id = id.ToString();
             Name = name.ToString();
             LocaleId = localeId;
             Themes = "";
+            ShareContent = shareContent == null ? "" : shareContent.ToString();
             UpdatedDate = DateTime.Parse(updatedDate.ToString());
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
-            AvailableLanguages = (availableLanguages as string).Split(",").Select(i => new Guid(i)).ToArray();
+            AvailableLanguages = (availableLanguages as string).Split(",").Select(i => new Guid(i)).ToList();
         }
     }
 
