@@ -1288,6 +1288,11 @@ export const Dashboard: React.FC = () => {
     }
   }
 
+  const name =
+    userData && (userData?.firstName || userData?.userName)
+      ? `Hi ${(userData && userData?.firstName) || userData?.userName}!`
+      : 'Welcome!';
+
   return (
     <>
       <DashboardWrapper />
@@ -1357,9 +1362,7 @@ export const Dashboard: React.FC = () => {
         <Typography
           type={'h1'}
           color="white"
-          text={`Hi ${
-            (userData && userData?.firstName) || userData?.userName
-          }!`}
+          text={name}
           className={styles.welcomeText}
         />
         <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>

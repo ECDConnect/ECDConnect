@@ -720,7 +720,7 @@ namespace ECDLink.ContentManagement.Repositories
                 ContentTypeId = contentTypeId,
                 ContentValues = contentValues,
                 IsActive = true,
-                TenantId = TenantExecutionContext.Tenant.Id,
+                //TenantId = TenantExecutionContext.Tenant.Id,
                 InsertedDate = DateTime.UtcNow,
                 UpdatedDate = DateTime.UtcNow
             };

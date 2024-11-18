@@ -14093,6 +14093,7 @@ export type Query = {
   currentUserCompletedTrainingCourses?: Maybe<Array<Maybe<UserTrainingCourse>>>;
   dangerSignTranslations?: Maybe<Array<Maybe<DangerSignTranslation>>>;
   defaultSettingsForTenant?: Maybe<Scalars['String']>;
+  deleteMultipleStoryBooks?: Maybe<BulkDeactivateResult>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   districtsAndStats?: Maybe<Array<Maybe<DistrictStatsModel>>>;
   districtsForProvinceId?: Maybe<Array<Maybe<District>>>;
@@ -16962,6 +16963,10 @@ export type QueryDangerSignTranslationsArgs = {
   toTranslate?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryDeleteMultipleStoryBooksArgs = {
+  contentIds?: InputMaybe<Array<Scalars['Int']>>;
+};
+
 export type QueryDisplayMetricsArgs = {
   type?: InputMaybe<Scalars['String']>;
 };
@@ -17365,6 +17370,7 @@ export type QueryStoryBookRecordsArgs = {
   languageSearch?: InputMaybe<Array<Scalars['UUID']>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Scalars['String']>;
   skillsSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   startDate?: InputMaybe<Scalars['DateTime']>;
   themesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -18847,18 +18853,6 @@ export type StoryBookPartsInput = {
   shareContent?: InputMaybe<Scalars['String']>;
   storyBookPartQuestions?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
-};
-
-export type StoryBookViewModel = {
-  __typename?: 'StoryBookViewModel';
-  availableLanguages?: Maybe<Array<Scalars['UUID']>>;
-  id?: Maybe<Scalars['String']>;
-  insertedDate?: Maybe<Scalars['DateTime']>;
-  localeId: Scalars['UUID'];
-  name?: Maybe<Scalars['String']>;
-  themes?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-  updatedDate: Scalars['DateTime'];
 };
 
 export type StringOperationFilterInput = {
