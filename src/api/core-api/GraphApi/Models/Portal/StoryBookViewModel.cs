@@ -21,6 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             var item = (IDictionary<string, object>)record;
             item.TryGetValue("id", out var id);
             item.TryGetValue("name", out var name);
+            item.TryGetValue("type", out var type);
             item.TryGetValue("updatedDate", out var updatedDate);
             item.TryGetValue("insertedDate", out var insertedDate);
             item.TryGetValue("availableLanguages", out var availableLanguages);
@@ -28,6 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
             Id = id.ToString();
             Name = name.ToString();
+            Type = type.ToString();
             LocaleId = localeId;
             Themes = "";
             ShareContent = shareContent == null ? "" : shareContent.ToString();
