@@ -1289,8 +1289,8 @@ export const Dashboard: React.FC = () => {
   }
 
   const name =
-    userData && (userData?.firstName || userData?.userName)
-      ? `Hi ${(userData && userData?.firstName) || userData?.userName}!`
+    userData && userData?.firstName
+      ? `Hi ${userData && userData?.firstName}!`
       : 'Welcome!';
 
   return (
