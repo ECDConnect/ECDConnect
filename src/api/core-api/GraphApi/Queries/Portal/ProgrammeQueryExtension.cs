@@ -53,7 +53,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             }
 
             var themes = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId);
-
             var themeRecords = new List<ThemeViewModel>();
             foreach (var theme in themes)
             {
@@ -67,7 +66,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                                                  .ToList());
 
             }
-
 
             // populate theme values on records
             foreach (var item in records)
@@ -103,14 +101,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                     if (shareContent.Count != 0)
                     {
-                        foreach (var record in records)
+                        if (shareContent.Contains("Yes"))
                         {
-                            if (shareContent.Contains(record.ShareContent))
-                            {
-                                filteredRecords.Add(record);
-                            }
-
-                            
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes").ToList());
+                        }
+                        else if (shareContent.Contains("No"))
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no").ToList());
+                        }
+                        else
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "").ToList());
                         }
                     }
 
@@ -127,13 +128,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                     if (themesSearch.Count != 0)
                     {
-                        foreach (var record in records)
+                        if (themesSearch.Contains("Theme"))
                         {
-
-                            if (typesSearch.Contains(record.Themes))
-                            {
-                                filteredRecords.Add(record);
-                            }
+                            filteredRecords.AddRange(records.Where(x => x.Themes != "").ToList());
+                        }
+                        else
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
                         }
                     }
 
@@ -175,14 +176,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                                     }
                                 }
                             }
-
                         }
                     }
-
                     return filteredRecords;
                 }
             }
-
             return records;
         }
 
