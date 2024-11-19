@@ -26,12 +26,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
            string search = null,
            List<string> typesSearch = null,
            List<string> themesSearch = null,
-           List<string> skillsSearch = null,
            List<Guid> languageSearch = null,
+           List<string> shareContent = null,
            PagedQueryInput pagingInput = null,
            DateTime? startDate = null,
-           DateTime? endDate= null,
-           string shareContent = null)
+           DateTime? endDate= null)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -40,7 +39,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
             var records = new List<StoryBookViewModel>();
-
 
             if (languageSearch.Count > 0)
             {
@@ -82,10 +80,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 if (string.IsNullOrEmpty(search)
                     && typesSearch.Count == 0
                     && themesSearch.Count == 0
-                    && skillsSearch.Count == 0
                     && startDate == null 
                     && endDate == null
-                    && string.IsNullOrEmpty(shareContent))
+                    && shareContent.Count == 0)
                 {
                     return records;
                 }
@@ -104,14 +101,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(shareContent))
+                    if (shareContent.Count != 0)
                     {
                         foreach (var record in records)
                         {
-                            if (record.ShareContent.ToLower().Contains(shareContent.ToLower()))
+                            if (shareContent.Contains(record.ShareContent))
                             {
                                 filteredRecords.Add(record);
                             }
+
+                            
                         }
                     }
 
@@ -132,17 +131,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         {
 
                             if (typesSearch.Contains(record.Themes))
-                            {
-                                filteredRecords.Add(record);
-                            }
-                        }
-                    }
-
-                    if (skillsSearch.Count != 0)
-                    {
-                        foreach (var record in records)
-                        {
-                            if (typesSearch.Contains(record.Type))
                             {
                                 filteredRecords.Add(record);
                             }
