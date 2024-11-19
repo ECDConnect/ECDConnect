@@ -11,6 +11,7 @@ export const ContentTypes = {
   CONNECT_ITEM: 'ConnectItem',
   RESOURCE_LINK: 'ResourceLink',
   PROGRESS_TRACKING_SKILL: 'ProgressTrackingSkill',
+  PROGRESS_TRACKING_CATEGORY: 'ProgressTrackingCategory',
   CONSENT: 'Consent',
   MORE_INFORMATION: 'MoreInformation',
   INFO_PAGES: 'Info Pages',

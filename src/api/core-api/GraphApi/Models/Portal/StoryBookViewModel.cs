@@ -1,4 +1,5 @@
-﻿using System;
+﻿using iTextSharp.text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,6 +17,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public DateTime? InsertedDate { get; set; }
         public List<Guid> AvailableLanguages { get; set; }
 
+        public string Author { get; set; }
+        public string Illustrator { get; set; }
+        public string BookLocation { get; set; }
+        public string Keywords { get; set; }
+        public string StoryBookParts { get; set; }
+
         public StoryBookViewModel(Object record, Guid localeId) {
 
             var item = (IDictionary<string, object>)record;
@@ -27,9 +34,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             item.TryGetValue("availableLanguages", out var availableLanguages);
             item.TryGetValue("shareContent", out var shareContent);
 
+            item.TryGetValue("Author", out var author);
+            item.TryGetValue("illustrator", out var illustrator);
+            item.TryGetValue("bookLocation", out var bookLocation);
+            item.TryGetValue("keywords", out var keywords);
+            item.TryGetValue("storyBookParts", out var storyBookParts);
+
             Id = id.ToString();
             Name = name != null ? name.ToString() : "";
             Type = type != null ? type.ToString() : "";
+            Author = author != null ? author.ToString() : "";
+            Illustrator = illustrator != null ? illustrator.ToString() : "";
+            BookLocation = bookLocation != null ? bookLocation.ToString() : "";
+            Keywords = keywords != null ? keywords.ToString() : "";
+            StoryBookParts = storyBookParts != null ? storyBookParts.ToString() : "";
             LocaleId = localeId;
             Themes = "";
             ShareContent = shareContent == null ? "" : shareContent.ToString();
