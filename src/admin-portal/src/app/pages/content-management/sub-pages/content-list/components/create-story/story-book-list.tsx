@@ -233,7 +233,6 @@ export default function StoryBookList({
       typesSearch: filteredTypes,
       themesSearch: filteredThemes,
       languageSearch: filteredLanguage,
-      skillSearch: [],
       startDate: startDate === '' ? null : startDate,
       endDate: endDate === '' ? null : endDate,
       shareContent: filteredShare,
