@@ -37,6 +37,7 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
       noContentText = '-',
       onChangeSelectedRows,
       watchMode,
+      styling,
     },
     ref
   ) => {
@@ -109,7 +110,10 @@ export const Table = forwardRef<TableRefMethods, TableProps>(
 
       if (!!onClickRow) {
         return (
-          <button className="w-full truncate" onClick={() => onClickRow(row)}>
+          <button
+            className="w-full truncate text-left"
+            onClick={() => onClickRow(row)}
+          >
             {displayValue}
           </button>
         );

@@ -18855,6 +18855,19 @@ export type StoryBookPartsInput = {
   updatedDate?: InputMaybe<Scalars['String']>;
 };
 
+export type StoryBookViewModel = {
+  __typename?: 'StoryBookViewModel';
+  availableLanguages?: Maybe<Array<Scalars['UUID']>>;
+  id?: Maybe<Scalars['String']>;
+  insertedDate?: Maybe<Scalars['DateTime']>;
+  localeId: Scalars['UUID'];
+  name?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
+  themes?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
 export type StringOperationFilterInput = {
   and?: InputMaybe<Array<StringOperationFilterInput>>;
   contains?: InputMaybe<Scalars['String']>;

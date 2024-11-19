@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useQuery, useMutation, useLazyQuery } from '@apollo/client';
+import { useMutation, useLazyQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
@@ -10,12 +10,7 @@ import {
   useNotifications,
 } from '@ecdlink/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  DialogPosition,
-  renderIcon,
-  SearchDropDownOption,
-  Table,
-} from '@ecdlink/ui';
+import { DialogPosition, SearchDropDownOption, Table } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import {
   ContentManagementView,
@@ -24,7 +19,6 @@ import {
 // import { useResources } from '../../../../../../hooks/useResources';
 import { LanguageId } from '../../../../../../constants/language';
 import { ContentTypes } from '../../../../../../constants/content-management';
-import { BulkActionStatus } from '../../../../../../components/ui-table/type';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import debounce from 'lodash.debounce';
 import {
@@ -32,7 +26,11 @@ import {
   GetStoryBookRecords,
 } from '@ecdlink/graphql';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import { storyBookTypeOptions } from './story-book.types';
+import {
+  StoryBookTypeOptions,
+  StoryBookThemeOptions,
+  StoryBookShareOptions,
+} from './story-book.types';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -48,26 +46,34 @@ export interface ContentListProps {
   dataTypes?: any;
 }
 
-// export const sortByDataFreeOptions: SearchDropDownOption<string>[] = [
-//   DataFree?.Yes,
-//   DataFree?.No,
-// ].map((item) => ({
-//   id: item,
-//   label: item,
-//   value: item === 'Yes' ? 'true' : 'false',
-// }));
+export const sortByTypeOptions: SearchDropDownOption<string>[] = [
+  StoryBookTypeOptions?.StoryBook,
+  StoryBookTypeOptions?.ReadAloud,
+  StoryBookTypeOptions?.Other,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
-// export const sortByLikeOptions: SearchDropDownOption<string>[] = [
-//   Likes?.Zero,
-//   Likes?.OneToTen,
-//   Likes?.ElevenToFifty,
-//   Likes?.FiftyOneToHundred,
-//   Likes?.MoreThanHundred,
-// ].map((item) => ({
-//   id: item,
-//   label: item,
-//   value: item,
-// }));
+export const sortByThemeOptions: SearchDropDownOption<string>[] = [
+  StoryBookThemeOptions?.Theme,
+  StoryBookThemeOptions?.NoTheme,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+export const sortByShareOptions: SearchDropDownOption<string>[] = [
+  StoryBookShareOptions?.Yes,
+  StoryBookShareOptions?.No,
+  StoryBookShareOptions?.NA,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
 export default function StoryBookList({
   selectedTab,
@@ -80,41 +86,51 @@ export default function StoryBookList({
   setSelectedType,
   dataTypes,
 }: ContentListProps) {
+  const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
+    (item) => ({
+      id: item?.id,
+      label: item?.description,
+      value: item?.id,
+    })
+  );
+
   const [tableData, setTableData] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
-  const [typeFilter, setTypeFilter] = useState<SearchDropDownOption<string>[]>(
-    []
-  );
 
-  const [dataFreeFilter, setDataFreeFilter] = useState<
+  // Filter options
+  // ---------
+  const [typesFilter, setTypesFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
-  const filteredDataFree = useMemo(
-    () => dataFreeFilter?.map((item) => item?.value),
-    [dataFreeFilter]
+  const filteredTypes = useMemo(
+    () => typesFilter?.map((item) => item?.value),
+    [typesFilter]
   );
-
-  const [likesFilter, setLikesFilter] = useState<
+  // ---------
+  const [themesFilter, setThemesFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
-  const filteredLikes = useMemo(
-    () => likesFilter?.map((item) => item?.value),
-    [likesFilter]
+  const filteredThemes = useMemo(
+    () => themesFilter?.map((item) => item?.value),
+    [themesFilter]
   );
-
+  // ---------
+  const [shareFilter, setShareFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredShare = useMemo(
+    () => shareFilter?.map((item) => item?.value),
+    [shareFilter]
+  );
+  // ---------
   const [languageFilter, setLanguageFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
-
-  const languageFilterValues = useMemo(
+  const filteredLanguage = useMemo(
     () => languageFilter?.map((item) => item?.value),
     [languageFilter]
-  );
-  const typeFilterValues = useMemo(
-    () => typeFilter?.map((item) => item?.value),
-    [typeFilter]
   );
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
@@ -211,30 +227,29 @@ export default function StoryBookList({
     }
   }, [choosedSectionTitle, contentType]);
 
-  //   string search = null,
-  // List<string> typesSearch = null,
-  // List<string> themesSearch = null,
-  // List<string> skillsSearch = null,
-  // List<Guid> languageSearch = null,
-  // PagedQueryInput pagingInput = null,
-  // DateTime? startDate = null,
-  // DateTime? endDate= null
-
   const queryVariables = useMemo(
     () => ({
-      localeId: languageId,
       search: '',
-      typesSearch: filteredDataFree,
-      themesSearch: filteredLikes,
-      languageSearch: filteredLikes,
+      typesSearch: filteredTypes,
+      themesSearch: filteredThemes,
+      languageSearch: filteredLanguage,
+      skillSearch: [],
       startDate: startDate === '' ? null : startDate,
       endDate: endDate === '' ? null : endDate,
+      shareContent: filteredShare,
       pagingInput: {
         pageNumber: 1,
         pageSize: null,
       },
     }),
-    [endDate, filteredDataFree, filteredLikes, languageId, startDate]
+    [
+      filteredTypes,
+      filteredThemes,
+      filteredLanguage,
+      startDate,
+      endDate,
+      filteredShare,
+    ]
   );
 
   // const [resources, setResources] = useState<any[]>([]);
@@ -278,87 +293,6 @@ export default function StoryBookList({
     viewContent(model);
   };
 
-  const onBulkActionCallback = useCallback(
-    (status: BulkActionStatus) => {
-      if (status !== 'success') return;
-
-      refetchContent({
-        localeId: languageId.toString(),
-      });
-      refreshParent();
-    },
-    [languageId, refetchContent, refreshParent]
-  );
-
-  const filteredData = useMemo(() => {
-    if (startDate && endDate) {
-      const filteredByDate = tableData?.filter((d) => {
-        return (
-          new Date(d?.updatedDate).getTime() >=
-            new Date(startDate)?.getTime() &&
-          new Date(d?.updatedDate).getTime() <= new Date(endDate)?.getTime()
-        );
-      });
-
-      const filteredByType =
-        typeFilterValues?.length > 0
-          ? filteredByDate?.filter((el) => {
-              return typeFilterValues?.some((f) => {
-                return f === el.childType;
-              });
-            })
-          : filteredByDate;
-
-      if (languageFilter?.length > 0) {
-        const filteredbyLanguageObjects = filteredByType.filter((item) =>
-          item.availableLanguages.some((languageId) =>
-            languageFilterValues.includes(languageId)
-          )
-        );
-        return filteredbyLanguageObjects;
-      }
-
-      return filteredByType;
-    }
-
-    if (typeFilterValues?.length > 0) {
-      const typeFilterValue = tableData?.filter((el) => {
-        return typeFilterValues?.some((f) => {
-          return f === el.type;
-        });
-      });
-
-      if (languageFilter?.length > 0) {
-        const filteredbyLanguageObjects = typeFilterValue.filter((item) =>
-          item.availableLanguages.some((languageId) =>
-            languageFilterValues.includes(languageId)
-          )
-        );
-        return filteredbyLanguageObjects;
-      }
-
-      return typeFilterValue;
-    }
-
-    if (languageFilter?.length > 0) {
-      const filteredbyLanguageObjects = tableData.filter((item) =>
-        item.availableLanguages.some((languageId) =>
-          languageFilterValues.includes(languageId)
-        )
-      );
-      return filteredbyLanguageObjects;
-    }
-
-    return tableData;
-  }, [
-    endDate,
-    languageFilter?.length,
-    languageFilterValues,
-    tableData,
-    startDate,
-    typeFilterValues,
-  ]);
-
   //////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////
@@ -388,9 +322,9 @@ export default function StoryBookList({
   const getChipColor = (type?: string) => {
     if (type) {
       switch (type) {
-        case storyBookTypeOptions?.ReadAloud:
+        case StoryBookTypeOptions?.ReadAloud:
           return 'bg-primary';
-        case storyBookTypeOptions?.StoryBook:
+        case StoryBookTypeOptions?.StoryBook:
           return 'bg-secondary';
         default:
           return 'bg-infoMain';
@@ -422,37 +356,47 @@ export default function StoryBookList({
             </div>
           </div>
         ),
-        // dataFreeComponent: (
-        //   <p
-        //     className={
-        //       item?.dataFree === 'true' ? 'text-successMain' : 'text-errorMain'
-        //     }
-        //   >
-        //     {item?.dataFree === 'true'
-        //       ? renderIcon('CheckCircleIcon', 'success h-6 w-6')
-        //       : renderIcon('XCircleIcon', 'error h-6 w-6')}
-        //   </p>
-        // ),
+        languageComponent: (
+          <div className="ml-0 flex cursor-pointer flex-row items-center">
+            {item.availableLanguages?.map((item: any, index: number) => {
+              const language = languages?.find(
+                (language) =>
+                  language?.id === item.availableLanguages?.id ||
+                  language?.id === item
+              );
+              return (
+                <div
+                  key={`language_` + index}
+                  className={' text-textMid m-1 rounded-full py-1 text-xs'}
+                >
+                  {index === item.availableLanguages?.length - 1
+                    ? `${language?.locale}`
+                    : `${language?.locale};`}
+                </div>
+              );
+            })}
+          </div>
+        ),
       })
     ) ?? [];
 
   const columns: Icolumn[] = [
     {
       field: 'name',
-      use: 'Storybook title',
+      use: 'Story title',
     },
     {
       field: 'typeComponent',
       use: 'Type',
     },
-    // {
-    //   field: 'dataFreeComponent',
-    //   use: 'Data free?',
-    // },
-    // {
-    //   field: 'numberLikes',
-    //   use: '# of likes',
-    // },
+    {
+      field: 'themes',
+      use: 'Themes',
+    },
+    {
+      field: 'languageComponent',
+      use: 'Languages',
+    },
     {
       field: 'updatedDate',
       use: 'Last updated',
@@ -462,15 +406,19 @@ export default function StoryBookList({
   const clearFilters = () => {
     setStartDate('');
     setEndDate('');
-    setDataFreeFilter([]);
-    setLikesFilter([]);
+    setTypesFilter([]);
+    setThemesFilter([]);
+    setLanguageFilter([]);
+    setShareFilter([]);
   };
 
   const isFilterActive =
-    !!dataFreeFilter?.length ||
+    !!typesFilter?.length ||
+    !!themesFilter?.length ||
+    !!languageFilter?.length ||
+    !!shareFilter?.length ||
     !!startDate ||
-    !!endDate ||
-    !!likesFilter?.length;
+    !!endDate;
 
   const noContentText = useMemo(() => {
     if (isFilterActive) {
@@ -479,7 +427,7 @@ export default function StoryBookList({
     return 'No entries found';
   }, [isFilterActive]);
 
-  const [deactivateResources, { loading: deactivating }] = useMutation(
+  const [deactivateStoryBooks, { loading: deactivating }] = useMutation(
     DeleteMultipleStoryBooks,
     {
       variables: {
@@ -490,7 +438,7 @@ export default function StoryBookList({
   );
 
   const deactivateStorybooks = useCallback(() => {
-    deactivateResources({
+    deactivateStoryBooks({
       variables: {
         contentIds: selectedStorybooks?.map((item) => item?.id),
       },
@@ -521,7 +469,7 @@ export default function StoryBookList({
         });
       });
   }, [
-    deactivateResources,
+    deactivateStoryBooks,
     refetchContent,
     selectedStorybooks,
     setNotification,
@@ -603,6 +551,46 @@ export default function StoryBookList({
             ]}
             filters={[
               {
+                type: 'search-dropdown',
+                menuItemClassName: 'ml-20 w-11/12',
+                options: sortByTypeOptions,
+                selectedOptions: typesFilter,
+                onChange: setTypesFilter,
+                placeholder: 'Type',
+                multiple: true,
+                info: { name: 'Type :' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'ml-20 w-11/12',
+                options: sortByThemeOptions,
+                selectedOptions: themesFilter,
+                onChange: setThemesFilter,
+                placeholder: 'Theme',
+                multiple: true,
+                info: { name: 'Theme :' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'ml-20 w-11/12',
+                options: sortByLanguageOptions,
+                selectedOptions: languageFilter,
+                onChange: setLanguageFilter,
+                placeholder: 'Languages',
+                multiple: true,
+                info: { name: 'Languages :' },
+              },
+              {
+                type: 'search-dropdown',
+                menuItemClassName: 'ml-20 w-11/12',
+                options: sortByShareOptions,
+                selectedOptions: shareFilter,
+                onChange: setShareFilter,
+                placeholder: 'Shared with others',
+                multiple: false,
+                info: { name: 'Shared with others:' },
+              },
+              {
                 dateFormat: 'd MMM yyyy',
                 className: 'w-64 h-11 mt-1 border-2 border-transparent',
                 isFullWidth: false,
@@ -620,26 +608,6 @@ export default function StoryBookList({
                 selectsRange: true,
                 shouldCloseOnSelect: true,
               },
-              // {
-              //   type: 'search-dropdown',
-              //   menuItemClassName: 'ml-20 w-11/12',
-              //   options: sortByDataFreeOptions,
-              //   selectedOptions: dataFreeFilter,
-              //   onChange: setDataFreeFilter,
-              //   placeholder: 'Datafree',
-              //   multiple: true,
-              //   info: { name: 'Datafree :' },
-              // },
-              // {
-              //   type: 'search-dropdown',
-              //   menuItemClassName: 'ml-20 w-11/12',
-              //   options: sortByLikeOptions,
-              //   selectedOptions: likesFilter,
-              //   onChange: setLikesFilter,
-              //   placeholder: 'Likes',
-              //   multiple: true,
-              //   info: { name: 'Likes :' },
-              // },
             ]}
           />
         </div>

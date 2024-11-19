@@ -672,7 +672,6 @@ export default function ContentList({
   if (tableData && displayFields) {
     return (
       <div>
-        selectedTab={selectedTab}
         <div className="flex flex-col">
           <div className="mb-8 flex flex-col items-center gap-2 md:justify-between lg:flex-row">
             <div className="bg-adminPortalBg relative w-full rounded-md lg:w-6/12">

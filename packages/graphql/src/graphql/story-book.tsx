@@ -5,23 +5,21 @@ export const GetStoryBookRecords = gql`
     $search: String
     $typesSearch: [String]
     $themesSearch: [String]
-    $skillsSearch: [String]
     $languageSearch: [UUID!]
+    $shareContent: [String]
     $startDate: DateTime
     $endDate: DateTime
-    $shareContent: String
     $pagingInput: PagedQueryInput
   ) {
     storyBookRecords(
       search: $search
       typesSearch: $typesSearch
       themesSearch: $themesSearch
-      skillsSearch: $skillsSearch
       languageSearch: $languageSearch
+      shareContent: $shareContent
       startDate: $startDate
       endDate: $endDate
       pagingInput: $pagingInput
-      shareContent: $shareContent
     ) {
       id
       name

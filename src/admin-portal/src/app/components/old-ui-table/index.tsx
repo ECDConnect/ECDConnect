@@ -249,7 +249,7 @@ export default function UiTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: `text-gray-900 border-b-2 border-gray-100`,
+            table_row: `text-gray-900 border-b-2 border-gray-100 bg-blue-50`,
             table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
           },
           table_body: {

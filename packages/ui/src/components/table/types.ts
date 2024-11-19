@@ -57,8 +57,24 @@ export interface TableProps {
   onClickRow?: (row: Irow) => void;
   onChangePage?: (page: number) => void;
   onChangeSelectedRows?: (rows: Irow[]) => void;
+  styling?: ItableStyle;
 }
 
 export interface TableRefMethods {
   resetSelectedRows: () => void;
+}
+
+interface ItableStyle {
+  base_bg_color?: string; // defaults to  bg-pink-700
+  base_text_color?: string; // defaults to text-pink-700
+  main?: string; // The container holding the table
+  table_head?: {
+    table_row?: string; // The <tr/> holding all <th/>
+    table_data?: string; // each table head column
+  };
+  table_body?: {
+    main?: string; // main here targets <tbody/>
+    table_row?: string;
+    table_data?: string;
+  };
 }
