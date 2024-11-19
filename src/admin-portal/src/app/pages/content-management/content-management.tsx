@@ -137,7 +137,6 @@ export function ContentManagement() {
     const currentType = dataTypes.contentTypes.find(
       (x: ContentTypeDto) => x.id === selectedType?.id
     );
-
     setSelectedType(currentType);
     setSelectedContent(contentManagementView);
   };

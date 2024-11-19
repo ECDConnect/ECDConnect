@@ -1,5 +1,4 @@
-﻿using iTextSharp.text;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,8 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             item.TryGetValue("insertedDate", out var insertedDate);
             item.TryGetValue("availableLanguages", out var availableLanguages);
             item.TryGetValue("shareContent", out var shareContent);
-
-            item.TryGetValue("Author", out var author);
+            item.TryGetValue("author", out var author);
             item.TryGetValue("illustrator", out var illustrator);
             item.TryGetValue("bookLocation", out var bookLocation);
             item.TryGetValue("keywords", out var keywords);
