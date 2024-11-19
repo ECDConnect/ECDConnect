@@ -17370,8 +17370,7 @@ export type QueryStoryBookRecordsArgs = {
   languageSearch?: InputMaybe<Array<Scalars['UUID']>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
-  shareContent?: InputMaybe<Scalars['String']>;
-  skillsSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  shareContent?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   startDate?: InputMaybe<Scalars['DateTime']>;
   themesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   typesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -18857,15 +18856,20 @@ export type StoryBookPartsInput = {
 
 export type StoryBookViewModel = {
   __typename?: 'StoryBookViewModel';
+  author?: Maybe<Scalars['String']>;
   availableLanguages?: Maybe<Array<Scalars['UUID']>>;
+  bookLocation?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  illustrator?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
+  keywords?: Maybe<Scalars['String']>;
   localeId: Scalars['UUID'];
   name?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
+  storyBookParts?: Maybe<Scalars['String']>;
   themes?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
-  updatedDate: Scalars['DateTime'];
+  updatedDate?: Maybe<Scalars['DateTime']>;
 };
 
 export type StringOperationFilterInput = {
