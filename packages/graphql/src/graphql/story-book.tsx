@@ -29,6 +29,11 @@ export const GetStoryBookRecords = gql`
       insertedDate
       availableLanguages
       shareContent
+      author
+      illustrator
+      bookLocation
+      keywords
+      storyBookParts
       __typename
     }
   }
