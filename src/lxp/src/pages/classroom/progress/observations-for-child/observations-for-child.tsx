@@ -45,12 +45,21 @@ export const ObservationsForChild: React.FC = () => {
     syncChildProgressReports,
   } = useObserveProgressForChild(routeState.childId);
 
-  const { ageGroup, walkthroughObservations, walkthroughReplaceSkillText } =
-    useProgressWalkthrough();
+  const {
+    ageGroup,
+    walkthroughObservations,
+    walkthroughReplaceSkillText,
+    walkthroughReport,
+  } = useProgressWalkthrough();
+
+  const report = isWalkthrough ? walkthroughReport : currentReport;
+  const observations = isWalkthrough
+    ? walkthroughObservations
+    : currentObservations;
 
   const ageGroupRequiresSupportLearningSteps = true; // TODO - only for certain age groups
 
-  const totalSkillsSteps = Math.ceil((currentObservations.length || 0) / 5);
+  const totalSkillsSteps = Math.ceil((observations.length || 0) / 5);
   const totalSteps =
     totalSkillsSteps + (ageGroupRequiresSupportLearningSteps ? 2 : 0);
 
@@ -62,38 +71,36 @@ export const ObservationsForChild: React.FC = () => {
       ? totalSkillsSteps + 2
       : !!routeState.jumpToSkillId
       ? Math.ceil(
-          currentObservations.findIndex(
-            (x) => x.id === routeState.jumpToSkillId
-          ) / 5 || 1 / 5
+          observations.findIndex((x) => x.id === routeState.jumpToSkillId) /
+            5 || 1 / 5
         )
       : 1
   );
 
   const negativeSkills =
-    currentReport?.skillObservations.filter(
-      (x) => x.isNegative || !x?.isPositive
-    ) || [];
+    report?.skillObservations.filter((x) => x.isNegative || !x?.isPositive) ||
+    [];
 
   const skillsToChoose = negativeSkills.length < 4 ? negativeSkills.length : 4;
 
   const nextEnabled = useMemo<boolean>(() => {
     // For skills to work on, must choose correct number
     if (currentStep === totalSkillsSteps + 1) {
-      return currentReport!.skillsToWorkOn.length === skillsToChoose;
+      return report?.skillsToWorkOn.length === skillsToChoose;
     }
 
     // All details filled in for how to support
     if (currentStep === totalSkillsSteps + 2) {
       return (
-        (!!currentReport!.skillsToWorkOn.length &&
-          currentReport!.skillsToWorkOn.every((x) => x.howToSupport !== '')) ||
-        !!currentReport!.howToSupport
+        (!!report!.skillsToWorkOn.length &&
+          report!.skillsToWorkOn.every((x) => x.howToSupport !== '')) ||
+        !!report!.howToSupport
       );
     }
 
     // For skills pages, all in that current page must be answered
     if (currentStep <= totalSkillsSteps) {
-      return currentObservations
+      return observations
         .slice((currentStep - 1) * 5, currentStep * 5)
         .every((x) => !!x.value);
     }
@@ -147,19 +154,19 @@ export const ObservationsForChild: React.FC = () => {
             negativeSkills={negativeSkills}
             skillsToChoose={skillsToChoose}
             child={child!}
-            doNotKnowPercentage={currentReport?.unknownPercentage || 0}
+            doNotKnowPercentage={report?.unknownPercentage || 0}
             addSkillToWorkOn={addSkillToWorkOn}
             removeSkillToWorkOn={removeSkillToWorkOn}
-            skillsToWorkOn={currentReport?.skillsToWorkOn || []}
-            doNotKnowCount={currentReport?.unknownCount || 0}
+            skillsToWorkOn={report?.skillsToWorkOn || []}
+            doNotKnowCount={report?.unknownCount || 0}
           />
         )}
         {currentStep === totalSkillsSteps + 2 && (
           <ObservationsForChildSupportLearning
             child={child!}
-            howToSupport={currentReport?.howToSupport}
+            howToSupport={report?.howToSupport}
             currentAgeGroup={observationsAgeGroup!}
-            skillsToWorkOn={currentReport?.skillsToWorkOn || []}
+            skillsToWorkOn={report?.skillsToWorkOn || []}
             updateHowToSupport={updateHowToSupport}
             updateSkillToWorkOn={updateSkillToWorkOn}
           />

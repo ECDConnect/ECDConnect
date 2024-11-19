@@ -43,6 +43,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             _userId = string.IsNullOrEmpty(user) ? null : Guid.Parse(user);
         }
 
+         public virtual void SetTenantContext(Guid? tenant)
+        {
+            _tenantId = (Guid)tenant;
+        }
+
         public virtual void SetUserContext(Guid? user)
         {
             _userId = user;

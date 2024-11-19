@@ -46,7 +46,10 @@ export const ProgressCaregiverResourcesPage: React.FC<
       </div>
       <Divider dividerType="dashed" className="mb-4" />
       {links.map((x) => (
-        <div className="border-infoMain bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm">
+        <div
+          key={x.id}
+          className="border-infoMain bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
+        >
           <div className="flex flex-row">
             <img src={resourceLink} className="mr-4 h-14 w-14" alt="link" />
             <Typography

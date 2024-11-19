@@ -260,7 +260,6 @@ export default function ContentList({
         setDisplayFields(smallLargeGroupsDisplayFields);
         return;
       }
-
       if (choosedSectionTitle === 'Story activities') {
         const smallLargeGroupsDisplayFields = displayFields?.filter(
           (item) =>

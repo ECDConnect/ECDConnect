@@ -17,14 +17,14 @@ export const getStyles = ({
     },
     main: 'rounded-lg',
     table_head: {
-      table_row: ` mb-10 border-b-2 border-secondary`,
+      table_row: ` mb-10 border-b-2 border-secondary bg-blue-50`,
       table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-quaternary text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
     },
     table_body: {
-      main: '',
-      table_row: 'border-none py-6 bg-white hover:bg-adminPortalBg',
+      main: 'text-left',
+      table_row: 'border-none py-6 bg-white hover:bg-adminPortalBg text-left',
       table_data:
-        'truncate px-6 py-4 text-sm font-medium text-gray-900 border-b border-gray-100',
+        'truncate px-6 py-4 text-sm font-medium text-gray-900 border-b border-gray-100 text-left',
     },
     footer: {
       main: `${

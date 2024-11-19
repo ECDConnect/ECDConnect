@@ -83,26 +83,26 @@ export default function ProgressWalkthroughWrapper() {
       spotlightPadding: 16,
       spotlightClicks: true,
     },
-    {
-      target: '#ageGroupIndicator',
-      content:
-        translations[language][
-          "You will be shown the right assessment for the child's age."
-        ],
-      placement: 'bottom-end',
-      spotlightClicks: true,
-    },
-    {
-      target: '#skill-0',
-      content:
-        translations[language][
-          'Pretend that, while observing Temba, you see that he does smile.\n\nTap “Yes” to answer!'
-        ],
-      placement: 'bottom',
-      offset: 10,
-      disableBeacon: true,
-      spotlightPadding: 16,
-    },
+    // {
+    //   target: '#ageGroupIndicator',
+    //   content:
+    //     translations[language][
+    //       "You will be shown the right assessment for the child's age."
+    //     ],
+    //   placement: 'bottom-end',
+    //   spotlightClicks: true,
+    // },
+    // {
+    //   target: '#skill-0',
+    //   content:
+    //     translations[language][
+    //       'Pretend that, while observing Temba, you see that he does smile.\n\nTap “Yes” to answer!'
+    //     ],
+    //   placement: 'bottom',
+    //   offset: 10,
+    //   disableBeacon: true,
+    //   spotlightPadding: 16,
+    // },
     {
       target: '#skill-0',
       content:
@@ -185,7 +185,6 @@ export default function ProgressWalkthroughWrapper() {
     step,
     tooltipProps,
   }: TooltipRenderProps) {
-    console.log('');
     return (
       <div {...tooltipProps} className="ml-2">
         <Card className="rounded-2xl p-6">
@@ -229,8 +228,7 @@ export default function ProgressWalkthroughWrapper() {
   }
 
   const handleCallback = async (data: CallBackProps) => {
-    const { action, index, lifecycle, type } = data;
-    console.log('callback', data);
+    const { index, lifecycle, type } = data;
 
     if (type === 'step:after' && index === 0) {
       setState({ run: true, stepIndex: 1 });
@@ -263,6 +261,7 @@ export default function ProgressWalkthroughWrapper() {
         run={run}
         stepIndex={stepIndex}
         steps={steps}
+        scrollOffset={100}
         tooltipComponent={Tooltip}
         scrollToFirstStep
         showProgress

@@ -15,6 +15,7 @@ interface InfoPageProps {
   closeText?: MoreInformationPageProps['closeText'];
   closeIcon?: MoreInformationPageProps['closeIcon'];
   onClose: () => void;
+  footer?: React.ReactNode;
 }
 
 export const InfoPage = ({
@@ -25,6 +26,7 @@ export const InfoPage = ({
   closeText,
   onClose,
   childrenPosition,
+  footer,
 }: InfoPageProps) => {
   const [data, setData] = useState<MoreInformation[]>();
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
@@ -74,6 +76,7 @@ export const InfoPage = ({
         setSelectedLanguage(language);
       }}
       childrenPosition={childrenPosition}
+      footer={footer}
     >
       {children}
     </MoreInformationPage>

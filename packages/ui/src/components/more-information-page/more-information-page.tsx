@@ -30,6 +30,7 @@ export interface MoreInformationPageProps {
   children?: React.ReactNode;
   childrenPosition?: 'top' | 'bottom';
   languageSelectorPosition?: 'top' | 'bottom';
+  footer?: React.ReactNode;
 }
 
 export const MoreInformationPage = ({
@@ -48,6 +49,7 @@ export const MoreInformationPage = ({
   isClosable = true,
   closeText = 'Close',
   closeIcon = 'XIcon',
+  footer,
 }: MoreInformationPageProps) => {
   const { height } = useWindowSize();
 
@@ -251,6 +253,7 @@ export const MoreInformationPage = ({
           )}
           {renderContent}
           {childrenPosition === 'bottom' && children}
+          {moreInformation && footer}
           <Button
             className="mt-auto mb-4"
             type="filled"

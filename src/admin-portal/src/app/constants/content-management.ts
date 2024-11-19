@@ -18,6 +18,7 @@ export const ContentTypes = {
   THEME: 'Theme',
   ACTIVITY: 'Activity',
   CLASSROOMBUSINESSRESOURCE: 'ClassroomBusinessResource',
+  STORY_BOOK: 'StoryBook',
 };
 
 export const ContentForms = {

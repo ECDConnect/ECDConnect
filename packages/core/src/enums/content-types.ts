@@ -18,6 +18,7 @@ export enum MoreInformationTypeEnum {
   LearningThroughPlay = 'Learning through play',
   TheDailyRoutine = 'The daily routine',
   DevelopingChildrenHolistically = 'Developing children holistically',
+  TrackingProgress = 'Tracking Progress',
 }
 
 export enum ContentTypeEnum {

@@ -13,12 +13,14 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security.Api.Constants;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Services;
 using HotChocolate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +38,7 @@ namespace ECDLink.Security.Api
     public class AuthenticationController : ControllerBase
     {
         private readonly ITokenManager<ApplicationUser, SecurityCodeTokenManager> _securityCodeManager;
-        
+
         private readonly SecurityManager _securityManager;
         private readonly ApplicationUserManager _userManager;
         private readonly SecurityNotificationManager _notificationManager;
@@ -44,6 +46,7 @@ namespace ECDLink.Security.Api
         private readonly PersonnelService _personnelService;
         private readonly AuthenticationDbContext _dbContext;
         private readonly INotificationService _notificationService;
+        private readonly TenantService _tenantService;
 
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
@@ -54,11 +57,12 @@ namespace ECDLink.Security.Api
             ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            SecurityManager securityManager, 
+            SecurityManager securityManager,
             ApplicationUserManager userManager,
             IPasswordManager<ApplicationUser> passwordManager,
             SecurityNotificationManager notificationManager,
             PersonnelService personnelService,
+            TenantService tenantService,
             HierarchyEngine hierarchyEngine,
             AuthenticationDbContext dbContext,
             [Service] INotificationService notificationService)
@@ -77,6 +81,7 @@ namespace ECDLink.Security.Api
             _securityCodeManager = securityCodeManager;
             _dbContext = dbContext;
             _notificationService = notificationService;
+            _tenantService = tenantService;
         }
 
         // POST api/auth/login
@@ -87,6 +92,7 @@ namespace ECDLink.Security.Api
             [FromServices] ApplicationUserManager _userManager,
             [FromBody] LoginRequestModel login)
         {
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -106,7 +112,17 @@ namespace ECDLink.Security.Api
             ApplicationUser user;
             if (!string.IsNullOrWhiteSpace(login.Username))
             {
-                user = await _securityManager.LogInWithUsernameAsync(login.Username, login.Password);
+                // find the user and set the tenat they belong to WLPrin40
+                user = await _securityManager.GetUsernameAsync(login.Username, login.Password);
+                if (user != null)
+                {
+                    var tenantId = user.TenantId;
+                    var tenants = _tenantService.GetTenantById((Guid)tenantId);
+                    TenantExecutionContext.SetTenant(null, true);
+                    TenantExecutionContext.SetTenant((Tenancy.Model.TenantInternalModel)tenants.First());
+                    await _userManager.SetObjectDataAsync(user, tenantId);
+                }
+                // user = await _securityManager.LogInWithUsernameAsync(login.Username, login.Password);
             }
             else
             {
@@ -137,7 +153,8 @@ namespace ECDLink.Security.Api
                     // TODO: Callcenter number should be in the tenant config?
                     return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
                 }
-            } else
+            }
+            else
             {
                 if (!userRoles.Any())
                 {
@@ -178,7 +195,7 @@ namespace ECDLink.Security.Api
             // Use username first, if provided, otherwise use email, otherwise use phone number
             var user = !string.IsNullOrEmpty(model.Username)
                 ? await _securityManager.GetUserByNameAsync(model.Username)
-                : !string.IsNullOrEmpty(model.Email) ? await _securityManager.GetUserByEmailAsync(model.Email) 
+                : !string.IsNullOrEmpty(model.Email) ? await _securityManager.GetUserByEmailAsync(model.Email)
                 : await _securityManager.GetUserByPhoneNumberAsync(normalizePhoneNumber);
 
 
@@ -328,7 +345,7 @@ namespace ECDLink.Security.Api
                     ErrorCode = 1,
                     Error = "Username and phone number is empty"
                 });
-            } 
+            }
 
             if (!string.IsNullOrEmpty(verifyModel.Username))
             {
@@ -368,7 +385,7 @@ namespace ECDLink.Security.Api
                             Error = "Invalid Username"
                         });
                     }
-                 }
+                }
             }
 
             if (!string.IsNullOrEmpty(verifyModel.PhoneNumber))
@@ -650,10 +667,10 @@ namespace ECDLink.Security.Api
                 });
             }
 
-           return Ok(user.Id);
+            return Ok(user.Id);
         }
 
-        
+
 
     }
 }

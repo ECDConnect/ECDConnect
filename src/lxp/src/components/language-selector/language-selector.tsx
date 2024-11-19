@@ -44,7 +44,7 @@ export const LanguageSelector = ({
         ? languages?.filter((language) =>
             availableLanguages?.includes(language.locale as LanguageCode)
           )
-        : languages,
+        : languages.filter((language) => language.locale !== 'other'),
     [languages, availableLanguages]
   );
 
@@ -95,7 +95,7 @@ export const LanguageSelector = ({
       </label>
       <Dropdown
         fillType="clear"
-        selectedValue={locale}
+        selectedValue={currentLocale ?? locale}
         disabled={disabled}
         fillColor="quatenary"
         labelColor="white"

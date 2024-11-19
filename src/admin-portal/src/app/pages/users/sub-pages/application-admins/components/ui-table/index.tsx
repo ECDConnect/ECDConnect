@@ -581,7 +581,7 @@ export default function UiTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: ` mb-10 border-b-2 border-secondary `,
+            table_row: ` mb-10 border-b-2 border-secondary bg-blue-50 `,
             table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-quaternary text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
           },
           table_body: {
