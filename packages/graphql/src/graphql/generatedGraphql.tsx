@@ -18787,7 +18787,6 @@ export type StoryBook = {
   shareContent?: Maybe<Scalars['String']>;
   storyBookParts?: Maybe<Array<Maybe<StoryBookParts>>>;
   themes?: Maybe<Array<Maybe<Theme>>>;
-  translator?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
 };

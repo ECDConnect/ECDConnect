@@ -92,6 +92,26 @@ export default function CreateStory({
     }
 `;
 
+  // const themeQuery = gql`
+  //     query GetAllTheme($localeId: String) {
+  //       GetAllTheme(localeId: $localeId) {
+  //         id
+  //         name
+  //         __typename
+  //       }
+  //     }
+  //   `;
+
+  //   const { data: themeData, loading } = useQuery(
+  //     themeQuery,
+  //     {
+  //       fetchPolicy: 'cache-and-network',
+  //       variables: {
+  //         localeId: languageId?.toString(),
+  //       },
+  //     }
+  //   );
+
   const dialog = useDialog();
   const [deleteContent, { loading: isLoadingDeleteContent }] =
     useMutation(deleteMutation);
@@ -186,6 +206,13 @@ export default function CreateStory({
       initialValues?.hasOwnProperty(item?.propName) &&
       !initialValues[item?.propName]
   );
+  const isEdit = template && template.fields.some((f) => !!f.contentValue);
+
+  useEffect(() => {
+    if (content && content.authorsAuthorization) {
+      setAuthorsAuthorization(content.authorsAuthorization);
+    }
+  }, [content]);
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -406,11 +433,12 @@ export default function CreateStory({
                 type="info"
               />
             ) : (
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
-                type="warning"
-              />
+              <></>
+              // <Alert
+              //   className="mt-2 mb-2 rounded-md"
+              //   message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
+              //   type="warning"
+              // />
             )}
 
             <CreateStoryForm
@@ -438,16 +466,20 @@ export default function CreateStory({
               className={`bg-secondary ${
                 disableButton?.length > 0 ||
                 !authorsAuthorization ||
-                (storyBookAndReadAloudRequiredPart &&
-                  filledStoryParts?.length < 1)
+                (!isEdit
+                  ? storyBookAndReadAloudRequiredPart &&
+                    filledStoryParts?.length < 1
+                  : content.storyBookParts.length === 0)
                   ? 'opacity-25'
                   : ''
               } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
               disabled={
                 disableButton?.length > 0 ||
                 !authorsAuthorization ||
-                (storyBookAndReadAloudRequiredPart &&
-                  filledStoryParts?.length < 1)
+                (!isEdit
+                  ? storyBookAndReadAloudRequiredPart &&
+                    filledStoryParts?.length < 1
+                  : content.storyBookParts.length === 0)
               }
             >
               <SaveIcon width="22px" className="mr-2" />
