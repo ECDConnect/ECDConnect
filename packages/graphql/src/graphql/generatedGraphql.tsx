@@ -18787,6 +18787,7 @@ export type StoryBook = {
   shareContent?: Maybe<Scalars['String']>;
   storyBookParts?: Maybe<Array<Maybe<StoryBookParts>>>;
   themes?: Maybe<Array<Maybe<Theme>>>;
+  translator?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
 };
@@ -18801,6 +18802,7 @@ export type StoryBookInput = {
   shareContent?: InputMaybe<Scalars['String']>;
   storyBookParts?: InputMaybe<Scalars['String']>;
   themes?: InputMaybe<Scalars['String']>;
+  translator?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
   updatedDate?: InputMaybe<Scalars['String']>;
 };
@@ -18868,6 +18870,7 @@ export type StoryBookViewModel = {
   shareContent?: Maybe<Scalars['String']>;
   storyBookParts?: Maybe<Scalars['String']>;
   themes?: Maybe<Scalars['String']>;
+  translator?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['DateTime']>;
 };
