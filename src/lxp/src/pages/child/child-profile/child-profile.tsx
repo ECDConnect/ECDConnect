@@ -62,7 +62,6 @@ import { newGuid } from '@utils/common/uuid.utils';
 import { userSelectors } from '@store/user';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';
-import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -789,16 +788,17 @@ export const ChildProfile: React.FC = () => {
             ))}
           </div>
         )}
-        {(practitioner?.isPrincipal ||
-          hasPermissionToCreateProgressReports) && (
-          <div
-            id={`child_progress_observations`}
-            aria-disabled={run}
-            className='"-mt-0.5 rounded-2xl" flex w-full flex-col gap-1'
-          >
-            <ChildProgressReportAlert child={child!} />
-          </div>
-        )}
+        {(practitioner?.isPrincipal || hasPermissionToCreateProgressReports) &&
+          childAge &&
+          childAge?.years < 5 && (
+            <div
+              id={`child_progress_observations`}
+              aria-disabled={run}
+              className='"-mt-0.5 rounded-2xl" flex w-full flex-col gap-1'
+            >
+              <ChildProgressReportAlert child={child!} />
+            </div>
+          )}
         <div className={styles.profileOptionsWrapper}>
           {options
             ?.filter((item) =>
