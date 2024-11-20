@@ -101,24 +101,28 @@ export const ObservationsForChildSkillsToWorkOn: React.FC<
               (x) => x.skillId === skill.skillId
             );
             return (
-              <CheckboxGroup
-                id={`${skill.skillId}`}
-                key={`${skill.skillId}`}
-                title={skill.skillName}
-                checked={selected}
-                value={skill.skillId}
-                onChange={() => {
-                  if (selected) {
-                    removeSkillToWorkOn(skill.skillId);
-                  }
+              <>
+                {skill.value !== "Don't know" && (
+                  <CheckboxGroup
+                    id={`${skill.skillId}`}
+                    key={`${skill.skillId}`}
+                    title={skill.skillName}
+                    checked={selected}
+                    value={skill.skillId}
+                    onChange={() => {
+                      if (selected) {
+                        removeSkillToWorkOn(skill.skillId);
+                      }
 
-                  if (!selected && skillsToWorkOn.length < 4) {
-                    addSkillToWorkOn(skill.skillId);
-                  }
-                }}
-                className="mb-1"
-                checkboxColor="primary"
-              />
+                      if (!selected && skillsToWorkOn.length < 4) {
+                        addSkillToWorkOn(skill.skillId);
+                      }
+                    }}
+                    className="mb-1"
+                    checkboxColor="primary"
+                  />
+                )}
+              </>
             );
           })}
         </>
