@@ -1,9 +1,9 @@
 ﻿/*
 -- afrikaans name
 insert into "ContentValue" ("ContentId", "LocaleId", "ContentTypeFieldId", "Value", "InsertedDate", "UpdatedDate")
-select distinct cv."ContentId", '058b9d8e-e472-48d6-8415-ba9408b95395'::uuid as "LocaleId", cv."ContentTypeFieldId", "afrikaansName" as "Value", current_date as "InsertedDate", current_date as "UpdatedDate"
+select distinct cv."ContentId", '058b9d8e-e472-48d6-8415-ba9408b95395'::uuid as "LocaleId", cv."ContentTypeFieldId", "afrikaansname" as "Value", current_date as "InsertedDate", current_date as "UpdatedDate"
 from "CMSImportLanguages" c
-inner join "ContentValue" cv on cv."Value" = c."englishName" 
+inner join "ContentValue" cv on cv."Value" = c."englishname" 
 order by cv."ContentId"
 
 -- afrikaans value
