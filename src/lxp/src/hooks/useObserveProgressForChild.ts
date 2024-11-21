@@ -235,7 +235,10 @@ export const useObserveProgressForChild = (childId: string) => {
     const skill = currentReport?.skillObservations.find(
       (x) => x.skillId === skillId
     );
-    if (skill?.isReverseScored && value !== ProgressSkillValues.Yes) {
+    if (
+      (skill?.isReverseScored && value !== ProgressSkillValues.Yes) ||
+      value === ProgressSkillValues.DoNotKnow
+    ) {
       await appDispatch(
         progressTrackingActions.removeSkillToWorkOn({
           childId,
