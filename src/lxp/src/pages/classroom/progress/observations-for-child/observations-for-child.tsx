@@ -80,8 +80,9 @@ export const ObservationsForChild: React.FC = () => {
   const negativeSkills =
     report?.skillObservations.filter(
       (x) =>
-        (!x.isReverseScored && (x.isNegative || !x?.isPositive)) ||
-        (x.isReverseScored && x.isNegative)
+        x.value !== "Don't know" &&
+        ((!x.isReverseScored && (x.isNegative || !x?.isPositive)) ||
+          (x.isReverseScored && x.isNegative))
     ) || [];
 
   const skillsToChoose = negativeSkills.length < 4 ? negativeSkills.length : 4;
