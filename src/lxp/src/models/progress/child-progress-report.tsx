@@ -67,6 +67,7 @@ export type ChildProgressDetailedSkillObservation =
     categoryId: number;
     isPositive: boolean;
     isNegative: boolean;
+    isReverseScored?: boolean;
   };
 
 export type ChildProgressDetailedSkillToWorkOn = {

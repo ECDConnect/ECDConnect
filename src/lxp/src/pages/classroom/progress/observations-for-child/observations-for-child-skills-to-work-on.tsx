@@ -101,6 +101,7 @@ export const ObservationsForChildSkillsToWorkOn: React.FC<
             const selected = skillsToWorkOn.some(
               (x) => x.skillId === skill.skillId
             );
+
             return (
               <div key={`${skill.skillId}`}>
                 <CheckboxGroup
