@@ -142,7 +142,6 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         const userCreated = await new AuthService()
           ?.RegisterOpenAccessUser(Config?.authApi, registerOpenAccessUserInput)
           .catch((error) => {
-            console.error('Registration error:', error);
             // setMessageError(specialCharactersMessageErrorText);
 
             setNotification({
@@ -185,7 +184,6 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       const updateUsername = await new AuthService()
         ?.UpdateUsername(Config?.authApi, updateUserInputModel)
         .catch((error) => {
-          console.log(error);
           setMessageError(specialCharactersMessageErrorText);
           setIsLoading(false);
           return;
