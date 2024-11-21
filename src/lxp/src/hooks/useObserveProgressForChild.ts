@@ -147,6 +147,7 @@ export const useObserveProgressForChild = (childId: string) => {
           skillDescription: skill?.description || '',
           subCategoryId: skill?.subCategory.id || 0,
           categoryId: skill?.subCategory.category.id || 0,
+          isReverseScored: skill?.isReverseScored,
           isPositive:
             !!skillObs.value &&
             ((!skill?.isReverseScored &&
@@ -230,6 +231,20 @@ export const useObserveProgressForChild = (childId: string) => {
       })
     );
 
+    // remove skill when it is reversed
+    const skill = currentReport?.skillObservations.find(
+      (x) => x.skillId === skillId
+    );
+    if (skill?.isReverseScored && value !== ProgressSkillValues.Yes) {
+      await appDispatch(
+        progressTrackingActions.removeSkillToWorkOn({
+          childId,
+          reportingPeriodId: currentObservationPeriod.id,
+          skillId,
+        })
+      );
+    }
+
     // Check if we have added all observations
     if (areObservationsComplete(skillId)) {
       appDispatch(
@@ -259,7 +274,6 @@ export const useObserveProgressForChild = (childId: string) => {
     if (!currentObservationPeriod) {
       return;
     }
-
     appDispatch(
       progressTrackingActions.removeSkillToWorkOn({
         childId,
