@@ -29,6 +29,7 @@ export const ObservationsForChildSkillsToWorkOn: React.FC<
   addSkillToWorkOn,
   removeSkillToWorkOn,
 }) => {
+  console.log('doNotKnowPercentage', doNotKnowPercentage);
   return (
     <>
       {doNotKnowPercentage >= 25 && (
@@ -101,28 +102,26 @@ export const ObservationsForChildSkillsToWorkOn: React.FC<
               (x) => x.skillId === skill.skillId
             );
             return (
-              <>
-                {skill.value !== "Don't know" && (
-                  <CheckboxGroup
-                    id={`${skill.skillId}`}
-                    key={`${skill.skillId}`}
-                    title={skill.skillName}
-                    checked={selected}
-                    value={skill.skillId}
-                    onChange={() => {
-                      if (selected) {
-                        removeSkillToWorkOn(skill.skillId);
-                      }
+              <div key={`${skill.skillId}`}>
+                <CheckboxGroup
+                  id={`${skill.skillId}`}
+                  key={`${skill.skillId}`}
+                  title={skill.skillName}
+                  checked={selected}
+                  value={skill.skillId}
+                  onChange={() => {
+                    if (selected) {
+                      removeSkillToWorkOn(skill.skillId);
+                    }
 
-                      if (!selected && skillsToWorkOn.length < 4) {
-                        addSkillToWorkOn(skill.skillId);
-                      }
-                    }}
-                    className="mb-1"
-                    checkboxColor="primary"
-                  />
-                )}
-              </>
+                    if (!selected && skillsToWorkOn.length < 4) {
+                      addSkillToWorkOn(skill.skillId);
+                    }
+                  }}
+                  className="mb-1"
+                  checkboxColor="primary"
+                />
+              </div>
             );
           })}
         </>
