@@ -178,6 +178,11 @@ export const useObserveProgressForChild = (childId: string) => {
     updatedSkillId?: number,
     updatedSkillValue?: ProgressSkillValues
   ) => {
+    // Criteria:
+    // 1: All questions answered
+    // 2: User responded yes to all regular and no to all reverse-score items
+    // 3: User responded don't know to less than 25%
+
     // Check if we have added all observations
     const allObsMade = skillsForAgeGroup.every((x) => {
       return (
@@ -201,16 +206,13 @@ export const useObserveProgressForChild = (childId: string) => {
     ) {
       doNotKnowCount++;
     }
-
     const doNotKnowPerc = (doNotKnowCount / skillsForAgeGroup.length) * 100;
 
     const skillsToWorkOnSelected =
-      currentReport?.skillsToWorkOn.length === 4 ||
-      currentReport?.skillsToWorkOn.length ===
-        currentReport?.skillObservations.reduce(
-          (count, x) => (x.isNegative ? count + 1 : count),
-          0
-        );
+      currentReport?.skillObservations.reduce(
+        (count, x) => (x.isNegative ? count + 1 : count),
+        0
+      ) === 0;
 
     return allObsMade && doNotKnowPerc < 25 && skillsToWorkOnSelected;
   };
