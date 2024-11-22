@@ -222,13 +222,7 @@ export const useObserveProgressForChild = (childId: string) => {
     }
     const doNotKnowPerc = (doNotKnowCount / skillsForAgeGroup.length) * 100;
 
-    const skillsToWorkOnSelected =
-      currentReport?.skillObservations.reduce(
-        (count, x) => (x.isNegative ? count + 1 : count),
-        0
-      ) === 0;
-
-    const result = allObsMade && doNotKnowPerc < 25 && skillsToWorkOnSelected;
+    const result = allObsMade && doNotKnowPerc < 25;
 
     setObservationsCompleteDate(result);
 
@@ -237,17 +231,14 @@ export const useObserveProgressForChild = (childId: string) => {
 
   const setObservationsCompleteDate = (isCompleted: boolean) => {
     if (currentObservationPeriod) {
-      // reset the date if there is any negative scores
-      if (!isCompleted || currentReport?.hasNegativeScores === true) {
+      if (!isCompleted) {
         appDispatch(
           progressTrackingActions.resetReportObservationDateComplete({
             childId,
             reportingPeriodId: currentObservationPeriod.id,
           })
         );
-      }
-
-      if (isCompleted && currentReport?.hasNegativeScores === false) {
+      } else {
         appDispatch(
           progressTrackingActions.markAllSkillsObserved({
             childId,
@@ -437,6 +428,7 @@ export const useObserveProgressForChild = (childId: string) => {
   const syncChildProgressReports = async () => {
     // add check for complete before syncing the data
     areObservationsComplete();
+    console.log('currentReport', currentReport);
     await appDispatch(
       progressTrackingThunkActions.syncChildProgressReports({})
     );
