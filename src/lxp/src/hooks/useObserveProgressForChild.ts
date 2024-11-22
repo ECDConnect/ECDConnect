@@ -162,6 +162,20 @@ export const useObserveProgressForChild = (childId: string) => {
                 skillObs.value === ProgressSkillValues.Yes)),
         };
       }),
+      hasNegativeScores:
+        report.skillObservations
+          .map((skillObs) => {
+            const skill = allSkills.find((x) => x.id === skillObs.skillId);
+            return {
+              isNegative:
+                !!skillObs.value &&
+                ((!skill?.isReverseScored &&
+                  skillObs.value === ProgressSkillValues.No) ||
+                  (!!skill?.isReverseScored &&
+                    skillObs.value === ProgressSkillValues.Yes)),
+            };
+          })
+          .reduce((count, x) => (x.isNegative ? count + 1 : count), 0) !== 0,
       reportingPeriodStartDate: new Date(currentObservationPeriod!.startDate),
       reportingPeriodEndDate: new Date(currentObservationPeriod!.endDate),
       reportingPeriodNumber: currentObservationPeriod!.reportNumber,
@@ -214,7 +228,30 @@ export const useObserveProgressForChild = (childId: string) => {
         0
       ) === 0;
 
+    isObservationsComplete();
+
     return allObsMade && doNotKnowPerc < 25 && skillsToWorkOnSelected;
+  };
+
+  const isObservationsComplete = () => {
+    if (currentObservationPeriod) {
+      if (currentReport?.hasNegativeScores === true) {
+        appDispatch(
+          progressTrackingActions.resetReportObservationDateComplete({
+            childId,
+            reportingPeriodId: currentObservationPeriod.id,
+          })
+        );
+      }
+      if (currentReport?.hasNegativeScores === false) {
+        appDispatch(
+          progressTrackingActions.markAllSkillsObserved({
+            childId,
+            reportingPeriodId: currentObservationPeriod.id,
+          })
+        );
+      }
+    }
   };
 
   const addObservationForSkill = async (
@@ -252,7 +289,7 @@ export const useObserveProgressForChild = (childId: string) => {
 
     // Check if we have added all observations
     if (areObservationsComplete(skillId)) {
-      appDispatch(
+      await appDispatch(
         progressTrackingActions.markAllSkillsObserved({
           childId,
           reportingPeriodId: currentObservationPeriod.id,
@@ -414,8 +451,12 @@ export const useObserveProgressForChild = (childId: string) => {
     );
   };
 
-  const syncChildProgressReports = () => {
-    appDispatch(progressTrackingThunkActions.syncChildProgressReports({}));
+  const syncChildProgressReports = async () => {
+    // add check for complete before syncing the data
+    areObservationsComplete();
+    await appDispatch(
+      progressTrackingThunkActions.syncChildProgressReports({})
+    );
   };
 
   const replaceSkillText = (skillText: string) => {
