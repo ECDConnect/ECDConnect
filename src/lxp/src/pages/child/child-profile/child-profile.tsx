@@ -239,12 +239,12 @@ export const ChildProfile: React.FC = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
   };
 
-  useEffect(() => {
-    if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
-      goToChildProfileWalkthrough();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childTutorialTaken, run]);
+  // useEffect(() => {
+  //   if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
+  //     goToChildProfileWalkthrough();
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [childTutorialTaken, run]);
 
   const showOnlineOnly = useCallback(() => {
     dialog({
@@ -260,49 +260,49 @@ export const ChildProfile: React.FC = () => {
     });
   }, [dialog]);
 
-  const goToChildProfileWalkthrough = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <ActionModal
-          customIcon={
-            <div className="flex">
-              <img src={walkthroughImage} alt="profile" className="mb-2" />
-            </div>
-          }
-          importantText={`Welcome to the child profile on ${appName}!`}
-          detailText={'Can I show you how to use this section?'}
-          actionButtons={[
-            {
-              text: 'Yes, help me!',
-              textColour: 'white',
-              colour: 'quatenary',
-              type: 'filled',
-              onClick: () => {
-                onSubmit();
-                handleClickStart();
-              },
-              leadingIcon: 'CheckCircleIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'quatenary',
-              colour: 'quatenary',
-              type: 'outlined',
-              onClick: () => {
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.childProfileTutorialComplete
-                );
-                onCancel();
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
+  // const goToChildProfileWalkthrough = () => {
+  //   dialog({
+  //     position: DialogPosition.Middle,
+  //     render: (onSubmit: any, onCancel: any) => (
+  //       <ActionModal
+  //         customIcon={
+  //           <div className="flex">
+  //             <img src={walkthroughImage} alt="profile" className="mb-2" />
+  //           </div>
+  //         }
+  //         importantText={`Welcome to the child profile on ${appName}!`}
+  //         detailText={'Can I show you how to use this section?'}
+  //         actionButtons={[
+  //           {
+  //             text: 'Yes, help me!',
+  //             textColour: 'white',
+  //             colour: 'quatenary',
+  //             type: 'filled',
+  //             onClick: () => {
+  //               onSubmit();
+  //               handleClickStart();
+  //             },
+  //             leadingIcon: 'CheckCircleIcon',
+  //           },
+  //           {
+  //             text: 'No, skip',
+  //             textColour: 'quatenary',
+  //             colour: 'quatenary',
+  //             type: 'outlined',
+  //             onClick: () => {
+  //               setStorageItem(
+  //                 true,
+  //                 LocalStorageKeys.childProfileTutorialComplete
+  //               );
+  //               onCancel();
+  //             },
+  //             leadingIcon: 'ClockIcon',
+  //           },
+  //         ]}
+  //       />
+  //     ),
+  //   });
+  // };
 
   // TODO - This useEffect needs to be fixed, causing infinite re-renders!!!
   useEffect(() => {
@@ -747,7 +747,7 @@ export const ChildProfile: React.FC = () => {
           }
         }}
         displayOffline={!isOnline}
-        onHelp={() => goToChildProfileWalkthrough()}
+        // onHelp={() => goToChildProfileWalkthrough()}
         displayHelp={true}
         isLoading={isLoadingAttendance}
       >
