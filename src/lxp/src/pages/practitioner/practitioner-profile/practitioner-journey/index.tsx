@@ -387,8 +387,10 @@ export const PractitionerJourney = ({
   }, [activityName, onIsDisplayFormChange]);
 
   useLayoutEffect(() => {
-    getTimeline();
-  }, [getTimeline]);
+    if (!isComingSoon) {
+      getTimeline();
+    }
+  }, [getTimeline, isComingSoon]);
 
   if (isRenderForm) {
     return <Form onBack={onFormBack} />;
