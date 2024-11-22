@@ -428,7 +428,6 @@ export const useObserveProgressForChild = (childId: string) => {
   const syncChildProgressReports = async () => {
     // add check for complete before syncing the data
     areObservationsComplete();
-    console.log('currentReport', currentReport);
     await appDispatch(
       progressTrackingThunkActions.syncChildProgressReports({})
     );
