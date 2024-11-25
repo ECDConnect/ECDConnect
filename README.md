@@ -102,8 +102,8 @@ hosted on Azure infrastructure.
 
 ## Security
 
-- SSL certificates are recommended for the respective, frontend, Admin Portal and API
-  url's
+- SSL certificates are recommended for the respective, frontend, Admin Portal
+  and API url's
 - [JWT](https://jwt.io/) tokens for authorisation with refresh endpoints
 - Basic Authentication for tenant creation
 - [Azure App Service Access Restrictions](https://docs.microsoft.com/en-us/azure/app-service/app-service-ip-restrictions#:~:text=Sign%20in%20to%20the%20Azure,are%20defined%20for%20your%20app.) -
@@ -187,4 +187,4 @@ hosted on Azure infrastructure.
   get a JWT token make a POST request to the login API to get the JWT,
   `https://localhost:5001/api/authentication/login`.
 - Refer to [this guide](https://graphql.org/learn/) that walks you through the
-  basic concepts of GraphQL
+  basic concepts of GraphQL ..
