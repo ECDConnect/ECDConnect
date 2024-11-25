@@ -78,8 +78,12 @@ export const ObservationsForChild: React.FC = () => {
   );
 
   const negativeSkills =
-    report?.skillObservations.filter((x) => x.isNegative || !x?.isPositive) ||
-    [];
+    report?.skillObservations.filter(
+      (x) =>
+        x.value !== "Don't know" &&
+        ((!x.isReverseScored && (x.isNegative || !x?.isPositive)) ||
+          (x.isReverseScored && x.isNegative))
+    ) || [];
 
   const skillsToChoose = negativeSkills.length < 4 ? negativeSkills.length : 4;
 
@@ -223,6 +227,7 @@ export const ObservationsForChild: React.FC = () => {
           icon="XIcon"
           text="Save & exit"
           textColor="quatenary"
+          disabled={currentStep === totalSteps && !nextEnabled}
         />
       </div>
     </BannerWrapper>

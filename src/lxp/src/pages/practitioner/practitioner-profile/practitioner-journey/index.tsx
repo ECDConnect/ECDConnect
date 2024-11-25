@@ -66,6 +66,7 @@ export const PractitionerJourney = ({
 
   const user = useSelector(getUser);
   const userId = user?.id || '';
+  const isComingSoon = true;
 
   const timeline = useSelector(getPractitionerTimelineByIdSelector(userId));
   const currentPqaRating = useSelector(getCurrentPQaRatingByUserId(userId));
@@ -386,8 +387,10 @@ export const PractitionerJourney = ({
   }, [activityName, onIsDisplayFormChange]);
 
   useLayoutEffect(() => {
-    getTimeline();
-  }, [getTimeline]);
+    if (!isComingSoon) {
+      getTimeline();
+    }
+  }, [getTimeline, isComingSoon]);
 
   if (isRenderForm) {
     return <Form onBack={onFormBack} />;
@@ -401,6 +404,14 @@ export const PractitionerJourney = ({
         backgroundColor="uiLight"
         className="tex pt-4"
       />
+    );
+  }
+
+  if (isComingSoon) {
+    return (
+      <div className="mt-2 flex flex-col p-4">
+        <Typography color="textDark" text={`Coming soon`} type={'h2'} />
+      </div>
     );
   }
 

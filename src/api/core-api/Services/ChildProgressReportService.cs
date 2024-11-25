@@ -168,10 +168,10 @@ namespace EcdLink.Api.CoreApi.Services
                     existingReport.DateCompleted = input.DateCompleted;
                 }
 
-                if (input.ObservationsCompleteDate != null)
-                {
+                //if (input.ObservationsCompleteDate != null)
+                //{
                     existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
-                }
+                //}
 
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
                 existingReport.UserId = _contextUserId;

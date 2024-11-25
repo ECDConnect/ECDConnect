@@ -57,6 +57,10 @@ export const Login: React.FC = () => {
 
   const { resetAppStore, resetAuth } = useStoreSetup();
 
+  useEffect(() => {
+    resetAppStore();
+  }, []);
+
   navigator?.storage?.estimate &&
     navigator?.storage?.estimate().then((estimate) => {
       if (estimate?.quota) {

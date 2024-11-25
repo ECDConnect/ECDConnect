@@ -233,7 +233,6 @@ export default function StoryBookList({
       typesSearch: filteredTypes,
       themesSearch: filteredThemes,
       languageSearch: filteredLanguage,
-      skillSearch: [],
       startDate: startDate === '' ? null : startDate,
       endDate: endDate === '' ? null : endDate,
       shareContent: filteredShare,
@@ -252,7 +251,6 @@ export default function StoryBookList({
     ]
   );
 
-  // const [resources, setResources] = useState<any[]>([]);
   const [
     fetchStoryBooks,
     { data: storyBookData, refetch: refetchContent, loading: loadingContent },
@@ -290,6 +288,37 @@ export default function StoryBookList({
       languageId: languageId,
     };
 
+    if (item) {
+      const itemLanguages = item?.availableLanguages.map((item: any) => ({
+        id: item,
+        __typename: 'Language',
+      }));
+
+      const storyBookParts = item?.storyBookParts.split(',');
+      const itemStoryBookParts = storyBookParts.map((item: any) => ({
+        id: item,
+        __typename: 'StoryBookParts',
+      }));
+
+      const copyItem = {
+        __typename: ContentTypes.STORY_BOOK,
+        id: +item.id,
+        name: item.name,
+        type: item.type,
+        author: item.auther,
+        illustrator: item.illustrator,
+        translator: item.translator,
+        bookLocation: item.bookLocation,
+        keywords: item.keywords,
+        storyBookParts: itemStoryBookParts,
+        availableLanguages: itemLanguages,
+        shareContent: item.shareContent,
+        themes: item.themes,
+        authorsAuthorization: true,
+      };
+
+      model.content = copyItem;
+    }
     viewContent(model);
   };
 
