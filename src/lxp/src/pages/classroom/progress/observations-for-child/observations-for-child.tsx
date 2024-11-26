@@ -87,6 +87,22 @@ export const ObservationsForChild: React.FC = () => {
 
   const skillsToChoose = negativeSkills.length < 4 ? negativeSkills.length : 4;
 
+  const showNextButton = useMemo<boolean>(() => {
+    if (currentStep === totalSkillsSteps + 1) {
+      return (
+        report?.skillsToWorkOn.length === skillsToChoose &&
+        report?.unknownPercentage < 25
+      );
+    }
+    return true;
+  }, [
+    currentStep,
+    report?.skillsToWorkOn.length,
+    report?.unknownPercentage,
+    skillsToChoose,
+    totalSkillsSteps,
+  ]);
+
   const nextEnabled = useMemo<boolean>(() => {
     // For skills to work on, must choose correct number
     if (currentStep === totalSkillsSteps + 1) {
@@ -113,7 +129,7 @@ export const ObservationsForChild: React.FC = () => {
     }
 
     return false;
-  }, [currentStep, currentReport, currentObservations]);
+  }, [currentStep, totalSkillsSteps, report, skillsToChoose, observations]);
 
   return (
     <BannerWrapper
@@ -178,34 +194,40 @@ export const ObservationsForChild: React.FC = () => {
             updateSkillToWorkOn={updateSkillToWorkOn}
           />
         )}
-        <Button
-          onClick={() => {
-            if (currentStep === totalSteps) {
-              if (isOnline) {
-                syncChildProgressReports();
+
+        {showNextButton ? (
+          <Button
+            onClick={() => {
+              if (currentStep === totalSteps) {
+                if (isOnline) {
+                  syncChildProgressReports();
+                }
+                history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
+                  childId: routeState.childId,
+                });
+              } else {
+                if (wrapperRef.current) {
+                  // SCroll div to top
+                  wrapperRef.current.scrollTop = 0;
+                }
+                setCurrentStep(currentStep + 1);
               }
-              history.replace(ROUTES.PROGRESS_OBSERVATIONS_LANDING, {
-                childId: routeState.childId,
-              });
-            } else {
-              if (wrapperRef.current) {
-                // SCroll div to top
-                wrapperRef.current.scrollTop = 0;
-              }
-              setCurrentStep(currentStep + 1);
+            }}
+            className="mt-auto mb-4 w-full"
+            size="normal"
+            color="quatenary"
+            type="filled"
+            icon={
+              currentStep === totalSteps ? 'SaveIcon' : 'ArrowCircleRightIcon'
             }
-          }}
-          className="mt-auto mb-4 w-full"
-          size="normal"
-          color="quatenary"
-          type="filled"
-          icon={
-            currentStep === totalSteps ? 'SaveIcon' : 'ArrowCircleRightIcon'
-          }
-          text={currentStep === totalSteps ? 'Save' : 'Next'}
-          textColor="white"
-          disabled={!nextEnabled}
-        />
+            text={currentStep === totalSteps ? 'Save' : 'Next'}
+            textColor="white"
+            disabled={!nextEnabled}
+          />
+        ) : (
+          <div className="mt-auto mb-4 w-full"></div>
+        )}
+
         <Button
           id="saveAndExitButton"
           onClick={() => {
