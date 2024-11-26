@@ -234,12 +234,13 @@ namespace EcdLink.Api.CoreApi.Services
                                        .FirstOrDefault();
 
 
-            var reports = _childProgressReportRepo.GetAll().Where(x => childIds.Contains(x.ChildId) && allPeriodIds.Contains(x.ChildProgressReportPeriodId)).AsNoTracking().AsQueryable();
+            var reports = _childProgressReportRepo.GetAll().Where(x => childIds.Contains(x.ChildId) && allPeriodIds.Contains(x.ChildProgressReportPeriodId)).AsNoTracking().ToList();
+            var allReports = new List<ChildProgressReport>();
 
-            var allReports = reports.Where(x => x.ChildProgressReportPeriodId == activeReportPeriodId);
-            allReports.Union(reports.Where(x => x.DateCompleted.HasValue)).Distinct();
+            allReports.AddRange(reports.Where(x => x.ChildProgressReportPeriodId == activeReportPeriodId)); // current period report
+            allReports.AddRange(reports.Where(x => x.DateCompleted.HasValue || x.ObservationsCompleteDate.HasValue)); // completed
 
-            foreach (var report in allReports) 
+            foreach (var report in allReports.Distinct()) 
             {
                 var data = JsonConvert.DeserializeObject<ProgressData>(report.ReportContent);
 
