@@ -1,37 +1,22 @@
 import { useEffect, useState } from 'react';
-import DynamicSelector from '../../../../../../../components/dynamic-selector/dynamic-selector';
 import DynamicStaticSelector from '../../../../../../../components/dynamic-static-selector/dynamic-static-selector';
-import FormColorField from '../../../../../../../components/form-color-field/form-color-field';
 import FormField from '../../../../../../../components/form-field/form-field';
-import FormFileInput from '../../../../../../../components/form-file-input/form-file-input';
 import Editor from '../../../../../../../components/form-markdown-editor/form-markdown-editor';
-import { videoExtensions } from '../../../../../../../utils/constants';
 import {
   DynamicFormTemplate,
   FieldType,
   FormTemplateField,
 } from '../../../../../content-management-models';
 import {
-  Alert,
   ButtonGroup,
   ButtonGroupTypes,
   Checkbox,
+  Divider,
   Typography,
 } from '@ecdlink/ui';
-import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
 import StoryContentForm from '../../../../../../../components/story-content-form/story-content-form';
 import { StoryBookPartDto, StoryBookQuestionDto } from '@ecdlink/core';
 import { StoryBookTypes } from '../create-story';
-
-const acceptedFormats = [
-  'svg',
-  'png',
-  'PNG',
-  'jpg',
-  'JPG',
-  'jpeg',
-  ...videoExtensions,
-];
 
 export interface CreateStoryFormProps {
   template: DynamicFormTemplate;
@@ -75,6 +60,10 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
     { text: 'Read aloud', value: 'Read aloud' },
     { text: 'Other', value: 'Other' },
   ];
+  const shareContentOptions = [
+    { text: 'Yes', value: 'yes' },
+    { text: 'No', value: 'no' },
+  ];
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -97,8 +86,31 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
 
       register(propName, { required: required });
 
+      let placeHolder = '';
+      if (propName === 'name') {
+        placeHolder = 'Give your story a title...';
+      } else if (propName === 'author') {
+        placeHolder = 'Add author';
+      } else if (propName === 'illustrator') {
+        placeHolder = 'Add illustrator';
+      } else if (propName === 'translator') {
+        placeHolder = 'Add translator';
+      } else if (propName === 'keywords') {
+        placeHolder = 'Add key words';
+      } else if (propName === 'bookLocation') {
+        placeHolder = 'Add text or link';
+      }
+
+      let subLabel = '';
+      if (propName === 'illustrator' || propName === 'translator') {
+        subLabel = 'Optional';
+      } else if (propName === 'keywords') {
+        subLabel = 'Use commas to separate words';
+      }
+
       switch (type) {
         case FieldType.Text:
+          // Type
           if (
             propName === 'type' &&
             template?.fields?.find((item) => item?.propName === 'type')
@@ -108,7 +120,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
               <div key={propName} className={contentWrapper}>
                 <label
                   htmlFor={propName}
-                  className="mb-1 block text-lg font-medium text-gray-800"
+                  className="mb-1 block font-bold text-gray-800"
                 >
                   {isRequired ? `${field?.title} *` : field?.title}
                 </label>
@@ -120,6 +132,53 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     }}
                     selectedOptions={formType}
                     color="tertiary"
+                    notSelectedColor="tertiaryAccent2"
+                    type={ButtonGroupTypes.Button}
+                    className={'w-full'}
+                    multiple={false}
+                  />
+                </div>
+                {isRequired &&
+                  initialValues?.hasOwnProperty(propName) &&
+                  !initialValues[propName] && (
+                    <Typography
+                      type="help"
+                      color="errorMain"
+                      text={requiredMessage}
+                    />
+                  )}
+                <Divider dividerType="dotted" className="mt-2" />
+              </div>
+            );
+          }
+          // shareContent
+          if (
+            propName === 'shareContent' &&
+            template?.fields?.find((item) => item?.propName === 'shareContent')
+              ?.contentValue === undefined
+          ) {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <label
+                  htmlFor={propName}
+                  className="mb-1 block font-bold text-gray-800"
+                >
+                  {isRequired ? `${field?.title} *` : field?.title}
+                </label>
+                <Typography
+                  type="small"
+                  color="textDark"
+                  text={`If you select "Yes", then any future edits made & all translations of this story can be shared with other organisations.`}
+                />
+                <div className="bg-uiBg sm:col-span-12">
+                  <ButtonGroup
+                    options={shareContentOptions}
+                    onOptionSelected={(value: string | string[]) => {
+                      onStateChange(propName, value);
+                    }}
+                    selectedOptions={formType}
+                    color="tertiary"
+                    notSelectedColor="tertiaryAccent2"
                     type={ButtonGroupTypes.Button}
                     className={'w-full'}
                     multiple={false}
@@ -149,7 +208,9 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
               <div className="sm:col-span-12">
                 <FormField
                   label={isRequired ? title + ' *' : title}
+                  subLabel={subLabel}
                   nameProp={propName}
+                  placeholder={placeHolder}
                   register={register}
                   error={
                     isRequired &&
@@ -165,8 +226,9 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
               {propName === 'author' && (
                 <div className="mt-2">
                   <Typography
-                    type="h4"
+                    type="help"
                     color="textDark"
+                    weight="bold"
                     text={`Confirm that the author has given you permission to make this story publicly available on the app *`}
                   />
                   <div className="mt-2 flex items-center gap-2">
@@ -178,7 +240,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     />
                     <Typography
                       text={`I confirm that the author has given me permission to post this story`}
-                      type="body"
+                      type="help"
                       color={'textMid'}
                     />
                   </div>
@@ -204,6 +266,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                   <FormField
                     label={isRequired ? title + ' *' : title}
                     nameProp={propName}
+                    placeholder={placeHolder}
                     register={register}
                     error={
                       isRequired &&
@@ -232,32 +295,11 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
               </div>
             </div>
           );
-        case FieldType.Image:
-          return (
-            <div key={propName} className={contentWrapper}>
-              <Alert
-                className="mt-2 mb-2 rounded-md"
-                message={`Editing the image here will update the image for all translations of this page.`}
-                type="warning"
-              />
-              <div className="sm:col-span-12">
-                <FormFileInput
-                  acceptedFormats={acceptedFileFormats || acceptedFormats}
-                  label={isRequired ? title + ' *' : title}
-                  nameProp={propName}
-                  contentUrl={
-                    field.contentValue ? field.contentValue.value : undefined
-                  }
-                  returnFullUrl={true}
-                  setValue={setValue}
-                />
-              </div>
-            </div>
-          );
         case FieldType.Link: {
           if (propName === 'storyBookParts') {
             return (
               <div key={propName} className={contentWrapper}>
+                <Divider dividerType="dotted" className="mb-2" />
                 <div className="sm:col-span-12">
                   <StoryContentForm
                     title={field.title}
@@ -273,26 +315,11 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                     formType={formType}
                   />
                 </div>
+                <Divider dividerType="dotted" className="mb-2" />
               </div>
             );
           }
-          if (title === 'G T -  Skills' || title === 'Skills') {
-            return (
-              <div key={propName} className={contentWrapper}>
-                <div className="sm:col-span-12">
-                  <DynamicSelector
-                    title={field.title}
-                    isReview={false}
-                    contentValue={field.contentValue}
-                    languageId={defaultLanguageId}
-                    optionDefinition={field.optionDefinition}
-                    setSelectedItems={(value) => onStateChange(propName, value)}
-                    isSkillType={true}
-                  />
-                </div>
-              </div>
-            );
-          }
+
           return null;
         }
         case FieldType.StaticLink: {
@@ -310,41 +337,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             </div>
           );
         }
-        case FieldType.ColorPicker: {
-          return (
-            <div key={propName} className={contentWrapper}>
-              <div className="sm:col-span-12">
-                <FormColorField
-                  setValue={setValue}
-                  currentColor={
-                    field.contentValue ? field.contentValue.value : ''
-                  }
-                  label={isRequired ? title + ' *' : title}
-                  nameProp={propName}
-                  register={register}
-                  error={errors[propName]?.message}
-                />
-              </div>
-            </div>
-          );
-        }
-        case FieldType.DatePicker: {
-          return (
-            <div key={propName} className={contentWrapper}>
-              <div className="sm:col-span-12">
-                <CombinedDatePickers
-                  contentValue={field.contentValue.value}
-                  label={isRequired ? title + ' *' : title}
-                  nameProp={propName}
-                  control={control}
-                  error={errors[propName]?.message}
-                  required={required}
-                  validation={validation}
-                />
-              </div>
-            </div>
-          );
-        }
+
         default:
           return (
             <div key={propName}>

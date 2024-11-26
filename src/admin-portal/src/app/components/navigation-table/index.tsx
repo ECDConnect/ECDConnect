@@ -240,7 +240,7 @@ export default function NavigationTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: `md:w-auto md:flex-row mb-10 border-b-2 border-secondary `,
+            table_row: `md:w-auto md:flex-row mb-10 border-b-2 border-secondary bg-blue-50`,
             table_data: `truncate px-6 py-8 pt-4 pb-4 text-left text-xs font-medium text-gray-500 tracking-wider leading-none bg-quatenaryBg`,
           },
           table_body: {

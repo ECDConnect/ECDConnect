@@ -102,8 +102,8 @@ hosted on Azure infrastructure.
 
 ## Security
 
-- SSL certificates are recommended for the respective, frontend, Admin Portal and API
-  url's
+- SSL certificates are recommended for the respective, frontend, Admin Portal
+  and API url's
 - [JWT](https://jwt.io/) tokens for authorisation with refresh endpoints
 - Basic Authentication for tenant creation
 - [Azure App Service Access Restrictions](https://docs.microsoft.com/en-us/azure/app-service/app-service-ip-restrictions#:~:text=Sign%20in%20to%20the%20Azure,are%20defined%20for%20your%20app.) -
@@ -198,5 +198,5 @@ hosted on Azure infrastructure.
 |---------------|-------------------------------------------------------------------------------------------------------------------|----------|
 | **DEV**       | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |
 | **QA**        | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |
-| **STAGING**   | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | No       |
-| **PRODUCTION**| - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | No       |
+| **STAGING**   | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |
+| **PRODUCTION**| - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |

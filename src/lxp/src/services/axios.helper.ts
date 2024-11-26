@@ -4,6 +4,8 @@ import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import { store } from '@store';
 import { refreshToken } from '@store/auth/auth.actions';
+import { userActions } from '@/store/user';
+import { TIMEOUTS } from '@/constants/timeouts';
 
 const disableGraphqlErrorAlert =
   process.env.REACT_APP_DISABLE_GRAPHQL_ERROR_ALERT;
@@ -33,6 +35,33 @@ const alertTimeout = () => {
   window.dispatchEvent(new CustomEvent('timeout-error', {})); // AppErrorHandler listens for the event.
 };
 
+/**
+ * Checks the response time duration and updates the store if the connection is considered to be unreliable.
+ *
+ * @param {*} response
+ * @param {boolean} [ignoreTimeoutCheck=false]
+ */
+const updateConfigEndTime = (
+  response: any,
+  ignoreTimeoutCheck: boolean = false
+) => {
+  response.config.metadata.endTime = new Date();
+  response.duration =
+    response.config.metadata.endTime - response.config.metadata.startTime;
+
+  const connectionType: string = (window.navigator as any).connection
+    .effectiveType as string;
+  // Duration before a connection is considered to be unreliable.
+  const spottyConnectionTimeout =
+    TIMEOUTS[connectionType].slowRequestTime || TIMEOUTS['4g'].slowRequestTime;
+
+  if (response.duration >= spottyConnectionTimeout && !ignoreTimeoutCheck) {
+    if (store.getState().user.unstableConnection === false) {
+      store.dispatch(userActions.updateConnectionStatus(true));
+    }
+  }
+};
+
 export const api = (baseUrl: string, token?: string): AxiosInstance => {
   const blackList = [
     APIs.authLogin,
@@ -58,7 +87,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
   });
 
   axiosInstance.interceptors.request.use(
-    async (config) => {
+    async (config: any) => {
       if (!navigator.onLine) {
         return new Promise((resolve) => {
           resolve({
@@ -86,6 +115,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
         }
       }
 
+      config.metadata = { startTime: new Date() };
       return config;
     },
     (error) => {
@@ -94,7 +124,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
   );
 
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse<any, any>) => {
+    (response: AxiosResponse<any, any> | any) => {
       if (response.config.baseURL === Config.graphQlApi) {
         // checked for internal exception.
         if (response.data.errors === undefined) {
@@ -132,9 +162,11 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           }
         }
       }
+
+      updateConfigEndTime(response, response.method === 'post');
       return response;
     },
-    (error: AxiosError) => {
+    (error: AxiosError | any) => {
       if (error.config.baseURL === Config.graphQlApi) {
         logGraphQL(
           console.error,
@@ -149,6 +181,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           alertGraphQL();
         }
       }
+      updateConfigEndTime(error, true);
       return Promise.reject(error);
     }
   );

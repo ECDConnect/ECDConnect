@@ -13,6 +13,11 @@ const ConfigWrapper: React.FC = () => {
   const { loading } = useConfig();
   const [loader, setLoader] = useState(true);
 
+  const isDevelopmentMode =
+    !process.env.NODE_ENV ||
+    process.env.NODE_ENV === 'development' ||
+    window.location.hostname === 'localhost';
+
   useEffect(() => {
     // minimum loading effect
     if (!loading) {
@@ -27,7 +32,12 @@ const ConfigWrapper: React.FC = () => {
   } else {
     const pollUrl = new URL(APIs.onlineCheck, Config.authApi).href;
     return (
-      <OnlineStatusProvider pollUrl={pollUrl} interval={3000} timeout={2000}>
+      <OnlineStatusProvider
+        pollUrl={pollUrl}
+        interval={20000}
+        timeout={10000}
+        enablePolling={!isDevelopmentMode}
+      >
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <TenantContextProvider>

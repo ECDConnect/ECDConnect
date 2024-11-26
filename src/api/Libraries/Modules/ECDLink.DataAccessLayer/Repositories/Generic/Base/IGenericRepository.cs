@@ -13,6 +13,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
     {
         void SetUserContext(string userId);
         void SetUserContext(Guid? userId);
+        void SetTenantContext(Guid? tenantId);
         IQueryable<T> GetAll(PagedQueryInput pagingInput = null);
         int Count(PagedQueryInput pagingInput = null);
         T GetById(TKey id);

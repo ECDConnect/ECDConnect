@@ -16,18 +16,20 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useDialog } from '@ecdlink/core';
 import { ProgressTabNoReportPeriodAndPrincipal } from './progress-tab-no-report-period-and-principal';
 import { ProgressTabNoReportPeriodAndPractitioner } from './progress-tab-no-report-period-and-practitioner';
+import { useProgressGenerateSummaryPdfReport as usePdfFromHtml } from '@/hooks/useProgressGenerateSummaryPdfReport';
 import { ProgressTabNoReports } from './progress-tab-no-reports';
 import { ProgressTabNoChildren } from './progress-tab-no-children';
 import { ProgressTabAllChildrenOverFive } from './progress-tab-all-children-over-five';
 import { ProgressTabReportSummary } from './progress-tab-report-summary';
 import { ProgressTabObservationsSummary } from './progress-tab-observations-summary';
 import { format } from 'date-fns';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
 
 export type ChildProgressLandingRouteState = {
   childId: string;
@@ -60,8 +62,15 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     isAllReportsComplete,
   } = useProgressForChildren();
 
+  const [generatedReports, setGeneratedReports] = useState<{
+    [reportId: string]: boolean;
+  }>({});
+  const [generatingReports, setGeneratingReports] = useState(false);
+
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);
+
+  const { asyncGenerateReport } = usePdfFromHtml();
 
   const showOnlineOnly = () => {
     dialog({
@@ -71,6 +80,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       },
     });
   };
+
+  const shareRef = useRef<HTMLDivElement>(null);
 
   const canAddChildren =
     hasPermissionToManageChildren || !!practitioner?.isPrincipal;
@@ -137,7 +148,52 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     }
   }, [dialog, currentReportingPeriod]);
 
-  const isComingSoon = true;
+  const generateAllReports = async () => {
+    setGeneratingReports(true);
+    // Add all reports to reports generation state
+    const reports: { [reportId: string]: boolean } = {};
+    childReports.forEach((report) => {
+      const reportId = report.report.id;
+      if (reportId) reports[reportId] = false;
+    });
+    setGeneratedReports(reports);
+
+    // Generate all reports
+    const reportElements = Array.from(
+      shareRef.current?.children || []
+    ).entries();
+    for await (const [index, element] of reportElements) {
+      await asyncGenerateReport(
+        element as HTMLElement,
+        (element as HTMLElement)?.offsetWidth || 750,
+        ` - ${childReports[index].childFullName}`
+      );
+      const reportId = childReports[index].report.id as string;
+      setGeneratedReports({
+        ...generatedReports,
+        [reportId]: true,
+      });
+    }
+  };
+
+  const generateButtonLabel = () => {
+    const totalReports = childReports.length;
+    const completedReports = Object.values(generatedReports).filter(
+      (x) => x
+    ).length;
+    return generatingReports
+      ? `${completedReports} of ${totalReports} reports generated`
+      : 'Download all progress reports';
+  };
+
+  useEffect(() => {
+    const allReportsGenerated = Object.values(generatedReports).every((x) => x);
+    if (allReportsGenerated) {
+      setGeneratingReports(false);
+    }
+  }, [generatedReports]);
+
+  const isComingSoon = false;
 
   if (isComingSoon) {
     return (
@@ -297,14 +353,15 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 {isAllReportsComplete && (
                   <>
                     <Button
-                      onClick={() => {}}
+                      onClick={() => generateAllReports()}
                       className="mt-auto w-full"
                       size="small"
                       color="quatenary"
                       textColor="white"
                       type="filled"
-                      icon={'DownloadIcon'}
-                      text={'Download all progress reports'}
+                      icon={generatingReports ? undefined : 'DownloadIcon'}
+                      text={generateButtonLabel()}
+                      disabled={generatingReports || !isOnline}
                     />
                     <Button
                       onClick={() =>
@@ -326,6 +383,20 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
             )}
           </div>
         )}
+      <div hidden={true}>
+        <div ref={shareRef}>
+          {childReports.map((report) =>
+            report.report.id ? (
+              <div key={report.childId} style={{ letterSpacing: '0.01px' }}>
+                <ProgressCaregiverReportPdf
+                  childId={report.childId}
+                  reportId={report.report.id as string}
+                />
+              </div>
+            ) : null
+          )}
+        </div>
+      </div>
     </>
   );
 };

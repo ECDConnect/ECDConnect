@@ -40,8 +40,6 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
             else
                 request = repository.GetAll();
 
-            request = request.Where(c => c.IsActive == true);
-
             if (showOnlyTypesWithName is not null && showOnlyTypesWithName.Length > 0)
                 request = request.Where(x => showOnlyTypesWithName.Contains(x.Name));
             

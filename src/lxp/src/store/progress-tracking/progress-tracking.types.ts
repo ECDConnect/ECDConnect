@@ -5,7 +5,6 @@ import {
   PractitionerProgressReportSummaryDto,
   ProgressTrackingAgeGroupDto,
   ProgressTrackingCategoryDto,
-  ProgressTrackingLevelDto,
 } from '@ecdlink/core';
 import { ResourceLink } from '@ecdlink/graphql';
 

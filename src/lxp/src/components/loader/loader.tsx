@@ -4,6 +4,7 @@ import { useHistory } from 'react-router';
 import RobotHearts from '../../assets/gifs/robothearts.gif';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import ROUTES from '@routes/routes';
+import { TIMEOUTS } from '@/constants/timeouts';
 
 const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const history = useHistory();
@@ -12,9 +13,16 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const [showIssue, setShowIssue] = useState<boolean>(false);
 
   useEffect(() => {
+    // Check for connection type and set timeout accordingly.
+    // This gives slower connections more time to not throw false positives for issues.
+    const connectionType: string = (window.navigator as any).connection
+      .effectiveType as string;
+    const issueTimeout =
+      TIMEOUTS[connectionType].loadIssueTime || TIMEOUTS['4g'].loadIssueTime;
+
     const timer = setTimeout(() => {
       setShowIssue(true);
-    }, 20000);
+    }, issueTimeout);
     return () => clearTimeout(timer);
   }, []);
 

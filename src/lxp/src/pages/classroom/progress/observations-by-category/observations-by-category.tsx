@@ -4,6 +4,7 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
   DialogPosition,
+  ImageWithFallback,
   Typography,
 } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
@@ -56,7 +57,10 @@ export const ObservationsByCategory: React.FC = () => {
             color="textDark"
             text={currentSkill.description}
           />
-          <img className="mt-2 mb-2" src={currentSkill.supportImage} />
+          <ImageWithFallback
+            className="mt-2 mb-2"
+            src={currentSkill.supportImage}
+          />
           <Button
             onClick={cancel}
             size="small"
@@ -85,6 +89,8 @@ export const ObservationsByCategory: React.FC = () => {
           });
         }
       }}
+      renderBorder={true}
+      displayOffline={!isOnline}
       onClose={() => {
         if (isOnline) {
           syncChildProgressReports();
@@ -121,7 +127,7 @@ export const ObservationsByCategory: React.FC = () => {
               backgroundColor: category.color,
             }} // TODO - maybe fix the category colours???
           >
-            <img
+            <ImageWithFallback
               src={category.imageUrl}
               alt="category"
               className="mr-2 h-5 w-5"

@@ -26,7 +26,8 @@
     "watch_packages": "npm-watch build:ui",
     "purge:portal": "cd ./src/admin-portal && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
     "purge:app": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
-    "purge:app-wl": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}"
+    "purge:app-wl": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
+    "patch:fixups": "node ./patch-fixups.js"
   },
   "watch": {
     "build:ui": {
@@ -67,7 +68,6 @@
     "@types/file-saver": "^2.0.4",
     "@types/object-hash": "^2.2.1",
     "@types/react-datepicker": "^4.3.2",
-    "@types/react-detect-offline": "^2.4.1",
     "@types/react-helmet": "^6.1.5",
     "@types/react-redux": "^7.1.24",
     "@types/react-signature-canvas": "^1.0.2",
@@ -100,9 +100,9 @@
     "react-currency-input-field": "^3.6.9",
     "react-date-range": "^1.4.0",
     "react-datepicker": "^4.5.0",
-    "react-detect-offline": "^2.4.5",
     "react-device-detect": "^2.2.2",
     "react-dom": "^17.0.2",
+    "react-error-overlay": "^6.0.9",
     "react-ga4": "^2.1.0",
     "react-gtm-module": "^2.0.11",
     "react-helmet": "^6.1.0",
@@ -110,7 +110,6 @@
     "react-i18next": "^11.11.4",
     "react-joyride": "2.5.5",
     "react-native-web": "^0.18.10",
-    "react-error-overlay": "^6.0.9",
     "react-redux": "^8.0.2",
     "react-responsive-carousel": "^3.2.23",
     "react-router": "^5.2.0",
@@ -166,8 +165,8 @@
     "autoprefixer": "^9.8.8",
     "craco-alias": "^3.0.1",
     "cropperjs": "^1.5.12",
-    "dotenv": "^16.0.0",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-react-app": "^7.0.0",
     "eslint-import-resolver-typescript": "^2.7.1",

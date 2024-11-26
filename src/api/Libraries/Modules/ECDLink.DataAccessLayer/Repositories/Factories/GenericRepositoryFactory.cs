@@ -58,13 +58,18 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
             return CreateRepository<T>(CustomScope, string.IsNullOrEmpty(userContext) ? null : Guid.Parse(userContext));
         }
 
-        public IGenericRepository<T, Guid> CreateGenericRepository<T>(AuthenticationDbContext CustomScope = null, Guid? userContext = null)
+        public IGenericRepository<T, Guid> CreateGenericRepository<T>(AuthenticationDbContext CustomScope = null, Guid? userContext = null, Guid? tenantContext = null)
           where T : EntityBase<Guid>
         {
             IGenericRepository<T, Guid> repo = _provider.GetService<GenericRepository<T>>();
             if (userContext.HasValue && userContext.Value != Guid.Empty)
             {
                 repo.SetUserContext(userContext);
+            }
+
+            if (tenantContext.HasValue && tenantContext.Value != Guid.Empty)
+            {
+                repo.SetTenantContext(tenantContext);
             }
             return repo;
         }

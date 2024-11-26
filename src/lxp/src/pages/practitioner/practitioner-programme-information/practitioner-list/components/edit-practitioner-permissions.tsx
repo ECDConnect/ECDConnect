@@ -170,7 +170,7 @@ export const EditPractitionerPermissions = ({
         {isFromProfileSection && (
           <Typography
             type={'body'}
-            text={`You can edit this in future by going to the Classroom then Practitioners tab.`}
+            text={`You can edit this in future by going to the Business then Staff tab.`}
             color={'textMid'}
           />
         )}

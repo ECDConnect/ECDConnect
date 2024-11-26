@@ -142,7 +142,7 @@ export const Resources = () => {
     });
   }
 
-  const isComingSoon = true;
+  const isComingSoon = false;
 
   if (isComingSoon) {
     return <Typography color="textDark" text={`Coming soon`} type={'h2'} />;
@@ -157,7 +157,7 @@ export const Resources = () => {
           spinnerColor={'quatenary'}
           backgroundColor={'uiBg'}
         />
-      ) : resourceItems && resourceItems?.length > 0 ? (
+      ) : (
         <div>
           <Typography
             type="h2"
@@ -171,8 +171,6 @@ export const Resources = () => {
             listItems={resourceItems}
           />
         </div>
-      ) : (
-        <ComingSoon />
       )}
       {resourceItems && resourceItems?.length > 0 && (
         <Button

@@ -3,6 +3,7 @@ import { ChildDto, ProgressTrackingAgeGroupDto } from '@ecdlink/core';
 import { ChildProgressDetailedSkillToWorkOn } from '@/models/progress/child-progress-report';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { differenceInMonths } from 'date-fns';
+import { useProgressWalkthrough } from '@/hooks/useProgressWalkthrough';
 
 export type ObservationsForChildSupportLearningProps = {
   child: ChildDto;
@@ -23,6 +24,9 @@ export const ObservationsForChildSupportLearning: React.FC<
   updateSkillToWorkOn,
   updateHowToSupport: updateHowToSupportGeneral,
 }) => {
+  const { ageGroup } = useProgressWalkthrough();
+
+  const ageGroupCurrent = currentAgeGroup || ageGroup;
   const ageInMonths =
     !!child.user && !!child.user.dateOfBirth
       ? differenceInMonths(new Date(), new Date(child.user!.dateOfBirth!))
@@ -51,7 +55,7 @@ export const ObservationsForChildSupportLearning: React.FC<
                   type="h3"
                   weight="bold"
                   color="white"
-                  text={`Wonderful! ${child.user?.firstName} is ${ageInMonths} months old and can do everything in the ${currentAgeGroup.description} progress tracker!`}
+                  text={`Wonderful! ${child.user?.firstName} is ${ageInMonths} months old and can do everything in the ${ageGroupCurrent.description} progress tracker!`}
                 />
                 <Typography
                   className="mt-2"
@@ -78,7 +82,7 @@ export const ObservationsForChildSupportLearning: React.FC<
       {!!skillsToWorkOn.length && (
         <div className="mb-4">
           {skillsToWorkOn.map((skill) => (
-            <>
+            <div key={skill.skillId}>
               <Typography
                 type="h4"
                 color="textDark"
@@ -102,7 +106,7 @@ export const ObservationsForChildSupportLearning: React.FC<
                 }
                 value={skill.howToSupport}
               />
-            </>
+            </div>
           ))}
         </div>
       )}

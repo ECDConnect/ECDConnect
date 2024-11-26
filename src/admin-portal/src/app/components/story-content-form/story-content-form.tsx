@@ -89,7 +89,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
 
   const { data: storyBookPartQuestioncontentData, loading } = useQuery(
     storyBookPartsQuestionsQuery,
-
     {
       fetchPolicy: 'cache-and-network',
       variables: {
@@ -230,7 +229,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
           });
         }
       });
-
       setInitialStoryBookPartsQuestionsFormatted([...emptyArray]);
     }
   }, [
@@ -301,7 +299,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
   const onQuestionChange = useCallback(
     (e, idx) => {
       let newArray = [...storyBookPartsQuestionsFormatted];
-
       newArray[idx] = {
         ...newArray[idx],
         question: e.target.value,
@@ -354,22 +351,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     setFilteredStoryBookPartsQuestions,
     storyBookPartsValuesFormatted,
   ]);
-
-  const getQuestionValue = useCallback(
-    (linkedQuestions, idx) => {
-      if (linkedQuestions && linkedQuestions.length !== 0) {
-        const question = linkedQuestions[0];
-        const answer = initialStoryBookPartsQuestionsFormatted.find(
-          (q) => q.id === question.id
-        );
-        if (answer) {
-          return answer.question;
-        }
-      }
-      return '';
-    },
-    [initialStoryBookPartsQuestionsFormatted]
-  );
 
   if (
     tempData &&
@@ -453,7 +434,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
             }
           />
         )}
-        {title === 'C T F35 - theme Days' || title === 'theme Days'}
         <Typography
           type={'body'}
           color={'textMid'}
@@ -461,9 +441,17 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
         />
 
         <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-          <div className="min-w-full  divide-gray-200">
+          <div className="min-w-full divide-gray-200">
             {storyBookPartsValuesFormatted &&
               storyBookPartsValuesFormatted.map((item: any, idx: number) => {
+                const formattedQuestion =
+                  storyBookPartsQuestionsFormatted?.find(
+                    (question) => question?.idx === idx
+                  );
+                const questionAnswer =
+                  initialStoryBookPartsQuestionsFormatted?.find(
+                    (question) => question?.idx === idx
+                  );
                 return (
                   <div className="mt-4" key={'storybook_' + idx}>
                     {formType === StoryBookTypes.storyBook && (
@@ -475,10 +463,11 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                           color={'textDark'}
                         />
                         <Typography
-                          type={'body'}
-                          text={`Text`}
+                          type={'small'}
+                          text={idx === 0 ? 'Text *' : `Text`}
                           className={'mt-1 text-sm font-normal'}
                           color={'textDark'}
+                          weight="bold"
                         />
                       </>
                     )}
@@ -495,14 +484,14 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                     )}
                     <div>
                       <FormInput
-                        key={idx}
-                        className="bg-adminPortalBg my-4 p-4"
+                        key={'story_' + idx}
+                        className="bg-adminPortalBg"
                         isAdminPortalField={true}
                         id={item?.id}
                         value={item?.partText}
                         onChange={(e) => onChange(e, idx)}
                         textInputType="textarea"
-                        placeholder={'Add a response...'}
+                        placeholder={'Add story text...'}
                         error={
                           idx === 0 && !item?.partText
                             ? 'This field is required'
@@ -524,34 +513,27 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                       color={'textDark'}
                     />
                     <Typography
-                      type={'body'}
+                      type={'small'}
                       text={`Optional`}
                       className={'mt-1 text-sm font-normal'}
                       color={'textDark'}
                     />
                     <FormInput
-                      key={idx}
-                      className="bg-adminPortalBg my-4 p-4"
+                      key={'question_' + idx}
+                      className="bg-adminPortalBg"
                       isAdminPortalField={true}
                       id={item?.id}
-                      value={getQuestionValue(
-                        item?.storyBookPartQuestions,
-                        idx
-                      )}
-                      //   (storyBookPartsQuestionsFormatted &&
-                      //     storyBookPartsQuestionsFormatted?.length &&
-                      //     storyBookPartsQuestionsFormatted?.find(
-                      //       (question) =>
-                      //         question?.id.toString() === item?.storyBookPartQuestions?.[0]?.id.toString()
-                      //     )?.question) ||
-                      //   storyBookPartsQuestionsFormatted?.find(
-                      //     (question) => question?.idx === idx
-                      //   )?.question
-                      // }
                       disabled={item?.partText === ''}
                       onChange={(e) => onQuestionChange(e, idx)}
+                      value={
+                        formattedQuestion
+                          ? formattedQuestion?.question
+                          : questionAnswer
+                          ? questionAnswer?.question
+                          : ''
+                      }
                       textInputType="textarea"
-                      placeholder={'Add a question...'}
+                      placeholder={'Add question...'}
                     />
                   </div>
                 );

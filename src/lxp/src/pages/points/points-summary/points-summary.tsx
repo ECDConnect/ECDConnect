@@ -127,6 +127,7 @@ export const PointsSummary: React.FC = () => {
           });
         })
     : pointActivitiesItems.filter((el) => {
+        if (pointsShareData?.activityDetail?.length === 0) return true;
         return pointsShareData?.activityDetail?.some((f: any) => {
           return f.activity !== el.activity;
         });
@@ -1028,11 +1029,11 @@ export const PointsSummary: React.FC = () => {
               textColour="black"
             />
           ) : null}
-          {!isOnline &&
-          monthPoints &&
-          pointsTotalForYear &&
-          pointsTotalForYear >= 10 &&
-          getCurrentPointsToDo === 4 ? (
+          {(!isOnline &&
+            monthPoints &&
+            pointsTotalForYear &&
+            pointsTotalForYear >= 10 &&
+            getCurrentPointsToDo) === 4 || percentageScore === 0 ? (
             <div>{celebrationCard}</div>
           ) : null}
           {isOnline &&
@@ -1061,7 +1062,11 @@ export const PointsSummary: React.FC = () => {
               )}
             />
           ) : null}
-          {!pointsTotalForYear || pointsTotalForYear < 10 ? (
+          {!pointsTotalForYear ||
+          pointsTotalForYear < 10 ||
+          (practitioner?.isPrincipal
+            ? getCurrentPointsToDo !== 4
+            : getCurrentPointsToDo !== 3) ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -1094,10 +1099,11 @@ export const PointsSummary: React.FC = () => {
               </div>
             </div>
           ) : null}
-          {!!todoListFiltered &&
-          !!todoListFiltered.length &&
-          pointsTotalForYear &&
-          pointsTotalForYear >= 10 ? (
+          {(!!todoListFiltered &&
+            !!todoListFiltered.length &&
+            pointsTotalForYear &&
+            pointsTotalForYear >= 10) ||
+          percentageScore === 0 ? (
             <Typography
               className="mt-8 mb-4"
               type={'h3'}
@@ -1108,7 +1114,10 @@ export const PointsSummary: React.FC = () => {
               )}:`}
             />
           ) : null}
-          {!!todoListFiltered && pointsTotalForYear && pointsTotalForYear >= 10
+          {(!!todoListFiltered &&
+            pointsTotalForYear &&
+            pointsTotalForYear >= 10) ||
+          percentageScore === 0
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
                   <div
@@ -1152,10 +1161,11 @@ export const PointsSummary: React.FC = () => {
               }}
             />
           ) : null}
-          {pointsTotalForYear &&
-          pointsTotalForYear >= 10 &&
-          monthPoints === 0 &&
-          !practitioner?.coachHierarchy ? (
+          {(pointsTotalForYear &&
+            pointsTotalForYear >= 10 &&
+            monthPoints === 0 &&
+            !practitioner?.coachHierarchy) ||
+          (percentageScore === 0 && !practitioner?.coachHierarchy) ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -1167,14 +1177,15 @@ export const PointsSummary: React.FC = () => {
               onClick={() => setShowInfo(true)}
             />
           ) : null}
-          {pointsTotalForYear &&
-          pointsTotalForYear >= 10 &&
-          monthPoints === 0 &&
-          practitioner?.coachHierarchy ? (
+          {(pointsTotalForYear &&
+            pointsTotalForYear >= 10 &&
+            monthPoints === 0 &&
+            practitioner?.coachHierarchy) ||
+          (percentageScore === 0 && practitioner?.coachHierarchy) ? (
             <Button
               size="normal"
               className="mb-4 w-full"
-              type="outlined"
+              type="filled"
               color="quatenary"
               text="Ask your coach for help"
               textColor="white"

@@ -144,7 +144,7 @@ export const Resources = () => {
     });
   }
 
-  const isComingSoon = true;
+  const isComingSoon = false;
 
   if (isComingSoon) {
     return (
