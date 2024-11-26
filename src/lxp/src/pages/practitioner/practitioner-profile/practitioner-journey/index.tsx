@@ -63,7 +63,6 @@ export const PractitionerJourney = ({
   const [, setVisitId] = useSessionStorage(practitionerVisitIdKey);
 
   //add coming soon
-  const isComingSoon = true;
   const appDispatch = useAppDispatch();
 
   const user = useSelector(getUser);
