@@ -39,7 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [UseSorting]
         public List<PortalUsersHCWModel> GetAllHealthCareWorkers(
             [Service] HealthCareWorkerManager healthCareWorkerManager,
-            CancellationToken cancellationToken, 
+            CancellationToken cancellationToken,
             PagedQueryInput pagingInput = null,
             string search = null,
             List<Guid> provinceSearch = null,
@@ -63,7 +63,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             return PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, healthCareWorkers.AsQueryable()).ToList();
         }
-       
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
         public int GetCountHealthCareWorkers(
@@ -174,7 +174,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             }
             else
                 _startDate = (startDate?.ToUniversalTime().Date ?? DateTime.Now.Date.Subtract(TimeSpan.FromDays(30)));
-            
+
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>();
             Guid.TryParse(healthCareWorkerId, out Guid hcwId);
             var communityHealthWorker = healthCareWorkerRepo.GetById(hcwId);
