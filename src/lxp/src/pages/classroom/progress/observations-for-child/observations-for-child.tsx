@@ -90,7 +90,10 @@ export const ObservationsForChild: React.FC = () => {
   const nextEnabled = useMemo<boolean>(() => {
     // For skills to work on, must choose correct number
     if (currentStep === totalSkillsSteps + 1) {
-      return report?.skillsToWorkOn.length === skillsToChoose;
+      return (
+        report?.skillsToWorkOn.length === skillsToChoose &&
+        report?.unknownPercentage < 25
+      );
     }
 
     // All details filled in for how to support
@@ -227,7 +230,6 @@ export const ObservationsForChild: React.FC = () => {
           icon="XIcon"
           text="Save & exit"
           textColor="quatenary"
-          disabled={currentStep === totalSteps && !nextEnabled}
         />
       </div>
     </BannerWrapper>
