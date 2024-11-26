@@ -87,7 +87,7 @@ export default function ContentCompare({
 
   const handleNoDynamicForms = (type: string) => {
     switch (type) {
-      case 'StoryBook':
+      case ContentTypes.STORY_BOOK:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -114,7 +114,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'Theme':
+      case ContentTypes.THEME:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -170,7 +170,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'ProgressTrackingCategory':
+      case ContentTypes.PROGRESS_TRACKING_CATEGORY:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -197,7 +197,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'ProgressTrackingSkill':
+      case ContentTypes.PROGRESS_TRACKING_SKILL:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -231,7 +231,7 @@ export default function ContentCompare({
 
   const handleSecondLanguageNoDynamicForms = (type: string) => {
     switch (type) {
-      case 'StoryBook':
+      case ContentTypes.STORY_BOOK:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -258,7 +258,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'Theme':
+      case ContentTypes.THEME:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -314,7 +314,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'ProgressTrackingCategory':
+      case ContentTypes.PROGRESS_TRACKING_CATEGORY:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -341,7 +341,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case ContentName.ProgressTrackingSkill:
+      case ContentTypes.PROGRESS_TRACKING_SKILL:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -375,7 +375,7 @@ export default function ContentCompare({
 
   if (
     (contentView && languages && currentContent) ||
-    (contentType?.name === ContentName.ProgressTrackingSkill &&
+    (contentType?.name === ContentTypes.PROGRESS_TRACKING_SKILL &&
       contentView &&
       languages)
   ) {

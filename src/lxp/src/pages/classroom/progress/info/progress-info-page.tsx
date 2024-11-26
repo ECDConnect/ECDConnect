@@ -1,24 +1,18 @@
-import { authSelectors } from '@/store/auth';
 import {
   ActionModal,
   Button,
   Card,
   DialogPosition,
-  MoreInformationPage,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '@/store/static-data';
-import { MoreInformation } from '@ecdlink/graphql';
-import InfoService from '@/services/InfoService/InfoService';
 import { MoreInformationTypeEnum, useDialog } from '@ecdlink/core';
 import { InfoPage } from '@/pages/business/money/submit-income-statements/components/info-page';
 import { useTenant } from '@/hooks/useTenant';
-import { ProgressWalkthroughStart } from '../walkthrough/progress-walkthrough-start';
 import { childrenSelectors } from '@/store/children';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
+import { useMemo } from 'react';
 
 interface ProgressInfoPageProps {
   onClose: () => void;
@@ -27,30 +21,45 @@ interface ProgressInfoPageProps {
 export const ProgressInfoPage: React.FC<ProgressInfoPageProps> = ({
   onClose,
 }) => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
-  const [data, setData] = useState<MoreInformation[]>();
-  const languages = useSelector(staticDataSelectors.getLanguages);
-  const [selectedLanguage, setSelectedLanguage] = useState('en-za');
   const { tenant } = useTenant();
   const history = useHistory();
   const children = useSelector(childrenSelectors.getChildren);
   const dialog = useDialog();
-
   const hasNoChildren = children?.length === 0;
 
-  useEffect(() => {
-    new InfoService()
-      .getMoreInformation(MoreInformationTypeEnum.Points, selectedLanguage)
-      .then((info) => setData(info));
-  }, [selectedLanguage, userAuth?.auth_token]);
+  const onDownloadPdf = () => {
+    const pdfUrl =
+      'https://ecdconnectstoragestg.blob.core.windows.net/unknown/979e688f-e372-465b-ace4-5a8769ca3896_TrackProgressReportExample.pdf';
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', 'TrackProgressReportExample.pdf');
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  const renderFooterComponent = useMemo(
+    () => (
+      <Button
+        className="mt-0 mb-4 w-60"
+        icon="ArrowCircleDownIcon"
+        type="outlined"
+        color="alertMain"
+        textColor="alertMain"
+        text={`Download example report`}
+        onClick={onDownloadPdf}
+      />
+    ),
+    []
+  );
 
   return (
     <InfoPage
       title="Tracking progress"
-      section={MoreInformationTypeEnum.DevelopingChildrenHolistically}
-      closeText="Start taking attendance"
+      section={MoreInformationTypeEnum.TrackingProgress}
+      closeText="Start tracking progress"
       closeIcon=""
       onClose={onClose}
+      footer={renderFooterComponent}
     >
       <Card className="bg-uiBg flex w-full flex-col justify-center rounded-2xl p-4">
         <Typography
@@ -58,7 +67,7 @@ export const ProgressInfoPage: React.FC<ProgressInfoPageProps> = ({
           color="textDark"
           type="h2"
           text={`How to use the progress tracker on ${
-            tenant?.applicationName ? `on ${tenant.applicationName}` : ''
+            tenant?.applicationName ? `${tenant.applicationName}` : ''
           }?`}
         />
         <Typography
@@ -115,7 +124,6 @@ export const ProgressInfoPage: React.FC<ProgressInfoPageProps> = ({
           }}
         />
       </Card>
-      <div className="my-2"></div>
     </InfoPage>
   );
 };

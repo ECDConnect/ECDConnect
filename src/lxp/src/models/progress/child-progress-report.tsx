@@ -47,6 +47,7 @@ export type ChildProgressDetailedReport = {
   unknownCount: number;
   howToSupport?: string;
   skillObservations: ChildProgressDetailedSkillObservation[];
+  hasNegativeScores?: boolean;
 
   childEnjoys?: string;
   goodProgressWith?: string;
@@ -67,6 +68,7 @@ export type ChildProgressDetailedSkillObservation =
     categoryId: number;
     isPositive: boolean;
     isNegative: boolean;
+    isReverseScored?: boolean;
   };
 
 export type ChildProgressDetailedSkillToWorkOn = {

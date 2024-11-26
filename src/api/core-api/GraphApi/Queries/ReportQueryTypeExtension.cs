@@ -225,8 +225,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            if (learner.StartedAttendance > fromDate)
-                            {
+                            // if (learner.StartedAttendance >= fromDate)
+                            // {
                                 childCount++;
                                 var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
                                 if (attendanceData.Any())
@@ -246,7 +246,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                     year = attendanceData.FirstOrDefault().Year;
                                     weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
                                 }
-                            }
+                            // }
                         }
                     }
                     metric.Add(
@@ -400,7 +400,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
             }
-                       
+
 
             //// TODO: Need to refactor dates for reporting periods
             //// Get Due/Overdue Reports
@@ -867,7 +867,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 for (DateTime dt = reportingPeriodStart; dt <= reportingPeriodEnd; dt = dt.AddMonths(1))
                 {
                     var attendanceForPeriod = attendanceService.GetAttendanceRecordsForPeriodByProgramme((IEnumerable<Guid>)classProgrammeIds, practitioner.UserId.ToString(), reportingPeriodStart, reportingPeriodEnd);
-                    
+
                     foreach (var programme in classroomGroup.ClassProgrammes)
                     {
                         var validClassDays = attendanceService.GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
@@ -970,6 +970,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 case "principal":
                     var principalResults = GetPractitionerNotificationsForPrincipal(
                         monthlyAttendanceReportService,
+                        attendanceRepo,
+                        attendanceService,
                         absenteeService,
                         repoFactory,
                         uId.ToString(),
@@ -1112,7 +1114,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
             var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId.ToString())).ToList();
             var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
-            
+
             foreach (var practitioner in practitioners)
             {
                 var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
@@ -1201,7 +1203,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if ((practitioner.IsPrincipal.HasValue && (bool)practitioner.IsPrincipal.Value == true) || (practitioner.IsFundaAppAdmin.HasValue && (bool)practitioner.IsFundaAppAdmin.Value == true))
                 {
                     var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.Value, previousMonthStart, previousMonthEnd).FirstOrDefault();
-                    var lastMonthStatementBalance = lastMonthStatement != null 
+                    var lastMonthStatementBalance = lastMonthStatement != null
                         ? lastMonthStatement.IncomeItems.Sum(x => x.Amount) - lastMonthStatement.ExpenseItems.Sum(x => x.Amount)
                         : 0;
                     #region MISSING INCOME STATEMENT
@@ -1262,8 +1264,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
                 {
 
-                    var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(),previousMonthStart, previousMonthEnd).SingleOrDefault();
-                     
+                    var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
+
                     if (monthlyReport != null)
                     {
                         if (monthlyReport.TotalScheduledSessions > 0)
@@ -1327,6 +1329,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         private IEnumerable<NotificationDisplay> GetPractitionerNotificationsForPrincipal(
             [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
+            [Service] AttendanceTrackingRepository attendanceRepo,
+            [Service] AttendanceService attendanceService,
             [Service] IAbsenteeService absenteeService,
             IGenericRepositoryFactory repoFactory,
             string uId,
@@ -1337,11 +1341,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
 
-            var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
+            var today = DateTime.Now;
+            var previousMonthStart =  DateTime.Now.GetStartOfPreviousMonth();
             var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
             var currentMonthEnd = DateTime.Now.GetEndOfMonth();
+            var currentMonthStart = DateTime.Now.GetStartOfMonth();
 
-            var mondayOfLastWeek = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek - 6); 
+            var mondayOfLastWeek = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek - 6);
             var sundayOfLastWeek = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek);
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
@@ -1363,7 +1369,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var pracitionerUserIds = practitioners.Select(y => y.UserId.ToString());
             var classrooms = classroomRepo.GetAll().ToList();
             var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
-            
+
             foreach (var practitioner in practitioners)
             {
                 var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
@@ -1431,13 +1437,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region ATTENDANCE
-                var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), mondayOfLastWeek, sundayOfLastWeek).SingleOrDefault();
-
+                // var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), mondayOfLastWeek, sundayOfLastWeek).SingleOrDefault();
+                var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
+                // var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), currentMonthStart, currentMonthEnd).SingleOrDefault();
+                var metrics = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), previousMonthStart.Date, previousMonthEnd.GetEndOfDay());
                 if (monthlyReport != null)
                 {
                     if (monthlyReport.TotalScheduledSessions > 0)
                     {
-                        var attendancePercentage = monthlyReport.PercentageAttendance;
+                        var attendancePercentage = metrics.First().AttendancePercentage;
 
                         #region LOW CHILD ATTENDENCE
                         if (attendancePercentage < 75)

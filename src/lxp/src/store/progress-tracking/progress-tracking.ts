@@ -341,6 +341,34 @@ const progressTrackingSlice = createSlice({
         },
       ];
     },
+    resetReportObservationDateComplete: (
+      state,
+      action: PayloadAction<{
+        childId: string;
+        reportingPeriodId: string;
+      }>
+    ) => {
+      const { childId, reportingPeriodId } = action.payload;
+
+      const report = state.childProgressReports.find(
+        (x) =>
+          x.childId === childId &&
+          x.childProgressReportPeriodId === reportingPeriodId
+      );
+
+      if (!report) {
+        return;
+      }
+
+      state.childProgressReports = [
+        ...state.childProgressReports.filter((x) => x.id !== report.id),
+        {
+          ...report,
+          synced: false,
+          observationsCompleteDate: undefined,
+        },
+      ];
+    },
     markAllSkillsObserved: (
       state,
       action: PayloadAction<{

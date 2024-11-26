@@ -62,7 +62,6 @@ import { newGuid } from '@utils/common/uuid.utils';
 import { userSelectors } from '@store/user';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';
-import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -240,12 +239,12 @@ export const ChildProfile: React.FC = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
   };
 
-  useEffect(() => {
-    if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
-      goToChildProfileWalkthrough();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childTutorialTaken, run]);
+  // useEffect(() => {
+  //   if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
+  //     goToChildProfileWalkthrough();
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [childTutorialTaken, run]);
 
   const showOnlineOnly = useCallback(() => {
     dialog({
@@ -261,49 +260,49 @@ export const ChildProfile: React.FC = () => {
     });
   }, [dialog]);
 
-  const goToChildProfileWalkthrough = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <ActionModal
-          customIcon={
-            <div className="flex">
-              <img src={walkthroughImage} alt="profile" className="mb-2" />
-            </div>
-          }
-          importantText={`Welcome to the child profile on ${appName}!`}
-          detailText={'Can I show you how to use this section?'}
-          actionButtons={[
-            {
-              text: 'Yes, help me!',
-              textColour: 'white',
-              colour: 'quatenary',
-              type: 'filled',
-              onClick: () => {
-                onSubmit();
-                handleClickStart();
-              },
-              leadingIcon: 'CheckCircleIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'quatenary',
-              colour: 'quatenary',
-              type: 'outlined',
-              onClick: () => {
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.childProfileTutorialComplete
-                );
-                onCancel();
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
+  // const goToChildProfileWalkthrough = () => {
+  //   dialog({
+  //     position: DialogPosition.Middle,
+  //     render: (onSubmit: any, onCancel: any) => (
+  //       <ActionModal
+  //         customIcon={
+  //           <div className="flex">
+  //             <img src={walkthroughImage} alt="profile" className="mb-2" />
+  //           </div>
+  //         }
+  //         importantText={`Welcome to the child profile on ${appName}!`}
+  //         detailText={'Can I show you how to use this section?'}
+  //         actionButtons={[
+  //           {
+  //             text: 'Yes, help me!',
+  //             textColour: 'white',
+  //             colour: 'quatenary',
+  //             type: 'filled',
+  //             onClick: () => {
+  //               onSubmit();
+  //               handleClickStart();
+  //             },
+  //             leadingIcon: 'CheckCircleIcon',
+  //           },
+  //           {
+  //             text: 'No, skip',
+  //             textColour: 'quatenary',
+  //             colour: 'quatenary',
+  //             type: 'outlined',
+  //             onClick: () => {
+  //               setStorageItem(
+  //                 true,
+  //                 LocalStorageKeys.childProfileTutorialComplete
+  //               );
+  //               onCancel();
+  //             },
+  //             leadingIcon: 'ClockIcon',
+  //           },
+  //         ]}
+  //       />
+  //     ),
+  //   });
+  // };
 
   // TODO - This useEffect needs to be fixed, causing infinite re-renders!!!
   useEffect(() => {
@@ -583,7 +582,7 @@ export const ChildProfile: React.FC = () => {
     }
   }, [isFromInfoPage]);
 
-  const isComingSoon = true;
+  const isComingSoon = false;
 
   const options = useMemo((): ListItemProps[] => {
     const attendancePercentage = attendanceReport?.attendancePercentage;
@@ -625,7 +624,7 @@ export const ChildProfile: React.FC = () => {
       },
       {
         key: 'progress',
-        title: `Progress reports${isComingSoon && ' - Coming soon'}`,
+        title: `Progress reports${isComingSoon ? ' - Coming soon' : ''}`,
         buttonType: 'filled',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
@@ -748,7 +747,7 @@ export const ChildProfile: React.FC = () => {
           }
         }}
         displayOffline={!isOnline}
-        onHelp={() => goToChildProfileWalkthrough()}
+        // onHelp={() => goToChildProfileWalkthrough()}
         displayHelp={true}
         isLoading={isLoadingAttendance}
       >
@@ -789,16 +788,17 @@ export const ChildProfile: React.FC = () => {
             ))}
           </div>
         )}
-        {(practitioner?.isPrincipal ||
-          hasPermissionToCreateProgressReports) && (
-          <div
-            id={`child_progress_observations`}
-            aria-disabled={run}
-            className='"-mt-0.5 rounded-2xl" flex w-full flex-col gap-1'
-          >
-            <ChildProgressReportAlert child={child!} />
-          </div>
-        )}
+        {(practitioner?.isPrincipal || hasPermissionToCreateProgressReports) &&
+          childAge &&
+          childAge?.years < 5 && (
+            <div
+              id={`child_progress_observations`}
+              aria-disabled={run}
+              className='"-mt-0.5 rounded-2xl" flex w-full flex-col gap-1'
+            >
+              <ChildProgressReportAlert child={child!} />
+            </div>
+          )}
         <div className={styles.profileOptionsWrapper}>
           {options
             ?.filter((item) =>

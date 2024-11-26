@@ -152,21 +152,21 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
   `;
 
   const { data: contentData } = useQuery(query, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
     variables: {
       localeId: languageId?.toString(),
     },
   });
 
   const { data: storyActivitiesData } = useQuery(smallLargeActivitiesQuery, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
     variables: {
       localeId: languageId?.toString(),
     },
   });
 
   const { data: storyBookActivitiesData } = useQuery(storiesActivitiesQuery, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
     variables: {
       localeId: languageId?.toString(),
     },
@@ -337,7 +337,6 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     item.idx = idx;
     tempArray[idx] = item;
 
-    selectItem(e?.[0]?.id);
     setThemeDaysArr(tempArray);
   };
 
@@ -395,7 +394,6 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                   <CheckboxGroup
                     checkboxColor="primary"
                     id={item?.title}
-                    key={item?.title + '_' + idx}
                     image={item?.imageUrl}
                     title={item?.name}
                     description={item?.description}
@@ -479,7 +477,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                             className="my-1"
                           />
                         ) : (
-                          <div className="mt-1"></div>
+                          <div key={'theme_' + idx} className="mt-1"></div>
                         )}
                         <Dropdown<any>
                           placeholder={'Type to search...'}

@@ -5,20 +5,20 @@ import {
   Card,
   DialogPosition,
   Divider,
+  ImageWithFallback,
   ListItem,
   Typography,
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import {
-  ChildDto,
   ContentTypeEnum,
   LanguageDto,
   ProgressTrackingAgeGroupDto,
   useDialog,
 } from '@ecdlink/core';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
-import { differenceInMonths, format, isBefore } from 'date-fns';
+import { format, isBefore } from 'date-fns';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { useMemo, useState } from 'react';
 import { ChildProgressDetailedReport } from '@/models/progress/child-progress-report';
@@ -34,6 +34,7 @@ import LanguageSelector from '@/components/language-selector/language-selector';
 import { ContentService } from '@/services/ContentService';
 import { authSelectors } from '@/store/auth';
 import { useAppDispatch } from '@/store';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export type ObservationsForChildLandingCompleteProps = {
   childId: string;
@@ -62,6 +63,8 @@ export const ObservationsForChildLandingComplete: React.FC<
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
+
+  const { hasPermissionToCreateProgressReports } = useUserPermissions();
 
   const changeLanguage = async (language: LanguageDto) => {
     const hasTranslations = await new ContentService(
@@ -115,6 +118,9 @@ export const ObservationsForChildLandingComplete: React.FC<
     });
   };
 
+  const currentReportLocale = useSelector(
+    progressTrackingSelectors?.getCurrentLocaleForReport
+  );
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories()
   );
@@ -173,15 +179,18 @@ export const ObservationsForChildLandingComplete: React.FC<
 
         return {
           ...category,
-          subCategories: subCats.map((x) => ({
-            ...x,
-            skills: currentReport.skillsToWorkOn.filter(
-              (y) => y.subCategoryId === x.id
+          subCategories: subCats.map((subCat) => ({
+            ...subCat,
+            skills: subCat.skills.filter((x) =>
+              currentReport.skillsToWorkOn.some((y) => x.id === y.skillId)
             ),
+            // skills: currentReport.skillsToWorkOn.filter(
+            //   (y) => y.subCategoryId === subCat.id
+            // ),
           })),
         };
       });
-  }, [categories, subCategories, currentReport]);
+  }, [subCategories, categories, currentReport.skillsToWorkOn]);
 
   const currentObservationsAllPositive = currentReport.skillObservations.every(
     (x) => x.isPositive
@@ -216,12 +225,14 @@ export const ObservationsForChildLandingComplete: React.FC<
           type="body"
           color="textMid"
           text={
-            'You can edit your observations, add a note, or create the progress report.'
+            hasPermissionToCreateProgressReports
+              ? 'You can edit your observations, add a note, or create the progress report.'
+              : 'You can edit your observations below or ask your principal to create the report.'
           }
           className="mb-4"
         />
       )}
-      {!currentReport.notes && (
+      {!currentReport.notes && hasPermissionToCreateProgressReports && (
         <ListItem
           key={'notes'}
           title={'Add a note'}
@@ -260,25 +271,34 @@ export const ObservationsForChildLandingComplete: React.FC<
             textColor="white"
           />
         )}
-      <div id="reportButtons">
+      <div
+        id="reportButtons"
+        className={
+          hasPermissionToCreateProgressReports ? '' : 'flex flex-grow flex-col'
+        }
+      >
         {(isWalkthrough ||
-          (!isBeforePeriod && currentReport.unknownPercentage < 25)) && (
-          <Button
-            onClick={() => {
-              if (!isWalkthrough) {
-                history.push(ROUTES.PROGRESS_CREATE_REPORT, {
-                  childId: childId,
-                });
-              }
-            }}
-            className="mt-auto mb-4 w-full"
-            size="normal"
-            color="quatenary"
-            type="filled"
-            icon="DocumentReportIcon"
-            text="Create caregiver report"
-            textColor="white"
-          />
+          (!isBeforePeriod && currentReport.unknownPercentage < 25)) &&
+          hasPermissionToCreateProgressReports && (
+            <Button
+              onClick={() => {
+                if (!isWalkthrough) {
+                  history.push(ROUTES.PROGRESS_CREATE_REPORT, {
+                    childId: childId,
+                  });
+                }
+              }}
+              className="mt-auto mb-4 w-full"
+              size="normal"
+              color="quatenary"
+              type="filled"
+              icon="DocumentReportIcon"
+              text="Create caregiver report"
+              textColor="white"
+            />
+          )}
+        {!hasPermissionToCreateProgressReports && (
+          <div className="w-full flex-grow"></div>
         )}
         <Button
           onClick={() => {
@@ -292,15 +312,17 @@ export const ObservationsForChildLandingComplete: React.FC<
           text={showDetails ? 'Hide details' : 'Show details'}
           textColor="quatenary"
         />
-        <LanguageSelector
-          labelText="Progress tracker language:"
-          labelClassName="font-medium font-body text-textDark pr-8"
-          currentLocale="en-za"
-          className="mb-2 w-full px-0"
-          selectLanguage={(data) => {
-            changeLanguage(data);
-          }}
-        />
+        {showDetails && (
+          <LanguageSelector
+            labelText="Progress tracker language:"
+            labelClassName="font-medium font-body text-textDark pr-8"
+            currentLocale={currentReportLocale}
+            className="mb-2 w-full px-0"
+            selectLanguage={(data) => {
+              changeLanguage(data);
+            }}
+          />
+        )}
       </div>
       {!isWalkthrough && showDetails && (
         <div className="pb-4">
@@ -365,7 +387,7 @@ export const ObservationsForChildLandingComplete: React.FC<
               <div key={category.id}>
                 <Card className="bg-uiBg mb-4 rounded-2xl p-4">
                   <div className="flex flex-row items-center">
-                    <img
+                    <ImageWithFallback
                       src={category.imageUrl}
                       alt="category"
                       className="mr-2 h-12 w-12"
@@ -380,7 +402,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                     <div key={subCategory.id}>
                       <Divider dividerType="dashed" className="mt-2 mb-2" />
                       <div className="flex flex-row items-center">
-                        <img
+                        <ImageWithFallback
                           src={subCategory.imageUrl}
                           alt="category"
                           className="mr-2 h-8 w-8"
@@ -392,7 +414,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                         />
                       </div>
                       {subCategory.skills.map((skill) => (
-                        <div key={skill.skillId}>
+                        <div key={skill.id}>
                           <Typography
                             type="small"
                             color="textMid"
@@ -403,7 +425,10 @@ export const ObservationsForChildLandingComplete: React.FC<
                             type="body"
                             color="textDark"
                             className="mt-2"
-                            text={skill.skillName}
+                            text={skill.name.replaceAll(
+                              '[childFirstName]',
+                              childFirstName
+                            )}
                           />
                           <Typography
                             type="small"
@@ -415,7 +440,11 @@ export const ObservationsForChildLandingComplete: React.FC<
                             type="body"
                             color="textDark"
                             className="mt-2"
-                            text={skill.howToSupport}
+                            text={
+                              currentReport.skillsToWorkOn.find(
+                                (x) => x.skillId === skill.id
+                              )?.howToSupport
+                            }
                           />
                           <Button
                             onClick={() =>
@@ -484,7 +513,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                 <div key={category.id}>
                   <Card className="bg-uiBg mb-4 rounded-2xl p-4">
                     <div className="flex flex-row items-center">
-                      <img
+                      <ImageWithFallback
                         src={category.imageUrl}
                         alt="category"
                         className="mr-2 h-12 w-12"
@@ -499,7 +528,7 @@ export const ObservationsForChildLandingComplete: React.FC<
                       <div key={subCategory.id}>
                         <Divider dividerType="dashed" className="mt-2 mb-2" />
                         <div className="flex flex-row items-center">
-                          <img
+                          <ImageWithFallback
                             src={subCategory.imageUrl}
                             alt="category"
                             className="mr-2 h-8 w-8"

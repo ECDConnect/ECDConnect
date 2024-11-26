@@ -13,7 +13,7 @@ export const replaceSkillText = (skillText: string, childFirstName: string) => {
   let finalText = skillText;
 
   // Child name
-  finalText = skillText.replace('[childFirstName]', childFirstName);
+  finalText = skillText.replaceAll('[childFirstName]', childFirstName);
 
   return finalText;
 };

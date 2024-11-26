@@ -102,6 +102,8 @@ export const ChildProgressReportsList: React.FC = () => {
     },
   ];
 
+  const reports = isWalkthrough ? walkthroughReports : detailedReports;
+
   return (
     <BannerWrapper
       size={'small'}
@@ -109,6 +111,8 @@ export const ChildProgressReportsList: React.FC = () => {
       onBack={() =>
         history.replace(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
       }
+      renderBorder={true}
+      displayOffline={!isOnline}
     >
       <ProgressWalkthroughWrapper />
       <div className={'flex h-full flex-col px-4 pb-4'}>
@@ -116,7 +120,7 @@ export const ChildProgressReportsList: React.FC = () => {
         {!isWalkthrough &&
           !currentAgeGroup &&
           !!currentReportingPeriod &&
-          (!detailedReports || detailedReports.length === 0) && (
+          (!reports || reports.length === 0) && (
             <div className="mt-2 flex flex-col justify-center p-8">
               <div>
                 <Typography
@@ -143,7 +147,7 @@ export const ChildProgressReportsList: React.FC = () => {
         {!isWalkthrough &&
           !!ageInMonths &&
           ageInMonths <= 60 &&
-          (!detailedReports || detailedReports.length === 0) && (
+          (!reports || reports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography
                 className={'mt-4'}
@@ -196,7 +200,7 @@ export const ChildProgressReportsList: React.FC = () => {
           )}
 
         {/* REPORTS LIST */}
-        {(isWalkthrough || (!!detailedReports && !!detailedReports.length)) && (
+        {(isWalkthrough || (!!reports && !!reports.length)) && (
           <div className="flex h-full w-full flex-col">
             <Typography
               className={'mt-4 mb-4'}
@@ -205,10 +209,7 @@ export const ChildProgressReportsList: React.FC = () => {
               text={`${child?.user?.firstName}'s reports`}
             />
             <div id="pastReports">
-              <ProgressReportsList
-                childId={childId}
-                reports={isWalkthrough ? walkthroughReports : detailedReports}
-              />
+              <ProgressReportsList childId={childId} reports={reports} />
             </div>
 
             <div className="mt-auto">
@@ -218,7 +219,7 @@ export const ChildProgressReportsList: React.FC = () => {
                   title="All reporting periods for the year are closed. You can keep tracking progress next year."
                 />
               )}
-              {!!detailedReports && !!detailedReports.length && (
+              {!!reports && !!reports.length && (
                 <Button
                   onClick={() =>
                     history.push(ROUTES.PROGRESS_SHARE_REPORT, {
@@ -241,15 +242,9 @@ export const ChildProgressReportsList: React.FC = () => {
                     className="mt-4 w-full"
                     size="small"
                     color="quatenary"
-                    type={
-                      !!detailedReports && !!detailedReports.length
-                        ? 'outlined'
-                        : 'filled'
-                    }
+                    type={!!reports && !!reports.length ? 'outlined' : 'filled'}
                     textColor={
-                      !!detailedReports && !!detailedReports.length
-                        ? 'quatenary'
-                        : 'white'
+                      !!reports && !!reports.length ? 'quatenary' : 'white'
                     }
                     icon="ArrowCircleRightIcon"
                     text="Track progress"

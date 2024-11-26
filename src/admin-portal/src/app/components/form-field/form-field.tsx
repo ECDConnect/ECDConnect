@@ -53,10 +53,7 @@ const FormField: React.FC<FormFieldProps> = ({
 
   return (
     <>
-      <label
-        htmlFor={nameProp}
-        className="block text-lg font-medium text-gray-800"
-      >
+      <label htmlFor={nameProp} className="block font-bold text-gray-800">
         {label}
       </label>
       {subLabel && (

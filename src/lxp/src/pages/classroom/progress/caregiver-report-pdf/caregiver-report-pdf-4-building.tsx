@@ -32,21 +32,6 @@ export const ProgressCaregiverReportBuildingPage: React.FC<
   reportingPeriodEndDate,
   skillsByCategory,
 }) => {
-  const getCategoryBg = (categoryName: string) => {
-    switch (categoryName) {
-      case 'Social emotional':
-        return '#FFF4F9';
-      case 'Cognitive':
-        return '#F7F8FB';
-      case 'Physical':
-        return '#F9FCF4';
-      case 'Language':
-        return '#FAF6F9';
-      default:
-        return '#000000';
-    }
-  };
-
   return (
     <div
       className={'flex flex-col px-4 pb-4 pt-4'}
@@ -79,10 +64,11 @@ export const ProgressCaregiverReportBuildingPage: React.FC<
         .filter((x) => x.skills.some((y) => y.isNegative))
         .map((category) => (
           <div
-            className="mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6 shadow-sm"
+            key={category.id}
+            className="bg-infoBb mt-6 mb-4 flex flex-col rounded-sm rounded-2xl border-2 p-4 pb-6  shadow-sm"
             style={{
               borderColor: category.color,
-              backgroundColor: getCategoryBg(category.name),
+              // backgroundColor: getCategoryBg(category.name),
             }}
           >
             <div className="flex flex-row">
@@ -98,6 +84,7 @@ export const ProgressCaregiverReportBuildingPage: React.FC<
               .filter((x) => x.isNegative)
               .map((skill) => (
                 <p
+                  key={skill.skillId}
                   className="font-body text-textDark"
                   style={{ fontSize: '12px' }}
                 >

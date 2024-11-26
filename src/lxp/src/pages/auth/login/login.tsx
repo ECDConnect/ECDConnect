@@ -50,12 +50,16 @@ export const Login: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
-  const [incorrectBrowser, setIncorrectBrowser] = useState(false);
+  // const [incorrectBrowser, setIncorrectBrowser] = useState(false);
   const tenant = useTenant();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const { resetAppStore, resetAuth } = useStoreSetup();
+
+  useEffect(() => {
+    resetAppStore();
+  }, []);
 
   navigator?.storage?.estimate &&
     navigator?.storage?.estimate().then((estimate) => {
