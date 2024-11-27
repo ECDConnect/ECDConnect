@@ -186,7 +186,7 @@ export default function ProgrammeWrapper() {
           </div>
           <div className="mt-4 flex items-center justify-between gap-4">
             <SliderPagination
-              totalItems={8}
+              totalItems={9}
               activeIndex={index}
               className={'p-4'}
             />
