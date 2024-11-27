@@ -88,20 +88,11 @@ export const ObservationsForChild: React.FC = () => {
   const skillsToChoose = negativeSkills.length < 4 ? negativeSkills.length : 4;
 
   const showNextButton = useMemo<boolean>(() => {
-    if (currentStep === totalSkillsSteps + 1) {
-      return (
-        report?.skillsToWorkOn.length === skillsToChoose &&
-        report?.unknownPercentage < 25
-      );
+    if (currentStep === totalSkillsSteps + 1 && report) {
+      return report?.unknownPercentage < 25;
     }
     return true;
-  }, [
-    currentStep,
-    report?.skillsToWorkOn.length,
-    report?.unknownPercentage,
-    skillsToChoose,
-    totalSkillsSteps,
-  ]);
+  }, [currentStep, report, totalSkillsSteps]);
 
   const nextEnabled = useMemo<boolean>(() => {
     // For skills to work on, must choose correct number
