@@ -16,7 +16,6 @@ import {
   ProgressTrackingSkill,
   ResourceLink,
 } from '@ecdlink/graphql';
-import { id } from 'date-fns/locale';
 class ProgressTrackingService {
   _accessToken: string;
 
