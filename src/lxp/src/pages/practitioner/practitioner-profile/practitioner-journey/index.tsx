@@ -62,6 +62,7 @@ export const PractitionerJourney = ({
   const [showForm, setShowForm] = useState(false);
   const [, setVisitId] = useSessionStorage(practitionerVisitIdKey);
 
+  //add coming soon
   const appDispatch = useAppDispatch();
 
   const user = useSelector(getUser);
@@ -394,6 +395,10 @@ export const PractitionerJourney = ({
 
   if (isRenderForm) {
     return <Form onBack={onFormBack} />;
+  }
+
+  if (isComingSoon) {
+    return <Typography color="textDark" text={`Coming soon`} type={'h2'} />;
   }
 
   if (isLoadingTimeline) {

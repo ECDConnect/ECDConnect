@@ -14,6 +14,7 @@ import ROUTES from '@/routes/routes';
 import { useObserveProgressForChild } from '@/hooks/useObserveProgressForChild';
 import { ProgressCreateReportSkillsToWorkOnSummary } from './create-report-skills-to-work-on-summary';
 import { useDialog } from '@ecdlink/core';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export type ProgressCreateReportState = {
   childId: string;
@@ -23,6 +24,8 @@ export const ProgressCreateReport: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
+
+  const { hasPermissionToCreateProgressReports } = useUserPermissions();
 
   const { state: routeState } = useLocation<ProgressCreateReportState>();
 
@@ -203,7 +206,8 @@ export const ProgressCreateReport: React.FC = () => {
           disabled={
             (currentStep === 1 && !childEnjoys) ||
             (currentStep === 2 && !goodProgressWith) ||
-            (currentStep === 3 && !howCanCaregiverSupport)
+            (currentStep === 3 && !howCanCaregiverSupport) ||
+            (!hasPermissionToCreateProgressReports && currentStep === 3)
           }
         />
         {currentStep === 3 && (
