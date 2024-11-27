@@ -243,6 +243,7 @@ export const ObservationsForChild: React.FC = () => {
           icon="XIcon"
           text="Save & exit"
           textColor="quatenary"
+          disabled={currentStep === totalSkillsSteps + 2 ? !nextEnabled : false}
         />
       </div>
     </BannerWrapper>

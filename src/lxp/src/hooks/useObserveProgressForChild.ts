@@ -223,12 +223,15 @@ export const useObserveProgressForChild = (childId: string) => {
     const skillsToWorkOnWithoutSupport = currentReport?.skillsToWorkOn.filter(
       (x) => x.howToSupport !== ''
     );
-    const skillsToWorkOnSelected =
+    const skillsToWorkOnSelectedWithSupport =
       currentReport &&
-      currentReport?.skillsToWorkOn.length > 0 &&
-      skillsToWorkOnWithoutSupport?.length !== 0;
+      currentReport?.skillsToWorkOn.length !== 0 &&
+      skillsToWorkOnWithoutSupport?.length ===
+        currentReport?.skillsToWorkOn.length;
+
     const doNotKnowPerc = (doNotKnowCount / skillsForAgeGroup.length) * 100;
-    const result = allObsMade && doNotKnowPerc < 25 && skillsToWorkOnSelected!;
+    const result =
+      allObsMade && doNotKnowPerc < 25 && skillsToWorkOnSelectedWithSupport!;
     setObservationsCompleteDate(result);
 
     return result;
