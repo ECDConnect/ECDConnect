@@ -1,5 +1,5 @@
 import { Alert, BannerWrapper, Button, Typography } from '@ecdlink/ui';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
@@ -96,6 +96,10 @@ export const ChildProgressReportsList: React.FC = () => {
   ];
 
   const reports = isWalkthrough ? walkthroughReports : detailedReports;
+
+  const showShareButton = useMemo<boolean>(() => {
+    return detailedReports.filter((x) => x.dateCompleted !== null).length > 0;
+  }, [detailedReports]);
 
   return (
     <BannerWrapper
@@ -212,7 +216,7 @@ export const ChildProgressReportsList: React.FC = () => {
                   title="All reporting periods for the year are closed. You can keep tracking progress next year."
                 />
               )}
-              {!!reports && !!reports.length && (
+              {showShareButton && (
                 <Button
                   onClick={() =>
                     history.push(ROUTES.PROGRESS_SHARE_REPORT, {
