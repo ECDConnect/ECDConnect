@@ -54,7 +54,7 @@ namespace ECDLink.DataAccessLayer.Managers
             return user;
         }
 
-        public async Task SetObjectDataAsync(ApplicationUser user)
+        public async Task SetObjectDataAsync(ApplicationUser user, Guid? tenantId = null)
         {
             if (user is null) return;
 
@@ -75,7 +75,8 @@ namespace ECDLink.DataAccessLayer.Managers
             //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
             if (roles.Any(x => x.Contains(Roles.PRINCIPAL) || x.Contains(Roles.PRACTITIONER)))
             {
-                var practiRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: user.Id);
+                var practiRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: user.Id, tenantContext: user.TenantId);
+
                 var userData = practiRepo.GetByUserId(user.Id);
                 if (userData != null)
                 {

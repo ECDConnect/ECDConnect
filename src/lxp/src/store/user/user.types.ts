@@ -5,6 +5,7 @@ export type UserState = {
   user: UserDto | undefined;
   userLocalePreference: string;
   userConsent: (UserConsentDto & OfflineUpdate)[] | undefined;
+  unstableConnection: boolean;
 };
 
 export type UserResetPasswrodParams = {

@@ -15,6 +15,7 @@ import React, { useState } from 'react';
 import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 export interface BannerWrapperProps extends ComponentBaseProps {
+  contentRef?: React.RefObject<HTMLDivElement>;
   title?: string;
   subTitle?: string;
   avatar?: JSX.Element;
@@ -42,40 +43,47 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   version?: string;
   helpId?: string;
   hasDecoratedBackButton?: boolean;
+  children?: any;
 }
 
-export const BannerWrapper: React.FC<BannerWrapperProps> = ({
-  title,
-  subTitle,
-  avatar,
-  isLoading,
-  showBackground = false,
-  color = 'primary',
-  size = 'normal',
-  children,
-  backgroundUrl,
-  backgroundColour = 'transparent',
-  className,
-  renderBorder = false,
-  renderOverflow = true,
-  displayHelp = false,
-  displayOffline = false,
-  menuItems,
-  menuLogoUrl = '',
-  onAvatarSelect,
-  notificationRender,
-  calendarRender,
-  titleOverrideRender,
-  onNavigation = () => {},
-  onBack,
-  onClose,
-  onHelp,
-  version,
-  id,
-  helpId,
-  style,
-  hasDecoratedBackButton,
-}) => {
+export const BannerWrapper = React.forwardRef<
+  HTMLDivElement,
+  BannerWrapperProps
+>((props, ref) => {
+  const {
+    contentRef,
+    title,
+    subTitle,
+    avatar,
+    isLoading,
+    showBackground = false,
+    color = 'primary',
+    size = 'normal',
+    children,
+    backgroundUrl,
+    backgroundColour = 'transparent',
+    className,
+    renderBorder = false,
+    renderOverflow = true,
+    displayHelp = false,
+    displayOffline = false,
+    menuItems,
+    menuLogoUrl = '',
+    onAvatarSelect,
+    notificationRender,
+    calendarRender,
+    titleOverrideRender,
+    onNavigation = () => {},
+    onBack,
+    onClose,
+    onHelp,
+    version,
+    id,
+    helpId,
+    style,
+    hasDecoratedBackButton,
+  } = props;
+
   const showMenu = (menuItems?.length || 0) > 0;
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -207,7 +215,10 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
           backgroundColor="uiBg"
         />
       ) : (
-        <div className={classNames(styles.content(renderOverflow), className)}>
+        <div
+          ref={contentRef}
+          className={classNames(styles.content(renderOverflow), className)}
+        >
           {showMenu ? (
             <SideMenu
               version={version}
@@ -226,6 +237,6 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default BannerWrapper;

@@ -28,7 +28,7 @@ export const ProgressReportsList: React.FC<ProgressReportsListProps> = ({
             subTitle={`${format(
               report.reportingPeriodStartDate,
               'd MMM'
-            )} and ${format(report.reportingPeriodEndDate, 'd MMM yyyy')}`}
+            )} - ${format(report.reportingPeriodEndDate, 'd MMM yyyy')}`}
             buttonType={'filled'}
             buttonIcon={'PencilIcon'}
             buttonText={'Edit'}
@@ -57,7 +57,7 @@ export const ProgressReportsList: React.FC<ProgressReportsListProps> = ({
             subTitle={`${format(
               report.reportingPeriodStartDate,
               'd MMM'
-            )} and ${format(report.reportingPeriodEndDate, 'd MMM yyyy')}`}
+            )} - ${format(report.reportingPeriodEndDate, 'd MMM yyyy')}`}
             buttonType={'filled'}
             buttonIcon={'EyeIcon'}
             buttonText={'View'}

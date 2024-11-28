@@ -1,4 +1,11 @@
-import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  Divider,
+  ImageWithFallback,
+  Typography,
+} from '@ecdlink/ui';
 import { useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { format } from 'date-fns';
@@ -7,6 +14,7 @@ import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@/store/progress-tracking';
 import ROUTES from '@/routes/routes';
 import { useProgressForChild } from '@/hooks/useProgressForChild';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export type ProgressViewReportState = {
   childId: string;
@@ -15,6 +23,8 @@ export type ProgressViewReportState = {
 
 export const ProgressViewReport: React.FC = () => {
   const history = useHistory();
+
+  const { isOnline } = useOnlineStatus();
 
   const categories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories()
@@ -93,6 +103,8 @@ export const ProgressViewReport: React.FC = () => {
       ).getFullYear()}`}
       subTitle={`${child?.user?.firstName} ${child?.user?.surname}`}
       onBack={() => history.goBack()}
+      renderBorder={true}
+      displayOffline={!isOnline}
     >
       <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>
         <Typography
@@ -109,7 +121,7 @@ export const ProgressViewReport: React.FC = () => {
           text={`${format(
             new Date(report?.reportingPeriodStartDate || ''),
             'd MMM'
-          )} and ${format(
+          )} - ${format(
             new Date(report?.reportingPeriodEndDate || ''),
             'd MMM yyyy'
           )}`}
@@ -126,7 +138,7 @@ export const ProgressViewReport: React.FC = () => {
           <div key={category.id}>
             <Card className="border-primary mb-4 rounded-2xl border p-4">
               <div className="flex flex-row items-center">
-                <img
+                <ImageWithFallback
                   src={category.imageUrl}
                   alt="category"
                   className="mr-2 h-12 w-12"
@@ -137,7 +149,7 @@ export const ProgressViewReport: React.FC = () => {
                 <div key={subCategory.id}>
                   <Divider dividerType="dashed" className="mt-2 mb-2" />
                   <div className="flex flex-row items-center">
-                    <img
+                    <ImageWithFallback
                       src={subCategory.imageUrl}
                       alt="category"
                       className="mr-2 h-8 w-8"
@@ -208,7 +220,7 @@ export const ProgressViewReport: React.FC = () => {
               <div key={category.id}>
                 <Card className="bg-uiBg mb-4 rounded-2xl p-4">
                   <div className="flex flex-row items-center">
-                    <img
+                    <ImageWithFallback
                       src={category.imageUrl}
                       alt="category"
                       className="mr-2 h-12 w-12"
@@ -223,7 +235,7 @@ export const ProgressViewReport: React.FC = () => {
                     <div key={subCategory.id}>
                       <Divider dividerType="dashed" className="mt-2 mb-2" />
                       <div className="flex flex-row items-center">
-                        <img
+                        <ImageWithFallback
                           src={subCategory.imageUrl}
                           alt="category"
                           className="mr-2 h-8 w-8"

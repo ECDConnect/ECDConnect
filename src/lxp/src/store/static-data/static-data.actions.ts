@@ -399,7 +399,14 @@ export const getHolidays = createAsyncThunk<
       staticData: { holidays: holidaysCache },
     } = getState();
 
-    if (!holidaysCache) {
+    let getNewHolidays = false;
+    if (holidaysCache) {
+      if (year !== new Date(holidaysCache[0].day).getFullYear()) {
+        getNewHolidays = !getNewHolidays;
+      }
+    }
+
+    if (!holidaysCache || getNewHolidays) {
       try {
         let holidays: HolidayDto[] | undefined;
 

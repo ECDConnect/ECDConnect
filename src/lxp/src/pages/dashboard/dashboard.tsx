@@ -470,12 +470,12 @@ export const Dashboard: React.FC = () => {
             })
           ).unwrap())();
 
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getUserClubStanding({
-              userId: userData?.id!,
-            })
-          ).unwrap())();
+        // (async () =>
+        //   await appDispatch(
+        //     pointsThunkActions.getUserClubStanding({
+        //       userId: userData?.id!,
+        //     })
+        //   ).unwrap())();
       }
     }
   }, [userData]);
@@ -910,9 +910,9 @@ export const Dashboard: React.FC = () => {
       title: NavigationNames.Training,
       titleIcon: 'PresentationChartBarIcon',
       titleIconClassName: styles.trainingIcon,
-      onActionClick: () => {
-        goToTraining();
-      },
+      onActionClick: !isOnline
+        ? () => offlineCommunity()
+        : () => goToTraining(),
       classNames: 'bg-tertiaryAccent2',
     });
 
@@ -1266,17 +1266,17 @@ export const Dashboard: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
-  const practitionerWithAttendancePermissionPointsToDo =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo < 4
-      : getCurrentPointsToDo < 3;
+  // const practitionerWithAttendancePermissionPointsToDo =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo < 4
+  //     : getCurrentPointsToDo < 3;
 
-  const practitionerWithAttendancePermissionPoints =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo === 4
-      : getCurrentPointsToDo === 3;
+  // const practitionerWithAttendancePermissionPoints =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo === 4
+  //     : getCurrentPointsToDo === 3;
 
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
@@ -1287,6 +1287,11 @@ export const Dashboard: React.FC = () => {
       delete (obj as any)[prop]; // Use type assertion to bypass TypeScript checks
     }
   }
+
+  const name =
+    userData && userData?.firstName
+      ? `Hi ${userData && userData?.firstName}!`
+      : 'Welcome!';
 
   return (
     <>
@@ -1357,9 +1362,7 @@ export const Dashboard: React.FC = () => {
         <Typography
           type={'h1'}
           color="white"
-          text={`Hi ${
-            (userData && userData?.firstName) || userData?.userName
-          }!`}
+          text={name}
           className={styles.welcomeText}
         />
         <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
@@ -1370,11 +1373,9 @@ export const Dashboard: React.FC = () => {
           {totalYearPoints &&
           totalYearPoints >= 10 &&
           !!pointsScoreProps &&
-          !isCoach &&
-          practitionerWithAttendancePermissionPoints &&
           !isCoach ? (
             <ScoreCard
-              className="mt-5 mb-1 h-20"
+              className="mt-1 mb-1 h-20"
               progressBarClassName="flex pt-2"
               mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}
@@ -1389,9 +1390,7 @@ export const Dashboard: React.FC = () => {
               textPosition={pointsScoreProps?.textPosition!}
             />
           ) : null}
-          {(practitionerWithAttendancePermissionPointsToDo ||
-            !totalYearPoints ||
-            (totalYearPoints && totalYearPoints < 10)) &&
+          {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
           !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}

@@ -1,4 +1,3 @@
-using Audit.Core;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -242,7 +241,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             item.TryGetValue("dataFree", out var dataFree);
             item.TryGetValue("sectionType", out var sectionType);
             item.TryGetValue("numberLikes", out var numberLikes);
-            item.TryGetValue("availableLanguages", out var insertedDate);
 
             result.ResourceType = resourceType.ToString();
             result.Title = title.ToString();

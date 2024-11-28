@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { practitionerSelectors } from '@/store/practitioner';
-import { UserDto } from '@ecdlink/core';
+import { RoleSystemNameEnum, UserDto } from '@ecdlink/core';
 import * as styles from './calendar-search-participant.styles';
 import { ListDataItem } from '../calendar.types';
 import {
@@ -47,15 +47,14 @@ export const CalendarSearchParticipant: React.FC<
   const { height } = useWindowSize();
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  // const isCoach = currentUser?.roles?.some(
-  //   (role) => role.systemName === RoleSystemNameEnum.Coach
-  // );
+  const isCoach = currentUser?.roles?.some(
+    (role) => role.systemName === RoleSystemNameEnum.Coach
+  );
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const principal = useSelector(classroomsSelectors.getPrincipal);
 
-  const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
 
   const handleListScroll = useCallback((scrollTop: number) => {
@@ -86,12 +85,12 @@ export const CalendarSearchParticipant: React.FC<
     setSearchTextActive(true);
   }, [unselectedData]);
 
-  const onPractitionerAdd = useCallback(
+  const onParticipantAdd = useCallback(
     (item: any) => {
-      const practitionerUserId = (item as UserAlertListDataItem).id;
-      if (practitionerUserId === currentUser.id) return;
+      const participantUserId = (item as UserAlertListDataItem).id;
+      if (participantUserId === currentUser.id) return;
       const unselected = [...unselectedData];
-      const index = unselected.findIndex((x) => x.id === practitionerUserId);
+      const index = unselected.findIndex((x) => x.id === participantUserId);
       if (index === -1) return;
       const practitionerItem = unselected[index];
       practitionerItem.rightIcon = 'XIcon';
@@ -100,7 +99,7 @@ export const CalendarSearchParticipant: React.FC<
       sortListDataItems(selected);
       const filtered = [...filteredData];
       const filteredIndex = filtered.findIndex(
-        (x) => x.id === practitionerUserId
+        (x) => x.id === participantUserId
       );
       if (filteredIndex !== -1) filtered.splice(filteredIndex, 1);
       setUnselectedData(unselected);
@@ -112,12 +111,12 @@ export const CalendarSearchParticipant: React.FC<
     [unselectedData, selectedData, filteredData, currentUser.id]
   );
 
-  const onPractitionerRemove = useCallback(
+  const onParticipantRemove = useCallback(
     (item: any) => {
-      const practitionerUserId = (item as UserAlertListDataItem).id;
-      if (practitionerUserId === currentUser.id) return;
+      const participantUserId = (item as UserAlertListDataItem).id;
+      if (participantUserId === currentUser.id) return;
       const selected = [...selectedData];
-      const index = selected.findIndex((x) => x.id === practitionerUserId);
+      const index = selected.findIndex((x) => x.id === participantUserId);
       if (index === -1) return;
       const practitionerItem = selected[index];
       practitionerItem.rightIcon = 'PlusCircleIcon';
@@ -148,36 +147,40 @@ export const CalendarSearchParticipant: React.FC<
     if (customList?.length) return;
 
     if (
+      practitioner ||
       (!!practitioners && practitioners.length > 0) ||
       (!!children && children.length > 0)
     ) {
       const list = !!practitioners
         ? practitioners.map((p) => mapPractitionerToListDataItem(p))
         : [];
-      const childList = !!children
-        ? children.map((p) => mapChildToListDataItem(p))
-        : [];
+
+      const childList =
+        !isCoach && !!children
+          ? children.map((p) => mapChildToListDataItem(p))
+          : [];
 
       const unselected: ListDataItem[] = childList;
 
-      if (isPractitioner || isPrincipal) {
-        let coachFirstName = '';
-        let coachSurname = '';
-        if (practitioner.coachName) {
-          const coachNameItems = practitioner?.coachName.split(' ');
-          coachFirstName = coachNameItems[0];
-          coachSurname = coachNameItems[1];
+      if (practitioner) {
+        if (practitioner.coachHierarchy) {
+          let coachFirstName = '';
+          let coachSurname = '';
+          if (practitioner.coachName) {
+            const coachNameItems = practitioner?.coachName.split(' ');
+            coachFirstName = coachNameItems[0];
+            coachSurname = coachNameItems[1];
+          }
+          const coachListItem = mapUserToListDataItem(
+            coachFirstName,
+            coachSurname,
+            practitioner?.coachHierarchy || '',
+            practitioner?.coachProfilePic || '',
+            tenant.tenant?.modules?.coachRoleName || ''
+          );
+          unselected.push(coachListItem);
         }
-        const coachListItem = mapUserToListDataItem(
-          coachFirstName,
-          coachSurname,
-          practitioner?.coachHierarchy || '',
-          practitioner?.coachProfilePic || '',
-          tenant.tenant?.modules?.coachRoleName || ''
-        );
-        unselected.push(coachListItem);
-
-        if (isPractitioner) {
+        if (!isPrincipal && currentUser.id !== principal.userId) {
           const principalListItem = mapUserToListDataItem(
             principal.firstName,
             principal.surname,
@@ -238,7 +241,7 @@ export const CalendarSearchParticipant: React.FC<
           isTextSearchActive={searchTextActive}
           onBack={onSearchDone}
           onSearchButtonClick={onSearch}
-          onClickItem={onPractitionerAdd}
+          onClickItem={onParticipantAdd}
         >
           <div></div>
         </SearchHeader>
@@ -248,7 +251,7 @@ export const CalendarSearchParticipant: React.FC<
               className={styles.stackedList}
               listItems={selectedData}
               type={'UserAlertList'}
-              onClickItem={onPractitionerRemove}
+              onClickItem={onParticipantRemove}
             />
           </div>
           <div>

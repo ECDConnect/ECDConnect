@@ -484,10 +484,20 @@ namespace ECDLink.ContentManagement.Repositories
                     //update with fulllist
                     contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                 }
-                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) && contentFieldValuePairs.ContainsKey("description"))
+                if ((contentType == ContentTypeConstants.Consent || contentType == ContentTypeConstants.MoreInformation) && 
+                    (contentFieldValuePairs.ContainsKey("description")) || contentFieldValuePairs.ContainsKey("descriptionA")
+                    )
                 {
-                    contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
-                    contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
+                    if (contentFieldValuePairs.ContainsKey("description"))
+                    {
+                        contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
+                        contentFieldValuePairs["description"] = contentFieldValuePairs["description"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
+                    }
+                    if (contentFieldValuePairs.ContainsKey("descriptionA"))
+                    {
+                        contentFieldValuePairs["descriptionA"] = contentFieldValuePairs["descriptionA"].Replace("[organisationName]", TenantExecutionContext.Tenant.OrganisationName);
+                        contentFieldValuePairs["descriptionA"] = contentFieldValuePairs["descriptionA"].Replace("[applicationName]", TenantExecutionContext.Tenant.ApplicationName);
+                    }
                 }
                 if (!contentFieldValuePairs.ContainsKey("insertedDate"))
                 {
@@ -710,7 +720,7 @@ namespace ECDLink.ContentManagement.Repositories
                 ContentTypeId = contentTypeId,
                 ContentValues = contentValues,
                 IsActive = true,
-                TenantId = TenantExecutionContext.Tenant.Id,
+                //TenantId = TenantExecutionContext.Tenant.Id,
                 InsertedDate = DateTime.UtcNow,
                 UpdatedDate = DateTime.UtcNow
             };

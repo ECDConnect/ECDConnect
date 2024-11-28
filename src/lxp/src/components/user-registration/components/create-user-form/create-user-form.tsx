@@ -64,6 +64,13 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   });
   const { password } = watch();
 
+  const validateUsername = (name: string): string | null => {
+    if (!/^[a-zA-Z0-9_]+$/.test(name)) {
+      return 'Usernames can only include letters, numbers, . , and @. Please remove any other special characters.';
+    }
+    return null;
+  };
+
   const handleCreateUser = async () => {
     const registerOpenAccessUserInput: RegisterRequestModel = {
       username,
@@ -125,12 +132,20 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       };
 
       if (checkUsername) {
+        const validationError = validateUsername(username);
+        if (validationError) {
+          setMessageError(validationError);
+          setIsLoading(false);
+          return;
+        }
+
         const userCreated = await new AuthService()
           ?.RegisterOpenAccessUser(Config?.authApi, registerOpenAccessUserInput)
           .catch((error) => {
-            setMessageError(specialCharactersMessageErrorText);
+            // setMessageError(specialCharactersMessageErrorText);
+
             setNotification({
-              title: ` Failed to create the username!`,
+              title: `Failed to create the username!`,
               variant: NOTIFICATION.ERROR,
             });
             setIsLoading(false);
@@ -141,17 +156,18 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           setIsLoading(false);
           setOpenVerifyPhoneNumber(true);
           setNotification({
-            title: ` Successfully registered!`,
+            title: `Successfully registered!`,
             variant: NOTIFICATION.SUCCESS,
           });
         } else {
           setNotification({
-            title: ` Successfully registered!`,
-            variant: NOTIFICATION.SUCCESS,
+            title: `Registration failed. Please try again.`,
+            variant: NOTIFICATION.ERROR,
           });
           setIsLoading(false);
         }
       }
+
       setIsLoading(false);
       return;
     }
@@ -168,7 +184,6 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       const updateUsername = await new AuthService()
         ?.UpdateUsername(Config?.authApi, updateUserInputModel)
         .catch((error) => {
-          console.log(error);
           setMessageError(specialCharactersMessageErrorText);
           setIsLoading(false);
           return;
@@ -226,8 +241,10 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           subLabel="Must be unique. Tip: use something that you will remember."
           placeholder="e.g. Nothando_123"
           onChange={(e) => {
-            setUsername(e?.target?.value?.replace(/\s+/g, ''));
-            setMessageError('');
+            const inputValue = e?.target?.value?.replace(/\s+/g, '');
+            setUsername(inputValue);
+            const error = validateUsername(inputValue);
+            setMessageError(error || '');
           }}
           value={username}
           error={messageError as unknown as FieldError}

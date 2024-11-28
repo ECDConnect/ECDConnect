@@ -48,7 +48,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
         private readonly IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
         private readonly IGenericRepository<Programme, Guid> _programmeRepo;
-
+        
         private MonthlyAttendanceReport _monthlyAttendanceReportService;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
@@ -241,21 +241,12 @@ namespace EcdLink.Api.CoreApi.Services
         private UserRankingPointsModel GetRankingMessagesForUser(UserRankingPointsModel userPointRecord, string roleName, string firstName)
         {
             // COMPARATIVE
-            userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Orange;
-            if (userPointRecord.ComparativeTargetPercentage >= 60 && userPointRecord.ComparativeTargetPercentage <= 79)
-            {
-                userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Blue;
-            }
-            else if (userPointRecord.ComparativeTargetPercentage >= 80)
-            {
-                userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
-            }
-
             if (userPointRecord.RankingNr == 1)
             {
                 userPointRecord.MessageNr = 1;
                 userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                 userPointRecord.ComparativeSecondaryMessage = "You are the top points earner so far this month. Keep it up!";
+                userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
             } else
             {
                 if (userPointRecord.ComparativeTargetPercentage < 50)
@@ -263,24 +254,28 @@ namespace EcdLink.Api.CoreApi.Services
                     userPointRecord.MessageNr = 4;
                     userPointRecord.ComparativePrimaryMessage = $"Keep going {firstName}!";
                     userPointRecord.ComparativeSecondaryMessage = $"Most of the practitioners on {TenantExecutionContext.Tenant.ApplicationName} have earned more than {userPointRecord.PointsTotal} points! Earn more points to join them.";
+                    userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Orange;
                 }
                 else if (userPointRecord.ComparativeTargetPercentage >= 50 && userPointRecord.ComparativeTargetPercentage < 75)
                 {
                     userPointRecord.MessageNr = 3;
                     userPointRecord.ComparativePrimaryMessage = $"Wow, great job {firstName}!";
                     userPointRecord.ComparativeSecondaryMessage = $"You have more points than most other {TenantExecutionContext.Tenant.ApplicationName} {roleName}s!";
+                    userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Blue;
                 }
                 else if (userPointRecord.ComparativeTargetPercentage >= 75)
                 {
                     userPointRecord.MessageNr = 2;
                     userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are one of the top {roleName}s on {TenantExecutionContext.Tenant.ApplicationName}!";
                     userPointRecord.ComparativeSecondaryMessage = "You are one of the top points earners so far this month. Keep it up!";
+                    userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
                 } 
                 else if (userPointRecord.ComparativeTargetPercentage == 100)
                 {
                     userPointRecord.MessageNr = 1;
                     userPointRecord.ComparativePrimaryMessage = $"Well done {firstName}, you are the top {roleName} on {TenantExecutionContext.Tenant.ApplicationName}!";
                     userPointRecord.ComparativeSecondaryMessage = "You are the top points earner so far this month. Keep it up!";
+                    userPointRecord.ComparativeTargetPercentageColor = Constants.CSSColorClasses.Green;
                 }
             }
             
@@ -305,7 +300,7 @@ namespace EcdLink.Api.CoreApi.Services
             else if (userPointRecord.NonComparativeTargetPercentage >= 60 && userPointRecord.NonComparativeTargetPercentage <= 79)
             {
                 userPointRecord.NonComparativePrimaryMessage = $"Wow, great job {firstName}!";
-                userPointRecord.NonComparativeSecondaryMessage = "You’re doing well, keep it up! You can still earn more points this month.";
+                userPointRecord.NonComparativeSecondaryMessage = "You're doing well, keep it up! You can still earn more points this month.";
             }
             else if (userPointRecord.PointsTotal > 0 && userPointRecord.NonComparativeTargetPercentage < 60)
             {
@@ -620,31 +615,23 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
 
-                        var classroomProgrammes = schoolClasses
+                        var totalCompletedDays = schoolClasses
                                                 .SelectMany(x => x.Programmes)
                                                 .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name == "No theme")
                                                 .ToList()
                                                 .SelectMany(x => x.DailyProgrammes)
-                                                .Where(x => x.IsActive && x.DayDate.Year >= today.Year && x.SmallGroupActivityId != 0 && x.LargeGroupActivityId != 0 && x.StoryBookId != 0 && x.StoryActivityId != 0)
                                                 .ToList()
-                                                .Select(x => new { x.DayDate.Month, x.DayDate })
-                                                .ToList()
-                                                .GroupBy(x => x.Month)
-                                                .Select(x => new { Month = x.Key, Total = x.Count() })
-                                                .ToList();
-
-                        if (classroomProgrammes.Count > 0)
+                                                .Where(x => x.IsActive && x.DateCompleted.HasValue && x.DateCompleted.Value.Year == today.Year && x.DateCompleted.Value.Month == today.Month)
+                                                .Select(x => x.Id)
+                                                .Count();
+                       if (totalCompletedDays > 0)
                         {
-                            foreach (var item in classroomProgrammes)
-                            {
-                                AddOrUpdatePoints(
-                                    PointsActivityConstants.NoThemePlannedId,
-                                    userId,
-                                    activity.Points * item.Total,
-                                    item.Total,
-                                    new DateTime(today.Year, item.Month, 01)
-                                    );
-                            }
+                            AddOrUpdatePoints(
+                                PointsActivityConstants.NoThemePlannedId,
+                                userId,
+                                activity.Points * totalCompletedDays,
+                                totalCompletedDays
+                                );
                         }
                     }
                 }

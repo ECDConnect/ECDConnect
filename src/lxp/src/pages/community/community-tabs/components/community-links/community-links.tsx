@@ -52,6 +52,16 @@ export const CommunityLinks = () => {
       });
   }
 
+  const isComingSoon = false;
+
+  if (isComingSoon) {
+    return (
+      <div className="mt-2 flex flex-col p-4">
+        <Typography color="textDark" text={`Coming soon`} type={'h2'} />
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <LoadingSpinner

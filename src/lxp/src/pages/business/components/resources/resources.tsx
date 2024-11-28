@@ -141,6 +141,13 @@ export const Resources = () => {
       },
     });
   }
+
+  const isComingSoon = false;
+
+  if (isComingSoon) {
+    return <Typography color="textDark" text={`Coming soon`} type={'h2'} />;
+  }
+
   return (
     <div className="p-4">
       {isLoading ? (

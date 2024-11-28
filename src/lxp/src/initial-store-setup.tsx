@@ -62,7 +62,7 @@ import {
 } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
-import { calendarThunkActions } from './store/calendar';
+import { calendarActions, calendarThunkActions } from './store/calendar';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
@@ -157,6 +157,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(contentReportActions.resetContentReportState());
     appDispatch(clubActions.resetClubState());
     appDispatch(statementsActions.resetStatementsState());
+    appDispatch(calendarActions.resetCalendarState());
   };
 
   const initStoreSetup = useCallback(async () => {

@@ -20,6 +20,7 @@ import { authSelectors } from '@/store/auth';
 import { useAppDispatch } from '@/store';
 import {
   progressTrackingActions,
+  progressTrackingSelectors,
   progressTrackingThunkActions,
 } from '@/store/progress-tracking';
 import { useAppContext } from '@/walkthrougContext';
@@ -43,8 +44,6 @@ export const ObservationsForChildLandingIncomplete: React.FC<
 
   const userAuth = useSelector(authSelectors.getAuthUser);
 
-  // TODO - ADD online check and add check to see if already fetched
-  // TODO hasTranslations seems to always return true
   const changeLanguage = async (language: LanguageDto) => {
     const hasTranslations = await new ContentService(
       userAuth?.auth_token ?? ''
@@ -66,6 +65,10 @@ export const ObservationsForChildLandingIncomplete: React.FC<
       presentUnavailableAlert();
     }
   };
+
+  const currentReportLocale = useSelector(
+    progressTrackingSelectors?.getCurrentLocaleForReport
+  );
 
   const presentUnavailableAlert = () => {
     dialog({
@@ -117,13 +120,13 @@ export const ObservationsForChildLandingIncomplete: React.FC<
       <LanguageSelector
         labelText="Progress tracker language:"
         labelClassName="font-medium font-body text-textDark pr-2"
-        currentLocale="en-za"
+        currentLocale={currentReportLocale}
         selectLanguage={(data) => {
           changeLanguage(data);
         }}
       />
       <div className="mt-4">
-        {currentAgeGroup.startAgeInMonths < 36 && (
+        {currentAgeGroup?.startAgeInMonths < 36 && (
           <Alert
             type={'info'}
             messageColor="textDark"
@@ -132,7 +135,7 @@ export const ObservationsForChildLandingIncomplete: React.FC<
             }
           />
         )}
-        {currentAgeGroup.startAgeInMonths > 35 && (
+        {currentAgeGroup?.startAgeInMonths > 35 && (
           <Alert
             type={'info'}
             title="This progress tracker is based on South Africa's National Curriculum Framework for Children from Birth to Four (NCF) developed by the Department of Basic Education (DBE)."
@@ -144,7 +147,6 @@ export const ObservationsForChildLandingIncomplete: React.FC<
         <Button
           onClick={() => {
             if (isWalkthrough) {
-              console.log('updateing step number');
               setState({ stepIndex: 2 });
             }
             history.push(ROUTES.PROGRESS_OBSERVATIONS, {

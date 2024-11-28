@@ -8,11 +8,14 @@ export const useUserPermissions = () => {
     (permission) =>
       permission?.permissionName === 'take_attendance' && permission?.isActive
   );
-  const hasPermissionToCreateProgressReports = practitioner?.permissions?.some(
-    (permission) =>
-      permission?.permissionName === 'create_progress_reports' &&
-      permission?.isActive
-  );
+
+  const hasPermissionToCreateProgressReports =
+    practitioner?.permissions?.some(
+      (permission) =>
+        permission?.permissionName === 'create_progress_reports' &&
+        permission?.isActive
+    ) || practitioner?.isPrincipal;
+
   const hasPermissionToPlanClassroomActivities =
     practitioner?.permissions?.some(
       (permission) =>

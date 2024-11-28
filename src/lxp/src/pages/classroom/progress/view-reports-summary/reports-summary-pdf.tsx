@@ -1,4 +1,4 @@
-import { Card, Divider, Typography } from '@ecdlink/ui';
+import { Card, Divider, ImageWithFallback, Typography } from '@ecdlink/ui';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
 import { format } from 'date-fns';
 import lightbulbEmoji from '@/assets/ECD_Connect_lightbulb.png';
@@ -61,7 +61,7 @@ export const ProgresseportsSummaryPdf: React.FC<
             text={`${format(
               new Date(currentReportingPeriod?.startDate || ''),
               'd MMM'
-            )} and ${format(
+            )} - ${format(
               new Date(currentReportingPeriod?.endDate || ''),
               'd MMM yyyy'
             )}`}
@@ -117,7 +117,7 @@ export const ProgresseportsSummaryPdf: React.FC<
           <div className="flex flex-row">
             <div className="mr-4 w-1/2">
               <div className="ml-4 flex flex-row items-center">
-                <img
+                <ImageWithFallback
                   src={reportSummaries[0].imageUrl}
                   alt="category"
                   className="mr-2 h-8 w-8"
@@ -139,7 +139,7 @@ export const ProgresseportsSummaryPdf: React.FC<
                 {reportSummaries[0].subCategories.map((subCategory) => (
                   <div key={subCategory.id}>
                     <div className="flex flex-row items-center">
-                      <img
+                      <ImageWithFallback
                         src={subCategory.imageUrl}
                         alt="category"
                         className="mr-2 h-6 w-6"
@@ -173,7 +173,7 @@ export const ProgresseportsSummaryPdf: React.FC<
             {reportSummaries.length >= 2 && (
               <div className="w-1/2">
                 <div className="ml-4 flex flex-row items-center">
-                  <img
+                  <ImageWithFallback
                     src={reportSummaries[1].imageUrl}
                     alt="category"
                     className="mr-2 h-8 w-8"
@@ -195,7 +195,7 @@ export const ProgresseportsSummaryPdf: React.FC<
                   {reportSummaries[1].subCategories.map((subCategory) => (
                     <div key={subCategory.id}>
                       <div className="flex flex-row items-center">
-                        <img
+                        <ImageWithFallback
                           src={subCategory.imageUrl}
                           alt="category"
                           className="mr-2 h-6 w-6"
@@ -232,7 +232,7 @@ export const ProgresseportsSummaryPdf: React.FC<
             <div className="flex flex-row">
               <div className="mr-4 w-1/2">
                 <div className="ml-4 flex flex-row items-center">
-                  <img
+                  <ImageWithFallback
                     src={reportSummaries[2].imageUrl}
                     alt="category"
                     className="mr-2 h-8 w-8"
@@ -254,7 +254,7 @@ export const ProgresseportsSummaryPdf: React.FC<
                   {reportSummaries[2].subCategories.map((subCategory) => (
                     <div key={subCategory.id}>
                       <div className="flex flex-row items-center">
-                        <img
+                        <ImageWithFallback
                           src={subCategory.imageUrl}
                           alt="category"
                           className="mr-2 h-6 w-6"
@@ -288,7 +288,7 @@ export const ProgresseportsSummaryPdf: React.FC<
               {reportSummaries.length >= 4 && (
                 <div className="w-1/2">
                   <div className="ml-4 flex flex-row items-center">
-                    <img
+                    <ImageWithFallback
                       src={reportSummaries[3].imageUrl}
                       alt="category"
                       className="mr-2 h-8 w-8"
@@ -310,7 +310,7 @@ export const ProgresseportsSummaryPdf: React.FC<
                     {reportSummaries[3].subCategories.map((subCategory) => (
                       <div key={subCategory.id}>
                         <div className="flex flex-row items-center">
-                          <img
+                          <ImageWithFallback
                             src={subCategory.imageUrl}
                             alt="category"
                             className="mr-2 h-6 w-6"
@@ -347,7 +347,7 @@ export const ProgresseportsSummaryPdf: React.FC<
         </>
       )}
       <Card className="bg-textDark mb-4 mt-auto flex flex-row rounded-2xl p-4">
-        <img src={lightbulbEmoji} className="mr-4 h-14 w-14" />
+        <ImageWithFallback src={lightbulbEmoji} className="mr-4 h-14 w-14" />
         <div className="flex flex-col">
           <Typography
             type="h2"

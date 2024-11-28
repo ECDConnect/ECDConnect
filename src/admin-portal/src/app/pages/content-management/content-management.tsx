@@ -28,6 +28,7 @@ import ProgressToolsContentList from './sub-pages/content-list/components/progre
 import { useTenant } from '../../hooks/useTenant';
 import { LinksSharedResource } from './components/links-shared/links-shared-resource';
 import ResourceList from './sub-pages/content-list/components/resources/resource-list';
+import StoryBookList from './sub-pages/content-list/components/create-story/story-book-list';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -136,7 +137,6 @@ export function ContentManagement() {
     const currentType = dataTypes.contentTypes.find(
       (x: ContentTypeDto) => x.id === selectedType?.id
     );
-
     setSelectedType(currentType);
     setSelectedContent(contentManagementView);
   };
@@ -483,6 +483,7 @@ export function ContentManagement() {
                   {selectedType &&
                     selectedType.name !== ContentTypes.RESOURCE_LINK &&
                     selectedType.name !== ContentTypes.CONNECT_ITEM &&
+                    selectedType.name !== ContentTypes.STORY_BOOK &&
                     selectedType.name !==
                       ContentTypes.CLASSROOMBUSINESSRESOURCE &&
                     selectedType.name !==
@@ -526,6 +527,22 @@ export function ContentManagement() {
                     ContentTypes.CLASSROOMBUSINESSRESOURCE &&
                     !specialType && (
                       <ResourceList
+                        optionDefinitions={dataDefinitions?.contentDefinitions}
+                        contentType={selectedType}
+                        specialType={specialType}
+                        languages={languages?.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                        onSearch={search}
+                        choosedSectionTitle={choosedSectionTitle}
+                        setSelectedType={setSelectedType}
+                        dataTypes={dataTypes}
+                      />
+                    )}
+                  {selectedType?.name === ContentTypes.STORY_BOOK &&
+                    !specialType && (
+                      <StoryBookList
                         optionDefinitions={dataDefinitions?.contentDefinitions}
                         contentType={selectedType}
                         specialType={specialType}

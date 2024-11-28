@@ -5,6 +5,7 @@ export * from './button-group/button-group';
 export * from './dropdown/dropdown';
 export * from './header-slider/header-slider';
 export * from './image-cropper/image-cropper';
+export * from './image-with-fallback/image-with-fallback';
 export * from './input-field/input-field';
 export * from './profile-avatar/profile-avatar';
 export * from './slider-pagination/slider-pagination';

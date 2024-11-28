@@ -7,6 +7,7 @@ using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
 using HotChocolate;
 using Microsoft.EntityFrameworkCore;
+using NPOI.HPSF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,14 +24,13 @@ namespace ECDLink.SmartStart.Reports
         }
 
         public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, DateTime startMonth, DateTime endMonth)
-        {         
+        {
             var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
 
             var attendanceForPeriod = GetAttendanceTakenRecordsForPeriod(
-                classroomGroups.SelectMany(x => x.ClassProgrammes).Select(x => x.Id), 
-                startMonth, 
+                classroomGroups.SelectMany(x => x.ClassProgrammes).Select(x => x.Id),
+                startMonth,
                 endMonth);
-
 
             var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
 
@@ -39,7 +39,7 @@ namespace ECDLink.SmartStart.Reports
             {
                 var attendance = new List<Tuple<int, int>>();
                 // Nest into class per month on only groups user is allowed to see
-                foreach (var classroomGroup in classroomGroups.Where(x => classroomGroups.Select(y => y.UserId).Contains(x.UserId)))
+                foreach (var classroomGroup in classroomGroups)
                 {
                     var validClassDays = GetDayRangeWithoutHolidays(dt.GetStartOfMonth(), dt.GetEndOfMonth());
 
@@ -50,11 +50,12 @@ namespace ECDLink.SmartStart.Reports
 
                         if (daysOfClass.Count() > 0 && learners.Count() > 0)
                         {
-                            var attendedClasses = attendanceForPeriod.Where(x => 
+                            var attendedClasses = attendanceForPeriod.Where(x =>
                                 x.ClassroomProgrammeId == programme.Id
                                 && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
                                 && x.MonthOfYear == dt.Month
-                                && x.Year == dt.Year);
+                                && x.Year == dt.Year
+                                && x.Attended == true);
 
                             attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                         }

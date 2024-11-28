@@ -95,6 +95,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<Learner, Guid> _learnerRepo;
         private IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
+        private IGenericRepository<ChildProgressReportPeriod, Guid> _childProgressReportPeriodRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private IGenericRepository<Document, Guid> _documentRepo;
 
@@ -129,6 +130,7 @@ namespace EcdLink.Api.CoreApi.Services
             _contextUserId = contextAccessor.HttpContext.GetUser().Id;
             _childRepo = repoFactory.CreateRepository<Child>(userContext: _contextUserId);
             _childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: _contextUserId);
+            _childProgressReportPeriodRepo = repoFactory.CreateRepository<ChildProgressReportPeriod>(userContext: _contextUserId);
             _practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: _contextUserId);
             _learnerRepo = repoFactory.CreateRepository<Learner>(userContext: _contextUserId);
             _documentRepo = repoFactory.CreateRepository<Document>();
@@ -166,10 +168,10 @@ namespace EcdLink.Api.CoreApi.Services
                     existingReport.DateCompleted = input.DateCompleted;
                 }
 
-                if (input.ObservationsCompleteDate != null)
-                {
+                //if (input.ObservationsCompleteDate != null)
+                //{
                     existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
-                }
+                //}
 
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
                 existingReport.UserId = _contextUserId;
@@ -212,14 +214,33 @@ namespace EcdLink.Api.CoreApi.Services
 
         public IEnumerable<ChildProgressReportModel> GetChildProgressReportsForUser(Guid userId)
         {
-            var classroomGroupIds = _classroomService.GetClassroomGroupsForUser(userId).Select(x => x.Id).ToList();
-            var childUserIds = _learnerRepo.GetAll().Where(x => classroomGroupIds.Contains(x.ClassroomGroupId)).Select(x => x.UserId);
-            var childIds = _childRepo.GetAll().Where(x => childUserIds.Contains(x.UserId)).Select(x => x.Id);
+            var userClassrooms = _classroomService.GetClassroomGroupsForUser(userId);
+            var classroomIds = userClassrooms.Select(x => x.ClassroomId);
+            var classroomGroupIds = userClassrooms.Select(x => x.Id);
+            var childUserIds = _learnerRepo.GetAll().Where(x => classroomGroupIds.Contains(x.ClassroomGroupId) && x.IsActive).Select(x => x.UserId);
+            var childIds = _childRepo.GetAll().Where(x => childUserIds.Contains(x.UserId) && x.IsActive).Select(x => x.Id);
+            var today = DateTime.Now;
 
-            var reports = _childProgressReportRepo.GetAll().Where(x => childIds.Contains(x.ChildId)).ToList();
+            // 1. Active reports within period
+            // 2. Completed reports outside period
+            var reportPeriods = _childProgressReportPeriodRepo.GetAll()
+                                        .Where(x => classroomIds.Contains(x.ClassroomId) && x.IsActive)
+                                        .Select(x => new { x.Id, x.StartDate, x.EndDate }).AsNoTracking().AsQueryable();
+
+            var allPeriodIds = reportPeriods.Select(x => x.Id);
+            var activeReportPeriodId = reportPeriods
+                                       .Where(x => today.Date >= x.StartDate.Date && today.Date <= x.EndDate.Date)
+                                       .Select(x => x.Id)
+                                       .FirstOrDefault();
 
 
-            foreach (var report in reports) 
+            var reports = _childProgressReportRepo.GetAll().Where(x => childIds.Contains(x.ChildId) && allPeriodIds.Contains(x.ChildProgressReportPeriodId)).AsNoTracking().ToList();
+            var allReports = new List<ChildProgressReport>();
+
+            allReports.AddRange(reports.Where(x => x.ChildProgressReportPeriodId == activeReportPeriodId)); // current period report
+            allReports.AddRange(reports.Where(x => x.DateCompleted.HasValue)); // completed
+
+            foreach (var report in allReports.Distinct()) 
             {
                 var data = JsonConvert.DeserializeObject<ProgressData>(report.ReportContent);
 

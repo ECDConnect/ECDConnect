@@ -9,6 +9,8 @@ namespace ECDLink.DataAccessLayer.Entities
         public ApplicationUser AppUser { get; set; }
         public bool? IsRegistered { get; set; }
 
+        public bool? BelongsToPreschool { get; set; }
+
         public string Note { get; set; }
     }
 }

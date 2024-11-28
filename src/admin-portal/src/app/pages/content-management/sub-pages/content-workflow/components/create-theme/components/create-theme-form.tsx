@@ -17,7 +17,6 @@ import {
   ActionModal,
   DialogPosition,
   Typography,
-  Button,
   ButtonGroup,
   ButtonGroupTypes,
 } from '@ecdlink/ui';
@@ -142,9 +141,9 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                       type="warning"
                     />
                   ) : (
-                    <></>
+                    <div key={propName} className="flex"></div>
                   )}
-                  <div className="flex">
+                  <div key={propName} className="flex">
                     <Typography
                       type={'body'}
                       weight={'bold'}

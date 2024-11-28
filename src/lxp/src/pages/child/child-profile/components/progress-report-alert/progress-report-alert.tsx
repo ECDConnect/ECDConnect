@@ -81,7 +81,10 @@ export const ChildProgressReportAlert: React.FC<
             className="ml-2"
             text={
               !currentReport?.observationsCompleteDate
-                ? `Report ${currentReport?.reportingPeriodNumber || 1}`
+                ? `Report ${
+                    currentReport?.reportingPeriodNumber ||
+                    currentReportingPeriod.reportNumber
+                  }`
                 : `All observations are done, time to create the report!`
             }
           />

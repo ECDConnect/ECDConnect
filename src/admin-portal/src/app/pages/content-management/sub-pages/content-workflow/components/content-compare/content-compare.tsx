@@ -33,6 +33,7 @@ export interface ContentCompareProps {
   cancelCompare: () => void;
   savedContent: () => void;
   choosedSectionTitle?: string;
+  goBack?: () => void;
 }
 
 export default function ContentCompare({
@@ -45,6 +46,7 @@ export default function ContentCompare({
   cancelCompare,
   savedContent,
   choosedSectionTitle,
+  goBack,
 }: ContentCompareProps) {
   const [selectedFirstLanguageId, setSelectedFirstLanguageId] =
     useState<string>(selectedLanguageId);
@@ -85,7 +87,7 @@ export default function ContentCompare({
 
   const handleNoDynamicForms = (type: string) => {
     switch (type) {
-      case 'StoryBook':
+      case ContentTypes.STORY_BOOK:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -112,7 +114,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'Theme':
+      case ContentTypes.THEME:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -139,7 +141,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'ProgressTrackingCategory':
+      case ContentTypes.CLASSROOMBUSINESSRESOURCE:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -147,7 +149,35 @@ export default function ContentCompare({
                 <div className="relative h-full" style={{ minHeight: '36rem' }}>
                   <div className="rounded-lg border-b py-5">
                     <div key={selectedLanguageId}>
-                      firstLanguageContent{selectedFirstLanguageId}
+                      <CreateResource
+                        key={'firstLanguageContent'}
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedFirstLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                        choosedSectionTitle={choosedSectionTitle}
+                        cancelEdit={goBack}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case ContentTypes.PROGRESS_TRACKING_CATEGORY:
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
                       <EditCategory
                         key={'firstLanguageContent'}
                         optionDefinitions={optionDefinitions}
@@ -167,7 +197,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'ProgressTrackingSkill':
+      case ContentTypes.PROGRESS_TRACKING_SKILL:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -201,7 +231,7 @@ export default function ContentCompare({
 
   const handleSecondLanguageNoDynamicForms = (type: string) => {
     switch (type) {
-      case 'StoryBook':
+      case ContentTypes.STORY_BOOK:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -228,7 +258,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'Theme':
+      case ContentTypes.THEME:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -275,6 +305,7 @@ export default function ContentCompare({
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
                         choosedSectionTitle={choosedSectionTitle}
+                        cancelEdit={goBack}
                       />
                     </div>
                   </div>
@@ -283,7 +314,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case 'ProgressTrackingCategory':
+      case ContentTypes.PROGRESS_TRACKING_CATEGORY:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -291,7 +322,6 @@ export default function ContentCompare({
                 <div className="relative h-full" style={{ minHeight: '36rem' }}>
                   <div className="rounded-lg border-b py-5">
                     <div key={selectedLanguageId}>
-                      secondLanguageContent {selectedSecondLanguageId}
                       <EditCategory
                         key={'secondLanguageContent'}
                         optionDefinitions={optionDefinitions}
@@ -311,7 +341,7 @@ export default function ContentCompare({
             </div>
           </>
         );
-      case ContentName.ProgressTrackingSkill:
+      case ContentTypes.PROGRESS_TRACKING_SKILL:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -345,7 +375,7 @@ export default function ContentCompare({
 
   if (
     (contentView && languages && currentContent) ||
-    (contentType?.name === ContentName.ProgressTrackingSkill &&
+    (contentType?.name === ContentTypes.PROGRESS_TRACKING_SKILL &&
       contentView &&
       languages)
   ) {
