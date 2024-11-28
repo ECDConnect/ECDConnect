@@ -17,6 +17,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Http;
+using HotChocolate.Execution.Configuration; // For IRequestExecutorBuilder
+using HotChocolate; // General HotChocolate namespace
 
 namespace ECDLink.EGraphQL
 {
@@ -51,9 +54,16 @@ namespace ECDLink.EGraphQL
               .RegisterService<ApplicationUserManager>(ServiceKind.Synchronized)
               .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized);
 
+
             builder = builder
                 .AddAuthorization()
                 .AddHttpRequestInterceptor<UserContextInterceptor>();
+
+            // Explicitly enable schema definition requests
+            builder.ModifyOptions(opt =>
+            {
+                opt.EnableSchemaRequests = true; // Enables SDL schema endpoint requests
+            });
 
             GraphServiceRegistration.RegisterExtensions(builder);
         }
@@ -76,6 +86,22 @@ namespace ECDLink.EGraphQL
                  {
                      Tool = { Enable = enableGraphQLPlayground }
                  });
+
+                 // Explicitly map schema.graphql endpoint
+                 //  endpoints.MapGet("/graphql/schema.graphql", async context =>
+                 //  {
+                 //      var schema = app.ApplicationServices.GetRequiredService<HotChocolate.Execution.IRequestExecutor>().Schema;
+                 //      await context.Response.WriteAsync(schema.ToString());
+                 //  });
+
+                 endpoints.MapGet("/graphql/schema.graphql", async context =>
+                {
+                    var schema = app.ApplicationServices
+                        .GetRequiredService<HotChocolate.Execution.IRequestExecutor>()
+                        .Schema;
+
+                    await context.Response.WriteAsync(schema.ToString() ?? "Schema not available");
+                });
              });
         }
     }
