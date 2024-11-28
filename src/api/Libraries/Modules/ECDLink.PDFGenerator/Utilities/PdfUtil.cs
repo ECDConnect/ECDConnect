@@ -37,8 +37,7 @@ namespace ECDLink.PDFGenerator.Utilities
                 size = (min + max) / 2;
                 ct = new ColumnText(null);
 
-                // UPDATED WITH .NET8
-                resizeChunks((ArrayList)paragraph.Chunks, size);
+                resizeChunks(paragraph.Chunks, size);
 
                 ct.SetSimpleColumn(paragraph, rect.Left, rect.Bottom, rect.Right, rect.Top, size, Element.ALIGN_LEFT);
                 ct.RunDirection = runDirection;
@@ -93,8 +92,7 @@ namespace ECDLink.PDFGenerator.Utilities
 
                     ct = new ColumnText(null);
 
-                    // UPDATED WITH .NET8
-                    resizeChunks((ArrayList)list.Chunks, size);
+                    resizeChunks(list.Chunks, size);
 
                     ct.AddElement(list);
                     ct.SetSimpleColumn(
