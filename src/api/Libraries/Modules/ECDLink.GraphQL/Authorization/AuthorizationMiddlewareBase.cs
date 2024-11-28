@@ -7,9 +7,9 @@ namespace ECDLink.EGraphQL.Authorization
 {
     public abstract class AuthorizationMiddlewareBase
     {
-        public abstract Task InvokeAsync(IMiddlewareContext context);
+        public abstract Task InvokeAsync(IDirectiveContext context);
 
-        protected virtual void SetError(IMiddlewareContext context, AuthState state)
+        protected virtual void SetError(IDirectiveContext context, AuthState state)
         {
             switch (state)
             {
