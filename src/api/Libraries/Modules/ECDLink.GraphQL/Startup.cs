@@ -89,6 +89,8 @@ namespace ECDLink.EGraphQL
                      Tool = { Enable = enableGraphQLPlayground }
                  });
 
+                //  endpoints.MapGraphQL().RequireCors("CorsPolicy"); TODO - Add this as a test when CORS still fails
+
                  // Explicitly map schema.graphql endpoint
                  //  endpoints.MapGet("/graphql/schema.graphql", async context =>
                  //  {

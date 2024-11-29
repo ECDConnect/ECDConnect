@@ -130,8 +130,11 @@ namespace EcdLink.Api.CoreApi
                             .AllowAnyHeader()
                             .AllowCredentials()
                             .SetIsOriginAllowedToAllowWildcardSubdomains()
-                            .SetIsOriginAllowed(origin => true)
-                            .WithOrigins(allowedDomains)
+                            .SetIsOriginAllowed(origin =>
+                            {
+                                Console.WriteLine($"CORS Request Origin: {origin}");
+                                return true;
+                            })
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
 
@@ -247,10 +250,9 @@ namespace EcdLink.Api.CoreApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors("CorsPolicy");
-
             app.UseCookiePolicy();
             app.UseRouting();
+            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
