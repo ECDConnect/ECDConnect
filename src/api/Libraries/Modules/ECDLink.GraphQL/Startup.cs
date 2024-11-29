@@ -19,7 +19,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http;
 using HotChocolate.Execution.Configuration; // For IRequestExecutorBuilder
-using HotChocolate; // General HotChocolate namespace
+using HotChocolate;
+using HotChocolate.Execution;
+using System; // General HotChocolate namespace
 
 namespace ECDLink.EGraphQL
 {
@@ -59,11 +61,11 @@ namespace ECDLink.EGraphQL
                 .AddAuthorization()
                 .AddHttpRequestInterceptor<UserContextInterceptor>();
 
-            // Explicitly enable schema definition requests
-            builder.ModifyOptions(opt =>
-            {
-                opt.EnableSchemaRequests = true; // Enables SDL schema endpoint requests
-            });
+            // // Explicitly enable schema definition requests
+            // builder.ModifyOptions(opt =>
+            // {
+            //     opt.EnableSchemaRequests = true; // Enables SDL schema endpoint requests
+            // });
 
             GraphServiceRegistration.RegisterExtensions(builder);
         }
@@ -95,13 +97,33 @@ namespace ECDLink.EGraphQL
                  //  });
 
                  endpoints.MapGet("/graphql/schema.graphql", async context =>
-                {
-                    var schema = app.ApplicationServices
-                        .GetRequiredService<HotChocolate.Execution.IRequestExecutor>()
-                        .Schema;
+                    {
+                        try
+                        {
+                            var requestExecutor = context.RequestServices.GetService<IRequestExecutor>();
+                            if (requestExecutor == null)
+                            {
+                                await context.Response.WriteAsync("IRequestExecutor not registered");
+                                return;
+                            }
 
-                    await context.Response.WriteAsync(schema.ToString() ?? "Schema not available");
-                });
+                            var schema = requestExecutor.Schema;
+                            await context.Response.WriteAsync(schema.ToString() ?? "Schema not available");
+                        }
+                        catch (Exception ex)
+                        {
+                            await context.Response.WriteAsync($"Error: {ex.Message}");
+                        }
+                    });
+
+                //  endpoints.MapGet("/graphql/schema.graphql", async context =>
+                // {
+                //     var schema = app.ApplicationServices
+                //         .GetRequiredService<HotChocolate.Execution.IRequestExecutor>()
+                //         .Schema;
+
+                //     await context.Response.WriteAsync(schema.ToString() ?? "Schema not available");
+                // });
              });
         }
     }

@@ -10,7 +10,7 @@
           "request": "launch",
           "preLaunchTask": "build",
           // If you have changed target frameworks, make sure to update the program path.
-          "program": "${workspaceFolder}/src/api/core-api/bin/Debug/net8.0/EcdLink.Api.CoreApi.dll",
+          "program": "${workspaceFolder}/src/api/core-api/bin/Debug/net9.0/EcdLink.Api.CoreApi.dll",
           "args": [],
           "cwd": "${workspaceFolder}/src/api/core-api",
           "stopAtEntry": false,
