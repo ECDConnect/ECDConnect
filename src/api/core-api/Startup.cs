@@ -97,7 +97,7 @@ namespace EcdLink.Api.CoreApi
                             .WithOrigins(corsAllowedDomains)
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
-            
+
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
             //PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
