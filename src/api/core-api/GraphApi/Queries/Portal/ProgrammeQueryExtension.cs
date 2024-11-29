@@ -52,27 +52,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 records = contentRepo.GetAll(ContentTypeConstants.StoryBookId, englishId).Select(x => new StoryBookViewModel(x, englishId)).ToList();
             }
 
-            var themes = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId);
-            var themeRecords = new List<ThemeViewModel>();
-            foreach (var theme in themes)
-            {
-                var item = (IDictionary<string, object>)theme;
-                item.TryGetValue("name", out var name);
-                item.TryGetValue("themeDays", out var themeDays);
-
-                var themeDayInts = themeDays.ToString().Split(",").Select(i => int.Parse(i)).ToArray();
-                themeRecords.AddRange(contentRepo.GetByIds(ContentTypeConstants.ThemeDayId, englishId, themeDayInts)
-                                                 .Select(x => new ThemeViewModel(name.ToString(), x))
-                                                 .ToList());
-
-            }
-
-            // populate theme values on records
-            foreach (var item in records)
-            {
-                item.Themes = string.Join(",", themeRecords.Where(x => x.StoryBookId == item.Id).Select(x => x.Name).ToArray().Distinct());
-            }
-
             if (records.Any())
             {
                 if (string.IsNullOrEmpty(search)
@@ -213,10 +192,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
             return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
-
-
-
-
        
     }
 }

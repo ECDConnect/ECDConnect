@@ -47,7 +47,6 @@ export default function ContentWorkflow({
   const [selectedLanguageId, setSelectedLanguageId] = useState<string>(
     contentView?.languageId
   );
-
   const [viewKey, setViewKey] = useState<number>(Math.random());
   const [defaultLanguageId, setDefaultLanguageId] = useState<string>();
   const [isEdit, setIsEdit] = useState<boolean>(false);

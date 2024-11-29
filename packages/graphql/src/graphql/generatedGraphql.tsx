@@ -13421,6 +13421,7 @@ export type ProgressTrackingLevelInput = {
 
 export type ProgressTrackingSkill = {
   __typename?: 'ProgressTrackingSkill';
+  ageGroups?: Maybe<Array<Maybe<ProgressTrackingAgeGroup>>>;
   id?: Maybe<Scalars['Int']>;
   isReverseScored?: Maybe<Scalars['String']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
@@ -13432,6 +13433,7 @@ export type ProgressTrackingSkill = {
 };
 
 export type ProgressTrackingSkillInput = {
+  ageGroups?: InputMaybe<Scalars['String']>;
   isReverseScored?: InputMaybe<Scalars['String']>;
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
@@ -18780,6 +18782,7 @@ export type StoryBook = {
   author?: Maybe<Scalars['String']>;
   availableLanguages?: Maybe<Array<Maybe<Language>>>;
   bookLocation?: Maybe<Scalars['String']>;
+  bookLocationLink?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   illustrator?: Maybe<Scalars['String']>;
   keywords?: Maybe<Scalars['String']>;
@@ -18787,6 +18790,7 @@ export type StoryBook = {
   shareContent?: Maybe<Scalars['String']>;
   storyBookParts?: Maybe<Array<Maybe<StoryBookParts>>>;
   themes?: Maybe<Array<Maybe<Theme>>>;
+  translator?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['String']>;
 };
@@ -18795,6 +18799,7 @@ export type StoryBookInput = {
   author?: InputMaybe<Scalars['String']>;
   availableLanguages?: InputMaybe<Scalars['String']>;
   bookLocation?: InputMaybe<Scalars['String']>;
+  bookLocationLink?: InputMaybe<Scalars['String']>;
   illustrator?: InputMaybe<Scalars['String']>;
   keywords?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
@@ -18860,6 +18865,7 @@ export type StoryBookViewModel = {
   author?: Maybe<Scalars['String']>;
   availableLanguages?: Maybe<Array<Scalars['UUID']>>;
   bookLocation?: Maybe<Scalars['String']>;
+  bookLocationLink?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   illustrator?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
