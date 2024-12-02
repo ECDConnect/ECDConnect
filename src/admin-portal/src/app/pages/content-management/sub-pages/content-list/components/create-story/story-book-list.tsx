@@ -57,7 +57,7 @@ export const sortByTypeOptions: SearchDropDownOption<string>[] = [
 }));
 
 export const sortByThemeOptions: SearchDropDownOption<string>[] = [
-  StoryBookThemeOptions?.Theme,
+  StoryBookThemeOptions?.Nature,
   StoryBookThemeOptions?.NoTheme,
 ].map((item) => ({
   id: item,

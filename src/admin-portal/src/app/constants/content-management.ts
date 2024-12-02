@@ -1,7 +1,6 @@
 export const ContentManagementTabs = {
   PROCESS: { id: 2, name: 'Progress' },
   PROGRAMMES: { id: 3, name: 'Programme' },
-  //COMMUNITY: { id: 4, name: 'Community' },
   RESOURCES: { id: 4, name: 'Resources' },
 };
 

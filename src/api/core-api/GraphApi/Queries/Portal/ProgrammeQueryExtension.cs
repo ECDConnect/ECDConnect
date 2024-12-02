@@ -107,13 +107,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                     if (themesSearch.Count != 0)
                     {
-                        if (themesSearch.Contains("Theme"))
+                        if (themesSearch.Contains("No theme"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.Themes != "").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
                         }
                         else
                         {
-                            filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
+                            foreach (var record in records)
+                            {
+                                if (themesSearch.Contains(record.Themes))
+                                {
+                                    filteredRecords.Add(record);
+                                }
+                            }
+
                         }
                     }
 

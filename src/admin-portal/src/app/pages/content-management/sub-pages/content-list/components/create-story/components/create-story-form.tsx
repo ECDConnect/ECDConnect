@@ -22,7 +22,6 @@ import {
   StoryBookQuestionDto,
 } from '@ecdlink/core';
 import { StoryBookTypes } from '../create-story';
-import DynamicSelector from '../../../../../../../components/dynamic-selector/dynamic-selector';
 import ThemeSelector from '../../../../../../../components/themes/theme-selector';
 
 export interface CreateStoryFormProps {
