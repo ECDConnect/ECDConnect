@@ -22,7 +22,8 @@ namespace ECDLink.Security.JwtSecurity.Encoders
 
         public async Task<string> GenerateEncodedToken(string userId, IEnumerable<Claim> claims)
         {
-            var fullClaims = (List<Claim>)claims.Copy();
+            // UPDATED WITH .NET 8
+            var fullClaims = new List<Claim>(claims);
 
             fullClaims.Add(new Claim(JwtRegisteredClaimNames.Sub, userId));
             fullClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, await Options.JtiGenerator()));
