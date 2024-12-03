@@ -1,5 +1,5 @@
 import { Alert, BannerWrapper, Button, Typography } from '@ecdlink/ui';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
@@ -11,9 +11,6 @@ import { useProgressForChild } from '@/hooks/useProgressForChild';
 import { ProgressReportsList } from './reports-list';
 import ProgressWalkthroughWrapper from '../walkthrough/progress-walkthrough-wrapper';
 import { useAppContext } from '@/walkthrougContext';
-import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
-import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 
 export type ChildProgressReportsListRouteState = {
   childId: string;
@@ -23,15 +20,11 @@ export const ChildProgressReportsList: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const { state: routeState } =
     useLocation<ChildProgressReportsListRouteState>();
   const {
     state: { run: isWalkthrough },
   } = useAppContext();
-  const planActivitiesPermission = practitioner?.permissions?.find(
-    (item) => item?.permissionName === PermissionsNames.create_progress_reports
-  );
 
   const { childId } = routeState;
   const {
@@ -103,6 +96,10 @@ export const ChildProgressReportsList: React.FC = () => {
   ];
 
   const reports = isWalkthrough ? walkthroughReports : detailedReports;
+
+  const showShareButton = useMemo<boolean>(() => {
+    return detailedReports.filter((x) => x.dateCompleted !== null).length > 0;
+  }, [detailedReports]);
 
   return (
     <BannerWrapper
@@ -219,7 +216,7 @@ export const ChildProgressReportsList: React.FC = () => {
                   title="All reporting periods for the year are closed. You can keep tracking progress next year."
                 />
               )}
-              {!!reports && !!reports.length && (
+              {showShareButton && (
                 <Button
                   onClick={() =>
                     history.push(ROUTES.PROGRESS_SHARE_REPORT, {
@@ -235,21 +232,20 @@ export const ChildProgressReportsList: React.FC = () => {
                   text="Share a report"
                 />
               )}
-              {!!currentReportingPeriod &&
-                planActivitiesPermission?.isActive && (
-                  <Button
-                    onClick={() => trackProgress()}
-                    className="mt-4 w-full"
-                    size="small"
-                    color="quatenary"
-                    type={!!reports && !!reports.length ? 'outlined' : 'filled'}
-                    textColor={
-                      !!reports && !!reports.length ? 'quatenary' : 'white'
-                    }
-                    icon="ArrowCircleRightIcon"
-                    text="Track progress"
-                  />
-                )}
+              {!!currentReportingPeriod && (
+                <Button
+                  onClick={() => trackProgress()}
+                  className="mt-4 w-full"
+                  size="small"
+                  color="quatenary"
+                  type={!!reports && !!reports.length ? 'outlined' : 'filled'}
+                  textColor={
+                    !!reports && !!reports.length ? 'quatenary' : 'white'
+                  }
+                  icon="ArrowCircleRightIcon"
+                  text="Track progress"
+                />
+              )}
             </div>
           </div>
         )}

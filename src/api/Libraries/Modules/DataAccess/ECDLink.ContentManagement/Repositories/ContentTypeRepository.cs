@@ -27,7 +27,7 @@ namespace ECDLink.ContentManagement.Repositories
               .Include(x => x.Content.Where(f => f.TenantId == tenantId && f.IsActive))
                 .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
                   .ThenInclude(x => x.ContentTypeField)
-              .Include(x => x.Fields)
+              .Include(x => x.Fields.Where(f => f.IsActive))
                 .ThenInclude(x => x.FieldType);
         }
 
@@ -58,7 +58,7 @@ namespace ECDLink.ContentManagement.Repositories
               .Include(x => x.Content)
                 .ThenInclude(x => x.ContentValues)
                   .ThenInclude(x => x.ContentTypeField)
-              .Include(x => x.Fields)
+              .Include(x => x.Fields.Where(f => f.IsActive))
                 .ThenInclude(x => x.FieldType)
                 .Where(x => x.Id == id)
               .OrderBy(x => x.Id)
@@ -91,7 +91,7 @@ namespace ECDLink.ContentManagement.Repositories
                 var contentValues = _context.ContentValues
                     .Include(cv => cv.Content)
                         .ThenInclude(c => c.ContentType)
-                            .ThenInclude(ct => ct.Fields)
+                            .ThenInclude(ct => ct.Fields.Where(f => f.IsActive))
                                 .ThenInclude(f => f.FieldType)
                     .Where(cv => cv.Content.IsActive == true &&
                         (cv.TenantId == null
@@ -123,7 +123,7 @@ namespace ECDLink.ContentManagement.Repositories
                   .Include(x => x.Content.Where(f => f.IsActive == true && f.TenantId == tenantId || f.TenantId == null))
                       .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId || f.TenantId == null))
                           .ThenInclude(x => x.ContentTypeField)
-                  .Include(x => x.Fields)
+                  .Include(x => x.Fields.Where(f => f.IsActive))
                       .ThenInclude(x => x.FieldType)
                   .Where(ct =>
                   (ct.TenantId == null || ct.TenantId == tenantId)
@@ -135,7 +135,7 @@ namespace ECDLink.ContentManagement.Repositories
                     .Include(x => x.Content.Where(f => f.IsActive == true && f.TenantId == tenantId || f.TenantId == null))
                         .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId || f.TenantId == null))
                             .ThenInclude(x => x.ContentTypeField)
-                    .Include(x => x.Fields)
+                    .Include(x => x.Fields.Where(f => f.IsActive))
                         .ThenInclude(x => x.FieldType)
                     .Where(ct =>
                     (ct.TenantId == null || ct.TenantId == tenantId)

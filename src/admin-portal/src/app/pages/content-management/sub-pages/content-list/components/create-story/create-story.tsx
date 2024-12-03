@@ -24,7 +24,10 @@ import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateStoryForm from './components/create-story-form';
 import { LanguageId } from '../../../../../../constants/language';
-import { UpdateStoryBookAndParts } from '@ecdlink/graphql';
+import {
+  BulkUpdateStoryBookThemes,
+  UpdateStoryBookAndParts,
+} from '@ecdlink/graphql';
 
 export interface ContentViewProps {
   content: any;
@@ -92,25 +95,7 @@ export default function CreateStory({
     }
 `;
 
-  // const themeQuery = gql`
-  //     query GetAllTheme($localeId: String) {
-  //       GetAllTheme(localeId: $localeId) {
-  //         id
-  //         name
-  //         __typename
-  //       }
-  //     }
-  //   `;
-
-  //   const { data: themeData, loading } = useQuery(
-  //     themeQuery,
-  //     {
-  //       fetchPolicy: 'cache-and-network',
-  //       variables: {
-  //         localeId: languageId?.toString(),
-  //       },
-  //     }
-  //   );
+  const [saveStorybookThemes] = useMutation(BulkUpdateStoryBookThemes);
 
   const dialog = useDialog();
   const [deleteContent, { loading: isLoadingDeleteContent }] =
@@ -315,6 +300,17 @@ export default function CreateStory({
         },
       }).catch(() => {
         setLoading(false);
+      });
+
+      await saveStorybookThemes({
+        variables: {
+          contentId: +content.id,
+          contentTypeId: +contentType.id,
+          localeId: selectedLanguageId.toString(),
+          themeIds: model.themes,
+        },
+      }).catch((error) => {
+        console.log(error);
       });
     }
 

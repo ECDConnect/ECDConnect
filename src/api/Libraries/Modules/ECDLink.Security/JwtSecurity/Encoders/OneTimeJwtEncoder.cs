@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using NPOI.Util;
 
 namespace ECDLink.Security.JwtSecurity.Encoders
 {
@@ -22,6 +23,7 @@ namespace ECDLink.Security.JwtSecurity.Encoders
 
         public async Task<string> GenerateEncodedToken(string userId, IEnumerable<Claim> claims)
         {
+            // UPDATED WITH .NET 8 - added NPO package
             var fullClaims = (List<Claim>)claims.Copy();
 
             fullClaims.Add(new Claim(JwtRegisteredClaimNames.Sub, userId));

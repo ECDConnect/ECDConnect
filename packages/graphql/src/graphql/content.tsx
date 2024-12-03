@@ -135,6 +135,22 @@ export const BulkUpdateConsentImages = gql`
   }
 `;
 
+export const BulkUpdateStoryBookThemes = gql`
+  mutation BulkUpdateStoryBookThemes(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $themeIds: String
+  ) {
+    bulkUpdateStoryBookThemes(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      themeIds: $themeIds
+    )
+  }
+`;
+
 export const DeleteMultipleResources = gql`
   mutation DeleteBulkResources($contentIds: [Int!]) {
     deleteBulkResources(contentIds: $contentIds) {
