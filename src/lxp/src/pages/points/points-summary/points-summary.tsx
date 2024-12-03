@@ -1062,11 +1062,7 @@ export const PointsSummary: React.FC = () => {
               )}
             />
           ) : null}
-          {!pointsTotalForYear ||
-          pointsTotalForYear < 10 ||
-          (practitioner?.isPrincipal
-            ? getCurrentPointsToDo !== 4
-            : getCurrentPointsToDo !== 3) ? (
+          {getCurrentPointsToDo < 4 ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -1099,11 +1095,9 @@ export const PointsSummary: React.FC = () => {
               </div>
             </div>
           ) : null}
-          {(!!todoListFiltered &&
-            !!todoListFiltered.length &&
-            pointsTotalForYear &&
-            pointsTotalForYear >= 10) ||
-          percentageScore === 0 ? (
+          {!!todoListFiltered &&
+          !!todoListFiltered.length &&
+          getCurrentPointsToDo > 3 ? (
             <Typography
               className="mt-8 mb-4"
               type={'h3'}
@@ -1114,10 +1108,10 @@ export const PointsSummary: React.FC = () => {
               )}:`}
             />
           ) : null}
-          {(!!todoListFiltered &&
-            pointsTotalForYear &&
-            pointsTotalForYear >= 10) ||
-          percentageScore === 0
+          {!!todoListFiltered &&
+          pointsTotalForYear &&
+          pointsTotalForYear >= 10 &&
+          getCurrentPointsToDo > 3
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
                   <div
