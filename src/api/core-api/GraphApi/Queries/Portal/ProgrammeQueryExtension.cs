@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
