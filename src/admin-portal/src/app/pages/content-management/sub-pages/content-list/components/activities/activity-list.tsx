@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useMutation, useLazyQuery } from '@apollo/client';
+import { useMutation, useLazyQuery, gql, useQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
@@ -21,16 +21,9 @@ import { LanguageId } from '../../../../../../constants/language';
 import { ContentTypes } from '../../../../../../constants/content-management';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import debounce from 'lodash.debounce';
-import {
-  DeleteMultipleActivities,
-  GetStoryBookRecords,
-} from '@ecdlink/graphql';
+import { DeleteMultipleActivities, GetActivityRecords } from '@ecdlink/graphql';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import {
-  StoryBookTypeOptions,
-  StoryBookThemeOptions,
-  StoryBookShareOptions,
-} from './activity.types';
+import { ActivityTypeOptions, ActivityShareOptions } from './activity.types';
 
 export interface ActivityListProps {
   selectedTab?: number;
@@ -47,18 +40,9 @@ export interface ActivityListProps {
 }
 
 export const sortByTypeOptions: SearchDropDownOption<string>[] = [
-  StoryBookTypeOptions?.StoryBook,
-  StoryBookTypeOptions?.ReadAloud,
-  StoryBookTypeOptions?.Other,
-].map((item) => ({
-  id: item,
-  label: item,
-  value: item,
-}));
-
-export const sortByThemeOptions: SearchDropDownOption<string>[] = [
-  StoryBookThemeOptions?.Nature,
-  StoryBookThemeOptions?.NoTheme,
+  ActivityTypeOptions?.StoryBook,
+  ActivityTypeOptions?.ReadAloud,
+  ActivityTypeOptions?.Other,
 ].map((item) => ({
   id: item,
   label: item,
@@ -66,9 +50,9 @@ export const sortByThemeOptions: SearchDropDownOption<string>[] = [
 }));
 
 export const sortByShareOptions: SearchDropDownOption<string>[] = [
-  StoryBookShareOptions?.Yes,
-  StoryBookShareOptions?.No,
-  StoryBookShareOptions?.NA,
+  ActivityShareOptions?.Yes,
+  ActivityShareOptions?.No,
+  ActivityShareOptions?.NA,
 ].map((item) => ({
   id: item,
   label: item,
@@ -93,6 +77,35 @@ export default function ActivityList({
       value: item?.id,
     })
   );
+
+  console.log('choosedSectionTitle', choosedSectionTitle);
+
+  const [sortByThemeOptions, setSortByThemeOptions] = useState<any[]>([]);
+
+  const getAllTheme = `GetAllTheme`;
+  const query = gql` 
+    query ${getAllTheme} ($localeId: String) {
+      ${getAllTheme} (localeId: $localeId) {
+        id
+        name
+        }
+      }
+  `;
+
+  const { data: themeData } = useQuery(query, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: LanguageId.enZa,
+    },
+  });
+
+  useEffect(() => {
+    if (themeData && themeData.GetAllTheme) {
+      setSortByThemeOptions(themeData.getAllTheme);
+    }
+  }, [themeData]);
+
+  console.log('themeData', themeData);
 
   const [tableData, setTableData] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
@@ -229,6 +242,7 @@ export default function ActivityList({
 
   const queryVariables = useMemo(
     () => ({
+      isStoryActivity: choosedSectionTitle === 'Story activities',
       search: '',
       typesSearch: filteredTypes,
       themesSearch: filteredThemes,
@@ -242,6 +256,7 @@ export default function ActivityList({
       },
     }),
     [
+      choosedSectionTitle,
       filteredTypes,
       filteredThemes,
       filteredLanguage,
@@ -254,14 +269,14 @@ export default function ActivityList({
   const [
     fetchActivities,
     { data: activityData, refetch: refetchContent, loading: loadingContent },
-  ] = useLazyQuery(GetStoryBookRecords, {
+  ] = useLazyQuery(GetActivityRecords, {
     fetchPolicy: 'network-only',
     variables: queryVariables,
   });
 
   useEffect(() => {
-    if (activityData && activityData.storyBookRecords) {
-      const copyItems = activityData.storyBookRecords.map((item: any) => ({
+    if (activityData && activityData.activityRecords) {
+      const copyItems = activityData.activityRecords.map((item: any) => ({
         ...item,
       }));
 
@@ -294,27 +309,17 @@ export default function ActivityList({
         __typename: 'Language',
       }));
 
-      const storyBookParts = item?.storyBookParts.split(',');
-      const itemStoryBookParts = storyBookParts.map((item: any) => ({
-        id: item,
-        __typename: 'StoryBookParts',
-      }));
-
       const copyItem = {
-        __typename: ContentTypes.STORY_BOOK,
+        __typename: ContentTypes.ACTIVITY,
         id: +item.id,
         name: item.name,
-        type: item.type,
-        author: item.auther,
-        illustrator: item.illustrator,
-        translator: item.translator,
-        bookLocation: item.bookLocation,
-        keywords: item.keywords,
-        storyBookParts: itemStoryBookParts,
+        subType: item.subType,
+        materials: item.materials,
+        description: item.description,
+        notes: item.notes,
         availableLanguages: itemLanguages,
         shareContent: item.shareContent,
         themes: item.themes,
-        authorsAuthorization: true,
       };
 
       model.content = copyItem;
@@ -351,9 +356,9 @@ export default function ActivityList({
   const getChipColor = (type?: string) => {
     if (type) {
       switch (type) {
-        case StoryBookTypeOptions?.StoryBook:
+        case ActivityTypeOptions?.StoryBook:
           return 'bg-primary';
-        case StoryBookTypeOptions?.ReadAloud:
+        case ActivityTypeOptions?.ReadAloud:
           return 'bg-secondary';
         default:
           return 'bg-infoMain';
@@ -558,7 +563,7 @@ export default function ActivityList({
               backgroundColor: 'secondary',
             }}
             actionButton={{
-              text: 'Add story',
+              text: 'Add activity',
               onClick: () => viewSelectedRow(),
               icon: 'PlusIcon',
             }}
