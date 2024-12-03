@@ -22,7 +22,7 @@ import { ContentTypes } from '../../../../../../constants/content-management';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import debounce from 'lodash.debounce';
 import {
-  DeleteMultipleStoryBooks,
+  DeleteMultipleActivities,
   GetStoryBookRecords,
 } from '@ecdlink/graphql';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
@@ -30,9 +30,9 @@ import {
   StoryBookTypeOptions,
   StoryBookThemeOptions,
   StoryBookShareOptions,
-} from './story-book.types';
+} from './activity.types';
 
-export interface ContentListProps {
+export interface ActivityListProps {
   selectedTab?: number;
   contentType: ContentTypeDto;
   optionDefinitions: ContentDefinitionModelDto[];
@@ -75,7 +75,7 @@ export const sortByShareOptions: SearchDropDownOption<string>[] = [
   value: item,
 }));
 
-export default function StoryBookList({
+export default function ActivityList({
   selectedTab,
   contentType,
   languages,
@@ -85,7 +85,7 @@ export default function StoryBookList({
   choosedSectionTitle,
   setSelectedType,
   dataTypes,
-}: ContentListProps) {
+}: ActivityListProps) {
   const sortByLanguageOptions: SearchDropDownOption<string>[] = languages?.map(
     (item) => ({
       id: item?.id,
@@ -183,11 +183,11 @@ export default function StoryBookList({
           displayFields.push(x);
       });
 
-      if (contentType.name === ContentTypes.STORY_BOOK) {
+      if (contentType.name === ContentTypes.ACTIVITY) {
         const resourceFields = displayFields?.filter(
           (item) =>
             item?.fieldName === 'name' ||
-            item?.fieldName === 'type' ||
+            item?.fieldName === 'subType' ||
             item?.fieldName === 'themes' ||
             item?.fieldName === 'languages' ||
             item?.fieldName === 'updatedDate'
@@ -198,14 +198,14 @@ export default function StoryBookList({
             ...item,
             displayName:
               item.fieldName === 'name'
-                ? 'Story title'
-                : item.fieldName === 'type'
-                ? 'Type'
+                ? 'Activity title'
+                : item.fieldName === 'subType'
+                ? 'For story type(s)'
                 : item.displayName,
             fieldOrder:
               item.fieldName === 'name'
                 ? 1
-                : item.fieldName === 'type'
+                : item.fieldName === 'subType'
                 ? 2
                 : item.fieldName === 'themes'
                 ? 3
@@ -252,23 +252,23 @@ export default function StoryBookList({
   );
 
   const [
-    fetchStoryBooks,
-    { data: storyBookData, refetch: refetchContent, loading: loadingContent },
+    fetchActivities,
+    { data: activityData, refetch: refetchContent, loading: loadingContent },
   ] = useLazyQuery(GetStoryBookRecords, {
     fetchPolicy: 'network-only',
     variables: queryVariables,
   });
 
   useEffect(() => {
-    if (storyBookData && storyBookData.storyBookRecords) {
-      const copyItems = storyBookData.storyBookRecords.map((item: any) => ({
+    if (activityData && activityData.storyBookRecords) {
+      const copyItems = activityData.storyBookRecords.map((item: any) => ({
         ...item,
       }));
 
       setTableData(copyItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storyBookData, selectedTab]);
+  }, [activityData, selectedTab]);
 
   useEffect(() => {
     if (languages) {
@@ -328,7 +328,7 @@ export default function StoryBookList({
 
   const tableRef = useRef<TableRefMethods>(null);
   const [searchValue, setSearchValue] = useState('');
-  const [selectedStorybooks, setSelectedStoryBooks] = useState<Irow[]>([]);
+  const [selectedActivities, setSelectedActivities] = useState<Irow[]>([]);
   const dialog = useDialog();
   const { setNotification } = useNotifications();
 
@@ -340,20 +340,20 @@ export default function StoryBookList({
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const inactiveStorybooks = selectedStorybooks?.filter(
+  const inactiveActivities = selectedActivities?.filter(
     (item) => item?.isActive === false
   );
 
-  const isAllInactive = selectedStorybooks.every(
+  const isAllInactive = selectedActivities.every(
     (obj) => obj?.isActive === false
   );
 
   const getChipColor = (type?: string) => {
     if (type) {
       switch (type) {
-        case StoryBookTypeOptions?.ReadAloud:
-          return 'bg-primary';
         case StoryBookTypeOptions?.StoryBook:
+          return 'bg-primary';
+        case StoryBookTypeOptions?.ReadAloud:
           return 'bg-secondary';
         default:
           return 'bg-infoMain';
@@ -367,21 +367,22 @@ export default function StoryBookList({
     (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
       (item) => ({
         ...item,
-        key: `storybook_` + item?.id,
+        key: `activity_` + item?.id,
         name: item?.name,
+        themes: item?.themes,
         updatedDate: item?.updatedDate
           ? format(new Date(item.updatedDate), 'dd/MM/yyyy')
           : '-',
-        typeComponent: (
+        subTypeComponent: (
           <div className="ml-0 flex cursor-pointer items-center">
             <div
-              key={`type_` + item?.id}
+              key={`subType_` + item?.id}
               className={
-                `${getChipColor(item?.type)}` +
+                `${getChipColor(item?.subType)}` +
                 ' m-1 rounded-full py-1 px-3 text-xs text-white'
               }
             >
-              {item?.type}
+              {item?.subType}
             </div>
           </div>
         ),
@@ -412,11 +413,11 @@ export default function StoryBookList({
   const columns: Icolumn[] = [
     {
       field: 'name',
-      use: 'Story title',
+      use: 'Activity title',
     },
     {
       field: 'typeComponent',
-      use: 'Type',
+      use: 'For story type(s)',
     },
     {
       field: 'themes',
@@ -456,38 +457,38 @@ export default function StoryBookList({
     return 'No entries found';
   }, [isFilterActive]);
 
-  const [deactivateStoryBooks, { loading: deactivating }] = useMutation(
-    DeleteMultipleStoryBooks,
+  const [deactivateActivities, { loading: deactivating }] = useMutation(
+    DeleteMultipleActivities,
     {
       variables: {
-        contentIds: selectedStorybooks?.map((item) => item?.id),
+        contentIds: selectedActivities?.map((item) => item?.id),
       },
       fetchPolicy: 'network-only',
     }
   );
 
   const deactivateRecords = useCallback(() => {
-    deactivateStoryBooks({
+    deactivateActivities({
       variables: {
-        contentIds: selectedStorybooks?.map((item) => item?.id),
+        contentIds: selectedActivities?.map((item) => item?.id),
       },
     })
       .then((res) => {
-        if (res.data?.deleteMultipleStoryBooks?.success.length > 0) {
+        if (res.data?.deleteMultipleActivities?.success.length > 0) {
           setNotification({
-            title: ` Successfully Deleted ${res.data?.deleteMultipleStoryBooks?.success.length} Story books!`,
+            title: ` Successfully Deleted ${res.data?.deleteMultipleActivities?.success.length} Story books!`,
             variant: NOTIFICATION.SUCCESS,
           });
           refetchContent();
-          setSelectedStoryBooks([]);
+          setSelectedActivities([]);
           handleResetSelectedRows();
         }
-        if (res.data?.deleteMultipleStoryBooks?.failed.length > 0) {
+        if (res.data?.deleteMultipleActivities?.failed.length > 0) {
           setNotification({
-            title: ` Failed to Deleted ${res.data?.deleteMultipleStoryBooks?.failed.length} Story books!`,
+            title: ` Failed to Deleted ${res.data?.deleteMultipleActivities?.failed.length} Story books!`,
             variant: NOTIFICATION.ERROR,
           });
-          setSelectedStoryBooks([]);
+          setSelectedActivities([]);
           handleResetSelectedRows();
         }
       })
@@ -498,9 +499,9 @@ export default function StoryBookList({
         });
       });
   }, [
-    deactivateStoryBooks,
+    deactivateActivities,
     refetchContent,
-    selectedStorybooks,
+    selectedActivities,
     setNotification,
   ]);
 
@@ -510,16 +511,16 @@ export default function StoryBookList({
       render: (onClose) => (
         <AlertModal
           title={`Are you sure you want to delete ${
-            selectedStorybooks?.length - inactiveStorybooks?.length
+            selectedActivities?.length - inactiveActivities?.length
           } items?`}
-          message={`Practitioners will no longer have access to these story books.`}
+          message={`Practitioners will no longer have access to these activities.`}
           btnText={['Yes, delete', 'No, Cancel']}
-          hasAlert={isAllInactive || inactiveStorybooks?.length > 0}
-          alertMessage={`Note: ${inactiveStorybooks?.length} deleted.`}
+          hasAlert={isAllInactive || inactiveActivities?.length > 0}
+          alertMessage={`Note: ${inactiveActivities?.length} deleted.`}
           alertType="error"
           onCancel={() => {
             onClose();
-            setSelectedStoryBooks([]);
+            setSelectedActivities([]);
             handleResetSelectedRows();
           }}
           onSubmit={() => {
@@ -532,9 +533,9 @@ export default function StoryBookList({
   }, [
     deactivateRecords,
     dialog,
-    inactiveStorybooks?.length,
+    inactiveActivities?.length,
     isAllInactive,
-    selectedStorybooks?.length,
+    selectedActivities?.length,
   ]);
 
   return (
@@ -547,7 +548,7 @@ export default function StoryBookList({
             rows={rows}
             columns={columns}
             onClearFilters={clearFilters}
-            onChangeSelectedRows={setSelectedStoryBooks}
+            onChangeSelectedRows={setSelectedActivities}
             onClickRow={viewSelectedRow}
             noContentText={noContentText}
             loading={{

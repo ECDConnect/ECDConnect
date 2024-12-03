@@ -3,7 +3,6 @@ import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
   ContentTypeDto,
-  ContentTypeEnum,
   ContentTypeFieldDto,
   ContentValueDto,
   LanguageDto,
@@ -21,9 +20,8 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
   MediaTypes,
-  TemplateTypenames,
 } from '../../../../content-management-models';
-import { Alert, DialogPosition, Typography } from '@ecdlink/ui';
+import { Alert, DialogPosition } from '@ecdlink/ui';
 import {
   BookOpenIcon,
   SaveIcon,
@@ -466,7 +464,7 @@ export default function ContentEdit({
                 )
               )}
             </div>
-            <div className="ml-4 mt-2 flex-shrink-0">
+            <div className="ml-4 flex-shrink-0">
               {!!cancelCompare && (
                 <button
                   type="button"
@@ -500,7 +498,6 @@ export default function ContentEdit({
             ) : (
               <></>
             )}
-
             <DynamicForm
               template={template}
               handleform={handleform}
@@ -515,6 +512,7 @@ export default function ContentEdit({
               useWatch={useWatch}
               contentView={contentView}
               setSmallLargeGroupsSkills={setSmallLargeGroupsSkills}
+              contentType={contentType}
             />
           </div>
 

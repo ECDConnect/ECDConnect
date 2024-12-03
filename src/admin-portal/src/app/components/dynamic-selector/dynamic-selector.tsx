@@ -22,6 +22,7 @@ export interface DynamicSelectorProps {
   setSelectedItems?: (value: string) => void;
   isSkillType?: boolean;
   choosedSectionTitle?: string;
+  subLabel?: string;
 }
 
 const storyActivitiesTypes = [
@@ -48,6 +49,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   setSelectedItems,
   isSkillType,
   choosedSectionTitle,
+  subLabel,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -177,6 +179,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
               }
             />
           )}
+          {subLabel && (
+            <Typography type={'help'} color={'textMid'} text={subLabel} />
+          )}
 
           <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
             {tableData &&
@@ -219,7 +224,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
         </div>
       );
     }
-    if (title === 'Themes') {
+    if (title === 'Themes' || title === 'Theme(s)') {
       return (
         <div>
           <Typography
@@ -231,6 +236,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
               camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
             }
           />
+          {subLabel && (
+            <Typography type={'help'} color={'textMid'} text={subLabel} />
+          )}
 
           <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
             {tableData &&

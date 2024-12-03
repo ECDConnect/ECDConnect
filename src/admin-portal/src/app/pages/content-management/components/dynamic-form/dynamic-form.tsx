@@ -16,18 +16,20 @@ import {
   ActionModal,
   DialogPosition,
   Typography,
-  Button,
   ButtonGroup,
   ButtonGroupTypes,
+  Divider,
 } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
-import { ContentForms } from '../../../../constants/content-management';
+import {
+  ContentForms,
+  ContentTypes,
+} from '../../../../constants/content-management';
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
 import { InformationCircleIcon } from '@heroicons/react/solid';
-import { useDialog } from '@ecdlink/core';
+import { ContentTypeDto, useDialog } from '@ecdlink/core';
 
 const acceptedFormats = ['svg', 'png', 'jpg', 'jpeg'];
-const accpedFormatsWithPdf = ['svg', 'png', 'jpg', 'jpeg', 'pdf'];
 const acceptedVideoFormats = ['mp4'];
 const allowedVideoFileSize = 13631488;
 
@@ -46,6 +48,7 @@ export interface DynamicFormProps {
   contentView?: ContentManagementView;
   setSmallLargeGroupsSkills?: (item: {}[]) => void;
   id?: string;
+  contentType?: ContentTypeDto;
 }
 
 const contentWrapper = '';
@@ -65,7 +68,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   contentView,
   setSmallLargeGroupsSkills,
   id,
+  contentType,
 }) => {
+  console.log('template', template);
+  console.log('choosedSectionTitle', choosedSectionTitle);
+  console.log('contentType', contentType);
   const { register, control, errors } = handleform;
 
   const dialog = useDialog();
@@ -216,6 +223,26 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         fieldAlert,
       } = field;
 
+      let placeHolder = '';
+      let subLabel = '';
+      if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+        if (propName === 'name') {
+          placeHolder = 'Give the activity a title';
+        } else if (propName === 'materials') {
+          placeHolder = 'Add materials...';
+          subLabel =
+            'List all materials the practitioner will need, sperated by a comma';
+        } else if (propName === 'description') {
+          placeHolder = 'Add instructions...';
+        } else if (propName === 'notes') {
+          placeHolder = 'Add tips...';
+          subLabel = 'Optional';
+        } else if (propName === 'subType') {
+          subLabel = 'Which story types go with this activity?';
+        } else if (propName === 'themes') {
+          subLabel = 'Optional';
+        }
+      }
       register(propName, { required: required });
 
       switch (type) {
@@ -353,6 +380,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
                   <DynamicSelector
+                    subLabel={subLabel}
                     title={isRequired ? field.title + ' *' : field.title}
                     isReview={false}
                     contentValue={field.contentValue}
@@ -371,6 +399,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div className="sm:col-span-12">
                 <FormField
                   label={isRequired ? title + ' *' : title}
+                  subLabel={subLabel}
                   nameProp={propName}
                   register={register}
                   error={
@@ -380,6 +409,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       ? requiredMessage
                       : ''
                   }
+                  placeholder={placeHolder}
                   required={isRequired}
                   validation={validation}
                 />
@@ -396,11 +426,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     field.contentValue ? field.contentValue.value : undefined
                   }
                   onStateChange={(data) => onStateChange(propName, data)}
-                  subLabel={
-                    isRequired
-                      ? 'You must add at least one content section.'
-                      : 'Optional'
-                  }
+                  subLabel={subLabel}
                 />
               </div>
               {isRequired &&
@@ -411,6 +437,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     color="errorMain"
                     text={requiredMessage}
                   />
+                )}
+              {choosedSectionTitle === ActivitiesTitles.StoryActivities &&
+                propName === 'notes' && (
+                  <Divider dividerType="dotted" className="mt-4" />
                 )}
             </div>
           );
@@ -583,6 +613,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       }`}
                     >
                       <DynamicSelector
+                        subLabel={subLabel}
                         title={isRequired ? field.title + ' *' : field.title}
                         isReview={false}
                         contentValue={
@@ -623,6 +654,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   )}
                   <div className="sm:col-span-12">
                     <DynamicSelector
+                      subLabel={subLabel}
                       title={field.title}
                       isReview={false}
                       contentValue={field.contentValue}
@@ -658,6 +690,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                 )}
                 <div className="sm:col-span-12">
                   <DynamicSelector
+                    subLabel={subLabel}
                     title={isRequired ? field.title + ' *' : field.title}
                     isReview={false}
                     contentValue={field.contentValue}
@@ -673,6 +706,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div key={propName} className={contentWrapper}>
                 <div className="sm:col-span-12">
                   <DynamicSelector
+                    subLabel={subLabel}
                     title={isRequired ? field.title + ' *' : field.title}
                     isReview={false}
                     contentValue={field.contentValue}
