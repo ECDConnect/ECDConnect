@@ -63,3 +63,4 @@ export * from './danger-sign-translation';
 export * from './setup-wizard';
 export * from './resources';
 export * from './story-book';
+export * from './activity';

@@ -30,6 +30,7 @@ import { LinksSharedResource } from './components/links-shared/links-shared-reso
 import ResourceList from './sub-pages/content-list/components/resources/resource-list';
 import StoryBookList from './sub-pages/content-list/components/create-story/story-book-list';
 import { pluralize } from '../pages.utils';
+import ActivityList from './sub-pages/content-list/components/activities/activity-list';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -489,6 +490,7 @@ export function ContentManagement() {
                     selectedType.name !== ContentTypes.RESOURCE_LINK &&
                     selectedType.name !== ContentTypes.CONNECT_ITEM &&
                     selectedType.name !== ContentTypes.STORY_BOOK &&
+                    selectedType.name !== ContentTypes.ACTIVITY &&
                     selectedType.name !==
                       ContentTypes.CLASSROOMBUSINESSRESOURCE &&
                     selectedType.name !==
@@ -532,6 +534,22 @@ export function ContentManagement() {
                     ContentTypes.CLASSROOMBUSINESSRESOURCE &&
                     !specialType && (
                       <ResourceList
+                        optionDefinitions={dataDefinitions?.contentDefinitions}
+                        contentType={selectedType}
+                        specialType={specialType}
+                        languages={languages?.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                        onSearch={search}
+                        choosedSectionTitle={choosedSectionTitle}
+                        setSelectedType={setSelectedType}
+                        dataTypes={dataTypes}
+                      />
+                    )}
+                  {selectedType?.name === ContentTypes.ACTIVITY &&
+                    !specialType && (
+                      <ActivityList
                         optionDefinitions={dataDefinitions?.contentDefinitions}
                         contentType={selectedType}
                         specialType={specialType}
