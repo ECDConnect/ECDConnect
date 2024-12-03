@@ -1,102 +1,79 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-  
-  <PropertyGroup>
-	<TargetFramework>net9.0</TargetFramework>
-	<!-- Nullable filters through to Entity Framework 7 and makes DB field FKs required -->
-	<Nullable>disable</Nullable>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <Compile Remove="Migrations\**" />
-    <Compile Remove="Tenancy\TempScripts\**" />
-    <Content Remove="Migrations\**" />
-    <Content Remove="Tenancy\TempScripts\**" />
-    <EmbeddedResource Remove="Migrations\**" />
-    <EmbeddedResource Remove="Tenancy\TempScripts\**" />
-    <None Remove="Migrations\**" />
-    <None Remove="Tenancy\TempScripts\**" />
-    <Compile Remove="Services\IntegrationService.cs" />
-    <Compile Remove="Services\Interfaces\IIntegrationService.cs" />
-    <None Remove="Middleware\" />
-    <None Remove="HtmlSanitizer" />
-    <None Remove="SQLUpgradeScripts" />
-  </ItemGroup>
-  
- 
-  <ItemGroup>    
-    <PackageReference Include="AngleSharp" Version="1.1.2" />    
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
-    
-    <PackageReference Include="DinkToPdf" Version="1.0.8" />
-    
-    <PackageReference Include="HotChocolate" Version="13.9.14" />
-    
-    <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.14" />
-    
-    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.9.14" />
-    
-    <PackageReference Include="HotChocolate.Data" Version="13.9.14" />
-    
-    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.14" />
-    
-    <PackageReference Include="HotChocolate.Execution" Version="13.9.14" />
-    
-    <PackageReference Include="HtmlToPdfConverter.Core" Version="2.0.0" />
-    
-    <PackageReference Include="MailKit" Version="4.8.0" />
-    
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-    
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.10" />
-    
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
-    <PackageReference Include="RestSharp" Version="112.1.0" />
-  </ItemGroup>
 
-  <ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<!-- Nullable filters through to Entity Framework 7 and makes DB field FKs required -->
+		<Nullable>disable</Nullable>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	</PropertyGroup>
 
-    <Reference Include="BouncyCastle.Crypto">
+	<ItemGroup>
+		<Compile Remove="Migrations\**" />
+		<Compile Remove="Tenancy\TempScripts\**" />
+		<Content Remove="Migrations\**" />
+		<Content Remove="Tenancy\TempScripts\**" />
+		<EmbeddedResource Remove="Migrations\**" />
+		<EmbeddedResource Remove="Tenancy\TempScripts\**" />
+		<None Remove="Migrations\**" />
+		<None Remove="Tenancy\TempScripts\**" />
+		<Compile Remove="Services\IntegrationService.cs" />
+		<Compile Remove="Services\Interfaces\IIntegrationService.cs" />
+		<None Remove="Middleware\" />
+		<None Remove="HtmlSanitizer" />
+		<None Remove="SQLUpgradeScripts" />
+	</ItemGroup>
 
-      <Aliases>BouncyCastleCrypto</Aliases>
 
-    </Reference>
+	<ItemGroup>
 
-    <Reference Include="BouncyCastle.Cryptography">
+		<PackageReference Include="AngleSharp" Version="1.1.2" />
 
-      <Aliases>BouncyCastleCryptography</Aliases>
+		<PackageReference Include="DinkToPdf" Version="1.0.8" />
 
-    </Reference>
+		<PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />
 
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
-    <ProjectReference Include="..\ECDLink.PostgresTenancy\ECDLink.PostgresTenancy.csproj" />
-    <ProjectReference Include="..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
-    <ProjectReference Include="..\Jobs\ECDLink.AutomatedJobs\ECDLink.AutomatedJobs.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\DataAccess\ECDLink.ContentManagement\ECDLink.ContentManagement.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.Core\ECDLink.Core.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.Development\ECDLink.Development.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.GraphQL\ECDLink.EGraphQL.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.Notifications\ECDLink.Notifications.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.PDFGenerator\ECDLink.PDFGenerator.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.Security\ECDLink.Security.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
-    <ProjectReference Include="..\ECDLink.Moodle\ECDLink.Moodle.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Middleware\" />
-  </ItemGroup>
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>
-  
+		<PackageReference Include="HtmlToPdfConverter.Core" Version="2.0.0" />
+
+		<PackageReference Include="MailKit" Version="3.5.0" />
+
+		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.0" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
+		<ProjectReference Include="..\ECDLink.PostgresTenancy\ECDLink.PostgresTenancy.csproj" />
+		<ProjectReference Include="..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
+		<ProjectReference Include="..\Jobs\ECDLink.AutomatedJobs\ECDLink.AutomatedJobs.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\DataAccess\ECDLink.ContentManagement\ECDLink.ContentManagement.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.Core\ECDLink.Core.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.Development\ECDLink.Development.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.GraphQL\ECDLink.EGraphQL.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.Notifications\ECDLink.Notifications.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.PDFGenerator\ECDLink.PDFGenerator.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.Security\ECDLink.Security.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
+		<ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
+		<ProjectReference Include="..\ECDLink.Moodle\ECDLink.Moodle.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Middleware\" />
+	</ItemGroup>
+	<ProjectExtensions>
+		<VisualStudio>
+			<UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" />
+		</VisualStudio>
+	</ProjectExtensions>
+
 </Project>
