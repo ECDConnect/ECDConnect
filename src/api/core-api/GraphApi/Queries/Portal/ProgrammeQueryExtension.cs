@@ -247,7 +247,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 }
                 else
                 {
-                    var filteredRecords = new List<StoryBookViewModel>();
+                    var filteredRecords = new List<ActivityViewModel>();
 
                     if (!string.IsNullOrEmpty(search))
                     {
