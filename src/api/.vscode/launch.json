@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/core-api/bin/Debug/net9.0/EcdLink.Api.CoreApi.dll",
+            "program": "${workspaceFolder}/core-api/bin/Debug/net7.0/EcdLink.Api.CoreApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/core-api",
             "stopAtEntry": false,
