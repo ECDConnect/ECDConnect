@@ -2,6 +2,7 @@ import { gql } from '@apollo/client';
 
 export const GetActivityRecords = gql`
   query GetActivityRecords(
+    $isStoryActivity: Boolean!
     $search: String
     $typesSearch: [String]
     $themesSearch: [String]
@@ -12,6 +13,7 @@ export const GetActivityRecords = gql`
     $pagingInput: PagedQueryInput
   ) {
     activityRecords(
+      isStoryActivity: $isStoryActivity
       search: $search
       typesSearch: $typesSearch
       themesSearch: $themesSearch
@@ -27,6 +29,7 @@ export const GetActivityRecords = gql`
       description
       notes
       subType
+      type
       themes
       shareContent
       availableLanguages

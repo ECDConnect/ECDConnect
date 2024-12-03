@@ -1,15 +1,10 @@
-export enum StoryBookTypeOptions {
+export enum ActivityTypeOptions {
   ReadAloud = 'Read aloud',
   StoryBook = 'Story book',
   Other = 'Other',
 }
 
-export enum StoryBookThemeOptions {
-  Nature = 'Nature',
-  NoTheme = 'No theme',
-}
-
-export enum StoryBookShareOptions {
+export enum ActivityShareOptions {
   Yes = 'Yes',
   No = 'No',
   NA = 'N/A',
