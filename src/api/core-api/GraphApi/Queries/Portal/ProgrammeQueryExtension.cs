@@ -280,7 +280,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         foreach (var record in records)
                         {
-                            if (typesSearch.Contains(record.Type))
+                            if (typesSearch.Contains(record.SubType))
                             {
                                 filteredRecords.Add(record);
                             }
