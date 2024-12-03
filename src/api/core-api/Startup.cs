@@ -53,6 +53,54 @@ using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace EcdLink.Api.CoreApi
 {
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.HttpLogging;
+    using System;
+    using System.Threading.Tasks;
+
+    public static class MaintainCorsExtension
+    {
+        public static IApplicationBuilder MaintainCorsHeadersOnError(this IApplicationBuilder builder)
+        {
+            return builder.Use(async (httpContext, next) =>
+            {
+                string timestamp = DateTime.Now.Ticks.ToString();
+                string path = httpContext.Request.Path;
+                string origin = httpContext.Request.Headers.Origin;
+                Console.WriteLine("{0}: {1} {2}", timestamp, path, origin);
+                //var corsHeaders = new HeaderDictionary();
+                //foreach (var pair in httpContext.Response.Headers)
+                //{
+                //    if (!pair.Key.StartsWith("access-control-", StringComparison.InvariantCultureIgnoreCase)) { continue; }
+                //    corsHeaders[pair.Key] = pair.Value;
+                //}
+
+                httpContext.Response.OnStarting(o => {
+                    var ctx = (HttpContext)o;
+                    var headers = ctx.Response.Headers;
+                    Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
+                    //ctx.Response.Headers.AccessControlAllowOrigin = origin;
+                    //Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
+                    //foreach (var pair in corsHeaders)
+                    //{
+                    //    if (headers.ContainsKey(pair.Key))
+                    //    {
+                    //        headers[pair.Key] = pair.Value;
+                    //    }
+                    //    else
+                    //    {
+                    //        headers.Add(pair.Key, pair.Value);
+                    //    }
+                    //}
+                    return Task.CompletedTask;
+                }, httpContext);
+
+                await next();
+            });
+        }
+    }
+
     public partial class Startup
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
@@ -98,6 +146,16 @@ namespace EcdLink.Api.CoreApi
                             .WithOrigins(corsAllowedDomains)
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
+
+            //services.AddHttpLogging(logging =>
+            //{
+            //    logging.LoggingFields = HttpLoggingFields.All;
+            //    logging.RequestHeaders.Add("Origin");
+            //    logging.ResponseHeaders.Add("Access-Control-Allow-Origin");
+            //    logging.MediaTypeOptions.AddText("application/javascript");
+            //    logging.RequestBodyLogLimit = 4096;
+            //    logging.ResponseBodyLogLimit = 4096;
+            //});
 
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
@@ -211,8 +269,9 @@ namespace EcdLink.Api.CoreApi
                 app.UseDeveloperExceptionPage();
             }
 
+            //app.UseHttpLogging();
+            //app.MaintainCorsHeadersOnError();
             app.UseCors("CorsPolicy");
-
             app.UseCookiePolicy();
             app.UseRouting();
             app.UseAuthentication();

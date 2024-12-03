@@ -9,7 +9,6 @@ using ECDLink.EGraphQL.Interceptors;
 using ECDLink.EGraphQL.ObjectTypes.Input;
 using ECDLink.EGraphQL.Registration;
 using ECDLink.EGraphQL.Registration.Modules;
-using ECDLink.PostgresTenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Builder;
@@ -47,7 +46,6 @@ namespace ECDLink.EGraphQL
               .AddFiltering()
               .AddSorting()
               .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
-              .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Synchronized)
               .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
               .RegisterService<ApplicationUserManager>(ServiceKind.Synchronized)
