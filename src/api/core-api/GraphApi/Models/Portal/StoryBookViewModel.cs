@@ -1,4 +1,8 @@
-﻿namespace EcdLink.Api.CoreApi.GraphApi.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class StoryBookViewModel
     {

@@ -1,4 +1,8 @@
-﻿namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
 {
     public class ActivityViewModel
     {
@@ -12,8 +16,8 @@
         public string Themes { get; set; }
         public string ShareContent { get; set; }
         public Guid LocaleId { get; set; }
-        public DateTime UpdatedDate { get; set; }
-        public DateTime InsertedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+        public DateTime? InsertedDate { get; set; }
         public List<Guid> AvailableLanguages { get; set; }
 
 
