@@ -291,6 +291,24 @@ export type ActivityMeetRegularDetail = {
   points: Scalars['Int'];
 };
 
+export type ActivityViewModel = {
+  __typename?: 'ActivityViewModel';
+  availableLanguages?: Maybe<Array<Scalars['UUID']>>;
+  description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  insertedDate?: Maybe<Scalars['DateTime']>;
+  localeId: Scalars['UUID'];
+  materials?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  notes?: Maybe<Scalars['String']>;
+  shareContent?: Maybe<Scalars['String']>;
+  subCategories?: Maybe<Scalars['String']>;
+  subType?: Maybe<Scalars['String']>;
+  themes?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  updatedDate?: Maybe<Scalars['DateTime']>;
+};
+
 export type AddBreastFeedingClubInputModelInput = {
   clients?: InputMaybe<Array<Scalars['UUID']>>;
   clientsAttendedConfirmed: Scalars['Boolean'];
@@ -7383,6 +7401,7 @@ export type Mutation = {
   bulkUpdateConsentImages: Scalars['Boolean'];
   bulkUpdateProgressTrackingCategoryImages: Scalars['Boolean'];
   bulkUpdateProgressTrackingSubCategoryImages: Scalars['Boolean'];
+  bulkUpdateStoryBookThemes: Scalars['Boolean'];
   cancelCalendarEvent?: Maybe<CalendarEvent>;
   cancelCommunityRequest?: Maybe<CommunityProfileConnection>;
   cancelRemovalFromProgramme: Scalars['Boolean'];
@@ -8251,6 +8270,13 @@ export type MutationBulkUpdateProgressTrackingSubCategoryImagesArgs = {
   contentTypeId: Scalars['Int'];
   imageUrl?: InputMaybe<Scalars['String']>;
   localeId: Scalars['UUID'];
+};
+
+export type MutationBulkUpdateStoryBookThemesArgs = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  localeId: Scalars['UUID'];
+  themeIds?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCancelCalendarEventArgs = {
@@ -13875,6 +13901,7 @@ export type Query = {
   activityHostFamilyDetails?: Maybe<ActivityHostFamilyDays>;
   activityLeaveNoOneBehindDetails?: Maybe<ActivityLeaveNoOneBehind>;
   activityMeetRegularDetails?: Maybe<ActivityMeetRegular>;
+  activityRecords?: Maybe<Array<Maybe<ActivityViewModel>>>;
   allCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiverByPractitioner?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiversForHCW?: Maybe<Array<Maybe<Caregiver>>>;
@@ -14095,6 +14122,7 @@ export type Query = {
   currentUserCompletedTrainingCourses?: Maybe<Array<Maybe<UserTrainingCourse>>>;
   dangerSignTranslations?: Maybe<Array<Maybe<DangerSignTranslation>>>;
   defaultSettingsForTenant?: Maybe<Scalars['String']>;
+  deleteMultipleActivities?: Maybe<BulkDeactivateResult>;
   deleteMultipleStoryBooks?: Maybe<BulkDeactivateResult>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   districtsAndStats?: Maybe<Array<Maybe<DistrictStatsModel>>>;
@@ -15942,6 +15970,18 @@ export type QueryActivityMeetRegularDetailsArgs = {
   year: Scalars['Int'];
 };
 
+export type QueryActivityRecordsArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  isStoryActivity: Scalars['Boolean'];
+  languageSearch?: InputMaybe<Array<Scalars['UUID']>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  search?: InputMaybe<Scalars['String']>;
+  shareContent?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  themesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  typesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
 export type QueryAllCaregiverByPractitionerArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
 };
@@ -16963,6 +17003,10 @@ export type QueryCountWorkflowStatusTypeArgs = {
 export type QueryDangerSignTranslationsArgs = {
   section?: InputMaybe<Scalars['String']>;
   toTranslate?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryDeleteMultipleActivitiesArgs = {
+  contentIds?: InputMaybe<Array<Scalars['Int']>>;
 };
 
 export type QueryDeleteMultipleStoryBooksArgs = {

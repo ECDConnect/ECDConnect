@@ -11,6 +11,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public string Materials { get; set; }
         public string Description { get; set; }
         public string Notes { get; set; }
+        public string Type { get; set; }
         public string SubType { get; set; }
         public string SubCategories { get; set; }
         public string Themes { get; set; }
@@ -30,6 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             item.TryGetValue("description", out var description);
             item.TryGetValue("notes", out var notes);
             item.TryGetValue("subType", out var subType);
+            item.TryGetValue("type", out var type);
             item.TryGetValue("subCategories", out var subCategories);
             item.TryGetValue("themes", out var themes);
             item.TryGetValue("shareContent", out var shareContent);
@@ -43,6 +45,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             Description = description != null ? description.ToString() : "";
             Notes = notes != null ? notes.ToString() : "";
             SubType = subType != null ? subType.ToString() : "";
+            Type = type != null ? type.ToString() : "";
             SubCategories = subCategories != null ? subCategories.ToString() : "";
             LocaleId = localeId;
             Themes = themes != null ? themes.ToString() : "";
