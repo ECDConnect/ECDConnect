@@ -1,4 +1,3 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -8,6 +7,12 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using HotChocolate;
+using HotChocolate.Types;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
