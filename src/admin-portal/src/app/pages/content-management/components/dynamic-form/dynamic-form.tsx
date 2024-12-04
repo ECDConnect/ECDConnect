@@ -70,9 +70,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   id,
   contentType,
 }) => {
-  console.log('template', template);
-  console.log('choosedSectionTitle', choosedSectionTitle);
-  console.log('contentType', contentType);
   const { register, control, errors } = handleform;
 
   const dialog = useDialog();
@@ -548,6 +545,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             const englishCatValues = contentView?.content?.[propName]
               ?.map((item) => item?.id)
               .toString();
+
             let subCategoriesValue = template?.fields.find(
               (item) => item?.propName === propName
             );

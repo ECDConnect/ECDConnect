@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useMutation, useLazyQuery } from '@apollo/client';
+import { useMutation, useLazyQuery, gql, useQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
@@ -28,7 +28,6 @@ import {
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import {
   StoryBookTypeOptions,
-  StoryBookThemeOptions,
   StoryBookShareOptions,
 } from './story-book.types';
 
@@ -50,15 +49,6 @@ export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   StoryBookTypeOptions?.StoryBook,
   StoryBookTypeOptions?.ReadAloud,
   StoryBookTypeOptions?.Other,
-].map((item) => ({
-  id: item,
-  label: item,
-  value: item,
-}));
-
-export const sortByThemeOptions: SearchDropDownOption<string>[] = [
-  StoryBookThemeOptions?.Nature,
-  StoryBookThemeOptions?.NoTheme,
 ].map((item) => ({
   id: item,
   label: item,
@@ -98,6 +88,44 @@ export default function StoryBookList({
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
+
+  const [sortByThemeOptions, setSortByThemeOptions] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const [themes, setThemes] = useState<any[]>([]);
+
+  const getAllTheme = `GetAllTheme`;
+  const query = gql` 
+    query ${getAllTheme} ($localeId: String) {
+      ${getAllTheme} (localeId: $localeId) {
+        id
+        name
+        }
+      }
+  `;
+
+  const { data: themeData } = useQuery(query, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: LanguageId.enZa,
+    },
+  });
+
+  useEffect(() => {
+    if (themeData && themeData.GetAllTheme) {
+      setThemes(themeData.GetAllTheme);
+
+      const copyItems = themeData.GetAllTheme.map((item: any) => ({
+        ...item,
+        id: item?.id,
+        label: item?.name,
+        value: item?.id,
+      }));
+      copyItems.push({ id: 0, label: 'No theme', value: 0 });
+
+      setSortByThemeOptions(copyItems);
+    }
+  }, [themeData]);
 
   // Filter options
   // ---------

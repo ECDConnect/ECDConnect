@@ -296,6 +296,7 @@ export type ActivityViewModel = {
   availableLanguages?: Maybe<Array<Scalars['UUID']>>;
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  image?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
   localeId: Scalars['UUID'];
   materials?: Maybe<Scalars['String']>;
@@ -303,7 +304,10 @@ export type ActivityViewModel = {
   notes?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
   subCategories?: Maybe<Scalars['String']>;
+  subCategoryItems?: Maybe<Array<Maybe<SubCategoryViewModel>>>;
   subType?: Maybe<Scalars['String']>;
+  subTypeItems?: Maybe<Array<Maybe<Scalars['String']>>>;
+  themeItems?: Maybe<Array<Scalars['Int']>>;
   themes?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['DateTime']>;
@@ -15976,8 +15980,10 @@ export type QueryActivityRecordsArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  skillSearch?: InputMaybe<Array<Scalars['Int']>>;
   startDate?: InputMaybe<Scalars['DateTime']>;
-  themesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  subTypesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  themesSearch?: InputMaybe<Array<Scalars['Int']>>;
   typesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -17417,7 +17423,7 @@ export type QueryStoryBookRecordsArgs = {
   search?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   startDate?: InputMaybe<Scalars['DateTime']>;
-  themesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  themesSearch?: InputMaybe<Array<Scalars['Int']>>;
   typesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -18901,6 +18907,7 @@ export type StoryBookViewModel = {
   name?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
   storyBookParts?: Maybe<Scalars['String']>;
+  themeItems?: Maybe<Array<Scalars['Int']>>;
   themes?: Maybe<Scalars['String']>;
   translator?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
@@ -18927,6 +18934,14 @@ export type SubCategorySkillModelInput = {
   id?: InputMaybe<Scalars['String']>;
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+};
+
+export type SubCategoryViewModel = {
+  __typename?: 'SubCategoryViewModel';
+  id?: Maybe<Scalars['String']>;
+  imageHexColor?: Maybe<Scalars['String']>;
+  imageUrl?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
 };
 
 export type SubDistrict = {

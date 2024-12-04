@@ -23,6 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public string BookLocationLink { get; set; }
         public string Keywords { get; set; }
         public string StoryBookParts { get; set; }
+        public List<int> ThemeItems { get; set; }
 
         public StoryBookViewModel(Object record, Guid localeId) {
 
@@ -59,6 +60,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             UpdatedDate = updatedDate != null ? DateTime.Parse(updatedDate.ToString()) : null;
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
             AvailableLanguages = availableLanguages != null ? (availableLanguages as string).Split(",").Select(i => new Guid(i)).ToList() : new List<Guid>();
+            ThemeItems = themes != null ? themes.ToString().Split(",").Where(x => x != "").Select(x => Int32.Parse(x)).ToList() : new List<int>();
         }
     }
 }

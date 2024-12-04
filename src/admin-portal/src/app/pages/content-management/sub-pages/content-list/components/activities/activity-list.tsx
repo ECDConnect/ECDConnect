@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useMutation, useLazyQuery, gql, useQuery } from '@apollo/client';
+import { useMutation, gql, useQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
@@ -16,14 +16,20 @@ import {
   ContentManagementView,
   FieldType,
 } from '../../../../content-management-models';
-// import { useResources } from '../../../../../../hooks/useResources';
 import { LanguageId } from '../../../../../../constants/language';
-import { ContentTypes } from '../../../../../../constants/content-management';
+import {
+  ActivityTypes,
+  ContentTypes,
+} from '../../../../../../constants/content-management';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
 import debounce from 'lodash.debounce';
 import { DeleteMultipleActivities, GetActivityRecords } from '@ecdlink/graphql';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
-import { ActivityTypeOptions, ActivityShareOptions } from './activity.types';
+import {
+  ActivitySubTypeOptions,
+  ActivityShareOptions,
+  ActivityTypeOptions,
+} from './activity.types';
 
 export interface ActivityListProps {
   selectedTab?: number;
@@ -38,11 +44,21 @@ export interface ActivityListProps {
   setSelectedType?: (item: ContentTypeDto) => void;
   dataTypes?: any;
 }
+// Story activities
+export const sortBySubTypeOptions: SearchDropDownOption<string>[] = [
+  ActivitySubTypeOptions?.StoryBook,
+  ActivitySubTypeOptions?.ReadAloud,
+  ActivitySubTypeOptions?.Other,
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
+// Small and Large groups
 export const sortByTypeOptions: SearchDropDownOption<string>[] = [
-  ActivityTypeOptions?.StoryBook,
-  ActivityTypeOptions?.ReadAloud,
-  ActivityTypeOptions?.Other,
+  ActivityTypeOptions?.SmallGroup,
+  ActivityTypeOptions?.LargeGroup,
 ].map((item) => ({
   id: item,
   label: item,
@@ -78,8 +94,6 @@ export default function ActivityList({
     })
   );
 
-  console.log('choosedSectionTitle', choosedSectionTitle);
-
   const [sortByThemeOptions, setSortByThemeOptions] = useState<
     SearchDropDownOption<string>[]
   >([]);
@@ -102,19 +116,55 @@ export default function ActivityList({
     },
   });
 
+  const [sortBySkillOptions, setSortBySkillOptions] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+
+  const getAllSkills = `GetAllProgressTrackingSubCategory`;
+  const skillQuery = gql` 
+    query ${getAllSkills} ($localeId: String) {
+      ${getAllSkills} (localeId: $localeId) {
+        id
+        name
+        }
+      }
+  `;
+
+  const { data: skillData } = useQuery(skillQuery, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: LanguageId.enZa,
+    },
+  });
+
+  useEffect(() => {
+    if (skillData && skillData.GetAllProgressTrackingSubCategory) {
+      const copyItems = skillData.GetAllProgressTrackingSubCategory.map(
+        (item: any) => ({
+          ...item,
+          id: item?.id,
+          label: item?.name,
+          value: item?.id,
+        })
+      );
+
+      setSortBySkillOptions(copyItems);
+    }
+  }, [skillData]);
+
   useEffect(() => {
     if (themeData && themeData.GetAllTheme) {
-      setThemes(themeData.getAllTheme);
+      setThemes(themeData.GetAllTheme);
 
-      // const copyItems = themeData.getAllTheme.map((item: any) => ({
-      //   ...item,
-      //   id: item?.id,
-      //   label: item?.name,
-      //   value: item?.id,
-      // }));
-      // copyItems.push({id: 'No theme', label: 'No theme', value: 'No theme'});
+      const copyItems = themeData.GetAllTheme.map((item: any) => ({
+        ...item,
+        id: item?.id,
+        label: item?.name,
+        value: item?.id,
+      }));
+      copyItems.push({ id: 0, label: 'No theme', value: 0 });
 
-      // setSortByThemeOptions(copyItems);
+      setSortByThemeOptions(copyItems);
     }
   }, [themeData]);
 
@@ -125,6 +175,14 @@ export default function ActivityList({
 
   // Filter options
   // ---------
+  const [subTypesFilter, setSubTypesFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredSubTypes = useMemo(
+    () => subTypesFilter?.map((item) => item?.value),
+    [subTypesFilter]
+  );
+  // ---------
   const [typesFilter, setTypesFilter] = useState<
     SearchDropDownOption<string>[]
   >([]);
@@ -132,6 +190,7 @@ export default function ActivityList({
     () => typesFilter?.map((item) => item?.value),
     [typesFilter]
   );
+
   // ---------
   const [themesFilter, setThemesFilter] = useState<
     SearchDropDownOption<string>[]
@@ -155,6 +214,14 @@ export default function ActivityList({
   const filteredLanguage = useMemo(
     () => languageFilter?.map((item) => item?.value),
     [languageFilter]
+  );
+  // ---------
+  const [skillsFilter, setSkillsFilter] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const filteredSkills = useMemo(
+    () => skillsFilter?.map((item) => item?.value),
+    [skillsFilter]
   );
 
   const [filterDateAdded, setFilterDateAdded] = useState(false);
@@ -208,42 +275,80 @@ export default function ActivityList({
       });
 
       if (contentType.name === ContentTypes.ACTIVITY) {
-        const resourceFields = displayFields?.filter(
-          (item) =>
-            item?.fieldName === 'name' ||
-            item?.fieldName === 'subType' ||
-            item?.fieldName === 'themes' ||
-            item?.fieldName === 'languages' ||
-            item?.fieldName === 'updatedDate'
-        );
-
-        const resourceItems = resourceFields
-          .map((item: any) => ({
-            ...item,
-            displayName:
-              item.fieldName === 'name'
-                ? 'Activity title'
-                : item.fieldName === 'subType'
-                ? 'For story type(s)'
-                : item.displayName,
-            fieldOrder:
-              item.fieldName === 'name'
-                ? 1
-                : item.fieldName === 'subType'
-                ? 2
-                : item.fieldName === 'themes'
-                ? 3
-                : item.fieldName === 'languages'
-                ? 4
-                : item.fieldName === 'updatedDate'
-                ? 4
-                : item.fieldOrder,
-          }))
-          .sort(function (a, b) {
-            return a.fieldOrder - b.fieldOrder;
-          });
-
-        setDisplayFields(resourceItems);
+        const activityFields =
+          choosedSectionTitle === ActivityTypes.STORY_ACTIVITIES
+            ? displayFields?.filter(
+                (item) =>
+                  item?.fieldName === 'name' ||
+                  item?.fieldName === 'subType' ||
+                  item?.fieldName === 'themes' ||
+                  item?.fieldName === 'languages' ||
+                  item?.fieldName === 'updatedDate'
+              )
+            : displayFields?.filter(
+                (item) =>
+                  item?.fieldName === 'name' ||
+                  item?.fieldName === 'type' ||
+                  item?.fieldName === 'themes' ||
+                  item?.fieldName === 'languages' ||
+                  item?.fieldName === 'subCategories' ||
+                  item?.fieldName === 'updatedDate'
+              );
+        const activityItems =
+          choosedSectionTitle === ActivityTypes.STORY_ACTIVITIES
+            ? activityFields
+                .map((item: any) => ({
+                  ...item,
+                  displayName:
+                    item.fieldName === 'name'
+                      ? 'Activity title'
+                      : item.fieldName === 'subType'
+                      ? 'For story type(s)'
+                      : item.displayName,
+                  fieldOrder:
+                    item.fieldName === 'name'
+                      ? 1
+                      : item.fieldName === 'subType'
+                      ? 2
+                      : item.fieldName === 'themes'
+                      ? 3
+                      : item.fieldName === 'languages'
+                      ? 4
+                      : item.fieldName === 'updatedDate'
+                      ? 5
+                      : item.fieldOrder,
+                }))
+                .sort(function (a, b) {
+                  return a.fieldOrder - b.fieldOrder;
+                })
+            : activityFields
+                .map((item: any) => ({
+                  ...item,
+                  displayName:
+                    item.fieldName === 'name'
+                      ? 'Activity title'
+                      : item.fieldName === 'type'
+                      ? 'Type'
+                      : item.displayName,
+                  fieldOrder:
+                    item.fieldName === 'name'
+                      ? 1
+                      : item.fieldName === 'type'
+                      ? 2
+                      : item.fieldName === 'themes'
+                      ? 3
+                      : item.fieldName === 'languages'
+                      ? 4
+                      : item.fieldName === 'subCategories'
+                      ? 5
+                      : item.fieldName === 'updatedDate'
+                      ? 6
+                      : item.fieldOrder,
+                }))
+                .sort(function (a, b) {
+                  return a.fieldOrder - b.fieldOrder;
+                });
+        setDisplayFields(activityItems);
         return;
       }
 
@@ -253,11 +358,13 @@ export default function ActivityList({
 
   const queryVariables = useMemo(
     () => ({
-      isStoryActivity: choosedSectionTitle === 'Story activities',
+      isStoryActivity: choosedSectionTitle === ActivityTypes.STORY_ACTIVITIES,
       search: '',
+      subTypesSearch: filteredSubTypes,
       typesSearch: filteredTypes,
       themesSearch: filteredThemes,
       languageSearch: filteredLanguage,
+      skillSearch: filteredSkills,
       startDate: startDate === '' ? null : startDate,
       endDate: endDate === '' ? null : endDate,
       shareContent: filteredShare,
@@ -268,19 +375,22 @@ export default function ActivityList({
     }),
     [
       choosedSectionTitle,
+      filteredSubTypes,
       filteredTypes,
       filteredThemes,
       filteredLanguage,
+      filteredSkills,
       startDate,
       endDate,
       filteredShare,
     ]
   );
 
-  const [
-    fetchActivities,
-    { data: activityData, refetch: refetchContent, loading: loadingContent },
-  ] = useLazyQuery(GetActivityRecords, {
+  const {
+    data: activityData,
+    refetch: refetchContent,
+    loading: loadingContent,
+  } = useQuery(GetActivityRecords, {
     fetchPolicy: 'network-only',
     variables: queryVariables,
   });
@@ -294,7 +404,7 @@ export default function ActivityList({
       setTableData(copyItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activityData, selectedTab]);
+  }, [activityData]);
 
   useEffect(() => {
     if (languages) {
@@ -323,16 +433,18 @@ export default function ActivityList({
       const copyItem = {
         __typename: ContentTypes.ACTIVITY,
         id: +item.id,
-        name: item.name,
-        subType: item.subType,
-        materials: item.materials,
-        description: item.description,
-        notes: item.notes,
+        name: item?.name,
+        subType: item?.subType,
+        materials: item?.materials,
+        description: item?.description,
+        notes: item?.notes,
         availableLanguages: itemLanguages,
-        shareContent: item.shareContent,
-        themes: item.themes,
+        shareContent: item?.shareContent,
+        themes: item?.themes.split(','),
+        type: item?.type,
+        subCategories: item?.subCategories.split(','),
+        image: item?.image,
       };
-
       model.content = copyItem;
     }
     viewContent(model);
@@ -364,47 +476,55 @@ export default function ActivityList({
     (obj) => obj?.isActive === false
   );
 
-  const getChipColor = (type?: string) => {
-    if (type) {
-      switch (type) {
-        case ActivityTypeOptions?.StoryBook:
-          return 'bg-primary';
-        case ActivityTypeOptions?.ReadAloud:
-          return 'bg-secondary';
-        default:
-          return 'bg-infoMain';
-      }
-    } else {
-      return 'bg-infoMain';
-    }
-  };
-
   const rows: Irow[] =
     (!!searchValue ? filterByValue(tableData, searchValue) : tableData)?.map(
       (item) => ({
         ...item,
         key: `activity_` + item?.id,
         name: item?.name,
-        themes: item?.themes,
+        themeComponent: (
+          <div className="ml-0 flex cursor-pointer flex-row items-center">
+            {item?.themes.split(',')?.map((item: any, index: number) => {
+              const theme = themes?.find((theme) => theme?.id === item);
+              return (
+                <div
+                  key={`theme_` + index}
+                  className={'text-textMid m-1 rounded-full py-1'}
+                >
+                  {theme?.name}
+                </div>
+              );
+            })}
+          </div>
+        ),
         updatedDate: item?.updatedDate
           ? format(new Date(item.updatedDate), 'dd/MM/yyyy')
           : '-',
         subTypeComponent: (
-          <div className="ml-0 flex cursor-pointer items-center">
-            <div
-              key={`subType_` + item?.id}
-              className={
-                `${getChipColor(item?.subType)}` +
-                ' m-1 rounded-full py-1 px-3 text-xs text-white'
-              }
-            >
-              {item?.subType}
-            </div>
+          <div className="ml-1 flex cursor-pointer gap-1">
+            {item?.subTypeItems.map((sub, index) => {
+              return (
+                <div
+                  key={'sb_' + index}
+                  className={`${
+                    sub.toString().toLowerCase() ===
+                    ActivitySubTypeOptions.StoryBook.toLowerCase()
+                      ? 'bg-secondary'
+                      : sub.toString().toLowerCase() ===
+                        ActivitySubTypeOptions.ReadAloud.toLowerCase()
+                      ? 'bg-darkBlue'
+                      : 'bg-successMain'
+                  } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+                >
+                  <span className="text-xs">{sub.toString()}</span>
+                </div>
+              );
+            })}
           </div>
         ),
         languageComponent: (
           <div className="ml-0 flex cursor-pointer flex-row items-center">
-            {item.availableLanguages?.map((item: any, index: number) => {
+            {item?.availableLanguages?.map((item: any, index: number) => {
               const language = languages?.find(
                 (language) =>
                   language?.id === item.availableLanguages?.id ||
@@ -415,7 +535,7 @@ export default function ActivityList({
                   key={`language_` + index}
                   className={' text-textMid m-1 rounded-full py-1 text-xs'}
                 >
-                  {index === item.availableLanguages?.length - 1
+                  {index === item?.availableLanguages?.length - 1
                     ? `${language?.locale}`
                     : `${language?.locale};`}
                 </div>
@@ -423,35 +543,97 @@ export default function ActivityList({
             })}
           </div>
         ),
+        typeComponent:
+          item?.type === 'Small group' ? (
+            <div className="ml-1 flex cursor-pointer">
+              <div className="bg-darkBlue inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+                <span>{item?.type}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="ml-1 flex cursor-pointer">
+              <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+                <span>{item?.type}</span>
+              </div>
+            </div>
+          ),
+        skillComponent: (
+          <div className="ml-0 flex cursor-pointer flex-row items-center">
+            {item.subCategoryItems?.map((item: any, index: number) => (
+              <div key={`cat_` + index} className="flex cursor-pointer">
+                <div
+                  className={`${
+                    item?.imageHexColor ? '' : 'bg-tertiary'
+                  } flex h-9 w-9 items-center rounded-full`}
+                >
+                  <img
+                    alt="skill"
+                    src={item?.imageUrl}
+                    className="h-6 w-6 object-contain"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ),
       })
     ) ?? [];
 
-  const columns: Icolumn[] = [
-    {
-      field: 'name',
-      use: 'Activity title',
-    },
-    {
-      field: 'typeComponent',
-      use: 'For story type(s)',
-    },
-    {
-      field: 'themes',
-      use: 'Themes',
-    },
-    {
-      field: 'languageComponent',
-      use: 'Languages',
-    },
-    {
-      field: 'updatedDate',
-      use: 'Last updated',
-    },
-  ];
+  const columns: Icolumn[] =
+    choosedSectionTitle === ActivityTypes.STORY_ACTIVITIES
+      ? [
+          {
+            field: 'name',
+            use: 'Activity title',
+          },
+          {
+            field: 'subTypeComponent',
+            use: 'For story type(s)',
+          },
+          {
+            field: 'themeComponent',
+            use: 'Themes',
+          },
+          {
+            field: 'languageComponent',
+            use: 'Languages',
+          },
+          {
+            field: 'updatedDate',
+            use: 'Last updated',
+          },
+        ]
+      : [
+          {
+            field: 'name',
+            use: 'Activity title',
+          },
+          {
+            field: 'typeComponent',
+            use: 'Type',
+          },
+          {
+            field: 'themeComponent',
+            use: 'Themes',
+          },
+          {
+            field: 'languageComponent',
+            use: 'Languages',
+          },
+          {
+            field: 'skillComponent',
+            use: 'Skills',
+          },
+          {
+            field: 'updatedDate',
+            use: 'Last updated',
+          },
+        ];
 
   const clearFilters = () => {
     setStartDate('');
     setEndDate('');
+    setSubTypesFilter([]);
     setTypesFilter([]);
     setThemesFilter([]);
     setLanguageFilter([]);
@@ -459,13 +641,20 @@ export default function ActivityList({
   };
 
   const isFilterActive =
-    !!typesFilter?.length ||
-    !!themesFilter?.length ||
-    !!languageFilter?.length ||
-    !!shareFilter?.length ||
-    !!startDate ||
-    !!endDate;
-
+    choosedSectionTitle === ActivityTypes.STORY_ACTIVITIES
+      ? !!subTypesFilter?.length ||
+        !!themesFilter?.length ||
+        !!languageFilter?.length ||
+        !!shareFilter?.length ||
+        !!startDate ||
+        !!endDate
+      : !!typesFilter?.length ||
+        !!themesFilter?.length ||
+        !!languageFilter?.length ||
+        !!skillsFilter?.length ||
+        !!shareFilter?.length ||
+        !!startDate ||
+        !!endDate;
   const noContentText = useMemo(() => {
     if (isFilterActive) {
       return 'No results found. Try changing the filters selected';
@@ -595,66 +784,139 @@ export default function ActivityList({
                 onClick: handleBulkDelete,
               },
             ]}
-            filters={[
-              {
-                type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
-                options: sortByTypeOptions,
-                selectedOptions: typesFilter,
-                onChange: setTypesFilter,
-                placeholder: 'Type',
-                multiple: true,
-                info: { name: 'Type :' },
-              },
-              {
-                type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
-                options: sortByThemeOptions,
-                selectedOptions: themesFilter,
-                onChange: setThemesFilter,
-                placeholder: 'Theme',
-                multiple: true,
-                info: { name: 'Theme :' },
-              },
-              {
-                type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
-                options: sortByLanguageOptions,
-                selectedOptions: languageFilter,
-                onChange: setLanguageFilter,
-                placeholder: 'Languages',
-                multiple: true,
-                info: { name: 'Languages :' },
-              },
-              {
-                type: 'search-dropdown',
-                menuItemClassName: 'ml-20 w-11/12',
-                options: sortByShareOptions,
-                selectedOptions: shareFilter,
-                onChange: setShareFilter,
-                placeholder: 'Shared with others',
-                multiple: false,
-                info: { name: 'Shared with others:' },
-              },
-              {
-                dateFormat: 'd MMM yyyy',
-                className: 'w-64 h-11 mt-1 border-2 border-transparent',
-                isFullWidth: false,
-                colour: !!startDate ? 'secondary' : 'adminPortalBg',
-                textColour: !!startDate ? 'white' : 'textMid',
-                placeholderText: 'Date inserted',
-                type: 'date-picker',
-                showChevronIcon: true,
-                chevronIconColour: !!startDate ? 'white' : 'primary',
-                hideCalendarIcon: true,
-                selected: startDate,
-                onChange,
-                startDate,
-                endDate,
-                selectsRange: true,
-                shouldCloseOnSelect: true,
-              },
-            ]}
+            filters={
+              choosedSectionTitle === ActivityTypes.STORY_ACTIVITIES
+                ? [
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortBySubTypeOptions,
+                      selectedOptions: subTypesFilter,
+                      onChange: setSubTypesFilter,
+                      placeholder: 'Type',
+                      multiple: true,
+                      info: { name: 'Type :' },
+                    },
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortByThemeOptions,
+                      selectedOptions: themesFilter,
+                      onChange: setThemesFilter,
+                      placeholder: 'Theme',
+                      multiple: true,
+                      info: { name: 'Theme :' },
+                    },
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortByLanguageOptions,
+                      selectedOptions: languageFilter,
+                      onChange: setLanguageFilter,
+                      placeholder: 'Languages',
+                      multiple: true,
+                      info: { name: 'Languages :' },
+                    },
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortByShareOptions,
+                      selectedOptions: shareFilter,
+                      onChange: setShareFilter,
+                      placeholder: 'Shared with others',
+                      multiple: false,
+                      info: { name: 'Shared with others:' },
+                    },
+                    {
+                      dateFormat: 'd MMM yyyy',
+                      className: 'w-64 h-11 mt-1 border-2 border-transparent',
+                      isFullWidth: false,
+                      colour: !!startDate ? 'secondary' : 'adminPortalBg',
+                      textColour: !!startDate ? 'white' : 'textMid',
+                      placeholderText: 'Last updated',
+                      type: 'date-picker',
+                      showChevronIcon: true,
+                      chevronIconColour: !!startDate ? 'white' : 'primary',
+                      hideCalendarIcon: true,
+                      selected: startDate,
+                      onChange,
+                      startDate,
+                      endDate,
+                      selectsRange: true,
+                      shouldCloseOnSelect: true,
+                    },
+                  ]
+                : [
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortByTypeOptions,
+                      selectedOptions: typesFilter,
+                      onChange: setTypesFilter,
+                      placeholder: 'Type',
+                      multiple: true,
+                      info: { name: 'Type :' },
+                    },
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortByThemeOptions,
+                      selectedOptions: themesFilter,
+                      onChange: setThemesFilter,
+                      placeholder: 'Theme',
+                      multiple: true,
+                      info: { name: 'Theme :' },
+                    },
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortByLanguageOptions,
+                      selectedOptions: languageFilter,
+                      onChange: setLanguageFilter,
+                      placeholder: 'Languages',
+                      multiple: true,
+                      info: { name: 'Languages :' },
+                    },
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortBySkillOptions,
+                      selectedOptions: skillsFilter,
+                      onChange: setSkillsFilter,
+                      placeholder: 'Skills',
+                      multiple: true,
+                      info: { name: 'Skills :' },
+                    },
+                    {
+                      type: 'search-dropdown',
+                      menuItemClassName: 'ml-20 w-11/12',
+                      options: sortByShareOptions,
+                      selectedOptions: shareFilter,
+                      onChange: setShareFilter,
+                      placeholder: 'Shared with others',
+                      multiple: false,
+                      info: { name: 'Shared with others:' },
+                    },
+                    {
+                      dateFormat: 'd MMM yyyy',
+                      className: 'w-64 h-11 mt-1 border-2 border-transparent',
+                      isFullWidth: false,
+                      colour: !!startDate ? 'secondary' : 'adminPortalBg',
+                      textColour: !!startDate ? 'white' : 'textMid',
+                      placeholderText: 'Last updated',
+                      type: 'date-picker',
+                      showChevronIcon: true,
+                      chevronIconColour: !!startDate ? 'white' : 'primary',
+                      hideCalendarIcon: true,
+                      selected: startDate,
+                      onChange,
+                      startDate,
+                      endDate,
+                      selectsRange: true,
+                      shouldCloseOnSelect: true,
+                    },
+                  ]
+            }
           />
         </div>
       </div>

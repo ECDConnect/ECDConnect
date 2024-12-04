@@ -15,6 +15,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public string SubType { get; set; }
         public string SubCategories { get; set; }
         public string Themes { get; set; }
+        public string Image { get; set; }
         public string ShareContent { get; set; }
         public Guid LocaleId { get; set; }
         public DateTime? UpdatedDate { get; set; }
@@ -22,6 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public List<Guid> AvailableLanguages { get; set; }
         public List<string> SubTypeItems { get; set; }
         public List<SubCategoryViewModel> SubCategoryItems { get; set; }
+        public List<int> ThemeItems { get; set; }
 
         public ActivityViewModel(Object record, Guid localeId, List<SubCategoryViewModel> subCategoriesItems)
         {
@@ -39,6 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             item.TryGetValue("updatedDate", out var updatedDate);
             item.TryGetValue("insertedDate", out var insertedDate);
             item.TryGetValue("availableLanguages", out var availableLanguages);
+            item.TryGetValue("image", out var image);
 
             Id = id.ToString();
             Name = name != null ? name.ToString() : "";
@@ -50,6 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             Type = type != null ? type.ToString() : "";
             LocaleId = localeId;
             Themes = themes != null ? themes.ToString() : "";
+            Image = image != null ? image.ToString() : "";
             ShareContent = shareContent == null ? "" : shareContent.ToString();
             UpdatedDate = updatedDate != null ? DateTime.Parse(updatedDate.ToString()) : null;
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
@@ -58,6 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
 
             var subCats = subCategories != null ? subCategories.ToString().Split(",").ToList() : new List<string>();
             SubCategoryItems = subCategoriesItems.Where(x => subCats.Contains(x.Id)).ToList();
+            ThemeItems = themes != null ? themes.ToString().Split(",").Where(x => x != "").Select(x => Int32.Parse(x)).ToList() : new List<int>();
         }
     }
 

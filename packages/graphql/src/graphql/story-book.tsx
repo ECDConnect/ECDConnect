@@ -4,7 +4,7 @@ export const GetStoryBookRecords = gql`
   query GetStoryBookRecords(
     $search: String
     $typesSearch: [String]
-    $themesSearch: [String]
+    $themesSearch: [Int!]
     $languageSearch: [UUID!]
     $shareContent: [String]
     $startDate: DateTime

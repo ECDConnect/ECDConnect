@@ -27,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
            CancellationToken cancellationToken,
            string search = null,
            List<string> typesSearch = null,
-           List<string> themesSearch = null,
+           List<int> themesSearch = null,
            List<Guid> languageSearch = null,
            List<string> shareContent = null,
            PagedQueryInput pagingInput = null,
@@ -109,18 +109,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                     if (themesSearch.Count != 0)
                     {
-                        if (themesSearch.Contains("No theme"))
+                        if (themesSearch.Contains(0))
                         {
                             filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
                         }
+                        
                         foreach (var record in records)
                         {
-                            if (themesSearch.Contains(record.Themes))
-                            {
-                                filteredRecords.Add(record);
+                            if (record.ThemeItems.Count > 0) {
+                                foreach (var theme in record.ThemeItems) {
+                                    if (themesSearch.Contains(theme))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
                             }
                         }
-
                     }
 
                     if (startDate != null)
@@ -206,8 +210,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
            CancellationToken cancellationToken,
            bool isStoryActivity,
            string search = null,
+           List<string> subTypesSearch = null,
            List<string> typesSearch = null,
-           List<string> themesSearch = null,
+           List<int> themesSearch = null,
+           List<int> skillSearch = null,
            List<Guid> languageSearch = null,
            List<string> shareContent = null,
            PagedQueryInput pagingInput = null,
@@ -248,8 +254,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             if (records.Any())
             {
                 if (string.IsNullOrEmpty(search)
+                    && subTypesSearch.Count == 0
                     && typesSearch.Count == 0
                     && themesSearch.Count == 0
+                    && skillSearch.Count == 0
                     && startDate == null
                     && endDate == null
                     && shareContent.Count == 0)
@@ -287,34 +295,63 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                         }
                     }
 
+                    if (subTypesSearch.Count != 0)
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.SubTypeItems.Count > 0) {
+                                foreach (var subTypeItem in record.SubTypeItems) {
+                                    if (subTypesSearch.Contains(subTypeItem))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                        }
+                    }
                     if (typesSearch.Count != 0)
                     {
                         foreach (var record in records)
                         {
-                            if (typesSearch.Contains(record.SubType))
+                            if (typesSearch.Contains(record.Type))
                             {
                                 filteredRecords.Add(record);
                             }
                         }
                     }
-
+                    if (skillSearch.Count != 0)
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.SubCategoryItems.Count > 0) {
+                                foreach (var subCat in record.SubCategoryItems) {
+                                    if (skillSearch.Contains(Int32.Parse(subCat.Id)))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                        }
+                    }
                     if (themesSearch.Count != 0)
                     {
-                        if (themesSearch.Contains("No theme"))
+                        if (themesSearch.Contains(0))
                         {
                             filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
                         }
                         
                         foreach (var record in records)
                         {
-                            if (themesSearch.Contains(record.Themes))
-                            {
-                                filteredRecords.Add(record);
+                            if (record.ThemeItems.Count > 0) {
+                                foreach (var theme in record.ThemeItems) {
+                                    if (themesSearch.Contains(theme))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
                             }
                         }
-
                     }
-
                     if (startDate != null)
                     {
                         foreach (var record in records)
