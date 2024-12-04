@@ -20,7 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public DateTime? UpdatedDate { get; set; }
         public DateTime? InsertedDate { get; set; }
         public List<Guid> AvailableLanguages { get; set; }
-
+        public List<string> SubTypeItems { get; set; }
 
         public ActivityViewModel(Object record, Guid localeId)
         {
@@ -53,6 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             UpdatedDate = updatedDate != null ? DateTime.Parse(updatedDate.ToString()) : null;
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
             AvailableLanguages = availableLanguages != null ? (availableLanguages as string).Split(",").Select(i => new Guid(i)).ToList() : new List<Guid>();
+            SubTypeItems = subType != null ? subType.ToString().Split(",").Where(word => word != "").Select(word => char.ToUpper(word.Trim()[0]) + word.Trim().Substring(1)).OrderBy(x => x).Distinct().ToList() : new List<string>();
         }
     }
 }

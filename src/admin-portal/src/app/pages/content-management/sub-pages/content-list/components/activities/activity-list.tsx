@@ -80,7 +80,10 @@ export default function ActivityList({
 
   console.log('choosedSectionTitle', choosedSectionTitle);
 
-  const [sortByThemeOptions, setSortByThemeOptions] = useState<any[]>([]);
+  const [sortByThemeOptions, setSortByThemeOptions] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const [themes, setThemes] = useState<any[]>([]);
 
   const getAllTheme = `GetAllTheme`;
   const query = gql` 
@@ -101,11 +104,19 @@ export default function ActivityList({
 
   useEffect(() => {
     if (themeData && themeData.GetAllTheme) {
-      setSortByThemeOptions(themeData.getAllTheme);
+      setThemes(themeData.getAllTheme);
+
+      // const copyItems = themeData.getAllTheme.map((item: any) => ({
+      //   ...item,
+      //   id: item?.id,
+      //   label: item?.name,
+      //   value: item?.id,
+      // }));
+      // copyItems.push({id: 'No theme', label: 'No theme', value: 'No theme'});
+
+      // setSortByThemeOptions(copyItems);
     }
   }, [themeData]);
-
-  console.log('themeData', themeData);
 
   const [tableData, setTableData] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);

@@ -224,25 +224,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
             if (languageSearch.Count > 0)
             {
-                if (isStoryActivity) {
-                    foreach (var localeId in languageSearch)
-                    {
-                        records.AddRange(contentRepo.GetAll(ContentTypeConstants.ActivityId, localeId).Select(x => new ActivityViewModel(x, localeId)).Where(x => x.Type == ContentTypeConstants.ActivityStoryTime).ToList());
-                    }
-                } else {
-                    foreach (var localeId in languageSearch)
-                    {
-                        records.AddRange(contentRepo.GetAll(ContentTypeConstants.ActivityId, localeId).Select(x => new ActivityViewModel(x, localeId)).Where(x => x.Type != ContentTypeConstants.ActivityStoryTime).ToList());
-                    }
+                foreach (var localeId in languageSearch)
+                {
+                    records.AddRange(contentRepo.GetAll(ContentTypeConstants.ActivityId, localeId)
+                                                .Select(x => new ActivityViewModel(x, localeId))
+                                                .Where(x => isStoryActivity ? x.Type == ContentTypeConstants.ActivityStoryTime : x.Type != ContentTypeConstants.ActivityStoryTime)
+                                                .ToList());
                 }
             }
             else
             {
-                if (isStoryActivity) {
-                    records = contentRepo.GetAll(ContentTypeConstants.ActivityId, englishId).Select(x => new ActivityViewModel(x, englishId)).Where(x => x.Type == ContentTypeConstants.ActivityStoryTime).ToList();
-                } else {
-                    records = contentRepo.GetAll(ContentTypeConstants.ActivityId, englishId).Select(x => new ActivityViewModel(x, englishId)).Where(x => x.Type != ContentTypeConstants.ActivityStoryTime).ToList();
-                }
+                records = contentRepo.GetAll(ContentTypeConstants.ActivityId, englishId)
+                                     .Select(x => new ActivityViewModel(x, englishId))
+                                     .Where(x => isStoryActivity ? x.Type == ContentTypeConstants.ActivityStoryTime : x.Type != ContentTypeConstants.ActivityStoryTime)
+                                     .ToList();
             }
 
             if (records.Any())
