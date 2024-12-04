@@ -26,6 +26,10 @@ export const ContentForms = {
   ACTIVITY_FROM: 'Activity Form',
 };
 
+export const ActivityTypes = {
+  STORY_ACTIVITIES: 'Story activities',
+};
+
 export const CoachingCircleText = {
   START_DATE: 'startDate',
   START_DATE_SUB_HEADING:

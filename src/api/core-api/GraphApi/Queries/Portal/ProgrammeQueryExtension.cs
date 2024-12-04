@@ -221,23 +221,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
             var records = new List<ActivityViewModel>();
+            var subCategories = contentRepo.GetAll(ContentTypeConstants.ProgressTrackingSubCategoryId, englishId).Select(x => new SubCategoryViewModel(x)).ToList();
 
             if (languageSearch.Count > 0)
             {
                 foreach (var localeId in languageSearch)
                 {
-                    records.AddRange(contentRepo.GetAll(ContentTypeConstants.ActivityId, localeId)
-                                                .Select(x => new ActivityViewModel(x, localeId))
-                                                .Where(x => isStoryActivity ? x.Type == ContentTypeConstants.ActivityStoryTime : x.Type != ContentTypeConstants.ActivityStoryTime)
-                                                .ToList());
+                    if (isStoryActivity) {
+                        records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.ActivityStoryTime, localeId).Select(x => new ActivityViewModel(x, localeId, new List<SubCategoryViewModel>())).ToList());
+                    } else {
+                        records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.SmallGroup, localeId).Select(x => new ActivityViewModel(x, localeId, subCategories)).ToList());
+                        records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.LargeGroup, localeId).Select(x => new ActivityViewModel(x, localeId, subCategories)).ToList());
+                    }
                 }
             }
             else
             {
-                records = contentRepo.GetAll(ContentTypeConstants.ActivityId, englishId)
-                                     .Select(x => new ActivityViewModel(x, englishId))
-                                     .Where(x => isStoryActivity ? x.Type == ContentTypeConstants.ActivityStoryTime : x.Type != ContentTypeConstants.ActivityStoryTime)
-                                     .ToList();
+                if (isStoryActivity) {
+                    records = contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.ActivityStoryTime, englishId).Select(x => new ActivityViewModel(x, englishId, new List<SubCategoryViewModel>())).ToList();
+                } else {
+                    records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.SmallGroup, englishId).Select(x => new ActivityViewModel(x, englishId, subCategories)).ToList());
+                    records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.LargeGroup, englishId).Select(x => new ActivityViewModel(x, englishId, subCategories)).ToList());
+                }
             }
 
             if (records.Any())
