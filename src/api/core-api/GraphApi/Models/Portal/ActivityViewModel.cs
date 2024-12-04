@@ -21,8 +21,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public DateTime? InsertedDate { get; set; }
         public List<Guid> AvailableLanguages { get; set; }
         public List<string> SubTypeItems { get; set; }
+        public List<SubCategoryViewModel> SubCategoryItems { get; set; }
 
-        public ActivityViewModel(Object record, Guid localeId)
+        public ActivityViewModel(Object record, Guid localeId, List<SubCategoryViewModel> subCategoriesItems)
         {
             var item = (IDictionary<string, object>)record;
             item.TryGetValue("id", out var id);
@@ -45,15 +46,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             Description = description != null ? description.ToString() : "";
             Notes = notes != null ? notes.ToString() : "";
             SubType = subType != null ? subType.ToString() : "";
-            Type = type != null ? type.ToString() : "";
             SubCategories = subCategories != null ? subCategories.ToString() : "";
+            Type = type != null ? type.ToString() : "";
             LocaleId = localeId;
             Themes = themes != null ? themes.ToString() : "";
             ShareContent = shareContent == null ? "" : shareContent.ToString();
             UpdatedDate = updatedDate != null ? DateTime.Parse(updatedDate.ToString()) : null;
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
             AvailableLanguages = availableLanguages != null ? (availableLanguages as string).Split(",").Select(i => new Guid(i)).ToList() : new List<Guid>();
-            SubTypeItems = subType != null ? subType.ToString().Split(",").Where(word => word != "").Select(word => char.ToUpper(word.Trim()[0]) + word.Trim().Substring(1)).OrderBy(x => x).Distinct().ToList() : new List<string>();
+            SubTypeItems = subType != null ? subType.ToString().Split(",").Where(word => word != "").Select(word => char.ToUpper(word.Trim()[0]) + word.Trim().Substring(1)).OrderByDescending(x => x).Distinct().ToList() : new List<string>();
+
+            var subCats = subCategories != null ? subCategories.ToString().Split(",").ToList() : new List<string>();
+            SubCategoryItems = subCategoriesItems.Where(x => subCats.Contains(x.Id)).ToList();
+        }
+    }
+
+    public class SubCategoryViewModel 
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string ImageUrl { get; set; }
+        public string ImageHexColor { get; set; }
+
+        public SubCategoryViewModel(Object record) {
+            var item = (IDictionary<string, object>)record;
+            item.TryGetValue("id", out var id);
+            item.TryGetValue("name", out var name);
+            item.TryGetValue("imageUrl", out var imageUrl);
+            item.TryGetValue("imageHexColor", out var imageHexColor);
+
+            Id = id.ToString();
+            Name = name.ToString();
+            ImageUrl = imageUrl.ToString();
+            ImageHexColor = imageHexColor.ToString();
         }
     }
 }

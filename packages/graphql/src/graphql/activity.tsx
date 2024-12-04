@@ -36,6 +36,13 @@ export const GetActivityRecords = gql`
       subCategories
       updatedDate
       insertedDate
+      subTypeItems
+      subCategoryItems {
+        id
+        name
+        imageUrl
+        imageHexColor
+      }
       __typename
     }
   }
