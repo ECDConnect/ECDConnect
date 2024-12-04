@@ -28,7 +28,6 @@ import {
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import {
   StoryBookTypeOptions,
-  StoryBookThemeOptions,
   StoryBookShareOptions,
 } from './story-book.types';
 

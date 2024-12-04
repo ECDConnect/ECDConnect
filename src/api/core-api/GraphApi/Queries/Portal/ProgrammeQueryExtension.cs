@@ -27,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
            CancellationToken cancellationToken,
            string search = null,
            List<string> typesSearch = null,
-           List<string> themesSearch = null,
+           List<int> themesSearch = null,
            List<Guid> languageSearch = null,
            List<string> shareContent = null,
            PagedQueryInput pagingInput = null,
@@ -109,18 +109,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                     if (themesSearch.Count != 0)
                     {
-                        if (themesSearch.Contains("No theme"))
+                        if (themesSearch.Contains(0))
                         {
                             filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
                         }
+                        
                         foreach (var record in records)
                         {
-                            if (themesSearch.Contains(record.Themes))
-                            {
-                                filteredRecords.Add(record);
+                            if (record.ThemeItems.Count > 0) {
+                                foreach (var theme in record.ThemeItems) {
+                                    if (themesSearch.Contains(theme))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
                             }
                         }
-
                     }
 
                     if (startDate != null)
@@ -348,7 +352,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                             }
                         }
                     }
-
                     if (startDate != null)
                     {
                         foreach (var record in records)

@@ -17424,7 +17424,7 @@ export type QueryStoryBookRecordsArgs = {
   search?: InputMaybe<Scalars['String']>;
   shareContent?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   startDate?: InputMaybe<Scalars['DateTime']>;
-  themesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  themesSearch?: InputMaybe<Array<Scalars['Int']>>;
   typesSearch?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -18924,6 +18924,7 @@ export type StoryBookViewModel = {
   name?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
   storyBookParts?: Maybe<Scalars['String']>;
+  themeItems?: Maybe<Array<Scalars['Int']>>;
   themes?: Maybe<Scalars['String']>;
   translator?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
