@@ -22,15 +22,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Audit.EntityFramework.Core" Version="27.0.3" />
-    <PackageReference Include="Audit.EntityFramework.Identity.Core" Version="18.1.5" />
-    <PackageReference Include="Audit.NET.AzureStorage" Version="18.1.5" />
-    <PackageReference Include="MediatR" Version="9.0.0" />
-    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
-    <PackageReference Include="NJsonSchema.CodeGeneration" Version="10.4.4" />
-    <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="10.4.4" />
-    <PackageReference Include="NJsonSchema.CodeGeneration.TypeScript" Version="10.4.4" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
+    <PackageReference Include="Audit.EntityFramework.Core" Version="27.2.0" />
+    <PackageReference Include="Audit.EntityFramework.Identity.Core" Version="27.2.0" />
+    <PackageReference Include="Audit.NET.AzureStorage" Version="27.2.0" />
+    <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="NJsonSchema.CodeGeneration" Version="11.1.0" />
+    <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="11.1.0" />
+    <PackageReference Include="NJsonSchema.CodeGeneration.TypeScript" Version="11.1.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>

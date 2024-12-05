@@ -1,4 +1,3 @@
-using DotLiquid.Util;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.ContentManagement.Constants;
 using ECDLink.ContentManagement.Entities;
@@ -265,7 +264,10 @@ namespace ECDLink.ContentManagement.Repositories
                 dict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
                 if (!dict.ContainsKey("updatedDate"))
                 {
-                    dict.Add("updatedDate", contentValuesList.TryGetAtIndex(0).UpdatedDate.ToString());
+                    if (contentValuesList != null && contentValuesList.Count > 0)
+                    {
+                        dict.Add("updatedDate", contentValuesList[0].UpdatedDate.ToString());
+                    }
                 }
 
                 result = dict.ToObject();

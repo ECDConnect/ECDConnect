@@ -17,7 +17,7 @@
     <None Remove="Microsoft.AspNet.WebApi.Client" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="8.0.4" />
+    <PackageReference Include="Npgsql" Version="9.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
