@@ -459,9 +459,17 @@ namespace ECDLink.ContentManagement.Repositories
                 var contentValues = item.ContentValues
                     .Where(x => x.LocaleId == localeId
                             && x.ContentTypeField.IsActive == true
-                            && (x.TenantId == TenantExecutionContext.Tenant.Id || x.TenantId == null))
+                            && (x.TenantId == TenantExecutionContext.Tenant.Id))
                     .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
                     .ToList();
+                if (contentValues.Count == 0) {
+                    contentValues = item.ContentValues
+                    .Where(x => x.LocaleId == localeId
+                            && x.ContentTypeField.IsActive == true
+                            && (x.TenantId == null))
+                    .OrderBy(cv => cv?.ContentTypeField?.FieldOrder ?? cv?.ContentId)
+                    .ToList();
+                }
 
                 var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                 contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
