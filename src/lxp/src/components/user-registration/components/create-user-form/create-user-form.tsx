@@ -57,16 +57,20 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const specialCharactersMessageErrorText = `Usernames can only include letters, numbers, . , and @. Please remove any other special characters.`;
   const [isFromAuthCodeScreen, setIsFromAuthCodeScreen] = useState(false);
 
-  const { register: passwordRegister, watch } = useForm({
+  const {
+    register: passwordRegister,
+    watch,
+    formState: { isValid },
+  } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
-    mode: 'onChange',
+    mode: 'all',
   });
   const { password } = watch();
 
   const validateUsername = (name: string): string | null => {
     if (!/^[a-zA-Z0-9_]+$/.test(name)) {
-      return 'Usernames can only include letters, numbers, . , and @. Please remove any other special characters.';
+      return specialCharactersMessageErrorText;
     }
     return null;
   };
@@ -308,7 +312,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
             type="filled"
             isLoading={isLoading}
             color="quatenary"
-            disabled={!password || !username || isLoading}
+            disabled={!password || !username || isLoading || !isValid}
             onClick={handleCreateUser}
           >
             <Typography type="help" color="white" text={'Sign up'}></Typography>
