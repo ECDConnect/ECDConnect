@@ -172,7 +172,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           />
           {choosedSectionTitle !== ActivitiesTitles.StoryActivities && (
             <Typography
-              type={'body'}
+              type={'help'}
               color={'textMid'}
               text={
                 'You must choose exactly 2 skills from the list below. To change your selection, deselect the skills and choose a new pair.'

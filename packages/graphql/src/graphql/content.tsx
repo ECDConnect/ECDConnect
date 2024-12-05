@@ -151,6 +151,22 @@ export const BulkUpdateStoryBookThemes = gql`
   }
 `;
 
+export const BulkUpdateActivityThemes = gql`
+  mutation BulkUpdateActivityThemes(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $themeIds: String
+  ) {
+    bulkUpdateActivityThemes(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      themeIds: $themeIds
+    )
+  }
+`;
+
 export const DeleteMultipleResources = gql`
   mutation DeleteBulkResources($contentIds: [Int!]) {
     deleteBulkResources(contentIds: $contentIds) {

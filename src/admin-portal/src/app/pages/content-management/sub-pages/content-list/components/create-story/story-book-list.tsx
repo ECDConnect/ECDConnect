@@ -193,9 +193,7 @@ export default function StoryBookList({
   useEffect(() => {
     if (contentType && contentType.fields) {
       const displayFields: ContentTypeFieldDto[] = [];
-
       const copy: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
-
       const orderedList = copy?.sort(function (a, b) {
         return a.fieldOrder - b.fieldOrder;
       });

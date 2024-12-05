@@ -34,6 +34,7 @@ import {
   ContentTypes,
 } from '../../../../../../constants/content-management';
 import {
+  BulkUpdateActivityThemes,
   BulkUpdateConsentImages,
   bulkUpdateCoachingCircleTopicDates,
 } from '@ecdlink/graphql';
@@ -126,6 +127,7 @@ export default function ContentEdit({
   );
 
   const [saveConsentImages] = useMutation(BulkUpdateConsentImages);
+  const [saveActivityThemes] = useMutation(BulkUpdateActivityThemes);
 
   const [updateContent] = useMutation(updateMutation);
   const [createContent] = useMutation(createMutation);
@@ -376,18 +378,13 @@ export default function ContentEdit({
         setLoading(false);
       });
 
-      // the requirement is that when you save the dates for a coaching circle, you need to update all other languages with same dates.
-      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-        await saveCoachCircleDates({
+      if (contentType.name === ContentTypes.ACTIVITY) {
+        await saveActivityThemes({
           variables: {
             contentId: +content.id,
             contentTypeId: +contentType.id,
             localeId: selectedLanguageId.toString(),
-            startDate: model[CoachingCircleText.START_DATE],
-            endDate:
-              model[CoachingCircleText.END_DATE] === ''
-                ? null
-                : model[CoachingCircleText.END_DATE],
+            imageUrl: model.image,
           },
         }).catch((error) => {
           console.log(error);
