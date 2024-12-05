@@ -914,6 +914,19 @@ namespace ECDLink.ContentManagement.Repositories
                 _context.SaveChanges();
             }
 
+            // if the content record has no linked values, then we archive the record as well.
+            var content = _context.Contents
+                            .Include(i => i.ContentValues)
+                            .Where(x => x.Id == contentId)
+                            .OrderBy(x => x.Id)
+                            .FirstOrDefault();
+            
+            if (content.ContentValues.Count == 0) {
+                content.IsActive = false;
+                content.UpdatedDate = DateTime.UtcNow;
+                _context.SaveChanges();
+            }
+
            /* var content = _context.Contents
                           .Where(x => x.Id == contentId
                             && x.TenantId == TenantExecutionContext.Tenant.Id)

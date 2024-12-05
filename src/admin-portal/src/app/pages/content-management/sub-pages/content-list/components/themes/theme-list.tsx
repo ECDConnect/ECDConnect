@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useMutation, useLazyQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
@@ -12,10 +12,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DialogPosition, SearchDropDownOption, Table } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import {
-  ContentManagementView,
-  FieldType,
-} from '../../../../content-management-models';
+import { ContentManagementView } from '../../../../content-management-models';
 import { LanguageId } from '../../../../../../constants/language';
 import { ContentTypes } from '../../../../../../constants/content-management';
 import { TableRefMethods } from '@ecdlink/ui/lib/components/table/types';
@@ -169,10 +166,11 @@ export default function ThemeList({
     [startDate, endDate, filteredShare]
   );
 
-  const [
-    fetchThemes,
-    { data: themeData, refetch: refetchContent, loading: loadingContent },
-  ] = useLazyQuery(GetThemeRecords, {
+  const {
+    data: themeData,
+    refetch: refetchContent,
+    loading: loadingContent,
+  } = useQuery(GetThemeRecords, {
     fetchPolicy: 'network-only',
     variables: queryVariables,
   });
