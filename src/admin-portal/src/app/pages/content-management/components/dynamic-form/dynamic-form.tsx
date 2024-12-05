@@ -367,17 +367,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           if (
             propName === 'type' &&
             isSmallLargeGroup &&
-            template?.title === ContentForms.ACTIVITY_FROM
+            template?.title === ContentForms.ACTIVITY_FROM &&
+            !isEdit
           ) {
             return (
               <div key={propName} className={contentWrapper}>
-                {isEdit && (
-                  <Alert
-                    className="mt-2 mb-2 rounded-md"
-                    message={`Editing the activity type here will update the activity type for all translations of this page.`}
-                    type="warning"
-                  />
-                )}
                 <label
                   htmlFor={propName}
                   className="mb-1 block text-lg font-medium text-gray-800"
