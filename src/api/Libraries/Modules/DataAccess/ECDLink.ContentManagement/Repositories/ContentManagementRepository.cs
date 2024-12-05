@@ -903,7 +903,18 @@ namespace ECDLink.ContentManagement.Repositories
 
         public bool Delete(int contentId)
         {
-            var content = _context.Contents
+            // Removing content values linked to content and tenant Id
+            var contentValues = _context.ContentValues
+                    .Where(x => x.ContentId == contentId
+                            && (x.TenantId == TenantExecutionContext.Tenant.Id))
+                    .ToList();
+
+            if (contentValues.Count > 0) {
+                _context.RemoveRange(contentValues);
+                _context.SaveChanges();
+            }
+
+           /* var content = _context.Contents
                           .Where(x => x.Id == contentId
                             && x.TenantId == TenantExecutionContext.Tenant.Id)
                           .OrderBy(x => x.Id)
@@ -915,6 +926,7 @@ namespace ECDLink.ContentManagement.Repositories
                             && x.TenantId == null)
                           .OrderBy(x => x.Id)
                           .FirstOrDefault();
+                          
 
             // No Content Found
             if (content == default)
@@ -926,7 +938,7 @@ namespace ECDLink.ContentManagement.Repositories
             content.IsActive = false;
             content.UpdatedDate = DateTime.UtcNow;
 
-            _context.SaveChanges();
+            _context.SaveChanges();*/
 
             return true;
         }

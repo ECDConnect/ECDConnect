@@ -54,7 +54,7 @@ export const GetActivityRecords = gql`
 `;
 
 export const DeleteMultipleActivities = gql`
-  mutation DeleteMultipleActivities($contentIds: [Int!]) {
+  mutation DeleteMultipleActivities($contentIds: [String]) {
     deleteMultipleActivities(contentIds: $contentIds) {
       success
       failed
