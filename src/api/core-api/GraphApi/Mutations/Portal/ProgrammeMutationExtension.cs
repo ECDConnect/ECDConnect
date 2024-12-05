@@ -57,7 +57,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             var languages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
-
             foreach (var id in languages)
             {
                 if (id != localeId)
@@ -69,7 +68,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     contentRepo.Update(contentId, id, connectDict);
                 }
             }
+            return true;
+        }
 
+        public bool BulkUpdateActivityThemes(
+           [Service] ContentManagementRepository contentRepo,
+           int contentId,
+           int contentTypeId,
+           Guid localeId,
+           string themeIds
+           )
+        {
+            if (contentId == 0)
+            {
+                return false;
+            }
+
+            var languages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            foreach (var id in languages)
+            {
+                if (id != localeId)
+                {
+                    Dictionary<string, object> connectDict = new Dictionary<string, object>
+                    {
+                        { "themes", themeIds },
+                    };
+                    contentRepo.Update(contentId, id, connectDict);
+                }
+            }
             return true;
         }
 

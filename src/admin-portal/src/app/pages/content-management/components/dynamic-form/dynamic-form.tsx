@@ -22,6 +22,7 @@ import {
 } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 import {
+  ActivityTypes,
   ContentForms,
   ContentTypes,
 } from '../../../../constants/content-management';
@@ -146,6 +147,46 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
   useEffect(() => {
     if (template && watchFields) {
+      if (contentType.name === ContentTypes.ACTIVITY) {
+        if (choosedSectionTitle !== ActivityTypes.STORY_ACTIVITIES) {
+          const copyTemplate = Object.assign([], template);
+          template.fields = copyTemplate?.fields
+            .map((item: any) => ({
+              ...item,
+              title:
+                item.propName === 'type'
+                  ? 'Activity type'
+                  : item.propName === 'description'
+                  ? 'Steps (what do I do?)'
+                  : item.propName === 'notes'
+                  ? 'Notes'
+                  : item.title,
+              propOrder:
+                item.propName === 'type'
+                  ? 0
+                  : item.propName === 'image'
+                  ? 1
+                  : item.propName === 'subCategories'
+                  ? 2
+                  : item.propName === 'name'
+                  ? 3
+                  : item.propName === 'materials'
+                  ? 4
+                  : item.propName === 'description'
+                  ? 5
+                  : item.propName === 'notes'
+                  ? 6
+                  : item.propName === 'themes'
+                  ? 7
+                  : item.propName === 'shareContent'
+                  ? 8
+                  : 9,
+            }))
+            .sort(function (a, b) {
+              return a.propOrder - b.propOrder;
+            });
+        }
+      }
       const fields = renderFields(template?.fields);
       setFields(fields);
     }
@@ -222,24 +263,41 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
       let placeHolder = '';
       let subLabel = '';
-      if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
-        if (propName === 'name') {
-          placeHolder = 'Give the activity a title';
-        } else if (propName === 'materials') {
-          placeHolder = 'Add materials...';
-          subLabel =
-            'List all materials the practitioner will need, sperated by a comma';
-        } else if (propName === 'description') {
-          placeHolder = 'Add instructions...';
-        } else if (propName === 'notes') {
-          placeHolder = 'Add tips...';
-          subLabel = 'Optional';
-        } else if (propName === 'subType') {
-          subLabel = 'Which story types go with this activity?';
-        } else if (propName === 'themes') {
-          subLabel = 'Optional';
+      if (contentType.name === ContentTypes.ACTIVITY) {
+        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+          if (propName === 'name') {
+            placeHolder = 'Give the activity a title';
+          } else if (propName === 'materials') {
+            placeHolder = 'Add materials...';
+            subLabel =
+              'List all materials the practitioner will need, sperated by a comma';
+          } else if (propName === 'description') {
+            placeHolder = 'Add instructions...';
+          } else if (propName === 'notes') {
+            placeHolder = 'Add tips...';
+            subLabel = 'Optional';
+          } else if (propName === 'subType') {
+            subLabel = 'Which story types go with this activity?';
+          } else if (propName === 'themes') {
+            subLabel = 'Optional';
+          }
+        } else {
+          if (propName === 'name') {
+            placeHolder = 'Give the activity a title';
+          } else if (propName === 'materials') {
+            placeHolder = 'Add materials...';
+            subLabel =
+              'List all materials the practitioner will need, sperated by a comma';
+          } else if (propName === 'description') {
+            placeHolder = 'Add steps...';
+          } else if (propName === 'notes') {
+            placeHolder = 'Add notes...';
+          } else if (propName === 'themes') {
+            subLabel = 'Optional';
+          }
         }
       }
+
       register(propName, { required: required });
 
       switch (type) {
@@ -442,6 +500,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         case FieldType.Image:
+          if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+            return null;
+          }
           if (propName === 'image' && disableActivitiesInputs) {
             return (
               <div key={propName} className={contentWrapper}>
