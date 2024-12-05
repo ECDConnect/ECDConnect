@@ -173,35 +173,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             return records;
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
-        public BulkDeactivateResult DeleteMultipleStoryBooks(
-            [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService,
-            List<int> contentIds)
-        {
-            if (contentIds is null || contentIds.Count == 0)
-            {
-                return new BulkDeactivateResult();
-            }
-
-            var success = new List<string>();
-            var failed = new List<string>();
-
-            foreach (int contentId in contentIds)
-            {
-                bool deleteResult = contentRepo.Delete(contentId);
-                if (deleteResult)
-                {
-                    success.Add(contentId.ToString());
-                }
-                else
-                {
-                    failed.Add(contentId.ToString());
-                }
-            }
-
-            return new BulkDeactivateResult() { Failed = failed, Success = success };
-        }
+        
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
         public List<ActivityViewModel> GetActivityRecords(
@@ -396,36 +368,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 }
             }
             return records;
-        }
-
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
-        public BulkDeactivateResult DeleteMultipleActivities(
-            [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService,
-            List<int> contentIds)
-        {
-            if (contentIds is null || contentIds.Count == 0)
-            {
-                return new BulkDeactivateResult();
-            }
-
-            var success = new List<string>();
-            var failed = new List<string>();
-
-            foreach (int contentId in contentIds)
-            {
-                bool deleteResult = contentRepo.Delete(contentId);
-                if (deleteResult)
-                {
-                    success.Add(contentId.ToString());
-                }
-                else
-                {
-                    failed.Add(contentId.ToString());
-                }
-            }
-
-            return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
     }

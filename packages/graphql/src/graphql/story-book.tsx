@@ -40,7 +40,7 @@ export const GetStoryBookRecords = gql`
 `;
 
 export const DeleteMultipleStoryBooks = gql`
-  mutation DeleteMultipleStoryBooks($contentIds: [Int!]) {
+  mutation DeleteMultipleStoryBooks($contentIds: [String]) {
     deleteMultipleStoryBooks(contentIds: $contentIds) {
       success
       failed

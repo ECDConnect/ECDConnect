@@ -99,5 +99,65 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
+        public BulkDeactivateResult DeleteMultipleActivities(
+            [Service] ContentManagementRepository contentRepo,
+            List<string> contentIds)
+        {
+            if (contentIds is null || contentIds.Count == 0)
+            {
+                return new BulkDeactivateResult();
+            }
+
+            var success = new List<string>();
+            var failed = new List<string>();
+
+            foreach (var contentId in contentIds)
+            {
+                var intId = Int32.Parse(contentId);
+                bool deleteResult = contentRepo.Delete(intId);
+                if (deleteResult)
+                {
+                    success.Add(contentId.ToString());
+                }
+                else
+                {
+                    failed.Add(contentId.ToString());
+                }
+            }
+
+            return new BulkDeactivateResult() { Failed = failed, Success = success };
+        }
+
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
+        public BulkDeactivateResult DeleteMultipleStoryBooks(
+            [Service] ContentManagementRepository contentRepo,
+            List<string> contentIds)
+        {
+            if (contentIds is null || contentIds.Count == 0)
+            {
+                return new BulkDeactivateResult();
+            }
+
+            var success = new List<string>();
+            var failed = new List<string>();
+
+            foreach (var contentId in contentIds)
+            {
+                var intId = Int32.Parse(contentId);
+                bool deleteResult = contentRepo.Delete(intId);
+                if (deleteResult)
+                {
+                    success.Add(contentId.ToString());
+                }
+                else
+                {
+                    failed.Add(contentId.ToString());
+                }
+            }
+
+            return new BulkDeactivateResult() { Failed = failed, Success = success };
+        }
+
     }
 }
