@@ -173,8 +173,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             return records;
         }
 
-        
-
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
         public List<ActivityViewModel> GetActivityRecords(
            [Service] ContentManagementRepository contentRepo,
@@ -324,6 +322,111 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                             }
                         }
                     }
+                    if (startDate != null)
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.InsertedDate is not null)
+                            {
+                                if (endDate != null)
+                                {
+                                    if (record.InsertedDate >= startDate && record.InsertedDate <= endDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                                else
+                                {
+                                    if (record.InsertedDate >= startDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (endDate != null)
+                                {
+                                    if (record.UpdatedDate >= startDate && record.UpdatedDate <= endDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                                else
+                                {
+                                    if (record.UpdatedDate >= startDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return filteredRecords;
+                }
+            }
+            return records;
+        }
+
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+        public List<ThemeViewModel> GetThemeRecords(
+           [Service] ContentManagementRepository contentRepo,
+           [Service] ILocaleService<Language> localeService,
+           CancellationToken cancellationToken,
+           string search = null,
+           List<string> shareContent = null,
+           PagedQueryInput pagingInput = null,
+           DateTime? startDate = null,
+           DateTime? endDate= null)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+
+            var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            var records = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId).Select(x => new ThemeViewModel(x, englishId)).ToList();
+
+            if (records.Any())
+            {
+                if (string.IsNullOrEmpty(search)
+                    && startDate == null 
+                    && endDate == null
+                    && shareContent.Count == 0)
+                {
+                    return records;
+                }
+                else
+                {
+                    var filteredRecords = new List<ThemeViewModel>();
+
+                    if (!string.IsNullOrEmpty(search))
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.Name.ToLower().Contains(search.ToLower()))
+                            {
+                                filteredRecords.Add(record);
+                            }
+                        }
+                    }
+
+                    if (shareContent.Count != 0)
+                    {
+                        if (shareContent.Contains("Yes"))
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes").ToList());
+                        }
+                        else if (shareContent.Contains("No"))
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no").ToList());
+                        }
+                        else
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "").ToList());
+                        }
+                    }
+
                     if (startDate != null)
                     {
                         foreach (var record in records)
