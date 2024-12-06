@@ -81,9 +81,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             item.TryGetValue("imageHexColor", out var imageHexColor);
 
             Id = id.ToString();
-            Name = name.ToString();
-            ImageUrl = imageUrl.ToString();
-            ImageHexColor = imageHexColor.ToString();
+            Name = name != null ? name.ToString() : "";
+            ImageUrl = imageUrl != null ? imageUrl.ToString() : "";
+            ImageHexColor = imageHexColor != null ? imageHexColor.ToString(): "";
         }
     }
 }

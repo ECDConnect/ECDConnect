@@ -63,7 +63,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     && endDate == null
                     && shareContent.Count == 0)
                 {
-                    return records;
+                    return records
+                        .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                        .ToList();
                 }
                 else
                 {
@@ -167,10 +171,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                             }
                         }
                     }
-                    return filteredRecords;
+                    return filteredRecords
+                            .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ToList();
                 }
             }
-            return records;
+            return records
+                    .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                    .ToList();
         }
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
@@ -232,7 +244,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     && endDate == null
                     && shareContent.Count == 0)
                 {
-                    return records;
+                    return records
+                            .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ToList();
                 }
                 else
                 {
@@ -362,10 +378,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                             }
                         }
                     }
-                    return filteredRecords;
+                    return filteredRecords
+                            .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ToList();
                 }
             }
-            return records;
+            return records
+                    .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                    .ToList();
         }
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
@@ -394,7 +418,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     && endDate == null
                     && shareContent.Count == 0)
                 {
-                    return records;
+                    return records
+                        .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                        .ToList();
                 }
                 else
                 {
@@ -467,10 +495,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                             }
                         }
                     }
-                    return filteredRecords;
+                    return filteredRecords
+                            .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ToList();
                 }
             }
-            return records;
+           return records
+                    .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                    .ToList();
         }
 
     }

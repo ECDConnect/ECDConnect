@@ -6,6 +6,7 @@ using ECDLink.Core.Caching.Configuration;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace ECDLink.ContentManagement.Repositories
     public class ContentManagementRepository
     {
         private readonly ContentManagementDbContext _context;
+        private AuthenticationDbContext _dbContext;
         private readonly IFileService _fileService;
         private readonly ILogger<ContentManagementRepository> _logger;
         private readonly IMemoryCache _memoryCache;
@@ -30,9 +32,15 @@ namespace ECDLink.ContentManagement.Repositories
         private readonly int _slidingExpiration = 10;
         private readonly int _absoluteExpiration = 60;
 
-        public ContentManagementRepository(ContentManagementDbContext context, IFileService fileService, IMemoryCache memoryCache, IConfiguration configuration, ILogger<ContentManagementRepository> logger)
+        public ContentManagementRepository(ContentManagementDbContext context, 
+                                           IFileService fileService, 
+                                           IMemoryCache memoryCache, 
+                                           IConfiguration configuration, 
+                                           ILogger<ContentManagementRepository> logger,
+                                           AuthenticationDbContext dbContext)
         {
             _context = context;
+            _dbContext= dbContext;
             _fileService = fileService;
             _logger = logger;
             _memoryCache = memoryCache;
@@ -903,56 +911,67 @@ namespace ECDLink.ContentManagement.Repositories
 
         public bool Delete(int contentId)
         {
-            // Removing content values linked to content and tenant Id
-            var contentValues = _context.ContentValues
-                    .Where(x => x.ContentId == contentId
-                            && (x.TenantId == TenantExecutionContext.Tenant.Id))
-                    .ToList();
-
-            if (contentValues.Count > 0) {
-                _context.RemoveRange(contentValues);
-                _context.SaveChanges();
-            }
-
-            // if the content record has no linked values, then we archive the record as well.
+            // get content with content values for tenant id
             var content = _context.Contents
-                            .Include(i => i.ContentValues)
+                            .Include(i => i.ContentValues.Where(x => x.TenantId == TenantExecutionContext.Tenant.Id))
                             .Where(x => x.Id == contentId)
-                            .OrderBy(x => x.Id)
                             .FirstOrDefault();
-            
-            if (content.ContentValues.Count == 0) {
-                content.IsActive = false;
-                content.UpdatedDate = DateTime.UtcNow;
-                _context.SaveChanges();
+            if (content != null) {
+
+                // If the content value is a "SmallGroupActivity" || "LargeGroupActivity" || "StoryBook" || "StoryActivity",
+                if (content.ContentTypeId == ContentTypeConstants.ActivityId || content.ContentTypeId == ContentTypeConstants.StoryBookId) 
+                {
+                    // activities
+                    if (content.ContentTypeId == ContentTypeConstants.ActivityId) {
+                        var isSmallGroupActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.SmallGroup).FirstOrDefault() != null;
+                        var isLargeGroupActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.LargeGroup).FirstOrDefault() != null;
+                        var isStoryActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.ActivityStoryTime).FirstOrDefault() != null;
+
+                        if (isSmallGroupActivity) {
+                            var programmeDays = _dbContext.DailyProgrammes.Where(x => x.SmallGroupActivityId == contentId).ToArray();
+                            foreach(var day in programmeDays) {
+                                day.SmallGroupActivityId = 0;
+                            }
+                            _dbContext.SaveChanges();
+                        }
+                        if (isLargeGroupActivity) {
+                            var programmeDays = _dbContext.DailyProgrammes.Where(x => x.LargeGroupActivityId == contentId).ToArray();
+                            foreach(var day in programmeDays) {
+                                day.LargeGroupActivityId = 0;
+                            }
+                            _dbContext.SaveChanges();
+                        }
+                        if (isStoryActivity) {
+                            var programmeDays = _dbContext.DailyProgrammes.Where(x => x.StoryActivityId == contentId).ToArray();
+                            foreach(var day in programmeDays) {
+                                day.StoryActivityId = 0;
+                            }
+                            _dbContext.SaveChanges();
+                        }
+                    }
+                    // story book
+                    if (content.ContentTypeId == ContentTypeConstants.StoryBookId) {
+                        var programmeDays = _dbContext.DailyProgrammes.Where(x => x.StoryBookId == contentId).ToArray();
+                        foreach(var day in programmeDays) {
+                            day.StoryBookId = 0;
+                        }
+                        _dbContext.SaveChanges();
+                    }
+                }
+
+                // remove content values
+                if (content.ContentValues.Count > 0) {
+                    _context.RemoveRange(content.ContentValues);
+                    _context.SaveChanges();
+                }
+
+                // remove content if no values are linked
+                content = _context.Contents.Where(x => x.Id == contentId).Include(i => i.ContentValues).FirstOrDefault();
+                if (content.ContentValues.Count == 0) {
+                    _context.Remove(content);
+                    _context.SaveChanges();
+                }
             }
-
-           /* var content = _context.Contents
-                          .Where(x => x.Id == contentId
-                            && x.TenantId == TenantExecutionContext.Tenant.Id)
-                          .OrderBy(x => x.Id)
-                          .FirstOrDefault();
-
-            // Use global tenant as a fallback, mostly for static and dynamic links            
-            content ??= _context.Contents
-                          .Where(x => x.Id == contentId
-                            && x.TenantId == null)
-                          .OrderBy(x => x.Id)
-                          .FirstOrDefault();
-                          
-
-            // No Content Found
-            if (content == default)
-            {
-                var errorMessage = "Could not find content with Id: {contentId}.";
-                _logger.LogWarning(errorMessage, contentId.ToString());
-            }
-
-            content.IsActive = false;
-            content.UpdatedDate = DateTime.UtcNow;
-
-            _context.SaveChanges();*/
-
             return true;
         }
     }
