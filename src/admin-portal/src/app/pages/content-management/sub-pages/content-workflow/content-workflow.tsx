@@ -120,6 +120,18 @@ export default function ContentWorkflow({
     [choosedSectionTitle, isEdit]
   );
 
+  const breadCrumbParentName = useCallback(
+    (item: ContentTypeDto) => {
+      if (item.name === ContentTypes.STORY_BOOK) {
+        return 'Stories';
+      } else if (item.name === ContentTypes.ACTIVITY) {
+        return choosedSectionTitle;
+      }
+      return item.description;
+    },
+    [choosedSectionTitle]
+  );
+
   const handleNoDynamicForms = (type: string) => {
     switch (type) {
       case ContentTypes.STORY_BOOK:
@@ -308,9 +320,9 @@ export default function ContentWorkflow({
             type="button"
             className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
           >
-            Content Management
+            Programme
             <ArrowRightIcon className="text-secondary ml-1 mr-1 h-4 w-4" />
-            {pluralize(choosedSectionTitle || contentType.name)}
+            {breadCrumbParentName(contentType)}
             <ArrowRightIcon className="text-secondary ml-1 h-4 w-4" />
             <span className="px-1 text-gray-400">
               {breadCrumbName(contentType)}

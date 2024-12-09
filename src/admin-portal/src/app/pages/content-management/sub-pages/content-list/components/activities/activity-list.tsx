@@ -561,9 +561,9 @@ export default function ActivityList({
             {item.subCategoryItems?.map((item: any, index: number) => (
               <div key={`cat_` + index} className="flex cursor-pointer">
                 <div
-                  className={`${
-                    item?.imageHexColor ? '' : 'bg-tertiary'
-                  } flex h-9 w-9 items-center rounded-full`}
+                // className={`${
+                //   item?.imageHexColor ? '' : 'bg-tertiary'
+                // } flex h-9 w-9 items-center rounded-full`}
                 >
                   <img
                     alt="skill"

@@ -436,7 +436,9 @@ namespace ECDLink.ContentManagement.Repositories
                             && x.IsActive
                             && x.ContentValues.Any(y => y.LocaleId == localeId)
                             && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
-                            && x.ContentValues.Any(y => y.Value == value))
+                            && x.ContentValues.Any(y => y.Value == value)
+                            && x.ContentValues.Any(y => y.TenantId == TenantExecutionContext.Tenant.Id)
+                            )
                     .ToList();
 
             // Use global tenant as a fallback, mostly for static and dynamic links
@@ -450,7 +452,9 @@ namespace ECDLink.ContentManagement.Repositories
                                 && x.IsActive
                                 && x.ContentValues.Any(y => y.LocaleId == localeId)
                                 && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
-                                && x.ContentValues.Any(y => y.Value == value))
+                                && x.ContentValues.Any(y => y.Value == value)
+                                && x.ContentValues.Any(y => y.TenantId == TenantExecutionContext.Tenant.Id)
+                                )
                         .ToList();
 
             // No Content Found
