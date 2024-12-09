@@ -34,6 +34,8 @@ import {
   ContentTypes,
 } from '../../../../../../constants/content-management';
 import {
+  BulkUpdateActivityShareContent,
+  BulkUpdateActivitySkills,
   BulkUpdateActivityThemes,
   BulkUpdateConsentImages,
   bulkUpdateCoachingCircleTopicDates,
@@ -122,12 +124,12 @@ export default function ContentEdit({
     }
   `;
 
-  const [saveCoachCircleDates] = useMutation(
-    bulkUpdateCoachingCircleTopicDates
-  );
-
   const [saveConsentImages] = useMutation(BulkUpdateConsentImages);
   const [saveActivityThemes] = useMutation(BulkUpdateActivityThemes);
+  const [saveActivitySkills] = useMutation(BulkUpdateActivitySkills);
+  const [saveActivityShareContent] = useMutation(
+    BulkUpdateActivityShareContent
+  );
 
   const [updateContent] = useMutation(updateMutation);
   const [createContent] = useMutation(createMutation);
@@ -378,13 +380,37 @@ export default function ContentEdit({
         setLoading(false);
       });
 
+      // Copy activity items over to other languages
       if (contentType.name === ContentTypes.ACTIVITY) {
+        // theme
         await saveActivityThemes({
           variables: {
             contentId: +content.id,
             contentTypeId: +contentType.id,
             localeId: selectedLanguageId.toString(),
-            imageUrl: model.image,
+            themeIds: model.themes,
+          },
+        }).catch((error) => {
+          console.log(error);
+        });
+        // skills
+        await saveActivitySkills({
+          variables: {
+            contentId: +content.id,
+            contentTypeId: +contentType.id,
+            localeId: selectedLanguageId.toString(),
+            subCategoryIds: model.subCategories,
+          },
+        }).catch((error) => {
+          console.log(error);
+        });
+        // share content
+        await saveActivityShareContent({
+          variables: {
+            contentId: +content.id,
+            contentTypeId: +contentType.id,
+            localeId: selectedLanguageId.toString(),
+            shareContent: model.shareContent,
           },
         }).catch((error) => {
           console.log(error);

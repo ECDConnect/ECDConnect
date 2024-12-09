@@ -167,6 +167,38 @@ export const BulkUpdateActivityThemes = gql`
   }
 `;
 
+export const BulkUpdateActivitySkills = gql`
+  mutation BulkUpdateActivitySkills(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $subCategoryIds: String
+  ) {
+    bulkUpdateActivitySkills(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      subCategoryIds: $subCategoryIds
+    )
+  }
+`;
+
+export const BulkUpdateActivityShareContent = gql`
+  mutation BulkUpdateActivityShareContent(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $shareContent: String
+  ) {
+    bulkUpdateActivityShareContent(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      shareContent: $shareContent
+    )
+  }
+`;
+
 export const DeleteMultipleResources = gql`
   mutation DeleteBulkResources($contentIds: [Int!]) {
     deleteBulkResources(contentIds: $contentIds) {

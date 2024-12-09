@@ -99,6 +99,62 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        public bool BulkUpdateActivitySkills(
+           [Service] ContentManagementRepository contentRepo,
+           int contentId,
+           int contentTypeId,
+           Guid localeId,
+           string subCategoryIds
+           )
+        {
+            if (contentId == 0)
+            {
+                return false;
+            }
+
+            var languages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            foreach (var id in languages)
+            {
+                if (id != localeId)
+                {
+                    Dictionary<string, object> connectDict = new Dictionary<string, object>
+                    {
+                        { "subCategories", subCategoryIds },
+                    };
+                    contentRepo.Update(contentId, id, connectDict);
+                }
+            }
+            return true;
+        }
+
+        public bool BulkUpdateActivityShareContent(
+           [Service] ContentManagementRepository contentRepo,
+           int contentId,
+           int contentTypeId,
+           Guid localeId,
+           string shareContent
+           )
+        {
+            if (contentId == 0)
+            {
+                return false;
+            }
+
+            var languages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            foreach (var id in languages)
+            {
+                if (id != localeId)
+                {
+                    Dictionary<string, object> connectDict = new Dictionary<string, object>
+                    {
+                        { "shareContent", shareContent },
+                    };
+                    contentRepo.Update(contentId, id, connectDict);
+                }
+            }
+            return true;
+        }
+
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
         public BulkDeactivateResult DeleteMultipleActivities(
             [Service] ContentManagementRepository contentRepo,
