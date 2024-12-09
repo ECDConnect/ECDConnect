@@ -443,7 +443,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
               )}
               <Button
                 type="filled"
-                className="mb-4 mt-8 w-full"
+                className="mb-10 mt-8 w-full"
                 color="quatenary"
                 icon="SaveIcon"
                 text="Save"
