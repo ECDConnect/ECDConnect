@@ -27,7 +27,7 @@ export const WalkthroughModal = ({
         ? languages?.filter((language) =>
             availableLanguages?.includes(language.locale as LanguageCode)
           )
-        : languages,
+        : languages?.filter((language) => language.isActive),
     [languages, availableLanguages]
   );
 
