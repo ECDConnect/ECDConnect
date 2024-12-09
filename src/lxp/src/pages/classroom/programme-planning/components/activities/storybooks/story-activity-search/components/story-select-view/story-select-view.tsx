@@ -30,16 +30,15 @@ export const StorySelectView: React.FC<StorySelectViewProps> = ({
         return <StoryCard key={`story-card-${idx}`} {...story} />;
       })}
       {pageSize < storieProps.length && (
-        <h1>hi</h1>
-        // <Button
-        //   onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
-        //   icon="EyeIcon"
-        //   className={'mt-4 w-full'}
-        //   text={'See more stories'}
-        //   color={'quatenary'}
-        //   textColor="quatenary"
-        //   type="outlined"
-        // />
+        <Button
+          onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
+          icon="EyeIcon"
+          className={'mt-4 w-full'}
+          text={'See more stories'}
+          color={'quatenary'}
+          textColor="quatenary"
+          type="outlined"
+        />
       )}
     </>
   );
