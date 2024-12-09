@@ -355,7 +355,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       onStateChange(propName, value);
                     }}
                     color="tertiary"
-                    selectedOptions={'true'}
+                    // selectedOptions={'true'}
                     type={ButtonGroupTypes.Button}
                     className={'w-full rounded-2xl'}
                     multiple={false}

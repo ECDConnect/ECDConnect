@@ -402,7 +402,13 @@ export function ContentManagement() {
       } else if (item.name === ContentTypes.STORY_BOOK) {
         return 'Stories';
       }
-      return pluralize(choosedSectionTitle || item.name);
+      if (
+        choosedSectionTitle === ActivitiesTitles.StoryActivities ||
+        choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+      ) {
+        return choosedSectionTitle;
+      }
+      return pluralize(item.name);
     },
     [choosedSectionTitle]
   );

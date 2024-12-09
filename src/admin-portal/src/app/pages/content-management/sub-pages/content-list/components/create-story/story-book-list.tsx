@@ -398,6 +398,22 @@ export default function StoryBookList({
         updatedDate: item?.updatedDate
           ? format(new Date(item.updatedDate), 'dd/MM/yyyy')
           : '-',
+        themeComponent: (
+          <div className="ml-0 flex cursor-pointer flex-row items-center">
+            {item?.themes !== '' &&
+              item?.themes.split(',')?.map((item: any, index: number) => {
+                const theme = themes?.find((x) => x?.id === +item);
+                return (
+                  <div
+                    key={`theme_` + index}
+                    className={'text-textMid m-1 rounded-full py-1'}
+                  >
+                    {theme?.name}
+                  </div>
+                );
+              })}
+          </div>
+        ),
         typeComponent: (
           <div className="ml-0 flex cursor-pointer items-center">
             <div
@@ -445,7 +461,7 @@ export default function StoryBookList({
       use: 'Type',
     },
     {
-      field: 'themes',
+      field: 'themeComponent',
       use: 'Themes',
     },
     {
