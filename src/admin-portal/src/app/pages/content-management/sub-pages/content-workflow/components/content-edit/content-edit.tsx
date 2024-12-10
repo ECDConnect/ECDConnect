@@ -36,9 +36,9 @@ import {
 import {
   BulkUpdateActivityShareContent,
   BulkUpdateActivitySkills,
+  BulkUpdateActivityStoryTypes,
   BulkUpdateActivityThemes,
   BulkUpdateConsentImages,
-  bulkUpdateCoachingCircleTopicDates,
 } from '@ecdlink/graphql';
 import { format } from 'date-fns';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline';
@@ -60,6 +60,7 @@ export interface ContentViewProps {
   languages: LanguageDto[];
   setOpenTopic?: (item: boolean) => void;
   id?: string;
+  isEdit: boolean;
 }
 
 export interface RequirementProps {
@@ -81,6 +82,7 @@ export default function ContentEdit({
   setSearchValue,
   contentView,
   languages,
+  isEdit,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(5242880); // 13 MB
@@ -127,6 +129,7 @@ export default function ContentEdit({
   const [saveConsentImages] = useMutation(BulkUpdateConsentImages);
   const [saveActivityThemes] = useMutation(BulkUpdateActivityThemes);
   const [saveActivitySkills] = useMutation(BulkUpdateActivitySkills);
+  const [saveActivityStoryTypes] = useMutation(BulkUpdateActivityStoryTypes);
   const [saveActivityShareContent] = useMutation(
     BulkUpdateActivityShareContent
   );
@@ -232,7 +235,7 @@ export default function ContentEdit({
   const disbleButtonStyles =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
       ? `bg-secondary ${
-          disableButton?.length > 0 || smallLargeGroupsSkills?.length < 2
+          disableButton?.length > 0 && smallLargeGroupsSkills?.length < 2
             ? 'opacity-25'
             : ''
         } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`
@@ -394,16 +397,20 @@ export default function ContentEdit({
           console.log(error);
         });
         // skills
-        await saveActivitySkills({
-          variables: {
-            contentId: +content.id,
-            contentTypeId: +contentType.id,
-            localeId: selectedLanguageId.toString(),
-            subCategoryIds: model.subCategories,
-          },
-        }).catch((error) => {
-          console.log(error);
-        });
+        if (
+          choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+        ) {
+          await saveActivitySkills({
+            variables: {
+              contentId: +content.id,
+              contentTypeId: +contentType.id,
+              localeId: selectedLanguageId.toString(),
+              subCategoryIds: model.subCategories,
+            },
+          }).catch((error) => {
+            console.log(error);
+          });
+        }
         // share content
         await saveActivityShareContent({
           variables: {
@@ -415,6 +422,19 @@ export default function ContentEdit({
         }).catch((error) => {
           console.log(error);
         });
+        // story types
+        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+          await saveActivityStoryTypes({
+            variables: {
+              contentId: +content.id,
+              contentTypeId: +contentType.id,
+              localeId: selectedLanguageId.toString(),
+              subType: model.subType,
+            },
+          }).catch((error) => {
+            console.log(error);
+          });
+        }
       }
 
       // if there is an image, we need to copy the image to the other languages
@@ -488,7 +508,7 @@ export default function ContentEdit({
               )}
             </div>
             <div className="ml-4 flex-shrink-0">
-              {!!cancelCompare && (
+              {!!cancelCompare && isEdit && (
                 <button
                   type="button"
                   onClick={cancelCompare}

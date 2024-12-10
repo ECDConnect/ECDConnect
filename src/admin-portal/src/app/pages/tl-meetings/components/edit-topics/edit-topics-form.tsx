@@ -189,6 +189,7 @@ export default function EditTopicsForm({
                           selectedTab={selectedTab}
                           languages={languages}
                           setOpenTopic={setOpenTopic}
+                          isEdit={true}
                         />
                       </div>
                     </div>

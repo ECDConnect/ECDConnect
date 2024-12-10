@@ -199,6 +199,22 @@ export const BulkUpdateActivityShareContent = gql`
   }
 `;
 
+export const BulkUpdateActivityStoryTypes = gql`
+  mutation BulkUpdateActivityStoryTypes(
+    $contentId: Int!
+    $contentTypeId: Int!
+    $localeId: UUID!
+    $subType: String
+  ) {
+    bulkUpdateActivityStoryTypes(
+      contentId: $contentId
+      contentTypeId: $contentTypeId
+      localeId: $localeId
+      subType: $subType
+    )
+  }
+`;
+
 export const DeleteMultipleResources = gql`
   mutation DeleteBulkResources($contentIds: [Int!]) {
     deleteBulkResources(contentIds: $contentIds) {
