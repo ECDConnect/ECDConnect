@@ -157,7 +157,7 @@ export const Dashboard: React.FC = () => {
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
   );
-
+  debugger;
   const getPointsToDoItems = useCallback(async () => {
     appDispatch(
       pointsThunkActions.pointsTodoItems({ userId: practitioner?.userId! })

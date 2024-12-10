@@ -30,6 +30,7 @@ export const Classes = () => {
     practitionerSelectors?.getPractitioner
   );
   const classes = useSelector(classroomsSelectors.getClassroomGroups);
+  debugger;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
   const classesWithPractitionerData = classes.map((cls) => {

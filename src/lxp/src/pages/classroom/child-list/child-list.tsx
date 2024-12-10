@@ -115,7 +115,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const hasPermissionToEdit =
     hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
-
+  debugger;
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
@@ -308,6 +308,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   }, [classroomGroups, state?.classroomGroupId]);
 
   const populateStackedList = useCallback(() => {
+    debugger;
     const mappedChildren = children?.map((child) => mapUserListDataItem(child));
     const mappedChildrenForRedirectedClass =
       mappedChildren?.filter((child) =>
