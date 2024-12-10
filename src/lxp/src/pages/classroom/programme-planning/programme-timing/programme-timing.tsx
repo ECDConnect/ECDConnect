@@ -358,8 +358,7 @@ const ProgrammeTiming: React.FC = () => {
             list={
               (languages &&
                 languages
-                  ?.filter((language) => language.isActive)
-                  ?.filter((x) => x.locale?.length > 0)
+                  .filter((x) => x.locale?.length > 0)
                   .map((language: LanguageDto) => {
                     return {
                       label: language.description,
