@@ -155,6 +155,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        public bool BulkUpdateActivityStoryTypes(
+           [Service] ContentManagementRepository contentRepo,
+           int contentId,
+           int contentTypeId,
+           Guid localeId,
+           string subType
+           )
+        {
+            if (contentId == 0)
+            {
+                return false;
+            }
+
+            var languages = contentRepo.GetAllLanguagesForContentId(contentId, contentTypeId);
+            foreach (var id in languages)
+            {
+                if (id != localeId)
+                {
+                    Dictionary<string, object> connectDict = new Dictionary<string, object>
+                    {
+                        { "subType", subType },
+                    };
+                    contentRepo.Update(contentId, id, connectDict);
+                }
+            }
+            return true;
+        }
+
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
         public BulkDeactivateResult DeleteMultipleActivities(
             [Service] ContentManagementRepository contentRepo,
