@@ -210,26 +210,28 @@ export const ProgressShareReport: React.FC = () => {
             </li>
           </ul>
         </div>
-        <Button
-          onClick={() => {
-            if (isOnline) {
-              generateReport(
-                shareRef.current!,
-                shareRef.current?.offsetWidth || 750
-              );
-            } else {
-              showOnlineOnly();
-            }
-          }}
-          className="mt-4 w-full"
-          size="small"
-          color="quatenary"
-          textColor="white"
-          type="filled"
-          icon={'ShareIcon'}
-          text={'Share report'}
-          disabled={!selectedReport}
-        />
+        {!selectedReport && (
+          <Button
+            onClick={() => {
+              if (isOnline) {
+                generateReport(
+                  shareRef.current!,
+                  shareRef.current?.offsetWidth || 750
+                );
+              } else {
+                showOnlineOnly();
+              }
+            }}
+            className="mt-4 w-full"
+            size="small"
+            color="quatenary"
+            textColor="white"
+            type="filled"
+            icon={'ShareIcon'}
+            text={'Share report'}
+            disabled={!selectedReport}
+          />
+        )}
       </div>
       {!!selectedReport && (
         <div hidden={true}>
