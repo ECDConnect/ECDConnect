@@ -1,0 +1,2 @@
+INSERT INTO "ContentTypeField" ("Id","FieldOrder","FieldName","FieldTypeId","IsActive","DataLinkName","ContentTypeId","InsertedDate","UpdatedDate","UpdatedBy","TenantId","DisplayName","DisplayMainTable","DisplayPage","IsRequired") VALUES
+	 (nextval('public."ContentTypeField_Id_seq"'),3,'authorsAuthorization',1,true,'',10,'0001-01-01 00:00:00.000','0001-01-01 00:00:00.000',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8'::uuid,'Confirm that the author has given you permission to make this story publicly available on the app *',false,true,false);
