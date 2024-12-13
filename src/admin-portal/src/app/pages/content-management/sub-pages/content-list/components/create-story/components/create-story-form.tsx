@@ -37,8 +37,6 @@ export interface CreateStoryFormProps {
   getValues?: any;
   requiredMessage?: string;
   useWatch?: any;
-  setAuthorsAuthorization?: (item: boolean) => void;
-  authorsAuthorization?: boolean;
 }
 
 const contentWrapper = '';
@@ -56,8 +54,6 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   getValues,
   requiredMessage,
   useWatch,
-  setAuthorsAuthorization,
-  authorsAuthorization,
 }) => {
   const { register, control, errors } = handleform;
   const initialValues = getValues();
@@ -116,6 +112,8 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
       } else if (propName === 'keywords') {
         subLabel = 'Use commas to separate words';
       }
+
+      // console.log('field', field);
 
       switch (type) {
         case FieldType.Text:
@@ -269,40 +267,47 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           ) {
             return null;
           }
+
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
-                <FormField
-                  label={isRequired ? title + ' *' : title}
-                  subLabel={subLabel}
-                  nameProp={propName}
-                  placeholder={placeHolder}
-                  register={register}
-                  error={
-                    isRequired &&
-                    initialValues?.hasOwnProperty(propName) &&
-                    !initialValues[propName]
-                      ? requiredMessage
-                      : ''
-                  }
-                  required={isRequired}
-                  validation={validation}
-                />
+                {propName !== 'authorsAuthorization' && (
+                  <FormField
+                    label={isRequired ? title + ' *' : title}
+                    subLabel={subLabel}
+                    nameProp={propName}
+                    placeholder={placeHolder}
+                    register={register}
+                    error={
+                      isRequired &&
+                      initialValues?.hasOwnProperty(propName) &&
+                      !initialValues[propName]
+                        ? requiredMessage
+                        : ''
+                    }
+                    required={isRequired}
+                    validation={validation}
+                  />
+                )}
               </div>
-              {propName === 'author' && (
-                <div className="mt-2">
+              {propName === 'authorsAuthorization' && (
+                <div>
                   <Typography
                     type="help"
                     color="textDark"
                     weight="bold"
                     text={`Confirm that the author has given you permission to make this story publicly available on the app *`}
                   />
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <Checkbox
-                      onCheckboxChange={() =>
-                        setAuthorsAuthorization(!authorsAuthorization)
+                      onCheckboxChange={(value) =>
+                        onStateChange(propName, value.checked.toString())
                       }
-                      checked={authorsAuthorization}
+                      //checked={field.contentValue !== undefined}
+                      // onCheckboxChange={() =>
+                      //   // setAuthorsAuthorization(!authorsAuthorization)
+                      //   onStateChange(propName, true)
+                      // }
                     />
                     <Typography
                       text={`I confirm that the author has given me permission to post this story`}
@@ -310,13 +315,13 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                       color={'textMid'}
                     />
                   </div>
-                  {!authorsAuthorization && (
+                  {/* {!authorsAuthorization && (
                     <Typography
                       type="help"
                       color="errorMain"
                       text={requiredMessage}
                     />
-                  )}
+                  )} */}
                 </div>
               )}
             </div>

@@ -340,7 +340,7 @@ export default function StoryBookList({
         availableLanguages: itemLanguages,
         shareContent: item.shareContent,
         themes: item.themes,
-        authorsAuthorization: true,
+        authorsAuthorization: item.authorsAuthorization,
       };
 
       model.content = copyItem;
