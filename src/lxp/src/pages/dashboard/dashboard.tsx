@@ -1118,11 +1118,11 @@ export const Dashboard: React.FC = () => {
     ) {
       return 'Cwepheshe';
     }
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'Tichere';
     }
 
-    if (pointsToDo?.signedUpForApp) {
+    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
       return 'Umtsha';
     }
 
@@ -1152,11 +1152,11 @@ export const Dashboard: React.FC = () => {
       return 'quatenaryBg';
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'secondaryAccent2';
     }
 
-    if (pointsToDo?.signedUpForApp) {
+    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
       return 'alertBg';
     }
 
@@ -1202,7 +1202,7 @@ export const Dashboard: React.FC = () => {
       );
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
           <Kindgarden className="font-white h-8  w-8 text-white" />
@@ -1210,7 +1210,7 @@ export const Dashboard: React.FC = () => {
       );
     }
 
-    if (pointsToDo?.signedUpForApp) {
+    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
       return (
         <div className="bg-alertMain mr-4 rounded-full p-2">
           <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
@@ -1248,11 +1248,11 @@ export const Dashboard: React.FC = () => {
       return 'quatenary';
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'secondary';
     }
 
-    if (pointsToDo?.signedUpForApp) {
+    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
       return 'alertMain';
     }
 
@@ -1398,9 +1398,11 @@ export const Dashboard: React.FC = () => {
               mainText={''}
               currentPoints={getCurrentPointsToDo}
               maxPoints={
-                practitioner?.isPrincipal ||
-                (!practitioner?.isPrincipal &&
-                  planActivitiesPermission?.isActive === true)
+                isTrialPeriod
+                  ? 6
+                  : practitioner?.isPrincipal ||
+                    (!practitioner?.isPrincipal &&
+                      planActivitiesPermission?.isActive === true)
                   ? 4
                   : 3
               }
