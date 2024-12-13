@@ -1370,7 +1370,7 @@ export const Dashboard: React.FC = () => {
             listItems={dashboardItems}
             notification={dashboardNotification}
           />
-          {totalYearPoints &&
+          {/* {totalYearPoints &&
           totalYearPoints >= 10 &&
           !!pointsScoreProps &&
           !isCoach ? (
@@ -1389,8 +1389,8 @@ export const Dashboard: React.FC = () => {
               textColour={pointsScoreProps?.textColour!}
               textPosition={pointsScoreProps?.textPosition!}
             />
-          ) : null}
-          {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
+          ) : null} */}
+          {/* {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
           !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
@@ -1415,7 +1415,7 @@ export const Dashboard: React.FC = () => {
               hint={renderTodoText}
               textPosition="left"
             />
-          ) : null}
+          ) : null} */}
         </div>
       </BannerWrapper>
     </>
