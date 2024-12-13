@@ -113,7 +113,11 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
         subLabel = 'Use commas to separate words';
       }
 
-      // console.log('field', field);
+      const isAuthorizationChecked =
+        initialValues?.hasOwnProperty('authorsAuthorization') &&
+        initialValues?.authorsAuthorization !== undefined
+          ? initialValues?.authorsAuthorization === 'true'
+          : false;
 
       switch (type) {
         case FieldType.Text:
@@ -303,11 +307,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                       onCheckboxChange={(value) =>
                         onStateChange(propName, value.checked.toString())
                       }
-                      //checked={field.contentValue !== undefined}
-                      // onCheckboxChange={() =>
-                      //   // setAuthorsAuthorization(!authorsAuthorization)
-                      //   onStateChange(propName, true)
-                      // }
+                      checked={isAuthorizationChecked}
                     />
                     <Typography
                       text={`I confirm that the author has given me permission to post this story`}
@@ -315,13 +315,13 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                       color={'textMid'}
                     />
                   </div>
-                  {/* {!authorsAuthorization && (
+                  {!isAuthorizationChecked && (
                     <Typography
                       type="help"
                       color="errorMain"
                       text={requiredMessage}
                     />
-                  )} */}
+                  )}
                 </div>
               )}
             </div>
