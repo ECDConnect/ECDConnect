@@ -166,8 +166,9 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           // shareContent ---------------------------------
           if (
             propName === 'shareContent' &&
-            template?.fields?.find((item) => item?.propName === 'shareContent')
-              ?.contentValue === undefined
+            (field?.contentValue === undefined ||
+              field?.contentValue?.value === 'no' ||
+              field?.contentValue?.value === 'false')
           ) {
             return (
               <div key={propName} className={contentWrapper}>
@@ -266,8 +267,8 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           }
           if (
             propName === 'shareContent' &&
-            template?.fields?.find((item) => item?.propName === 'shareContent')
-              ?.contentValue !== undefined
+            field?.contentValue !== undefined &&
+            field?.contentValue.value === 'yes'
           ) {
             return null;
           }

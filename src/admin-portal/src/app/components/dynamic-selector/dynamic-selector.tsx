@@ -263,7 +263,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
 
           <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
             {tableData &&
-              tableData.map((item: any) => {
+              tableData.map((item: any, index: number) => {
                 const maximumItemsChecked = tableData.filter((x) =>
                   currentIds?.includes(x.id?.toString())
                 );
@@ -274,7 +274,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                   <CheckboxGroup
                     checkboxColor="secondary"
                     id={item?.id}
-                    key={'theme_' + item?.title}
+                    key={'theme_' + index}
                     title={item?.name}
                     checked={itemChecked}
                     value={item?.title}
