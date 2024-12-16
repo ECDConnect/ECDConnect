@@ -177,6 +177,7 @@ namespace ECDLink.ContentManagement.Repositories
                             contentFieldValuePairs["availableLanguages"] = string.Join(",", langsList);
                         }
                     }
+                    contentFieldValuePairs["tenantId"] = item.ContentValues.Select(x => x.TenantId.ToString()).FirstOrDefault();
                     if (contentFieldValuePairs?.Any() ?? false)
                     {
                         allContentValuePairs.Add(contentFieldValuePairs.ToObject());

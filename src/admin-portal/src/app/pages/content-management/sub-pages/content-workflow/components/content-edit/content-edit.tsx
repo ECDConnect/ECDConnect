@@ -487,7 +487,9 @@ export default function ContentEdit({
                 {cancelEdit &&
                   camelCaseToSentanceCase(content?.name ?? content?.type)}
               </h3>
-              {content?.shareContent && content?.shareContent === 'true' ? (
+              {content?.shareContent &&
+              (content?.shareContent === 'true' ||
+                content?.shareContent === 'yes') ? (
                 <div className="flex items-center gap-4">
                   <CheckCircleIcon className="text-successMain h-8 w-8" />
                   <h4 className="text-small text-successMain font-semibold leading-6">
@@ -497,6 +499,7 @@ export default function ContentEdit({
               ) : (
                 (content?.shareContent === '' ||
                   content?.shareContent === 'false' ||
+                  content?.shareContent === 'no' ||
                   content?.shareContent === null) && (
                   <div className="flex items-center gap-4">
                     <XCircleIcon className="text-errorMain h-8 w-8" />

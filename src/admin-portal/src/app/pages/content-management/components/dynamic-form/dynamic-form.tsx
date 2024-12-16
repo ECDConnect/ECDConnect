@@ -311,8 +311,8 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           if (propName === 'shareContent') {
             if (
               disableActivitiesInputs ||
-              field?.contentValue?.value === 'true' ||
-              field?.contentValue?.value === 'false'
+              field?.contentValue?.value === 'yes' ||
+              field?.contentValue?.value === 'true'
             ) {
               return null;
             }
@@ -360,20 +360,21 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     </div>
                   </div>
                   <Typography
-                    type={'body'}
+                    type={'small'}
                     color={'textMid'}
                     text={`If you select 'Yes', then any future edits made & all translations of this activity can be shared with other organisations.`}
                   />
-                  <div className={`bg-uiBg sm:col-span-12`}>
+                  <div className={`bg-uiBg gap-2 sm:col-span-12`}>
                     <ButtonGroup
                       options={shareContentOptions}
                       onOptionSelected={(value: string | string[]) => {
                         onStateChange(propName, value);
                       }}
+                      selectedOptions={field?.contentValue?.value}
                       color="tertiary"
-                      // selectedOptions={'true'}
+                      notSelectedColor="tertiaryAccent2"
                       type={ButtonGroupTypes.Button}
-                      className={'w-full rounded-2xl'}
+                      className={'w-full'}
                       multiple={false}
                     />
                   </div>

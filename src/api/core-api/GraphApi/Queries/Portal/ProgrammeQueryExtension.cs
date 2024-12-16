@@ -8,6 +8,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -88,11 +89,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         if (shareContent.Contains("Yes"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes" || x.ShareContent == "true").ToList());
                         }
                         else if (shareContent.Contains("No"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no" || x.ShareContent == "false").ToList());
                         }
                         else
                         {
@@ -269,11 +270,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         if (shareContent.Contains("Yes"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes" || x.ShareContent == "true").ToList());
                         }
                         else if (shareContent.Contains("No"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no" || x.ShareContent == "false").ToList());
                         }
                         else
                         {
@@ -409,7 +410,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
             }
 
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
-            var records = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId).Select(x => new ThemeViewModel(x, englishId)).ToList();
+            var records = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId)
+                                     .Select(x => new ThemeViewModel(x, englishId))
+                                     .Where(x => x.TenantId.ToString() == TenantExecutionContext.Tenant.Id.ToString())
+                                     .ToList();
 
             if (records.Any())
             {
@@ -443,11 +447,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         if (shareContent.Contains("Yes"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes" || x.ShareContent == "true").ToList());
                         }
                         else if (shareContent.Contains("No"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no" || x.ShareContent == "false").ToList());
                         }
                         else
                         {

@@ -14,6 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public string ShareContent { get; set; }
         public string ThemeDays { get; set; }
         public Guid LocaleId { get; set; }
+        public string TenantId { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public DateTime? InsertedDate { get; set; }
         public List<Guid> AvailableLanguages { get; set; }
@@ -31,6 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             item.TryGetValue("imageUrl", out var imageUrl);
             item.TryGetValue("themeDays", out var themeDays);
             item.TryGetValue("themeLogo", out var themeLogo);
+            item.TryGetValue("tenantId", out var tenantId);
 
             Id = id.ToString();
             Name = name != null ? name.ToString() : "";
@@ -39,6 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             ThemeDays = themeDays != null ? themeDays.ToString() : "";
             ThemeLogo = themeLogo != null ? themeLogo.ToString() : "";
             LocaleId = localeId;
+            TenantId = tenantId != null ? tenantId.ToString() : "";
             ShareContent = shareContent == null ? "" : shareContent.ToString();
             UpdatedDate = updatedDate != null ? DateTime.Parse(updatedDate.ToString()) : null;
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
