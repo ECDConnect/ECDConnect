@@ -397,9 +397,6 @@ export default function CreateTheme({
         item?.storyActivity
     );
 
-  console.log('template', template);
-  console.log('formValues', formValues);
-
   const disbleButtonStyles = `bg-secondary ${
     !disableButtonDays ? 'opacity-25' : ''
   } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
