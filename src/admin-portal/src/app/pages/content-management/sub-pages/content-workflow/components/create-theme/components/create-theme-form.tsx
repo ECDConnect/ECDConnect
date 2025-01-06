@@ -141,9 +141,9 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                       type="warning"
                     />
                   ) : (
-                    <div key={propName} className="flex"></div>
+                    <div className="flex"></div>
                   )}
-                  <div key={propName} className="flex">
+                  <div className="flex">
                     <Typography
                       type={'body'}
                       weight={'bold'}
@@ -168,7 +168,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                     text={`If you select 'Yes', then any future edits made & all translations of this activity can be shared with other organisations.`}
                   />
                   <div
-                    className={`bg-uiBg sm:col-span-12 ${
+                    className={`bg-uiBg gap-2 sm:col-span-12 ${
                       hasUnsharedContent && 'pointer-events-none opacity-50'
                     }`}
                   >
@@ -178,7 +178,6 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                         onStateChange(propName, value);
                       }}
                       color="tertiary"
-                      selectedOptions={'true'}
                       type={ButtonGroupTypes.Button}
                       className={'mr-2 w-full rounded-2xl'}
                       multiple={false}
@@ -194,7 +193,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                     type={'body'}
                     weight={'bold'}
                     color={'textDark'}
-                    text={`${title}`}
+                    text={`${title} *`}
                   />
                 </div>
                 {propName === 'name' && (
@@ -244,7 +243,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                 <div className="sm:col-span-12">
                   <FormFileInput
                     acceptedFormats={acceptedFileFormats || acceptedFormats}
-                    label={title}
+                    label={propName === 'themeLogo' ? title : title + ' *'}
                     nameProp={propName}
                     contentUrl={
                       field.contentValue ? field.contentValue.value : undefined

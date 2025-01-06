@@ -374,7 +374,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                       color="tertiary"
                       notSelectedColor="tertiaryAccent2"
                       type={ButtonGroupTypes.Button}
-                      className={'w-full'}
+                      className={'mr-2 w-full rounded-2xl'}
                       multiple={false}
                     />
                   </div>
