@@ -119,7 +119,11 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
         switch (type) {
           case FieldType.Text:
             if (propName === 'shareContent') {
-              if (field?.contentValue?.value === 'true') {
+              console.log('field', field);
+              if (
+                field?.contentValue?.value === 'true' ||
+                field?.contentValue?.value === 'yes'
+              ) {
                 return null;
               }
               return (
