@@ -20,6 +20,7 @@ import { DialogPosition } from '@ecdlink/ui';
 import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateThemeForm from './components/create-theme-form';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline';
 
 export interface ContentViewProps {
   content: any;
@@ -401,6 +402,7 @@ export default function CreateTheme({
     !disableButtonDays ? 'opacity-25' : ''
   } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
+  console.log('content', content);
   if (
     contentType &&
     contentValues &&
@@ -419,6 +421,29 @@ export default function CreateTheme({
                     (content?.name ?? content?.type) || 'Add theme'
                   )}
               </h3>
+
+              {content?.shareContent &&
+              (content?.shareContent === 'true' ||
+                content?.shareContent === 'yes') ? (
+                <div className="flex items-center gap-4">
+                  <CheckCircleIcon className="text-successMain h-8 w-8" />
+                  <h4 className="text-small text-successMain font-semibold leading-6">
+                    Shared with other organisations
+                  </h4>
+                </div>
+              ) : (
+                (content?.shareContent === '' ||
+                  content?.shareContent === 'false' ||
+                  content?.shareContent === 'no' ||
+                  content?.shareContent === null) && (
+                  <div className="flex items-center gap-4">
+                    <XCircleIcon className="text-errorMain h-8 w-8" />
+                    <h4 className="text-small text-errorMain font-semibold leading-6">
+                      Not shared with other organisations
+                    </h4>
+                  </div>
+                )
+              )}
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
               {!!cancelEdit && (
