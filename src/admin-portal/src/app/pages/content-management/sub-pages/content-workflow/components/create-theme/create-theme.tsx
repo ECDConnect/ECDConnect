@@ -45,7 +45,8 @@ export default function CreateTheme({
   cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit, control, getValues } =
+    useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
@@ -166,16 +167,6 @@ export default function CreateTheme({
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
   const [filteredThemeDays, setFilteredThemeDays] = useState([]);
-
-  const validation =
-    filteredThemeDays &&
-    filteredThemeDays.every(
-      (item) =>
-        item.smallGroupActivity &&
-        item.largeGroupActivity &&
-        item.storyBook &&
-        item.storyActivity
-    );
 
   const allowedFileSize = 13631488;
 
@@ -389,10 +380,25 @@ export default function CreateTheme({
     setLoading(false);
   };
 
-  const disableButtonDays = filteredThemeDays?.length < 16;
+  const formValues = getValues();
+  const totalCompletedDays =
+    filteredThemeDays &&
+    filteredThemeDays.filter((item) => item !== undefined).length;
+  const disableButtonDays =
+    totalCompletedDays === 20 &&
+    formValues?.name &&
+    formValues?.imageUrl &&
+    filteredThemeDays &&
+    filteredThemeDays.every(
+      (item) =>
+        item?.smallGroupActivity &&
+        item?.largeGroupActivity &&
+        item?.storyBook &&
+        item?.storyActivity
+    );
 
   const disbleButtonStyles = `bg-secondary ${
-    disableButtonDays ? 'opacity-25' : ''
+    !disableButtonDays ? 'opacity-25' : ''
   } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`;
 
   if (
@@ -442,7 +448,7 @@ export default function CreateTheme({
           <div className="flex flex-row">
             <button
               type="submit"
-              disabled={disableButtonDays}
+              disabled={!disableButtonDays}
               className={disbleButtonStyles}
             >
               <SaveIcon width="22px" className="mr-2" />
