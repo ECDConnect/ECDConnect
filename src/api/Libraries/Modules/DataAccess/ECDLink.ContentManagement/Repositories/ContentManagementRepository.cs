@@ -83,7 +83,7 @@ namespace ECDLink.ContentManagement.Repositories
                 // Get the complete content for null tenant and current tenants.
                 var contentType = _context.ContentTypes
                   .Include(ct => ct.Content.Where(x => x.IsActive))
-                      .ThenInclude(c => c.ContentValues.Where(c => c.LocaleId == localeId))
+                      .ThenInclude(c => c.ContentValues.Where(c => c.LocaleId == localeId && c.TenantId == currentTenant))
                         .ThenInclude(c => c.ContentTypeField)
                   .Where(x => x.Id == contentTypeId
                         && x.IsActive
@@ -95,8 +95,7 @@ namespace ECDLink.ContentManagement.Repositories
                   .FirstOrDefault();
 
                 var contents = contentType?.Content
-                        .Where(x => x.IsActive
-                     && (x.TenantId == currentTenant))
+                        .Where(x => x.IsActive && x.ContentValues.Any())
                         .OrderBy(x => x.Id)
                         .ToList();
 
