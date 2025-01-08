@@ -306,26 +306,30 @@ export const ChildProfile: React.FC = () => {
 
   // TODO - This useEffect needs to be fixed, causing infinite re-renders!!!
   useEffect(() => {
-    async function getAttendance() {
-      if (!attendanceData || !child) return;
+    if (!attendanceData || !child) return;
 
+    const fetchAttendance = async () => {
       setIsLoadingAttendance(true);
 
-      await new AttendanceService(authUser?.auth_token ?? '')
-        .getChildAttendanceRecords(
+      try {
+        const data = await new AttendanceService(
+          authUser?.auth_token ?? ''
+        ).getChildAttendanceRecords(
           child?.userId ?? child?.user?.id ?? '',
           classroomGroup?.id ?? '',
           startOfISOWeekYear(new Date()),
           currentDate
-        )
-        .then((data) => {
-          setAttendanceReport(data);
-        });
+        );
+        setAttendanceReport(data);
+      } catch (error) {
+        console.error('Error fetching attendance:', error);
+      } finally {
+        setIsLoadingAttendance(false);
+      }
+    };
 
-      setIsLoadingAttendance(false);
-    }
-    getAttendance().catch(console.error);
-  }, [child, classroomGroup?.id, attendanceData]);
+    fetchAttendance();
+  }, [attendanceData, child, classroomGroup?.id]);
 
   useEffect(() => {
     if (!attendanceData || !child) return;
@@ -749,7 +753,7 @@ export const ChildProfile: React.FC = () => {
         displayOffline={!isOnline}
         // onHelp={() => goToChildProfileWalkthrough()}
         displayHelp={true}
-        isLoading={isLoadingAttendance}
+        isLoading={isOnline && !!isLoadingAttendance}
       >
         <div className={styles.avatarWrapper}>
           <ProfileAvatar
