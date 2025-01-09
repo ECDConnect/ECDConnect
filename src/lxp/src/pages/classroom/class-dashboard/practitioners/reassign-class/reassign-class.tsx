@@ -327,18 +327,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   }, [practitioner2, practitioners]);
 
   useEffect(() => {
-    // Create dropdown options excluding practitioners on leave
     const _list =
       [...(practitioners ?? []), practitionerUser]
-        ?.filter((p) => {
-          // Ensure the practitioner has a first name
-          const hasFirstName = !!p?.user?.firstName;
-
-          // Check if the practitioner is on leave (absentee)
-          const isPractitionerOnLeave = p?.absentees?.length ? true : false;
-
-          return hasFirstName && !isPractitionerOnLeave;
-        }) // Exclude practitioners on leave
+        ?.filter((p) => !!p?.user?.firstName)
         ?.map(
           (p): DropDownOption<string> =>
             ({
@@ -347,14 +338,12 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             } as DropDownOption<string>)
         ) ?? [];
 
-    // Set the filtered practitioners list
     setPractitionersList(_list);
     setPractitionersTeachList(
       _list?.filter((item) => item?.value !== String(practitionerId))
     );
-  }, [practitioners, practitionerUser, practitionerId]);
-
-  console.log(practitionersTeachList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitioners]);
 
   useEffect(() => {
     const _list = absentInfo?.map((item) => {
