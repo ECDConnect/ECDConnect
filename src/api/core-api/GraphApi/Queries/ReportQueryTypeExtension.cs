@@ -225,8 +225,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            // if (learner.StartedAttendance >= fromDate)
-                            // {
+                            if (learner.StartedAttendance > fromDate)
+                            {
                                 childCount++;
                                 var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
                                 if (attendanceData.Any())
@@ -246,7 +246,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                     year = attendanceData.FirstOrDefault().Year;
                                     weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
                                 }
-                            // }
+                            }
                         }
                     }
                     metric.Add(
