@@ -222,6 +222,8 @@ namespace ECDLink.DataAccessLayer.Context
 
         public DbSet<UserResourceLikes> UserResourceLikes { get; set; }
 
+        public DbSet<Holiday> Holidays { get; set; }
+
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
         {

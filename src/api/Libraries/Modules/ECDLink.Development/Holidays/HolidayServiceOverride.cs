@@ -5,6 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECDLink.Development.Holidays
 {
@@ -15,77 +19,72 @@ namespace ECDLink.Development.Holidays
 
     public class HolidayServiceOverride : IHolidayService<Holiday>
     {
+        private readonly AuthenticationDbContext _context;
+
+        public HolidayServiceOverride(AuthenticationDbContext context)
+        {
+            _context = context;
+        }
+
         public IEnumerable<Holiday> GetHolidays(int year, string locale = "ZA")
         {
-            var holidayList = new List<Holiday>();
+            return GetHolidaysAsync(year, locale).Result;
+        }
 
-            var endpoint = "https://date.nager.at/api/v3/PublicHolidays";
-            endpoint = $"{endpoint}/{year}/{locale}";
+        public IEnumerable<Holiday> GetHolidays(DateTime startMonth, DateTime endMonth, string locale = "ZA")
+        {
+            return GetHolidaysAsync(DateTime.Now.Year).Result.Where(x => x.Day >= startMonth && x.Day <= endMonth);
+        }
+
+        public async Task<IEnumerable<Holiday>> GetHolidaysAsync(int year, string locale = "ZA")
+        {
+            var currentMonth = DateTime.Now.Month;
+            var holidaysToUpdate = await _context.Holidays
+                .Where(x => x.CheckedDate.Month != currentMonth)
+                .ToListAsync();
+
+            if (!await _context.Holidays.AnyAsync() || holidaysToUpdate.Any())
+            {
+                await FetchAndUpdateHolidaysAsync();
+            }
+
+            return await _context.Holidays
+                .Where(x => x.Day.Year == year && x.Locale == locale)
+                .ToListAsync();
+        }
+
+        public async Task FetchAndUpdateHolidaysAsync()
+        {
+            var currentYear = DateTime.UtcNow.Year;
+
+            // Remove holidays from previous years
+            await _context.Holidays
+                .Where(h => h.Day.Year < currentYear)
+                .ExecuteDeleteAsync();
+
+            var endpoint = $"https://date.nager.at/api/v3/PublicHolidays/{currentYear}/ZA";
 
             var client = new RestClient(endpoint);
             var request = new RestRequest();
             request.AddHeader("Content-Type", "application/json");
             request.AddHeader("Accept", "application/json");
-            var response = client.Execute(request);
+            var response = await client.ExecuteAsync(request);
+
             if (response.ResponseStatus == ResponseStatus.Completed)
             {
-                var holidayDays =  JsonSerializer.Deserialize<IEnumerable<DaysOff>>(response.Content).ToList();
-                
-                foreach (var holiday in holidayDays)
-                {
-                    var holidayDateTime = DateTime.Parse(holiday.date);
-                    holidayList.Add(new Holiday
+                var holidays = JsonSerializer.Deserialize<IEnumerable<DaysOff>>(response.Content);
+
+                var newHolidays = holidays
+                    .Select(h => new Holiday
                     {
-                        Day = holidayDateTime
-                    });
-                }
-
-             } 
-            else
-            {
-                var dateStrings = new[]
-                {
-                    $"January 01, {DateTime.Now.Year}",
-                    $"March 21, {DateTime.Now.Year}",                
-                   // $"April 07, {DateTime.Now.Year}", Good Friday -  determined according to the ecclesiastical moon
-                   // $"April 10, {DateTime.Now.Year}", Family Day -  determined according to the ecclesiastical moon
-                    $"April 27, {DateTime.Now.Year}",
-                    $"May 01, {DateTime.Now.Year}",
-                    $"June 16, {DateTime.Now.Year}",
-                    $"August 09, {DateTime.Now.Year}",
-                    $"September 24, {DateTime.Now.Year}",
-                    $"December 16, {DateTime.Now.Year}",
-                    $"December 25, {DateTime.Now.Year}",
-                    $"December 26, {DateTime.Now.Year}",
-                };
-
-                foreach (var holiday in dateStrings)
-                {
-                    var holidayDateTime = DateTime.Parse(holiday);
-
-                    holidayList.Add(new Holiday
-                    {
-                        Day = holidayDateTime
+                        Day = DateTime.Parse(h.date),
+                        CheckedDate = DateTime.Now,
+                        Locale = "ZA"
                     });
 
-                    // If holiday falls on a Sunday, we add the monday as well.
-                    if (holidayDateTime.DayOfWeek == DayOfWeek.Sunday)
-                    {
-                        var mondayHoliday = new DateTime(holidayDateTime.Year, holidayDateTime.Month, holidayDateTime.Day + 1);
-                        holidayList.Add(new Holiday
-                        {
-                            Day = mondayHoliday
-                        });
-                    }
-                }
+                await _context.Holidays.AddRangeAsync(newHolidays);
+                await _context.SaveChangesAsync();
             }
-            return holidayList;
-        }
-        
-
-        public IEnumerable<Holiday> GetHolidays(DateTime startMonth, DateTime endMonth, string locale = "ZA")
-        {
-            return GetHolidays(DateTime.Now.Year).Where(x => x.Day >= startMonth && x.Day <= endMonth);
         }
     }
 }
