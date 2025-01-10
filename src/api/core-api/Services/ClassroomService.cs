@@ -57,6 +57,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 return null;
             }
+
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.OpenAccess
+                && !practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy != null) 
+            {
+                return _classroomRepo.GetAll()
+                    .Where(x =>
+                        x.IsActive
+                        && x.UserId.HasValue
+                        && x.UserId.Value == practitioner.PrincipalHierarchy)
+                    .OrderByDescending(x => x.InsertedDate)
+                    .FirstOrDefault();
+            }
+
           
             if (!practitioner.IsPrincipalOrAdmin() &&  (practitioner.PrincipalHierarchy == null || practitioner.Progress < 2))
             {
