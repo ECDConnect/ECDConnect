@@ -113,16 +113,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
                         if (practitioner.PrincipalHierarchy == null)
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, IsRegistered = practitioner.IsRegistered, BelongsToPreschool = classroom != null, Note = classroom != null ? "This practitioner is linked to a different SmartStart programme" : null };
+                            var hasPreschool = classroom == null ? false : (classroom.IsDummySchool == true ? false : true);
+                            return new PractitionerUserAndNote() { 
+                                AppUser = practitioner.User, 
+                                IsRegistered = practitioner.IsRegistered, 
+                                BelongsToPreschool = hasPreschool, 
+                                Note = hasPreschool ? "This practitioner is linked to a different SmartStart programme" : null };
                         }
                         else
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme", IsRegistered = classroom != null };
+                            return new PractitionerUserAndNote() { 
+                                AppUser = practitioner.User, 
+                                Note = "This practitioner is linked to a different SmartStart programme", 
+                                IsRegistered = classroom != null };
                         }
                     }
                     else
                     {
-                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", IsRegistered = false, BelongsToPreschool = false };
+                        return new PractitionerUserAndNote() { 
+                            AppUser = null, 
+                            Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", 
+                            IsRegistered = false, 
+                            BelongsToPreschool = false };
                     }
                 }
             }
