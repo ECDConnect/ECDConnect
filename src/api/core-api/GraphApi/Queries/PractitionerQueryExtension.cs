@@ -104,16 +104,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
                     ApplicationUser currentUser = userManager.FindByIdAsync(practitionerUser.Id.ToString()).Result;
                     Classroom classroom = dbContext.Classrooms.Where(classroom => classroom.UserId == practitionerUser.Id).FirstOrDefault();
+                    var linkedClasses = dbContext.ClassroomGroups.Where(x => x.UserId == practitionerUser.Id && x.IsActive).Count();
                     var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
 
                     if (practitioner != null)
                     {
-
                         practitioner.User = currentUser;
 
                         if (practitioner.PrincipalHierarchy == null)
                         {
-                            var hasPreschool = classroom == null ? false : (classroom.IsDummySchool == true ? false : true);
+                            var hasPreschool = classroom == null ? false : linkedClasses > 0;
                             return new PractitionerUserAndNote() { 
                                 AppUser = practitioner.User, 
                                 IsRegistered = practitioner.IsRegistered, 
