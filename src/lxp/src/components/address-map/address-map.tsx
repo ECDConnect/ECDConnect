@@ -5,7 +5,7 @@ import {
   GoogleMapGeoCodeResponse,
   GoogleMapGeoCodeAddressComponentType,
 } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { SiteAddressDto } from '@ecdlink/core';
 import { staticDataSelectors } from '@/store/static-data';
 import { useSelector } from 'react-redux';
@@ -43,12 +43,97 @@ const getAddressComponent = (
 };
 
 export const AddressMap: React.FC<AddressMapProps> = (props) => {
-  const [address, setAddress] = useState<SiteAddressDto>({ ...props.address });
+  const [address, setAddress] = useState<SiteAddressDto>(
+    props.address || {
+      addressLine1: '',
+      addressLine2: '',
+      addressLine3: '',
+      municipality: '',
+      provinceId: null,
+      province: null,
+      postalCode: '',
+      latitude: '',
+      longitude: '',
+    }
+  );
   const [formattedAddress, setFormattedAddress] = useState<string>(
     formatAddress(props.address)
   );
 
   const provinces = useSelector(staticDataSelectors.getProvinces);
+
+  // Function to reverse geocode coordinates
+  const reverseGeocode = async (latitude: number, longitude: number) => {
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk`;
+    const response = await fetch(geocodeUrl);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results.length > 0) {
+      const mapData = data;
+      const province = getAddressComponent(
+        mapData,
+        'administrative_area_level_1'
+      )?.long_name;
+      const matchedProvince = !!province
+        ? provinces.find(
+            (p) => p.description.toLowerCase() === province.toLowerCase()
+          )
+        : null;
+
+      const updatedAddress: SiteAddressDto = {
+        ...address,
+        addressLine1: `${
+          getAddressComponent(mapData, 'street_number')?.short_name || ''
+        } ${getAddressComponent(mapData, 'route')?.short_name || ''}`,
+        addressLine2:
+          getAddressComponent(mapData, 'sublocality')?.short_name || '',
+        addressLine3:
+          getAddressComponent(mapData, 'locality')?.short_name || '',
+        municipality:
+          getAddressComponent(mapData, 'administrative_area_level_2')
+            ?.short_name || '',
+        provinceId: matchedProvince ? matchedProvince.id : null,
+        province: matchedProvince
+          ? {
+              id: matchedProvince.id || '',
+              enumId: matchedProvince.id || '',
+              description: matchedProvince.description || '',
+            }
+          : null,
+        postalCode:
+          getAddressComponent(mapData, 'postal_code')?.short_name || '',
+        latitude: latitude.toString(),
+        longitude: longitude.toString(),
+      };
+
+      setAddress(updatedAddress);
+      setFormattedAddress(formatAddress(updatedAddress));
+    }
+  };
+
+  // Get current location
+  useEffect(() => {
+    console.log(props.address);
+    if (!props.address.latitude || !props.address.longitude) {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+
+            console.log(position.coords);
+            reverseGeocode(latitude, longitude);
+          },
+          (error) => {
+            console.error('Error getting location:', error);
+          }
+        );
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+      }
+    } else {
+      setFormattedAddress(formatAddress(props.address));
+    }
+  }, []);
 
   const onClickSaveAddress = useCallback(() => {
     props.onSubmit(address);
