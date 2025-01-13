@@ -110,10 +110,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     if (practitioner != null)
                     {
                         practitioner.User = currentUser;
+                        var hasPreschool = false;
 
                         if (practitioner.PrincipalHierarchy == null)
                         {
-                            var hasPreschool = classroom == null ? false : linkedClasses > 0;
+
+                        if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabelTemplate) {
+                            hasPreschool = classroom == null;
+                        } else {
+                            hasPreschool = classroom == null ? false : linkedClasses > 0;
+                        }
                             return new PractitionerUserAndNote() { 
                                 AppUser = practitioner.User, 
                                 IsRegistered = practitioner.IsRegistered, 
