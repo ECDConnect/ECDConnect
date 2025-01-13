@@ -165,7 +165,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     reassignedClassroomGroupProps[]
   >([]);
 
-  const practitionersArray = [...(practitioners ?? []), practitionerUser];
+  const [pracOnLeave, setPracOnLeave] = useState<string | null>(null);
 
   const [endDate, setEndDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
@@ -334,7 +334,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
   useEffect(() => {
     const _list =
-      practitionersArray
+      [...(practitioners ?? []), practitionerUser]
         ?.filter((p) => !!p?.user?.firstName)
         ?.map(
           (p): DropDownOption<string> =>
@@ -389,15 +389,17 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   // Filter practitioners who don't have absentee dates matching the current date
-  const filteredArray = practitionersArray.filter((prac) => {
-    const absentees = prac?.absentees ?? [];
-    return !absentees.some((absentee) => {
-      const absenteeDate = absentee.absentDateEnd
-        ? new Date(absentee.absentDateEnd)
-        : new Date();
-      return absenteeDate.toDateString() === currentDate.toDateString();
-    });
-  });
+  const filteredArray = [...(practitioners ?? []), practitionerUser].filter(
+    (prac) => {
+      const absentees = prac?.absentees ?? [];
+      return !absentees.some((absentee) => {
+        const absenteeDate = absentee.absentDateEnd
+          ? new Date(absentee.absentDateEnd)
+          : new Date();
+        return absenteeDate.toDateString() === currentDate.toDateString();
+      });
+    }
+  );
 
   const submitReassignClass = async () => {
     if (
@@ -703,6 +705,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           className={'mt-3 w-full'}
           selectedValue={practitioner}
           onChange={(item: any) => {
+            setPracOnLeave(item);
             setReassignClassValue('practitioner', item);
             setPractitionersTeachList(
               practitionersList.filter((prac) => prac.value !== item)
@@ -892,10 +895,15 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         key={index}
                         placeholder={'Select practitioner'}
                         list={
-                          filteredArray?.map((practitioner: any) => ({
-                            label: practitioner.user.firstName,
-                            value: practitioner.userId,
-                          })) ?? []
+                          filteredArray
+                            ?.filter(
+                              (practitioner: any) =>
+                                practitioner.userId !== pracOnLeave // Exclude selected value
+                            )
+                            ?.map((practitioner: any) => ({
+                              label: practitioner.user.firstName,
+                              value: practitioner.userId,
+                            })) ?? []
                         }
                         fillType="clear"
                         label={`Who will teach the ${item?.name} class instead?`}
@@ -909,6 +917,11 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                           setReassignClassValue('practitioner2', practitioner);
                           handleReassignClassroomGroupPractitioner(
                             reassignedData
+                          );
+                          setPractitionersTeachList(
+                            practitionersList.filter(
+                              (prac) => practitioner.value !== item
+                            )
                           );
                         }}
                       />
