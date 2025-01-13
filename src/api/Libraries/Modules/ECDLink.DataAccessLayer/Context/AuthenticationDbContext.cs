@@ -74,7 +74,7 @@ namespace ECDLink.DataAccessLayer.Context
         // Classroom
         public DbSet<Classroom> Classrooms { get; set; }
         public DbSet<ClassProgramme> ClassProgrammes { get; set; }
-        public DbSet<ClassroomGroup> ClassroomGroupss { get; set; }
+        public DbSet<ClassroomGroup> ClassroomGroups { get; set; }
         public DbSet<Learner> Learners { get; set; }
         public DbSet<ProgrammeAttendanceReason> ProgrammeAttendanceReasons { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
