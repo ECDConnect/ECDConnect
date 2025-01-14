@@ -79,6 +79,7 @@ export interface DynamicFormTemplate {
 export interface FormTemplateField {
   title: string;
   propName: string;
+  propOrder?: number;
   type: string;
   required: FormTemplateFieldRequired;
   validation?: any;

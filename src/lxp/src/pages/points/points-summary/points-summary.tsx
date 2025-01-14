@@ -47,13 +47,16 @@ import {
 import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 import { useTenant } from '@/hooks/useTenant';
-import { pointsTodoItems } from '@/store/points/points.actions';
+// import { pointsTodoItems } from '@/store/points/points.actions';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import { BusinessTabItems } from '@/pages/business/business.types';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 
 export const PointsSummary: React.FC = () => {
+  const isTrialPeriod = useIsTrialPeriod();
+
   const history = useHistory();
   const dispatch = useAppDispatch();
   const dialog = useDialog();
@@ -177,7 +180,7 @@ export const PointsSummary: React.FC = () => {
       return 'Cwepheshe';
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'Tichere';
     }
     if (pointsToDo?.signedUpForApp) {
@@ -193,6 +196,7 @@ export const PointsSummary: React.FC = () => {
     pointsToDo?.signedUpForApp,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
+    isTrialPeriod,
   ]);
 
   const renderPointsToDoScoreCardBgColor = useMemo(() => {
@@ -220,7 +224,7 @@ export const PointsSummary: React.FC = () => {
       return 'quatenaryBg';
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'secondaryAccent2';
     }
 
@@ -238,12 +242,13 @@ export const PointsSummary: React.FC = () => {
     pointsToDo?.signedUpForApp,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
+    isTrialPeriod,
   ]);
 
   const renderPointsToDoEmoji = useMemo(() => {
     if (pointsToDo?.viewedCommunitySection) {
       if (
-        (getCurrentPointsToDo === 3 && practitioner?.isPrincipal) ||
+        (getCurrentPointsToDo === 5 && practitioner?.isPrincipal) ||
         (!practitioner?.isPrincipal &&
           planActivitiesPermission?.isActive === true &&
           getCurrentPointsToDo === 3)
@@ -281,7 +286,7 @@ export const PointsSummary: React.FC = () => {
       );
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
           <Kindgarden className="font-white h-8  w-8 text-white" />
@@ -310,6 +315,7 @@ export const PointsSummary: React.FC = () => {
     pointsToDo?.signedUpForApp,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
+    isTrialPeriod,
   ]);
 
   const renderPointsToDoProgressBarColor = useMemo(() => {
@@ -337,7 +343,7 @@ export const PointsSummary: React.FC = () => {
       return 'quatenary';
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'secondary';
     }
 
@@ -355,6 +361,7 @@ export const PointsSummary: React.FC = () => {
     pointsToDo?.signedUpForApp,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
+    isTrialPeriod,
   ]);
 
   // const practitionerWithAttendancePermissionPointsToDo =
@@ -409,46 +416,56 @@ export const PointsSummary: React.FC = () => {
       {
         id: '2',
         title: 'Tichere',
-        titleStyle: pointsToDo?.isPartOfPreschool
-          ? 'text-successDark'
-          : titleStyle,
+        titleStyle:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod
+            ? 'text-successDark'
+            : titleStyle,
         subTitle: 'Set up or join your preschool',
-        subTitleStyle: pointsToDo?.isPartOfPreschool
-          ? 'text-successDark'
-          : subTitleStyle,
+        subTitleStyle:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod
+            ? 'text-successDark'
+            : subTitleStyle,
         className:
-          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool
+          pointsToDo?.signedUpForApp &&
+          !pointsToDo?.isPartOfPreschool &&
+          isTrialPeriod
             ? ''
             : 'px-2',
-        menuIcon: pointsToDo?.isPartOfPreschool ? 'CheckIcon' : '',
+        menuIcon:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod ? 'CheckIcon' : '',
         customIcon:
-          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool ? (
+          isTrialPeriod ||
+          (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ? (
             <Kindgarden
               className={`${
-                pointsToDo?.isPartOfPreschool
+                pointsToDo?.isPartOfPreschool && !isTrialPeriod
                   ? `bg-successMain text-white`
                   : 'text-quatenary bg-quatenary'
               } z-50 mr-4 h-12 w-12 rounded-full p-2`}
             />
           ) : undefined,
-        iconBackgroundColor: pointsToDo?.isPartOfPreschool
-          ? 'successMain'
-          : 'quatenary',
+        iconBackgroundColor:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod
+            ? 'successMain'
+            : 'quatenary',
         showIcon: true,
         iconColor: 'white',
         hideRightIcon: true,
-        backgroundColor: pointsToDo?.isPartOfPreschool
-          ? 'successBg'
-          : pointsToDo?.signedUpForApp
-          ? 'quatenaryBg'
-          : 'adminPortalBg',
+        backgroundColor:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod
+            ? 'successBg'
+            : pointsToDo?.signedUpForApp
+            ? 'quatenaryBg'
+            : 'adminPortalBg',
         onActionClick:
           pointsToDo?.signedUpForApp &&
           !pointsToDo?.isPartOfPreschool &&
+          !isTrialPeriod &&
           practitioner?.isPrincipal
             ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
             : pointsToDo?.signedUpForApp &&
               !pointsToDo?.isPartOfPreschool &&
+              !isTrialPeriod &&
               !practitioner?.isPrincipal
             ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
             : () => {},
@@ -469,6 +486,7 @@ export const PointsSummary: React.FC = () => {
             : subTitleStyle,
         className:
           pointsToDo?.isPartOfPreschool &&
+          !isTrialPeriod &&
           !pointsToDo?.savedIncomeOrExpense &&
           !pointsToDo?.plannedOneDay
             ? ''
@@ -489,7 +507,7 @@ export const PointsSummary: React.FC = () => {
               className={`${
                 pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
                   ? 'bg-successMain'
-                  : !pointsToDo?.isPartOfPreschool
+                  : !pointsToDo?.isPartOfPreschool && isTrialPeriod
                   ? `bg-uiLight text-white`
                   : 'text-quatenary bg-quatenary'
               } z-50 mr-4 h-12 w-12 rounded-full p-2`}
@@ -507,11 +525,12 @@ export const PointsSummary: React.FC = () => {
         backgroundColor:
           pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
             ? 'successBg'
-            : pointsToDo?.isPartOfPreschool
+            : pointsToDo?.isPartOfPreschool && !isTrialPeriod
             ? 'quatenaryBg'
             : 'adminPortalBg',
         onActionClick:
           pointsToDo?.isPartOfPreschool &&
+          !isTrialPeriod &&
           !pointsToDo?.savedIncomeOrExpense &&
           !pointsToDo?.savedIncomeOrExpense &&
           practitioner?.isPrincipal
@@ -520,6 +539,7 @@ export const PointsSummary: React.FC = () => {
                   activeTabIndex: BusinessTabItems.MONEY,
                 })
             : pointsToDo?.isPartOfPreschool &&
+              !isTrialPeriod &&
               !pointsToDo?.savedIncomeOrExpense &&
               !pointsToDo?.savedIncomeOrExpense &&
               !practitioner?.isPrincipal
@@ -544,7 +564,8 @@ export const PointsSummary: React.FC = () => {
             pointsToDo?.plannedOneDay ||
             (!practitioner?.isPrincipal &&
               planActivitiesPermission?.isActive === false &&
-              pointsToDo?.isPartOfPreschool)) &&
+              pointsToDo?.isPartOfPreschool &&
+              !isTrialPeriod)) &&
           !pointsToDo?.viewedCommunitySection
             ? ''
             : 'px-2',
@@ -559,7 +580,8 @@ export const PointsSummary: React.FC = () => {
               (!practitioner?.isPrincipal &&
                 (planActivitiesPermission?.isActive === false ||
                   planActivitiesPermission?.isActive === undefined) &&
-                pointsToDo?.isPartOfPreschool)
+                pointsToDo?.isPartOfPreschool &&
+                !isTrialPeriod)
             ? 'quatenary'
             : 'bg-uiLight'
         } rounded-full h-12 w-12 p-2.5`,
@@ -581,7 +603,8 @@ export const PointsSummary: React.FC = () => {
             (!practitioner?.isPrincipal &&
               (planActivitiesPermission?.isActive === false ||
                 planActivitiesPermission?.isActive === undefined) &&
-              pointsToDo?.isPartOfPreschool)
+              pointsToDo?.isPartOfPreschool &&
+              !isTrialPeriod)
           ? 'quatenaryBg'
           : 'adminPortalBg',
       },
@@ -620,43 +643,53 @@ export const PointsSummary: React.FC = () => {
       {
         id: '2',
         title: 'Tichere',
-        titleStyle: pointsToDo?.isPartOfPreschool
-          ? 'text-successDark'
-          : titleStyle,
+        titleStyle:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod
+            ? 'text-successDark'
+            : titleStyle,
         subTitle: 'Set up or join your preschool',
-        subTitleStyle: pointsToDo?.isPartOfPreschool
-          ? 'text-successDark'
-          : subTitleStyle,
+        subTitleStyle:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod
+            ? 'text-successDark'
+            : subTitleStyle,
         className:
-          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool
+          pointsToDo?.signedUpForApp &&
+          !pointsToDo?.isPartOfPreschool &&
+          isTrialPeriod
             ? ''
             : 'px-2',
-        menuIcon: pointsToDo?.isPartOfPreschool ? 'CheckIcon' : '',
+        menuIcon:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod ? 'CheckIcon' : '',
         customIcon:
-          pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool ? (
+          isTrialPeriod ||
+          (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ? (
             <Kindgarden
               className={`${
-                pointsToDo?.isPartOfPreschool
+                pointsToDo?.isPartOfPreschool && !isTrialPeriod
                   ? `bg-successMain text-white`
                   : 'text-quatenary bg-white'
               } z-50 mr-4 h-12 w-12 rounded-full p-2`}
             />
           ) : undefined,
-        iconBackgroundColor: pointsToDo?.isPartOfPreschool
-          ? 'successMain'
-          : 'quatenary',
+        iconBackgroundColor:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod
+            ? 'successMain'
+            : 'quatenary',
         showIcon: true,
         iconColor: 'white',
         hideRightIcon: true,
-        backgroundColor: pointsToDo?.isPartOfPreschool
-          ? 'successBg'
-          : 'adminPortalBg',
+        backgroundColor:
+          pointsToDo?.isPartOfPreschool && !isTrialPeriod
+            ? 'successBg'
+            : 'adminPortalBg',
         onActionClick:
           pointsToDo?.signedUpForApp &&
           !pointsToDo?.isPartOfPreschool &&
+          isTrialPeriod &&
           practitioner?.isPrincipal
             ? pointsToDo?.signedUpForApp &&
               !pointsToDo?.isPartOfPreschool &&
+              isTrialPeriod &&
               !practitioner?.isPrincipal
               ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
               : () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
@@ -693,7 +726,8 @@ export const PointsSummary: React.FC = () => {
             pointsToDo?.plannedOneDay ||
             (!practitioner?.isPrincipal &&
               planActivitiesPermission?.isActive === false &&
-              pointsToDo?.isPartOfPreschool)
+              pointsToDo?.isPartOfPreschool &&
+              !isTrialPeriod)
           ? 'quatenaryBg'
           : 'adminPortalBg',
       },
@@ -713,6 +747,7 @@ export const PointsSummary: React.FC = () => {
             : subTitleStyle,
         className:
           pointsToDo?.isPartOfPreschool &&
+          !isTrialPeriod &&
           !pointsToDo?.savedIncomeOrExpense &&
           !pointsToDo?.savedIncomeOrExpense
             ? ''
@@ -728,7 +763,7 @@ export const PointsSummary: React.FC = () => {
           pointsToDo?.signedUpForApp && practitioner?.isPrincipal ? (
             <Crown
               className={`${
-                !pointsToDo?.isPartOfPreschool
+                !pointsToDo?.isPartOfPreschool && isTrialPeriod
                   ? `bg-uiLight text-white`
                   : pointsToDo?.savedIncomeOrExpense
                   ? 'text-quatenary bg-successMain'
@@ -739,7 +774,7 @@ export const PointsSummary: React.FC = () => {
         iconBackgroundColor:
           pointsToDo?.savedIncomeOrExpense || pointsToDo?.plannedOneDay
             ? 'successBg'
-            : !pointsToDo?.isPartOfPreschool
+            : !pointsToDo?.isPartOfPreschool && isTrialPeriod
             ? 'uiLight'
             : 'quatenary',
         showIcon: true,
@@ -748,16 +783,18 @@ export const PointsSummary: React.FC = () => {
         backgroundColor:
           pointsToDo?.savedIncomeOrExpense || pointsToDo?.savedIncomeOrExpense
             ? 'successBg'
-            : pointsToDo?.isPartOfPreschool
+            : pointsToDo?.isPartOfPreschool && isTrialPeriod
             ? 'quatenaryBg'
             : 'adminPortalBg',
         onActionClick:
           pointsToDo?.isPartOfPreschool &&
+          !isTrialPeriod &&
           !pointsToDo?.savedIncomeOrExpense &&
           !pointsToDo?.savedIncomeOrExpense &&
           practitioner?.isPrincipal
             ? () => history.push(ROUTES.BUSINESS)
             : pointsToDo?.isPartOfPreschool &&
+              !isTrialPeriod &&
               !pointsToDo?.savedIncomeOrExpense &&
               !pointsToDo?.savedIncomeOrExpense &&
               !practitioner?.isPrincipal
@@ -978,9 +1015,11 @@ export const PointsSummary: React.FC = () => {
               mainText={renderTodoText}
               currentPoints={getCurrentPointsToDo}
               maxPoints={
-                practitioner?.isPrincipal ||
-                (!practitioner?.isPrincipal &&
-                  planActivitiesPermission?.isActive === true)
+                isTrialPeriod
+                  ? 6
+                  : practitioner?.isPrincipal ||
+                    (!practitioner?.isPrincipal &&
+                      planActivitiesPermission?.isActive === true)
                   ? 4
                   : 3
               }
@@ -1062,11 +1101,7 @@ export const PointsSummary: React.FC = () => {
               )}
             />
           ) : null}
-          {!pointsTotalForYear ||
-          pointsTotalForYear < 10 ||
-          (practitioner?.isPrincipal
-            ? getCurrentPointsToDo !== 4
-            : getCurrentPointsToDo !== 3) ? (
+          {getCurrentPointsToDo < 4 ? (
             <div>
               <Divider dividerType="dashed" />
               <Typography
@@ -1099,11 +1134,9 @@ export const PointsSummary: React.FC = () => {
               </div>
             </div>
           ) : null}
-          {(!!todoListFiltered &&
-            !!todoListFiltered.length &&
-            pointsTotalForYear &&
-            pointsTotalForYear >= 10) ||
-          percentageScore === 0 ? (
+          {!!todoListFiltered &&
+          !!todoListFiltered.length &&
+          getCurrentPointsToDo > 3 ? (
             <Typography
               className="mt-8 mb-4"
               type={'h3'}
@@ -1114,10 +1147,10 @@ export const PointsSummary: React.FC = () => {
               )}:`}
             />
           ) : null}
-          {(!!todoListFiltered &&
-            pointsTotalForYear &&
-            pointsTotalForYear >= 10) ||
-          percentageScore === 0
+          {!!todoListFiltered &&
+          pointsTotalForYear &&
+          pointsTotalForYear >= 10 &&
+          getCurrentPointsToDo > 3
             ? todoListFiltered?.slice(0, 3)?.map((item) => {
                 return (
                   <div

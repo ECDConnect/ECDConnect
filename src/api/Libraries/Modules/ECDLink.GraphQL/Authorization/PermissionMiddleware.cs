@@ -1,8 +1,8 @@
-using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Security.Enums;
 using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
 using HotChocolate.Resolvers;
+using HotChocolate.Language;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,24 +29,26 @@ namespace ECDLink.EGraphQL.Authorization
 
         public override async Task InvokeAsync(IMiddlewareContext context)
         {
-            // Retrieve the "permission" directive from the selection's syntax node
-            var directiveNode = context.Selection.SyntaxNode
+            // Fetching directive data from the selection syntax node
+            var permissionDirective = context.Selection.SyntaxNode
                 .Directives.FirstOrDefault(d => d.Name.Value == "permission");
 
-            if (directiveNode == null)
+            if (permissionDirective == null)
             {
-                // If the directive is not present, proceed with the next middleware
                 await _next(context).ConfigureAwait(false);
                 return;
             }
 
-            // Extract and manually map the directive's arguments to the PermissionDirective instance
+            // Parsing directive arguments safely
+            var directiveValues = permissionDirective.Arguments.ToDictionary(
+                arg => arg.Name.Value,
+                arg => arg.Value);
+
+            var objectType = directiveValues.ContainsKey("objectType") ? directiveValues["objectType"].ToString() : "*";
+
             var directive = new PermissionDirective
             {
-                ObjectType = directiveNode.Arguments
-                    .FirstOrDefault(a => a.Name.Value == "ObjectType")?.Value?.ToString(),
-                MethodType = (GraphActionEnum)Enum.Parse(typeof(GraphActionEnum),
-                    directiveNode.Arguments.FirstOrDefault(a => a.Name.Value == "MethodType")?.Value?.ToString() ?? "View")
+                ObjectType = objectType
             };
 
             var state = ValidateResult(context, directive);
@@ -63,13 +65,11 @@ namespace ECDLink.EGraphQL.Authorization
 
         private AuthState ValidateResult(IMiddlewareContext context, PermissionDirective directive)
         {
-            // If no directive is set, assume endpoint is completely open
-            if (directive == null)
+            if (directive == default(PermissionDirective))
             {
                 return AuthState.Allowed;
             }
 
-            // If ObjectType is *, endpoint is completely open
             if (string.Equals(directive.ObjectType, "*"))
             {
                 return AuthState.Allowed;
@@ -92,13 +92,14 @@ namespace ECDLink.EGraphQL.Authorization
 
         private List<string> GetClaimRoles(IMiddlewareContext context)
         {
-            if (!_claimsManager.TryGetAuthenticatedPrincipal(context.ContextData, out ClaimsPrincipal principal))
+            ClaimsPrincipal principal;
+
+            if (!_claimsManager.TryGetAuthenticatedPrincipal(context.ContextData, out principal))
             {
-                // No principal found
                 return new List<string>();
             }
 
-            return _claimsManager.GetClaimRoles(principal); // Retrieve roles
+            return _claimsManager.GetClaimRoles(principal);
         }
     }
 }

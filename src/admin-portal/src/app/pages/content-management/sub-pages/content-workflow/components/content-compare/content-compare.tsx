@@ -6,7 +6,7 @@ import {
   ContentValueDto,
   LanguageDto,
 } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
 import {
@@ -373,6 +373,18 @@ export default function ContentCompare({
     }
   };
 
+  const breadCrumbParentName = useCallback(
+    (item: ContentTypeDto) => {
+      if (item.name === ContentTypes.STORY_BOOK) {
+        return 'Stories';
+      } else if (item.name === ContentTypes.ACTIVITY) {
+        return choosedSectionTitle;
+      }
+      return item.description;
+    },
+    [choosedSectionTitle]
+  );
+
   if (
     (contentView && languages && currentContent) ||
     (contentType?.name === ContentTypes.PROGRESS_TRACKING_SKILL &&
@@ -385,8 +397,7 @@ export default function ContentCompare({
           <div className="relative h-full" style={{ minHeight: '36rem' }}>
             <div className="pb-5 sm:flex sm:items-center sm:justify-between">
               <h3 className="text-lg font-medium leading-6 ">
-                {camelCaseToSentanceCase(contentType.name ?? '')} - Compare
-                languages
+                {breadCrumbParentName(contentType)} - Compare languages
               </h3>
               <div className="flex flex-row">
                 <div className="ml-4">
@@ -440,6 +451,7 @@ export default function ContentCompare({
                     choosedSectionTitle={choosedSectionTitle}
                     contentView={contentView}
                     languages={languages}
+                    isEdit={true}
                   />
                 )}
               </div>
@@ -477,6 +489,7 @@ export default function ContentCompare({
                     contentView={contentView}
                     languages={languages}
                     id={'secondLanguageContent'}
+                    isEdit={true}
                   />
                 )}
               </div>

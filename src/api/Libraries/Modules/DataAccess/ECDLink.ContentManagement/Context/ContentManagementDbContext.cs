@@ -1,4 +1,5 @@
 using ECDLink.ContentManagement.Entities;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,8 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ContentStatus> ContentStatuses { get; set; }
 
         public DbSet<Language> Languages { get; set; }
+
+        public DbSet<Holiday> Holiday { get; set; }
 
         public ContentManagementDbContext(DbContextOptions<ContentManagementDbContext> options)
           : base(options)

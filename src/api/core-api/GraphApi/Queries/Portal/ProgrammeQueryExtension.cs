@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.ContentManagement.Constants;
@@ -7,6 +8,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
@@ -19,13 +21,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ProgrammeQueryExtension
     {
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
         public List<StoryBookViewModel> GetStoryBookRecords(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
            CancellationToken cancellationToken,
            string search = null,
            List<string> typesSearch = null,
-           List<string> themesSearch = null,
+           List<int> themesSearch = null,
            List<Guid> languageSearch = null,
            List<string> shareContent = null,
            PagedQueryInput pagingInput = null,
@@ -52,27 +55,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                 records = contentRepo.GetAll(ContentTypeConstants.StoryBookId, englishId).Select(x => new StoryBookViewModel(x, englishId)).ToList();
             }
 
-            var themes = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId);
-            var themeRecords = new List<ThemeViewModel>();
-            foreach (var theme in themes)
-            {
-                var item = (IDictionary<string, object>)theme;
-                item.TryGetValue("name", out var name);
-                item.TryGetValue("themeDays", out var themeDays);
-
-                var themeDayInts = themeDays.ToString().Split(",").Select(i => int.Parse(i)).ToArray();
-                themeRecords.AddRange(contentRepo.GetByIds(ContentTypeConstants.ThemeDayId, englishId, themeDayInts)
-                                                 .Select(x => new ThemeViewModel(name.ToString(), x))
-                                                 .ToList());
-
-            }
-
-            // populate theme values on records
-            foreach (var item in records)
-            {
-                item.Themes = string.Join(",", themeRecords.Where(x => x.StoryBookId == item.Id).Select(x => x.Name).ToArray().Distinct());
-            }
-
             if (records.Any())
             {
                 if (string.IsNullOrEmpty(search)
@@ -82,7 +64,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     && endDate == null
                     && shareContent.Count == 0)
                 {
-                    return records;
+                    return records
+                        .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                        .ToList();
                 }
                 else
                 {
@@ -103,11 +89,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                     {
                         if (shareContent.Contains("Yes"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes" || x.ShareContent == "true").ToList());
                         }
                         else if (shareContent.Contains("No"))
                         {
-                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no").ToList());
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no" || x.ShareContent == "false").ToList());
                         }
                         else
                         {
@@ -128,13 +114,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
                     if (themesSearch.Count != 0)
                     {
-                        if (themesSearch.Contains("Theme"))
-                        {
-                            filteredRecords.AddRange(records.Where(x => x.Themes != "").ToList());
-                        }
-                        else
+                        if (themesSearch.Contains(0))
                         {
                             filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
+                        }
+                        
+                        foreach (var record in records)
+                        {
+                            if (record.ThemeItems.Count > 0) {
+                                foreach (var theme in record.ThemeItems) {
+                                    if (themesSearch.Contains(theme))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -178,45 +172,346 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
                             }
                         }
                     }
-                    return filteredRecords;
+                    return filteredRecords
+                            .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ToList();
                 }
             }
-            return records;
+            return records
+                    .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                    .ToList();
         }
 
-        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Delete)]
-        public BulkDeactivateResult DeleteMultipleStoryBooks(
-            [Service] ContentManagementRepository contentRepo,
-            [Service] ILocaleService<Language> localeService,
-            List<int> contentIds)
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+        public List<ActivityViewModel> GetActivityRecords(
+           [Service] ContentManagementRepository contentRepo,
+           [Service] ILocaleService<Language> localeService,
+           CancellationToken cancellationToken,
+           bool isStoryActivity,
+           string search = null,
+           List<string> subTypesSearch = null,
+           List<string> typesSearch = null,
+           List<int> themesSearch = null,
+           List<int> skillSearch = null,
+           List<Guid> languageSearch = null,
+           List<string> shareContent = null,
+           PagedQueryInput pagingInput = null,
+           DateTime? startDate = null,
+           DateTime? endDate = null)
         {
-            if (contentIds is null || contentIds.Count == 0)
+            if (cancellationToken.IsCancellationRequested)
             {
-                return new BulkDeactivateResult();
+                return null;
             }
 
-            var success = new List<string>();
-            var failed = new List<string>();
+            var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            var records = new List<ActivityViewModel>();
+            var subCategories = contentRepo.GetAll(ContentTypeConstants.ProgressTrackingSubCategoryId, englishId).Select(x => new SubCategoryViewModel(x)).ToList();
 
-            foreach (int contentId in contentIds)
+            if (languageSearch.Count > 0)
             {
-                bool deleteResult = contentRepo.Delete(contentId);
-                if (deleteResult)
+                foreach (var localeId in languageSearch)
                 {
-                    success.Add(contentId.ToString());
+                    if (isStoryActivity) {
+                        records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.ActivityStoryTime, localeId).Select(x => new ActivityViewModel(x, localeId, new List<SubCategoryViewModel>())).ToList());
+                    } else {
+                        records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.SmallGroup, localeId).Select(x => new ActivityViewModel(x, localeId, subCategories)).ToList());
+                        records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.LargeGroup, localeId).Select(x => new ActivityViewModel(x, localeId, subCategories)).ToList());
+                    }
+                }
+            }
+            else
+            {
+                if (isStoryActivity) {
+                    records = contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.ActivityStoryTime, englishId).Select(x => new ActivityViewModel(x, englishId, new List<SubCategoryViewModel>())).ToList();
+                } else {
+                    records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.SmallGroup, englishId).Select(x => new ActivityViewModel(x, englishId, subCategories)).ToList());
+                    records.AddRange(contentRepo.GetByValueKey(ContentTypeConstants.Activity, "type", ContentTypeConstants.LargeGroup, englishId).Select(x => new ActivityViewModel(x, englishId, subCategories)).ToList());
+                }
+            }
+
+            if (records.Any())
+            {
+                if (string.IsNullOrEmpty(search)
+                    && subTypesSearch.Count == 0
+                    && typesSearch.Count == 0
+                    && themesSearch.Count == 0
+                    && skillSearch.Count == 0
+                    && startDate == null
+                    && endDate == null
+                    && shareContent.Count == 0)
+                {
+                    return records
+                            .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ToList();
                 }
                 else
                 {
-                    failed.Add(contentId.ToString());
+                    var filteredRecords = new List<ActivityViewModel>();
+
+                    if (!string.IsNullOrEmpty(search))
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.Name.ToLower().Contains(search.ToLower()))
+                            {
+                                filteredRecords.Add(record);
+                            }
+                        }
+                    }
+
+                    if (shareContent.Count != 0)
+                    {
+                        if (shareContent.Contains("Yes"))
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes" || x.ShareContent == "true").ToList());
+                        }
+                        else if (shareContent.Contains("No"))
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no" || x.ShareContent == "false").ToList());
+                        }
+                        else
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "").ToList());
+                        }
+                    }
+
+                    if (subTypesSearch.Count != 0)
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.SubTypeItems.Count > 0) {
+                                foreach (var subTypeItem in record.SubTypeItems) {
+                                    if (subTypesSearch.Contains(subTypeItem))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (typesSearch.Count != 0)
+                    {
+                        foreach (var record in records)
+                        {
+                            if (typesSearch.Contains(record.Type))
+                            {
+                                filteredRecords.Add(record);
+                            }
+                        }
+                    }
+                    if (skillSearch.Count != 0)
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.SubCategoryItems.Count > 0) {
+                                foreach (var subCat in record.SubCategoryItems) {
+                                    if (skillSearch.Contains(Int32.Parse(subCat.Id)))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (themesSearch.Count != 0)
+                    {
+                        if (themesSearch.Contains(0))
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.Themes == "").ToList());
+                        }
+                        
+                        foreach (var record in records)
+                        {
+                            if (record.ThemeItems.Count > 0) {
+                                foreach (var theme in record.ThemeItems) {
+                                    if (themesSearch.Contains(theme))
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (startDate != null)
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.InsertedDate is not null)
+                            {
+                                if (endDate != null)
+                                {
+                                    if (record.InsertedDate >= startDate && record.InsertedDate <= endDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                                else
+                                {
+                                    if (record.InsertedDate >= startDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (endDate != null)
+                                {
+                                    if (record.UpdatedDate >= startDate && record.UpdatedDate <= endDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                                else
+                                {
+                                    if (record.UpdatedDate >= startDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return filteredRecords
+                            .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ToList();
                 }
             }
-
-            return new BulkDeactivateResult() { Failed = failed, Success = success };
+            return records
+                    .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                    .ToList();
         }
 
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+        public List<ThemeViewModel> GetThemeRecords(
+           [Service] ContentManagementRepository contentRepo,
+           [Service] ILocaleService<Language> localeService,
+           CancellationToken cancellationToken,
+           string search = null,
+           List<string> shareContent = null,
+           PagedQueryInput pagingInput = null,
+           DateTime? startDate = null,
+           DateTime? endDate= null)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
 
+            var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
+            var records = contentRepo.GetAll(ContentTypeConstants.ThemeId, englishId)
+                                     .Select(x => new ThemeViewModel(x, englishId))
+                                     .Where(x => x.TenantId.ToString() == TenantExecutionContext.Tenant.Id.ToString())
+                                     .ToList();
 
+            if (records.Any())
+            {
+                if (string.IsNullOrEmpty(search)
+                    && startDate == null 
+                    && endDate == null
+                    && shareContent.Count == 0)
+                {
+                    return records
+                        .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                        .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                        .ToList();
+                }
+                else
+                {
+                    var filteredRecords = new List<ThemeViewModel>();
 
-       
+                    if (!string.IsNullOrEmpty(search))
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.Name.ToLower().Contains(search.ToLower()))
+                            {
+                                filteredRecords.Add(record);
+                            }
+                        }
+                    }
+
+                    if (shareContent.Count != 0)
+                    {
+                        if (shareContent.Contains("Yes"))
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "yes" || x.ShareContent == "true").ToList());
+                        }
+                        else if (shareContent.Contains("No"))
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "no" || x.ShareContent == "false").ToList());
+                        }
+                        else
+                        {
+                            filteredRecords.AddRange(records.Where(x => x.ShareContent == "").ToList());
+                        }
+                    }
+
+                    if (startDate != null)
+                    {
+                        foreach (var record in records)
+                        {
+                            if (record.InsertedDate is not null)
+                            {
+                                if (endDate != null)
+                                {
+                                    if (record.InsertedDate >= startDate && record.InsertedDate <= endDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                                else
+                                {
+                                    if (record.InsertedDate >= startDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (endDate != null)
+                                {
+                                    if (record.UpdatedDate >= startDate && record.UpdatedDate <= endDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                                else
+                                {
+                                    if (record.UpdatedDate >= startDate)
+                                    {
+                                        filteredRecords.Add(record);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return filteredRecords
+                            .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                            .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                            .ToList();
+                }
+            }
+           return records
+                    .OrderByDescending(d => d.UpdatedDate.HasValue ? d.UpdatedDate.Value.Year : d.InsertedDate.Value.Year)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Month : d.InsertedDate.Value.Month)
+                    .ThenByDescending(d => d.UpdatedDate.HasValue ?  d.UpdatedDate.Value.Day : d.InsertedDate.Value.Day)
+                    .ToList();
+        }
+
     }
 }

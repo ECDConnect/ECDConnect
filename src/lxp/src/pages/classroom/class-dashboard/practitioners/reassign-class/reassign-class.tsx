@@ -123,6 +123,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
   const isLoggedInUser = practitionerUser?.userId === practitionerId;
 
+  const [selectedLeaveDate, setSelectedLeave] = useState<Date>();
+  const currentDate = selectedLeaveDate ? selectedLeaveDate : new Date();
+
   const formattedDate = reportingDate
     ? format(reportingDate, 'EEEE, d LLLL')
     : '';
@@ -161,6 +164,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const [reassignedClassroomGroups, setReassignedClassroomGroups] = useState<
     reassignedClassroomGroupProps[]
   >([]);
+
+  const [pracOnLeave, setPracOnLeave] = useState<string | null>(null);
+
   const [endDate, setEndDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
   const handleReassignClassroomGroupPractitioner = useCallback(
@@ -381,6 +387,19 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     setClassroomGroupsList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Filter practitioners who don't have absentee dates matching the current date
+  const filteredArray = [...(practitioners ?? []), practitionerUser].filter(
+    (prac) => {
+      const absentees = prac?.absentees ?? [];
+      return !absentees.some((absentee) => {
+        const absenteeDate = absentee.absentDateEnd
+          ? new Date(absentee.absentDateEnd)
+          : new Date();
+        return absenteeDate.toDateString() === currentDate.toDateString();
+      });
+    }
+  );
 
   const submitReassignClass = async () => {
     if (
@@ -686,6 +705,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           className={'mt-3 w-full'}
           selectedValue={practitioner}
           onChange={(item: any) => {
+            setPracOnLeave(item);
             setReassignClassValue('practitioner', item);
             setPractitionersTeachList(
               practitionersList.filter((prac) => prac.value !== item)
@@ -732,6 +752,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               className="border-uiLight text-textMid mx-auto w-full rounded-md"
               selected={selectedDate ? new Date(selectedDate) : undefined}
               onChange={(date: Date) => {
+                setSelectedLeave(date);
                 setReassignClassValue('date', date ? date.toString() : '');
               }}
               dateFormat="EEE, dd MMM yyyy"
@@ -873,7 +894,17 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                       <Dropdown
                         key={index}
                         placeholder={'Select practitioner'}
-                        list={practitionersTeachList || []}
+                        list={
+                          filteredArray
+                            ?.filter(
+                              (practitioner: any) =>
+                                practitioner.userId !== pracOnLeave // Exclude selected value
+                            )
+                            ?.map((practitioner: any) => ({
+                              label: practitioner.user.firstName,
+                              value: practitioner.userId,
+                            })) ?? []
+                        }
                         fillType="clear"
                         label={`Who will teach the ${item?.name} class instead?`}
                         fullWidth
@@ -886,6 +917,11 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                           setReassignClassValue('practitioner2', practitioner);
                           handleReassignClassroomGroupPractitioner(
                             reassignedData
+                          );
+                          setPractitionersTeachList(
+                            practitionersList.filter(
+                              (prac) => practitioner.value !== item
+                            )
                           );
                         }}
                       />

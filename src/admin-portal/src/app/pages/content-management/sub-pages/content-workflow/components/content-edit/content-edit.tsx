@@ -3,7 +3,6 @@ import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
   ContentTypeDto,
-  ContentTypeEnum,
   ContentTypeFieldDto,
   ContentValueDto,
   LanguageDto,
@@ -21,9 +20,8 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
   MediaTypes,
-  TemplateTypenames,
 } from '../../../../content-management-models';
-import { Alert, DialogPosition, Typography } from '@ecdlink/ui';
+import { Alert, DialogPosition } from '@ecdlink/ui';
 import {
   BookOpenIcon,
   SaveIcon,
@@ -36,8 +34,11 @@ import {
   ContentTypes,
 } from '../../../../../../constants/content-management';
 import {
+  BulkUpdateActivityShareContent,
+  BulkUpdateActivitySkills,
+  BulkUpdateActivityStoryTypes,
+  BulkUpdateActivityThemes,
   BulkUpdateConsentImages,
-  bulkUpdateCoachingCircleTopicDates,
 } from '@ecdlink/graphql';
 import { format } from 'date-fns';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/outline';
@@ -59,6 +60,7 @@ export interface ContentViewProps {
   languages: LanguageDto[];
   setOpenTopic?: (item: boolean) => void;
   id?: string;
+  isEdit: boolean;
 }
 
 export interface RequirementProps {
@@ -80,6 +82,7 @@ export default function ContentEdit({
   setSearchValue,
   contentView,
   languages,
+  isEdit,
 }: ContentViewProps) {
   const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const [allowedFileSize, setAllowedFileSize] = useState(5242880); // 13 MB
@@ -123,11 +126,13 @@ export default function ContentEdit({
     }
   `;
 
-  const [saveCoachCircleDates] = useMutation(
-    bulkUpdateCoachingCircleTopicDates
-  );
-
   const [saveConsentImages] = useMutation(BulkUpdateConsentImages);
+  const [saveActivityThemes] = useMutation(BulkUpdateActivityThemes);
+  const [saveActivitySkills] = useMutation(BulkUpdateActivitySkills);
+  const [saveActivityStoryTypes] = useMutation(BulkUpdateActivityStoryTypes);
+  const [saveActivityShareContent] = useMutation(
+    BulkUpdateActivityShareContent
+  );
 
   const [updateContent] = useMutation(updateMutation);
   const [createContent] = useMutation(createMutation);
@@ -230,7 +235,7 @@ export default function ContentEdit({
   const disbleButtonStyles =
     choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
       ? `bg-secondary ${
-          disableButton?.length > 0 || smallLargeGroupsSkills?.length < 2
+          disableButton?.length > 0 && smallLargeGroupsSkills?.length < 2
             ? 'opacity-25'
             : ''
         } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`
@@ -378,22 +383,58 @@ export default function ContentEdit({
         setLoading(false);
       });
 
-      // the requirement is that when you save the dates for a coaching circle, you need to update all other languages with same dates.
-      if (contentType.name === ContentTypes.COACHING_CIRCLE_TOPICS) {
-        await saveCoachCircleDates({
+      // Copy activity items over to other languages
+      if (contentType.name === ContentTypes.ACTIVITY) {
+        // theme
+        await saveActivityThemes({
           variables: {
             contentId: +content.id,
             contentTypeId: +contentType.id,
             localeId: selectedLanguageId.toString(),
-            startDate: model[CoachingCircleText.START_DATE],
-            endDate:
-              model[CoachingCircleText.END_DATE] === ''
-                ? null
-                : model[CoachingCircleText.END_DATE],
+            themeIds: model.themes,
           },
         }).catch((error) => {
           console.log(error);
         });
+        // skills
+        if (
+          choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+        ) {
+          await saveActivitySkills({
+            variables: {
+              contentId: +content.id,
+              contentTypeId: +contentType.id,
+              localeId: selectedLanguageId.toString(),
+              subCategoryIds: model.subCategories,
+            },
+          }).catch((error) => {
+            console.log(error);
+          });
+        }
+        // share content
+        await saveActivityShareContent({
+          variables: {
+            contentId: +content.id,
+            contentTypeId: +contentType.id,
+            localeId: selectedLanguageId.toString(),
+            shareContent: model.shareContent,
+          },
+        }).catch((error) => {
+          console.log(error);
+        });
+        // story types
+        if (choosedSectionTitle === ActivitiesTitles.StoryActivities) {
+          await saveActivityStoryTypes({
+            variables: {
+              contentId: +content.id,
+              contentTypeId: +contentType.id,
+              localeId: selectedLanguageId.toString(),
+              subType: model.subType,
+            },
+          }).catch((error) => {
+            console.log(error);
+          });
+        }
       }
 
       // if there is an image, we need to copy the image to the other languages
@@ -446,7 +487,9 @@ export default function ContentEdit({
                 {cancelEdit &&
                   camelCaseToSentanceCase(content?.name ?? content?.type)}
               </h3>
-              {content?.shareContent && content?.shareContent === 'true' ? (
+              {content?.shareContent &&
+              (content?.shareContent === 'true' ||
+                content?.shareContent === 'yes') ? (
                 <div className="flex items-center gap-4">
                   <CheckCircleIcon className="text-successMain h-8 w-8" />
                   <h4 className="text-small text-successMain font-semibold leading-6">
@@ -456,6 +499,7 @@ export default function ContentEdit({
               ) : (
                 (content?.shareContent === '' ||
                   content?.shareContent === 'false' ||
+                  content?.shareContent === 'no' ||
                   content?.shareContent === null) && (
                   <div className="flex items-center gap-4">
                     <XCircleIcon className="text-errorMain h-8 w-8" />
@@ -466,8 +510,8 @@ export default function ContentEdit({
                 )
               )}
             </div>
-            <div className="ml-4 mt-2 flex-shrink-0">
-              {!!cancelCompare && (
+            <div className="ml-4 flex-shrink-0">
+              {!!cancelCompare && isEdit && (
                 <button
                   type="button"
                   onClick={cancelCompare}
@@ -500,7 +544,6 @@ export default function ContentEdit({
             ) : (
               <></>
             )}
-
             <DynamicForm
               template={template}
               handleform={handleform}
@@ -515,6 +558,7 @@ export default function ContentEdit({
               useWatch={useWatch}
               contentView={contentView}
               setSmallLargeGroupsSkills={setSmallLargeGroupsSkills}
+              contentType={contentType}
             />
           </div>
 

@@ -39,7 +39,6 @@ using ECDLink.SmartStart.Services;
 using ECDLink.SmartStart.Services.Interfaces;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +51,53 @@ using System.Reflection;
 
 namespace EcdLink.Api.CoreApi
 {
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+    using System;
+    using System.Threading.Tasks;
+
+    public static class MaintainCorsExtension
+    {
+        public static IApplicationBuilder MaintainCorsHeadersOnError(this IApplicationBuilder builder)
+        {
+            return builder.Use(async (httpContext, next) =>
+            {
+                string timestamp = DateTime.Now.Ticks.ToString();
+                string path = httpContext.Request.Path;
+                string origin = httpContext.Request.Headers.Origin;
+                Console.WriteLine("{0}: {1} {2}", timestamp, path, origin);
+                //var corsHeaders = new HeaderDictionary();
+                //foreach (var pair in httpContext.Response.Headers)
+                //{
+                //    if (!pair.Key.StartsWith("access-control-", StringComparison.InvariantCultureIgnoreCase)) { continue; }
+                //    corsHeaders[pair.Key] = pair.Value;
+                //}
+
+                httpContext.Response.OnStarting(o => {
+                    var ctx = (HttpContext)o;
+                    var headers = ctx.Response.Headers;
+                    Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
+                    //ctx.Response.Headers.AccessControlAllowOrigin = origin;
+                    //Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
+                    //foreach (var pair in corsHeaders)
+                    //{
+                    //    if (headers.ContainsKey(pair.Key))
+                    //    {
+                    //        headers[pair.Key] = pair.Value;
+                    //    }
+                    //    else
+                    //    {
+                    //        headers.Add(pair.Key, pair.Value);
+                    //    }
+                    //}
+                    return Task.CompletedTask;
+                }, httpContext);
+
+                await next();
+            });
+        }
+    }
+
     public partial class Startup
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
@@ -73,48 +119,11 @@ namespace EcdLink.Api.CoreApi
             services.AddHttpContextAccessor();
 
             // We are explicitly setting these because of CORS issues on .datafree.co
-            // var corsAllowedDomainsEnv = System.Environment.GetEnvironmentVariable("CORS_ALLOWED_DOMAINS");
-            // if (string.IsNullOrEmpty(corsAllowedDomainsEnv))
-            // {
-            //     corsAllowedDomainsEnv = "https://ecdconnect-develop-app.azurewebsites.net,https://ecdconnect-develop-portal.azurewebsites.net,https://whitelabel-develop-app.azurewebsites.net,https://whitelabel-develop-portal.azurewebsites.net,https://ecd-connect-develop-api.azurewebsites.net,https://ecdconnect-qa-app.azurewebsites.net,https://ecdconnect-qa-portal.azurewebsites.net,https://whitelabel-qa-app.azurewebsites.net,https://whitelabel-qa-portal.azurewebsites.net,https://ecdconnect-qa-api.azurewebsites.net,https://app.staging.ecdconnect.co.za,https://portal.staging.ecdconnect.co.za,https://whitelabel.staging.ecdconnect.co.za,https://portal-whitelabel.staging.ecdconnect.co.za,https://api.staging.ecdconnect.co.za,https://app.ecdconnect.co.za,https://portal.ecdconnect.co.za,https://whitelabel.staging.ecdconnect.co.za,https://portal-whitelabel.ecdconnect.co.za,https://api-ecd.ecdconnect.co.za,https://ecdconnect.co.za,https://*.ecdconnect.co.za,https://*.azurewebsites.net,https://portal.smartstart.ecdconnect.co.za,https://portal.chwconnect.ecdconnect.co.za,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005,https://localhost:5001,https://localhost:5000,https://*.datafree.co,https://*.sbox.datafree.co";
-            // }
-
-            var allowedDomains = new[] {
-                "https://ecdconnect-develop-app.azurewebsites.net",
-                "https://ecdconnect-develop-portal.azurewebsites.net",
-                "https://whitelabel-develop-app.azurewebsites.net",
-                "https://whitelabel-develop-portal.azurewebsites.net",
-                "https://ecd-connect-develop-api.azurewebsites.net",
-                "https://ecdconnect-qa-app.azurewebsites.net",
-                "https://ecdconnect-qa-portal.azurewebsites.net",
-                "https://whitelabel-qa-app.azurewebsites.net",
-                "https://whitelabel-qa-portal.azurewebsites.net",
-                "https://ecdconnect-qa-api.azurewebsites.net",
-                "https://app.staging.ecdconnect.co.za",
-                "https://portal.staging.ecdconnect.co.za",
-                "https://whitelabel.staging.ecdconnect.co.za",
-                "https://portal-whitelabel.staging.ecdconnect.co.za",
-                "https://api.staging.ecdconnect.co.za",
-                "https://app.ecdconnect.co.za",
-                "https://portal.ecdconnect.co.za",
-                "https://whitelabel.staging.ecdconnect.co.za",
-                "https://portal-whitelabel.ecdconnect.co.za",
-                "https://api-ecd.ecdconnect.co.za",
-                "https://ecdconnect.co.za",
-                "https://*.ecdconnect.co.za",
-                "https://*.azurewebsites.net",
-                "https://portal.smartstart.ecdconnect.co.za",
-                "https://portal.chwconnect.ecdconnect.co.za",
-                "http://localhost:3000",
-                "http://localhost:3001",
-                "http://localhost:3002",
-                "http://localhost:3003",
-                "http://localhost:3005",
-                "https://localhost:5001",
-                "https://localhost:5000",
-                "https://*.datafree.co",
-                "https://*.sbox.datafree.co"
-            };
+            var corsAllowedDomainsEnv = System.Environment.GetEnvironmentVariable("CORS_ALLOWED_DOMAINS");
+            if (string.IsNullOrEmpty(corsAllowedDomainsEnv))
+            {
+                corsAllowedDomainsEnv = "https://ecdconnect.co.za,https://*.ecdconnect.co.za,https://*.azurewebsites.net,https://portal.smartstart.ecdconnect.co.za,https://portal.chwconnect.ecdconnect.co.za,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005,https://*.datafree.co,https://*.sbox.datafree.co";
+            }
             //var allowedDomains = new[] { "https://ecdconnect.co.za",
             //"https://ecdconnect-co-za-fundasmartstart.datafree.co",
             //"https://*.ecdconnect.co.za",
@@ -124,19 +133,26 @@ namespace EcdLink.Api.CoreApi
             //"http://localhost:3000" ,
             //"https://smartstart-ecdconnect-co-za-funda.datafree.co"};
 
-            // var corsAllowedDomains = corsAllowedDomainsEnv.Split(",");
+            var corsAllowedDomains = corsAllowedDomainsEnv.Split(",");
             services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
                             .AllowAnyMethod()
                             .AllowAnyHeader()
                             .AllowCredentials()
                             .SetIsOriginAllowedToAllowWildcardSubdomains()
-                            .SetIsOriginAllowed(origin =>
-                            {
-                                Console.WriteLine($"CORS Request Origin: {origin}");
-                                return true;
-                            })
+                            .SetIsOriginAllowed(origin => true)
+                            .WithOrigins(corsAllowedDomains)
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
+
+            //services.AddHttpLogging(logging =>
+            //{
+            //    logging.LoggingFields = HttpLoggingFields.All;
+            //    logging.RequestHeaders.Add("Origin");
+            //    logging.ResponseHeaders.Add("Access-Control-Allow-Origin");
+            //    logging.MediaTypeOptions.AddText("application/javascript");
+            //    logging.RequestBodyLogLimit = 4096;
+            //    logging.ResponseBodyLogLimit = 4096;
+            //});
 
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
@@ -250,9 +266,11 @@ namespace EcdLink.Api.CoreApi
                 app.UseDeveloperExceptionPage();
             }
 
+            //app.UseHttpLogging();
+            //app.MaintainCorsHeadersOnError();
+            app.UseCors("CorsPolicy");
             app.UseCookiePolicy();
             app.UseRouting();
-            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();

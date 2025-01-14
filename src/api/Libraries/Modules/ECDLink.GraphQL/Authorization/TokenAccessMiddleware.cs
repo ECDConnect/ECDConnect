@@ -19,51 +19,25 @@ namespace ECDLink.EGraphQL.Authorization
 
         public override async Task InvokeAsync(IMiddlewareContext context)
         {
-            // Retrieve the "token" directive from the selection's syntax node
-            var directiveNode = context.Selection.SyntaxNode
-                .Directives.FirstOrDefault(d => d.Name.Value == "token");
+            // Since `IMiddlewareContext` does not support `Directive`, you need to pass the directive explicitly
+            var directive = context.Selection.SyntaxNode.Directives
+                .FirstOrDefault(d => d.Name.Value == "tokenAccess");
 
-            if (directiveNode == null)
+            if (directive == null)
             {
-                // If the directive is not present, simply proceed with the next middleware
                 await _next(context).ConfigureAwait(false);
                 return;
             }
 
-            // Extract the "Validator" argument from the directive
-            var validatorTypeName = directiveNode.Arguments
-                .FirstOrDefault(a => a.Name.Value == "Validator")?.Value.Value?.ToString();
+            // Extract the validator type and other properties safely
+            var directiveArgs = directive.Arguments
+                .ToDictionary(arg => arg.Name.Value, arg => arg.Value.Value);
 
-            if (string.IsNullOrEmpty(validatorTypeName))
-            {
-                SetError(context, AuthState.NotAllowed);
-                return;
-            }
-
-            // Create a new TokenAccessDirective instance using the extracted validator type
-            var tokenDirective = new TokenAccessDirective
-            {
-                Validator = Type.GetType(validatorTypeName)
-            };
-
-            // Use the validator as per the original logic
-            var validatorType = typeof(IOpenAccessValidator<>).MakeGenericType(tokenDirective.Validator);
+            var validatorType = Type.GetType(directiveArgs["validator"].ToString());
             var validator = context.Services.GetService(validatorType);
-
-            if (validator == null)
-            {
-                SetError(context, AuthState.NotAllowed);
-                return;
-            }
 
             var token = context.ArgumentValue<string>(ArgumentConstants.Token);
             var method = validator.GetType().GetMethod("ValidateToken");
-
-            if (method == null)
-            {
-                SetError(context, AuthState.NotAllowed);
-                return;
-            }
 
             var state = (AuthState)method.Invoke(validator, new object[] { token });
 

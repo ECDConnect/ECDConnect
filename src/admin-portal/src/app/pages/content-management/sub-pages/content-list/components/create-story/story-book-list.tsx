@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useMutation, useLazyQuery } from '@apollo/client';
+import { useMutation, useLazyQuery, gql, useQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentTypeDto,
@@ -28,7 +28,6 @@ import {
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import {
   StoryBookTypeOptions,
-  StoryBookThemeOptions,
   StoryBookShareOptions,
 } from './story-book.types';
 
@@ -50,15 +49,6 @@ export const sortByTypeOptions: SearchDropDownOption<string>[] = [
   StoryBookTypeOptions?.StoryBook,
   StoryBookTypeOptions?.ReadAloud,
   StoryBookTypeOptions?.Other,
-].map((item) => ({
-  id: item,
-  label: item,
-  value: item,
-}));
-
-export const sortByThemeOptions: SearchDropDownOption<string>[] = [
-  StoryBookThemeOptions?.Theme,
-  StoryBookThemeOptions?.NoTheme,
 ].map((item) => ({
   id: item,
   label: item,
@@ -98,6 +88,44 @@ export default function StoryBookList({
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
   const [searchText, setSearchText] = useState('Search by title or content...');
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
+
+  const [sortByThemeOptions, setSortByThemeOptions] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const [themes, setThemes] = useState<any[]>([]);
+
+  const getAllTheme = `GetAllTheme`;
+  const query = gql` 
+    query ${getAllTheme} ($localeId: String) {
+      ${getAllTheme} (localeId: $localeId) {
+        id
+        name
+        }
+      }
+  `;
+
+  const { data: themeData } = useQuery(query, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: LanguageId.enZa,
+    },
+  });
+
+  useEffect(() => {
+    if (themeData && themeData.GetAllTheme) {
+      setThemes(themeData.GetAllTheme);
+
+      const copyItems = themeData.GetAllTheme.map((item: any) => ({
+        ...item,
+        id: item?.id,
+        label: item?.name,
+        value: item?.id,
+      }));
+      copyItems.push({ id: 0, label: 'No theme', value: 0 });
+
+      setSortByThemeOptions(copyItems);
+    }
+  }, [themeData]);
 
   // Filter options
   // ---------
@@ -165,9 +193,7 @@ export default function StoryBookList({
   useEffect(() => {
     if (contentType && contentType.fields) {
       const displayFields: ContentTypeFieldDto[] = [];
-
       const copy: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
-
       const orderedList = copy?.sort(function (a, b) {
         return a.fieldOrder - b.fieldOrder;
       });
@@ -314,7 +340,7 @@ export default function StoryBookList({
         availableLanguages: itemLanguages,
         shareContent: item.shareContent,
         themes: item.themes,
-        authorsAuthorization: true,
+        authorsAuthorization: item.authorsAuthorization,
       };
 
       model.content = copyItem;
@@ -372,6 +398,22 @@ export default function StoryBookList({
         updatedDate: item?.updatedDate
           ? format(new Date(item.updatedDate), 'dd/MM/yyyy')
           : '-',
+        themeComponent: (
+          <div className="ml-0 flex cursor-pointer flex-row items-center">
+            {item?.themes !== '' &&
+              item?.themes.split(',')?.map((item: any, index: number) => {
+                const theme = themes?.find((x) => x?.id === +item);
+                return (
+                  <div
+                    key={`theme_` + index}
+                    className={'text-textMid m-1 rounded-full py-1'}
+                  >
+                    {theme?.name}
+                  </div>
+                );
+              })}
+          </div>
+        ),
         typeComponent: (
           <div className="ml-0 flex cursor-pointer items-center">
             <div
@@ -419,7 +461,7 @@ export default function StoryBookList({
       use: 'Type',
     },
     {
-      field: 'themes',
+      field: 'themeComponent',
       use: 'Themes',
     },
     {
@@ -466,7 +508,7 @@ export default function StoryBookList({
     }
   );
 
-  const deactivateStorybooks = useCallback(() => {
+  const deactivateRecords = useCallback(() => {
     deactivateStoryBooks({
       variables: {
         contentIds: selectedStorybooks?.map((item) => item?.id),
@@ -523,14 +565,14 @@ export default function StoryBookList({
             handleResetSelectedRows();
           }}
           onSubmit={() => {
-            deactivateStorybooks();
+            deactivateRecords();
             onClose();
           }}
         />
       ),
     });
   }, [
-    deactivateStorybooks,
+    deactivateRecords,
     dialog,
     inactiveStorybooks?.length,
     isAllInactive,

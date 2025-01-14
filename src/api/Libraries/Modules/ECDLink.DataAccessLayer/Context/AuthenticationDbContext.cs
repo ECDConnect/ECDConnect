@@ -74,7 +74,7 @@ namespace ECDLink.DataAccessLayer.Context
         // Classroom
         public DbSet<Classroom> Classrooms { get; set; }
         public DbSet<ClassProgramme> ClassProgrammes { get; set; }
-        public DbSet<ClassroomGroup> ClassroomGroupss { get; set; }
+        public DbSet<ClassroomGroup> ClassroomGroups { get; set; }
         public DbSet<Learner> Learners { get; set; }
         public DbSet<ProgrammeAttendanceReason> ProgrammeAttendanceReasons { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
@@ -221,6 +221,8 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<CommunityProfileConnection> CommunityProfileConnections { get; set; }
 
         public DbSet<UserResourceLikes> UserResourceLikes { get; set; }
+
+        public DbSet<Holiday> Holidays { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
