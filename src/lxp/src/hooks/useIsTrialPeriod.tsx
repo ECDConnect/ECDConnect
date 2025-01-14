@@ -27,7 +27,7 @@ export const useIsTrialPeriod = () => {
         return false;
       }
     }
-  }, [clasroom?.name, isOpenAccess, practitioner?.startDate]);
+  }, [clasroom?.preschoolCode, isOpenAccess, practitioner?.startDate]);
 
   return trialPeriod;
 };
