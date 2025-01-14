@@ -10,6 +10,7 @@ import { SiteAddressDto } from '@ecdlink/core';
 import { staticDataSelectors } from '@/store/static-data';
 import { useSelector } from 'react-redux';
 import { CustomGoogleMap } from '../google-map';
+import { p } from 'msw/lib/glossary-297d38ba';
 
 // Format the address based on its components
 export const formatAddress = (address: SiteAddressDto) => {
@@ -66,7 +67,10 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
 
   // Function to reverse geocode the coordinates to an address
   const reverseGeocode = async (latitude: number, longitude: number) => {
-    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=YOUR_GOOGLE_API_KEY`;
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
+      process.env.REACT_APP_MAP_API_KEY ||
+      'AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk'
+    }`;
     const response = await fetch(geocodeUrl);
     const data = await response.json();
 
@@ -115,12 +119,12 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
 
   // Get current location when the component mounts
   useEffect(() => {
-    if (!props.address.latitude || !props.address.longitude) {
+    if (!props.address.latitude && !props.address.longitude) {
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
-            reverseGeocode(latitude, longitude); // Reverse geocode to address
+            reverseGeocode(latitude, longitude);
           },
           (error) => {
             console.error('Error getting location:', error);
@@ -130,7 +134,7 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
         console.error('Geolocation is not supported by this browser.');
       }
     } else {
-      setFormattedAddress(formatAddress(props.address)); // Format address if available
+      setFormattedAddress(formatAddress(props.address));
     }
   }, [props.address]);
 
