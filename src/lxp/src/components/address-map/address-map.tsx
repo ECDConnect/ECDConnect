@@ -11,6 +11,30 @@ import { staticDataSelectors } from '@/store/static-data';
 import { useSelector } from 'react-redux';
 import { CustomGoogleMap } from '../google-map';
 
+// Format the address based on its components
+export const formatAddress = (address: SiteAddressDto) => {
+  if (address.addressLine1 === '') {
+    return '';
+  }
+  const parts = [address.addressLine1];
+  if (address.addressLine2) parts.push(address.addressLine2);
+  if (address.addressLine3) parts.push(address.addressLine3);
+  if (address.province) parts.push(address.province.description);
+  return parts.join(', ');
+};
+
+// Extract address components from the geocoding response
+const getAddressComponent = (
+  result: GoogleMapGeoCodeResponse,
+  type: GoogleMapGeoCodeAddressComponentType
+) => {
+  const address_components = result.results[0].address_components;
+  const component = address_components.find((item) =>
+    item.types.includes(type)
+  );
+  return component;
+};
+
 interface AddressMapProps {
   componentHeight: number;
   buttonColor?: Colours;
@@ -19,30 +43,8 @@ interface AddressMapProps {
   onSubmit: (address: SiteAddressDto) => void;
 }
 
-export const formatAddress = (address: SiteAddressDto) => {
-  if (address.addressLine1 === '') {
-    return '';
-  }
-  const parts = [address.addressLine1];
-  if (!!address.addressLine2) parts.push(address.addressLine2);
-  if (!!address.addressLine3) parts.push(address.addressLine3);
-  //if (!!address.municipality) parts.push(address.municipality);
-  if (!!address.province) parts.push(address.province.description);
-  return parts.join(', ');
-};
-
-const getAddressComponent = (
-  result: GoogleMapGeoCodeResponse,
-  type: GoogleMapGeoCodeAddressComponentType
-) => {
-  const address_components = result.results[0].address_components;
-  const component = address_components.find((item) =>
-    item.types.find((currentType) => currentType === type)
-  );
-  return component;
-};
-
 export const AddressMap: React.FC<AddressMapProps> = (props) => {
+  // State to hold the address and its formatted version
   const [address, setAddress] = useState<SiteAddressDto>(
     props.address || {
       addressLine1: '',
@@ -62,9 +64,9 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
 
   const provinces = useSelector(staticDataSelectors.getProvinces);
 
-  // Function to reverse geocode coordinates
+  // Function to reverse geocode the coordinates to an address
   const reverseGeocode = async (latitude: number, longitude: number) => {
-    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk`;
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=YOUR_GOOGLE_API_KEY`;
     const response = await fetch(geocodeUrl);
     const data = await response.json();
 
@@ -74,7 +76,7 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
         mapData,
         'administrative_area_level_1'
       )?.long_name;
-      const matchedProvince = !!province
+      const matchedProvince = province
         ? provinces.find(
             (p) => p.description.toLowerCase() === province.toLowerCase()
           )
@@ -93,13 +95,13 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
           getAddressComponent(mapData, 'administrative_area_level_2')
             ?.short_name || '',
         provinceId: matchedProvince ? matchedProvince.id : null,
-        province: matchedProvince
-          ? {
+        province: !matchedProvince
+          ? null
+          : {
               id: matchedProvince.id || '',
               enumId: matchedProvince.id || '',
               description: matchedProvince.description || '',
-            }
-          : null,
+            },
         postalCode:
           getAddressComponent(mapData, 'postal_code')?.short_name || '',
         latitude: latitude.toString(),
@@ -111,17 +113,14 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
     }
   };
 
-  // Get current location
+  // Get current location when the component mounts
   useEffect(() => {
-    console.log(props.address);
     if (!props.address.latitude || !props.address.longitude) {
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
-
-            console.log(position.coords);
-            reverseGeocode(latitude, longitude);
+            reverseGeocode(latitude, longitude); // Reverse geocode to address
           },
           (error) => {
             console.error('Error getting location:', error);
@@ -131,26 +130,29 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
         console.error('Geolocation is not supported by this browser.');
       }
     } else {
-      setFormattedAddress(formatAddress(props.address));
+      setFormattedAddress(formatAddress(props.address)); // Format address if available
     }
-  }, []);
+  }, [props.address]);
 
+  // Save the address and close the dialog
   const onClickSaveAddress = useCallback(() => {
-    props.onSubmit(address);
-    props.onClose();
+    props.onSubmit(address); // Submit the address
+    props.onClose(); // Close the map
   }, [props.onClose, props.onSubmit, address]);
 
+  // Handle cancel action (close the map without saving)
   const onClickCancel = useCallback(() => {
     props.onClose();
   }, [props.onClose]);
 
+  // Handle map data change when the pin is moved
   const onChangeMapData = (mapData?: GoogleMapGeoCodeResponse) => {
-    if (mapData && mapData.results.length > 0 && mapData.status == 'OK') {
+    if (mapData && mapData.results.length > 0 && mapData.status === 'OK') {
       const province = getAddressComponent(
         mapData,
         'administrative_area_level_1'
       )?.long_name;
-      const matchedProvince = !!province
+      const matchedProvince = province
         ? provinces.find(
             (p) => p.description.toLowerCase() === province.toLowerCase()
           )
@@ -168,7 +170,7 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
         municipality:
           getAddressComponent(mapData, 'administrative_area_level_2')
             ?.short_name || '',
-        provinceId: !!matchedProvince ? matchedProvince.id : null,
+        provinceId: matchedProvince ? matchedProvince.id : null,
         province: !matchedProvince
           ? null
           : {
@@ -181,6 +183,8 @@ export const AddressMap: React.FC<AddressMapProps> = (props) => {
         latitude: mapData.results[0].geometry.location.lat.toString(),
         longitude: mapData.results[0].geometry.location.lng.toString(),
       };
+
+      // Only update the state if the address has changed
       if (JSON.stringify(address) !== JSON.stringify(updatedAddress)) {
         setAddress(updatedAddress);
         setFormattedAddress(formatAddress(updatedAddress));
