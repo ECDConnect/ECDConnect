@@ -30,6 +30,7 @@ import { useAppContext } from '@/walkthrougContext';
 import axios from 'axios';
 import { useHolidays } from '@/hooks/useHolidays';
 import { staticDataThunkActions } from '@/store/static-data';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -49,6 +50,10 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   isWeekendDay,
 }) => {
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
+
+  const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+
+  const hasPermissionToEdit = hasPermissionToPlanClassroomActivities;
 
   const {
     state: { run: isWalkthrough },
@@ -356,38 +361,43 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
         )}
       </div>
       <div className={classNames(className, 'flex w-full gap-2')}>
-        {!isWeekendDay && showChips && (
-          <button
-            className={`flex w-full items-center rounded-xl ${themeColour()}`}
-            disabled={isWalkthrough}
-            onClick={onClickTheme}
-          >
-            {chosenTheme && (
-              <img src={svgImageBase64} alt="theme" className="ml-4 h-8 w-8" />
-            )}
-            {dailyProgramme && theme?.dailyProgrammes?.length ? (
-              <Typography
-                type="small"
-                color={chosenTheme?.color ? 'white' : 'textDark'}
-                text={
-                  themeName
-                    ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
-                    : `No theme`
-                }
-                className={'p-4'}
-                weight={`bold`}
-              />
-            ) : (
-              <Typography
-                type="small"
-                color={chosenTheme?.color ? 'white' : 'textDark'}
-                text={`${themeName}`}
-                className={'p-4'}
-                weight={`bold`}
-              />
-            )}
-          </button>
-        )}
+        {(!isWeekendDay && showChips) ||
+          (!hasPermissionToEdit && (
+            <button
+              className={`flex w-full items-center rounded-xl ${themeColour()}`}
+              disabled={isWalkthrough}
+              onClick={onClickTheme}
+            >
+              {chosenTheme && (
+                <img
+                  src={svgImageBase64}
+                  alt="theme"
+                  className="ml-4 h-8 w-8"
+                />
+              )}
+              {dailyProgramme && theme?.dailyProgrammes?.length ? (
+                <Typography
+                  type="small"
+                  color={chosenTheme?.color ? 'white' : 'textDark'}
+                  text={
+                    themeName
+                      ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
+                      : `No theme`
+                  }
+                  className={'p-4'}
+                  weight={`bold`}
+                />
+              ) : (
+                <Typography
+                  type="small"
+                  color={chosenTheme?.color ? 'white' : 'textDark'}
+                  text={`${themeName}`}
+                  className={'p-4'}
+                  weight={`bold`}
+                />
+              )}
+            </button>
+          ))}
       </div>
     </div>
   );

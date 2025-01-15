@@ -6,10 +6,11 @@ import {
   LanguageDto,
 } from '@ecdlink/core';
 import { classNames } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ContentManagementView,
   ContentName,
+  ResourcesTitles,
 } from '../../content-management-models';
 import ContentCompare from './components/content-compare/content-compare';
 import ContentEdit from './components/content-edit/content-edit';
@@ -20,6 +21,7 @@ import EditCategory from './components/edit-category/edit-category';
 import EditSkills from './components/edit-skills/edit-skills';
 import { ContentTypes } from '../../../../constants/content-management';
 import CreateResource from './components/create-resource/create-resource';
+import { ArrowRightIcon } from '@heroicons/react/solid';
 
 export interface ContentWorkflowProps {
   contentView: ContentManagementView;
@@ -47,10 +49,8 @@ export default function ContentWorkflow({
   const [selectedLanguageId, setSelectedLanguageId] = useState<string>(
     contentView?.languageId
   );
-
   const [viewKey, setViewKey] = useState<number>(Math.random());
   const [defaultLanguageId, setDefaultLanguageId] = useState<string>();
-  const [isEdit, setIsEdit] = useState<boolean>(false);
   const [isCompareMode, setIsCompareMode] = useState<boolean>(false);
   const [currentContent, setCurrentContent] = useState<ContentDto>();
 
@@ -92,9 +92,47 @@ export default function ContentWorkflow({
     return orderedList;
   };
 
+  const isEdit = contentView && !!contentView?.content;
+
+  const breadCrumbName = useCallback(
+    (item: ContentTypeDto) => {
+      if (item.name === ContentTypes.THEME) {
+        return isEdit ? 'Edit theme' : 'Add new theme';
+      } else if (item.name === ContentTypes.ACTIVITY) {
+        return isEdit ? 'Edit activity' : 'Add new activity';
+      } else if (item.name === ContentTypes.STORY_BOOK) {
+        return isEdit ? 'Edit story' : 'Add new story';
+      } else if (item.name === ContentTypes.CLASSROOMBUSINESSRESOURCE) {
+        if (choosedSectionTitle === ResourcesTitles.ClassroomResources) {
+          return isEdit
+            ? 'Edit classroom resource'
+            : 'Add new classroom resource';
+        } else {
+          return isEdit
+            ? 'Edit business resource'
+            : 'Add new business resource';
+        }
+      }
+      return '';
+    },
+    [choosedSectionTitle, isEdit]
+  );
+
+  const breadCrumbParentName = useCallback(
+    (item: ContentTypeDto) => {
+      if (item.name === ContentTypes.STORY_BOOK) {
+        return 'Stories';
+      } else if (item.name === ContentTypes.ACTIVITY) {
+        return choosedSectionTitle;
+      }
+      return item.description;
+    },
+    [choosedSectionTitle]
+  );
+
   const handleNoDynamicForms = (type: string) => {
     switch (type) {
-      case 'StoryBook':
+      case ContentTypes.STORY_BOOK:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -113,7 +151,7 @@ export default function ContentWorkflow({
                         cancelEdit={() => goBack()}
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => setIsCompareMode(isEdit)}
                       />
                     </div>
                   </div>
@@ -126,9 +164,9 @@ export default function ContentWorkflow({
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
-              <div className="h-full py-6">
+              <div className="h-full">
                 <div className="relative h-full" style={{ minHeight: '36rem' }}>
-                  <div className="rounded-lg border-b py-5">
+                  <div className="rounded-lg border-b">
                     <div key={selectedLanguageId}>
                       <CreateTheme
                         optionDefinitions={optionDefinitions}
@@ -141,7 +179,7 @@ export default function ContentWorkflow({
                         cancelEdit={() => goBack()}
                         savedContent={savedContent}
                         defaultLanguageId={selectedLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => setIsCompareMode(isEdit)}
                       />
                     </div>
                   </div>
@@ -171,7 +209,7 @@ export default function ContentWorkflow({
                         savedContent={savedContent}
                         defaultLanguageId={selectedLanguageId}
                         cancelCompare={() => {
-                          setIsCompareMode(!isEdit);
+                          setIsCompareMode(isEdit);
                         }}
                         choosedSectionTitle={choosedSectionTitle}
                       />
@@ -182,7 +220,7 @@ export default function ContentWorkflow({
             </div>
           </>
         );
-      case 'ProgressTrackingCategory':
+      case ContentTypes.PROGRESS_TRACKING_CATEGORY:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -200,7 +238,7 @@ export default function ContentWorkflow({
                         contentType={contentType}
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => setIsCompareMode(isEdit)}
                         cancelEdit={() => goBack()}
                       />
                     </div>
@@ -210,7 +248,7 @@ export default function ContentWorkflow({
             </div>
           </>
         );
-      case 'ProgressTrackingSkill':
+      case ContentTypes.PROGRESS_TRACKING_SKILL:
         return (
           <>
             <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
@@ -229,7 +267,7 @@ export default function ContentWorkflow({
                         cancelEdit={() => goBack()}
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => setIsCompareMode(isEdit)}
                         setSelectedLanguageId={setSelectedLanguageId}
                       />
                     </div>
@@ -246,8 +284,8 @@ export default function ContentWorkflow({
 
   if (contentView && languages && defaultLanguageId) {
     return (
-      <div className="flex flex-col">
-        <div className="mb-6 flex flex-row gap-2 overflow-auto rounded-md bg-white px-2">
+      <div className="flex flex-col pl-6 pr-6">
+        <div className="flex flex-row overflow-auto rounded-md bg-white">
           {!isCompareMode &&
             contentType?.name !== ContentName.Theme &&
             languages
@@ -271,6 +309,24 @@ export default function ContentWorkflow({
                 </div>
               ))}
         </div>
+        {/* BREADCRUMBS */}
+        <div>
+          <button
+            onClick={() => {
+              goBack();
+            }}
+            type="button"
+            className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+          >
+            Programme
+            <ArrowRightIcon className="text-secondary ml-1 mr-1 h-4 w-4" />
+            {breadCrumbParentName(contentType)}
+            <ArrowRightIcon className="text-secondary ml-1 h-4 w-4" />
+            <span className="px-1 text-gray-400">
+              {breadCrumbName(contentType)}
+            </span>
+          </button>
+        </div>
         <div className="min-w-0 flex-1 rounded xl:flex">
           {!isCompareMode ? (
             contentType?.name === ContentName.StoryBook ||
@@ -280,38 +336,37 @@ export default function ContentWorkflow({
             contentType?.name === ContentName.ProgressTrackingSkill ? (
               handleNoDynamicForms(contentType?.name)
             ) : (
-              <>
-                <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
-                  <div className="h-full py-6">
-                    <div
-                      className="relative h-full"
-                      style={{ minHeight: '36rem' }}
-                    >
-                      <div className="rounded-lg border-b py-5">
-                        <div key={selectedLanguageId}>
-                          <ContentEdit
-                            optionDefinitions={optionDefinitions}
-                            content={contentView.content}
-                            selectedLanguageId={selectedLanguageId}
-                            contentValues={getOrderedContentValues(
-                              currentContent?.contentValues
-                            )}
-                            contentType={contentType}
-                            cancelEdit={() => goBack()}
-                            savedContent={savedContent}
-                            defaultLanguageId={defaultLanguageId}
-                            cancelCompare={() => setIsCompareMode(!isEdit)}
-                            choosedSectionTitle={choosedSectionTitle}
-                            setSearchValue={setSearchValue}
-                            contentView={contentView}
-                            languages={languages}
-                          />
-                        </div>
+              <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+                <div className="h-full">
+                  <div
+                    className="relative h-full"
+                    style={{ minHeight: '36rem' }}
+                  >
+                    <div className="rounded-lg border-b py-5">
+                      <div key={selectedLanguageId}>
+                        <ContentEdit
+                          optionDefinitions={optionDefinitions}
+                          content={contentView.content}
+                          selectedLanguageId={selectedLanguageId}
+                          contentValues={getOrderedContentValues(
+                            currentContent?.contentValues
+                          )}
+                          contentType={contentType}
+                          cancelEdit={() => goBack()}
+                          savedContent={savedContent}
+                          defaultLanguageId={defaultLanguageId}
+                          cancelCompare={() => setIsCompareMode(isEdit)}
+                          choosedSectionTitle={choosedSectionTitle}
+                          setSearchValue={setSearchValue}
+                          contentView={contentView}
+                          languages={languages}
+                          isEdit={isEdit}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
-              </>
+              </div>
             )
           ) : (
             <ContentCompare

@@ -59,7 +59,9 @@ namespace ECDLink.ContentManagement.Constants
         public const int ResourceLinkId = 38;
         public const int ClassroomBusinessResourceId = 39;
 
-
+        public const string ActivityStoryTime = "Story time";
+        public const string SmallGroup = "Small group";
+        public const string LargeGroup = "Large group";
 
     }
 }

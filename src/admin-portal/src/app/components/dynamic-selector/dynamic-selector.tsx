@@ -4,7 +4,7 @@ import {
   ContentValueDto,
   camelCaseToSentanceCase,
 } from '@ecdlink/core';
-import { CheckboxGroup, Typography } from '@ecdlink/ui';
+import { Alert, CheckboxGroup, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import {
   ActivitiesTitles,
@@ -22,6 +22,7 @@ export interface DynamicSelectorProps {
   setSelectedItems?: (value: string) => void;
   isSkillType?: boolean;
   choosedSectionTitle?: string;
+  subLabel?: string;
 }
 
 const storyActivitiesTypes = [
@@ -48,6 +49,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   setSelectedItems,
   isSkillType,
   choosedSectionTitle,
+  subLabel,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -158,7 +160,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   ) {
     if (isSkillType) {
       return (
-        <div>
+        <div key={title}>
           <Typography
             type={'body'}
             weight={'bold'}
@@ -170,11 +172,29 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           />
           {choosedSectionTitle !== ActivitiesTitles.StoryActivities && (
             <Typography
-              type={'body'}
+              type={'help'}
               color={'textMid'}
               text={
                 'You must choose exactly 2 skills from the list below. To change your selection, deselect the skills and choose a new pair.'
               }
+            />
+          )}
+          {subLabel && (
+            <Typography type={'help'} color={'textMid'} text={subLabel} />
+          )}
+
+          {choosedSectionTitle === ActivitiesTitles.StoryActivities && (
+            <Alert
+              className="mt-2 mb-4 rounded-md"
+              message={`Editing the connected story types here will update the connected story types for all translations of this page.`}
+              type="warning"
+            />
+          )}
+          {choosedSectionTitle !== ActivitiesTitles.StoryActivities && (
+            <Alert
+              className="mt-2 mb-4 rounded-md"
+              message={`Editing the skills here will update the skills for all translations of this page.`}
+              type="warning"
             />
           )}
 
@@ -191,7 +211,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                   <CheckboxGroup
                     checkboxColor="secondary"
                     id={item?.title}
-                    key={item?.title}
+                    key={'story_' + item?.id}
                     image={item?.imageUrl}
                     title={item?.name}
                     checked={itemChecked}
@@ -219,7 +239,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
         </div>
       );
     }
-    if (title === 'Themes') {
+    if (title === 'Themes' || title === 'Theme(s)') {
       return (
         <div>
           <Typography
@@ -231,10 +251,19 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
               camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
             }
           />
+          {subLabel && (
+            <Typography type={'help'} color={'textMid'} text={subLabel} />
+          )}
+
+          <Alert
+            className="mt-2 mb-4 rounded-md"
+            message={`Editing the themes here will update the themes for all translations of this page.`}
+            type="warning"
+          />
 
           <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
             {tableData &&
-              tableData.map((item: any) => {
+              tableData.map((item: any, index: number) => {
                 const maximumItemsChecked = tableData.filter((x) =>
                   currentIds?.includes(x.id?.toString())
                 );
@@ -244,8 +273,8 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                 return (
                   <CheckboxGroup
                     checkboxColor="secondary"
-                    id={item?.title}
-                    key={item?.title}
+                    id={item?.id}
+                    key={'theme_' + index}
                     title={item?.name}
                     checked={itemChecked}
                     value={item?.title}
@@ -347,7 +376,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       </div>
     );
   } else {
-    return <div>...loading</div>;
+    return <div key={title}>...loading</div>;
   }
 };
 

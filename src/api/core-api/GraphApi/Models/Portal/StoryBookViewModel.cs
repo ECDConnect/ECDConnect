@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
 {
     public class StoryBookViewModel
     {
@@ -20,8 +20,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Illustrator { get; set; }
         public string Translator { get; set; }
         public string BookLocation { get; set; }
+        public string BookLocationLink { get; set; }
         public string Keywords { get; set; }
         public string StoryBookParts { get; set; }
+        public List<int> ThemeItems { get; set; }
 
         public StoryBookViewModel(Object record, Guid localeId) {
 
@@ -37,8 +39,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             item.TryGetValue("illustrator", out var illustrator);
             item.TryGetValue("translator", out var translator);
             item.TryGetValue("bookLocation", out var bookLocation);
+            item.TryGetValue("bookLocationLink", out var bookLocationLink);
             item.TryGetValue("keywords", out var keywords);
             item.TryGetValue("storyBookParts", out var storyBookParts);
+            item.TryGetValue("themes", out var themes);
 
             Id = id.ToString();
             Name = name != null ? name.ToString() : "";
@@ -47,29 +51,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             Illustrator = illustrator != null ? illustrator.ToString() : "";
             Translator = translator != null ? translator.ToString() : "";
             BookLocation = bookLocation != null ? bookLocation.ToString() : "";
+            bookLocationLink = bookLocationLink != null ? bookLocationLink.ToString() : "";
             Keywords = keywords != null ? keywords.ToString() : "";
             StoryBookParts = storyBookParts != null ? storyBookParts.ToString() : "";
             LocaleId = localeId;
-            Themes = "";
+            Themes = themes != null ? themes.ToString(): "";
             ShareContent = shareContent == null ? "" : shareContent.ToString();
             UpdatedDate = updatedDate != null ? DateTime.Parse(updatedDate.ToString()) : null;
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
             AvailableLanguages = availableLanguages != null ? (availableLanguages as string).Split(",").Select(i => new Guid(i)).ToList() : new List<Guid>();
-        }
-    }
-
-    public class ThemeViewModel
-    {
-        public string Name { get; set; }
-        public string StoryBookId { get; set; }
-
-        public ThemeViewModel(string themeName, Object record)
-        {
-            var item = (IDictionary<string, object>)record;
-            item.TryGetValue("storyBook", out var storyBook);
-
-            Name = themeName;
-            StoryBookId = storyBook.ToString();
+            ThemeItems = themes != null ? themes.ToString().Split(",").Where(x => x != "").Select(x => Int32.Parse(x)).ToList() : new List<int>();
         }
     }
 }

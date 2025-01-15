@@ -194,8 +194,7 @@ export const useObserveProgressForChild = (childId: string) => {
   ) => {
     // Criteria:
     // 1: All questions answered
-    // 2: User responded yes to all regular and no to all reverse-score items
-    // 3: User responded don't know to less than 25%
+    // 2: User responded don't know to less than 25%
 
     // Check if we have added all observations
     const allObsMade = skillsForAgeGroup.every((x) => {
@@ -220,10 +219,19 @@ export const useObserveProgressForChild = (childId: string) => {
     ) {
       doNotKnowCount++;
     }
+
+    const skillsToWorkOnWithoutSupport = currentReport?.skillsToWorkOn.filter(
+      (x) => x.howToSupport !== ''
+    );
+    const skillsToWorkOnSelectedWithSupport =
+      currentReport &&
+      currentReport?.skillsToWorkOn.length !== 0 &&
+      skillsToWorkOnWithoutSupport?.length ===
+        currentReport?.skillsToWorkOn.length;
+
     const doNotKnowPerc = (doNotKnowCount / skillsForAgeGroup.length) * 100;
-
-    const result = allObsMade && doNotKnowPerc < 25;
-
+    const result =
+      allObsMade && doNotKnowPerc < 25 && skillsToWorkOnSelectedWithSupport!;
     setObservationsCompleteDate(result);
 
     return result;

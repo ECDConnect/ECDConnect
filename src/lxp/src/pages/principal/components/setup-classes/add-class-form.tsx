@@ -22,23 +22,29 @@ import {
 } from '@store/classroom';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { buttonDays } from './setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
 import { useTenant } from '@/hooks/useTenant';
+import { userSelectors } from '@/store/user';
+import { useNotificationService } from '@/hooks/useNotificationService';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const tenant = useTenant();
   const isOpenAccess = tenant?.isOpenAccess;
+  const { stopService } = useNotificationService();
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
   );
-
+  const userData = useSelector(userSelectors.getUser);
   const [classCount, setClassCount] = useState(1);
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
@@ -158,6 +164,14 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       await appDispatch(
         classroomsThunkActions.upsertClassroomGroupProgrammes({})
       );
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionerByUserId({
+            userId: userData?.id || '',
+          })
+        ).unwrap())().then(() => {
+        stopService();
+      });
     }
   };
 

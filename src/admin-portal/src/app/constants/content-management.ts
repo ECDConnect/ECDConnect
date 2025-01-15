@@ -1,7 +1,6 @@
 export const ContentManagementTabs = {
   PROCESS: { id: 2, name: 'Progress' },
   PROGRAMMES: { id: 3, name: 'Programme' },
-  //COMMUNITY: { id: 4, name: 'Community' },
   RESOURCES: { id: 4, name: 'Resources' },
 };
 
@@ -25,6 +24,10 @@ export const ContentTypes = {
 export const ContentForms = {
   CONSENT_FORM: 'Consent Form',
   ACTIVITY_FROM: 'Activity Form',
+};
+
+export const ActivityTypes = {
+  STORY_ACTIVITIES: 'Story activities',
 };
 
 export const CoachingCircleText = {

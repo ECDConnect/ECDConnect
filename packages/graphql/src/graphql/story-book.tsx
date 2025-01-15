@@ -4,7 +4,7 @@ export const GetStoryBookRecords = gql`
   query GetStoryBookRecords(
     $search: String
     $typesSearch: [String]
-    $themesSearch: [String]
+    $themesSearch: [Int!]
     $languageSearch: [UUID!]
     $shareContent: [String]
     $startDate: DateTime
@@ -40,7 +40,7 @@ export const GetStoryBookRecords = gql`
 `;
 
 export const DeleteMultipleStoryBooks = gql`
-  mutation DeleteMultipleStoryBooks($contentIds: [Int!]) {
+  mutation DeleteMultipleStoryBooks($contentIds: [String]) {
     deleteMultipleStoryBooks(contentIds: $contentIds) {
       success
       failed

@@ -5,7 +5,6 @@ import {
   camelCaseToSentanceCase,
 } from '@ecdlink/core';
 import {
-  Alert,
   CheckboxGroup,
   Dropdown,
   SearchDropDownOption,
@@ -15,7 +14,6 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
-import { DropDownFillType } from '../dropdown/models/DropDownOption';
 import { Colours } from '@ecdlink/ui';
 
 export interface DynamicSelectorProps {
@@ -262,62 +260,29 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     }
   };
 
-  const getFillType = (idx, storyType) => {
-    let tempArray = [...themeDaysArr];
-
-    let item = { ...tempArray[idx] };
-
-    const activity =
-      storyType === ThemeStoryTypes?.smallGroup
-        ? item?.smallGroupActivity?.[0]
-        : storyType === ThemeStoryTypes?.largeGroup
-        ? item?.largeGroupActivity?.[0]
-        : storyType === ThemeStoryTypes?.storyActivity
-        ? item?.storyActivity?.[0]
-        : storyType === ThemeStoryTypes?.storyBook
-        ? item?.storyBook?.[0]
-        : null;
-
-    if (
-      activity?.shareContent === null ||
-      activity?.shareContent === '' ||
-      activity?.shareContent === 'false'
-    ) {
-      setHasUnsharedContent(true);
-      return 'outlined' as DropDownFillType;
-    }
-    return 'filled' as DropDownFillType;
-  };
-
   const getFillColor = (idx, storyType) => {
-    let tempArray = [...themeDaysArr];
-
-    let item = { ...tempArray[idx] };
+    const tempArray = [...themeDaysArr];
+    const item = { ...tempArray[idx] };
     const activity =
       storyType === ThemeStoryTypes?.smallGroup
-        ? item?.smallGroupActivity?.[0]
+        ? item?.smallGroupActivity
         : storyType === ThemeStoryTypes?.largeGroup
-        ? item?.largeGroupActivity?.[0]
+        ? item?.largeGroupActivity
         : storyType === ThemeStoryTypes?.storyActivity
-        ? item?.storyActivity?.[0]
+        ? item?.storyActivity
         : storyType === ThemeStoryTypes?.storyBook
-        ? item?.storyBook?.[0]
+        ? item?.storyBook
         : null;
 
-    if (
-      activity?.shareContent === null ||
-      activity?.shareContent === '' ||
-      activity?.shareContent === 'false'
-    ) {
+    if (activity === undefined) {
       return 'alertMain' as Colours;
     }
-    return 'adminPortalBg' as Colours;
+    return 'successMain' as Colours;
   };
 
   const handleGroupChange = (e, idx, storyType) => {
-    let tempArray = [...themeDaysArr];
-
-    let item = { ...tempArray[idx] };
+    const tempArray = [...themeDaysArr];
+    const item = { ...tempArray[idx] };
 
     if (storyType === ThemeStoryTypes?.smallGroup) {
       item.smallGroupActivity = e?.[0]?.id;
@@ -336,7 +301,6 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
     }
     item.idx = idx;
     tempArray[idx] = item;
-
     setThemeDaysArr(tempArray);
   };
 
@@ -392,6 +356,7 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
                 );
                 return (
                   <CheckboxGroup
+                    key={`checkbox_` + idx}
                     checkboxColor="primary"
                     id={item?.title}
                     image={item?.imageUrl}
@@ -454,248 +419,233 @@ const ThemeContentSelector: React.FC<DynamicSelectorProps> = ({
               storyBookOptions &&
               storyTimeOptions &&
               tableData.map((item: any, idx: number) => (
-                <>
-                  <div
-                    className="justify-left flex items-center"
-                    key={'theme_' + idx}
-                  >
-                    <Typography
-                      type={'body'}
-                      text={`Day ${idx + 1}`}
-                      weight="normal"
-                      color={'textDark'}
-                      className={`${idx === 0 ? 'mt-8' : 'mt-2'} w-1/12`}
-                    />
-                    <div className="grid w-8/12 grid-cols-4 gap-2">
-                      <div>
-                        {idx === 0 ? (
-                          <Typography
-                            type={'h4'}
-                            text={'Small group activity'}
-                            weight="normal"
-                            color={'textDark'}
-                            className="my-1"
-                          />
-                        ) : (
-                          <div key={'theme_' + idx} className="mt-1"></div>
+                <div
+                  className="justify-left flex items-center"
+                  key={'themes_' + idx}
+                >
+                  <Typography
+                    type={'body'}
+                    text={`Day ${idx + 1}`}
+                    weight="normal"
+                    color={'textDark'}
+                    className={`${idx === 0 ? 'mt-8' : 'mt-2'} w-1/12`}
+                  />
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="w-22 text-small">
+                      {idx === 0 ? (
+                        <Typography
+                          type={'h4'}
+                          text={'Small group activity'}
+                          weight="normal"
+                          color={'textDark'}
+                          className="my-2"
+                        />
+                      ) : (
+                        <div className="mt-1"></div>
+                      )}
+                      <Dropdown<any>
+                        placeholder={'Type to search...'}
+                        list={smallGroupOptions}
+                        fillType="outlined"
+                        fillColor={getFillColor(
+                          idx,
+                          ThemeStoryTypes?.smallGroup
                         )}
-                        <Dropdown<any>
-                          placeholder={'Type to search...'}
-                          list={smallGroupOptions}
-                          fillType={getFillType(
+                        textColor="textDark"
+                        fullWidth
+                        className="text-small w-56"
+                        selectedValue={
+                          smallGroupOptions?.filter(
+                            (option) =>
+                              option?.id ===
+                              themeDaysArr?.[idx]?.smallGroupActivity?.[0]?.id
+                          )?.length > 0
+                            ? smallGroupOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.smallGroupActivity?.[0]
+                                    ?.id
+                              ).id
+                            : smallGroupOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.smallGroupActivity
+                              )?.id
+                        }
+                        showSearch
+                        onChange={(e: string | string[]) => {
+                          const newItem = smallGroupOptions?.filter(
+                            (item) => item?.id === e
+                          );
+                          handleGroupChange(
+                            newItem,
                             idx,
                             ThemeStoryTypes?.smallGroup
-                          )}
-                          fillColor={getFillColor(
-                            idx,
-                            ThemeStoryTypes?.smallGroup
-                          )}
-                          textColor="textLight"
-                          fullWidth
-                          className={`textDark w-58 h-full px-0`}
-                          selectedValue={
-                            smallGroupOptions?.filter(
-                              (option) =>
-                                option?.id ===
-                                themeDaysArr?.[idx]?.smallGroupActivity?.[0]?.id
-                            )?.length > 0
-                              ? smallGroupOptions?.find(
-                                  (option) =>
-                                    option?.id ===
-                                    themeDaysArr?.[idx]?.smallGroupActivity?.[0]
-                                      ?.id
-                                ).id
-                              : smallGroupOptions?.find(
-                                  (option) =>
-                                    option?.id ===
-                                    themeDaysArr?.[idx]?.smallGroupActivity
-                                )?.id
-                          }
-                          showSearch
-                          onChange={(e: string | string[]) => {
-                            const newItem = smallGroupOptions?.filter(
-                              (item) => item?.id === e
-                            );
-                            handleGroupChange(
-                              newItem,
-                              idx,
-                              ThemeStoryTypes?.smallGroup
-                            );
-                          }}
+                          );
+                        }}
+                      />
+                    </div>
+                    <div className="w-22">
+                      {idx === 0 ? (
+                        <Typography
+                          type={'h4'}
+                          text={'Large group activity'}
+                          weight="normal"
+                          color={'textDark'}
+                          className="my-2"
                         />
-                      </div>
-                      <div>
-                        {idx === 0 ? (
-                          <Typography
-                            type={'h4'}
-                            text={'Large group activity'}
-                            weight="normal"
-                            color={'textDark'}
-                            className="my-2"
-                          />
-                        ) : (
-                          <div className="mt-1"></div>
+                      ) : (
+                        <div className="mt-1"></div>
+                      )}
+                      <Dropdown<any>
+                        placeholder={'Type to search...'}
+                        list={largeGroupOptions}
+                        fillType="outlined"
+                        fillColor={getFillColor(
+                          idx,
+                          ThemeStoryTypes?.largeGroup
                         )}
-                        <Dropdown<any>
-                          placeholder={'Type to search...'}
-                          list={largeGroupOptions}
-                          fillType={getFillType(
+                        textColor="textDark"
+                        fullWidth
+                        className="w-56 text-sm"
+                        selectedValue={
+                          largeGroupOptions?.filter(
+                            (option) =>
+                              option?.id ===
+                              themeDaysArr?.[idx]?.largeGroupActivity?.[0]?.id
+                          )?.length > 0
+                            ? largeGroupOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.largeGroupActivity?.[0]
+                                    ?.id
+                              ).id
+                            : largeGroupOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.largeGroupActivity
+                              )?.id
+                        }
+                        showSearch
+                        onChange={(e: string | string[]) => {
+                          const newItem = largeGroupOptions?.filter(
+                            (item) => item?.id === e
+                          );
+                          handleGroupChange(
+                            newItem,
                             idx,
                             ThemeStoryTypes?.largeGroup
-                          )}
-                          fillColor={getFillColor(
-                            idx,
-                            ThemeStoryTypes?.largeGroup
-                          )}
-                          textColor="textDark"
-                          fullWidth
-                          className="text-textDark w-58 h-full"
-                          selectedValue={
-                            largeGroupOptions?.filter(
-                              (option) =>
-                                option?.id ===
-                                themeDaysArr?.[idx]?.largeGroupActivity?.[0]?.id
-                            )?.length > 0
-                              ? largeGroupOptions?.find(
-                                  (option) =>
-                                    option?.id ===
-                                    themeDaysArr?.[idx]?.largeGroupActivity?.[0]
-                                      ?.id
-                                ).id
-                              : largeGroupOptions?.find(
-                                  (option) =>
-                                    option?.id ===
-                                    themeDaysArr?.[idx]?.largeGroupActivity
-                                )?.id
-                          }
-                          showSearch
-                          onChange={(e: string | string[]) => {
-                            const newItem = largeGroupOptions?.filter(
-                              (item) => item?.id === e
-                            );
-                            handleGroupChange(
-                              newItem,
-                              idx,
-                              ThemeStoryTypes?.largeGroup
-                            );
-                          }}
+                          );
+                        }}
+                      />
+                    </div>
+                    <div className="w-22">
+                      {idx === 0 ? (
+                        <Typography
+                          type={'h4'}
+                          text={'Story'}
+                          weight="normal"
+                          color={'textDark'}
+                          className="my-2"
                         />
-                      </div>
-                      <div>
-                        {idx === 0 ? (
-                          <Typography
-                            type={'h4'}
-                            text={'Story'}
-                            weight="normal"
-                            color={'textDark'}
-                            className="my-2"
-                          />
-                        ) : (
-                          <div className="mt-1"></div>
+                      ) : (
+                        <div className="mt-1"></div>
+                      )}
+                      <Dropdown<any>
+                        placeholder={'Type to search...'}
+                        list={storyBookOptions}
+                        fillType="outlined"
+                        fillColor={getFillColor(
+                          idx,
+                          ThemeStoryTypes?.storyBook
                         )}
-                        <Dropdown<any>
-                          placeholder={'Type to search...'}
-                          list={storyBookOptions}
-                          fillType={getFillType(
+                        textColor="textDark"
+                        fullWidth
+                        className="w-56 text-sm"
+                        selectedValue={
+                          storyBookOptions?.filter(
+                            (option) =>
+                              option?.id ===
+                              themeDaysArr?.[idx]?.storyBook?.[0]?.id
+                          )?.length > 0
+                            ? storyBookOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.storyBook?.[0]?.id
+                              ).id
+                            : storyBookOptions?.find(
+                                (option) =>
+                                  option?.id === themeDaysArr?.[idx]?.storyBook
+                              )?.id
+                        }
+                        showSearch
+                        onChange={(e: string | string[]) => {
+                          const newItem = storyBookOptions?.filter(
+                            (item) => item?.id === e
+                          );
+                          handleGroupChange(
+                            newItem,
                             idx,
                             ThemeStoryTypes?.storyBook
-                          )}
-                          fillColor={getFillColor(
-                            idx,
-                            ThemeStoryTypes?.storyBook
-                          )}
-                          textColor="textDark"
-                          fullWidth
-                          className="text-textDark w-58 h-full"
-                          selectedValue={
-                            storyBookOptions?.filter(
-                              (option) =>
-                                option?.id ===
-                                themeDaysArr?.[idx]?.storyBook?.[0]?.id
-                            )?.length > 0
-                              ? storyBookOptions?.find(
-                                  (option) =>
-                                    option?.id ===
-                                    themeDaysArr?.[idx]?.storyBook?.[0]?.id
-                                ).id
-                              : storyBookOptions?.find(
-                                  (option) =>
-                                    option?.id ===
-                                    themeDaysArr?.[idx]?.storyBook
-                                )?.id
-                          }
-                          showSearch
-                          onChange={(e: string | string[]) => {
-                            const newItem = storyBookOptions?.filter(
-                              (item) => item?.id === e
-                            );
-                            handleGroupChange(
-                              newItem,
-                              idx,
-                              ThemeStoryTypes?.storyBook
-                            );
-                          }}
+                          );
+                        }}
+                      />
+                    </div>
+                    <div className="w-22">
+                      {idx === 0 ? (
+                        <Typography
+                          type={'h4'}
+                          text={'Story activity'}
+                          weight="normal"
+                          color={'textDark'}
+                          className="my-2"
                         />
-                      </div>
-                      <div>
-                        {idx === 0 ? (
-                          <Typography
-                            type={'h4'}
-                            text={'Story activity'}
-                            weight="normal"
-                            color={'textDark'}
-                            className="my-2"
-                          />
-                        ) : (
-                          <div className="mt-1"></div>
+                      ) : (
+                        <div className="mt-1"></div>
+                      )}
+                      <Dropdown<any>
+                        placeholder={'Type to search...'}
+                        list={storyTimeOptions}
+                        fillType="outlined"
+                        fillColor={getFillColor(
+                          idx,
+                          ThemeStoryTypes?.storyActivity
                         )}
-                        <Dropdown<any>
-                          placeholder={'Type to search...'}
-                          list={storyTimeOptions}
-                          fillType={getFillType(
+                        textColor="textDark"
+                        fullWidth
+                        className="w-56 text-sm"
+                        selectedValue={
+                          storyTimeOptions?.filter(
+                            (option) =>
+                              option?.id ===
+                              themeDaysArr?.[idx]?.storyActivity?.[0]?.id
+                          )?.length > 0
+                            ? storyTimeOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.storyActivity?.[0]?.id
+                              ).id
+                            : storyTimeOptions?.find(
+                                (option) =>
+                                  option?.id ===
+                                  themeDaysArr?.[idx]?.storyActivity
+                              )?.id
+                        }
+                        showSearch
+                        onChange={(e: string | string[]) => {
+                          const newItem = storyTimeOptions?.filter(
+                            (item) => item?.id === e
+                          );
+                          handleGroupChange(
+                            newItem,
                             idx,
                             ThemeStoryTypes?.storyActivity
-                          )}
-                          fillColor={getFillColor(
-                            idx,
-                            ThemeStoryTypes?.storyActivity
-                          )}
-                          textColor="textDark"
-                          fullWidth
-                          className="text-textDark w-58 h-full"
-                          selectedValue={
-                            storyTimeOptions?.filter(
-                              (option) =>
-                                option?.id ===
-                                themeDaysArr?.[idx]?.storyActivity?.[0]?.id
-                            )?.length > 0
-                              ? storyTimeOptions?.find(
-                                  (option) =>
-                                    option?.id ===
-                                    themeDaysArr?.[idx]?.storyActivity?.[0]?.id
-                                ).id
-                              : storyTimeOptions?.find(
-                                  (option) =>
-                                    option?.id ===
-                                    themeDaysArr?.[idx]?.storyActivity
-                                )?.id
-                          }
-                          showSearch
-                          onChange={(e: string | string[]) => {
-                            const newItem = storyTimeOptions?.filter(
-                              (item) => item?.id === e
-                            );
-                            handleGroupChange(
-                              newItem,
-                              idx,
-                              ThemeStoryTypes?.storyActivity
-                            );
-                          }}
-                        />
-                      </div>
+                          );
+                        }}
+                      />
                     </div>
                   </div>
-                </>
+                </div>
               ))}
 
             <Pagination

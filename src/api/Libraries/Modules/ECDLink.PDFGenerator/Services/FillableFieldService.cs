@@ -36,7 +36,8 @@ namespace ECDLink.PDFGenerator.Services
 
                 AcroFields form = pdfStamper.AcroFields;
 
-                foreach (DictionaryEntry field in form.Fields)
+                // UPDATED WITH .NET8
+                foreach (KeyValuePair<string, AcroFields.Item> field in form.Fields)
                 {
                     var key = field.Key.ToString();
                     var item = field.Value as AcroFields.Item;

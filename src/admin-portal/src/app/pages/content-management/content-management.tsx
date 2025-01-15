@@ -17,7 +17,7 @@ import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, TitleListDataItem, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import { ArrowLeftIcon } from '@heroicons/react/solid';
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 import {
   ContentManagementTabs,
@@ -29,6 +29,9 @@ import { useTenant } from '../../hooks/useTenant';
 import { LinksSharedResource } from './components/links-shared/links-shared-resource';
 import ResourceList from './sub-pages/content-list/components/resources/resource-list';
 import StoryBookList from './sub-pages/content-list/components/create-story/story-book-list';
+import { pluralize } from '../pages.utils';
+import ActivityList from './sub-pages/content-list/components/activities/activity-list';
+import ThemeList from './sub-pages/content-list/components/themes/theme-list';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -96,7 +99,6 @@ export function ContentManagement() {
       },
       {
         name: ContentManagementTabs.PROGRAMMES.name,
-        // href: '/',
         id: ContentManagementTabs.PROGRAMMES.id,
       },
       {
@@ -391,14 +393,25 @@ export function ContentManagement() {
     setSearchValue('');
   };
 
-  const breadCrumbName = useCallback((item: ContentTypeDto) => {
-    if (item.name === ContentTypes.RESOURCE_LINK) {
-      return ' Edit child progress report links';
-    } else if (item.name === ContentTypes.CONNECT_ITEM) {
-      return ' Edit community links';
-    }
-    return item.description;
-  }, []);
+  const breadCrumbName = useCallback(
+    (item: ContentTypeDto) => {
+      if (item.name === ContentTypes.RESOURCE_LINK) {
+        return ' Edit child progress report links';
+      } else if (item.name === ContentTypes.CONNECT_ITEM) {
+        return ' Edit community links';
+      } else if (item.name === ContentTypes.STORY_BOOK) {
+        return 'Stories';
+      }
+      if (
+        choosedSectionTitle === ActivitiesTitles.StoryActivities ||
+        choosedSectionTitle === ActivitiesTitles.SmallLargeGroupActivities
+      ) {
+        return choosedSectionTitle;
+      }
+      return pluralize(item.name);
+    },
+    [choosedSectionTitle]
+  );
 
   return (
     <div className="">
@@ -466,12 +479,12 @@ export function ContentManagement() {
                       type="button"
                       className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
                     >
-                      <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
-                      {/* BreadCrumbs */}
+                      Content Management
+                      <ArrowRightIcon className="text-secondary ml-1 mr-1 h-4 w-4" />
                       {navigation?.find((tab) => tab.id === selectedTab).name}
+                      <ArrowRightIcon className="text-secondary ml-1 h-4 w-4" />
                       <span className="px-1 text-gray-400">
-                        {' '}
-                        / {breadCrumbName(selectedType)}
+                        {breadCrumbName(selectedType)}
                       </span>
                     </button>
                   </div>
@@ -484,6 +497,8 @@ export function ContentManagement() {
                     selectedType.name !== ContentTypes.RESOURCE_LINK &&
                     selectedType.name !== ContentTypes.CONNECT_ITEM &&
                     selectedType.name !== ContentTypes.STORY_BOOK &&
+                    selectedType.name !== ContentTypes.ACTIVITY &&
+                    selectedType.name !== ContentTypes.THEME &&
                     selectedType.name !==
                       ContentTypes.CLASSROOMBUSINESSRESOURCE &&
                     selectedType.name !==
@@ -540,9 +555,41 @@ export function ContentManagement() {
                         dataTypes={dataTypes}
                       />
                     )}
+                  {selectedType?.name === ContentTypes.ACTIVITY &&
+                    !specialType && (
+                      <ActivityList
+                        optionDefinitions={dataDefinitions?.contentDefinitions}
+                        contentType={selectedType}
+                        specialType={specialType}
+                        languages={languages?.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                        onSearch={search}
+                        choosedSectionTitle={choosedSectionTitle}
+                        setSelectedType={setSelectedType}
+                        dataTypes={dataTypes}
+                      />
+                    )}
                   {selectedType?.name === ContentTypes.STORY_BOOK &&
                     !specialType && (
                       <StoryBookList
+                        optionDefinitions={dataDefinitions?.contentDefinitions}
+                        contentType={selectedType}
+                        specialType={specialType}
+                        languages={languages?.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                        onSearch={search}
+                        choosedSectionTitle={choosedSectionTitle}
+                        setSelectedType={setSelectedType}
+                        dataTypes={dataTypes}
+                      />
+                    )}
+                  {selectedType?.name === ContentTypes.THEME &&
+                    !specialType && (
+                      <ThemeList
                         optionDefinitions={dataDefinitions?.contentDefinitions}
                         contentType={selectedType}
                         specialType={specialType}

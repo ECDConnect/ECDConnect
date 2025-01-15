@@ -5,7 +5,7 @@ export enum StoryBookTypeOptions {
 }
 
 export enum StoryBookThemeOptions {
-  Theme = 'Theme',
+  Nature = 'Nature',
   NoTheme = 'No theme',
 }
 
