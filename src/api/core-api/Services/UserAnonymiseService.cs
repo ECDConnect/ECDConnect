@@ -77,7 +77,7 @@ namespace EcdLink.Api.CoreApi.Services
                             { _context.Remove(jobNotificationRow); }
                         }
                         //remove classroomgroups and children via classrooms and learners linke dto this user
-                        List<ClassroomGroup> classroomGroups = _context.ClassroomGroupss.Where(x => x.UserId == userId).ToList();
+                        List<ClassroomGroup> classroomGroups = _context.ClassroomGroups.Where(x => x.UserId == userId).ToList();
                         List<Classroom> classrooms = _context.Classrooms.Where(x => x.UserId == userId).ToList();
 
                         if (classroomGroups.Any())
