@@ -89,6 +89,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
                     // add points for adding a new class
                     pointsService.CalculateAddNewClassToPreschool(uId);
+                    // EC-3508 - as soon as a class is created, we set the progress to 2
+                    var practitionerToUpdate = pracRepo.GetByUserId(uId);
+                    practitionerToUpdate.Progress = 2;
+                    pracRepo.Update(practitionerToUpdate);
+
                     return newClassRoomGroup;
 
                 }
