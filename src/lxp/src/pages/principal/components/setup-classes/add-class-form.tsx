@@ -196,7 +196,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
         <FormInput<EditClassModel>
           type="text"
-          label={`Give your class a name4`}
+          label={`Give your class a name`}
           register={classFormRegister}
           nameProp={'name'}
           hint="Optional"
