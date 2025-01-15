@@ -92,6 +92,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // EC-3508 - as soon as a class is created, we set the progress to 2
                     var practitionerToUpdate = pracRepo.GetByUserId(uId);
                     practitionerToUpdate.Progress = 2;
+                    practitionerToUpdate.IsPrincipal = true;
                     pracRepo.Update(practitionerToUpdate);
 
                     return newClassRoomGroup;
