@@ -251,7 +251,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             ? classroomForPractitionerAnyType?.name
             : practitioner?.isRegistered && !missingProgramme
             ? classroom?.name || 'None'
-            : 'None',
+            : classroom?.name || 'None',
         switchTextStyles: true,
         actionName:
           practitioner?.isRegistered &&
