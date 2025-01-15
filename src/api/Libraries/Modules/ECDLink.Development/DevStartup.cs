@@ -5,8 +5,10 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Development.Holidays;
 using ECDLink.Development.Notifications;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Linq;
 
@@ -14,9 +16,11 @@ namespace ECDLink.Development
 {
     public static class DevStartup
     {
-        public static void ConfigureLocalDevServices(IServiceCollection services, IConfiguration config)
+        public static void ConfigureLocalDevServices(IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
         {
-            OverrideNotifications(services);
+            if (env.IsDevelopment()) {
+                OverrideNotifications(services);
+            }
             OverrideHolidayService(services);
 
         }
