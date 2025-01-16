@@ -11,18 +11,14 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
   Checkbox,
-  CheckboxGroup,
   Divider,
   Typography,
 } from '@ecdlink/ui';
 import StoryContentForm from '../../../../../../../components/story-content-form/story-content-form';
-import {
-  camelCaseToSentanceCase,
-  StoryBookPartDto,
-  StoryBookQuestionDto,
-} from '@ecdlink/core';
+import { StoryBookPartDto, StoryBookQuestionDto } from '@ecdlink/core';
 import { StoryBookTypes } from '../create-story';
 import ThemeSelector from '../../../../../../../components/themes/theme-selector';
+import ContentLoader from '../../../../../../../components/content-loader/content-loader';
 
 export interface CreateStoryFormProps {
   template: DynamicFormTemplate;
@@ -47,7 +43,6 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   setValue,
   defaultLanguageId,
   selectedLanguageId,
-  acceptedFileFormats,
   setFilteredStoryBookParts,
   setFilteredStoryBookPartsQuestions,
   formType,
@@ -56,6 +51,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   useWatch,
 }) => {
   const { register, control, errors } = handleform;
+  const [isLoading, setIsLoading] = useState(true);
   const initialValues = getValues();
   const storyBookTypeOptions = [
     { text: 'Story book', value: 'Story book' },
@@ -83,7 +79,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   }, [template, watchFields]);
 
   const renderFields = (fields: FormTemplateField[]) => {
-    return fields.map((field) => {
+    return fields.map((field, index) => {
       const isEdit = fields.some((f) => !!f.contentValue);
       const { type, title, propName, required, validation, isRequired } = field;
 
@@ -111,6 +107,12 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
         subLabel = 'Optional';
       } else if (propName === 'keywords') {
         subLabel = 'Use commas to separate words';
+      }
+
+      if (index + 1 === fields.length) {
+        setTimeout(function () {
+          setIsLoading(false);
+        }, 6000);
       }
 
       const isAuthorizationChecked =
@@ -414,11 +416,15 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
     });
   };
 
-  return (
-    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
-      {fields}
-    </div>
-  );
+  if (!isLoading) {
+    return (
+      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
+        {fields}
+      </div>
+    );
+  } else {
+    return <ContentLoader />;
+  }
 };
 
 export default CreateStoryForm;
