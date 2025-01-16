@@ -515,7 +515,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         />
       )}
 
-      {disabled && (
+      {!disabled && (
         <input
           accept={uploadTypes}
           id={nameProp}
