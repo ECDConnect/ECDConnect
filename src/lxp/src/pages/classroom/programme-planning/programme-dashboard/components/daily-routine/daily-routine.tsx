@@ -451,18 +451,29 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDailyProgramme, routineItemSet]);
 
-  const onStoryAndActivitySelected = (
+  const onStoryAndActivitySelected = async (
     storyId?: number,
     activityId?: number
   ) => {
-    if (!currentDailyProgramme) return;
+    // create the programme day
+    if (!currentDailyProgramme) {
+      await createOrEditProgramme(
+        classroomGroupId,
+        selectedDate!,
+        'en-za',
+        undefined,
+        selectedDate!
+      );
+    }
 
-    const currentDayCopy = { ...currentDailyProgramme };
+    if (currentDailyProgramme) {
+      const currentDayCopy = { ...currentDailyProgramme };
 
-    currentDayCopy.storyBookId = storyId;
-    currentDayCopy.storyActivityId = activityId;
+      currentDayCopy.storyBookId = storyId;
+      currentDayCopy.storyActivityId = activityId;
 
-    saveCurrentDay(currentDayCopy);
+      saveCurrentDay(currentDayCopy);
+    }
   };
 
   useEffect(() => {
