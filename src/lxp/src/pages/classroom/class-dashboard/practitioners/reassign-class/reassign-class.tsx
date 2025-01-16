@@ -402,285 +402,108 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   );
 
   const submitReassignClass = async () => {
-    if (
-      userAuth?.auth_token &&
-      selectedDate &&
-      userData?.id &&
-      reassignedClassroomGroups?.length > 0
-    ) {
-      if (reassignedClassroomGroups?.length > 0)
-        reassignedClassroomGroups?.map(async (item) => {
-          setIsLoading(true);
-          if (item?.absenteeId) {
-            if (principalOrFundaAppAdmin) {
-              return await new ClassroomGroupService(
-                userAuth.auth_token
-              ).editAbsentee(
-                item?.absenteeId,
-                false,
-                item?.practitioner,
-                reasonPayload,
-                new Date(selectedDate),
-                isOneDayLeave
-                  ? new Date(selectedDate)
-                  : endDate || new Date(selectedDate),
-                true,
-                principalOrFundaAppAdmin
-              );
-            }
-
-            return await new ClassroomGroupService(
-              userAuth.auth_token
-            ).editAbsentee(
-              item?.absenteeId,
-              false,
-              item?.practitioner,
-              reasonPayload,
-              new Date(selectedDate),
-              isOneDayLeave
-                ? new Date(selectedDate)
-                : endDate || new Date(selectedDate)
-            );
-          }
-
-          return await new ClassroomGroupService(
-            userAuth.auth_token
-          ).updateReassignClassroomGroup(
-            practitioner,
-            item?.practitioner,
-            reasonPayload,
-            new Date(selectedDate),
-            userData?.id!,
-            item?.classroomId,
-            isOneDayLeave
-              ? new Date(selectedDate)
-              : endDate || new Date(selectedDate),
-            '',
-            '',
-            principalOrFundaAppAdmin
-          );
-        });
-
-      await refreshClassroom();
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap();
-      if (isLoggedInUser) {
-        await appDispatch(
-          practitionerThunkActions.getPractitionerByUserId({
-            userId: practitionerId!,
-          })
-        ).unwrap();
-      }
-
-      setIsLoading(false);
-
-      if (principalPractitioner) {
-        history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
-        return;
-      }
-
-      if (practitionerId) {
-        history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-          practitionerId,
-        });
-        return;
-      }
-      history.push(ROUTES.CLASSROOM.ROOT, {
-        activeTabIndex: TabsItems.CLASSES,
-      });
-
+    if (!userAuth?.auth_token || !selectedDate || !userData?.id) {
       return;
-    } else {
-      if (userAuth?.auth_token && selectedDate && userData?.id) {
-        const absenteeId = allAbsenteeClasses?.[0].absenteeId;
-        setIsLoading(true);
-        if (absenteeId) {
-          if (principalOrFundaAppAdmin) {
-            await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
-              absenteeId,
-              false,
-              practitioner2 || principalOrFundaAppAdmin,
-              reasonPayload,
-              new Date(selectedDate),
-              isOneDayLeave
-                ? new Date(selectedDate)
-                : endDate || new Date(selectedDate),
-              true,
-              principalOrFundaAppAdmin
-            );
+    }
 
-            await refreshClassroom();
-            await appDispatch(
-              practitionerThunkActions.getAllPractitioners({})
-            ).unwrap();
-            if (isLoggedInUser) {
-              await appDispatch(
-                practitionerThunkActions.getPractitionerByUserId({
-                  userId: practitionerId!,
-                })
-              ).unwrap();
-            }
-            setIsLoading(false);
+    setIsLoading(true);
 
-            if (principalPractitioner) {
-              history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
-              return;
-            }
-            if (practitionerId) {
-              history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-                practitionerId,
-              });
-              return;
-            }
-            history.push(ROUTES.CLASSROOM.ROOT, {
-              activeTabIndex: TabsItems.CLASSES,
-            });
+    const processReassignment = async (item: any) => {
+      const service = new ClassroomGroupService(userAuth.auth_token);
+      const startDate = new Date(selectedDate);
+      const endDateToUse = isOneDayLeave ? startDate : endDate || startDate;
 
-            return;
-          }
-          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
-            absenteeId,
-            false,
-            practitioner2 || practitioner,
-            reasonPayload,
-            new Date(selectedDate),
-            isOneDayLeave
-              ? new Date(selectedDate)
-              : endDate || new Date(selectedDate)
-          );
-
-          await refreshClassroom();
-          await appDispatch(
-            practitionerThunkActions.getAllPractitioners({})
-          ).unwrap();
-          if (isLoggedInUser) {
-            await appDispatch(
-              practitionerThunkActions.getPractitionerByUserId({
-                userId: practitionerId!,
-              })
-            ).unwrap();
-          }
-          setIsLoading(false);
-
-          if (principalPractitioner) {
-            history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
-            return;
-          }
-
-          if (practitionerId) {
-            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-              practitionerId,
-            });
-            return;
-          }
-          history.push(ROUTES.CLASSROOM.ROOT, {
-            activeTabIndex: TabsItems.CLASSES,
-          });
-
-          return;
-        }
-        if (principalPractitioner) {
-          setIsLoading(true);
-          await new ClassroomGroupService(
-            userAuth.auth_token
-          ).updateReassignClassroomGroup(
-            practitioner,
-            practitioner2,
-            reasonPayload,
-            new Date(selectedDate),
-            userData?.id!,
-            '',
-            isOneDayLeave
-              ? new Date(selectedDate)
-              : endDate || new Date(selectedDate),
-            '',
-            '',
-            principalOrFundaAppAdmin
-          );
-
-          await refreshClassroom();
-          await appDispatch(
-            practitionerThunkActions.getAllPractitioners({})
-          ).unwrap();
-          if (isLoggedInUser) {
-            await appDispatch(
-              practitionerThunkActions.getPractitionerByUserId({
-                userId: practitionerId!,
-              })
-            ).unwrap();
-          }
-
-          setIsLoading(false);
-
-          if (principalPractitioner) {
-            history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
-            return;
-          }
-
-          if (practitionerId) {
-            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-              practitionerId,
-            });
-            return;
-          }
-          history.push(ROUTES.CLASSROOM.ROOT, {
-            activeTabIndex: TabsItems.CLASSES,
-          });
-
-          return;
-        }
-
-        setIsLoading(true);
-
-        await new ClassroomGroupService(
-          userAuth.auth_token
-        ).updateReassignClassroomGroup(
-          practitioner,
-          practitioner2,
+      if (item?.absenteeId) {
+        await service.editAbsentee(
+          item.absenteeId,
+          false,
+          item.practitioner,
           reasonPayload,
-          new Date(selectedDate),
-          userData?.id!,
-          '',
-          isOneDayLeave
-            ? new Date(selectedDate)
-            : endDate || new Date(selectedDate),
+          startDate,
+          endDateToUse,
+          !!principalOrFundaAppAdmin,
+          principalOrFundaAppAdmin
+        );
+      } else {
+        await service.updateReassignClassroomGroup(
+          practitioner,
+          item?.practitioner,
+          reasonPayload,
+          startDate,
+          userData.id!,
+          item?.classroomId,
+          endDateToUse,
           '',
           '',
           principalOrFundaAppAdmin
         );
-
-        await refreshClassroom();
-        await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
-        ).unwrap();
-        if (isLoggedInUser) {
-          await appDispatch(
-            practitionerThunkActions.getPractitionerByUserId({
-              userId: practitionerId!,
-            })
-          ).unwrap();
-        }
       }
+    };
+
+    const handleReassignments = async () => {
+      if (reassignedClassroomGroups?.length > 0) {
+        for (const item of reassignedClassroomGroups) {
+          await processReassignment(item);
+        }
+      } else if (allAbsenteeClasses?.[0]?.absenteeId) {
+        await processReassignment(allAbsenteeClasses[0]);
+      } else {
+        const service = new ClassroomGroupService(userAuth.auth_token);
+        const startDate = new Date(selectedDate);
+        const endDateToUse = isOneDayLeave ? startDate : endDate || startDate;
+
+        await service.updateReassignClassroomGroup(
+          practitioner,
+          practitioner2,
+          reasonPayload,
+          startDate,
+          userData.id!,
+          '',
+          endDateToUse,
+          '',
+          '',
+          principalOrFundaAppAdmin
+        );
+      }
+    };
+
+    await handleReassignments();
+    await refreshClassroom();
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
+
+    if (isLoggedInUser) {
+      await appDispatch(
+        practitionerThunkActions.getPractitionerByUserId({
+          userId: practitionerId!,
+        })
+      ).unwrap();
     }
+
+    if (pracOnLeave) {
+      await appDispatch(
+        practitionerThunkActions.getPractitionerByUserId({
+          userId: pracOnLeave!,
+        })
+      ).unwrap();
+    }
+
     setIsLoading(false);
 
-    if (principalPractitioner) {
-      history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
-      return;
-    }
+    const redirectTo =
+      principalPractitioner || pracOnLeave === practitionerUser?.userId
+        ? ROUTES.PRACTITIONER.PROFILE.ROOT
+        : practitionerId
+        ? ROUTES.PRINCIPAL.PRACTITIONER_PROFILE
+        : ROUTES.CLASSROOM.ROOT;
 
-    if (practitionerId) {
-      history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-        practitionerId,
-      });
-      return;
-    }
-    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: TabsItems.CLASSES });
+    const redirectState = practitionerId
+      ? { practitionerId }
+      : { activeTabIndex: TabsItems.CLASSES };
 
-    return;
+    history.push(redirectTo, redirectState);
   };
-
   return (
     <BannerWrapper
       title={`Record absence/leave`}
