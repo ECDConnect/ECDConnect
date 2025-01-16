@@ -389,17 +389,27 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   // Filter practitioners who don't have absentee dates matching the current date
-  const filteredArray = [...(practitioners ?? []), practitionerUser].filter(
-    (prac) => {
-      const absentees = prac?.absentees ?? [];
+  const filteredPractitioners: DropDownOption<string>[] = [
+    ...(practitioners ?? []),
+    ...(!routeState?.practitionerId ? [practitionerUser] : []),
+  ]
+    .filter((practitioner) => {
+      const absentees = practitioner?.absentees ?? [];
       return !absentees.some((absentee) => {
         const absenteeDate = absentee.absentDateEnd
           ? new Date(absentee.absentDateEnd)
           : new Date();
         return absenteeDate.toDateString() === currentDate.toDateString();
       });
-    }
-  );
+    })
+    .map(
+      (practitioner): DropDownOption<string> => ({
+        label: `${practitioner?.user?.firstName ?? ''} ${
+          practitioner?.user?.surname ?? ''
+        }`.trim(),
+        value: practitioner?.userId!,
+      })
+    );
 
   const submitReassignClass = async () => {
     if (!userAuth?.auth_token || !selectedDate || !userData?.id) {
@@ -718,21 +728,17 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         key={index}
                         placeholder={'Select practitioner'}
                         list={
-                          filteredArray
-                            ?.filter(
-                              (practitioner: any) =>
-                                practitioner.userId !== pracOnLeave // Exclude selected value
-                            )
-                            ?.map((practitioner: any) => ({
-                              label: practitioner.user.firstName,
-                              value: practitioner.userId,
-                            })) ?? []
+                          filteredPractitioners.filter(
+                            (practitioner: any) =>
+                              practitioner.value !== pracOnLeave
+                          ) ?? []
                         }
                         fillType="clear"
                         label={`Who will teach the ${item?.name} class instead?`}
                         fullWidth
                         className={'mt-3 w-full'}
                         onChange={(practitioner: any) => {
+                          console.log(practitioner);
                           const reassignedData = {
                             practitioner,
                             classroomId,
@@ -747,6 +753,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                             )
                           );
                         }}
+                        selectedValue={practitionerId}
                       />
                       {selectedPractitioner && (
                         <Alert
