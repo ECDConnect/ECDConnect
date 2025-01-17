@@ -317,7 +317,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
       overwritePostSlotRender={getRoutineItemPostSlotRender}
       dividerColor={'uiLight'}
       disabled={disabled}
-      onClick={handleOnClick}
+      onClick={isWalkthrough && !isOnline ? onClick : handleOnClick}
       routineItem={routineItem}
     />
   );
