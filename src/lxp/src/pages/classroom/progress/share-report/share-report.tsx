@@ -213,12 +213,10 @@ export const ProgressShareReport: React.FC = () => {
         <Button
           onClick={() => {
             if (isOnline) {
-              if (selectedReport) {
-                generateReport(
-                  shareRef.current!,
-                  shareRef.current?.offsetWidth || 750
-                );
-              }
+              generateReport(
+                shareRef.current!,
+                shareRef.current?.offsetWidth || 750
+              );
             } else {
               showOnlineOnly();
             }
@@ -230,6 +228,7 @@ export const ProgressShareReport: React.FC = () => {
           type="filled"
           icon={'ShareIcon'}
           text={'Share report'}
+          disabled={!selectedReport}
         />
       </div>
       {!!selectedReport && (
