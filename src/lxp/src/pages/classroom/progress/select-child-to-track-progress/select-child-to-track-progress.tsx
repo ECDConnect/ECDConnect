@@ -13,6 +13,7 @@ import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import { useMemo, useState } from 'react';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 
 export const SelectChildToTrack: React.FC = () => {
   const history = useHistory();
@@ -68,7 +69,11 @@ export const SelectChildToTrack: React.FC = () => {
       size={'small'}
       title={`Track progress - report ${currentReportingPeriod?.reportNumber}`}
       subTitle="Step 1 of 1"
-      onBack={() => history.goBack()}
+      onBack={() =>
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItems.PROGRESS,
+        })
+      }
     >
       <div className="mt-2 flex flex-col p-4">
         <Typography

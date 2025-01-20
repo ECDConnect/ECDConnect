@@ -209,18 +209,22 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   const handleAddProgramme = () => {
+    const navigateToTheme = () => {
+      nextWalkthroughStep(1);
+      history.push(ROUTES.PROGRAMMES.THEME, {
+        classroomGroupId,
+      } as ProgrammeThemeRouteState);
+    };
+
     if (isOnline) {
       if (themes.length === 0) {
         appDispatch(
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
         );
       }
-      nextWalkthroughStep(1);
-      history.push(ROUTES.PROGRAMMES.THEME, {
-        classroomGroupId,
-      } as ProgrammeThemeRouteState);
+      navigateToTheme();
     } else {
-      showOnlineOnly();
+      isWalkthrough ? navigateToTheme() : showOnlineOnly();
     }
   };
 
@@ -451,18 +455,29 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDailyProgramme, routineItemSet]);
 
-  const onStoryAndActivitySelected = (
+  const onStoryAndActivitySelected = async (
     storyId?: number,
     activityId?: number
   ) => {
-    if (!currentDailyProgramme) return;
+    // create the programme day
+    if (!currentDailyProgramme) {
+      await createOrEditProgramme(
+        classroomGroupId,
+        selectedDate!,
+        'en-za',
+        undefined,
+        selectedDate!
+      );
+    }
 
-    const currentDayCopy = { ...currentDailyProgramme };
+    if (currentDailyProgramme) {
+      const currentDayCopy = { ...currentDailyProgramme };
 
-    currentDayCopy.storyBookId = storyId;
-    currentDayCopy.storyActivityId = activityId;
+      currentDayCopy.storyBookId = storyId;
+      currentDayCopy.storyActivityId = activityId;
 
-    saveCurrentDay(currentDayCopy);
+      saveCurrentDay(currentDayCopy);
+    }
   };
 
   useEffect(() => {
@@ -705,7 +720,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                       key={routineItem.id}
                       id={
                         index === 2
-                          ? state.stepIndex < 5
+                          ? state.stepIndex === 4
                             ? 'walkthrough-plan-activity'
                             : 'walkthrough-add-activity'
                           : ''

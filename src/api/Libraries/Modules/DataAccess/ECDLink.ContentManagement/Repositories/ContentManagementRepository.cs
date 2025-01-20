@@ -77,8 +77,8 @@ namespace ECDLink.ContentManagement.Repositories
             List<object> results = null;
 
             string key = string.Format("Content.{0}.{1}.{2}.All", currentTenant, contentTypeId, localeId);
-            if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
-            {
+            //if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
+            //{
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // Get the complete content for null tenant and current tenants.
                 var contentType = _context.ContentTypes
@@ -185,12 +185,12 @@ namespace ECDLink.ContentManagement.Repositories
 
                 results = allContentValuePairs;
 
-                _memoryCache.Set(key, results, GetCacheOptions());
-            }
-            else
-            {
-                _logger.LogDebug("Fetching from CACHE: {0}", key);
-            }
+                //_memoryCache.Set(key, results, GetCacheOptions());
+            // }
+            // else
+            // {
+            //     _logger.LogDebug("Fetching from CACHE: {0}", key);
+            // }
             return results;
         }
 
