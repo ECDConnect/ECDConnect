@@ -211,10 +211,11 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
           )}
           <div className={'w-full py-4'}>
             <Button
+              isLoading={isLoading}
               type={'filled'}
               color={'quatenary'}
               className={'mb-20 w-full'}
-              disabled={disableButton}
+              disabled={disableButton || isLoading}
               onClick={() => {
                 sendHelpMessage();
               }}
