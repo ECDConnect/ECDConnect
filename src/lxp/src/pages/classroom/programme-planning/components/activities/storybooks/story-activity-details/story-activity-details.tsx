@@ -642,6 +642,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
   onStorySwitched,
 }) => {
   const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
   const [currentActivity, setCurrentActivity] = useState(activity);
@@ -750,15 +751,13 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
             />
           ))}
         <Divider dividerType="dashed" className={'mx-4 mt-4'} />
-        {!disabled ||
-          (linkedStory && !hasPermissionToPlanClassroomActivities && (
-            <div className={'flex flex-col bg-white'}>
+        {linkedStory &&
+          !disabled &&
+          (practitioner?.isPrincipal ||
+            hasPermissionToPlanClassroomActivities) && (
+            <div className="flex flex-col bg-white">
               <div className="mt-4 px-4">
-                <Typography
-                  text={`Story chosen:`}
-                  type={'h2'}
-                  color={'textDark'}
-                />
+                <Typography text="Story chosen:" type="h2" color="textDark" />
               </div>
               <StoryCard
                 title={linkedStory.name}
@@ -766,16 +765,17 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
                 type={linkedStory.type}
                 languages={linkedStory.availableLanguages}
                 selected={isSelected}
-                hideDetails={true}
-                buttonIcon={'SwitchVerticalIcon'}
-                buttonText={'Change story'}
+                hideDetails
+                buttonIcon="SwitchVerticalIcon"
+                buttonText="Change story"
                 onSelected={() => {}}
                 onCleared={() => {}}
                 radioEnabled={false}
-                className={'mx-4'}
+                className="mx-4"
               />
             </div>
-          ))}
+          )}
+
         <div className="mt-4 px-4">
           <Typography
             type="markdown"
