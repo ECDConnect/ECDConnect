@@ -187,6 +187,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
         }
 
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
+        public List<StoryBookPartModel> GetStoryBookPartQuestions(
+            [Service] ContentManagementRepository contentRepo, 
+            Guid localeId) {
+
+            return contentRepo.GetAll(ContentTypeConstants.StoryBookPartQuestionId, localeId).Select(x => new StoryBookPartModel(x)).ToList();
+        }
+
+        [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
         public List<ActivityViewModel> GetActivityRecords(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
