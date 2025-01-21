@@ -543,7 +543,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           label={'Which practitioner is taking leave'}
           fullWidth
           className={'mt-3 w-full'}
-          selectedValue={routeState?.practitionerId}
+          selectedValue={practitioner}
           onChange={(item: any) => {
             setPracOnLeave(item);
             setReassignClassValue('practitioner', item);
