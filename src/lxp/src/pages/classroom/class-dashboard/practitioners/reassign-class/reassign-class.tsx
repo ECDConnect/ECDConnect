@@ -388,13 +388,20 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Helper function to format practitioner label
+  const formatPractitionerLabel = (
+    firstName: string | undefined,
+    surname: string | undefined
+  ): string => `${firstName ?? ''} ${surname ?? ''}`.trim();
+
   // Filter practitioners who don't have absentee dates matching the current date
   const filteredPractitioners: DropDownOption<string>[] = [
     ...(practitioners ?? []),
-    ...(!routeState?.practitionerId ? [practitionerUser] : []),
+    practitionerUser,
   ]
     .filter((practitioner) => {
       const absentees = practitioner?.absentees ?? [];
+      // Check if any absentee date matches the current date
       return !absentees.some((absentee) => {
         const absenteeDate = absentee.absentDateEnd
           ? new Date(absentee.absentDateEnd)
@@ -402,14 +409,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         return absenteeDate.toDateString() === currentDate.toDateString();
       });
     })
-    .map(
-      (practitioner): DropDownOption<string> => ({
-        label: `${practitioner?.user?.firstName ?? ''} ${
-          practitioner?.user?.surname ?? ''
-        }`.trim(),
-        value: practitioner?.userId!,
-      })
-    );
+    .map((practitioner) => ({
+      label: formatPractitionerLabel(
+        practitioner?.user?.firstName,
+        practitioner?.user?.surname
+      ),
+      value: practitioner?.userId ?? '',
+    }));
 
   const submitReassignClass = async () => {
     if (!userAuth?.auth_token || !selectedDate || !userData?.id) {
