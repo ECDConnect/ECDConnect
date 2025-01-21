@@ -530,18 +530,10 @@ export const ProgrammeDashboard: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (
-      lastProgressReportPeriodHasPassed &&
-      !!hasClickedAfterEndOfProgressReportPeriodEnded &&
-      baseReports?.length > 0
-    ) {
+    if (lastProgressReportPeriodHasPassed && baseReports?.length > 0) {
       showProgressReportEndedDialog();
     }
-  }, [
-    lastProgressReportPeriodHasPassed,
-    hasClickedAfterEndOfProgressReportPeriodEnded,
-    baseReports?.length,
-  ]);
+  }, [lastProgressReportPeriodHasPassed, baseReports?.length]);
 
   return (
     <BannerWrapper
