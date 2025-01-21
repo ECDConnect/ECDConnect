@@ -263,7 +263,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         setPractitioners([...practitioners, principalPractitioner]);
       }
     }
-  }, []);
+  }, [routeState?.practitionerId]);
 
   useEffect(() => {
     if (hasAbsenteeClasses) {
@@ -306,7 +306,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         );
       }
     }
-  }, []);
+  }, [routeState?.practitionerId]);
 
   const practitionerAbsent = useMemo(() => {
     if (practitionerUser?.userId === practitioner) {
@@ -514,6 +514,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
     history.push(redirectTo, redirectState);
   };
+
+  useEffect(() => {
+    if (routeState?.practitionerId !== undefined) {
+      setPracOnLeave(routeState?.practitionerId);
+    }
+  }, []);
+
   return (
     <BannerWrapper
       title={`Record absence/leave`}
@@ -738,7 +745,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         fullWidth
                         className={'mt-3 w-full'}
                         onChange={(practitioner: any) => {
-                          console.log(practitioner);
                           const reassignedData = {
                             practitioner,
                             classroomId,
