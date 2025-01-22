@@ -254,12 +254,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 if (practi.IsPrincipal == true)
                 {
                     Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
-                    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                    if (practiPrincipal != null && practiPrincipal.UserId != practi.UserId) {
+                        practitioners.Add(practiPrincipal);
+                    }
                 }
                 if (practi.PrincipalHierarchy.HasValue)
                 {
                     Practitioner practiPrincipal = practiRepo.GetByUserId(practi.PrincipalHierarchy.ToString());
-                    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                    if (practiPrincipal != null && practiPrincipal.UserId != practi.UserId) {
+                        practitioners.Add(practiPrincipal);
+                    }
                 }
 
                 if (practitioners.Count > 0)

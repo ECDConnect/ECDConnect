@@ -81,7 +81,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
   `;
 
   const { data: contentData } = useQuery(query, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'no-cache',
     variables: {
       localeId: languageId?.toString(),
     },
@@ -90,7 +90,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
   const { data: storyBookPartQuestioncontentData, loading } = useQuery(
     storyBookPartsQuestionsQuery,
     {
-      fetchPolicy: 'cache-and-network',
+      fetchPolicy: 'no-cache',
       variables: {
         localeId: languageId?.toString(),
       },
@@ -297,13 +297,14 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
   );
 
   const onQuestionChange = useCallback(
-    (e, idx) => {
+    (e, idx, id) => {
       let newArray = [...storyBookPartsQuestionsFormatted];
       newArray[idx] = {
         ...newArray[idx],
         question: e.target.value,
         name: e.target.value,
         idx: idx,
+        id: id,
       };
       setStoryBookPartsQuestionsFormatted(newArray);
     },
@@ -322,16 +323,9 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     [storyBookPartsValues, storyBookPartsValuesFormatted]
   );
 
-  let changedStoryBookPartsQuestionsArr = useMemo(
-    () =>
-      storyBookPartsQuestionsFormatted?.filter((o1) => {
-        return storyBookPartsQuestions?.every(
-          (o2) =>
-            (o2?.question !== o1?.question && o1?.question !== '') ||
-            (o1?.question === '' && o1?.id)
-        );
-      }),
-    [storyBookPartsQuestionsFormatted, storyBookPartsQuestions]
+  const changedStoryBookPartsQuestionsArr = useMemo(
+    () => storyBookPartsQuestionsFormatted?.filter((x) => x?.quest !== ''),
+    [storyBookPartsQuestionsFormatted]
   );
 
   useEffect(() => {
@@ -452,6 +446,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                   initialStoryBookPartsQuestionsFormatted?.find(
                     (question) => question?.idx === idx
                   );
+
                 return (
                   <div className="mt-4" key={'storybook_' + idx}>
                     {formType === StoryBookTypes.storyBook && (
@@ -524,7 +519,15 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                       isAdminPortalField={true}
                       id={item?.id}
                       disabled={item?.partText === ''}
-                      onChange={(e) => onQuestionChange(e, idx)}
+                      onChange={(e) =>
+                        onQuestionChange(
+                          e,
+                          idx,
+                          item?.storyBookPartQuestions.length > 0
+                            ? item?.storyBookPartQuestions[0].id
+                            : ''
+                        )
+                      }
                       value={
                         formattedQuestion
                           ? formattedQuestion?.question

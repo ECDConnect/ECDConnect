@@ -55,6 +55,7 @@ import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
 import {
   addWeeks,
+  isSameDay,
   isSameWeek,
   isWeekend,
   nextMonday,
@@ -209,18 +210,22 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   const handleAddProgramme = () => {
+    const navigateToTheme = () => {
+      nextWalkthroughStep(1);
+      history.push(ROUTES.PROGRAMMES.THEME, {
+        classroomGroupId,
+      } as ProgrammeThemeRouteState);
+    };
+
     if (isOnline) {
       if (themes.length === 0) {
         appDispatch(
           programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
         );
       }
-      nextWalkthroughStep(1);
-      history.push(ROUTES.PROGRAMMES.THEME, {
-        classroomGroupId,
-      } as ProgrammeThemeRouteState);
+      navigateToTheme();
     } else {
-      showOnlineOnly();
+      isWalkthrough ? navigateToTheme() : showOnlineOnly();
     }
   };
 
@@ -451,18 +456,50 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDailyProgramme, routineItemSet]);
 
-  const onStoryAndActivitySelected = (
+  const currentProgramme = useSelector(
+    programmeSelectors.getProgrammeByDateAndClassroomGroupId({
+      date: selectedDate!,
+      classroomGroupId,
+    })
+  );
+
+  useEffect(() => {
+    if (
+      currentDailyProgramme === undefined &&
+      currentProgramme?.dailyProgrammes.length === 0
+    ) {
+      createOrEditProgramme(
+        classroomGroupId,
+        selectedDate!,
+        'en-za',
+        undefined,
+        selectedDate!
+      );
+    }
+  }, [
+    classroomGroupId,
+    createOrEditProgramme,
+    currentDailyProgramme,
+    currentProgramme?.dailyProgrammes.length,
+    selectedDate,
+  ]);
+
+  const unsavedDay = currentProgramme?.dailyProgrammes.find((dailyRoutine) =>
+    isSameDay(new Date(dailyRoutine?.dayDate), selectedDate!)
+  );
+
+  const onStoryAndActivitySelected = async (
     storyId?: number,
-    activityId?: number
+    activityId?: number,
+    day?: DailyProgrammeDto
   ) => {
-    if (!currentDailyProgramme) return;
+    if (day) {
+      const currentDayCopy = { ...day };
+      currentDayCopy.storyBookId = storyId;
+      currentDayCopy.storyActivityId = activityId;
 
-    const currentDayCopy = { ...currentDailyProgramme };
-
-    currentDayCopy.storyBookId = storyId;
-    currentDayCopy.storyActivityId = activityId;
-
-    saveCurrentDay(currentDayCopy);
+      saveCurrentDay(currentDayCopy);
+    }
   };
 
   useEffect(() => {
@@ -559,7 +596,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
               currentDailyProgramme?.dayDate || new Date()
             ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}
             onSave={(storyId?: number, activityId?: number) => {
-              onStoryAndActivitySelected(storyId, activityId);
+              onStoryAndActivitySelected(storyId, activityId, unsavedDay);
               onSubmit();
             }}
             onClose={onClose}
@@ -705,7 +742,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                       key={routineItem.id}
                       id={
                         index === 2
-                          ? state.stepIndex < 5
+                          ? state.stepIndex === 4
                             ? 'walkthrough-plan-activity'
                             : 'walkthrough-add-activity'
                           : ''

@@ -142,47 +142,36 @@ export const ChildProgressReportsList: React.FC = () => {
           )}
         {/* NO REPORTS */}
         {!isWalkthrough &&
-          !!ageInMonths &&
-          ageInMonths <= 60 &&
+          ((ageInMonths && ageInMonths <= 60) || ageInMonths === 0) &&
           (!reports || reports.length === 0) && (
             <div className="flex h-full w-full flex-col">
               <Typography
-                className={'mt-4'}
+                className="mt-4"
                 type="h2"
-                color={'textDark'}
+                color="textDark"
                 text={`${child?.user?.firstName}'s reports`}
               />
               <div className="mt-2 flex flex-col justify-center p-8">
                 <div className="mt-10 flex justify-center">
                   <NoProgressEmoticon className="h-40 w-40" />
                 </div>
-                <div>
-                  <Typography
-                    className="mt-4 text-center"
-                    color="textDark"
-                    text={`${child?.user?.firstName} doesn't have any progress reports yet!`}
-                    type={'h2'}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    className="mt-2 text-center"
-                    color="textMid"
-                    text="Tap the button below to start"
-                    type={'body'}
-                  />
-                </div>
+                <Typography
+                  className="mt-4 text-center"
+                  color="textDark"
+                  text={`${child?.user?.firstName} doesn't have any progress reports yet!`}
+                  type="h2"
+                />
+                <Typography
+                  className="mt-2 text-center"
+                  color="textMid"
+                  text="Tap the button below to start"
+                  type="body"
+                />
               </div>
               <div className="mt-auto">
-                {!currentReportingPeriod && (
-                  <Alert
-                    type="info"
-                    title="All reporting periods for the year are closed. You can keep tracking progress next year."
-                  />
-                )}
-                {!!currentReportingPeriod && (
+                {currentReportingPeriod ? (
                   <Button
-                    onClick={() => trackProgress()}
+                    onClick={trackProgress}
                     className="w-full"
                     size="small"
                     color="quatenary"
@@ -190,6 +179,11 @@ export const ChildProgressReportsList: React.FC = () => {
                     icon="PencilIcon"
                     text="Start tracking progress"
                     textColor="white"
+                  />
+                ) : (
+                  <Alert
+                    type="info"
+                    title="All reporting periods for the year are closed. You can keep tracking progress next year."
                   />
                 )}
               </div>

@@ -122,8 +122,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         {
                             if (practitioner.Progress >= 0 && practitioner.Progress < 2)
                             {
-                                // remove request ticket EC-3236
-                                // notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
+                                notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now.Date, user, "", MessageStatusConstants.Amber, replacements);
                             } else
                             {
                                 if (practitioner.Progress > 2)
@@ -405,8 +404,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 //notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.PrincipalFAAChanged, null, null, practitioner.UserId);
             }
 
-            // expire the invite after accept or reject - remove request ticket EC-3236
-            // notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation);
+            notificationService.ExpireNotificationsTypesForUser(practitioner.UserId.ToString(), TemplateTypeConstants.ProgrammeInvitation);
 
             //update practitioner with column changes
             practitionerRepo.Update(practitioner);

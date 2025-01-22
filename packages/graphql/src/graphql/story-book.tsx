@@ -39,6 +39,17 @@ export const GetStoryBookRecords = gql`
   }
 `;
 
+export const GetStoryBookPartQuestions = gql`
+  query GetStoryBookPartQuestions($localeId: UUID!) {
+    storyBookPartQuestions(localeId: $localeId) {
+      id
+      name
+      question
+      __typename
+    }
+  }
+`;
+
 export const DeleteMultipleStoryBooks = gql`
   mutation DeleteMultipleStoryBooks($contentIds: [String]) {
     deleteMultipleStoryBooks(contentIds: $contentIds) {
