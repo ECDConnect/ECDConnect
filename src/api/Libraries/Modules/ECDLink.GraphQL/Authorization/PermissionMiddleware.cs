@@ -2,6 +2,7 @@ using ECDLink.Security.Enums;
 using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
 using HotChocolate.Resolvers;
+using HotChocolate.Language;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,10 +27,29 @@ namespace ECDLink.EGraphQL.Authorization
             _jwtTokenManager = tokenManager;
         }
 
-        public override async Task InvokeAsync(IDirectiveContext context)
+        public override async Task InvokeAsync(IMiddlewareContext context)
         {
-            PermissionDirective directive = context.Directive
-                .ToObject<PermissionDirective>();
+            // Fetching directive data from the selection syntax node
+            var permissionDirective = context.Selection.SyntaxNode
+                .Directives.FirstOrDefault(d => d.Name.Value == "permission");
+
+            if (permissionDirective == null)
+            {
+                await _next(context).ConfigureAwait(false);
+                return;
+            }
+
+            // Parsing directive arguments safely
+            var directiveValues = permissionDirective.Arguments.ToDictionary(
+                arg => arg.Name.Value,
+                arg => arg.Value);
+
+            var objectType = directiveValues.ContainsKey("objectType") ? directiveValues["objectType"].ToString() : "*";
+
+            var directive = new PermissionDirective
+            {
+                ObjectType = objectType
+            };
 
             var state = ValidateResult(context, directive);
 
@@ -43,15 +63,13 @@ namespace ECDLink.EGraphQL.Authorization
             }
         }
 
-        private AuthState ValidateResult(IDirectiveContext context, PermissionDirective directive)
+        private AuthState ValidateResult(IMiddlewareContext context, PermissionDirective directive)
         {
-            // If no directive is set, assume end point is completely open
             if (directive == default(PermissionDirective))
             {
                 return AuthState.Allowed;
             }
 
-            // If Object is *, end point is completely open
             if (string.Equals(directive.ObjectType, "*"))
             {
                 return AuthState.Allowed;
@@ -72,19 +90,16 @@ namespace ECDLink.EGraphQL.Authorization
             return AuthState.Allowed;
         }
 
-        private List<string> GetClaimRoles(IDirectiveContext context)
+        private List<string> GetClaimRoles(IMiddlewareContext context)
         {
             ClaimsPrincipal principal;
 
-            if (!_claimsManager.TryGetAuthenticatedPrincipal(context?.ContextData, out principal))
+            if (!_claimsManager.TryGetAuthenticatedPrincipal(context.ContextData, out principal))
             {
-                // No principle
                 return new List<string>();
             }
 
-            //TODO: CB Remove ROL again when portal login errors have been resolved
-            return _claimsManager.GetClaimRoles(principal); //to remove obfuscation
-
+            return _claimsManager.GetClaimRoles(principal);
         }
     }
 }
