@@ -72,6 +72,18 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
   const { asyncGenerateReport } = usePdfFromHtml();
 
+  const showSuccessIcon =
+    !!isWithinReportPeriod && percentageObservationsCompleted === 100;
+
+  const completionPercentage = percentageObservationsCompleted;
+
+  const progressHint =
+    hasPermissionToCreateProgressReports && isWithinReportPeriod
+      ? 'Reports created'
+      : 'Observations completed';
+
+  const progressColour = showSuccessIcon ? 'successMain' : 'alertMain';
+
   const showOnlineOnly = () => {
     dialog({
       position: DialogPosition.Middle,
@@ -277,7 +289,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 text={'Continue tracking progress'}
               />
             )}
-            <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
+            {/* <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
               <div className="justify-center">
                 {((isWithinReportPeriod &&
                   percentageReportsCompleted === 100) ||
@@ -294,7 +306,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                       : percentageObservationsCompleted
                   }%`}
                   hint={
-                    isWithinReportPeriod
+                    hasPermissionToCreateProgressReports && isWithinReportPeriod
                       ? 'Reports created'
                       : 'Observations completed'
                   }
@@ -317,14 +329,36 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                   textColour="textDark"
                 />
               </div>
+            </Card> */}
+
+            <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
+              <div className="justify-center">
+                {/* Extracted logic for better readability */}
+                {showSuccessIcon && (
+                  <div className="mt-6 flex w-full justify-center">
+                    <EmojiYellowSmile className="h-20 w-20" />
+                  </div>
+                )}
+                <ProgressBar
+                  label={`${completionPercentage}%`}
+                  hint={progressHint}
+                  subLabel=""
+                  isHiddenSubLabel={true}
+                  value={completionPercentage}
+                  primaryColour={progressColour}
+                  secondaryColour="textLight"
+                  textColour="textDark"
+                />
+              </div>
             </Card>
+
             {/* Outside report period */}
-            {!isWithinReportPeriod && !isAllObservationsComplete && (
+            {isWithinReportPeriod && !isAllObservationsComplete && (
               <ProgressTabObservationsSummary />
             )}
 
             {/* Within report period */}
-            {isWithinReportPeriod && (
+            {/* {isWithinReportPeriod && (
               <>
                 {!isAllReportsComplete && <ProgressTabReportSummary />}
                 {isAllObservationsComplete &&
@@ -377,6 +411,69 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                       icon={'EyeIcon'}
                       text={'See Summary'}
                     />
+                  </>
+                )}
+              </>
+            )} */}
+
+            {isWithinReportPeriod && (
+              <>
+                {!isAllReportsComplete &&
+                  !isAllObservationsComplete &&
+                  hasPermissionToCreateProgressReports && (
+                    <ProgressTabReportSummary />
+                  )}
+
+                {isAllObservationsComplete && (
+                  <>
+                    {!hasPermissionToCreateProgressReports ? (
+                      <>
+                        <Alert
+                          type="success"
+                          title="Well done!"
+                          message="You can keep observing children and change your responses."
+                          className="mt-4"
+                        />
+                        <Button
+                          onClick={handleContinueTrackingProgress}
+                          className="mt-4 w-full"
+                          size="small"
+                          color="quatenary"
+                          textColor="white"
+                          type="filled"
+                          icon="PresentationChartBarIcon"
+                          text="Continue tracking progress"
+                        />
+                      </>
+                    ) : (
+                      <div className="report-buttons">
+                        <Button
+                          onClick={generateAllReports}
+                          className="mt-auto w-full"
+                          size="small"
+                          color="quatenary"
+                          textColor="white"
+                          type="filled"
+                          icon={generatingReports ? undefined : 'DownloadIcon'}
+                          text={generateButtonLabel()}
+                          disabled={generatingReports || !isOnline}
+                        />
+                        <Button
+                          onClick={() =>
+                            history.replace(
+                              ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
+                            )
+                          }
+                          className="mt-4 w-full"
+                          size="small"
+                          color="quatenary"
+                          textColor="quatenary"
+                          type="outlined"
+                          icon="EyeIcon"
+                          text="See Summary"
+                        />
+                      </div>
+                    )}
                   </>
                 )}
               </>

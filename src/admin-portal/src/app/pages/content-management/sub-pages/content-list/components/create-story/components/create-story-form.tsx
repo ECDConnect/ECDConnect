@@ -11,18 +11,14 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
   Checkbox,
-  CheckboxGroup,
   Divider,
   Typography,
 } from '@ecdlink/ui';
 import StoryContentForm from '../../../../../../../components/story-content-form/story-content-form';
-import {
-  camelCaseToSentanceCase,
-  StoryBookPartDto,
-  StoryBookQuestionDto,
-} from '@ecdlink/core';
+import { StoryBookPartDto, StoryBookQuestionDto } from '@ecdlink/core';
 import { StoryBookTypes } from '../create-story';
 import ThemeSelector from '../../../../../../../components/themes/theme-selector';
+import ContentLoader from '../../../../../../../components/content-loader/content-loader';
 
 export interface CreateStoryFormProps {
   template: DynamicFormTemplate;
@@ -37,8 +33,6 @@ export interface CreateStoryFormProps {
   getValues?: any;
   requiredMessage?: string;
   useWatch?: any;
-  setAuthorsAuthorization?: (item: boolean) => void;
-  authorsAuthorization?: boolean;
 }
 
 const contentWrapper = '';
@@ -49,17 +43,15 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   setValue,
   defaultLanguageId,
   selectedLanguageId,
-  acceptedFileFormats,
   setFilteredStoryBookParts,
   setFilteredStoryBookPartsQuestions,
   formType,
   getValues,
   requiredMessage,
   useWatch,
-  setAuthorsAuthorization,
-  authorsAuthorization,
 }) => {
   const { register, control, errors } = handleform;
+  const [isLoading, setIsLoading] = useState(true);
   const initialValues = getValues();
   const storyBookTypeOptions = [
     { text: 'Story book', value: 'Story book' },
@@ -87,7 +79,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   }, [template, watchFields]);
 
   const renderFields = (fields: FormTemplateField[]) => {
-    return fields.map((field) => {
+    return fields.map((field, index) => {
       const isEdit = fields.some((f) => !!f.contentValue);
       const { type, title, propName, required, validation, isRequired } = field;
 
@@ -116,6 +108,22 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
       } else if (propName === 'keywords') {
         subLabel = 'Use commas to separate words';
       }
+
+      if (!isEdit) {
+        setIsLoading(false);
+      } else {
+        if (index + 1 === fields.length) {
+          setTimeout(function () {
+            setIsLoading(false);
+          }, 4000);
+        }
+      }
+
+      const isAuthorizationChecked =
+        initialValues?.hasOwnProperty('authorsAuthorization') &&
+        initialValues?.authorsAuthorization !== undefined
+          ? initialValues?.authorsAuthorization === 'true'
+          : false;
 
       switch (type) {
         case FieldType.Text:
@@ -164,8 +172,9 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           // shareContent ---------------------------------
           if (
             propName === 'shareContent' &&
-            template?.fields?.find((item) => item?.propName === 'shareContent')
-              ?.contentValue === undefined
+            (field?.contentValue === undefined ||
+              field?.contentValue?.value === 'no' ||
+              field?.contentValue?.value === 'false')
           ) {
             return (
               <div key={propName} className={contentWrapper}>
@@ -264,45 +273,49 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           }
           if (
             propName === 'shareContent' &&
-            template?.fields?.find((item) => item?.propName === 'shareContent')
-              ?.contentValue !== undefined
+            field?.contentValue !== undefined &&
+            (field?.contentValue.value === 'yes' ||
+              field?.contentValue.value === 'true')
           ) {
             return null;
           }
+
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
-                <FormField
-                  label={isRequired ? title + ' *' : title}
-                  subLabel={subLabel}
-                  nameProp={propName}
-                  placeholder={placeHolder}
-                  register={register}
-                  error={
-                    isRequired &&
-                    initialValues?.hasOwnProperty(propName) &&
-                    !initialValues[propName]
-                      ? requiredMessage
-                      : ''
-                  }
-                  required={isRequired}
-                  validation={validation}
-                />
+                {propName !== 'authorsAuthorization' && (
+                  <FormField
+                    label={isRequired ? title + ' *' : title}
+                    subLabel={subLabel}
+                    nameProp={propName}
+                    placeholder={placeHolder}
+                    register={register}
+                    error={
+                      isRequired &&
+                      initialValues?.hasOwnProperty(propName) &&
+                      !initialValues[propName]
+                        ? requiredMessage
+                        : ''
+                    }
+                    required={isRequired}
+                    validation={validation}
+                  />
+                )}
               </div>
-              {propName === 'author' && (
-                <div className="mt-2">
+              {propName === 'authorsAuthorization' && (
+                <div>
                   <Typography
                     type="help"
                     color="textDark"
                     weight="bold"
                     text={`Confirm that the author has given you permission to make this story publicly available on the app *`}
                   />
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <Checkbox
-                      onCheckboxChange={() =>
-                        setAuthorsAuthorization(!authorsAuthorization)
+                      onCheckboxChange={(value) =>
+                        onStateChange(propName, value.checked.toString())
                       }
-                      checked={authorsAuthorization}
+                      checked={isAuthorizationChecked}
                     />
                     <Typography
                       text={`I confirm that the author has given me permission to post this story`}
@@ -310,7 +323,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                       color={'textMid'}
                     />
                   </div>
-                  {!authorsAuthorization && (
+                  {!isAuthorizationChecked && (
                     <Typography
                       type="help"
                       color="errorMain"
@@ -407,11 +420,15 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
     });
   };
 
-  return (
-    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
-      {fields}
-    </div>
-  );
+  if (!isLoading) {
+    return (
+      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
+        {fields}
+      </div>
+    );
+  } else {
+    return <ContentLoader />;
+  }
 };
 
 export default CreateStoryForm;

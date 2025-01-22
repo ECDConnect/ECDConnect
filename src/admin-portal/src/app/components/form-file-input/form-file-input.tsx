@@ -515,16 +515,18 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         />
       )}
 
-      <input
-        accept={uploadTypes}
-        id={nameProp}
-        disabled={disabled}
-        type="file"
-        style={{ display: 'none' }}
-        onChange={(e) => {
-          handleChange(e);
-        }}
-      />
+      {!disabled && (
+        <input
+          accept={uploadTypes}
+          id={nameProp}
+          disabled={disabled}
+          type="file"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            handleChange(e);
+          }}
+        />
+      )}
       <div className="flex items-center justify-center">
         <Dialog
           visible={emojisSection}

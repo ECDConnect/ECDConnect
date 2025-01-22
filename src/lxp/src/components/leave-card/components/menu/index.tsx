@@ -44,28 +44,33 @@ export const LeaveCardMenu = ({
   const onDelete = async () => {
     if (userAuth) {
       setIsDeleting(true);
-      for (const leave of currentClassesReassigned ?? []) {
-        await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
-          leave?.absenteeId!,
-          true,
-          practitioner?.id!,
-          leave?.reason!,
-          new Date(leave?.absentDate),
-          new Date(leave?.absentDateEnd)
-        );
-      }
-      await refreshClassroom();
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap();
-      if (user?.id === practitioner?.userId) {
+      try {
+        for (const leave of currentClassesReassigned ?? []) {
+          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
+            leave?.absenteeId!,
+            true,
+            practitioner?.id!,
+            leave?.reason!,
+            new Date(leave?.absentDate),
+            new Date(leave?.absentDateEnd)
+          );
+        }
+        await refreshClassroom();
+
+        // Invalidate or refetch absentees after deletion
+        await appDispatch(
+          practitionerThunkActions.getAllPractitioners({})
+        ).unwrap();
         await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({
-            userId: practitioner?.id!,
+            userId: practitioner?.userId!,
           })
         ).unwrap();
+      } catch (error) {
+        console.error('Error deleting leave:', error);
+      } finally {
+        setIsDeleting(false);
       }
-      setIsDeleting(false);
     }
   };
 

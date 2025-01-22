@@ -104,7 +104,7 @@ export const ProgrammeDashboard: React.FC = () => {
 
   const lastProgressReportPeriodHasPassed =
     currentReportingPeriod?.endDate &&
-    new Date() > new Date(currentReportingPeriod?.endDate);
+    new Date(currentReportingPeriod?.endDate) > new Date();
 
   const currentProgramme = useSelector(
     programmeSelectors.getProgrammeByDateAndClassroomGroupId({
@@ -530,19 +530,10 @@ export const ProgrammeDashboard: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (
-      lastProgressReportPeriodHasPassed &&
-      !hasClickedAfterEndOfProgressReportPeriodEnded &&
-      baseReports?.length > 0
-    ) {
+    if (lastProgressReportPeriodHasPassed && baseReports?.length > 0) {
       showProgressReportEndedDialog();
     }
-  }, [
-    baseReports?.length,
-    hasClickedAfterEndOfProgressReportPeriodEnded,
-    lastProgressReportPeriodHasPassed,
-    showProgressReportEndedDialog,
-  ]);
+  }, [lastProgressReportPeriodHasPassed, baseReports?.length]);
 
   return (
     <BannerWrapper

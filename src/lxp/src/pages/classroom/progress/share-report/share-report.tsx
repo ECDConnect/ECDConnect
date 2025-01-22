@@ -228,7 +228,7 @@ export const ProgressShareReport: React.FC = () => {
           type="filled"
           icon={'ShareIcon'}
           text={'Share report'}
-          disabled={!selectedReport || !isOnline}
+          disabled={!selectedReport}
         />
       </div>
       {!!selectedReport && (

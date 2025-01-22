@@ -224,10 +224,13 @@ export const useObserveProgressForChild = (childId: string) => {
       (x) => x.howToSupport !== ''
     );
     const skillsToWorkOnSelectedWithSupport =
-      currentReport &&
-      currentReport?.skillsToWorkOn.length !== 0 &&
-      skillsToWorkOnWithoutSupport?.length ===
-        currentReport?.skillsToWorkOn.length;
+      (currentReport &&
+        currentReport?.skillsToWorkOn.length !== 0 &&
+        skillsToWorkOnWithoutSupport?.length ===
+          currentReport?.skillsToWorkOn.length) ||
+      (currentReport &&
+        skillsToWorkOnWithoutSupport?.length === 0 &&
+        currentReport?.skillsToWorkOn.length === 0);
 
     const doNotKnowPerc = (doNotKnowCount / skillsForAgeGroup.length) * 100;
     const result =

@@ -216,7 +216,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 int totalPercentageAttendance = 0;
                 int percentageAttendance = 0;
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
-                List<ClassroomGroup> groups = _context.ClassroomGroupss.Where(x => x.UserId == Guid.Parse(parentRecordId)).ToList();
+                List<ClassroomGroup> groups = _context.ClassroomGroups.Where(x => x.UserId == Guid.Parse(parentRecordId)).ToList();
                 int divider = 0;
                 foreach (ClassroomGroup group in groups)
                 {

@@ -332,13 +332,8 @@ export class ChildProgressReportNotificationValidator
     );
 
     if (activeChildren?.length === 0) return [];
-
-    // const expectedReportCount = activeChildren?.length;
-
     if (!isBetweenReportProgressPeriodDate) return [];
-
-    // if (reports?.length < expectedReportCount) return [];
-    if (reportsCompleted < 100) return [];
+    if (reports?.length === 0 || reportsCompleted < 100) return [];
 
     const notification: Message = {
       reference,
