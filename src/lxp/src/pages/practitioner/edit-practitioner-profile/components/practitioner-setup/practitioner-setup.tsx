@@ -154,8 +154,6 @@ export const PractitionerSetup = ({
     }
   };
 
-  console.log('practitioner', practitioner);
-
   return (
     <>
       <div className="wrapper-with-sticky-button mt-4">
