@@ -1,14 +1,11 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { StepItem } from '@ecdlink/ui';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
   NotificationIntervals,
-  NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
-import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 
 export class IncompletePractitionerInformationNotificationValidator
@@ -29,7 +26,6 @@ export class IncompletePractitionerInformationNotificationValidator
       user: userState,
       classroomData: classroomState,
       practitioner: practitionerState,
-      trainee: traineeState,
       tenant: tenantState,
     } = this.store.getState();
 
@@ -38,7 +34,6 @@ export class IncompletePractitionerInformationNotificationValidator
     );
 
     if (!classroomState || !userState) return [];
-    const isOnStipend = practitionerState?.practitioner?.isOnStipend;
 
     /**
      * Notification is returned when
@@ -74,57 +69,6 @@ export class IncompletePractitionerInformationNotificationValidator
           practitionerState?.practitioner?.progress === 0) ||
         (practitionerState?.practitioner?.progress === 1.0 &&
           !addedByPrincipal);
-      const isTrainee = practitionerState?.practitioner?.isTrainee;
-
-      if (isTrainee) {
-        const timeline =
-          traineeState?.traineeOnboardTimeline[
-            practitionerState.practitioner.userId || ''
-          ];
-        const steps = timelineSteps(
-          timeline!,
-          () => {},
-          false,
-          true,
-          // @ts-ignore
-          undefined,
-          '',
-          timeline?.consolidationMeetingStatus,
-          isOnStipend
-        );
-
-        const completedSteps = steps.filter(
-          (item) => item?.type === 'completed'
-        );
-        const overdueSteps = steps
-          .filter((item) => {
-            const overdueDate = (item as StepItem<{ date: Date }>)?.extraData
-              ?.date;
-            return (
-              (item?.type === 'todo' || item?.type === 'inProgress') &&
-              overdueDate &&
-              overdueDate < new Date()
-            );
-          })
-          .sort(
-            (stepA, stepB) =>
-              ((stepA as StepItem<{ date: Date }>).extraData?.date?.getTime() ||
-                0) -
-              ((stepB as StepItem<{ date: Date }>).extraData?.date?.getTime() ||
-                0)
-          ) as StepItem<{ date: Date }>[];
-
-        if (overdueSteps?.length > 0) {
-          return [];
-        }
-
-        if (
-          (isOnStipend && completedSteps?.length < 8) ||
-          (!isOnStipend && completedSteps?.length < 7)
-        ) {
-          return [];
-        }
-      }
 
       if (showNotificationForPrincipalFlow) {
         return [
