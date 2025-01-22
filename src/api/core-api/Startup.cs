@@ -181,10 +181,10 @@ namespace EcdLink.Api.CoreApi
 
             MoodleStartup.ConfigureMoodleServices(services, Configuration);
 
-            if (Environment.IsDevelopment())
-            {
-                DevStartup.ConfigureLocalDevServices(services, Configuration);
-            }
+            // if (Environment.IsDevelopment())
+            // {
+                DevStartup.ConfigureLocalDevServices(services, Configuration, Environment);
+            // }
 
             services.AddTransient<IOpenAccessValidator<ChildOpenAccessValidator>, ChildOpenAccessValidator>();
             services.AddTransient<IOpenAccessValidator<PrincipalOpenAccessValidator>, PrincipalOpenAccessValidator>();

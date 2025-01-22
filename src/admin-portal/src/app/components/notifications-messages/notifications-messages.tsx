@@ -1,4 +1,4 @@
-import { Button, Card, LoadingSpinner, Typography } from '@ecdlink/ui';
+import { Button, Card, Typography } from '@ecdlink/ui';
 import {
   ExclamationIcon,
   InformationCircleIcon,
@@ -11,22 +11,9 @@ import {
   MessageStatusConstants,
   NotificationsCTAText,
 } from './notifications-messages.types';
-import { useMutation, useQuery } from '@apollo/client';
-import {
-  DisableNotification,
-  GetClinicById,
-  GetPortalHealthCareWorkerById,
-  MarkAsReadNotification,
-  PortalUsersHcwModel,
-  PortalUsersTlModel,
-  TeamLeadById,
-} from '@ecdlink/graphql';
+import { useMutation } from '@apollo/client';
+import { DisableNotification, MarkAsReadNotification } from '@ecdlink/graphql';
 import { classNames } from '../../pages/users/components/users';
-import { useUserRole } from '../../hooks/useUserRole';
-import { ClinicsRouteState } from '../../pages/clinics/main-view/admin-view/clinics.types';
-import { ClinicDto } from '@ecdlink/core';
-import { HealthCareWorkerOptedOutRouteState } from '../../pages/health-care-worker/health-care-worker-opted-out/types';
-import { UsersRouteRedirectTypeEnum } from '../../pages/view-user/view-user.types';
 
 interface NotificationsMessagesProps {
   title: string;
@@ -63,8 +50,6 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
 }) => {
   const history = useHistory();
 
-  const { isTeamLead } = useUserRole();
-
   const [markAsRead] = useMutation(MarkAsReadNotification);
 
   const [disableNotification, { loading: loadingDisableNotification }] =
@@ -72,51 +57,13 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
 
   const actionJson = JSON.parse(action || '{}');
 
-  const healthCareWorkerId = actionJson?.state?.healthCareWorkerId;
-  const clinicId = actionJson?.state?.clinicId;
-  const teamLeadId = actionJson?.state?.teamLeadId;
-
-  const { data: clinicData, loading: loadingClinicsData } = useQuery<{
-    GetClinicById: ClinicDto;
-  }>(GetClinicById, {
-    variables: {
-      id: clinicId || relatedToUserId,
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: (!relatedToUserId && !clinicId) || !!healthCareWorkerId,
-  });
-  const { data: teamLeadData, loading: loadingTeamLeadData } = useQuery<{
-    teamLeadById: PortalUsersTlModel;
-  }>(TeamLeadById, {
-    variables: {
-      teamLeadId,
-    },
-    fetchPolicy: 'cache-and-network',
-    skip: !teamLeadId,
-  });
-  const { data: hcwData, loading: loadingHcwData } = useQuery<{
-    portalHealthCareWorkersById: PortalUsersHcwModel;
-  }>(GetPortalHealthCareWorkerById, {
-    variables: {
-      healthCareWorkerId: healthCareWorkerId || relatedToUserId,
-    },
-    fetchPolicy: 'network-only',
-    skip: (!relatedToUserId && !healthCareWorkerId) || !!clinicId,
-  });
-
-  const targetClinic = clinicData?.GetClinicById;
-  const targetHcw = hcwData?.portalHealthCareWorkersById;
-  const targetTeamLead = teamLeadData?.teamLeadById;
-
-  const isToShowDismissButton =
-    !isTeamLead &&
-    [
-      NotificationsCTAText.DuplicateClientPregnantMom,
-      NotificationsCTAText.DuplicateClientChild,
-      NotificationsCTAText.AdminNextMonthTLMeetingTopic,
-      NotificationsCTAText.NoMeetingReportClinic,
-      NotificationsCTAText.CHWsOptedOut,
-    ].includes(cTA as NotificationsCTAText);
+  const isToShowDismissButton = [
+    NotificationsCTAText.DuplicateClientPregnantMom,
+    NotificationsCTAText.DuplicateClientChild,
+    NotificationsCTAText.AdminNextMonthTLMeetingTopic,
+    NotificationsCTAText.NoMeetingReportClinic,
+    NotificationsCTAText.CHWsOptedOut,
+  ].includes(cTA as NotificationsCTAText);
 
   const handleIcon = (type: string) => {
     switch (type) {
@@ -139,80 +86,47 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     }
   };
 
-  // const goToTargetChw = useCallback(() => {
-  //   history.push({
-  //     pathname: ROUTES.USERS.VIEW_USER,
-  //     state: {
-  //       component: UsersRouteRedirectTypeEnum.chw,
-  //       userId: targetHcw?.user?.id,
-  //       clinicId: targetHcw?.clinicId,
-  //       hcwId: targetHcw?.id,
-  //       isRegistered: targetHcw?.isRegistered,
-  //       connectUsage: targetHcw?.user?.connectUsage,
-  //       connectUsageColor: targetHcw?.user?.connectUsageColor,
-  //     },
-  //   });
-  // }, [history, targetHcw]);
-
-  // const goToTargetTeamLead = useCallback(() => {
-  //   history.push({
-  //     pathname: ROUTES.USERS.VIEW_USER,
-  //     state: {
-  //       component: UsersRouteRedirectTypeEnum.teamLeads,
-  //       userId: targetTeamLead?.user?.id,
-  //       teamLeadId: targetTeamLead?.id,
-  //       connectUsage: targetTeamLead?.user?.connectUsage,
-  //       isRegistered: targetTeamLead?.isRegistered,
-  //       clinicIds: targetTeamLead?.clinicIds,
-  //       connectUsageColor: targetTeamLead?.user?.connectUsageColor,
-  //     },
-  //   });
-  // }, [history, targetTeamLead]);
-
-  const handleRedirectURL = useCallback(
-    (value: string) => {
-      // TODO: Add more switch cases accordingly with the BE types
-      switch (value) {
-        case NotificationsCTAText.AddMeetingReport:
-          return history.push(ROUTES.TEAM_MEETINGS, {
-            clinicId: targetClinic?.id,
-          });
-        case NotificationsCTAText.SeeClinicSummary:
-          return history.push(ROUTES.TEAM_MEETINGS, {
-            clinicId: targetClinic?.id,
-          });
-        // case NotificationsCTAText.ContactCHW:
-        //   return goToTargetChw();
-        case NotificationsCTAText.AddLeagues:
-          return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
-        case NotificationsCTAText.AssignToLeagues:
-          return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
-        case NotificationsCTAText.CHWsOptedOut:
-          return history.push(ROUTES.HEALTH_CARE_WORKER.OPTED_OUT, {
-            ...actionJson?.state,
-          } as HealthCareWorkerOptedOutRouteState);
-        // case NotificationsCTAText.DuplicateClientPregnantMom:
-        //   return goToTargetChw();
-        // case NotificationsCTAText.DuplicateClientChild:
-        //   return goToTargetChw();
-        case NotificationsCTAText.AdminNextMonthTLMeetingTopic:
-          return history.push(ROUTES.TL_MEETINGS.EDIT_TOPICS);
-        case NotificationsCTAText.ClinicMissingTL:
-          return history.push({
-            pathname: ROUTES.CLINICS.VIEW_CLINICS,
-            state: {
-              clinic: targetClinic,
-              openEditPanel: true,
-            } as ClinicsRouteState,
-          });
-        // case NotificationsCTAText.NoMeetingReportClinic:
-        //   return goToTargetTeamLead();
-        default:
-          return null;
-      }
-    },
-    [actionJson?.state, history, targetClinic]
-  );
+  const handleRedirectURL = useCallback((value: string) => {
+    // TODO: Add more switch cases accordingly with the BE types
+    switch (value) {
+      // case NotificationsCTAText.AddMeetingReport:
+      //   return history.push(ROUTES.TEAM_MEETINGS, {
+      //     clinicId: targetClinic?.id,
+      //   });
+      // case NotificationsCTAText.SeeClinicSummary:
+      //   return history.push(ROUTES.TEAM_MEETINGS, {
+      //     clinicId: targetClinic?.id,
+      //   });
+      // case NotificationsCTAText.ContactCHW:
+      //   return goToTargetChw();
+      // case NotificationsCTAText.AddLeagues:
+      //   return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
+      // case NotificationsCTAText.AssignToLeagues:
+      //   return history.push(ROUTES.CLINICS.LEAGUES.ROOT);
+      // case NotificationsCTAText.CHWsOptedOut:
+      //   return history.push(ROUTES.HEALTH_CARE_WORKER.OPTED_OUT, {
+      //     ...actionJson?.state,
+      //   } as HealthCareWorkerOptedOutRouteState);
+      // case NotificationsCTAText.DuplicateClientPregnantMom:
+      //   return goToTargetChw();
+      // case NotificationsCTAText.DuplicateClientChild:
+      //   return goToTargetChw();
+      // case NotificationsCTAText.AdminNextMonthTLMeetingTopic:
+      //   return history.push(ROUTES.TL_MEETINGS.EDIT_TOPICS);
+      // case NotificationsCTAText.ClinicMissingTL:
+      //   return history.push({
+      //     pathname: ROUTES.CLINICS.VIEW_CLINICS,
+      //     state: {
+      //       clinic: targetClinic,
+      //       openEditPanel: true,
+      //     } as ClinicsRouteState,
+      //   });
+      // case NotificationsCTAText.NoMeetingReportClinic:
+      //   return goToTargetTeamLead();
+      default:
+        return null;
+    }
+  }, []);
 
   const handleNotificationClick = useCallback(() => {
     handleRedirectURL(cTA);
@@ -234,17 +148,17 @@ export const NotificationsMessages: React.FC<NotificationsMessagesProps> = ({
     });
   };
 
-  if (loadingClinicsData || loadingHcwData || loadingTeamLeadData) {
-    return (
-      <div className={classNames(className, 'w-full rounded-xl bg-white p-4')}>
-        <LoadingSpinner
-          size="medium"
-          spinnerColor="adminPortalBg"
-          backgroundColor="secondary"
-        />
-      </div>
-    );
-  }
+  // if (loadingClinicsData || loadingHcwData || loadingTeamLeadData) {
+  //   return (
+  //     <div className={classNames(className, 'w-full rounded-xl bg-white p-4')}>
+  //       <LoadingSpinner
+  //         size="medium"
+  //         spinnerColor="adminPortalBg"
+  //         backgroundColor="secondary"
+  //       />
+  //     </div>
+  //   );
+  // }
 
   return (
     <Card

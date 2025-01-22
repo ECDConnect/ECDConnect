@@ -4,6 +4,10 @@ import { Typography, Button, renderIcon } from '@ecdlink/ui';
 import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
+import { useDialog } from '@ecdlink/core';
+import { DialogPosition } from '@ecdlink/ui';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+
 export interface GeneratePdfReportButtonProps {
   isLoading?: boolean;
   tableFootStyles: UserOptions['footStyles'];
@@ -43,33 +47,50 @@ const GeneratePdfReportButton = ({
 }: GeneratePdfReportButtonProps) => {
   const { isOnline } = useOnlineStatus();
   const { generateReport } = useGeneratePdfReport();
+
+  const dialog = useDialog();
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
   return (
     <Button
       isLoading={isLoading}
-      disabled={isLoading || !isOnline}
+      disabled={isLoading}
       type="filled"
       color="quatenary"
       className={'w-full'}
-      onClick={() => {
-        if (!!onClick) {
-          onClick();
-        }
-        generateReport(
-          tableData ?? [],
-          signature,
-          downloadDate,
-          numberOfChildren,
-          tableHeadStyles,
-          content,
-          tableBottomContent,
-          outputName,
-          component,
-          tableStyles,
-          [tableFooter],
-          tableFootStyles,
-          pageOriantations
-        );
-      }}
+      onClick={
+        !isOnline
+          ? showOnlineOnly
+          : () => {
+              if (!!onClick) {
+                onClick();
+              }
+              generateReport(
+                tableData ?? [],
+                signature,
+                downloadDate,
+                numberOfChildren,
+                tableHeadStyles,
+                content,
+                tableBottomContent,
+                outputName,
+                component,
+                tableStyles,
+                [tableFooter],
+                tableFootStyles,
+                pageOriantations
+              );
+            }
+      }
     >
       {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
       <Typography

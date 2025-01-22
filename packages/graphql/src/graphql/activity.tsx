@@ -4,8 +4,10 @@ export const GetActivityRecords = gql`
   query GetActivityRecords(
     $isStoryActivity: Boolean!
     $search: String
+    $subTypesSearch: [String]
     $typesSearch: [String]
-    $themesSearch: [String]
+    $themesSearch: [Int!]
+    $skillSearch: [Int!]
     $languageSearch: [UUID!]
     $shareContent: [String]
     $startDate: DateTime
@@ -15,8 +17,10 @@ export const GetActivityRecords = gql`
     activityRecords(
       isStoryActivity: $isStoryActivity
       search: $search
+      subTypesSearch: $subTypesSearch
       typesSearch: $typesSearch
       themesSearch: $themesSearch
+      skillSearch: $skillSearch
       languageSearch: $languageSearch
       shareContent: $shareContent
       startDate: $startDate
@@ -36,13 +40,21 @@ export const GetActivityRecords = gql`
       subCategories
       updatedDate
       insertedDate
+      subTypeItems
+      image
+      subCategoryItems {
+        id
+        name
+        imageUrl
+        imageHexColor
+      }
       __typename
     }
   }
 `;
 
 export const DeleteMultipleActivities = gql`
-  mutation DeleteMultipleActivities($contentIds: [Int!]) {
+  mutation DeleteMultipleActivities($contentIds: [String]) {
     deleteMultipleActivities(contentIds: $contentIds) {
       success
       failed

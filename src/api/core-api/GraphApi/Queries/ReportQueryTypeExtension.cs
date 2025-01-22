@@ -9,6 +9,7 @@ using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
@@ -44,6 +45,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ReportQueryTypeExtension
     {
+
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public PractitionerMetricReport GetPractitionerMetrics(
             [Service] IHttpContextAccessor contextAccessor,
@@ -193,6 +195,61 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return metrics;
         }
 
+
+        public List<ClassroomMetricReport> GetClassAttendanceByUser(
+                    [Service] AttendanceTrackingRepository attendanceRepo,
+                    [Service] AttendanceService attendanceService,
+                    [Service] AuthenticationDbContext dbContext,
+                    string userId,
+                    DateTime startMonth,
+                    DateTime endMonth)
+        {
+            var metric = new List<ClassroomMetricReport>();
+
+            var fromDate = startMonth.GetStartOfMonth();
+            var toDate = endMonth.GetEndOfMonth().GetEndOfDay();
+
+            var classroomGroups = attendanceService.GetUserClassroomGroups(userId);
+
+            var results = dbContext.Learners
+            .Where(x => classroomGroups.Select(a => a.Id).Contains(x.ClassroomGroupId))
+            .Join(dbContext.Attendances,
+                    l => l.UserId,
+                    a => a.UserId,
+                    (l, a) => new { Learner = l, Attendance = a })
+            .Where(joined => joined.Attendance.MonthOfYear == fromDate.Month
+                     && joined.Attendance.Year == fromDate.Year
+                     && joined.Attendance.AttendanceDate >= fromDate)
+            .ToList();
+
+            var distinctLearnerCount = results
+                .Select(joined => joined.Learner)
+                .Distinct()
+                .Count();
+
+            var attendance = results
+                .Select(joined => joined.Attendance)
+                .ToList();
+
+            var attended = attendance.Where(x => x.Attended).Count();
+            var notAttended = attendance.Where(x => !x.Attended).Count();
+
+            int attendancePercentage = (int)(attendance.Count() > 0 && attended > 0
+                                                           ? Math.Round((double)(attended / (double)(attended + notAttended)) * 100)
+                                                           : 0);
+
+            metric.Add(
+                    new ClassroomMetricReport()
+                    {
+                        ChildCount = distinctLearnerCount,
+                        AttendancePercentage = attendancePercentage,
+                    });
+
+            return metric;
+        }
+
+
+
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceMetricsByUser(
             [Service] AttendanceTrackingRepository attendanceRepo,
@@ -207,6 +264,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var toDate = endMonth.GetEndOfMonth().GetEndOfDay();
 
             var classroomGroups = attendanceService.GetUserClassroomGroups(userId);
+
             if (classroomGroups != null)
             {
                 foreach (var group in classroomGroups)
@@ -225,8 +283,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            // if (learner.StartedAttendance >= fromDate)
-                            // {
+                            if (learner.StartedAttendance >= fromDate)
+                            {
                                 childCount++;
                                 var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
                                 if (attendanceData.Any())
@@ -246,7 +304,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                     year = attendanceData.FirstOrDefault().Year;
                                     weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
                                 }
-                            // }
+                            }
                         }
                     }
                     metric.Add(
@@ -954,6 +1012,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] AttendanceService attendanceService,
+            [Service] AuthenticationDbContext dbContext,
             [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
             [Service] IAbsenteeService absenteeService,
             IGenericRepositoryFactory repoFactory,
@@ -972,6 +1031,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         monthlyAttendanceReportService,
                         attendanceRepo,
                         attendanceService,
+                        dbContext,
                         absenteeService,
                         repoFactory,
                         uId.ToString(),
@@ -1331,6 +1391,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] MonthlyAttendanceReport monthlyAttendanceReportService,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] AttendanceService attendanceService,
+            [Service] AuthenticationDbContext dbContext,
             [Service] IAbsenteeService absenteeService,
             IGenericRepositoryFactory repoFactory,
             string uId,
@@ -1342,7 +1403,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
 
             var today = DateTime.Now;
-            var previousMonthStart =  DateTime.Now.GetStartOfPreviousMonth();
+            var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
             var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
             var currentMonthEnd = DateTime.Now.GetEndOfMonth();
             var currentMonthStart = DateTime.Now.GetStartOfMonth();
@@ -1437,15 +1498,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region ATTENDANCE
-                // var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), mondayOfLastWeek, sundayOfLastWeek).SingleOrDefault();
                 var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
-                // var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), currentMonthStart, currentMonthEnd).SingleOrDefault();
-                var metrics = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), previousMonthStart.Date, previousMonthEnd.GetEndOfDay());
+                var metrics = GetClassAttendanceByUser(attendanceRepo, attendanceService, dbContext, practitioner.UserId.ToString(), previousMonthStart.Date, previousMonthEnd.GetEndOfDay());
                 if (monthlyReport != null)
                 {
                     if (monthlyReport.TotalScheduledSessions > 0)
                     {
-                        var attendancePercentage = metrics.First().AttendancePercentage;
+                        var attendancePercentage = metrics[0].AttendancePercentage;
 
                         #region LOW CHILD ATTENDENCE
                         if (attendancePercentage < 75)

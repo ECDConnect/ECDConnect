@@ -104,25 +104,43 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
                     ApplicationUser currentUser = userManager.FindByIdAsync(practitionerUser.Id.ToString()).Result;
                     Classroom classroom = dbContext.Classrooms.Where(classroom => classroom.UserId == practitionerUser.Id).FirstOrDefault();
+                    var linkedClasses = dbContext.ClassroomGroups.Where(x => x.UserId == practitionerUser.Id && x.IsActive).Count();
                     var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
 
                     if (practitioner != null)
                     {
-
                         practitioner.User = currentUser;
+                        var hasPreschool = false;
 
                         if (practitioner.PrincipalHierarchy == null)
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, IsRegistered = practitioner.IsRegistered, BelongsToPreschool = classroom != null, Note = classroom != null ? "This practitioner is linked to a different SmartStart programme" : null };
+
+                        if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabelTemplate) {
+                            hasPreschool = classroom == null;
+                        } else {
+                            hasPreschool = classroom == null ? false : linkedClasses > 0;
+                        }
+                            return new PractitionerUserAndNote() { 
+                                AppUser = practitioner.User, 
+                                IsRegistered = practitioner.IsRegistered, 
+                                BelongsToPreschool = hasPreschool, 
+                                Note = hasPreschool ? "This practitioner is linked to a different SmartStart programme" : null };
                         }
                         else
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme", IsRegistered = classroom != null };
+                            return new PractitionerUserAndNote() { 
+                                AppUser = practitioner.User, 
+                                Note = "This practitioner is linked to a different SmartStart programme", 
+                                IsRegistered = classroom != null };
                         }
                     }
                     else
                     {
-                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", IsRegistered = false, BelongsToPreschool = false };
+                        return new PractitionerUserAndNote() { 
+                            AppUser = null, 
+                            Note = "Not on " + TenantExecutionContext.Tenant.ApplicationName + " app", 
+                            IsRegistered = false, 
+                            BelongsToPreschool = false };
                     }
                 }
             }
@@ -236,12 +254,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 if (practi.IsPrincipal == true)
                 {
                     Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
-                    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                    if (practiPrincipal != null && practiPrincipal.UserId != practi.UserId) {
+                        practitioners.Add(practiPrincipal);
+                    }
                 }
                 if (practi.PrincipalHierarchy.HasValue)
                 {
                     Practitioner practiPrincipal = practiRepo.GetByUserId(practi.PrincipalHierarchy.ToString());
-                    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                    if (practiPrincipal != null && practiPrincipal.UserId != practi.UserId) {
+                        practitioners.Add(practiPrincipal);
+                    }
                 }
 
                 if (practitioners.Count > 0)

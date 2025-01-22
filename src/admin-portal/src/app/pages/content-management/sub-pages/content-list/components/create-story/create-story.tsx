@@ -178,7 +178,6 @@ export default function CreateStory({
   const [requiredMessage, setRequiredMessage] = useState(
     'This field is required'
   );
-  const [authorsAuthorization, setAuthorsAuthorization] = useState(false);
   const storyBookAndReadAloudRequiredPart =
     initialValues?.type === StoryBookTypes.storyBook ||
     initialValues?.type === StoryBookTypes.readAloud;
@@ -192,12 +191,6 @@ export default function CreateStory({
       !initialValues[item?.propName]
   );
   const isEdit = template && template.fields.some((f) => !!f.contentValue);
-
-  useEffect(() => {
-    if (content && content.authorsAuthorization) {
-      setAuthorsAuthorization(content.authorsAuthorization);
-    }
-  }, [content]);
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -235,6 +228,7 @@ export default function CreateStory({
           setValue('type', defaultType.value);
         }
       }
+
       setTemplate(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -430,11 +424,6 @@ export default function CreateStory({
               />
             ) : (
               <></>
-              // <Alert
-              //   className="mt-2 mb-2 rounded-md"
-              //   message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
-              //   type="warning"
-              // />
             )}
 
             <CreateStoryForm
@@ -451,8 +440,6 @@ export default function CreateStory({
               getValues={getValues}
               useWatch={useWatch}
               requiredMessage={requiredMessage}
-              setAuthorsAuthorization={setAuthorsAuthorization}
-              authorsAuthorization={authorsAuthorization}
             />
           </div>
 
@@ -461,7 +448,7 @@ export default function CreateStory({
               type="submit"
               className={`bg-secondary ${
                 disableButton?.length > 0 ||
-                !authorsAuthorization ||
+                initialValues.authorsAuthorization !== 'true' ||
                 (!isEdit
                   ? storyBookAndReadAloudRequiredPart &&
                     filledStoryParts?.length < 1
@@ -471,7 +458,7 @@ export default function CreateStory({
               } hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
               disabled={
                 disableButton?.length > 0 ||
-                !authorsAuthorization ||
+                initialValues.authorsAuthorization !== 'true' ||
                 (!isEdit
                   ? storyBookAndReadAloudRequiredPart &&
                     filledStoryParts?.length < 1

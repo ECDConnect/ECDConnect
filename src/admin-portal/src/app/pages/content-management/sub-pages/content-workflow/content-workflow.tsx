@@ -21,7 +21,6 @@ import EditCategory from './components/edit-category/edit-category';
 import EditSkills from './components/edit-skills/edit-skills';
 import { ContentTypes } from '../../../../constants/content-management';
 import CreateResource from './components/create-resource/create-resource';
-import { pluralize } from '../../../pages.utils';
 import { ArrowRightIcon } from '@heroicons/react/solid';
 
 export interface ContentWorkflowProps {
@@ -52,7 +51,6 @@ export default function ContentWorkflow({
   );
   const [viewKey, setViewKey] = useState<number>(Math.random());
   const [defaultLanguageId, setDefaultLanguageId] = useState<string>();
-  // const [isEdit, setIsEdit] = useState<boolean>(false);
   const [isCompareMode, setIsCompareMode] = useState<boolean>(false);
   const [currentContent, setCurrentContent] = useState<ContentDto>();
 
@@ -94,7 +92,7 @@ export default function ContentWorkflow({
     return orderedList;
   };
 
-  const isEdit = contentView && contentView?.content;
+  const isEdit = contentView && !!contentView?.content;
 
   const breadCrumbName = useCallback(
     (item: ContentTypeDto) => {
@@ -120,6 +118,18 @@ export default function ContentWorkflow({
     [choosedSectionTitle, isEdit]
   );
 
+  const breadCrumbParentName = useCallback(
+    (item: ContentTypeDto) => {
+      if (item.name === ContentTypes.STORY_BOOK) {
+        return 'Stories';
+      } else if (item.name === ContentTypes.ACTIVITY) {
+        return choosedSectionTitle;
+      }
+      return item.description;
+    },
+    [choosedSectionTitle]
+  );
+
   const handleNoDynamicForms = (type: string) => {
     switch (type) {
       case ContentTypes.STORY_BOOK:
@@ -141,7 +151,7 @@ export default function ContentWorkflow({
                         cancelEdit={() => goBack()}
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => setIsCompareMode(isEdit)}
                       />
                     </div>
                   </div>
@@ -169,7 +179,7 @@ export default function ContentWorkflow({
                         cancelEdit={() => goBack()}
                         savedContent={savedContent}
                         defaultLanguageId={selectedLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => setIsCompareMode(isEdit)}
                       />
                     </div>
                   </div>
@@ -199,7 +209,7 @@ export default function ContentWorkflow({
                         savedContent={savedContent}
                         defaultLanguageId={selectedLanguageId}
                         cancelCompare={() => {
-                          setIsCompareMode(!isEdit);
+                          setIsCompareMode(isEdit);
                         }}
                         choosedSectionTitle={choosedSectionTitle}
                       />
@@ -228,7 +238,7 @@ export default function ContentWorkflow({
                         contentType={contentType}
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => setIsCompareMode(isEdit)}
                         cancelEdit={() => goBack()}
                       />
                     </div>
@@ -257,7 +267,7 @@ export default function ContentWorkflow({
                         cancelEdit={() => goBack()}
                         savedContent={savedContent}
                         defaultLanguageId={defaultLanguageId}
-                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                        cancelCompare={() => setIsCompareMode(isEdit)}
                         setSelectedLanguageId={setSelectedLanguageId}
                       />
                     </div>
@@ -308,9 +318,9 @@ export default function ContentWorkflow({
             type="button"
             className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
           >
-            Content Management
+            Programme
             <ArrowRightIcon className="text-secondary ml-1 mr-1 h-4 w-4" />
-            {pluralize(choosedSectionTitle || contentType.name)}
+            {breadCrumbParentName(contentType)}
             <ArrowRightIcon className="text-secondary ml-1 h-4 w-4" />
             <span className="px-1 text-gray-400">
               {breadCrumbName(contentType)}
@@ -345,11 +355,12 @@ export default function ContentWorkflow({
                           cancelEdit={() => goBack()}
                           savedContent={savedContent}
                           defaultLanguageId={defaultLanguageId}
-                          cancelCompare={() => setIsCompareMode(!isEdit)}
+                          cancelCompare={() => setIsCompareMode(isEdit)}
                           choosedSectionTitle={choosedSectionTitle}
                           setSearchValue={setSearchValue}
                           contentView={contentView}
                           languages={languages}
+                          isEdit={isEdit}
                         />
                       </div>
                     </div>

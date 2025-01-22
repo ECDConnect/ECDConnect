@@ -759,21 +759,21 @@ export const Dashboard: React.FC = () => {
         },
       ],
     },
-    {
-      name: NavigationNames.Training,
-      href: ROUTES.TRAINING,
-      icon: styles.trainingIconName,
-      current: false,
-      showDivider: true,
-      hideItem: !trainingEnabled && isWhiteLabel,
-    },
-    {
-      name: NavigationNames.Points,
-      href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
-      icon: styles.pointsIconName,
-      current: false,
-      showDivider: true,
-    },
+    // {
+    //   name: NavigationNames.Training,
+    //   href: ROUTES.TRAINING,
+    //   icon: styles.trainingIconName,
+    //   current: false,
+    //   showDivider: true,
+    //   hideItem: !trainingEnabled && isWhiteLabel,
+    // },
+    // {
+    //   name: NavigationNames.Points,
+    //   href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
+    //   icon: styles.pointsIconName,
+    //   current: false,
+    //   showDivider: true,
+    // },
     {
       name: NavigationNames.Calendar,
       href: ROUTES.CALENDAR,
@@ -823,14 +823,14 @@ export const Dashboard: React.FC = () => {
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
     },
-    {
-      name: NavigationNames.Training,
-      href: ROUTES.TRAINING,
-      icon: styles.trainingIconName,
-      current: false,
-      showDivider: true,
-      hideItem: !trainingEnabled && isWhiteLabel,
-    },
+    // {
+    //   name: NavigationNames.Training,
+    //   href: ROUTES.TRAINING,
+    //   icon: styles.trainingIconName,
+    //   current: false,
+    //   showDivider: true,
+    //   hideItem: !trainingEnabled && isWhiteLabel,
+    // },
     {
       name: NavigationNames.Calendar,
       href: ROUTES.CALENDAR,
@@ -905,16 +905,16 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if ((trainingEnabled && isWhiteLabel) || isOpenAccess)
-    dashboardItems.splice(4, 0, {
-      title: NavigationNames.Training,
-      titleIcon: 'PresentationChartBarIcon',
-      titleIconClassName: styles.trainingIcon,
-      onActionClick: !isOnline
-        ? () => offlineCommunity()
-        : () => goToTraining(),
-      classNames: 'bg-tertiaryAccent2',
-    });
+  // if ((trainingEnabled && isWhiteLabel) || isOpenAccess)
+  //   dashboardItems.splice(4, 0, {
+  //     title: NavigationNames.Training,
+  //     titleIcon: 'PresentationChartBarIcon',
+  //     titleIconClassName: styles.trainingIcon,
+  //     onActionClick: !isOnline
+  //       ? () => offlineCommunity()
+  //       : () => goToTraining(),
+  //     classNames: 'bg-tertiaryAccent2',
+  //   });
 
   const goToCommunity = () => {
     if (
@@ -1118,11 +1118,11 @@ export const Dashboard: React.FC = () => {
     ) {
       return 'Cwepheshe';
     }
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'Tichere';
     }
 
-    if (pointsToDo?.signedUpForApp) {
+    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
       return 'Umtsha';
     }
 
@@ -1152,11 +1152,11 @@ export const Dashboard: React.FC = () => {
       return 'quatenaryBg';
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'secondaryAccent2';
     }
 
-    if (pointsToDo?.signedUpForApp) {
+    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
       return 'alertBg';
     }
 
@@ -1202,7 +1202,7 @@ export const Dashboard: React.FC = () => {
       );
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
           <Kindgarden className="font-white h-8  w-8 text-white" />
@@ -1210,7 +1210,7 @@ export const Dashboard: React.FC = () => {
       );
     }
 
-    if (pointsToDo?.signedUpForApp) {
+    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
       return (
         <div className="bg-alertMain mr-4 rounded-full p-2">
           <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
@@ -1248,11 +1248,11 @@ export const Dashboard: React.FC = () => {
       return 'quatenary';
     }
 
-    if (pointsToDo?.isPartOfPreschool) {
+    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
       return 'secondary';
     }
 
-    if (pointsToDo?.signedUpForApp) {
+    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
       return 'alertMain';
     }
 
@@ -1365,12 +1365,12 @@ export const Dashboard: React.FC = () => {
           text={name}
           className={styles.welcomeText}
         />
-        <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
+        <div className={`${styles.wrapper} pb-4`}>
           <DashboardItems
             listItems={dashboardItems}
             notification={dashboardNotification}
           />
-          {totalYearPoints &&
+          {/* {totalYearPoints &&
           totalYearPoints >= 10 &&
           !!pointsScoreProps &&
           !isCoach ? (
@@ -1389,8 +1389,8 @@ export const Dashboard: React.FC = () => {
               textColour={pointsScoreProps?.textColour!}
               textPosition={pointsScoreProps?.textPosition!}
             />
-          ) : null}
-          {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
+          ) : null} */}
+          {/* {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
           !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
@@ -1398,9 +1398,11 @@ export const Dashboard: React.FC = () => {
               mainText={''}
               currentPoints={getCurrentPointsToDo}
               maxPoints={
-                practitioner?.isPrincipal ||
-                (!practitioner?.isPrincipal &&
-                  planActivitiesPermission?.isActive === true)
+                isTrialPeriod
+                  ? 6
+                  : practitioner?.isPrincipal ||
+                    (!practitioner?.isPrincipal &&
+                      planActivitiesPermission?.isActive === true)
                   ? 4
                   : 3
               }
@@ -1413,7 +1415,7 @@ export const Dashboard: React.FC = () => {
               hint={renderTodoText}
               textPosition="left"
             />
-          ) : null}
+          ) : null} */}
         </div>
       </BannerWrapper>
     </>

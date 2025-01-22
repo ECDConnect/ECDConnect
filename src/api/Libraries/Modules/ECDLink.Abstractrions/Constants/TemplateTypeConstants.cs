@@ -28,7 +28,7 @@ namespace ECDLink.Abstractrions.Constants
 
         // row 4
         public const string PrincipalInvitation = "principal-invitation"; // sms
-        // public const string ProgrammeInvitation = "ProgrammeInvitation"; // sms, hub, push -> ticket EC-3236 request removal from back-end
+        public const string ProgrammeInvitation = "ProgrammeInvitation"; // sms, hub, push 
 
         public const string MultipleProgrammeInvitation = "multiple-programme-invitation"; // sms, hub, push
         // row 5
