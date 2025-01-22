@@ -24,7 +24,7 @@ export const useObserveProgressForAgeGroupAndCategory = (
   const appDispatch = useAppDispatch();
 
   const baseChildren = useSelector(childrenSelectors.getChildren);
-  debugger;
+
   const allAgeGroups = useSelector(
     progressTrackingSelectors.getProgressAgeGroups()
   );
