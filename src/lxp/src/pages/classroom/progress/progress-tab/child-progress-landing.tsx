@@ -72,6 +72,18 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
   const { asyncGenerateReport } = usePdfFromHtml();
 
+  const showSuccessIcon =
+    !!isWithinReportPeriod && percentageObservationsCompleted === 100;
+
+  const completionPercentage = percentageObservationsCompleted;
+
+  const progressHint =
+    hasPermissionToCreateProgressReports && isWithinReportPeriod
+      ? 'Reports created'
+      : 'Observations completed';
+
+  const progressColour = showSuccessIcon ? 'successMain' : 'alertMain';
+
   const showOnlineOnly = () => {
     dialog({
       position: DialogPosition.Middle,
@@ -277,7 +289,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 text={'Continue tracking progress'}
               />
             )}
-            <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
+            {/* <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
               <div className="justify-center">
                 {((isWithinReportPeriod &&
                   percentageReportsCompleted === 100) ||
@@ -317,9 +329,31 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                   textColour="textDark"
                 />
               </div>
+            </Card> */}
+
+            <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
+              <div className="justify-center">
+                {/* Extracted logic for better readability */}
+                {showSuccessIcon && (
+                  <div className="mt-6 flex w-full justify-center">
+                    <EmojiYellowSmile className="h-20 w-20" />
+                  </div>
+                )}
+                <ProgressBar
+                  label={`${completionPercentage}%`}
+                  hint={progressHint}
+                  subLabel=""
+                  isHiddenSubLabel={true}
+                  value={completionPercentage}
+                  primaryColour={progressColour}
+                  secondaryColour="textLight"
+                  textColour="textDark"
+                />
+              </div>
             </Card>
+
             {/* Outside report period */}
-            {!isWithinReportPeriod && !isAllObservationsComplete && (
+            {isWithinReportPeriod && !isAllObservationsComplete && (
               <ProgressTabObservationsSummary />
             )}
 
@@ -384,9 +418,11 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
             {isWithinReportPeriod && (
               <>
-                {!isAllReportsComplete && <ProgressTabReportSummary />}
+                {!isAllReportsComplete && !isAllObservationsComplete && (
+                  <ProgressTabReportSummary />
+                )}
 
-                {isAllReportsComplete && (
+                {isAllObservationsComplete && (
                   <>
                     {!hasPermissionToCreateProgressReports ? (
                       <>
