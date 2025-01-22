@@ -418,9 +418,11 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
             {isWithinReportPeriod && (
               <>
-                {!isAllReportsComplete && !isAllObservationsComplete && (
-                  <ProgressTabReportSummary />
-                )}
+                {!isAllReportsComplete &&
+                  !isAllObservationsComplete &&
+                  hasPermissionToCreateProgressReports && (
+                    <ProgressTabReportSummary />
+                  )}
 
                 {isAllObservationsComplete && (
                   <>
