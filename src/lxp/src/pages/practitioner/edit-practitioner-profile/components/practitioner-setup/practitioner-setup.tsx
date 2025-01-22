@@ -232,7 +232,7 @@ export const PractitionerSetup = ({
               />
             )}
 
-            {practitionerToProgramme && practitioner?.shareInfo !== true && (
+            {practitionerToProgramme && (
               <>
                 <Typography
                   type="h4"
