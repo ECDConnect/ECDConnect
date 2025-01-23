@@ -387,7 +387,6 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var notification = _messageRepo.GetById(Guid.Parse(notificationId));
                 notification.ReadDate = DateTime.Now;
-                notification.IsActive = false;
                 _messageRepo.Update(notification);
             }
             return true;
