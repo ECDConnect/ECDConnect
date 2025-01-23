@@ -57,6 +57,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
 import { formatAddress } from '@/components/address-map/address-map';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { p } from 'msw/lib/glossary-297d38ba';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -96,6 +97,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const { theme } = useTheme();
+
+  const userClassroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroupsForUser(practitioner?.id || '')
+  );
 
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
@@ -258,7 +263,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           practitioner?.isPrincipal !== true &&
           !isTrialPeriod
             ? ''
-            : isTrialPeriod
+            : isTrialPeriod || !practitioner?.shareInfo
             ? 'Add'
             : 'Edit',
         actionIcon: isTrialPeriod ? 'PlusIcon' : 'PencilIcon',
@@ -285,23 +290,24 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
     ];
 
-    if ((classroomGroups.length > 0 && !missingProgramme) || isTrialPeriod) {
+    if (!missingProgramme || isTrialPeriod) {
       stackedActionList.push({
         title: 'Classes',
-        subTitle:
-          classroomGroups
-            ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
-            .map((x) => x.name)
-            .join(', ') || 'None',
+        subTitle: practitioner?.shareInfo
+          ? classroomGroups
+              ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+              .map((x) => x.name)
+              .join(', ')
+          : 'None',
         switchTextStyles: true,
         actionName: isPrincipal
           ? 'Edit'
-          : classroomGroups.length === 0 && isTrialPeriod
+          : !practitioner?.shareInfo
           ? 'Add'
           : 'View',
         actionIcon: isPrincipal
           ? 'PencilIcon'
-          : classroomGroups.length === 0 && isTrialPeriod
+          : !practitioner?.shareInfo
           ? 'PlusIcon'
           : 'EyeIcon',
         buttonColor: isTrialPeriod ? 'quatenary' : undefined,
@@ -328,16 +334,17 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           ? practitionersList
               ?.map((x) => x?.user?.firstName || x?.user?.userName)
               .join(', ')
-          : otherColleaguesFiltered
+          : practitioner?.shareInfo
+          ? otherColleaguesFiltered
               ?.map((x: any) => x?.name || x?.nickName)
-              .join(', ') || 'None',
+              .join(', ')
+          : 'None',
         switchTextStyles: true,
-        actionName:
-          practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0
-            ? isPrincipal
-              ? 'Edit'
-              : 'View'
-            : 'Add',
+        actionName: practitioner?.shareInfo
+          ? isPrincipal
+            ? 'Edit'
+            : 'View'
+          : 'Add',
         actionIcon: isPrincipal
           ? 'PencilIcon'
           : isTrialPeriod
@@ -356,9 +363,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
 
     if (
-      (practitioner?.isRegistered !== null ||
-        practitioner?.isLeaving !== null) &&
-      !missingProgramme
+      // ((practitioner?.isRegistered !== null ||
+      //   practitioner?.isLeaving !== null) &&)
+      // missingProgramme ||
+      practitioner?.shareInfo
     ) {
       stackedActionList.push({
         title: 'Location',

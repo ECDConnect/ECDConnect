@@ -55,7 +55,7 @@ export const PractitionerSetup = ({
     resolver: yupResolver(setupPractitioner),
     defaultValues: {
       practitionerToProgramme: undefined,
-      allowPermissions: undefined || false,
+      allowPermissions: false,
     },
   });
 
@@ -147,6 +147,10 @@ export const PractitionerSetup = ({
   }, []);
 
   const { practitionerToProgramme, allowPermissions } = watch();
+
+  console.log(`practitionerToProgramme`, practitionerToProgramme);
+
+  console.log(`allowPermissions`, allowPermissions);
 
   const checkClassroomNeedsToBeRemove = async () => {
     if (!practitionerToProgramme) {
