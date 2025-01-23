@@ -387,9 +387,21 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var notification = _messageRepo.GetById(Guid.Parse(notificationId));
                 notification.ReadDate = DateTime.Now;
-                notification.IsActive = false;
                 _messageRepo.Update(notification);
             }
+            return true;
+        }
+
+        public async Task<bool> DisableNotficationsWithEndDateAsToday()
+        {
+            var today = DateTime.Now.Date;
+            var notifications = _messageRepo.GetAll().Where(x => x.IsActive && x.MessageEndDate.Value.Date < today).ToArray();
+
+            foreach (var notification in notifications)
+            {
+                await DisableNotification(notification.Id.ToString());
+            }
+
             return true;
         }
 
