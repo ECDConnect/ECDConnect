@@ -396,7 +396,7 @@ namespace EcdLink.Api.CoreApi.Services
         public async Task<bool> DisableNotficationsWithEndDateAsToday()
         {
             var today = DateTime.Now.Date;
-            var notifications = _messageRepo.GetAll().Where(x => x.IsActive && x.MessageEndDate.Value.Date == today).ToArray();
+            var notifications = _messageRepo.GetAll().Where(x => x.IsActive && x.MessageEndDate.Value.Date < today).ToArray();
 
             foreach (var notification in notifications)
             {
