@@ -158,6 +158,8 @@ namespace EcdLink.Api.CoreApi.Services
                             notification.MessageEndDate = messageEndDate.Value.AddDays(1).Date;
                         }
                         //skip if the enotification exists already for same date and person and template and protocol
+                        var isAvailable = await NotificationExists(notification, dontSendIfExists, searchCriteria);
+
                         if (!await NotificationExists(notification, dontSendIfExists, searchCriteria))
                         {
                             switch (item.Protocol)
@@ -385,6 +387,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var notification = _messageRepo.GetById(Guid.Parse(notificationId));
                 notification.ReadDate = DateTime.Now;
+                notification.IsActive = false;
                 _messageRepo.Update(notification);
             }
             return true;
