@@ -19,6 +19,90 @@ class ChildService {
     this._accessToken = accessToken;
   }
 
+  async getChildrenForClassroomGroup(): Promise<ChildDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { GetAllChild: ChildDto[] };
+      errors?: {};
+    }>(``, {
+      query: `query($classroomGroupId: UUID!) {
+          childrenForClassroomGroup(classroomGroupId $classroomGroupId) {
+            id
+            workflowStatusId
+            insertedDate
+            languageId
+            allergies
+            disabilities
+            otherHealthConditions
+            isActive
+            insertedBy
+            userId
+            user {
+              id
+              firstName
+              surname
+              fullName
+              email
+              genderId
+              dateOfBirth
+              profileImageUrl
+              isActive
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+            }
+            caregiverId 
+            caregiver {
+              id
+              phoneNumber
+              idNumber
+              firstName
+              surname
+              fullName  
+              siteAddressId          
+              siteAddress {
+                id
+                provinceId
+                province {
+                  id
+                  description
+                }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+                isActive
+              }
+              relationId
+              educationId
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
+              additionalFirstName
+              additionalSurname
+              additionalPhoneNumber
+              joinReferencePanel
+              contribution
+              grants {
+                id
+                description
+              }
+              isActive
+              isAllowedCustody
+            }
+          }
+        }
+      `,
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get Children Failed - Server connection error');
+    }
+
+    return response.data.data.GetAllChild;
+  }
+
   async getChildren(): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{

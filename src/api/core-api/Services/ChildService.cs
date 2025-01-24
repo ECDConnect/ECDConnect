@@ -44,6 +44,21 @@ namespace EcdLink.Api.CoreApi.Services
             _dbContext = dbContext;
         }
 
+        public List<Child> GetChildrenForClassroomGroup(Guid classroomGroupId)
+        {
+            var learnerUserIds = _learnerRepo.GetAll()
+                .Where(x => x.IsActive && x.ClassroomGroupId == classroomGroupId)
+                .Select(x => x.UserId)
+                .ToList();
+
+            var children = _childRepo.GetAll()
+                .Where(x => learnerUserIds.Contains(x.UserId) && x.IsActive)
+                .Distinct()
+                .ToList();
+
+            return children;
+        }
+
         public List<Child> GetChildrenForClassroom(Guid classroomId)
         {
             var learnerUserIds = _classroomGroupRepo.GetAll()
@@ -157,7 +172,7 @@ namespace EcdLink.Api.CoreApi.Services
                             learner.IsActive = false;
                             learner.StoppedAttendance = DateTime.Now;
                             _learnerRepo.Update(learner);
-                            
+
                         }
                     }
                     _pointsService.CalculateChildRemovedFromPreschool((Guid)_applicationUserId);
