@@ -90,6 +90,7 @@ class NotificationAsyncService {
             cTA
             cTAText
             ordering
+            readDate
             messageTemplate
               {
                 id
