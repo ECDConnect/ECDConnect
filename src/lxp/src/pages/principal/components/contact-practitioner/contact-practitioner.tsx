@@ -25,7 +25,6 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import TransparentLayer from '@/assets/TransparentLayer.png';
-import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const ContactPractitioner: React.FC = () => {
   const history = useHistory();
@@ -107,14 +106,6 @@ export const ContactPractitioner: React.FC = () => {
       )}`
     );
   };
-
-  if (!practitioner) {
-    return (
-      <div className={'h-full flex-1 bg-white px-4 pt-4'}>
-        <IconInformationIndicator title="Practitioner not found" subTitle="" />
-      </div>
-    );
-  }
 
   return (
     <div className={styles.contentWrapper}>
