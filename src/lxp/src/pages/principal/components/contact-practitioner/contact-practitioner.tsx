@@ -1,13 +1,14 @@
 import { useHistory, useLocation } from 'react-router';
 import {
-  renderIcon,
   BannerWrapper,
   Button,
   Typography,
   Alert,
   DialogPosition,
+  ProfileAvatar,
+  StatusChip,
 } from '@ecdlink/ui';
-import { PractitionerDto } from '@ecdlink/core';
+import { ClassroomGroupDto, PractitionerDto } from '@ecdlink/core';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { PractitionerProfileRouteState } from './contact-practitioner.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -17,12 +18,14 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useDialog } from '@ecdlink/core';
-import { IconInformationIndicator } from '../../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
+import { ClassroomGroupService } from '@/services/ClassroomGroupService';
+import TransparentLayer from '@/assets/TransparentLayer.png';
+import { IconInformationIndicator } from '@/pages/classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const ContactPractitioner: React.FC = () => {
   const history = useHistory();
@@ -52,6 +55,26 @@ export const ContactPractitioner: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
+    useState<ClassroomGroupDto[]>();
+
+  const classroomsDetailsForPractitioner = useCallback(
+    async (practitionerUserId: string) => {
+      const classroomDetails = (await new ClassroomGroupService(
+        userAuth?.auth_token!
+      ).getClassroomGroupsForUser(practitionerUserId)) as unknown;
+      setPractitionerClassroomDetails(classroomDetails as ClassroomGroupDto[]);
+      return classroomDetails;
+    },
+    [userAuth?.auth_token]
+  );
+
+  useMemo(() => {
+    if (practitioner !== undefined) {
+      classroomsDetailsForPractitioner(practitioner?.userId!);
+    }
+  }, [classroomsDetailsForPractitioner, practitioner]);
 
   const showOnlineOnly = useCallback(() => {
     dialog({
@@ -88,10 +111,7 @@ export const ContactPractitioner: React.FC = () => {
   if (!practitioner) {
     return (
       <div className={'h-full flex-1 bg-white px-4 pt-4'}>
-        <IconInformationIndicator
-          title="Practitioner not found"
-          subTitle="Please contact the SmartStart call centre to find out more: 0800 014 817."
-        />
+        <IconInformationIndicator title="Practitioner not found" subTitle="" />
       </div>
     );
   }
@@ -99,110 +119,112 @@ export const ContactPractitioner: React.FC = () => {
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
-        title={`Contact Practitioner`}
+        title={
+          practitioner
+            ? practitioner.user?.firstName || practitioner.user?.userName
+            : ''
+        }
         color={'primary'}
         size="small"
         renderOverflow={false}
         onBack={() => history.push(ROUTES.DASHBOARD)}
         displayOffline={!isOnline}
-      ></BannerWrapper>
-      <div>
-        <div>
-          <div>
-            <Typography
-              text={`Contact ${practitioner?.user?.firstName}`}
-              type="h3"
-              color="textDark"
-              className={'m-4'}
-            />
-          </div>
-          <div>
-            <Typography
-              text={`${practitioner?.user?.phoneNumber || ''}`}
-              type="h2"
-              weight="skinny"
-              color="primary"
-              className={'ml-4 mt-2'}
-            />
-          </div>
+        backgroundImageColour={'primary'}
+        showBackground={true}
+        backgroundUrl={TransparentLayer}
+        className="px-4"
+      >
+        <div className={'inline-flex w-full justify-center pt-8'}>
+          <ProfileAvatar
+            canChangeImage={false}
+            dataUrl={practitioner?.user?.profileImageUrl!}
+            size={'header'}
+            onPressed={() => {}}
+            hasConsent={true}
+          />
         </div>
-        <div>
-          <div className={styles.contactButtons}>
-            <div className="ml-4 grid grid-cols-2 justify-items-center">
-              <Button
-                color={'primary'}
-                type={'outlined'}
-                className={'mr-4 rounded-xl'}
-                size={'normal'}
-                onClick={whatsapp}
-              >
-                <div className="flex items-center justify-center">
-                  <img
-                    src={getLogo(LogoSvgs.whatsapp)}
-                    alt="whatsapp"
-                    className={styles.buttonIconStyle}
-                  />
-                  <Typography
-                    text={`Whatsapp ${practitioner?.user?.firstName}`}
-                    type="button"
-                    weight="skinny"
-                    color="primary"
-                  />
-                </div>
-              </Button>
-              <Button
-                color={'primary'}
-                type={'outlined'}
-                className={'mr-4 rounded-xl'}
-                size={'small'}
-                onClick={call}
-              >
-                <div className="flex items-center justify-center">
-                  <PhoneIcon
-                    className="text-primary mr-2 h-6 w-5"
-                    aria-hidden="true"
-                  />
-                  <Typography
-                    text={`Call ${practitioner?.user?.firstName}`}
-                    type="button"
-                    weight="skinny"
-                    color="primary"
-                  />
-                </div>
-              </Button>
-            </div>
-          </div>
-          <div className="flex justify-center">
-            <div className="w-11/12 rounded-2xl">
-              <Alert
-                type="info"
-                className="mt-4"
-                message="WhatsApps and phone calls will be charged at your standard carrier rates."
+        <div className={styles.chipsWrapper}>
+          <StatusChip
+            backgroundColour="successMain"
+            borderColour="successMain"
+            text={practitioner?.isPrincipal ? 'Principal' : 'Practitioner'}
+            textColour={'white'}
+            className={'mr-2'}
+          />
+          {practitionerClassroomDetails &&
+            practitionerClassroomDetails?.map((item: any) => (
+              <StatusChip
+                key={item.id}
+                backgroundColour="tertiary"
+                borderColour="tertiary"
+                text={`${item.name}`}
+                textColour={'white'}
+                className={'mr-2'}
               />
-            </div>
-          </div>
+            ))}
         </div>
-        <div className="absolute bottom-4 w-full">
-          <div className="flex w-full justify-center">
-            <div className="w-11/12">
-              <Button
-                className={styles.button.replace('mt-4', 'mt-3')}
-                color={'primary'}
-                type="filled"
-                onClick={() => history.goBack()}
-              >
-                {renderIcon('XIcon', styles.buttonIcon)}
-                <Typography
-                  type="button"
-                  text="Close"
-                  color="white"
-                  className="w/11-12 ml-2"
+        <div>
+          <Typography
+            text={`Contact ${practitioner?.user?.firstName}`}
+            type="h3"
+            color="textDark"
+            className={'mt-6 mb-1'}
+          />
+          <Typography
+            text={`${practitioner?.user?.phoneNumber}`}
+            type="body"
+            weight="skinny"
+            color="quatenary"
+          />
+          <div className="mt-4 flex flex-wrap gap-4">
+            <Button
+              color={'secondary'}
+              type={'outlined'}
+              onClick={whatsapp}
+              size="small"
+            >
+              <div className="flex items-center justify-center">
+                <img
+                  src={getLogo(LogoSvgs.whatsapp)}
+                  alt="whatsapp"
+                  className={styles.buttonIconStyle}
                 />
-              </Button>
-            </div>
+                <Typography
+                  text={`WhatsApp ${practitioner?.user?.firstName}`}
+                  type="button"
+                  weight="skinny"
+                  color="secondary"
+                />
+              </div>
+            </Button>
+            <Button
+              color={'secondary'}
+              type={'outlined'}
+              onClick={call}
+              size="small"
+            >
+              <div className="flex items-center justify-center">
+                <PhoneIcon
+                  className="text-secondary mr-2 h-5 w-4"
+                  aria-hidden="true"
+                />
+                <Typography
+                  text={`Call ${practitioner?.user?.firstName}`}
+                  type="button"
+                  weight="skinny"
+                  color="secondary"
+                />
+              </div>
+            </Button>
           </div>
+
+          <Alert
+            type="info"
+            className="mt-4"
+            message="WhatsApps and phone calls will be charged at your standard carrier rates."
+          />
         </div>
-      </div>
+      </BannerWrapper>
     </div>
   );
 };
