@@ -127,7 +127,6 @@ export class PractitionerNotificationValidator
       });
     }
 
-    console.log('notifications', notifications);
     return notifications;
   };
 }
