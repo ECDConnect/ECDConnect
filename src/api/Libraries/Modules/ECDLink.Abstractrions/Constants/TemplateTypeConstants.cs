@@ -50,7 +50,7 @@ namespace ECDLink.Abstractrions.Constants
         // row 16
         public const string PrincipalMarkedOnLeave = "marked-onleave"; // push
         // row 17
-        public const string PractitionerMarkedOnLeave = "practitioner-marked-onleave"; // push
+        public const string PractitionerMarkedOnLeave = "practitioner-marked-onleave"; // push, hub
         // row 19
         public const string ChildNotAssignedToClass = "child-unassigned-to-class"; // hub, push
         // row 20

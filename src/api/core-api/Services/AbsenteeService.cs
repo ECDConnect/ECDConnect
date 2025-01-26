@@ -181,6 +181,9 @@ namespace ECDLink.Api.CoreApi.Services
                     if (deleteAbsentee)
                     {
                         absentee.IsActive = false;
+                        // remove notifications for leave
+                        _notificationService.ExpireNotificationsTypesForUser(absentee.UserId.ToString(), TemplateTypeConstants.PrincipalMarkedOnLeave);
+                        _notificationService.ExpireNotificationsTypesForUser(absentee.UserId.ToString(), TemplateTypeConstants.PractitionerMarkedOnLeave);
                     }
                     else
                     {
