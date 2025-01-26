@@ -43,8 +43,8 @@ export class PractitionerNotificationValidator
     const year = new Date().getFullYear();
     const checkLocationDate = new Date(year, 2, 1);
     const today = new Date();
-    const checkLocationDateLessThan15Days =
-      differenceInDays(new Date(), checkLocationDate) < 15;
+    // const checkLocationDateLessThan15Days =
+    //   differenceInDays(new Date(), checkLocationDate) < 15;
 
     const isMoreThan30Days =
       differenceInDays(
@@ -57,31 +57,29 @@ export class PractitionerNotificationValidator
         new Date(practitionerState?.practitioner?.startDate!)
       ) < 45;
 
-    if (
-      (isMoreThan30Days &&
-        isLessThan45Days &&
-        !classroomState?.classroom?.siteAddress) ||
-      (today === checkLocationDate &&
-        !classroomState?.classroom?.siteAddress &&
-        checkLocationDateLessThan15Days)
-    ) {
-      notifications.push({
-        reference: `practitioner-profile-no-preschool-location`,
-        title: `Add your preschool location!`,
-        message: `You can add your preschool location to ${tenantState?.tenant?.applicationName}.`,
-        dateCreated: new Date().toISOString(),
-        expiryDate: addDays(new Date(), 14).toISOString(),
-        priority: 30,
-        viewOnDashboard: true,
-        area: 'practitioner',
-        icon: 'InformationCircleIcon',
-        color: 'infoMain',
-        actionText: 'Add location',
-        viewType: 'Both',
-        routeConfig: {
-          route: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
-        },
-      });
+    if (!classroomState?.classroom?.siteAddress) {
+      if (
+        (isMoreThan30Days && isLessThan45Days) ||
+        today === checkLocationDate
+      ) {
+        notifications.push({
+          reference: `practitioner-profile-no-preschool-location`,
+          title: `Add your preschool location!`,
+          message: `You can add your preschool location to ${tenantState?.tenant?.applicationName}.`,
+          dateCreated: new Date().toISOString(),
+          expiryDate: addDays(new Date(), 14).toISOString(),
+          priority: 30,
+          viewOnDashboard: true,
+          area: 'practitioner',
+          icon: 'InformationCircleIcon',
+          color: 'infoMain',
+          actionText: 'Add location',
+          viewType: 'Both',
+          routeConfig: {
+            route: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+          },
+        });
+      }
     }
 
     if (
