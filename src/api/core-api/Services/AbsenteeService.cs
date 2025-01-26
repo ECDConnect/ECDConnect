@@ -29,6 +29,7 @@ namespace ECDLink.Api.CoreApi.Services
         private readonly Guid _applicationUserId;
         private IGenericRepository<Absentees, Guid> _absenteeRepo;
         private readonly IHolidayService<Holiday> _holidayService;
+        private IGenericRepository<Practitioner, Guid> _practiGenericRepo;
 
         public AbsenteeService(
             IHttpContextAccessor contextAccessor,
@@ -46,6 +47,7 @@ namespace ECDLink.Api.CoreApi.Services
             _hierarchyEngine = hierarchyEngine;
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _absenteeRepo = repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
+            _practiGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _holidayService = holidayService;
         }
 
@@ -155,8 +157,12 @@ namespace ECDLink.Api.CoreApi.Services
                         FindValue = "PractitionerUserId",
                         ReplacementValue = parentUser.Id.ToString()
                     });
-                    _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PrincipalMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
-                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
+
+                    var practitioner = _practiGenericRepo.GetByUserId(userToSend.Id);
+                    if (!practitioner.IsPrincipalOrAdmin()) {
+                        _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PrincipalMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
+                    }
                 }
             }
 
