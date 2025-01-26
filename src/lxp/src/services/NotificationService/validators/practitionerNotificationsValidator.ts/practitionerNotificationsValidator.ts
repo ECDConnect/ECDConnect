@@ -57,7 +57,10 @@ export class PractitionerNotificationValidator
         new Date(practitionerState?.practitioner?.startDate!)
       ) < 45;
 
-    if (!classroomState?.classroom?.siteAddress) {
+    if (
+      practitionerState.practitioner?.isPrincipal &&
+      !classroomState?.classroom?.siteAddress
+    ) {
       if (
         (isMoreThan30Days && isLessThan45Days) ||
         today === checkLocationDate
