@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
 import { StoryBookTypes } from '../../pages/content-management/sub-pages/content-list/components/create-story/create-story';
+import ContentLoader from '../content-loader/content-loader';
 
 export interface StoryContentFormProps {
   contentValue?: ContentValueDto;
@@ -133,7 +134,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
       );
       setHasLoadedQuestionData(false);
     }
-  }, [initialStoryBookPartsQuestionsFormatted, loading]);
+  }, [hasLoadedQuestionData, initialStoryBookPartsQuestionsFormatted, loading]);
 
   const currentStoryBooksPartQuestions = useMemo(
     () =>
@@ -348,6 +349,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
 
   if (
     tempData &&
+    tempData.length > 0 &&
     displayFields &&
     storyBookPartsQuestions &&
     storyBookPartsValuesFormatted
@@ -552,7 +554,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
       </div>
     );
   } else {
-    return <div>...loading</div>;
+    return <ContentLoader />;
   }
 };
 
