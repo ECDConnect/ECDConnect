@@ -82,9 +82,9 @@ export class IncompleteChildRegistrationNotificationValidator
           viewType: 'Both',
           actionText: 'Finish registration',
           routeConfig: {
-            route: '/child-registration',
+            route: '/child-profile',
             params: {
-              step: 6,
+              // step: 2,
               childId: child.id,
               notificationReference: `${child.id || child.user?.firstName}-reg`,
             },
