@@ -47,6 +47,7 @@ import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { Colours } from '@ecdlink/ui';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
@@ -243,151 +244,290 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
   }, [otherColleagues, user?.firstName, user?.userName]);
 
-  const getStackedListItems = () => {
-    const stackedActionList: ActionListDataItem[] = [
-      {
-        title: 'Preschool name',
-        subTitle:
-          (classroomForPractitionerAnyType?.id &&
-            practitioner?.isPrincipal !== true &&
-            !missingProgramme &&
-            practitioner?.isRegistered) ||
-          isTrialPeriod
-            ? classroomForPractitionerAnyType?.name
-            : practitioner?.isRegistered && !missingProgramme
-            ? classroom?.name || 'None'
-            : classroom?.name || 'None',
-        switchTextStyles: true,
-        actionName:
-          practitioner?.isRegistered &&
-          practitioner?.isPrincipal !== true &&
-          !isTrialPeriod
-            ? ''
-            : isTrialPeriod || !practitioner?.shareInfo
-            ? 'Add'
-            : 'Edit',
-        actionIcon: isTrialPeriod ? 'PlusIcon' : 'PencilIcon',
-        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
-        textColor: isTrialPeriod ? 'white' : undefined,
-        onActionClick:
-          (practitioner?.isRegistered !== null ||
-            practitioner?.isLeaving !== null) &&
-          !isTrialPeriod
-            ? classroomForPractitionerAnyType?.id &&
-              practitioner?.isPrincipal !== true
-              ? () => {}
-              : () => setEditFieldVisible(true)
-            : practitioner?.isPrincipal !== true
-            ? isTrialPeriod
-              ? () => showTrialPeriodCompleteProfileBlockingDialog()
-              : () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
-            : isTrialPeriod
-            ? () => showTrialPeriodCompleteProfileBlockingDialog()
-            : () => {
-                history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
-                return;
-              },
-      },
-    ];
+  // const getStackedListItems = () => {
+  //   const stackedActionList: ActionListDataItem[] = [
+  //     {
+  //       title: 'Preschool name',
+  //       subTitle:
+  //         (classroomForPractitionerAnyType?.id &&
+  //           !practitioner?.shareInfo &&
+  //           practitioner?.isPrincipal !== true &&
+  //           !missingProgramme &&
+  //           practitioner?.isRegistered) ||
+  //         !practitioner?.shareInfo
+  //           ? classroomForPractitionerAnyType?.name
+  //           : practitioner?.isRegistered && !missingProgramme
+  //           ? classroom?.name || 'None'
+  //           : classroom?.name || 'None',
+  //       switchTextStyles: true,
+  //       actionName:
+  //         practitioner?.isRegistered &&
+  //         practitioner?.isPrincipal !== true &&
+  //         !isTrialPeriod
+  //           ? ''
+  //           : isTrialPeriod || !practitioner?.shareInfo
+  //           ? 'Add'
+  //           : 'Edit',
+  //       actionIcon: isTrialPeriod ? 'PlusIcon' : 'PencilIcon',
+  //       buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+  //       textColor: isTrialPeriod ? 'white' : undefined,
+  //       onActionClick:
+  //         (practitioner?.isRegistered !== null ||
+  //           practitioner?.isLeaving !== null) &&
+  //         !isTrialPeriod
+  //           ? classroomForPractitionerAnyType?.id &&
+  //             practitioner?.isPrincipal !== true
+  //             ? () => {}
+  //             : () => setEditFieldVisible(true)
+  //           : practitioner?.isPrincipal !== true
+  //           ? isTrialPeriod
+  //             ? () => showTrialPeriodCompleteProfileBlockingDialog()
+  //             : () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+  //           : isTrialPeriod
+  //           ? () => showTrialPeriodCompleteProfileBlockingDialog()
+  //           : () => {
+  //               history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
+  //               return;
+  //             },
+  //     },
+  //   ];
 
+  //   if (!missingProgramme || isTrialPeriod) {
+  //     stackedActionList.push({
+  //       title: 'Classes',
+  //       subTitle: practitioner?.shareInfo
+  //         ? classroomGroups
+  //             ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+  //             .map((x) => x.name)
+  //             .join(', ')
+  //         : 'None',
+  //       switchTextStyles: true,
+  //       actionName: isPrincipal
+  //         ? 'Edit'
+  //         : !practitioner?.shareInfo
+  //         ? 'Add'
+  //         : 'View',
+  //       actionIcon: isPrincipal
+  //         ? 'PencilIcon'
+  //         : !practitioner?.shareInfo
+  //         ? 'PlusIcon'
+  //         : 'EyeIcon',
+  //       buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+  //       textColor: isTrialPeriod ? 'white' : undefined,
+  //       onActionClick: () => {
+  //         history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+  //       },
+  //     });
+  //   }
+
+  //   if (
+  //     ((practitioner?.isRegistered !== null ||
+  //       isPrincipal !== false ||
+  //       practitioner?.isLeaving !== null) &&
+  //       !missingProgramme) ||
+  //     isTrialPeriod
+  //   ) {
+  //     if (isPrincipal) {
+  //       practitionersList?.push(practitioner);
+  //     }
+  //     stackedActionList.push({
+  //       title: 'Other practitioners on site',
+  //       subTitle: isPrincipal
+  //         ? practitionersList
+  //             ?.map((x) => x?.user?.firstName || x?.user?.userName)
+  //             .join(', ')
+  //         : practitioner?.shareInfo
+  //         ? otherColleaguesFiltered
+  //             ?.map((x: any) => x?.name || x?.nickName)
+  //             .join(', ')
+  //         : 'None',
+  //       switchTextStyles: true,
+  //       actionName: practitioner?.shareInfo
+  //         ? isPrincipal
+  //           ? 'Edit'
+  //           : 'View'
+  //         : 'Add',
+  //       actionIcon: isPrincipal
+  //         ? 'PencilIcon'
+  //         : isTrialPeriod
+  //         ? 'PlusIcon'
+  //         : 'EyeIcon',
+  //       buttonColor: isTrialPeriod ? 'quatenary' : undefined,
+  //       textColor: isTrialPeriod ? 'white' : undefined,
+  //       onActionClick: isTrialPeriod
+  //         ? () => showTrialPeriodCompleteProfileBlockingDialog()
+  //         : () => {
+  //             history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+  //               returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+  //             });
+  //           },
+  //     });
+  //   }
+
+  //   if (
+  //     // ((practitioner?.isRegistered !== null ||
+  //     //   practitioner?.isLeaving !== null) &&)
+  //     // missingProgramme ||
+  //     practitioner?.shareInfo
+  //   ) {
+  //     stackedActionList.push({
+  //       title: 'Location',
+  //       subTitle: !!classroom?.siteAddress
+  //         ? formatAddress(classroom.siteAddress as any)
+  //         : '',
+  //       switchTextStyles: true,
+  //       actionName: isPrincipal
+  //         ? classroom?.siteAddress
+  //           ? 'Edit'
+  //           : 'Add'
+  //         : '',
+  //       actionIcon: classroom?.siteAddress ? 'PencilIcon' : 'PlusIcon',
+  //       buttonColor:
+  //         isTrialPeriod || !classroom?.siteAddress?.addressLine1
+  //           ? 'quatenary'
+  //           : undefined,
+  //       textColor:
+  //         isTrialPeriod || !classroom?.siteAddress?.addressLine1
+  //           ? 'white'
+  //           : undefined,
+  //       onActionClick: () => setShowEditAddress(true),
+  //     });
+  //   }
+
+  //   setListItems(stackedActionList);
+  // };
+
+  const getStackedListItems = () => {
+    const stackedActionList: ActionListDataItem[] = [];
+
+    // Helper function to get styles based on trial period or missing data
+    const getButtonStyles = (isTrial: boolean): Partial<ActionListDataItem> => {
+      return isTrial
+        ? { buttonColor: 'quatenary' as Colours, textColor: 'white' }
+        : {};
+    };
+
+    // Preschool item
+    const preschoolHasInfo =
+      !!classroomForPractitionerAnyType?.id && practitioner?.shareInfo;
+    const preschoolActionName =
+      isTrialPeriod || !practitioner?.shareInfo
+        ? 'Add'
+        : practitioner?.isPrincipal !== true && practitioner?.isRegistered
+        ? ''
+        : 'Edit';
+    const preschoolActionIcon = isTrialPeriod ? 'PlusIcon' : 'PencilIcon';
+
+    stackedActionList.push({
+      title: 'Preschool name',
+      subTitle:
+        preschoolHasInfo && practitioner?.isRegistered && !missingProgramme
+          ? classroomForPractitionerAnyType?.name || 'None'
+          : classroom?.name || 'None',
+      switchTextStyles: true,
+      actionName: preschoolActionName,
+      actionIcon: preschoolActionIcon,
+      ...getButtonStyles(!!isTrialPeriod),
+      onActionClick: () => {
+        if (isTrialPeriod) {
+          showTrialPeriodCompleteProfileBlockingDialog();
+        } else if (preschoolHasInfo && practitioner?.isPrincipal !== true) {
+          setEditFieldVisible(true);
+        } else {
+          history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT);
+        }
+      },
+    });
+
+    // Classes item
     if (!missingProgramme || isTrialPeriod) {
+      const classesSubTitle = practitioner?.shareInfo
+        ? classroomGroups
+            ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+            .map((x) => x.name)
+            .join(', ')
+        : 'None';
+      const classesActionName = isPrincipal
+        ? 'Edit'
+        : !practitioner?.shareInfo
+        ? 'Add'
+        : 'View';
+      const classesActionIcon = isPrincipal
+        ? 'PencilIcon'
+        : !practitioner?.shareInfo
+        ? 'PlusIcon'
+        : 'EyeIcon';
+
       stackedActionList.push({
         title: 'Classes',
-        subTitle: practitioner?.shareInfo
-          ? classroomGroups
-              ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
-              .map((x) => x.name)
-              .join(', ')
-          : 'None',
+        subTitle: classesSubTitle,
         switchTextStyles: true,
-        actionName: isPrincipal
+        actionName: classesActionName,
+        actionIcon: classesActionIcon,
+        ...getButtonStyles(!!isTrialPeriod),
+        onActionClick: () =>
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS),
+      });
+    }
+
+    // Other Practitioners item
+    if (practitioner?.shareInfo || isTrialPeriod) {
+      const practitionersSubTitle = isPrincipal
+        ? practitionersList
+            ?.map((x) => x?.user?.firstName || x?.user?.userName)
+            .join(', ')
+        : otherColleaguesFiltered
+            ?.map((x: any) => x?.name || x?.nickName)
+            .join(', ') || 'None';
+      const practitionersActionName = practitioner?.shareInfo
+        ? isPrincipal
           ? 'Edit'
-          : !practitioner?.shareInfo
-          ? 'Add'
-          : 'View',
-        actionIcon: isPrincipal
-          ? 'PencilIcon'
-          : !practitioner?.shareInfo
-          ? 'PlusIcon'
-          : 'EyeIcon',
-        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
-        textColor: isTrialPeriod ? 'white' : undefined,
+          : 'View'
+        : 'Add';
+      const practitionersActionIcon = isPrincipal
+        ? 'PencilIcon'
+        : isTrialPeriod
+        ? 'PlusIcon'
+        : 'EyeIcon';
+
+      stackedActionList.push({
+        title: 'Other practitioners on site',
+        subTitle: practitionersSubTitle,
+        switchTextStyles: true,
+        actionName: practitionersActionName,
+        actionIcon: practitionersActionIcon,
+        ...getButtonStyles(!!isTrialPeriod),
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+          if (isTrialPeriod) {
+            showTrialPeriodCompleteProfileBlockingDialog();
+          } else {
+            history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+              returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+            });
+          }
         },
       });
     }
 
-    if (
-      ((practitioner?.isRegistered !== null ||
-        isPrincipal !== false ||
-        practitioner?.isLeaving !== null) &&
-        !missingProgramme) ||
-      isTrialPeriod
-    ) {
-      if (isPrincipal) {
-        practitionersList?.push(practitioner);
-      }
-      stackedActionList.push({
-        title: 'Other practitioners on site',
-        subTitle: isPrincipal
-          ? practitionersList
-              ?.map((x) => x?.user?.firstName || x?.user?.userName)
-              .join(', ')
-          : practitioner?.shareInfo
-          ? otherColleaguesFiltered
-              ?.map((x: any) => x?.name || x?.nickName)
-              .join(', ')
-          : 'None',
-        switchTextStyles: true,
-        actionName: practitioner?.shareInfo
-          ? isPrincipal
-            ? 'Edit'
-            : 'View'
-          : 'Add',
-        actionIcon: isPrincipal
-          ? 'PencilIcon'
-          : isTrialPeriod
-          ? 'PlusIcon'
-          : 'EyeIcon',
-        buttonColor: isTrialPeriod ? 'quatenary' : undefined,
-        textColor: isTrialPeriod ? 'white' : undefined,
-        onActionClick: isTrialPeriod
-          ? () => showTrialPeriodCompleteProfileBlockingDialog()
-          : () => {
-              history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
-                returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
-              });
-            },
-      });
-    }
+    // Location item
+    if (practitioner?.shareInfo) {
+      const locationHasInfo = !!classroom?.siteAddress;
+      const locationActionName = isPrincipal
+        ? locationHasInfo
+          ? 'Edit'
+          : 'Add'
+        : '';
+      const locationActionIcon = locationHasInfo ? 'PencilIcon' : 'PlusIcon';
 
-    if (
-      // ((practitioner?.isRegistered !== null ||
-      //   practitioner?.isLeaving !== null) &&)
-      // missingProgramme ||
-      practitioner?.shareInfo
-    ) {
       stackedActionList.push({
         title: 'Location',
-        subTitle: !!classroom?.siteAddress
+        subTitle: locationHasInfo
           ? formatAddress(classroom.siteAddress as any)
           : '',
         switchTextStyles: true,
-        actionName: isPrincipal
-          ? classroom?.siteAddress
-            ? 'Edit'
-            : 'Add'
-          : '',
-        actionIcon: classroom?.siteAddress ? 'PencilIcon' : 'PlusIcon',
-        buttonColor:
-          isTrialPeriod || !classroom?.siteAddress?.addressLine1
-            ? 'quatenary'
-            : undefined,
-        textColor:
-          isTrialPeriod || !classroom?.siteAddress?.addressLine1
-            ? 'white'
-            : undefined,
+        actionName: locationActionName,
+        actionIcon: locationActionIcon,
+        ...getButtonStyles(isTrialPeriod || !locationHasInfo),
         onActionClick: () => setShowEditAddress(true),
       });
     }
