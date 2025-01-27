@@ -188,8 +188,8 @@ namespace ECDLink.Api.CoreApi.Services
                     {
                         absentee.IsActive = false;
                         // remove notifications for leave
-                        _notificationService.ExpireNotificationsTypesForUser(absentee.UserId.ToString(), TemplateTypeConstants.PrincipalMarkedOnLeave);
-                        _notificationService.ExpireNotificationsTypesForUser(absentee.UserId.ToString(), TemplateTypeConstants.PractitionerMarkedOnLeave);
+                        _notificationService.DeleteAllNotificationsForTypeAndDate(absentee.UserId.ToString(), TemplateTypeConstants.PrincipalMarkedOnLeave, absentee.AbsentDate, absentee.AbsentDateEnd);
+                        _notificationService.DeleteAllNotificationsForTypeAndDate(absentee.UserId.ToString(), TemplateTypeConstants.PractitionerMarkedOnLeave, absentee.AbsentDate, absentee.AbsentDateEnd);
                     }
                     else
                     {
