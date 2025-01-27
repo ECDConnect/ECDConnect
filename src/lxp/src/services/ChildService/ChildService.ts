@@ -23,108 +23,89 @@ class ChildService {
     classroomGroupId: string
   ): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-
-    // Define the GraphQL query
-    const query = `
-    query($classroomGroupId: UUID!) {
-      childrenForClassroomGroup(classroomGroupId: $classroomGroupId) {
-        id
-        workflowStatusId
-        insertedDate
-        languageId
-        allergies
-        disabilities
-        otherHealthConditions
-        isActive
-        insertedBy
-        userId
-        user {
-          id
-          firstName
-          surname
-          fullName
-          email
-          genderId
-          dateOfBirth
-          profileImageUrl
-          isActive
-          isSouthAfricanCitizen
-          verifiedByHomeAffairs
-        }
-        caregiverId 
-        caregiver {
-          id
-          phoneNumber
-          idNumber
-          firstName
-          surname
-          fullName  
-          siteAddressId          
-          siteAddress {
+    const response = await apiInstance.post<{
+      data: { childrenForClassroomGroup: ChildDto[] };
+      errors?: {};
+    }>(``, {
+      query: `query($classRoomGroupId: UUID!) {
+           childrenForClassroomGroup(classRoomGroupId: $classRoomGroupId) {
             id
-            provinceId
-            province {
-              id
-              description
-            }
-            name
-            addressLine1
-            addressLine2
-            addressLine3
-            postalCode
-            ward
+            workflowStatusId
+            insertedDate
+            languageId
+            allergies
+            disabilities
+            otherHealthConditions
             isActive
+            insertedBy
+            userId
+            user {
+              id
+              firstName
+              surname
+              fullName
+              email
+              genderId
+              dateOfBirth
+              profileImageUrl
+              isActive
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+            }
+            caregiverId 
+            caregiver {
+              id
+              phoneNumber
+              idNumber
+              firstName
+              surname
+              fullName  
+              siteAddressId          
+              siteAddress {
+                id
+                provinceId
+                province {
+                  id
+                  description
+                }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+                isActive
+              }
+              relationId
+              educationId
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
+              additionalFirstName
+              additionalSurname
+              additionalPhoneNumber
+              joinReferencePanel
+              contribution
+              grants {
+                id
+                description
+              }
+              isActive
+              isAllowedCustody
+            }
           }
-          relationId
-          educationId
-          emergencyContactFirstName
-          emergencyContactSurname
-          emergencyContactPhoneNumber
-          additionalFirstName
-          additionalSurname
-          additionalPhoneNumber
-          joinReferencePanel
-          contribution
-          grants {
-            id
-            description
-          }
-          isActive
-          isAllowedCustody
         }
-      }
+      `,
+      variables: {
+        classRoomGroupId: classroomGroupId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get Children Failed - Server connection error');
     }
-  `;
 
-    try {
-      // Perform the API request
-      const response = await apiInstance.post<{
-        data: { childrenForClassroomGroup: ChildDto[] };
-        errors?: Record<string, unknown>;
-      }>('', {
-        query,
-        variables: { classroomGroupId },
-      });
-
-      // Handle non-200 HTTP responses
-      if (response.status !== 200) {
-        throw new Error(`API responded with status ${response.status}`);
-      }
-
-      // Handle GraphQL errors
-      if (response.data.errors) {
-        console.error('GraphQL Errors:', response.data.errors);
-        throw new Error(
-          'Failed to fetch children for classroom group due to GraphQL errors.'
-        );
-      }
-
-      // Return the fetched data
-      return response.data.data.childrenForClassroomGroup;
-    } catch (error) {
-      console.error('Error fetching children for classroom group:', error);
-      throw new Error('An unexpected error occurred while fetching children.');
-    }
+    return response.data.data.childrenForClassroomGroup;
   }
 
   async getChildren(): Promise<ChildDto[]> {
