@@ -321,8 +321,11 @@ export default function StoryBookList({
       }));
 
       const storyBookParts = item?.storyBookParts.split(',');
-      const itemStoryBookParts = storyBookParts.map((item: any) => ({
-        id: item,
+      const filteredBookParts = storyBookParts.filter(function (el) {
+        return el !== '';
+      });
+      const itemStoryBookParts = filteredBookParts.map((item: any) => ({
+        id: +item,
         __typename: 'StoryBookParts',
       }));
 
@@ -342,9 +345,9 @@ export default function StoryBookList({
         themes: item.themes,
         authorsAuthorization: item.authorsAuthorization,
       };
-
       model.content = copyItem;
     }
+
     viewContent(model);
   };
 

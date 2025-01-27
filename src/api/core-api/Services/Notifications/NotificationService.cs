@@ -158,6 +158,8 @@ namespace EcdLink.Api.CoreApi.Services
                             notification.MessageEndDate = messageEndDate.Value.AddDays(1).Date;
                         }
                         //skip if the enotification exists already for same date and person and template and protocol
+                        var isAvailable = await NotificationExists(notification, dontSendIfExists, searchCriteria);
+
                         if (!await NotificationExists(notification, dontSendIfExists, searchCriteria))
                         {
                             switch (item.Protocol)
@@ -319,6 +321,22 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        public async Task<bool> DeleteAllNotificationsForTypeAndDate(string userId, string templatetype, DateTime messageDate, DateTime? messageEndDate)
+        {
+            if (userId != null)
+            {
+                var notifications = _messageRepo.GetAll().Where(x => x.To.Equals(userId) && 
+                                                                x.MessageTemplateType == templatetype &&
+                                                                x.MessageDate.Value.Date == messageDate.Date &&
+                                                                x.MessageEndDate == messageEndDate.Value.Date).ToArray();
+                foreach (var notification in notifications)
+                {
+                    _messageRepo.Delete(notification.Id);
+                }
+            }
+            return true;
+        }
+
         public async Task<bool> DeleteAllNotificationsRelatedToEntity(Guid entityId)
         {
             var notifications = _messageRepo.GetAll().Where(x => x.MessageLogRelatedTos.Any(x => x.RelatedEntityId == entityId)).ToList();
@@ -387,6 +405,19 @@ namespace EcdLink.Api.CoreApi.Services
                 notification.ReadDate = DateTime.Now;
                 _messageRepo.Update(notification);
             }
+            return true;
+        }
+
+        public async Task<bool> DisableNotficationsWithEndDateAsToday()
+        {
+            var today = DateTime.Now.Date;
+            var notifications = _messageRepo.GetAll().Where(x => x.IsActive && x.MessageEndDate.Value.Date < today).ToArray();
+
+            foreach (var notification in notifications)
+            {
+                await DisableNotification(notification.Id.ToString());
+            }
+
             return true;
         }
 

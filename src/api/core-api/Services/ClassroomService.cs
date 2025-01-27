@@ -61,6 +61,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.OpenAccess
                 && !practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy != null) 
             {
+                var assignedClasses = _classroomGroupRepo.GetAll().Where(x => x.IsActive && x.UserId == practitioner.UserId).Count();
+                if (assignedClasses > 0 && practitioner.DateAccepted == null) {
+                    return _classroomRepo.GetAll()
+                        .Where(x =>
+                            x.IsActive
+                            && x.UserId.HasValue
+                            && x.UserId.Value == practitioner.UserId)
+                        .OrderByDescending(x => x.InsertedDate)
+                        .FirstOrDefault();
+                }
+
                 return _classroomRepo.GetAll()
                     .Where(x =>
                         x.IsActive

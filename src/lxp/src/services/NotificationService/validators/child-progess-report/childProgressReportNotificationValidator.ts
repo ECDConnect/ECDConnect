@@ -298,7 +298,6 @@ export class ChildProgressReportNotificationValidator
     reportingPeriod: ReportingPeriodType
   ): Message[] => {
     const {
-      user: userState,
       practitioner: practitionerState,
       classroomData: classroomState,
       children: childrenState,
@@ -306,7 +305,6 @@ export class ChildProgressReportNotificationValidator
 
     if (!practitionerState || !practitionerState.practitioner) return [];
 
-    const currentUser = userState.user;
     const children = childrenState?.childData?.children;
 
     const reference = referenceNames.allChildrenProgressReportsCreated;
@@ -333,7 +331,12 @@ export class ChildProgressReportNotificationValidator
 
     if (activeChildren?.length === 0) return [];
     if (!isBetweenReportProgressPeriodDate) return [];
-    if (reports?.length === 0 || reportsCompleted < 100) return [];
+    if (
+      reports?.length === 0 ||
+      reports?.length < activeChildren.length ||
+      reportsCompleted < 100
+    )
+      return [];
 
     const notification: Message = {
       reference,
@@ -359,88 +362,6 @@ export class ChildProgressReportNotificationValidator
 
     return [notification];
   };
-
-  // private getNotificationsCompletedReportsAllChildren = (
-  //   reportingPeriod: ReportingPeriodType
-  // ): Message[] => {
-  //   const {
-  //     user: userState,
-  //     practitioner: practitionerState,
-  //     classroomData: classroomState,
-  //     children: childrenState,
-  //   } = this.store.getState();
-
-  //   if (!practitionerState || !practitionerState.practitioner) return [];
-
-  //   if (!practitionerState || !practitionerState.practitioner) return [];
-  //   const createProgressReportsPermission =
-  //     practitionerState?.practitioner?.permissions?.find(
-  //       (item) =>
-  //         item?.permissionName === PermissionsNames.create_progress_reports
-  //     );
-
-  //   if (
-  //     !practitionerState?.practitioner?.isPrincipal &&
-  //     !createProgressReportsPermission
-  //   )
-  //     return [];
-
-  //   const currentUser = userState.user;
-  //   const children = childrenState?.childData?.children;
-
-  //   const reference = referenceNames.allChildrenProgressReportsCreated;
-
-  //   if (this.notificationAlreadyDone(reference)) return [];
-
-  //   if (!classroomState?.classroom?.childProgressReportPeriods) return [];
-
-  //   const reportingPeriods =
-  //     classroomState?.classroom?.childProgressReportPeriods;
-
-  //   const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
-
-  //   const reports = this.getCompletedChildrenProgressReports(
-  //     currentReportPeriod!
-  //   );
-
-  //   const today = new Date();
-  //   const isBetweenReportProgressPeriodDate =
-  //     today >= new Date(currentReportPeriod?.startDate!) &&
-  //     today <= new Date(currentReportPeriod?.endDate!);
-  //   const activeChildren = children?.filter((item) => item?.isActive === true);
-
-  //   if (activeChildren?.length === 0) return [];
-
-  //   const expectedReportCount = activeChildren?.length;
-
-  //   if (!isBetweenReportProgressPeriodDate) return [];
-
-  //   if (reports?.length < expectedReportCount) return [];
-
-  //   const notification: Message = {
-  //     reference,
-  //     title: `Well done, you've created progress reports for all children!`,
-  //     message: `Great job! You can get a summary of what you are working on with each child.`,
-  //     priority: 24,
-  //     actionText: 'Get summary',
-  //     area: 'progress-report',
-  //     color: 'successMain',
-  //     dateCreated: new Date().toISOString(),
-  //     expiryDate: addDays(new Date(), 7).toISOString(),
-  //     icon: 'CheckCircleIcon',
-  //     viewOnDashboard: true,
-  //     viewType: 'Both',
-  //     routeConfig: {
-  //       route:
-  //         ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
-  //       params: {
-  //         report: 'completed-all',
-  //       },
-  //     },
-  //   };
-
-  //   return [notification];
-  // };
 
   private getNotificationsPastDeadlineDate = (
     reportingPeriod: ReportingPeriodType

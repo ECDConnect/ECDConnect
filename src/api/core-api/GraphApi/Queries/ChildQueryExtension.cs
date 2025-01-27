@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -11,6 +12,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,8 +30,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public async Task<ChildCreatedByDetail> GetChildCreatedByDetailAsync([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService personnelManager,
-            string firstName, 
-            string surname, 
+            string firstName,
+            string surname,
             string practitionerId)
         {
             // Move logic to service
@@ -51,9 +53,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             {
                                 continue;
                             }
-                                
+
                             var pracChildren = childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
-                            
+
                             if (pracChildren.Where(x => x.Equals(child)).Any())
                             {
                                 var programmeName = personnelManager.GetSiteNameForPractitioner(practitioner.UserId.ToString());
@@ -78,6 +80,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 return null;
             }
             else return null;
+
+        }
+
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
+        public List<Child> GetChildrenForClassroomGroup(
+            [Service] IChildService childService,
+            Guid classRoomGroupId)
+        {
+            var children = childService.GetChildrenForClassroom(classRoomGroupId);
+
+            if (children == null)
+            {
+                return null;
+            }
+
+            return children.ToList();
 
         }
     }

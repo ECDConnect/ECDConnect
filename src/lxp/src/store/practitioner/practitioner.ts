@@ -167,7 +167,6 @@ const practitionerSlice = createSlice({
         const newPermissions = action.payload.map(
           (userPermission) => userPermission as UserPermissionDto
         );
-        console.log('newPermissions', newPermissions);
 
         if (!!practitioner) {
           state.practitioners = [

@@ -178,7 +178,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (userUnstableConnection && isOnline) {
+    if (userUnstableConnection) {
       dialog({
         position: DialogPosition.Middle,
         blocking: false,

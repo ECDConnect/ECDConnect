@@ -71,6 +71,7 @@ export const ClassMenu = ({
             history.push(ROUTES.CLASSROOM.CHILDREN, {
               classroomGroupId,
             } as ChildListRouteState);
+
             onClose();
           },
           textColour: 'white',

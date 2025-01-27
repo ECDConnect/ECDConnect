@@ -36,7 +36,9 @@ namespace ECDLink.Core.Services.Interfaces
         MessageLogModel RetrieveToGroupItems(string toGroups);
         Task<bool> NotificationExists(Notification notification, bool excludeDates = false, string searchCriteria = null);
         Task<bool> DeleteAllNotificationsForUser(string userId);
+        Task<bool> DeleteAllNotificationsForTypeAndDate(string userId, string templatetype, DateTime messageDate, DateTime? messageEndDate);
         Task<bool> DeleteAllNotificationsRelatedToEntity(Guid entityId);
+        Task<bool> DisableNotficationsWithEndDateAsToday();
         void DeleteGroupNotifications(string templateType, Guid relatedToEntityId);
         List<MessageLog> GetMessages(string templateType, Guid relatedEntityId);
         void DeleteGroupNotifications(Guid groupingId);

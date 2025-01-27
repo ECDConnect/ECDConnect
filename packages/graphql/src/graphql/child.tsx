@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GetAllChild = gql`
-  {
-    GetAllChild {
+  query GetAllChild($classroomGroupId: UUID) {
+    GetAllChild(classroomGroupId: UUID) {
       id
       caregiverId
       workflowStatusId

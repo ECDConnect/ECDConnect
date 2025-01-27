@@ -28,7 +28,7 @@ namespace ECDLink.Abstractrions.Constants
 
         // row 4
         public const string PrincipalInvitation = "principal-invitation"; // sms
-        // public const string ProgrammeInvitation = "ProgrammeInvitation"; // sms, hub, push -> ticket EC-3236 request removal from back-end
+        public const string ProgrammeInvitation = "ProgrammeInvitation"; // sms, hub, push 
 
         public const string MultipleProgrammeInvitation = "multiple-programme-invitation"; // sms, hub, push
         // row 5
@@ -50,7 +50,7 @@ namespace ECDLink.Abstractrions.Constants
         // row 16
         public const string PrincipalMarkedOnLeave = "marked-onleave"; // push
         // row 17
-        public const string PractitionerMarkedOnLeave = "practitioner-marked-onleave"; // push
+        public const string PractitionerMarkedOnLeave = "practitioner-marked-onleave"; // push, hub
         // row 19
         public const string ChildNotAssignedToClass = "child-unassigned-to-class"; // hub, push
         // row 20

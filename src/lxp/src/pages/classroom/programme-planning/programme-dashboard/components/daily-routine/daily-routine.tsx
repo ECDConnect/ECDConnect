@@ -55,6 +55,7 @@ import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
 import {
   addWeeks,
+  isSameDay,
   isSameWeek,
   isWeekend,
   nextMonday,
@@ -455,13 +456,19 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDailyProgramme, routineItemSet]);
 
-  const onStoryAndActivitySelected = async (
-    storyId?: number,
-    activityId?: number
-  ) => {
-    // create the programme day
-    if (!currentDailyProgramme) {
-      await createOrEditProgramme(
+  const currentProgramme = useSelector(
+    programmeSelectors.getProgrammeByDateAndClassroomGroupId({
+      date: selectedDate!,
+      classroomGroupId,
+    })
+  );
+
+  useEffect(() => {
+    if (
+      currentDailyProgramme === undefined &&
+      currentProgramme?.dailyProgrammes.length === 0
+    ) {
+      createOrEditProgramme(
         classroomGroupId,
         selectedDate!,
         'en-za',
@@ -469,10 +476,25 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         selectedDate!
       );
     }
+  }, [
+    classroomGroupId,
+    createOrEditProgramme,
+    currentDailyProgramme,
+    currentProgramme?.dailyProgrammes.length,
+    selectedDate,
+  ]);
 
-    if (currentDailyProgramme) {
-      const currentDayCopy = { ...currentDailyProgramme };
+  const unsavedDay = currentProgramme?.dailyProgrammes.find((dailyRoutine) =>
+    isSameDay(new Date(dailyRoutine?.dayDate), selectedDate!)
+  );
 
+  const onStoryAndActivitySelected = async (
+    storyId?: number,
+    activityId?: number,
+    day?: DailyProgrammeDto
+  ) => {
+    if (day) {
+      const currentDayCopy = { ...day };
       currentDayCopy.storyBookId = storyId;
       currentDayCopy.storyActivityId = activityId;
 
@@ -574,7 +596,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
               currentDailyProgramme?.dayDate || new Date()
             ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}
             onSave={(storyId?: number, activityId?: number) => {
-              onStoryAndActivitySelected(storyId, activityId);
+              onStoryAndActivitySelected(storyId, activityId, unsavedDay);
               onSubmit();
             }}
             onClose={onClose}

@@ -55,7 +55,7 @@ export const PractitionerSetup = ({
     resolver: yupResolver(setupPractitioner),
     defaultValues: {
       practitionerToProgramme: undefined,
-      allowPermissions: undefined || false,
+      allowPermissions: false,
     },
   });
 
@@ -232,42 +232,39 @@ export const PractitionerSetup = ({
               />
             )}
 
-            {(practitionerToProgramme && practitioner?.shareInfo !== true) ||
-              (practitionerToProgramme && isWhiteLabel && (
-                <>
-                  <Typography
-                    type="h4"
-                    text="Permission to share information with principal"
-                  />
-                  <div
-                    className={`${false && 'border-errorDark border'} ${
-                      false
-                        ? 'border-quatenary bg-quatenaryBg border'
-                        : 'bg-uiBg'
-                    } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
-                  >
-                    <div className="flex">
-                      <Checkbox
-                        register={register}
-                        checked={allowPermissions}
-                        nameProp="allowPermissions"
-                        className="mr-4 flex-1"
-                        description="I accept that my information will be shared with the programme principal"
-                      />
-                      &nbsp;
-                      <Button
-                        color={'secondaryAccent2'}
-                        type={'filled'}
-                        text="Read"
-                        textColor="secondary"
-                        className={'rounded-xl'}
-                        size={'small'}
-                        onClick={() => setViewPermissionToShare(true)}
-                      />
-                    </div>
+            {practitionerToProgramme && (
+              <>
+                <Typography
+                  type="h4"
+                  text="Permission to share information with principal"
+                />
+                <div
+                  className={`${false && 'border-errorDark border'} ${
+                    false ? 'border-quatenary bg-quatenaryBg border' : 'bg-uiBg'
+                  } bg-uiBg mt-2 flex w-full flex-row items-center justify-between gap-2 rounded-xl p-4`}
+                >
+                  <div className="flex">
+                    <Checkbox
+                      register={register}
+                      checked={allowPermissions}
+                      nameProp="allowPermissions"
+                      className="mr-4 flex-1"
+                      description="I accept that my information will be shared with the programme principal"
+                    />
+                    &nbsp;
+                    <Button
+                      color={'secondaryAccent2'}
+                      type={'filled'}
+                      text="Read"
+                      textColor="secondary"
+                      className={'rounded-xl'}
+                      size={'small'}
+                      onClick={() => setViewPermissionToShare(true)}
+                    />
                   </div>
-                </>
-              ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
