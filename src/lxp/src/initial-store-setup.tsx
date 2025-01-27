@@ -183,6 +183,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
     const promises: Promise<any>[] = [
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
+      appDispatch(
+        childrenThunkActions.getChildrenForClassroomGroup({})
+      ).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
       appDispatch(staticDataThunkActions.getRoles({})).unwrap(),

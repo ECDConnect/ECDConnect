@@ -22,6 +22,7 @@ import { RetrieveFromCache } from '@/models/sync/retrieve-from-cache';
 
 export const ChildrenActions = {
   GET_CHILDREN: 'getChildren',
+  GET_CHILDREN_CLASS_GROUP: 'getChildrenForClassroomGroup',
   UPDATE_CHILD: 'updateChild',
   UPSERT_CHILDREN: 'upsertChildren',
   FIND_CREATED_CHILD: 'findCreatedChild',
@@ -114,6 +115,55 @@ export const getChildrenForCoach = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
+      return { children: childDataCache.children, retrievedFromCache: true };
+    }
+  }
+);
+
+export const getChildrenForClassroomGroup = createAsyncThunk<
+  { children: ChildDto[] } & RetrieveFromCache,
+  {} & OverrideCache,
+  ThunkApiType<RootState>
+>(
+  ChildrenActions.GET_CHILDREN_CLASS_GROUP,
+
+  async ({ overrideCache }, { getState, rejectWithValue }) => {
+    console.log(`getChildrenForClassroomGroup Works`);
+
+    const {
+      auth: { userAuth },
+      children: { childData: childDataCache },
+    } = getState();
+
+    let oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    if (
+      !!overrideCache ||
+      !childDataCache.dateRefreshed ||
+      new Date(childDataCache.dateRefreshed) < oneDayAgo
+    ) {
+      try {
+        let children: ChildDto[];
+
+        if (userAuth?.auth_token) {
+          children = await new ChildService(
+            userAuth?.auth_token
+          ).getChildrenForClassroomGroup(userAuth?.id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!children) {
+          return rejectWithValue('Error getting Children');
+        }
+
+        return { children, retrievedFromCache: false };
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      console.log(`childDataCache`, childDataCache);
       return { children: childDataCache.children, retrievedFromCache: true };
     }
   }
