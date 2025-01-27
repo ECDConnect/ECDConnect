@@ -148,10 +148,6 @@ export const PractitionerSetup = ({
 
   const { practitionerToProgramme, allowPermissions } = watch();
 
-  console.log(`practitionerToProgramme`, practitionerToProgramme);
-
-  console.log(`allowPermissions`, allowPermissions);
-
   const checkClassroomNeedsToBeRemove = async () => {
     if (!practitionerToProgramme) {
       await appDispatch(classroomsActions.resetClassroomState());
