@@ -122,12 +122,15 @@ export const getChildrenForCoach = createAsyncThunk<
 
 export const getChildrenForClassroomGroup = createAsyncThunk<
   { children: ChildDto[] } & RetrieveFromCache,
-  {} & OverrideCache,
+  { classroomGroupId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   ChildrenActions.GET_CHILDREN_CLASS_GROUP,
 
-  async ({ overrideCache }, { getState, rejectWithValue }) => {
+  async (
+    { classroomGroupId, overrideCache },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
       children: { childData: childDataCache },
@@ -147,25 +150,24 @@ export const getChildrenForClassroomGroup = createAsyncThunk<
         if (userAuth?.auth_token) {
           children = await new ChildService(
             userAuth?.auth_token
-          ).getChildrenForClassroomGroup(
-            '26697e90-2c05-497b-998b-066a33fc9f32' //classroomGroupId
-          );
+          ).getChildrenForClassroomGroup(classroomGroupId);
         } else {
-          return rejectWithValue('no access token, profile check required');
+          return rejectWithValue('No access token, profile check required');
         }
 
         if (!children) {
-          return rejectWithValue('Error getting Children');
+          return rejectWithValue('Error getting children');
         }
 
-        console.log(`Testing`, children);
-
-        return { children, retrievedFromCache: false };
+        return {
+          children,
+          retrievedFromCache: false,
+          classroomGroupId: classroomGroupId,
+        };
       } catch (err) {
         return rejectWithValue(err);
       }
     } else {
-      console.log(`childDataCache`, childDataCache);
       return { children: childDataCache.children, retrievedFromCache: true };
     }
   }

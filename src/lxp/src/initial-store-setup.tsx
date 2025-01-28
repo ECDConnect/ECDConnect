@@ -183,9 +183,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
     const promises: Promise<any>[] = [
       appDispatch(childrenThunkActions.getChildren({})).unwrap(),
-      appDispatch(
-        childrenThunkActions.getChildrenForClassroomGroup({})
-      ).unwrap(),
       appDispatch(practitionerThunkActions.getAllPractitioners({})).unwrap(),
       appDispatch(documentThunkActions.getDocuments({})).unwrap(),
       appDispatch(staticDataThunkActions.getRoles({})).unwrap(),
@@ -201,6 +198,16 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         })
       ),
     ];
+    if (classroomForUser?.id) {
+      promises.push(
+        appDispatch(
+          childrenThunkActions.getChildrenForClassroomGroup({
+            classroomGroupId: classroomForUser?.id,
+            overrideCache: true,
+          })
+        ).unwrap()
+      );
+    }
     if (!isCoach) {
       promises.push(
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
