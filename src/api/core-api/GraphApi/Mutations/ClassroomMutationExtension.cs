@@ -92,9 +92,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     pointsService.CalculateAddNewClassToPreschool(uId);
                     // EC-3508 - as soon as a class is created, we set the progress to 2
                     var practitionerToUpdate = pracRepo.GetByUserId(uId);
-                    practitionerToUpdate.Progress = 2;
-                    practitionerToUpdate.IsPrincipal = true;
-                    pracRepo.Update(practitionerToUpdate);
+                    if (practitionerToUpdate.Progress != 2) {
+                        practitionerToUpdate.Progress = 2;
+                        practitionerToUpdate.IsPrincipal = true;
+                        pracRepo.Update(practitionerToUpdate);
+                    }
 
                     // notifiy the practitioner that he was assigned to a class
                     var practitioner = pracRepo.GetByUserId(input.UserId.Value);
@@ -150,7 +152,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
 
                 //update classrooms hierarchy and send through to next function
-                var previousUser = classRoomGroup.UserId;
+                var previousUserId = classRoomGroup.UserId;
                 classRoomGroup.Hierarchy = hierarchy;
                 classRoomGroup.UserId = input.UserId;
                 classRoomGroup.ClassroomId = input.ClassroomId;
@@ -161,7 +163,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 classRepo.Update(classRoomGroup);
 
                 //if this was a new assignment to a new practitioner trigger message to notify them
-                if (previousUser != input.UserId)
+                if (previousUserId != input.UserId)
                 {
                     var practitioner = pracRepo.GetByUserId(input.UserId.Value);
                     // only send to practitioner and not principal
@@ -184,6 +186,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         };
                         notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(classRoomGroup.Id, "ClassRoomGroup") });
                     }
+
+                    // if the user has changed, we need to disable notification for previous user.
+                    var previousUser = userManager.FindByIdAsync(previousUserId.ToString()).Result;
+                    var previousReassignedMessages = notificationService.GetMessagesForUser(previousUserId.ToString(), TemplateTypeConstants.ReassignedToNewClass, classRoomGroup.Id);
+                    if (previousReassignedMessages.Count > 0) {
+                        foreach (var item in previousReassignedMessages)
+                        {
+                            notificationService.DisableNotification(item.Id.ToString());
+                        }
+                    }
+
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
