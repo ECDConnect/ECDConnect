@@ -135,7 +135,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.OpenAccess
                 && !practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy != null && !practitioner.DateAccepted.HasValue) 
             {
-                return null;
+                return new List<ClassroomGroup>();
             }
 
             // Practitioner can only see classroom groups assigned to them directly
