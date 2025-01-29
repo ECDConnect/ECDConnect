@@ -131,6 +131,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     .ToList();
             }
 
+            // Return no classroom if the OA practitioner has not accepted any invitation for classroom
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.OpenAccess
+                && !practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy != null && !practitioner.DateAccepted.HasValue) 
+            {
+                return null;
+            }
+
             // Practitioner can only see classroom groups assigned to them directly
             return _classroomGroupRepo.GetAll()
                 .Include(x => x.Learners

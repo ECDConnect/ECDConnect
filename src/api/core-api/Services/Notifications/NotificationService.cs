@@ -555,5 +555,17 @@ namespace EcdLink.Api.CoreApi.Services
 
             return messages;
         }
+
+        public List<MessageLog> GetMessagesForUser(string userId, string templateType, Guid relatedEntityId)
+        {
+            var messages = _messageRepo.GetAll()
+                   .Where(n =>
+                       n.MessageTemplateType == templateType
+                       && n.To == userId
+                       &&  n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedEntityId))
+                   .ToList();
+
+            return messages;
+        }
     }
 }
