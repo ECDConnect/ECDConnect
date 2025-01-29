@@ -1,6 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -25,8 +24,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<Practitioner, Guid> _practiGenericRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
         private IGenericRepository<Classroom, Guid> _classroomRepo;
-        private IGenericRepository<SiteAddress, Guid> _addressRepo;
-        private IGenericRepository<ProgrammeType, Guid> _programmeRepo;
 
         public ClassroomService(
             IHttpContextAccessor contextAccessor,
@@ -39,8 +36,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _classroomGroupRepo = _repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             _classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
-            _addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
-            _programmeRepo = _repoFactory.CreateGenericRepository<ProgrammeType>(userContext: _applicationUserId);
         }
 
         public Classroom GetClassroomForUser(Guid userId)
@@ -61,8 +56,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.OpenAccess
                 && !practitioner.IsPrincipalOrAdmin() && practitioner.PrincipalHierarchy != null) 
             {
-                var assignedClasses = _classroomGroupRepo.GetAll().Where(x => x.IsActive && x.UserId == practitioner.UserId).Count();
-                if (assignedClasses > 0 && practitioner.DateAccepted == null) {
+                if (practitioner.DateAccepted == null) 
+                {
                     return _classroomRepo.GetAll()
                         .Where(x =>
                             x.IsActive
