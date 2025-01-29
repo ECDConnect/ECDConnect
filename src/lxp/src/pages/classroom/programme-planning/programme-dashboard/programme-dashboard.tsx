@@ -466,7 +466,7 @@ export const ProgrammeDashboard: React.FC = () => {
           title="What are children working on?"
           customDetailText={
             <div className="text-textMid">
-              {`Base on Report ${currentReportingPeriod?.reportNumber}, here are some areas that children are working on:`}
+              {`Based on Report ${currentReportingPeriod?.reportNumber}, here are some areas that children are working on:`}
               <div>
                 {listOfWorkingOnActivities?.map((item) => (
                   <div className="mt-2">{`\u00A0\u00A0\u00A0\u00A0• ${replaceSkillText(
