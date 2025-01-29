@@ -43,6 +43,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
 import { replaceSkillText } from '@/utils/child/child-progress-report.utils';
+import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -52,6 +53,8 @@ export interface iSkills {
 }
 
 export const ProgrammeDashboard: React.FC = () => {
+  const { percentageReportsCompleted, percentageObservationsCompleted } =
+    useProgressForChildren();
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
 
   const { isLoading: isLoadingActivities } = useThunkFetchCall(
@@ -530,10 +533,18 @@ export const ProgrammeDashboard: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (lastProgressReportPeriodHasPassed && baseReports?.length > 0) {
+    if (
+      (percentageObservationsCompleted === 100 ||
+        percentageReportsCompleted === 100) &&
+      lastProgressReportPeriodHasPassed
+    ) {
       showProgressReportEndedDialog();
     }
-  }, [lastProgressReportPeriodHasPassed, baseReports?.length]);
+  }, [
+    percentageReportsCompleted,
+    percentageObservationsCompleted,
+    lastProgressReportPeriodHasPassed,
+  ]);
 
   return (
     <BannerWrapper
