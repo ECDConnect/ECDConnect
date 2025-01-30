@@ -16,6 +16,7 @@ using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Context;
 
 namespace ECDLink.Api.CoreApi.Services
 {
@@ -27,6 +28,7 @@ namespace ECDLink.Api.CoreApi.Services
         private readonly ApplicationUserManager _userManager;
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly Guid _applicationUserId;
+        private readonly AuthenticationDbContext _dbContext;
         private IGenericRepository<Absentees, Guid> _absenteeRepo;
         private readonly IHolidayService<Holiday> _holidayService;
         private IGenericRepository<Practitioner, Guid> _practiGenericRepo;
@@ -38,8 +40,10 @@ namespace ECDLink.Api.CoreApi.Services
             [Service] INotificationService notificationService,
             [Service] ApplicationUserManager userManager,
             IHolidayService<Holiday> holidayService,
+            [Service] AuthenticationDbContext dbContext,
             HierarchyEngine hierarchyEngine)
         {
+            _dbContext = dbContext;
             _repositoryFactory = repositoryFactory;
             _reassignmentService = reassignmentService;
             _notificationService = notificationService;
@@ -77,7 +81,7 @@ namespace ECDLink.Api.CoreApi.Services
                 ReassignedToPractitioner = reassignedToPractitioner,
                 UpdatedBy = loggedByUser,
                 UpdatedDate = DateTime.Now,
-                IsRoleAssign = isRoleAssign,                
+                IsRoleAssign = isRoleAssign,
                 PractitionerRemovalHistoryId = practitionerRemovalHistory
             };
 
@@ -159,7 +163,8 @@ namespace ECDLink.Api.CoreApi.Services
                     });
 
                     var practitioner = _practiGenericRepo.GetByUserId(userToSend.Id);
-                    if (!practitioner.IsPrincipalOrAdmin()) {
+                    if (!practitioner.IsPrincipalOrAdmin())
+                    {
                         _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PrincipalMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
                         _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
                     }
@@ -174,13 +179,22 @@ namespace ECDLink.Api.CoreApi.Services
             bool deleteAbsentee = false,
             string reassignedToPractitioner = null,
             string reason = null,
-            DateTime? absentDate = null,           
+            DateTime? absentDate = null,
             DateTime? absentDateEnd = null,
             bool isRoleAssign = false,
             string roleAssignedToUser = null)
         {
-            if (absenteeId != null) {
+            if (absenteeId != null)
+            {
                 var absentee = _absenteeRepo.GetById(Guid.Parse(absenteeId));
+                
+                var userId = _userManager.FindByIdAsync(absentee.UserId.ToString()).Result?.Id.ToString();
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var practitioner = _dbContext.Practitioners.FirstOrDefault(u => u.Id == absentee.UserId);
+                    userId = practitioner?.Id.ToString() ?? absentee.UserId.ToString();
+                }
 
                 if (absentee != null)
                 {
@@ -188,8 +202,8 @@ namespace ECDLink.Api.CoreApi.Services
                     {
                         absentee.IsActive = false;
                         // remove notifications for leave
-                        _notificationService.DeleteAllNotificationsForTypeAndDate(absentee.UserId.ToString(), TemplateTypeConstants.PrincipalMarkedOnLeave, absentee.AbsentDate, absentee.AbsentDateEnd);
-                        _notificationService.DeleteAllNotificationsForTypeAndDate(absentee.UserId.ToString(), TemplateTypeConstants.PractitionerMarkedOnLeave, absentee.AbsentDate, absentee.AbsentDateEnd);
+                        _notificationService.DeleteAllNotificationsForTypeAndDate(userId, TemplateTypeConstants.PrincipalMarkedOnLeave, absentee.AbsentDate, absentee.AbsentDateEnd);
+                        _notificationService.DeleteAllNotificationsForTypeAndDate(userId, TemplateTypeConstants.PractitionerMarkedOnLeave, absentee.AbsentDate, absentee.AbsentDateEnd);
                     }
                     else
                     {
@@ -216,7 +230,7 @@ namespace ECDLink.Api.CoreApi.Services
                                 absentee.AbsentDateEnd = (DateTime)absentDateEnd;
                             }
                         }
-                        if (isRoleAssign && roleAssignedToUser!=null)
+                        if (isRoleAssign && roleAssignedToUser != null)
                         {
                             absentee.IsRoleAssign = isRoleAssign;
                         }
@@ -227,16 +241,36 @@ namespace ECDLink.Api.CoreApi.Services
                     _absenteeRepo.Update(absentee);
                     if (reassignedToPractitioner != null)
                     {
-                        _reassignmentService.EditReassignment(absentee.UserId.ToString(), reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
-                    }
+                        var practitionerUserId = _userManager.FindByIdAsync(reassignedToPractitioner).Result?.Id.ToString();
+
+                        if (string.IsNullOrEmpty(practitionerUserId))
+                        {
+                            var practitioner = _dbContext.Practitioners.FirstOrDefault(u => u.Id == Guid.Parse(reassignedToPractitioner));
+                            practitionerUserId = practitioner?.UserId.ToString() ?? reassignedToPractitioner;
+                        }
                         
+                        _reassignmentService.EditReassignment(userId, practitionerUserId, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
+
+                        // Reassign classroom group to the practitioner that took attendance  
+                        if(absentee.ReassignedClass != null)
+                        {
+                            var classroomGroup = _dbContext.ClassroomGroups.FirstOrDefault(u => u.Id == Guid.Parse(absentee.ReassignedClass));
+                            if (classroomGroup != null)
+                            {
+                                classroomGroup.UserId = Guid.Parse(userId);
+                                _dbContext.SaveChanges();
+                            }
+                        }
+                    }
+
                     return absentee;
                 }
             }
             return null;
         }
 
-            public List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? startDate = null, DateTime? endDate = null)
+
+        public List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? startDate = null, DateTime? endDate = null)
         {
             var classRoomRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             List<AbsenteeDetail> absenteeDetails = new List<AbsenteeDetail>();
@@ -245,7 +279,8 @@ namespace ECDLink.Api.CoreApi.Services
             if (startDate != null)
             {
                 absentees = absentees.Where(a => a.AbsentDate >= startDate).ToList();
-            } else
+            }
+            else
             {
                 absentees = absentees.Where(a => a.AbsentDate >= DateTime.Now.Date).ToList();
             }
@@ -254,14 +289,14 @@ namespace ECDLink.Api.CoreApi.Services
                 absentees = absentees.Where(a => a.AbsentDate <= endDate).ToList();
             }
 
-            if (absentees.Any() )
+            if (absentees.Any())
             {
                 foreach (var item in absentees)
                 {
                     string classRoomName = "";
                     string reassignedToPerson = "";
                     string loggedByPerson = "";
-                    if (item.ReassignedClass!= null)
+                    if (item.ReassignedClass != null)
                     {
                         var classRoom = classRoomRepo.GetAll().Where(c => c.Id.ToString() == item.ReassignedClass && c.Name != "Unsure").FirstOrDefault();
                         if (classRoom != null)
@@ -269,7 +304,7 @@ namespace ECDLink.Api.CoreApi.Services
                             classRoomName = classRoom.Name;
                         }
                     }
-                    if (item.ReassignedToPractitioner!=null)
+                    if (item.ReassignedToPractitioner != null)
                     {
                         var user = _userManager.FindByIdAsync(item.ReassignedToPractitioner).Result;
                         if (user != null)
@@ -278,17 +313,19 @@ namespace ECDLink.Api.CoreApi.Services
                         }
                     }
                     //get logged by details
-                    if (item.LoggedBy != null) {
-                        var loggedUser = _userManager.FindByIdAsync(item.LoggedBy).Result;                        
+                    if (item.LoggedBy != null)
+                    {
+                        var loggedUser = _userManager.FindByIdAsync(item.LoggedBy).Result;
                         if (loggedUser != null)
                         {
                             loggedByPerson = loggedUser.FirstName + " " + loggedUser.Surname;
                         }
                     }
 
-                    absenteeDetails.Add(new AbsenteeDetail() { 
+                    absenteeDetails.Add(new AbsenteeDetail()
+                    {
                         AbsenteeId = item.Id.ToString(),
-                        Reason = item.Reason, 
+                        Reason = item.Reason,
                         AbsentDate = item.AbsentDate,
                         AbsentDateEnd = item.AbsentDateEnd,
                         ClassName = classRoomName,
@@ -307,7 +344,7 @@ namespace ECDLink.Api.CoreApi.Services
         public int GetAbsentDayCountForUser(Guid userId, DateTime startDate, DateTime endDate)
         {
             var absentees = _absenteeRepo.GetAll()
-                .Where(a => 
+                .Where(a =>
                     a.UserId == userId
                     && a.AbsentDate < endDate
                     && (!a.AbsentDateEnd.HasValue || (a.AbsentDateEnd >= startDate)))
@@ -318,9 +355,9 @@ namespace ECDLink.Api.CoreApi.Services
             foreach (var absense in absentees)
             {
                 var leaveStart = absense.AbsentDate < startDate ? startDate : absense.AbsentDate; // Ignore absense days before our start
-                var leaveEnd = !absense.AbsentDateEnd.HasValue 
+                var leaveEnd = !absense.AbsentDateEnd.HasValue
                     ? absense.AbsentDate // Only one days leave
-                    : absense.AbsentDateEnd.Value > endDate 
+                    : absense.AbsentDateEnd.Value > endDate
                         ? endDate : absense.AbsentDateEnd.Value; // Ignore leave days after our end date
 
                 daysAbsent.AddRange(leaveStart.DaysBetween(leaveEnd));
@@ -329,7 +366,7 @@ namespace ECDLink.Api.CoreApi.Services
             // Remove holidays
             var holidays = _holidayService.GetHolidays(startDate, endDate, "en-za").Select(x => x.Day).ToList();
             daysAbsent.Except(holidays);
-                        
+
             var count = daysAbsent
                 .Where(x => x.DayOfWeek != DayOfWeek.Saturday && x.DayOfWeek != DayOfWeek.Sunday) // Remove weekends
                 .Distinct() // Ensure unique days (could be overlapping leave logged)
