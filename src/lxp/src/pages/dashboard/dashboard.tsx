@@ -551,7 +551,7 @@ export const Dashboard: React.FC = () => {
           await appDispatch(
             childrenThunkActions.getChildrenForClassroomGroup({
               classroomGroupId: classroom?.id,
-              overrideCache: true,
+              overrideCache: false,
             })
           ).unwrap())();
       }
