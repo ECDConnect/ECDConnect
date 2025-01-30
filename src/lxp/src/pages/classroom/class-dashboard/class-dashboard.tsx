@@ -373,7 +373,11 @@ export const ClassDashboard: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (practitionerIsOnLeave && !practitioner?.isPrincipal) {
+    if (
+      practitionerIsOnLeave &&
+      !practitioner?.isPrincipal &&
+      !practitioner?.isLeaving
+    ) {
       handleIsOnLeaveModal();
     }
 
