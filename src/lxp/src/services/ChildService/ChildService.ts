@@ -19,14 +19,16 @@ class ChildService {
     this._accessToken = accessToken;
   }
 
-  async getChildrenForClassroomGroup(): Promise<ChildDto[]> {
+  async getChildrenForClassroomGroup(
+    classroomGroupId: string
+  ): Promise<ChildDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { GetAllChild: ChildDto[] };
+      data: { childrenForClassroomGroup: ChildDto[] };
       errors?: {};
     }>(``, {
-      query: `query($classroomGroupId: UUID!) {
-          childrenForClassroomGroup(classroomGroupId $classroomGroupId) {
+      query: `query($classRoomGroupId: UUID!) {
+           childrenForClassroomGroup(classRoomGroupId: $classRoomGroupId) {
             id
             workflowStatusId
             insertedDate
@@ -94,13 +96,16 @@ class ChildService {
           }
         }
       `,
+      variables: {
+        classRoomGroupId: classroomGroupId,
+      },
     });
 
     if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Get Children Failed - Server connection error');
     }
 
-    return response.data.data.GetAllChild;
+    return response.data.data.childrenForClassroomGroup;
   }
 
   async getChildren(): Promise<ChildDto[]> {

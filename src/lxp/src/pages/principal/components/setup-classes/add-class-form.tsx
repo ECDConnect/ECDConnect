@@ -160,13 +160,11 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       await appDispatch(
         classroomsActions.createClassroomGroup(classroomGroupModel)
       );
-      await appDispatch(classroomsThunkActions.upsertClassroomGroups({})).then(
-        () =>
-          appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap()
-      );
+      await appDispatch(classroomsThunkActions.upsertClassroomGroups({}));
       await appDispatch(
         classroomsThunkActions.upsertClassroomGroupProgrammes({})
       );
+      await appDispatch(classroomsThunkActions.getClassroomGroups({}));
       (async () =>
         await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({
