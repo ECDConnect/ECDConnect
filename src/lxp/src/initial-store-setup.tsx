@@ -203,7 +203,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         appDispatch(
           childrenThunkActions.getChildrenForClassroomGroup({
             classroomGroupId: classroomForUser?.id,
-            overrideCache: true,
           })
         ).unwrap()
       );
