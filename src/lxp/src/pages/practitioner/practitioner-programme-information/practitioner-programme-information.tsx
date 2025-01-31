@@ -59,6 +59,7 @@ import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-moda
 import { formatAddress } from '@/components/address-map/address-map';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
 import { p } from 'msw/lib/glossary-297d38ba';
+import { is } from 'date-fns/locale';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -304,20 +305,28 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
     // Classes item
     if (!missingProgramme || isTrialPeriod) {
-      const classesSubTitle = practitioner?.shareInfo
-        ? classroomGroups
-            ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
-            .map((x) => x.name)
-            .join(', ')
-        : 'None';
-      const classesActionName = isPrincipal
-        ? 'Edit'
-        : !practitioner?.shareInfo
-        ? 'Add'
-        : 'View';
+      const classesSubTitle =
+        practitioner?.shareInfo && !isTrialPeriod
+          ? classroomGroups
+              ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+              .map((x) => x.name)
+              .join(', ')
+          : 'None';
+      // const classesActionName = isPrincipal
+      //   ? 'Edit'
+      //   : !practitioner?.shareInfo || !isTrialPeriod
+      //   ? 'Add'
+      //   : 'View';
+
+      const classesActionName =
+        practitioner?.shareInfo && !isTrialPeriod
+          ? isPrincipal
+            ? 'Edit'
+            : 'View'
+          : 'Add';
       const classesActionIcon = isPrincipal
         ? 'PencilIcon'
-        : !practitioner?.shareInfo
+        : !practitioner?.shareInfo || isTrialPeriod
         ? 'PlusIcon'
         : 'EyeIcon';
 
@@ -328,8 +337,13 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         actionName: classesActionName,
         actionIcon: classesActionIcon,
         ...getButtonStyles(!!isTrialPeriod),
-        onActionClick: () =>
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS),
+        onActionClick: () => {
+          if (isTrialPeriod) {
+            showTrialPeriodCompleteProfileBlockingDialog();
+          } else {
+            history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+          }
+        },
       });
     }
 
@@ -342,11 +356,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         : otherColleaguesFiltered
             ?.map((x: any) => x?.name || x?.nickName)
             .join(', ') || 'None';
-      const practitionersActionName = practitioner?.shareInfo
-        ? isPrincipal
-          ? 'Edit'
-          : 'View'
-        : 'Add';
+      const practitionersActionName =
+        practitioner?.shareInfo && !isTrialPeriod
+          ? isPrincipal
+            ? 'Edit'
+            : 'View'
+          : 'Add';
       const practitionersActionIcon = isPrincipal
         ? 'PencilIcon'
         : isTrialPeriod
@@ -373,7 +388,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
 
     // Location item
-    if (practitioner?.shareInfo) {
+    if (practitioner?.shareInfo && !isTrialPeriod) {
       const locationHasInfo = !!classroom?.siteAddress;
       const locationActionName = isPrincipal
         ? locationHasInfo
