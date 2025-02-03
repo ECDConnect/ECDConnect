@@ -94,12 +94,9 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   };
 
   const handleOnClick = () => {
-    if (isPastDay() || (!hasPermissionToEdit && !activity?.name)) {
-      return;
-    } else if (isOnline || (!isOnline && !!activity?.name)) {
-      return onClick();
-    }
-    return showOnlineOnly();
+    if (isPastDay() || (!hasPermissionToEdit && !activity?.name)) return;
+    if (isOnline || activity?.name) return onClick();
+    showOnlineOnly();
   };
 
   const getTitle = () => {
