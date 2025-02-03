@@ -93,6 +93,8 @@ export const PractitionersList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersList?.length, practitionersMessages]);
 
+  console.log('practitionerListData', practitionerListData);
+
   const classroomsDetailsForPractitioner = async () => {
     if (isOnline) {
       const practitionersMessageData = await appDispatch(
@@ -138,9 +140,11 @@ export const PractitionersList: React.FC = () => {
     return {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl!,
-      title: `${practitioner?.user?.firstName}${
-        !!practitioner?.user?.surname ? ` ${practitioner.user.surname}` : ''
-      }`,
+      title: practitioner?.user?.firstName
+        ? `${practitioner?.user?.firstName} ${
+            !!practitioner?.user?.surname ? ` ${practitioner.user.surname}` : ''
+          }`
+        : `${practitioner?.user?.userName}`,
       ...(isOnline && !!currentPractitionerMessage?.subject
         ? { subTitle: `${currentPractitionerMessage?.subject}` }
         : {}),
