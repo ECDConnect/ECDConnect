@@ -1,8 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import DynamicSelector from '../../../../../../../components/dynamic-selector/dynamic-selector';
 import DynamicStaticSelector from '../../../../../../../components/dynamic-static-selector/dynamic-static-selector';
 import FormColorField from '../../../../../../../components/form-color-field/form-color-field';
-import FormField from '../../../../../../../components/form-field/form-field';
 import FormFileInput from '../../../../../../../components/form-file-input/form-file-input';
 import Editor from '../../../../../../../components/form-markdown-editor/form-markdown-editor';
 import {
@@ -19,9 +18,11 @@ import {
   Typography,
   ButtonGroup,
   ButtonGroupTypes,
+  FormInput,
 } from '@ecdlink/ui';
 import { useDialog } from '@ecdlink/core';
 import { InformationCircleIcon } from '@heroicons/react/solid';
+import { useWatch } from 'react-hook-form';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
@@ -34,6 +35,7 @@ export interface CreateThemeFormProps {
   setFilteredThemeDays?: (item: any[]) => void;
   allowedFileSize?: number;
   formType?: string;
+  getValues?: any;
 }
 
 const contentWrapper = '';
@@ -51,12 +53,16 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   setFilteredThemeDays,
   allowedFileSize,
   formType,
+  getValues,
 }) => {
   const { register, control, errors } = handleform;
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
   };
+
+  const initialValues = getValues();
+  const watchFields = useWatch({ control });
 
   const [hasUnsharedContent, setHasUnsharedContent] = useState(false);
 
@@ -100,14 +106,13 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
   const [fields, setFields] = useState<any>();
 
   useEffect(() => {
-    if (template) {
+    if (template && watchFields) {
       const fields = renderFields(template.fields);
       setFields(fields);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template]);
+  }, [template, watchFields]);
 
-  //const renderFields = useCallback((fields: FormTemplateField[]) => {
   const renderFields = (fields: FormTemplateField[]) => {
     const isEdit = fields.some((f) => !!f.contentValue);
 
@@ -191,31 +196,47 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
           }
           return (
             <div key={propName} className={contentWrapper}>
-              <div className="mb-2">
-                <Typography
-                  type={'body'}
-                  weight={'bold'}
-                  color={'textDark'}
-                  text={`${title} *`}
-                />
-              </div>
-              {propName === 'name' && (
-                <Typography
-                  type={'body'}
-                  color={'textMid'}
-                  text={`Give your theme a name no longer than 20 characters`}
-                />
-              )}
-
               <div className="sm:col-span-12">
-                <FormField
+                <FormInput
+                  label={'Title *'}
+                  textInputType="input"
+                  visible={true}
+                  nameProp={propName}
+                  subLabel="Give your theme a name no longer than 20 characters"
+                  maxCharacters={20}
+                  maxLength={20}
+                  isAdminPortalField={true}
+                  register={register}
+                  value={initialValues[propName]}
+                  error={
+                    required.value &&
+                    initialValues?.hasOwnProperty(propName) &&
+                    !initialValues[propName]
+                      ? 'This field is required'
+                      : errors[propName]?.message
+                  }
+                  onChange={(data) => {
+                    setValue(propName, data.target.value);
+                  }}
+                />
+
+                {/* <FormInput
                   label={''}
                   nameProp={propName}
                   register={register}
-                  error={errors[propName]?.message}
-                  required={required}
-                  validation={validation}
-                />
+                  maxCharacters={20}
+                  maxLength={20}
+                  onChange={(e) => {
+                    onStateChange(propName, e.target.value);
+                  }}
+                  error={
+                    required.value &&
+                    initialValues?.hasOwnProperty(propName) &&
+                    !initialValues[propName]
+                      ? 'This field is required'
+                      : errors[propName]?.message
+                  }
+                /> */}
               </div>
             </div>
           );

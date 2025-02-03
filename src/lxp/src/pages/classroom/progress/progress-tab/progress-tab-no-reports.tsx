@@ -9,26 +9,25 @@ export const ProgressTabNoReports: React.FC<ProgressTabNoReports> = ({
   trackProgress,
 }) => {
   return (
-    <div className="mt-2 flex flex-col justify-center p-8">
-      <div className="flex w-full justify-center">
+    <div className="flex h-full flex-col overflow-hidden p-6">
+      <div className="flex flex-1 flex-col items-center ">
         <Emoji4Icon />
+        <Typography
+          className="mt-4 text-center"
+          color="textDark"
+          text="You don't have any progress observations yet!"
+          type="h3"
+        />
+        <Typography
+          className="mt-2 text-center"
+          color="textMid"
+          text="Tap the button below to start"
+          type="body"
+        />
       </div>
-      <Typography
-        className="mt-4 text-center"
-        color="textDark"
-        text="You don't have any progress observations yet!"
-        type={'h3'}
-      />
-      <Typography
-        className="mt-2 text-center"
-        color="textMid"
-        text={`Tap the button below to start`}
-        type={'body'}
-      />
       <Button
         onClick={trackProgress}
-        className="mt-4 w-full"
-        size="small"
+        className="mb-12 w-full"
         color="quatenary"
         textColor="white"
         type="filled"

@@ -247,8 +247,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var classGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             List<PractitionerColleagues> practitionerColleagues = new List<PractitionerColleagues>();
             Practitioner practi = practiRepo.GetByUserId(userId);
-            if (practi.PrincipalHierarchy.HasValue || practi.IsPrincipal == true)
+            // Return no classroom if the OA practitioner has not accepted any invitation for classroom
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.OpenAccess
+                && !practi.IsPrincipalOrAdmin() && practi.PrincipalHierarchy != null && !practi.DateAccepted.HasValue) 
             {
+                return null;
+            }
+
+            if (practi != null && (practi.PrincipalHierarchy.HasValue || practi.IsPrincipal == true))
+            {
+
                 List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy == practi.PrincipalHierarchy : x.IsPrincipal == true ? x.UserId == Guid.Parse(userId) : x.UserId == Guid.Parse(userId)).ToList();
                 //also add principal
                 if (practi.IsPrincipal == true)

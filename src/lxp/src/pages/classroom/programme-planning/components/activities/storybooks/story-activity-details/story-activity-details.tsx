@@ -751,30 +751,27 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
             />
           ))}
         <Divider dividerType="dashed" className={'mx-4 mt-4'} />
-        {linkedStory &&
-          !disabled &&
-          (practitioner?.isPrincipal ||
-            hasPermissionToPlanClassroomActivities) && (
-            <div className="flex flex-col bg-white">
-              <div className="mt-4 px-4">
-                <Typography text="Story chosen:" type="h2" color="textDark" />
-              </div>
-              <StoryCard
-                title={linkedStory.name}
-                storyBookId={linkedStory.id}
-                type={linkedStory.type}
-                languages={linkedStory.availableLanguages}
-                selected={isSelected}
-                hideDetails
-                buttonIcon="SwitchVerticalIcon"
-                buttonText="Change story"
-                onSelected={() => {}}
-                onCleared={() => {}}
-                radioEnabled={false}
-                className="mx-4"
-              />
+        {linkedStory && (
+          <div className="flex flex-col bg-white">
+            <div className="mt-4 px-4">
+              <Typography text="Story chosen:" type="h2" color="textDark" />
             </div>
-          )}
+            <StoryCard
+              title={linkedStory.name}
+              storyBookId={linkedStory.id}
+              type={linkedStory.type}
+              languages={linkedStory.availableLanguages}
+              selected={isSelected}
+              hideDetails
+              buttonIcon="SwitchVerticalIcon"
+              buttonText="Change story"
+              onSelected={() => {}}
+              onCleared={() => {}}
+              radioEnabled={false}
+              className="mx-4"
+            />
+          </div>
+        )}
 
         <div className="mt-4 px-4">
           <Typography

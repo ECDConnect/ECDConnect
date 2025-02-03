@@ -17,6 +17,7 @@ import { markAsReadNotification } from '@/store/notifications/notifications.acti
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 import { notificationActions } from '@/store/notifications';
 import { referenceNames } from '@/services/NotificationService/validators/points/poinstNotificationValidator.types';
+import { useMemo } from 'react';
 
 interface DashboardItemsProps extends ComponentBaseProps {
   listItems: StackedListItemType[];
@@ -31,18 +32,21 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
-  const resetNotificationOnClick =
-    notification?.message?.reference ===
-      referenceNames?.yearPointsGreaterThen0 ||
-    notification?.message?.reference ===
-      referenceNames?.getSevenDaysBeforeWithNoProgressReports ||
-    notification?.message?.reference ===
-      referenceNames?.allChildrenProgressReportsCompleted ||
-    notification?.message?.reference ===
-      referenceNames?.allChildrenProgressReportsCreated ||
-    notification?.message?.reference ===
-      referenceNames?.pastDeadlineDateForProgressReports ||
-    notification?.message?.priority === 8;
+
+  // Memoized flag to determine reset notification logic
+  const resetNotificationOnClick = useMemo(
+    () =>
+      (notification?.message?.reference &&
+        [
+          referenceNames.yearPointsGreaterThen0,
+          referenceNames.getSevenDaysBeforeWithNoProgressReports,
+          referenceNames.allChildrenProgressReportsCompleted,
+          referenceNames.allChildrenProgressReportsCreated,
+          referenceNames.pastDeadlineDateForProgressReports,
+        ].includes(notification?.message?.reference)) ||
+      notification?.message?.priority === 8,
+    [notification]
+  );
 
   const showOnlineOnly = () => {
     dialog({

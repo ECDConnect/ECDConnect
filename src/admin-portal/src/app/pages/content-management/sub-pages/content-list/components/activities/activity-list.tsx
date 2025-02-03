@@ -110,7 +110,7 @@ export default function ActivityList({
   `;
 
   const { data: themeData } = useQuery(query, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
     variables: {
       localeId: LanguageId.enZa,
     },
@@ -131,7 +131,7 @@ export default function ActivityList({
   `;
 
   const { data: skillData } = useQuery(skillQuery, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
     variables: {
       localeId: LanguageId.enZa,
     },

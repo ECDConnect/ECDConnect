@@ -109,10 +109,14 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
         subLabel = 'Use commas to separate words';
       }
 
-      if (isEdit && index + 1 === fields.length) {
-        setTimeout(function () {
-          setIsLoading(false);
-        }, 6000);
+      if (!isEdit) {
+        setIsLoading(false);
+      } else {
+        if (index + 1 === fields.length) {
+          setTimeout(function () {
+            setIsLoading(false);
+          }, 4000);
+        }
       }
 
       const isAuthorizationChecked =
@@ -169,6 +173,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           if (
             propName === 'shareContent' &&
             (field?.contentValue === undefined ||
+              field?.contentValue.value === null ||
               field?.contentValue?.value === 'no' ||
               field?.contentValue?.value === 'false')
           ) {
@@ -267,6 +272,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           ) {
             return null;
           }
+
           if (
             propName === 'shareContent' &&
             field?.contentValue !== undefined &&

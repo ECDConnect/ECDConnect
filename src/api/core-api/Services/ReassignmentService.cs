@@ -308,14 +308,13 @@ namespace ECDLink.Core.Services
                     
                     if (toUserId != null)
                     {
-                        var toUser = _userManager.FindByIdAsync(toUserId).Result;
                         var toUserHierarchy = _hierarchyEngine.GetUserHierarchy((toUserId != null ? Guid.Parse(toUserId) : _applicationUserId));
 
                         reassignment.HierarchyToUser = toUserHierarchy;
                     }
                     if (deleteReassignment)
                     {
-                        reassignment.IsActive = false;
+                        reassignment.IsActive = false;                        
                     }
 
                     //update the reassignments
