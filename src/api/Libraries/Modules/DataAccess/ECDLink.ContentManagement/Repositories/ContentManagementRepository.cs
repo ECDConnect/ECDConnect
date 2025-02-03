@@ -293,11 +293,10 @@ namespace ECDLink.ContentManagement.Repositories
             // if (!_memoryCache.TryGetValue<List<Guid>>(key, out results))
             // {
                 var content = _context.Contents
-                            .Include(i => i.ContentValues)
+                            .Include(i => i.ContentValues.Where(x => x.TenantId == currentTenant))
                             .Where(x => x.Id == contentId
                                     && x.IsActive
-                                    && x.ContentTypeId == contentTypeId
-                                    && x.TenantId == currentTenant)
+                                    && x.ContentTypeId == contentTypeId)
                             .FirstOrDefault();
 
                 // Use global tenant as a fallback, mostly for static and dynamic links
