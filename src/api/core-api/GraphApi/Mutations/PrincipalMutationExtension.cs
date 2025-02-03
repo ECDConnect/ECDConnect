@@ -114,6 +114,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             {
                                 FindValue = "ApplicationName",
                                 ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                            },
+                            new TagsReplacements()
+                            {
+                                FindValue = "PrincipalName",
+                                ReplacementValue = principalUser.User.FirstName
                             }
                         };
                         // send message of invitation only if principal is adding the practitioner to the programme

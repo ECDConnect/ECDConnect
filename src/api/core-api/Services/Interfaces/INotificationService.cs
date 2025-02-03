@@ -41,6 +41,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> DisableNotficationsWithEndDateAsToday();
         void DeleteGroupNotifications(string templateType, Guid relatedToEntityId);
         List<MessageLog> GetMessages(string templateType, Guid relatedEntityId);
+        List<MessageLog> GetMessagesForUser(string userId, string templateType, Guid relatedEntityId);
         void DeleteGroupNotifications(Guid groupingId);
     }
 }

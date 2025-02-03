@@ -8,6 +8,7 @@ import {
   openAccessAddChildDetail,
   updateChild,
   upsertChildren,
+  getChildrenForClassroomGroup,
 } from './children.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import { CaregiverContactHistory, ChildrenState } from './children.types';
@@ -120,6 +121,23 @@ const childrenSlice = createSlice({
         };
       }
     });
+    builder.addCase(getChildrenForClassroomGroup.fulfilled, (state, action) => {
+      if (!action.payload.retrievedFromCache) {
+        const unsyncedChildren = state.childData.children.filter(
+          (child) => !child.synced
+        );
+        const newChildren = action.payload.children.map((x) => ({
+          ...x,
+          synced: true,
+        }));
+
+        state.childData = {
+          children: unsyncedChildren.concat(newChildren),
+          dateRefreshed: new Date().toDateString(),
+        };
+      }
+    });
+
     builder.addCase(updateChild.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const childIndex = state.childData.children.findIndex(

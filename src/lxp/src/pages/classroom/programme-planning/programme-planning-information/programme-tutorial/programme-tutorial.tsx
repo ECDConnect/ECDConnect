@@ -105,26 +105,24 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
   };
 
   const progressSummary = useSelector(
-    progressTrackingSelectors?.getPractitionerProgressReportSummary
+    progressTrackingSelectors.getPractitionerProgressReportSummary
   );
-  const fetchData = useCallback(
-    async (reportDate: string) => {
-      await appDispatch(
-        progressTrackingThunkActions.getPractitionerProgressReportSummary({
-          reportingPeriod: reportDate,
-        })
-      );
-    },
-    [appDispatch]
-  );
+
+  const fetchData = useCallback(async (reportDate: string) => {
+    // await appDispatch(
+    //   progressTrackingThunkActions.getPractitionerProgressReportSummary({
+    //     reportingPeriod: reportDate,
+    //   })
+    // );
+  }, []);
 
   useEffect(() => {
     if (!progressSummary) {
       const today = new Date();
       const reportDate =
-        today.getMonth() >= 0 && today.getMonth() <= 6
-          ? 'June'
-          : 'November' + today.getFullYear();
+        today.getMonth() < 6
+          ? `June${today.getFullYear()}`
+          : `November${today.getFullYear()}`;
       fetchData(reportDate);
     }
   }, [progressSummary, fetchData]);
