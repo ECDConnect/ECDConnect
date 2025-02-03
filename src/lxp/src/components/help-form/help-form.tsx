@@ -45,6 +45,50 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
   const [isValidCellphone, setIsValidCellphone] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  const helpService = new HelpService(Config.authApi);
+
+  // const sendHelpMessage = async () => {
+  //   const input: HelpFormModel = {
+  //     subject: helpType,
+  //     description: problemValue,
+  //     cellNumber: isPhoneSelected ? contactValue : '',
+  //     email: isPhoneSelected === false ? contactValue : '',
+  //     isLoggedIn: false,
+  //     contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
+  //     userId: null,
+  //   };
+
+  //   console.time('SendHelp API Call');
+  //   setIsLoading(true);
+
+  //   try {
+  //     const message = await new HelpService(Config.authApi).SendHelp(input);
+  //     console.timeEnd('SendHelp API Call');
+
+  //     if (message) {
+  //       setNotification({
+  //         title: `Message sent!`,
+  //         variant: NOTIFICATION.SUCCESS,
+  //       });
+  //     } else {
+  //       setNotification({
+  //         title: `Message not sent!`,
+  //         variant: NOTIFICATION.ERROR,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.timeEnd('SendHelp API Call');
+  //     console.error('SendHelp error:', error);
+  //     setNotification({
+  //       title: `Failed to send the message!`,
+  //       variant: NOTIFICATION.ERROR,
+  //     });
+  //   }
+
+  //   setIsLoading(false);
+  //   closeAction && closeAction(false);
+  // };
+
   const sendHelpMessage = async () => {
     const input: HelpFormModel = {
       subject: helpType,
@@ -55,29 +99,40 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
       contactPreference: isPhoneSelected ? 'phoneNumber' : 'email',
       userId: null,
     };
+
+    console.time('Total API Call Time');
+    const start = Date.now();
+
     setIsLoading(true);
-    const message = await new HelpService(Config.authApi)
-      .SendHelp(input)
-      .catch(() => {
+
+    try {
+      console.time('API Request Time');
+      const message = await helpService.SendHelp(input);
+      console.timeEnd('API Request Time');
+
+      if (message) {
         setNotification({
-          title: ` Failed to send the message!`,
+          title: `Message sent!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+      } else {
+        setNotification({
+          title: `Message not sent!`,
           variant: NOTIFICATION.ERROR,
         });
-      });
-
-    if (message) {
+      }
+    } catch (error) {
+      console.error('SendHelp error:', error);
       setNotification({
-        title: `Message sent!`,
-        variant: NOTIFICATION.SUCCESS,
+        title: `Failed to send the message!`,
+        variant: NOTIFICATION.ERROR,
       });
-      setIsLoading(false);
-    } else {
-      setNotification({
-        title: `Message not sent!`,
-        variant: NOTIFICATION.SUCCESS,
-      });
-      setIsLoading(false);
     }
+
+    const end = Date.now();
+    console.timeEnd('Total API Call Time');
+    console.log(`API took ${end - start}ms`);
+
     setIsLoading(false);
     closeAction && closeAction(false);
   };
