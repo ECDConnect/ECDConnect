@@ -3,7 +3,7 @@ import { authSelectors } from '@/store/auth';
 import { staticDataSelectors } from '@/store/static-data';
 import { MoreInformation } from '@ecdlink/graphql';
 import { MoreInformationPage, MoreInformationPageProps } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -28,9 +28,8 @@ export const InfoPage = ({
   childrenPosition,
   footer,
 }: InfoPageProps) => {
-  const [data, setData] = useState<MoreInformation[]>();
+  const [data, setData] = useState<MoreInformation[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
-
   const [isLoading, setIsLoading] = useState(false);
 
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -38,42 +37,52 @@ export const InfoPage = ({
 
   const { i18n } = useTranslation();
 
+  // Memoizing the fetch request to avoid multiple re-creations of InfoService
+  const fetchMoreInformation = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const info = await new InfoService().getMoreInformation(
+        section,
+        selectedLanguage
+      );
+      setData(info);
+    } catch (error) {
+      console.error('Error fetching information:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [section, selectedLanguage]);
+
   useEffect(() => {
-    setIsLoading(true);
-    new InfoService()
-      .getMoreInformation(section, selectedLanguage)
-      .then((info) => {
-        setData(info);
-        setIsLoading(false);
-      })
-      .catch(() => setIsLoading(false));
-  }, [section, selectedLanguage, userAuth]);
+    fetchMoreInformation();
+  }, [fetchMoreInformation, userAuth]);
 
   useEffect(() => {
     if (i18n.language !== selectedLanguage) {
       i18n.changeLanguage(selectedLanguage);
     }
+  }, [selectedLanguage, i18n]);
 
-    // trigger only once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const activeLanguages = languages
+    .filter((language) => language.isActive)
+    .map((language) => ({
+      value: language.locale,
+      label: language.description,
+    }));
 
   return (
     <MoreInformationPage
       isClosable={false}
       isLoading={isLoading}
-      languages={languages.map((language) => ({
-        value: language.locale,
-        label: language.description,
-      }))}
-      moreInformation={!!data ? data[0] : {}}
+      languages={activeLanguages}
+      moreInformation={data?.[0] || {}}
       title={title}
       closeText={closeText}
       closeIcon={closeIcon}
       onClose={onClose}
       setSelectedLanguage={(language) => {
-        i18n.changeLanguage(language);
         setSelectedLanguage(language);
+        i18n.changeLanguage(language);
       }}
       childrenPosition={childrenPosition}
       footer={footer}
