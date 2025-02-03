@@ -49,13 +49,14 @@ const updateConfigEndTime = (
   response.duration =
     response.config.metadata.endTime - response.config.metadata.startTime;
 
-  const connectionType: string = (window.navigator as any).connection
-    .effectiveType as string;
-  // Duration before a connection is considered to be unreliable.
-  const spottyConnectionTimeout =
-    TIMEOUTS[connectionType].slowRequestTime || TIMEOUTS['4g'].slowRequestTime;
+  // Ensure compatibility with all browsers
+  const connection = (window.navigator as any).connection;
+  const connectionType: string = connection?.effectiveType || '4g';
 
-  if (response.duration >= spottyConnectionTimeout && !ignoreTimeoutCheck) {
+  // Ensure timeout exists to avoid undefined errors
+  const issueTimeout = TIMEOUTS[connectionType]?.loadIssueTime || 5000; // Default 5s timeout if missing
+
+  if (response.duration >= issueTimeout && !ignoreTimeoutCheck) {
     if (store.getState().user.unstableConnection === false) {
       store.dispatch(userActions.updateConnectionStatus(true));
     }
