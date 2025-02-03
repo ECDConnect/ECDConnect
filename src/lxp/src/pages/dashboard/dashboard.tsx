@@ -951,22 +951,44 @@ export const Dashboard: React.FC = () => {
   // };
 
   const goToCommunity = () => {
-    if (
-      (classroom && classroom.id) ||
-      (practitioner?.progress === 2 && classroom && classroom?.name) ||
-      (isRegistered &&
+    if (isOpenAccess) {
+      if (
+        (classroom &&
+          classroom.id &&
+          classroomGroups &&
+          classroomGroups.length > 0) ||
+        (practitioner?.progress === 2 && classroom && classroom?.name) ||
+        (classroomGroups &&
+          classroomGroups.length > 0 &&
+          isRegistered &&
+          isProgress &&
+          isProgress > 0 &&
+          hasConsent &&
+          !missingProgramme) ||
+        isTrialPeriod
+      ) {
+        history?.push(ROUTES.COMMUNITY.WELCOME);
+      } else if (missingProgramme || wlNotAcceptThePrincipalInvite) {
+        showCompleteProfileBlockingDialog();
+      }
+    } else {
+      if (
+        ((classroom &&
+          classroom.id &&
+          classroomGroups &&
+          classroomGroups.length > 0) ||
+          (practitioner?.progress === 2 && classroom && classroom?.name) ||
+          (classroomGroups && classroomGroups.length > 0)) &&
+        isRegistered &&
         isProgress &&
         isProgress > 0 &&
         hasConsent &&
-        !missingProgramme) ||
-      isTrialPeriod
-    ) {
-      history?.push(ROUTES.COMMUNITY.WELCOME);
-    } else if (
-      (missingProgramme && isWhiteLabel) ||
-      wlNotAcceptThePrincipalInvite
-    ) {
-      showCompleteProfileBlockingDialog();
+        !missingProgramme
+      ) {
+        history?.push(ROUTES.COMMUNITY.WELCOME);
+      } else if (missingProgramme || wlNotAcceptThePrincipalInvite) {
+        showCompleteProfileBlockingDialog();
+      }
     }
   };
 
