@@ -321,14 +321,13 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public async Task<bool> DeleteAllNotificationsForTypeAndDate(string userId, string templatetype, DateTime messageDate, DateTime? messageEndDate)
+        public async Task<bool> DeleteAllNotificationsForTypeAndDate(string userId, string templatetype, DateTime? messageDate)
         {
             if (userId != null)
             {
                 var notifications = _messageRepo.GetAll().Where(x => x.To.Equals(userId) && 
                                                                 x.MessageTemplateType == templatetype &&
-                                                                x.MessageDate.Value.Date == messageDate.Date &&
-                                                                x.MessageEndDate == messageEndDate.Value.Date).ToArray();
+                                                                x.MessageDate.HasValue && x.MessageDate.Value.Date == messageDate.Value.Date).ToArray();
                 foreach (var notification in notifications)
                 {
                     _messageRepo.Delete(notification.Id);
