@@ -100,8 +100,6 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
       userId: null,
     };
 
-    const start = Date.now();
-
     setIsLoading(true);
 
     try {
