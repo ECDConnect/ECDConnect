@@ -93,8 +93,6 @@ export const PractitionersList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersList?.length, practitionersMessages]);
 
-  console.log('practitionerListData', practitionerListData);
-
   const classroomsDetailsForPractitioner = async () => {
     if (isOnline) {
       const practitionersMessageData = await appDispatch(
