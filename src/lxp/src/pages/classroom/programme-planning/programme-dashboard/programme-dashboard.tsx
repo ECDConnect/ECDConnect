@@ -53,9 +53,16 @@ export interface iSkills {
 }
 
 export const ProgrammeDashboard: React.FC = () => {
-  const { percentageReportsCompleted, percentageObservationsCompleted } =
-    useProgressForChildren();
+  const {
+    percentageReportsCompleted,
+    percentageObservationsCompleted,
+    childReports,
+  } = useProgressForChildren();
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+
+  const completedReportCount = childReports.filter(
+    (x) => !!x.report && !!x.report.dateCompleted
+  ).length;
 
   const { isLoading: isLoadingActivities } = useThunkFetchCall(
     'activityData',
@@ -535,7 +542,8 @@ export const ProgrammeDashboard: React.FC = () => {
   useEffect(() => {
     if (
       (percentageObservationsCompleted === 100 ||
-        percentageReportsCompleted === 100) &&
+        percentageReportsCompleted === 100 ||
+        completedReportCount > 0) &&
       lastProgressReportPeriodHasPassed
     ) {
       showProgressReportEndedDialog();
@@ -543,6 +551,7 @@ export const ProgrammeDashboard: React.FC = () => {
   }, [
     percentageReportsCompleted,
     percentageObservationsCompleted,
+    completedReportCount,
     lastProgressReportPeriodHasPassed,
   ]);
 
