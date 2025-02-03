@@ -100,15 +100,12 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
       userId: null,
     };
 
-    console.time('Total API Call Time');
     const start = Date.now();
 
     setIsLoading(true);
 
     try {
-      console.time('API Request Time');
       const message = await helpService.SendHelp(input);
-      console.timeEnd('API Request Time');
 
       if (message) {
         setNotification({
@@ -128,10 +125,6 @@ export const HelpForm: React.FC<HelpFormProps> = ({ closeAction }) => {
         variant: NOTIFICATION.ERROR,
       });
     }
-
-    const end = Date.now();
-    console.timeEnd('Total API Call Time');
-    console.log(`API took ${end - start}ms`);
 
     setIsLoading(false);
     closeAction && closeAction(false);
