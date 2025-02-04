@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	<TargetFramework>net7.0</TargetFramework>
+	<TargetFramework>net9.0</TargetFramework>
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
@@ -9,11 +9,12 @@
     <None Remove="Models\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.13.0" />
-    <PackageReference Include="Microsoft.NETCore.Targets" Version="3.0.0" PrivateAssets="all" />
-    <PackageReference Include="HotChocolate.AspNetCore" Version="12.12.1" />
-    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="12.12.1" />
-	<PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.0" />
+    <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" PrivateAssets="all" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.14" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.9.14" />
+	  <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.14" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
