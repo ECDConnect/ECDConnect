@@ -126,7 +126,7 @@ const childrenSlice = createSlice({
         const unsyncedChildren = state.childData.children.filter(
           (child) => !child.synced
         );
-        const newChildren = action.payload.children.map((x) => ({
+        const newChildren = action.payload.children?.map((x) => ({
           ...x,
           synced: true,
         }));
