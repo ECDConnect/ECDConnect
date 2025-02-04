@@ -89,7 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IChildService childService,
             Guid classRoomGroupId)
         {
-            var children = childService.GetChildrenForClassroom(classRoomGroupId);
+            var children = childService.GetChildrenForClassroomGroup(classRoomGroupId);
 
             if (children == null)
             {
