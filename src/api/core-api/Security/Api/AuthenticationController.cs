@@ -9,6 +9,7 @@ using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -618,6 +619,69 @@ namespace ECDLink.Security.Api
             {
                 await _notificationManager.SendHelpFormSubmissionToAdministratorAsync((Guid)_applicationUserId, newRecord);
                 await _notificationService.ExpireNotificationsTypesForUser(_applicationUserId.ToString(), TemplateTypeConstants.FeedbackNotification);
+
+                var affectedUserFullName = "anonymous";
+                if (newRecord.UserId != null)
+                {
+                    var user = _userManager.FindByIdAsync(newRecord.UserId).Result;
+                    affectedUserFullName = user.FullName;
+                }
+
+                List<TagsReplacements> replacements = new List<TagsReplacements>
+                {
+                    new TagsReplacements()
+                    {
+                        FindValue = "AffectedUserFullName",
+                        ReplacementValue = affectedUserFullName
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "ApplicationName",
+                        ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "HelpContactDetail",
+                        ReplacementValue =  newRecord.ContactPreference == "email" ? newRecord.Email : newRecord.CellNumber
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "HelpCategory",
+                        ReplacementValue = newRecord.Subject
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "HelpDescription",
+                        ReplacementValue = newRecord.Description
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "HelpLoginStatus",
+                        ReplacementValue = newRecord.IsLoggedIn  ? "Yes" : "No"
+                    },
+                    new TagsReplacements()
+                    {
+                        FindValue = "OrganisationName",
+                        ReplacementValue = TenantExecutionContext.Tenant.OrganisationName
+                    },
+                };
+
+                var userToSend = await _userManager.FindByIdAsync(_applicationUserId);
+                await _notificationService.SendNotificationAsync(null, 
+                                                                 TemplateTypeConstants.AdminUserHelpForm, 
+                                                                 DateTime.Now, 
+                                                                 userToSend, 
+                                                                 "",
+                                                                 MessageStatusConstants.Blue,
+                                                                 replacements,
+                                                                 null,
+                                                                 false,
+                                                                 true,
+                                                                 null,
+                                                                 null,
+                                                                 null,
+                                                                 "portal");
+
             }
             else
             {
