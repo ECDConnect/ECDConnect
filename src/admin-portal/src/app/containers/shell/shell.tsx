@@ -81,6 +81,8 @@ export default function Shell() {
   const { data: notificationsData } = useQuery(GetAllNotifications, {
     variables: {
       userId: user?.id,
+      inApp: false,
+      protocol: 'portal',
     },
     fetchPolicy: 'cache-and-network',
   });

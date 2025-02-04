@@ -62,8 +62,11 @@ namespace EcdLink.Api.CoreApi.Services
             _logger = logger;
         }
 
-        public async Task<List<MessageTemplate>> RetrieveTemplate(string template)
+        public async Task<List<MessageTemplate>> RetrieveTemplate(string template, string protocol)
         {            
+            if (protocol != "") {
+                return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true && x.Protocol == protocol).OrderBy(x => x.Protocol).ToList();
+            }
             return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).OrderBy(x => x.Protocol).ToList();
         }
 
@@ -117,11 +120,12 @@ namespace EcdLink.Api.CoreApi.Services
             bool dontSendIfExists = false, 
             string searchCriteria = null, 
             List<RelatedEntity> relatedEntities = null,
-            Guid? groupingId = null)
+            Guid? groupingId = null,
+            string protocol = "")
         {
             try
             {                
-                var templates = await RetrieveTemplate(templatetype);
+                var templates = await RetrieveTemplate(templatetype, protocol);
 
                 if (templates != null)
                 {
