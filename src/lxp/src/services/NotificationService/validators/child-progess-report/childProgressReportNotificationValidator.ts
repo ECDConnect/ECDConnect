@@ -7,7 +7,7 @@ import {
   NotificationIntervals,
 } from '../../NotificationService.types';
 import { ChildDto, ChildProgressReportSummaryModel } from '@ecdlink/core';
-import { addDays, addMonths, format, sub, subDays } from 'date-fns';
+import { addDays, addMonths, format, isBefore, subDays } from 'date-fns';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import ROUTES from '@/routes/routes';
 import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
@@ -175,12 +175,43 @@ export class ChildProgressReportNotificationValidator
     reportingPeriods: ChildProgressReportPeriodDto[]
   ): ChildProgressReportPeriodDto | undefined => {
     const today = new Date();
+    const currentYear = today.getFullYear();
 
-    const currentReportPeriod = reportingPeriods?.find(
-      (item) =>
-        new Date(item?.startDate) < today && new Date(item?.endDate) > today
+    const currentYearsReportingPeriods =
+      reportingPeriods
+        ?.filter((x) => new Date(x.startDate).getFullYear() === currentYear)
+        .sort(
+          (a, b) =>
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        ) || [];
+
+    // Get first in order where end date is after the current date
+    const index = currentYearsReportingPeriods.findIndex((x) =>
+      isBefore(
+        new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          new Date().getDate()
+        ),
+        new Date(x.endDate)
+      )
     );
-    return currentReportPeriod;
+
+    if (index < 0) {
+      return undefined;
+    }
+
+    const startDate = new Date(currentYearsReportingPeriods[index].startDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(currentYearsReportingPeriods[index].endDate);
+    endDate.setHours(23, 59, 59, 0);
+
+    return {
+      id: currentYearsReportingPeriods[index].id,
+      startDate: startDate.toString(),
+      endDate: endDate.toString(),
+    };
   };
 
   private notificationAlreadyDone = (reference: string): boolean => {
@@ -298,7 +329,6 @@ export class ChildProgressReportNotificationValidator
     reportingPeriod: ReportingPeriodType
   ): Message[] => {
     const {
-      user: userState,
       practitioner: practitionerState,
       classroomData: classroomState,
       children: childrenState,
@@ -306,7 +336,6 @@ export class ChildProgressReportNotificationValidator
 
     if (!practitionerState || !practitionerState.practitioner) return [];
 
-    const currentUser = userState.user;
     const children = childrenState?.childData?.children;
 
     const reference = referenceNames.allChildrenProgressReportsCreated;
@@ -333,12 +362,17 @@ export class ChildProgressReportNotificationValidator
 
     if (activeChildren?.length === 0) return [];
     if (!isBetweenReportProgressPeriodDate) return [];
-    if (reports?.length === 0 || reportsCompleted < 100) return [];
+    if (
+      reports?.length === 0 ||
+      reports?.length < activeChildren.length ||
+      reportsCompleted < 100
+    )
+      return [];
 
     const notification: Message = {
       reference,
-      title: `Well done, you've created progress reports for all children!`,
-      message: `Great job! You can get a summary of what you are working on with each child.`,
+      title: `Well done, all progress reports complete!`,
+      message: `Great job! View a summary of the skills each class is working on.`,
       priority: 23,
       actionText: 'Get summary',
       area: 'progress-report',
@@ -359,88 +393,6 @@ export class ChildProgressReportNotificationValidator
 
     return [notification];
   };
-
-  // private getNotificationsCompletedReportsAllChildren = (
-  //   reportingPeriod: ReportingPeriodType
-  // ): Message[] => {
-  //   const {
-  //     user: userState,
-  //     practitioner: practitionerState,
-  //     classroomData: classroomState,
-  //     children: childrenState,
-  //   } = this.store.getState();
-
-  //   if (!practitionerState || !practitionerState.practitioner) return [];
-
-  //   if (!practitionerState || !practitionerState.practitioner) return [];
-  //   const createProgressReportsPermission =
-  //     practitionerState?.practitioner?.permissions?.find(
-  //       (item) =>
-  //         item?.permissionName === PermissionsNames.create_progress_reports
-  //     );
-
-  //   if (
-  //     !practitionerState?.practitioner?.isPrincipal &&
-  //     !createProgressReportsPermission
-  //   )
-  //     return [];
-
-  //   const currentUser = userState.user;
-  //   const children = childrenState?.childData?.children;
-
-  //   const reference = referenceNames.allChildrenProgressReportsCreated;
-
-  //   if (this.notificationAlreadyDone(reference)) return [];
-
-  //   if (!classroomState?.classroom?.childProgressReportPeriods) return [];
-
-  //   const reportingPeriods =
-  //     classroomState?.classroom?.childProgressReportPeriods;
-
-  //   const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
-
-  //   const reports = this.getCompletedChildrenProgressReports(
-  //     currentReportPeriod!
-  //   );
-
-  //   const today = new Date();
-  //   const isBetweenReportProgressPeriodDate =
-  //     today >= new Date(currentReportPeriod?.startDate!) &&
-  //     today <= new Date(currentReportPeriod?.endDate!);
-  //   const activeChildren = children?.filter((item) => item?.isActive === true);
-
-  //   if (activeChildren?.length === 0) return [];
-
-  //   const expectedReportCount = activeChildren?.length;
-
-  //   if (!isBetweenReportProgressPeriodDate) return [];
-
-  //   if (reports?.length < expectedReportCount) return [];
-
-  //   const notification: Message = {
-  //     reference,
-  //     title: `Well done, you've created progress reports for all children!`,
-  //     message: `Great job! You can get a summary of what you are working on with each child.`,
-  //     priority: 24,
-  //     actionText: 'Get summary',
-  //     area: 'progress-report',
-  //     color: 'successMain',
-  //     dateCreated: new Date().toISOString(),
-  //     expiryDate: addDays(new Date(), 7).toISOString(),
-  //     icon: 'CheckCircleIcon',
-  //     viewOnDashboard: true,
-  //     viewType: 'Both',
-  //     routeConfig: {
-  //       route:
-  //         ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
-  //       params: {
-  //         report: 'completed-all',
-  //       },
-  //     },
-  //   };
-
-  //   return [notification];
-  // };
 
   private getNotificationsPastDeadlineDate = (
     reportingPeriod: ReportingPeriodType

@@ -466,6 +466,7 @@ export default function CreateTheme({
               setFilteredThemeDays={setFilteredThemeDays}
               allowedFileSize={allowedFileSize}
               formType={formType}
+              getValues={getValues}
             />
           </div>
 

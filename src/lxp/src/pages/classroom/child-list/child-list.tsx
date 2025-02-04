@@ -115,7 +115,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const hasPermissionToEdit =
     hasPermissionToManageChildren || practitioner?.isPrincipal || isTrialPeriod;
-
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);

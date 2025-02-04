@@ -51,8 +51,16 @@ export const SelectChildToTrack: React.FC = () => {
       profileText: childReport.childFirstName,
       avatarColor: getAvatarColor() || '',
       title: childReport.childFirstName,
-      subTitle: childReport.isInProgress ? 'In progress' : 'Not started',
-      alertSeverity: childReport.isInProgress ? 'warning' : 'error',
+      subTitle: childReport.isObservationsComplete
+        ? 'Completed'
+        : childReport.isInProgress
+        ? 'In progress'
+        : 'Not started',
+      alertSeverity: childReport.isObservationsComplete
+        ? 'success'
+        : childReport.isInProgress
+        ? 'warning'
+        : 'error',
       onActionClick: () =>
         history.push(ROUTES.PROGRESS_REPORT_LIST, {
           childId: childReport.childId,

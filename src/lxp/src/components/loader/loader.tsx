@@ -13,16 +13,17 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const [showIssue, setShowIssue] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check for connection type and set timeout accordingly.
-    // This gives slower connections more time to not throw false positives for issues.
-    const connectionType: string = (window.navigator as any).connection
-      .effectiveType as string;
-    const issueTimeout =
-      TIMEOUTS[connectionType].loadIssueTime || TIMEOUTS['4g'].loadIssueTime;
+    // Ensure compatibility with all browsers
+    const connection = (window.navigator as any).connection;
+    const connectionType: string = connection?.effectiveType || '4g';
+
+    // Ensure timeout exists to avoid undefined errors
+    const issueTimeout = TIMEOUTS[connectionType]?.loadIssueTime || 5000; // Default 5s timeout if missing
 
     const timer = setTimeout(() => {
       setShowIssue(true);
     }, issueTimeout);
+
     return () => clearTimeout(timer);
   }, []);
 

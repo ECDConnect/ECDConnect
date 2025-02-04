@@ -43,6 +43,7 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
 import { replaceSkillText } from '@/utils/child/child-progress-report.utils';
+import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 
 const { usePDF } = require('react-to-pdf');
 
@@ -52,7 +53,16 @@ export interface iSkills {
 }
 
 export const ProgrammeDashboard: React.FC = () => {
+  const {
+    percentageReportsCompleted,
+    percentageObservationsCompleted,
+    childReports,
+  } = useProgressForChildren();
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
+
+  const completedReportCount = childReports.filter(
+    (x) => !!x.report && !!x.report.dateCompleted
+  ).length;
 
   const { isLoading: isLoadingActivities } = useThunkFetchCall(
     'activityData',
@@ -463,7 +473,7 @@ export const ProgrammeDashboard: React.FC = () => {
           title="What are children working on?"
           customDetailText={
             <div className="text-textMid">
-              {`Base on Report ${currentReportingPeriod?.reportNumber}, here are some areas that children are working on:`}
+              {`Based on Report ${currentReportingPeriod?.reportNumber}, here are some areas that children are working on:`}
               <div>
                 {listOfWorkingOnActivities?.map((item) => (
                   <div className="mt-2">{`\u00A0\u00A0\u00A0\u00A0• ${replaceSkillText(
@@ -530,10 +540,20 @@ export const ProgrammeDashboard: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (lastProgressReportPeriodHasPassed && baseReports?.length > 0) {
+    if (
+      (percentageObservationsCompleted === 100 ||
+        percentageReportsCompleted === 100 ||
+        completedReportCount > 0) &&
+      lastProgressReportPeriodHasPassed
+    ) {
       showProgressReportEndedDialog();
     }
-  }, [lastProgressReportPeriodHasPassed, baseReports?.length]);
+  }, [
+    percentageReportsCompleted,
+    percentageObservationsCompleted,
+    completedReportCount,
+    lastProgressReportPeriodHasPassed,
+  ]);
 
   return (
     <BannerWrapper

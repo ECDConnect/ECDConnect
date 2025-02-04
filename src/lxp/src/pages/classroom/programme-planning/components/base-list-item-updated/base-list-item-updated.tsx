@@ -37,13 +37,11 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
   dividerColor = 'uiLight',
   backgroundColor = 'transparent',
   titleTypography,
-  subTitleTypography,
   actionIconName = 'ChevronRightIcon',
   actionIconColor = 'textLight',
   iconName = 'InformationIcon',
   iconBackgroundColor = 'uiBg',
   iconColor = 'white',
-  borderRadius = '',
   routineItem,
   disabled,
   onClick,
@@ -51,16 +49,13 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
   overwriteTextSlotRender,
   overwritePostSlotRender,
 }) => {
-  const isMessageRoutineItem =
-    routineItem?.name === DailyRoutineItemType.messageBoard ||
-    routineItem?.name === DailyRoutineItemType.greeting ||
-    routineItem?.name === DailyRoutineItemType.freePlay
-      ? 'w-full'
-      : 'w-3/4';
-  const showTitle =
-    routineItem?.name === DailyRoutineItemType.messageBoard ||
-    routineItem?.name === DailyRoutineItemType.greeting ||
-    routineItem?.name === DailyRoutineItemType.freePlay;
+  const isMessageRoutineItem = [
+    DailyRoutineItemType.messageBoard,
+    DailyRoutineItemType.greeting,
+    DailyRoutineItemType.freePlay,
+  ].includes(routineItem?.name as DailyRoutineItemType);
+
+  const containerWidth = isMessageRoutineItem ? 'w-full' : 'w-3/4';
 
   return (
     <button
@@ -71,38 +66,42 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
         styles.container(backgroundColor, dividerType, dividerColor)
       )}
     >
-      {!showTitle && (
-        <div className={'flex w-1/4 flex-row items-center justify-start'}>
-          {overwritePreSlotRender === undefined && (
-            <div className={`bg-${iconBackgroundColor} mr-4 rounded-full p-3`}>
-              {renderIcon(iconName, `w-5 h-5 text-alertBg`)}
+      {!isMessageRoutineItem && (
+        <div className="flex w-1/4 flex-row items-center justify-start">
+          {overwritePreSlotRender ? (
+            overwritePreSlotRender()
+          ) : (
+            <div
+              className={classNames(
+                'mr-4 rounded-full p-3',
+                `bg-${iconBackgroundColor}`
+              )}
+            >
+              {renderIcon(iconName, 'w-5 h-5 text-alertBg')}
             </div>
           )}
-          <div className={'flex flex-col items-start justify-start'}>
-            {overwriteTextSlotRender !== undefined && overwriteTextSlotRender()}
-            {overwriteTextSlotRender === undefined && (
-              <>
-                {titleTypography &&
-                  routineItem?.name !== DailyRoutineItemType.messageBoard &&
-                  routineItem?.name !== DailyRoutineItemType.greeting &&
-                  routineItem?.name !== DailyRoutineItemType.freePlay && (
-                    <Typography
-                      {...titleTypography}
-                      className={'text-textMid w-full'}
-                    />
-                  )}
-              </>
-            )}
+          <div className="flex flex-col items-start justify-start">
+            {overwriteTextSlotRender?.() ||
+              (titleTypography && (
+                <Typography
+                  {...titleTypography}
+                  className="text-textMid w-full"
+                />
+              ))}
           </div>
         </div>
       )}
+
       <div
-        className={`flex ${isMessageRoutineItem} flex-row items-center justify-end ${
-          !showTitle && `border-primaryAccent2 ml-1 border-l p-3 pr-0 `
-        }`}
+        className={classNames(
+          'flex flex-row items-center justify-end',
+          containerWidth,
+          !isMessageRoutineItem
+            ? 'border-primaryAccent2 ml-1 border-l p-3 pr-0'
+            : ''
+        )}
       >
-        {overwritePostSlotRender !== undefined && overwritePostSlotRender()}
-        {overwritePostSlotRender === undefined &&
+        {overwritePostSlotRender?.() ||
           renderIcon(actionIconName, styles.icon(actionIconColor))}
       </div>
     </button>

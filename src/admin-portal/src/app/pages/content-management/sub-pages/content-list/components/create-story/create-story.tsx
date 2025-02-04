@@ -167,7 +167,7 @@ export default function CreateStory({
   };
 
   const [updateContent] = useMutation(updateMutation);
-  const [crateContent] = useMutation(createMutation);
+  const [createContent] = useMutation(createMutation);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -274,14 +274,21 @@ export default function CreateStory({
     setLoading(true);
 
     const model = { ...values };
+    let newContentId = '';
 
     if (!content?.id) {
-      await crateContent({
+      const newContent = await createContent({
         variables: {
           input: { ...model },
           localeId: selectedLanguageId.toString(),
         },
       });
+
+      if (newContent) {
+        newContentId = newContent?.data?.createStoryBook;
+      }
+
+      console.log('newContent', newContent);
       setLoading(false);
       savedContent();
       cancelEdit();
@@ -351,7 +358,7 @@ export default function CreateStory({
     await updateStoryBookAndParts({
       variables: {
         storyBookParts: storyBookParts,
-        storyBookContentId: content.id,
+        storyBookContentId: content === undefined ? +newContentId : content.id,
         localeId: selectedLanguageId,
         currentBookPartsIds: model.storyBookParts ? model.storyBookParts : '',
       },

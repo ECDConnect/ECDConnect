@@ -6,7 +6,12 @@ import {
   NotificationValidator,
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
-import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  RoleSystemNameEnum,
+  TenantType,
+} from '@ecdlink/core';
+import { differenceInDays } from 'date-fns';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -35,15 +40,6 @@ export class IncompletePractitionerInformationNotificationValidator
 
     if (!classroomState || !userState) return [];
 
-    /**
-     * Notification is returned when
-     * 1. The user is a practitioner
-     * 2. The practitioner object is in the state
-     * 3. The practitioner is not a principal yet
-     */
-
-    // TODO: change conditions for when to show the page
-
     if (practitionerState.practitioner) {
       const hasPractitionerRole = userState?.user?.roles?.some(
         (role) => role.systemName === RoleSystemNameEnum.Practitioner
@@ -60,15 +56,28 @@ export class IncompletePractitionerInformationNotificationValidator
         Boolean(practitionerState.practitioner?.principalHierarchy) &&
         !practitionerState.practitioner?.isPrincipal;
 
+      const isOpenAccess =
+        tenantState.tenant?.tenantType === TenantType.OpenAccess;
+      const diffDays = differenceInDays(
+        new Date(),
+        new Date(practitionerState.practitioner?.startDate!)
+      );
+      const isTrialPeriod =
+        isOpenAccess &&
+        diffDays <= 30 &&
+        !classroomState.classroom?.preschoolCode;
+
       const showNotificationForPractitionerFlow =
         (hasPractitionerRole || addedByPrincipal) &&
         practitionerState?.practitioner?.progress === 0;
+
       const showNotificationForPrincipalFlow =
         (hasPrincipalRole && notRegistered && !addedByPrincipal) ||
         (!addedByPrincipal &&
           practitionerState?.practitioner?.progress === 0) ||
         (practitionerState?.practitioner?.progress === 1.0 &&
-          !addedByPrincipal);
+          !addedByPrincipal) ||
+        isTrialPeriod;
 
       if (showNotificationForPrincipalFlow) {
         return [

@@ -173,6 +173,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           if (
             propName === 'shareContent' &&
             (field?.contentValue === undefined ||
+              field?.contentValue.value === null ||
               field?.contentValue?.value === 'no' ||
               field?.contentValue?.value === 'false')
           ) {
@@ -271,6 +272,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           ) {
             return null;
           }
+
           if (
             propName === 'shareContent' &&
             field?.contentValue !== undefined &&

@@ -55,7 +55,7 @@ export const PractitionerSetup = ({
     resolver: yupResolver(setupPractitioner),
     defaultValues: {
       practitionerToProgramme: undefined,
-      allowPermissions: undefined || false,
+      allowPermissions: false,
     },
   });
 

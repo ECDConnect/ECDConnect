@@ -62,6 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            var schoolRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             var pracRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id == id).Include(x => x.Classroom).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
@@ -91,10 +92,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     pointsService.CalculateAddNewClassToPreschool(uId);
                     // EC-3508 - as soon as a class is created, we set the progress to 2
                     var practitionerToUpdate = pracRepo.GetByUserId(uId);
-                    practitionerToUpdate.Progress = 2;
-                    practitionerToUpdate.IsPrincipal = true;
-                    pracRepo.Update(practitionerToUpdate);
+                    if (practitionerToUpdate.Progress != 2) {
+                        practitionerToUpdate.Progress = 2;
+                        practitionerToUpdate.IsPrincipal = true;
+                        pracRepo.Update(practitionerToUpdate);
+                    }
 
+                    // notifiy the practitioner that he was assigned to a class
+                    var practitioner = pracRepo.GetByUserId(input.UserId.Value);
+                    // only send to practitioner and not principal
+                    if (practitioner != null && !practitioner.IsPrincipalOrAdmin())
+                    {
+                        var classroom = schoolRepo.GetById(input.ClassroomId);
+                        var principalToSend = userManager.FindByIdAsync(classroom.UserId.Value.ToString()).Result;
+                        var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
+                        List<TagsReplacements> replacements = new List<TagsReplacements>
+                        {
+                            new TagsReplacements()
+                            {
+                                FindValue = "ClassName",
+                                ReplacementValue = input.Name
+                            },
+                            new TagsReplacements()
+                            {
+                                FindValue = "PrincipalName",
+                                ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
+                            }
+                        };
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(newClassRoomGroup.Id, "ClassRoomGroup") });
+                    }
                     return newClassRoomGroup;
 
                 }
@@ -126,7 +152,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
 
                 //update classrooms hierarchy and send through to next function
-                var previousUser = classRoomGroup.UserId;
+                var previousUserId = classRoomGroup.UserId;
                 classRoomGroup.Hierarchy = hierarchy;
                 classRoomGroup.UserId = input.UserId;
                 classRoomGroup.ClassroomId = input.ClassroomId;
@@ -136,32 +162,41 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 classRoomGroup.UpdatedBy = uId.ToString();
                 classRepo.Update(classRoomGroup);
 
-                //get principal details
-                var principalToSend = userManager.FindByIdAsync(classRoomGroup.Classroom.UserId.Value.ToString()).Result;
-                var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
-                var practitioner = pracRepo.GetByUserId(input.UserId.Value);
-                List<TagsReplacements> replacements = new List<TagsReplacements>
-                {
-                    new TagsReplacements()
-                    {
-                        FindValue = "ClassName",
-                        ReplacementValue = input.Name
-                    },
-                    new TagsReplacements()
-                    {
-                        FindValue = "PrincipalName",
-                        ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
-                    }
-                };
-
                 //if this was a new assignment to a new practitioner trigger message to notify them
-                if (previousUser != input.UserId)
+                if (previousUserId != input.UserId)
                 {
-                    if (!practitioner.IsPrincipalOrAdmin())
+                    var practitioner = pracRepo.GetByUserId(input.UserId.Value);
+                    // only send to practitioner and not principal
+                    if (practitioner != null && !practitioner.IsPrincipalOrAdmin())
                     {
-                        // only send to practitioner and not principal
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(input.UserId.Value, "ApplicationUser") });
+                        var principalToSend = userManager.FindByIdAsync(classRoomGroup.Classroom.UserId.Value.ToString()).Result;
+                        var userToSend = userManager.FindByIdAsync(input.UserId.Value.ToString()).Result;
+                        List<TagsReplacements> replacements = new List<TagsReplacements>
+                        {
+                            new TagsReplacements()
+                            {
+                                FindValue = "ClassName",
+                                ReplacementValue = input.Name
+                            },
+                            new TagsReplacements()
+                            {
+                                FindValue = "PrincipalName",
+                                ReplacementValue = principalToSend.FirstName + " " + principalToSend.Surname
+                            }
+                        };
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ReassignedToNewClass, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7), false, true, null, new List<RelatedEntity> { new RelatedEntity(classRoomGroup.Id, "ClassRoomGroup") });
                     }
+
+                    // if the user has changed, we need to disable notification for previous user.
+                    var previousUser = userManager.FindByIdAsync(previousUserId.ToString()).Result;
+                    var previousReassignedMessages = notificationService.GetMessagesForUser(previousUserId.ToString(), TemplateTypeConstants.ReassignedToNewClass, classRoomGroup.Id);
+                    if (previousReassignedMessages.Count > 0) {
+                        foreach (var item in previousReassignedMessages)
+                        {
+                            notificationService.DisableNotification(item.Id.ToString());
+                        }
+                    }
+
                 }
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this

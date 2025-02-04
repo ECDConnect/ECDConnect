@@ -1,0 +1,2 @@
+
+UPDATE "MessageTemplate" SET "Message" = '[[PrincipalName]] has invited you to join [[ProgrammeName]] on [[ApplicationName]], your assistant in brighter beginnings! Check it out: [[LoginLink:shorturl]]' WHERE "TemplateType"='ProgrammeInvitation' and "Protocol"='sms'

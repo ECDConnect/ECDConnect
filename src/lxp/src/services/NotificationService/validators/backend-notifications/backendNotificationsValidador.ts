@@ -41,27 +41,33 @@ export class BackendNotificationsValidator implements NotificationValidator {
 
       const viewType = this.getViewType(notification?.messageProtocol ?? '');
 
-      notifications.push({
-        ...notificationConfig,
-        isFromBackend: true,
-        reference: notification.id,
-        title: notification?.subject ?? '',
-        message: notification.message ?? '',
-        dateCreated: notification.messageDate,
-        priority: notification?.ordering,
-        viewOnDashboard:
-          notificationConfig?.viewOnDashboard || viewType === 'Hub',
-        actionText: notification.cTAText ?? '',
-        cta: notification.cTA ?? '',
-        icon: notificationConfig?.icon || 'ArrowCircleRightIcon',
-        color:
-          notificationConfig?.color ||
-          this.getMessagesColor(notification?.status ?? ''),
-        viewType: notificationConfig?.viewType || viewType,
-        area: notificationConfig?.area || this.getDefaultArea(this.user ?? {}),
-        expiryDate: notification.messageEndDate,
-        action: notification.action ?? '',
-      });
+      // Ensure that future messages don't display here
+      if (
+        new Date(notification.messageDate).getTime() <= new Date().getTime()
+      ) {
+        notifications.push({
+          ...notificationConfig,
+          isFromBackend: true,
+          reference: notification.id,
+          title: notification?.subject ?? '',
+          message: notification.message ?? '',
+          dateCreated: notification.messageDate,
+          priority: notification?.ordering,
+          viewOnDashboard:
+            notificationConfig?.viewOnDashboard || viewType === 'Hub',
+          actionText: notification.cTAText ?? '',
+          cta: notification.cTA ?? '',
+          icon: notificationConfig?.icon || 'ArrowCircleRightIcon',
+          color:
+            notificationConfig?.color ||
+            this.getMessagesColor(notification?.status ?? ''),
+          viewType: notificationConfig?.viewType || viewType,
+          area:
+            notificationConfig?.area || this.getDefaultArea(this.user ?? {}),
+          expiryDate: notification.messageEndDate,
+          action: notification.action ?? '',
+        });
+      }
     }
 
     return notifications;
@@ -160,7 +166,6 @@ export class BackendNotificationsValidator implements NotificationValidator {
     if (response.status !== 200 || response.data.errors) {
       return [];
     }
-
     return response.data.data.allNotifications;
   }
 }
