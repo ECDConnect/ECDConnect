@@ -1,11 +1,11 @@
 import { Button, Typography } from '@ecdlink/ui';
 import { ReactComponent as Emoji4Icon } from '@/assets/ECD_Connect_emoji4.svg';
 
-export type ProgressTabNoReports = {
+export type ProgressTabNoReportsProps = {
   trackProgress: () => void;
 };
 
-export const ProgressTabNoReports: React.FC<ProgressTabNoReports> = ({
+export const ProgressTabNoReports: React.FC<ProgressTabNoReportsProps> = ({
   trackProgress,
 }) => {
   return (
