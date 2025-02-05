@@ -47,7 +47,7 @@ namespace EcdLink.Api.CoreApi.Services
         public List<Child> GetChildrenForClassroomGroup(Guid classroomGroupId)
         {
             var learnerUserIds = _learnerRepo.GetAll()
-                .Where(x => x.IsActive && x.ClassroomGroupId == classroomGroupId)
+                .Where(x => x.IsActive && x.ClassroomGroupId == classroomGroupId && !x.StoppedAttendance.HasValue)
                 .Select(x => x.UserId)
                 .ToList();
 

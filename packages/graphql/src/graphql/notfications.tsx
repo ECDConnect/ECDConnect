@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GetAllNotifications = gql`
-  query allNotifications($userId: String) {
-    allNotifications(userId: $userId) {
+  query allNotifications($userId: String, $protocol: String, $inApp: Boolean) {
+    allNotifications(userId: $userId, protocol: $protocol, inApp: $inApp) {
       id
       fromUserId
       messageProtocol

@@ -8,6 +8,7 @@ namespace EcdLink.Api.CoreApi.Services.Interfaces
     public interface IChildService
     {
         List<Child> GetChildrenForClassroom(Guid classroomId);
+        List<Child> GetChildrenForClassroomGroup(Guid classroomGroupId);
         void UpdateChild(UpdateChildAndCaregiverInput input);
     }
 }

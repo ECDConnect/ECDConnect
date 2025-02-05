@@ -287,11 +287,6 @@ export default function CreateStory({
       if (newContent) {
         newContentId = newContent?.data?.createStoryBook;
       }
-
-      console.log('newContent', newContent);
-      setLoading(false);
-      savedContent();
-      cancelEdit();
     } else {
       await updateContent({
         variables: {
