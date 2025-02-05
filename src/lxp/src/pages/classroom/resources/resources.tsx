@@ -15,6 +15,9 @@ import { authSelectors } from '@/store/auth';
 import { AllResources } from './all-resources/all-resources';
 import { userSelectors } from '@/store/user';
 import { ComingSoon } from '@/pages/business/components/coming-soon/coming-soon';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useDialog } from '@ecdlink/core';
 
 export const Resources = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -27,6 +30,9 @@ export const Resources = () => {
   const [viewAllResources, setViewAllResources] = useState(false);
   const [resourceTypeItem, setResourceTypeItem] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
+  const isComingSoon = false;
 
   const activitiesResources = useMemo(
     () =>
@@ -144,7 +150,21 @@ export const Resources = () => {
     });
   }
 
-  const isComingSoon = false;
+  useEffect(() => {
+    if (!isOnline) {
+      setIsLoading(false);
+      openOfflineDialog();
+    }
+  }, [isOnline]);
+
+  // Use useCallback to avoid re-renders
+  const openOfflineDialog = useCallback(() => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => <OnlineOnlyModal onSubmit={onSubmit} />,
+    });
+  }, [dialog]);
 
   if (isComingSoon) {
     return (
@@ -154,22 +174,24 @@ export const Resources = () => {
     );
   }
 
+  const hasResources = resourceItems?.length > 0;
+
   return (
     <div className="p-4">
       {isLoading ? (
         <LoadingSpinner
           className="mt-6"
-          size={'medium'}
-          spinnerColor={'quatenary'}
-          backgroundColor={'uiBg'}
+          size="medium"
+          spinnerColor="quatenary"
+          backgroundColor="uiBg"
         />
-      ) : resourceItems && resourceItems?.length > 0 ? (
+      ) : hasResources ? (
         <div>
           <Typography
             type="h2"
             weight="bold"
             color="textDark"
-            text={`What type of resource would you like to see?`}
+            text="What type of resource would you like to see?"
           />
           <StackedList
             className="my-4 flex w-full flex-col gap-1 rounded-2xl"
@@ -177,10 +199,11 @@ export const Resources = () => {
             listItems={resourceItems}
           />
         </div>
-      ) : (
+      ) : isOnline ? (
         <ComingSoon />
-      )}
-      {resourceItems && resourceItems?.length > 0 && (
+      ) : null}
+
+      {hasResources && (
         <Button
           onClick={() => setViewAllResources(true)}
           className="mt-12 w-full rounded-2xl"
@@ -188,10 +211,11 @@ export const Resources = () => {
           color="quatenary"
           textColor="white"
           type="filled"
-          icon={'EyeIcon'}
-          text={'See all classroom resources'}
+          icon="EyeIcon"
+          text="See all classroom resources"
         />
       )}
+
       <Dialog
         stretch
         fullScreen
