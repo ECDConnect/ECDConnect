@@ -182,6 +182,7 @@ export const ProgrammeDashboard: React.FC = () => {
 
   const showStartPlanning = useCallback(() => {
     if (
+      isOnline &&
       !isWalkthrough &&
       hasPermissionToEdit &&
       !isWholeWeekPlanned &&
@@ -250,6 +251,7 @@ export const ProgrammeDashboard: React.FC = () => {
     selectedDate,
     tomorrowUnplannedActivity,
     user?.firstName,
+    isOnline,
   ]);
 
   const checkIfToShowInitialWalkthrough = useCallback(() => {
