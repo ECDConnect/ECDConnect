@@ -546,15 +546,23 @@ export const Dashboard: React.FC = () => {
             classroomsThunkActions.getClassroom({})
           ).unwrap())();
       }
-      if (classroom) {
-        (async () =>
-          await appDispatch(
-            childrenThunkActions.getChildrenForClassroomGroup({
-              classroomGroupId: classroom?.id,
-              overrideCache: false,
-            })
-          ).unwrap())();
+
+      console.log(`classroomGroups`, classroomGroups);
+      if (classroomGroups?.length) {
+        (async () => {
+          await Promise.all(
+            classroomGroups.map((group) =>
+              appDispatch(
+                childrenThunkActions.getChildrenForClassroomGroup({
+                  classroomGroupId: group.id,
+                  overrideCache: true,
+                })
+              ).unwrap()
+            )
+          );
+        })();
       }
+
       if (
         !!practitioner?.userId &&
         (!classroomGroups || !classroomGroups.length)

@@ -198,13 +198,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         })
       ),
     ];
-    promises.push(
-      appDispatch(
-        childrenThunkActions.getChildrenForClassroomGroup({
-          classroomGroupId: classroomForUser?.id!,
-        })
-      ).unwrap()
-    );
+    // promises.push(
+    //   appDispatch(
+    //     childrenThunkActions.getChildrenForClassroomGroup({
+    //       classroomGroupId: classroomForUser?.id!,
+    //     })
+    //   ).unwrap()
+    // );
     if (!isCoach) {
       promises.push(
         appDispatch(classroomsThunkActions.getClassroom({})).unwrap()
