@@ -165,8 +165,13 @@ namespace ECDLink.Api.CoreApi.Services
                     var practitioner = _practiGenericRepo.GetByUserId(userToSend.Id);
                     if (!practitioner.IsPrincipalOrAdmin())
                     {
-                        _notificationService.SendNotificationAsync(null, (absentDateEnd.HasValue ? TemplateTypeConstants.PrincipalMarkedOnLeave : TemplateTypeConstants.PractitionerMarkedAbsent), DateTime.Now.Date, userToSend, "", MessageStatusConstants.Amber, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, (absentDateEnd.HasValue ? absentDateEnd : absentDate), false, true, practitionerId);
+                        // practitioner-marked-onleave 
+                        // show while on leave
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDateEnd, false, true, practitionerId);
+
+                        // marked-onleave
+                        // show until day before leave starts
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalMarkedOnLeave, absentDate.AddDays(-1), userToSend, "", MessageStatusConstants.Amber, replacements, absentDate.AddDays(-1), false, true, practitionerId);
                     }
                 }
             }
