@@ -171,7 +171,9 @@ namespace ECDLink.Api.CoreApi.Services
 
                         // marked-onleave
                         // show until day before leave starts
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalMarkedOnLeave, absentDate.AddDays(-1), userToSend, "", MessageStatusConstants.Amber, replacements, absentDate.AddDays(-1), false, true, practitionerId);
+                        var beforeAbsentDayStarts = absentDate.AddDays(-1);
+                        var startDate = DateTime.Now.Date < beforeAbsentDayStarts.Date ? DateTime.Now.Date : beforeAbsentDayStarts.Date;
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalMarkedOnLeave, startDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDate.AddDays(-1), false, true, practitionerId);
                     }
                 }
             }
