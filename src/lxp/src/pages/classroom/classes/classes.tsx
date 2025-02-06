@@ -30,9 +30,10 @@ export const Classes = () => {
   );
   const classes = useSelector(classroomsSelectors.getClassroomGroups);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const isPrincipal = !!practitionerLoggedIn?.isPrincipal;
+  const isPrincipal = Boolean(practitionerLoggedIn?.isPrincipal);
   const appDispatch = useAppDispatch();
 
+  // Fetch children data when classrooms data is available
   useEffect(() => {
     if (classes?.length) {
       (async () => {
@@ -41,14 +42,13 @@ export const Classes = () => {
             appDispatch(
               childrenThunkActions.getChildrenForClassroomGroup({
                 classroomGroupId: group.id,
-                overrideCache: true,
               })
             ).unwrap()
           )
         );
       })();
     }
-  }, []);
+  }, [classes]);
 
   /**
    * Matches each class with its practitioner
@@ -78,11 +78,7 @@ export const Classes = () => {
     return getClassesWithPractitioners().map((currentClass) => ({
       title: currentClass.name,
       profileText: currentClass.name.slice(0, 2).toUpperCase(),
-      subTitle: `${
-        currentClass.practitioner?.name
-          ? `${currentClass.practitioner.name}, `
-          : ''
-      }${
+      subTitle: `${currentClass.practitioner?.name || ''}, ${
         currentClass.learners?.filter((child) => child?.isActive !== false)
           ?.length ?? 0
       } children`,
