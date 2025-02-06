@@ -541,21 +541,21 @@ export const ProgrammeDashboard: React.FC = () => {
     listOfWorkingOnActivities,
   ]);
 
-  useEffect(() => {
-    if (
-      (percentageObservationsCompleted === 100 ||
-        percentageReportsCompleted === 100 ||
-        completedReportCount > 0) &&
-      lastProgressReportPeriodHasPassed
-    ) {
-      showProgressReportEndedDialog();
-    }
-  }, [
-    percentageReportsCompleted,
-    percentageObservationsCompleted,
-    completedReportCount,
-    lastProgressReportPeriodHasPassed,
-  ]);
+  // useEffect(() => {
+  //   if (
+  //     (percentageObservationsCompleted === 100 ||
+  //       percentageReportsCompleted === 100 ||
+  //       completedReportCount > 0) &&
+  //     lastProgressReportPeriodHasPassed
+  //   ) {
+  //     showProgressReportEndedDialog();
+  //   }
+  // }, [
+  //   percentageReportsCompleted,
+  //   percentageObservationsCompleted,
+  //   completedReportCount,
+  //   lastProgressReportPeriodHasPassed,
+  // ]);
 
   return (
     <BannerWrapper
