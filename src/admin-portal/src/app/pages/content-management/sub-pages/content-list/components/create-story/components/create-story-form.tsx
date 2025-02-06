@@ -109,14 +109,10 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
         subLabel = 'Use commas to separate words';
       }
 
-      if (!isEdit) {
-        setIsLoading(false);
-      } else {
-        if (index + 1 === fields.length) {
-          setTimeout(function () {
-            setIsLoading(false);
-          }, 4000);
-        }
+      if (index + 1 === fields.length) {
+        setTimeout(function () {
+          setIsLoading(false);
+        }, 6000);
       }
 
       const isAuthorizationChecked =

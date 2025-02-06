@@ -23,9 +23,10 @@ namespace ECDLink.Core.Services.Interfaces
             bool dontSendIfExists = false,
             string searchCriteria = null,
             List<RelatedEntity> relatedEntities = null,
-            Guid? groupingId = null);
+            Guid? groupingId = null,
+            string protocol = "");
 
-        Task<List<MessageTemplate>> RetrieveTemplate(string template);
+        Task<List<MessageTemplate>> RetrieveTemplate(string template, string protocol = "");
         Task<MessageLog> CommitNotification(Notification notification, MessageTemplate template);
         Task<bool> DisableNotification(string notificationId);
         Task<bool> ExpireNotification(string notificationId);

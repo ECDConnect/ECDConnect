@@ -465,7 +465,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   useEffect(() => {
     if (
-      currentDailyProgramme === undefined &&
+      currentDailyProgramme === undefined ||
       currentProgramme?.dailyProgrammes.length === 0
     ) {
       createOrEditProgramme(

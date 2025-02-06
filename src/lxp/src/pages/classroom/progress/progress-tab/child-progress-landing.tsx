@@ -246,7 +246,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {/* Report period setup, children, but no reports yet */}
       {isReportWindowSet &&
         !!children.length &&
-        childReports.every((x) => x.isNotStarted) && (
+        childReports.every((x) => x.isNotStarted) &&
+        children.every((x) => (x.ageInMonths ?? 0) < 60) && (
           <ProgressTabNoReports
             trackProgress={handleContinueTrackingProgress}
           />

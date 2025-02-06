@@ -63,12 +63,16 @@ export const InfoPage = ({
     }
   }, [selectedLanguage, i18n]);
 
-  const activeLanguages = languages
-    .filter((language) => language.isActive)
-    .map((language) => ({
-      value: language.locale,
-      label: language.description,
-    }));
+  const activeLanguages = Array.from(
+    new Map(
+      languages
+        .filter((language) => language.isActive)
+        .map((language) => [
+          language.locale,
+          { value: language.locale, label: language.description },
+        ])
+    ).values()
+  );
 
   return (
     <MoreInformationPage
