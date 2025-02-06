@@ -303,19 +303,14 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       })(),
     });
 
-    // Classes item
-    if (!missingProgramme || isTrialPeriod) {
-      const classesSubTitle = isTrialPeriod
-        ? classroomGroups
-            ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
-            .map((x) => x.name)
-            .join(', ')
-        : 'None';
-      // const classesActionName = isPrincipal
-      //   ? 'Edit'
-      //   : !practitioner?.shareInfo || !isTrialPeriod
-      //   ? 'Add'
-      //   : 'View';
+    if (!missingProgramme || !isTrialPeriod || classroomGroups.length > 0) {
+      const classesSubTitle =
+        !isTrialPeriod || classroomGroups.length > 0
+          ? classroomGroups
+              ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+              .map((x) => x.name)
+              .join(', ')
+          : 'None';
 
       const classesActionName =
         practitioner?.shareInfo && !isTrialPeriod
