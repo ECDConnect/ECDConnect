@@ -101,7 +101,7 @@ export const ClassDashboard: React.FC = () => {
     []
   );
 
-  console.log(`children from class dashboard`, children);
+  // console.log(`children from class dashboard`, children);
 
   const { practitionerIsOnLeave, currentAbsentee } = usePractitionerAbsentees(
     practitioner!

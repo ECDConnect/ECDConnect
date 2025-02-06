@@ -148,7 +148,7 @@ export const getChildrenForClassroomGroup = createAsyncThunk<
         userAuth.auth_token
       ).getChildrenForClassroomGroup(classroomGroupId);
 
-      console.log(`Children retrieved:`, children);
+      // console.log(`Children retrieved:`, children);
 
       return {
         children,

@@ -129,6 +129,8 @@ export const Dashboard: React.FC = () => {
   );
   const { setState } = useAppContext();
 
+  console.log(`classroomGroups`, classroomGroups);
+
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
