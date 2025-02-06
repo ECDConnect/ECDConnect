@@ -129,8 +129,6 @@ export const Dashboard: React.FC = () => {
   );
   const { setState } = useAppContext();
 
-  console.log(`classroomGroups`, classroomGroups);
-
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
@@ -548,23 +546,6 @@ export const Dashboard: React.FC = () => {
             classroomsThunkActions.getClassroom({})
           ).unwrap())();
       }
-
-      console.log(`classroomGroups`, classroomGroups);
-      if (classroomGroups?.length) {
-        (async () => {
-          await Promise.all(
-            classroomGroups.map((group) =>
-              appDispatch(
-                childrenThunkActions.getChildrenForClassroomGroup({
-                  classroomGroupId: group.id,
-                  overrideCache: true,
-                })
-              ).unwrap()
-            )
-          );
-        })();
-      }
-
       if (
         !!practitioner?.userId &&
         (!classroomGroups || !classroomGroups.length)

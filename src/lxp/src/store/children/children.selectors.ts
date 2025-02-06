@@ -11,6 +11,13 @@ import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { differenceInMonths } from 'date-fns';
 import { getCurrentProgressReportPeriod } from '../classroom/classroom.selectors';
 
+export const getChildrenForClassroomGroup = (classroomGroupId: string) =>
+  createSelector(
+    (state: RootState) => state.children.learnersByClassroom,
+    (learnersByClassroom) =>
+      learnersByClassroom ? learnersByClassroom[classroomGroupId] : 0
+  );
+
 export const getChildren = (state: RootState): ChildDto[] | undefined =>
   state.children.childData.children;
 

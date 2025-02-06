@@ -121,6 +121,7 @@ const childrenSlice = createSlice({
         };
       }
     });
+
     builder.addCase(getChildrenForClassroomGroup.fulfilled, (state, action) => {
       if (!action.payload.retrievedFromCache) {
         const unsyncedChildren = state.childData.children.filter(
@@ -134,6 +135,15 @@ const childrenSlice = createSlice({
         state.childData = {
           children: unsyncedChildren.concat(newChildren),
           dateRefreshed: new Date().toDateString(),
+        };
+
+        // Store learner count per classroom
+        const classroomGroupId = action.meta.arg.classroomGroupId;
+        state.learnersByClassroom = {
+          ...state.learnersByClassroom,
+          [classroomGroupId]: newChildren.filter(
+            (child) => child.isActive !== false
+          ).length,
         };
       }
     });
