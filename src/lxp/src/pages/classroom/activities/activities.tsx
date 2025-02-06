@@ -103,6 +103,10 @@ export const ActivitiesTab = () => {
     currentReportingPeriod?.endDate &&
     new Date(currentReportingPeriod?.endDate) > new Date();
 
+  const hasClickedAfterEndOfProgressReportPeriodEnded = getStorageItem(
+    LocalStorageKeys?.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
+  );
+
   const showProgressReportEndedDialog = useCallback(async () => {
     dialog({
       // blocking: true,
@@ -183,7 +187,8 @@ export const ActivitiesTab = () => {
     if (
       percentageReportsCompleted === 100 &&
       completedReportCount > 0 &&
-      lastProgressReportPeriodHasPassed
+      lastProgressReportPeriodHasPassed &&
+      hasClickedAfterEndOfProgressReportPeriodEnded
     ) {
       showProgressReportEndedDialog();
     }
@@ -191,6 +196,7 @@ export const ActivitiesTab = () => {
     percentageReportsCompleted,
     completedReportCount,
     lastProgressReportPeriodHasPassed,
+    hasClickedAfterEndOfProgressReportPeriodEnded,
   ]);
 
   const getProgrammeName = (currentClass: ClassroomGroupDto) => {
