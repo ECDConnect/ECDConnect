@@ -295,10 +295,11 @@ namespace ECDLink.ContentManagement.Repositories
             // if (!_memoryCache.TryGetValue<List<Guid>>(key, out results))
             // {
                 var content = _context.Contents
-                            .Include(i => i.ContentValues.Where(x => x.TenantId == currentTenant))
+                            .Include(i => i.ContentValues)
                             .Where(x => x.Id == contentId
                                     && x.IsActive
-                                    && x.ContentTypeId == contentTypeId)
+                                    && x.ContentTypeId == contentTypeId
+                                    && x.TenantId == currentTenant)
                             .FirstOrDefault();
 
                 // Use global tenant as a fallback, mostly for static and dynamic links
@@ -347,10 +348,11 @@ namespace ECDLink.ContentManagement.Repositories
                 // TODO: Do we need to selectively skip the IsActive check?
                 var content = _context.Contents
                             .Include(i => i.ContentType)
-                            .Include(i => i.ContentValues.Where(x => x.TenantId == currentTenant))
+                            .Include(i => i.ContentValues)
                             .ThenInclude(ti => ti.ContentTypeField)
                             .Where(x => contentIds.Contains(x.Id)
-                                && x.IsActive)
+                                && x.IsActive
+                                && x.TenantId == currentTenant)
                             .OrderBy(c => c.Id)
                             .ToList();
 
@@ -358,7 +360,7 @@ namespace ECDLink.ContentManagement.Repositories
                 content = content?.Any() ?? false ? content
                         : _context.Contents
                                 .Include(i => i.ContentType)
-                                .Include(i => i.ContentValues.Where(x => x.TenantId == currentTenant))
+                                .Include(i => i.ContentValues)
                                 .ThenInclude(ti => ti.ContentTypeField)
                                 .Where(x => contentIds.Contains(x.Id)
                                     && x.IsActive
