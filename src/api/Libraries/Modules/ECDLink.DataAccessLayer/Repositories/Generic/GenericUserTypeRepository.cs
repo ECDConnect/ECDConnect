@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -288,6 +289,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (typedEntity == null)
             {
                 throw new ArgumentNullException("entity");
+            }
+
+            if (entity is Practitioner practitioner)
+            {
+                practitioner.ReasonForPractitionerLeavingId = null;
             }
 
             entity.TenantId = tenantId;
