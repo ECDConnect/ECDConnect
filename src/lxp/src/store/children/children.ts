@@ -121,21 +121,30 @@ const childrenSlice = createSlice({
         };
       }
     });
-    builder.addCase(getChildrenForClassroomGroup.fulfilled, (state, action) => {
-      if (!action.payload.retrievedFromCache) {
-        const unsyncedChildren = state.childData.children.filter(
-          (child) => !child.synced
-        );
-        const newChildren = action.payload.children.map((x) => ({
-          ...x,
-          synced: true,
-        }));
 
-        state.childData = {
-          children: unsyncedChildren.concat(newChildren),
-          dateRefreshed: new Date().toDateString(),
-        };
-      }
+    builder.addCase(getChildrenForClassroomGroup.fulfilled, (state, action) => {
+      // if (!action.payload.retrievedFromCache) {
+      //   const unsyncedChildren = state.childData.children.filter(
+      //     (child) => !child.synced
+      //   );
+      const newChildren = action.payload.childrenTest?.map((x) => ({
+        ...x,
+        synced: true,
+      }));
+
+      state.childData = {
+        children: newChildren,
+        dateRefreshed: new Date().toDateString(),
+      };
+
+      // Store learner count per classroom
+      const classroomGroupId = action.meta.arg.classroomGroupId;
+      state.learnersByClassroom = {
+        ...state.learnersByClassroom,
+        [classroomGroupId]: newChildren.filter(
+          (child) => child.isActive !== false
+        ).length,
+      };
     });
 
     builder.addCase(updateChild.fulfilled, (state, action) => {

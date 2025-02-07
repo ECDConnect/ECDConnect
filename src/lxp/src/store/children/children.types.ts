@@ -7,6 +7,7 @@ export type ChildrenState = {
     children: (ChildDto & OfflineUpdate)[];
   } & OfflineCache;
   contactHistory?: CaregiverContactHistory[];
+  learnersByClassroom?: { [key: string]: number };
 };
 
 export interface CaregiverContactHistory {

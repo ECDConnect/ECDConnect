@@ -121,54 +121,42 @@ export const getChildrenForCoach = createAsyncThunk<
 );
 
 export const getChildrenForClassroomGroup = createAsyncThunk<
-  { children: ChildDto[] } & RetrieveFromCache,
+  { childrenTest: ChildDto[] } & RetrieveFromCache,
   { classroomGroupId: string } & OverrideCache,
   ThunkApiType<RootState>
 >(
   ChildrenActions.GET_CHILDREN_CLASS_GROUP,
-
   async (
     { classroomGroupId, overrideCache },
     { getState, rejectWithValue }
   ) => {
     const {
       auth: { userAuth },
-      children: { childData: childDataCache },
+      // children: { childData: childDataCache },
     } = getState();
 
-    let oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    // if (!classroomGroupId) {
+    //   return { children: childDataCache.children, retrievedFromCache: true };
+    // }
 
-    if (
-      !!overrideCache ||
-      !childDataCache.dateRefreshed ||
-      new Date(childDataCache.dateRefreshed) < oneDayAgo
-    ) {
-      try {
-        let children: ChildDto[];
+    if (!userAuth?.auth_token) {
+      return rejectWithValue('No access token, profile check required');
+    }
 
-        if (userAuth?.auth_token) {
-          children = await new ChildService(
-            userAuth?.auth_token
-          ).getChildrenForClassroomGroup(classroomGroupId);
-        } else {
-          return rejectWithValue('No access token, profile check required');
-        }
+    try {
+      const childrenTest = await new ChildService(
+        userAuth.auth_token
+      ).getChildrenForClassroomGroup(classroomGroupId);
 
-        if (!children) {
-          return rejectWithValue('Error getting children');
-        }
-
-        return {
-          children,
-          retrievedFromCache: false,
-          classroomGroupId: classroomGroupId,
-        };
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return { children: childDataCache.children, retrievedFromCache: true };
+      return {
+        childrenTest,
+        retrievedFromCache: false,
+        classroomGroupId,
+      };
+    } catch (err) {
+      return rejectWithValue(
+        err instanceof Error ? err.message : 'Error fetching children'
+      );
     }
   }
 );
