@@ -39,7 +39,6 @@ using ECDLink.SmartStart.Services;
 using ECDLink.SmartStart.Services.Interfaces;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,13 +48,11 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace EcdLink.Api.CoreApi
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.HttpLogging;
     using System;
     using System.Threading.Tasks;
 
