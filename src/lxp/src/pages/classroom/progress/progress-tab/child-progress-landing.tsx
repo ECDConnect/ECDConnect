@@ -75,14 +75,18 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   const showSuccessIcon =
     !!isWithinReportPeriod && percentageObservationsCompleted === 100;
   const completionPercentage =
-    hasPermissionToCreateProgressReports ||
-    (isWithinReportPeriod && practitioner?.isPrincipal)
+    hasPermissionToCreateProgressReports &&
+    isWithinReportPeriod &&
+    (practitioner?.isPrincipal ||
+      (!practitioner?.isPrincipal && hasPermissionToCreateProgressReports))
       ? percentageReportsCompleted
       : percentageObservationsCompleted;
 
   const progressHint =
-    hasPermissionToCreateProgressReports ||
-    (isWithinReportPeriod && practitioner?.isPrincipal)
+    hasPermissionToCreateProgressReports &&
+    isWithinReportPeriod &&
+    (practitioner?.isPrincipal ||
+      (!practitioner?.isPrincipal && hasPermissionToCreateProgressReports))
       ? 'Reports created'
       : 'Observations completed';
 
@@ -425,8 +429,10 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
               <>
                 {!isAllReportsComplete &&
                 !isAllObservationsComplete &&
-                (hasPermissionToCreateProgressReports ||
-                  practitioner?.isPrincipal) ? (
+                hasPermissionToCreateProgressReports &&
+                (practitioner?.isPrincipal ||
+                  (!practitioner?.isPrincipal &&
+                    hasPermissionToCreateProgressReports)) ? (
                   <ProgressTabReportSummary />
                 ) : (
                   <ProgressTabObservationsSummary />
