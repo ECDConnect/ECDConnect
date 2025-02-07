@@ -356,11 +356,10 @@ namespace ECDLink.ContentManagement.Repositories
                 content = content?.Any() ?? false ? content
                         : _context.Contents
                                 .Include(i => i.ContentType)
-                                .Include(i => i.ContentValues.Where(x => x.TenantId == currentTenant))
+                                .Include(i => i.ContentValues.Where(x => x.TenantId == null))
                                 .ThenInclude(ti => ti.ContentTypeField)
                                 .Where(x => contentIds.Contains(x.Id)
-                                    && x.IsActive
-                                    && x.TenantId == null)
+                                    && x.IsActive)
                                 .OrderBy(c => c.Id)
                                 .ToList();
 
