@@ -185,7 +185,6 @@ export const ActivitiesTab = () => {
 
   useEffect(() => {
     if (
-      percentageReportsCompleted === 100 &&
       completedReportCount > 0 &&
       lastProgressReportPeriodHasPassed &&
       hasClickedAfterEndOfProgressReportPeriodEnded
@@ -193,7 +192,6 @@ export const ActivitiesTab = () => {
       showProgressReportEndedDialog();
     }
   }, [
-    percentageReportsCompleted,
     completedReportCount,
     lastProgressReportPeriodHasPassed,
     hasClickedAfterEndOfProgressReportPeriodEnded,
