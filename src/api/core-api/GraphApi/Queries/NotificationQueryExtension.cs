@@ -83,7 +83,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             }
 
-            logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId && x.IsActive == true).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
+            logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId && x.IsActive == true && !x.ReadDate.HasValue).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
             //only send in the relevcant prototcol types
             if (inApp)
             {
