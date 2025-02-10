@@ -85,10 +85,12 @@ export const ActivitiesTab = () => {
       .filter(([_, count]) => count > 1)
       .map(([num, count]) => ({ number: Number(num), count }));
 
+  const randomValues = getRandomValues(flattenedArray, 2);
+
   const listOfWorkingOnActivities =
     duplicatesWithCounts?.length > 0
-      ? allSkills.filter((skill) =>
-          duplicatesWithCounts.some((l) => skill?.id === l?.number)
+      ? allSkills?.filter((skill) =>
+          duplicatesWithCounts?.some((l) => skill?.id === l?.number)
         )
       : allSkills.filter((skill) => randomValues.some((l) => skill?.id === l));
 
@@ -96,8 +98,6 @@ export const ActivitiesTab = () => {
     const shuffled = [...arr].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, n);
   }
-
-  const randomValues = getRandomValues(flattenedArray, 2);
 
   const lastProgressReportPeriodHasPassed =
     currentReportingPeriod?.endDate &&
