@@ -72,21 +72,23 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
   const { asyncGenerateReport } = usePdfFromHtml();
 
+  const canAddChildren: any =
+    (hasPermissionToManageChildren && !practitioner?.isPrincipal) ||
+    practitioner?.isPrincipal;
+
   const showSuccessIcon =
     !!isWithinReportPeriod && percentageObservationsCompleted === 100;
   const completionPercentage =
     hasPermissionToCreateProgressReports &&
     isWithinReportPeriod &&
-    (practitioner?.isPrincipal ||
-      (!practitioner?.isPrincipal && hasPermissionToCreateProgressReports))
+    canAddChildren
       ? percentageReportsCompleted
       : percentageObservationsCompleted;
 
   const progressHint =
     hasPermissionToCreateProgressReports &&
     isWithinReportPeriod &&
-    (practitioner?.isPrincipal ||
-      (!practitioner?.isPrincipal && hasPermissionToCreateProgressReports))
+    canAddChildren
       ? 'Reports created'
       : 'Observations completed';
 
@@ -102,9 +104,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   };
 
   const shareRef = useRef<HTMLDivElement>(null);
-
-  const canAddChildren =
-    hasPermissionToManageChildren || !!practitioner?.isPrincipal;
 
   const handleContinueTrackingProgress = useCallback(() => {
     if (!currentReportingPeriod) {
@@ -286,7 +285,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 'd MMM yyyy'
               )}`}
             />
-            {(!isAllObservationsComplete || !isWithinReportPeriod) && (
+            {(!canAddChildren && isWithinReportPeriod
+              ? !isAllObservationsComplete
+              : !isAllReportsComplete) && (
               <Button
                 onClick={handleContinueTrackingProgress}
                 className="mt-4 w-full"
@@ -343,7 +344,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
             <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
               <div className="justify-center">
                 {/* Extracted logic for better readability */}
-                {showSuccessIcon && (
+                {!canAddChildren && showSuccessIcon && (
                   <div className="mt-6 flex w-full justify-center">
                     <EmojiYellowSmile className="h-20 w-20" />
                   </div>
@@ -427,18 +428,13 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
             {isWithinReportPeriod && (
               <>
-                {!isAllReportsComplete &&
-                !isAllObservationsComplete &&
-                hasPermissionToCreateProgressReports &&
-                (practitioner?.isPrincipal ||
-                  (!practitioner?.isPrincipal &&
-                    hasPermissionToCreateProgressReports)) ? (
+                {canAddChildren ? (
                   <ProgressTabReportSummary />
                 ) : (
                   <ProgressTabObservationsSummary />
                 )}
 
-                {isAllObservationsComplete && (
+                {!canAddChildren && (
                   <>
                     {!hasPermissionToCreateProgressReports ? (
                       <>
