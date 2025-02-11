@@ -34,21 +34,21 @@ export const Classes = () => {
   const appDispatch = useAppDispatch();
 
   // Fetch children data when classrooms data is available
-  useEffect(() => {
-    if (classes?.length) {
-      (async () => {
-        await Promise.all(
-          classes.map((group) =>
-            appDispatch(
-              childrenThunkActions.getChildrenForClassroomGroup({
-                classroomGroupId: group.id,
-              })
-            ).unwrap()
-          )
-        );
-      })();
-    }
-  }, [classes]);
+  // useEffect(() => {
+  //   if (classes?.length) {
+  //     (async () => {
+  //       await Promise.all(
+  //         classes.map((group) =>
+  //           appDispatch(
+  //             childrenThunkActions.getChildrenForClassroomGroup({
+  //               classroomGroupId: group.id,
+  //             })
+  //           ).unwrap()
+  //         )
+  //       );
+  //     })();
+  //   }
+  // }, [classes]);
 
   /**
    * Matches each class with its practitioner
