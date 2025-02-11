@@ -73,7 +73,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   const { asyncGenerateReport } = usePdfFromHtml();
 
   const canAddChildren: any =
-    (hasPermissionToManageChildren && !practitioner?.isPrincipal) ||
+    (hasPermissionToCreateProgressReports &&
+      !practitioner?.isPrincipal &&
+      hasPermissionToManageChildren) ||
     practitioner?.isPrincipal;
 
   const showSuccessIcon =
@@ -431,7 +433,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 {canAddChildren ? (
                   <ProgressTabReportSummary />
                 ) : (
-                  <ProgressTabObservationsSummary />
+                  !isAllObservationsComplete && (
+                    <ProgressTabObservationsSummary />
+                  )
                 )}
 
                 {!canAddChildren && (

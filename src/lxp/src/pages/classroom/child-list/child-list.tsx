@@ -313,23 +313,23 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     setSelectedClasses(selectedClassForRedirectedClass);
   }, [classroomGroups, state?.classroomGroupId]);
 
-  useEffect(() => {
-    if (classroomGroupId) {
-      dispatch(
-        childrenThunkActions.getChildrenForClassroomGroup({
-          classroomGroupId,
-          overrideCache: false,
-        }) as unknown as AnyAction
-      )
-        .unwrap()
-        .then((response: any) => {
-          setLearners(response.childrenTest);
-        })
-        .catch((error: unknown) => {
-          console.error('Failed to fetch children:', error);
-        });
-    }
-  }, [dispatch, classroomGroupId]);
+  // useEffect(() => {
+  //   if (classroomGroupId) {
+  //     dispatch(
+  //       childrenThunkActions.getChildrenForClassroomGroup({
+  //         classroomGroupId,
+  //         overrideCache: true,
+  //       }) as unknown as AnyAction
+  //     )
+  //       .unwrap()
+  //       .then((response: any) => {
+  //         setLearners(response.childrenTest);
+  //       })
+  //       .catch((error: unknown) => {
+  //         console.error('Failed to fetch children:', error);
+  //       });
+  //   }
+  // }, [dispatch, classroomGroupId]);
 
   const populateStackedList = useCallback(() => {
     if (!children || !learners) {
