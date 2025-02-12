@@ -268,7 +268,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {/* Observations summary */}
       {isReportWindowSet &&
         !!children.length &&
-        childReports.some((x) => !x.isNotStarted) &&
         children.some((x) => !x.ageInMonths || x.ageInMonths < 60) && (
           <div className="mt-2 flex flex-col p-4">
             <Typography
