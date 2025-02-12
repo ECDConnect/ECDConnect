@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
@@ -178,16 +178,23 @@ const ProgrammeTiming: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, selectedLanguage]);
 
+  const lastCheckedDateRef = useRef<Date | null>(null);
+
+  const isDateRangeOverlapping = (
+    start1: Date,
+    end1: Date,
+    start2: Date,
+    end2: Date
+  ) => end1 <= end2 && start1 >= start2;
+
   useEffect(() => {
     if (!selectedDate) return;
 
     const validatedDate = validateStartDate(new Date(selectedDate));
-
     let internalEndDate;
 
     if (!selectedTheme) {
-      const endOfWeekDay = getNoThemedProgrammeEndDate(validatedDate);
-      internalEndDate = endOfWeekDay.endDate;
+      internalEndDate = getNoThemedProgrammeEndDate(validatedDate).endDate;
     } else {
       if (!programmeToEdit) {
         setValue(
@@ -198,31 +205,55 @@ const ProgrammeTiming: React.FC = () => {
       internalEndDate = getThemedProgrammeEndDate(validatedDate);
     }
 
-    setAlert(internalEndDate);
+    if (lastCheckedDateRef.current?.getTime() === internalEndDate?.getTime()) {
+      return;
+    }
 
+    lastCheckedDateRef.current = internalEndDate;
+
+    setAlert(internalEndDate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   const setAlert = useCallback(
-    (date) => {
+    (date: string | Date) => {
+      if (!selectedDate || !classroomGroup?.id) return;
+
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) return;
+
       const overlappingProgramme = getConflictingProgramme(
-        new Date(selectedDate!),
-        new Date(date),
-        classroomGroup?.id!
+        new Date(selectedDate),
+        parsedDate,
+        classroomGroup.id
       );
 
       if (overlappingProgramme) {
-        setAlertState({
-          title: `You already have activities planned for the ${classroomGroup?.name} class on these dates`,
-          list: [
-            `If you continue with these dates, you will lose your plans for ${getDateRangeText(
-              overlappingProgramme.startDate,
-              overlappingProgramme.endDate
-            )} (${overlappingProgramme.name}).`,
-          ],
-          type: 'warning',
-        });
-        return;
+        const programmeStart = new Date(overlappingProgramme.startDate);
+        const programmeEnd = new Date(overlappingProgramme.endDate);
+        const selectedStart = new Date(selectedDate);
+        const selectedEnd = new Date(parsedDate);
+        // Check overlap
+        if (
+          isDateRangeOverlapping(
+            selectedStart,
+            selectedEnd,
+            programmeStart,
+            programmeEnd
+          )
+        ) {
+          setAlertState({
+            title: `You already have activities planned for the ${classroomGroup.name} class on these dates`,
+            list: [
+              `If you continue with these dates, you will lose your plans for ${getDateRangeText(
+                overlappingProgramme.startDate,
+                overlappingProgramme.endDate
+              )} (${overlappingProgramme.name}).`,
+            ],
+            type: 'warning',
+          });
+          return;
+        }
       }
 
       setAlertState({
@@ -230,8 +261,12 @@ const ProgrammeTiming: React.FC = () => {
         type: 'success',
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedDate, selectedTheme]
+    [
+      classroomGroup?.id,
+      classroomGroup?.name,
+      getConflictingProgramme,
+      selectedDate,
+    ]
   );
 
   useEffect(() => {
@@ -329,7 +364,7 @@ const ProgrammeTiming: React.FC = () => {
             selected={endDate ? new Date(endDate) : undefined}
             onChange={(date) => {
               setValue('endDate', date ? date.toString() : '');
-              setAlert(date);
+              setAlert(date!);
             }}
             dateFormat="EEE, dd MMM yyyy"
             minDate={selectedDate ? new Date(selectedDate) : undefined}
