@@ -381,7 +381,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       }
       size="small"
     >
-      {children && children.length > 0 && (
+      {children && children.length > 0 && learners.length && (
         <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}
           onScroll={handleListScroll}
@@ -427,7 +427,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         </SearchHeader>
       )}
       <div className={styles.overlay}>
-        {!childUserListData?.length && (
+        {!childUserListData?.length && !learners.length && (
           <IconInformationIndicator
             title="You don't have any children yet!"
             subTitle="Tap the add a child button below to start"
@@ -435,13 +435,13 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         )}
         {!!childUserListData?.length &&
           !filteredChildData?.length &&
-          !learners && (
+          !learners.length && (
             <IconInformationIndicator
               title="You don't have any children in this class yet!"
               subTitle=""
             />
           )}
-        {!!filteredChildData?.length && learners && (
+        {filteredChildData?.length && learners && (
           <StackedList
             className={styles.stackedList}
             listItems={learners.map(mapUserListDataItem)}
