@@ -18,7 +18,7 @@ import {
 } from '@ecdlink/ui';
 import { format, isBefore } from 'date-fns';
 import { useCallback, useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { childrenSelectors, childrenThunkActions } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
@@ -46,6 +46,7 @@ import { ChildProfileRouteState } from '@/pages/child/child-profile/child-profil
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
 import { AnyAction } from '@reduxjs/toolkit';
+import { useAppDispatch } from '@/store';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -96,7 +97,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const { state } = useLocation<ChildListRouteState>();
 
   const classroomGroupId = state?.classroomGroupId;
-  const dispatch = useDispatch();
+
+  const dispatch = useAppDispatch();
 
   const previousChildrenClassroomGroupId = usePrevious(state?.classroomGroupId);
 
@@ -135,9 +137,11 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     SearchDropDownOption<ClassroomGroupDto>[]
   >([]);
 
-  const today = new Date();
-
   const [learners, setLearners] = useState<ChildDto[]>([]);
+
+  console.log(learners);
+
+  const today = new Date();
 
   const { practitionerIsOnLeave } = usePractitionerAbsentees(practitioner!);
 
@@ -304,7 +308,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       label: currentClass.name,
       value: currentClass,
     }));
-
     const selectedClassForRedirectedClass = classOptions.filter(
       (currentClass) => currentClass.value?.id === state?.classroomGroupId
     );
@@ -313,48 +316,59 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     setSelectedClasses(selectedClassForRedirectedClass);
   }, [classroomGroups, state?.classroomGroupId]);
 
-  // useEffect(() => {
-  //   if (classroomGroupId) {
-  //     dispatch(
-  //       childrenThunkActions.getChildrenForClassroomGroup({
-  //         classroomGroupId,
-  //         overrideCache: true,
-  //       }) as unknown as AnyAction
-  //     )
-  //       .unwrap()
-  //       .then((response: any) => {
-  //         setLearners(response.childrenTest);
-  //       })
-  //       .catch((error: unknown) => {
-  //         console.error('Failed to fetch children:', error);
-  //       });
-  //   }
-  // }, [dispatch, classroomGroupId]);
-
   const populateStackedList = useCallback(() => {
-    if (!children || !learners) {
-      return;
-    }
+    const mappedChildren = children?.map((child) => mapUserListDataItem(child));
+    const mappedChildrenForRedirectedClass =
+      mappedChildren?.filter((child) =>
+        classroomGroup?.learners?.some(
+          (learner) =>
+            (learner.childUserId === child.extraData?.userId ||
+              learner.childUserId === child.extraData?.user?.id) &&
+            learner.isActive
+        )
+      ) ?? [];
 
-    const mappedChildren = learners.map((child) => mapUserListDataItem(child));
-
-    const mappedChildrenForRedirectedClass = mappedChildren.filter((child) =>
-      learners.some(
-        (learner) =>
-          (learner.userId === child.extraData?.userId ||
-            learner.user?.id === child.extraData?.user?.id) &&
-          learner.isActive
-      )
-    );
-
-    setFilteredChildData(mappedChildrenForRedirectedClass);
     setChildUserListData(mappedChildren);
-  }, [children, learners, mapUserListDataItem]);
+    setFilteredChildData(mappedChildrenForRedirectedClass);
+  }, [children, classroomGroup?.learners, mapUserListDataItem]);
 
-  useEffect(() => {
+  const populateInitialState = useCallback(() => {
+    if (
+      !children?.length ||
+      state?.classroomGroupId === previousChildrenClassroomGroupId
+    )
+      return;
+
     populateStackedList();
     populateClassOptions();
-  }, [populateClassOptions, populateStackedList]);
+  }, [
+    children?.length,
+    populateClassOptions,
+    populateStackedList,
+    previousChildrenClassroomGroupId,
+    state?.classroomGroupId,
+  ]);
+
+  useEffect(() => {
+    populateInitialState();
+  }, [populateInitialState]);
+
+  useEffect(() => {
+    if (classroomGroupId) {
+      dispatch(
+        childrenThunkActions.getChildrenForClassroomGroup({
+          classroomGroupId,
+        }) as unknown as AnyAction
+      )
+        .unwrap()
+        .then((response: any) => {
+          setLearners(response.childrenTest);
+        })
+        .catch((error: unknown) => {
+          console.error('Failed to fetch children:', error);
+        });
+    }
+  }, [classroomGroupId, dispatch]);
 
   return (
     <BannerWrapper
@@ -367,7 +381,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       }
       size="small"
     >
-      {(childUserListData?.length || filteredChildData?.length) && (
+      {children && children.length > 0 && (
         <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}
           onScroll={handleListScroll}
@@ -413,15 +427,24 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         </SearchHeader>
       )}
       <div className={styles.overlay}>
-        {!childUserListData?.length || !filteredChildData?.length ? (
+        {!childUserListData?.length && (
           <IconInformationIndicator
             title="You don't have any children yet!"
             subTitle="Tap the add a child button below to start"
           />
-        ) : (
+        )}
+        {!!childUserListData?.length &&
+          !filteredChildData?.length &&
+          !learners && (
+            <IconInformationIndicator
+              title="You don't have any children in this class yet!"
+              subTitle=""
+            />
+          )}
+        {!!filteredChildData?.length && learners && (
           <StackedList
             className={styles.stackedList}
-            listItems={filteredChildData}
+            listItems={learners.map(mapUserListDataItem)}
             type={'UserAlertList'}
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
           />
