@@ -77,8 +77,8 @@ namespace ECDLink.ContentManagement.Repositories
             List<object> results = null;
 
             string key = string.Format("Content.{0}.{1}.{2}.All", currentTenant, contentTypeId, localeId);
-            if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
-            {
+            //if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
+            //{
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // Get the complete content for null tenant and current tenants.
                 var contentType = _context.ContentTypes
@@ -185,12 +185,12 @@ namespace ECDLink.ContentManagement.Repositories
 
                 results = allContentValuePairs;
 
-                _memoryCache.Set(key, results, GetCacheOptions());
-            }
-            else
-            {
-                _logger.LogDebug("Fetching from CACHE: {0}", key);
-            }
+                //_memoryCache.Set(key, results, GetCacheOptions());
+            // }
+            // else
+            // {
+            //     _logger.LogDebug("Fetching from CACHE: {0}", key);
+            // }
             return results;
         }
 
@@ -201,8 +201,8 @@ namespace ECDLink.ContentManagement.Repositories
             object result;
 
             var key = string.Format("Content.{0}.{1}..Id.{2}", currentTenant, localeId, contentId);
-            if (!_memoryCache.TryGetValue<object>(key, out result))
-            {
+            // if (!_memoryCache.TryGetValue<object>(key, out result))
+            // {
                 // Try get tenant data
                 var content = _context.Contents
                             .Include(i => i.ContentType)
@@ -278,8 +278,8 @@ namespace ECDLink.ContentManagement.Repositories
 
                 result = dict.ToObject();
 
-                _memoryCache.Set(key, result, GetCacheOptions());
-            }
+            //     _memoryCache.Set(key, result, GetCacheOptions());
+            // }
             return result;
         }
 
@@ -290,8 +290,8 @@ namespace ECDLink.ContentManagement.Repositories
             List<Guid> results;
 
             var key = string.Format("Content.{0}.{1}.{2}.AllLanguages", currentTenant, contentTypeId, contentId);
-            if (!_memoryCache.TryGetValue<List<Guid>>(key, out results))
-            {
+            // if (!_memoryCache.TryGetValue<List<Guid>>(key, out results))
+            // {
                 var content = _context.Contents
                             .Include(i => i.ContentValues)
                             .Where(x => x.Id == contentId
@@ -312,8 +312,8 @@ namespace ECDLink.ContentManagement.Repositories
 
                 results = content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
 
-                _memoryCache.Set(key, results, GetCacheOptions());
-            }
+            //     _memoryCache.Set(key, results, GetCacheOptions());
+            // }
             return results;
         }
 
@@ -340,8 +340,8 @@ namespace ECDLink.ContentManagement.Repositories
             List<object> results = null;
 
             string key = string.Format("Content.{0}.{1}.{2}.Ids.{3}", currentTenant, contentTypeId, localeId, string.Join(',', contentIds));
-            if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
-            {
+            // if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
+            // {
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // TODO: Do we need to selectively skip the IsActive check?
                 var content = _context.Contents
@@ -416,12 +416,12 @@ namespace ECDLink.ContentManagement.Repositories
                 }
 
                 results = dynamicContentList;
-                _memoryCache.Set(key, results, GetCacheOptions());
-            }
-            else
-            {
-                _logger.LogDebug("Fetching from CACHE: {0}", key);
-            }
+            //     _memoryCache.Set(key, results, GetCacheOptions());
+            // }
+            // else
+            // {
+            //     _logger.LogDebug("Fetching from CACHE: {0}", key);
+            // }
             return results;
         }
 
