@@ -365,6 +365,17 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     );
   }
 
+  const hasAttendanceData =
+    formattedAttendanceSummary.length > 1 ||
+    (formattedAttendanceSummary.length === 1 &&
+      formattedAttendanceSummary[0].percentageAttendance !== 0) ||
+    offlineAttendanceData.length > 0;
+
+  const noValidAttendance =
+    !formattedAttendanceSummary.length ||
+    (formattedAttendanceSummary.length === 1 &&
+      formattedAttendanceSummary[0].percentageAttendance === 0);
+
   const renderNoAttendanceOrOfflineAttendance = () => {
     return offlineAttendanceData.length > 0 ? (
       <>
@@ -399,11 +410,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto p-4">
-      <div className={'flex flex-col'}>
-        {(formattedAttendanceSummary.length > 1 ||
-          (formattedAttendanceSummary?.length === 1 &&
-            formattedAttendanceSummary[0].percentageAttendance !== 0) ||
-          offlineAttendanceData.length > 0) && (
+      <div className="flex flex-col">
+        {hasAttendanceData && isFulfilled && (
           <>
             <Typography
               type="h2"
@@ -413,18 +421,18 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
             />
             <PointsSuccessCard
               visible={!!isAllRegistersCompleted}
-              className={'mb-4'}
-              message={`Good job! All your attendance registers are up to date!`}
-              icon={'SparklesIcon'}
+              className="mb-4"
+              message="Good job! All your attendance registers are up to date!"
+              icon="SparklesIcon"
             />
           </>
         )}
-        {!formattedAttendanceSummary.length ||
-        (formattedAttendanceSummary?.length === 1 &&
-          formattedAttendanceSummary[0].percentageAttendance === 0) ? (
+
+        {noValidAttendance ? (
           renderNoAttendanceOrOfflineAttendance()
         ) : (
           <>
+            {isFulfilled && !wasLoading && isLoading}
             <AttendanceMonthlyReport
               attendanceSummary={formattedAttendanceSummary}
             />
@@ -437,11 +445,12 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
                 icon="EyeIcon"
                 text="See more registers"
                 onClick={onSeeMoreRegisters}
-              ></Button>
+              />
             )}
           </>
         )}
       </div>
+
       {!isAllRegistersCompleted && hasPermissionToEdit && (
         <Button
           className="mt-auto"
