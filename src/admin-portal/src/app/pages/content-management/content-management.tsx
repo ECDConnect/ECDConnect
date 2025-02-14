@@ -85,41 +85,63 @@ export function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
-  const getNavigationItems = () => {
+  const getWLNavigationItems = () => {
     return [
-      // {
-      //   name: 'Consent',
-      //   href: '/content-management',
-      //   id: 0,
-      // },
-      // {
-      //   name: 'Info pages',
-      //   href: 'MoreInformation',
-      //   id: 1,
-      // },
       {
         name: ContentManagementTabs.PROGRAMMES.name,
         id: ContentManagementTabs.PROGRAMMES.id,
+        href: '',
       },
       {
         name: ContentManagementTabs.RESOURCES.name,
         id: ContentManagementTabs.RESOURCES.id,
+        href: '',
       },
     ];
   };
 
-  const navigation = getNavigationItems();
+  const getOANavigationItems = () => {
+    return [
+      {
+        name: 'Consent',
+        href: '/content-management',
+        id: 0,
+      },
+      {
+        name: 'Info pages',
+        href: 'MoreInformation',
+        id: 1,
+      },
+      {
+        name: ContentManagementTabs.PROGRAMMES.name,
+        id: ContentManagementTabs.PROGRAMMES.id,
+        href: '',
+      },
+      {
+        name: ContentManagementTabs.RESOURCES.name,
+        id: ContentManagementTabs.RESOURCES.id,
+        href: '',
+      },
+    ];
+  };
 
-  // const history = useHistory();
+  const navigation = tenant.isWhiteLabel
+    ? getWLNavigationItems()
+    : getOANavigationItems();
+
+  const history = useHistory();
   useEffect(() => {
     localStorage.removeItem('selectedUser');
 
     // GO TO DEFAULT ROUTE
     async function init() {
-      // EC-3230 - hide consent and info pages
-      //history.push(navigation[0].href);
-      setSelectedTab(navigation[0].id);
-      setSpecialType(navigation[0].name);
+      if (tenant.isWhiteLabel) {
+        // EC-3230 - hide consent and info pages
+        setSelectedTab(navigation[0].id);
+        setSpecialType(navigation[0].name);
+      } else {
+        history.push(navigation[0].href);
+      }
     }
 
     init().catch(console.error);
