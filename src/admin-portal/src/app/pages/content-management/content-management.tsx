@@ -87,16 +87,16 @@ export function ContentManagement() {
 
   const getNavigationItems = () => {
     return [
-      {
-        name: 'Consent',
-        href: '/content-management',
-        id: 0,
-      },
-      {
-        name: 'Info pages',
-        href: 'MoreInformation',
-        id: 1,
-      },
+      // {
+      //   name: 'Consent',
+      //   href: '/content-management',
+      //   id: 0,
+      // },
+      // {
+      //   name: 'Info pages',
+      //   href: 'MoreInformation',
+      //   id: 1,
+      // },
       {
         name: ContentManagementTabs.PROGRAMMES.name,
         id: ContentManagementTabs.PROGRAMMES.id,
@@ -110,13 +110,16 @@ export function ContentManagement() {
 
   const navigation = getNavigationItems();
 
-  const history = useHistory();
+  // const history = useHistory();
   useEffect(() => {
     localStorage.removeItem('selectedUser');
 
     // GO TO DEFAULT ROUTE
     async function init() {
-      history.push(navigation[0].href);
+      // EC-3230 - hide consent and info pages
+      //history.push(navigation[0].href);
+      setSelectedTab(navigation[0].id);
+      setSpecialType(navigation[0].name);
     }
 
     init().catch(console.error);
