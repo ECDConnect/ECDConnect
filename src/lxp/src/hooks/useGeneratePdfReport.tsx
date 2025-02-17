@@ -41,7 +41,7 @@ export const useGeneratePdfReport = () => {
           doc.addPage();
         }
         doc.setFontSize(16);
-        doc.setFont('bold');
+        doc.setFont('helvetica');
         doc.text(tableType, 10, 19 + 7);
         lastTableType = tableType;
       }
@@ -79,7 +79,22 @@ export const useGeneratePdfReport = () => {
               ]
             : [table.headers.map((h) => h.header)],
           columns: headers,
-          body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
+          body: table.data.map((d) =>
+            table.headers.map((h) => {
+              const value = d[h.dataKey];
+
+              if (typeof value === 'number') {
+                return value === 1
+                  ? String.fromCharCode(10003)
+                  : value === 0
+                  ? String.fromCharCode(10007)
+                  : value; // Unicode checkmark (✓) and cross (✗)
+              }
+              return value;
+            })
+          ),
+
+          // body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
           foot: finalFooter,
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
           horizontalPageBreakRepeat: 'avoid',
@@ -90,12 +105,12 @@ export const useGeneratePdfReport = () => {
             // Add table header to each new page
             // Add left header
             doc.setFontSize(20);
-            doc.setFont('bold');
+            doc.setFont('Arial');
             doc.text(content?.pageTitle ?? '', 10, 10);
 
             // Add right header
             doc.setFontSize(16);
-            doc.setFont('bold');
+            doc.setFont('Arial');
             const pageWidth = doc.internal.pageSize.getWidth();
             doc.text(
               content.subtitle ?? '',
@@ -103,7 +118,7 @@ export const useGeneratePdfReport = () => {
               10
             );
             doc.setFontSize(12);
-            doc.setFont('bold');
+            doc.setFont('Arial');
 
             //Document Top text section
             doc.text(content.text_coulumn_one_row_one ?? '', 10, 20);
@@ -242,7 +257,11 @@ export const useGeneratePdfReport = () => {
       return base64String;
     } else {
       //export pdf report
-      doc.save(outputName);
+      // doc.save(outputName);
+
+      // Instead of saving the PDF, generate a blob URL and open in new tab
+      const pdfBlobUrl = doc.output('bloburl');
+      window.open(pdfBlobUrl, '_blank');
     }
   };
   return { generateReport };
