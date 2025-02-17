@@ -39,6 +39,7 @@ export function ContentManagement() {
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
+  const [allContentTypes, setAllContentTypes] = useState<ContentTypeDto[]>();
   const [subTabs, setSubTabs] = useState<TitleListDataItem[]>();
   const [choosedSectionTitle, setChoosedSectionTitleSectionTitle] =
     useState('');
@@ -71,6 +72,10 @@ export function ContentManagement() {
   );
 
   useEffect(() => {
+    if (dataTypes && dataTypes.contentTypes) {
+      setAllContentTypes(dataTypes.contentTypes);
+    }
+
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
       const defaultType = dataTypes.contentTypes?.find(
         (item) => item?.name === 'Consent'
@@ -406,6 +411,12 @@ export function ContentManagement() {
     }
     return setSubTabs([]);
   }, [dataTypes?.contentTypes, specialType]);
+
+  useEffect(() => {
+    if (allContentTypes && allContentTypes.length !== 0) {
+      handleSubTabs();
+    }
+  }, [allContentTypes]);
 
   useEffect(() => {
     if (previousTab !== selectedTab) {

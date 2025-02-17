@@ -24,9 +24,9 @@ namespace ECDLink.ContentManagement.Repositories
             // Can probably inject Id and fields
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return _context.ContentTypes.Where(e => e.IsActive == true && (e.TenantId == null || e.TenantId == tenantId))
-              .Include(x => x.Content.Where(f => f.TenantId == tenantId && f.IsActive))
-                .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
-                  .ThenInclude(x => x.ContentTypeField)
+            //   .Include(x => x.Content.Where(f => f.IsActive))
+                // .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
+                //   .ThenInclude(x => x.ContentTypeField)
               .Include(x => x.Fields.Where(f => f.IsActive))
                 .ThenInclude(x => x.FieldType);
         }
@@ -120,8 +120,8 @@ namespace ECDLink.ContentManagement.Repositories
                 if (string.IsNullOrWhiteSpace(search))
                 {
                     result = _context.ContentTypes
-                  .Include(x => x.Content.Where(f => f.IsActive == true && f.TenantId == tenantId || f.TenantId == null))
-                      .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId || f.TenantId == null))
+                  .Include(x => x.Content.Where(f => f.IsActive == true))
+                      .ThenInclude(x => x.ContentValues.Where(f => f.TenantId == tenantId))
                           .ThenInclude(x => x.ContentTypeField)
                   .Include(x => x.Fields.Where(f => f.IsActive))
                       .ThenInclude(x => x.FieldType)
