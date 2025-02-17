@@ -50,10 +50,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (user != null)
             {
                 List<MessageLog> typeLogs = new List<MessageLog>();
-                if (user?.franchisorObjectData != null)
-                {
-                    typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("Franchisor")).ToList());
-                }
                 if (user?.coachObjectData != null)
                 {
                     typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("Coach")).ToList());
@@ -66,17 +62,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     typeLogs.AddRange(dbRepo.GetAll().Where(x =>  x.ToGroups.Contains("Practitioner")).ToList());
                 }
-                if (user?.traineeObjectData != null)
-                {
-                    typeLogs.AddRange(dbRepo.GetAll().Where(x =>x.ToGroups.Contains("Trainee")).ToList());
-                }
-                 if (user?.traineeObjectData != null) //todo - fix this correctly and team leads, this is a placeholder
-                {
-                    typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("CHW")).ToList());
-                }
                  //catch all
                 typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("AllUsers")).ToList());
-                //TODO: check regions and provinces etc as well
                 
                 //altertypelogs first by repllacing tags
                 List<TagsReplacements> replacements = new List<TagsReplacements>();                
@@ -96,7 +83,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             }
 
-            logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId && x.IsActive == true).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
+            logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId && x.IsActive == true && !x.ReadDate.HasValue).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
             //only send in the relevcant prototcol types
             if (inApp)
             {

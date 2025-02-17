@@ -72,19 +72,25 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
   const { asyncGenerateReport } = usePdfFromHtml();
 
+  const canAddChildren: any =
+    (hasPermissionToCreateProgressReports &&
+      !practitioner?.isPrincipal &&
+      hasPermissionToManageChildren) ||
+    practitioner?.isPrincipal;
+
   const showSuccessIcon =
     !!isWithinReportPeriod && percentageObservationsCompleted === 100;
   const completionPercentage =
     hasPermissionToCreateProgressReports &&
     isWithinReportPeriod &&
-    practitioner?.isPrincipal
+    canAddChildren
       ? percentageReportsCompleted
       : percentageObservationsCompleted;
 
   const progressHint =
     hasPermissionToCreateProgressReports &&
     isWithinReportPeriod &&
-    practitioner?.isPrincipal
+    canAddChildren
       ? 'Reports created'
       : 'Observations completed';
 
@@ -100,9 +106,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   };
 
   const shareRef = useRef<HTMLDivElement>(null);
-
-  const canAddChildren =
-    hasPermissionToManageChildren || !!practitioner?.isPrincipal;
 
   const handleContinueTrackingProgress = useCallback(() => {
     if (!currentReportingPeriod) {
@@ -246,7 +249,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {/* Report period setup, children, but no reports yet */}
       {isReportWindowSet &&
         !!children.length &&
-        childReports.every((x) => x.isNotStarted) && (
+        childReports.every((x) => x.isNotStarted) &&
+        children.every((x) => (x.ageInMonths ?? 0) < 60) && (
           <ProgressTabNoReports
             trackProgress={handleContinueTrackingProgress}
           />
@@ -263,8 +267,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
         )}
       {/* Observations summary */}
       {isReportWindowSet &&
+        currentReportingPeriod &&
         !!children.length &&
-        childReports.some((x) => !x.isNotStarted) &&
         children.some((x) => !x.ageInMonths || x.ageInMonths < 60) && (
           <div className="mt-2 flex flex-col p-4">
             <Typography
@@ -283,7 +287,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 'd MMM yyyy'
               )}`}
             />
-            {(!isAllObservationsComplete || !isWithinReportPeriod) && (
+            {(!canAddChildren && isWithinReportPeriod
+              ? !isAllObservationsComplete
+              : !isAllReportsComplete) && (
               <Button
                 onClick={handleContinueTrackingProgress}
                 className="mt-4 w-full"
@@ -340,7 +346,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
             <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
               <div className="justify-center">
                 {/* Extracted logic for better readability */}
-                {showSuccessIcon && (
+                {!canAddChildren && showSuccessIcon && (
                   <div className="mt-6 flex w-full justify-center">
                     <EmojiYellowSmile className="h-20 w-20" />
                   </div>
@@ -359,9 +365,9 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
             </Card>
 
             {/* Outside report period */}
-            {isWithinReportPeriod &&
+            {/* {isWithinReportPeriod &&
               !isAllObservationsComplete &&
-              !practitioner?.isPrincipal && <ProgressTabObservationsSummary />}
+              !practitioner?.isPrincipal && <ProgressTabObservationsSummary />} */}
 
             {/* Within report period */}
             {/* {isWithinReportPeriod && (
@@ -424,12 +430,15 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
 
             {isWithinReportPeriod && (
               <>
-                {!isAllReportsComplete &&
-                  !isAllObservationsComplete &&
-                  hasPermissionToCreateProgressReports &&
-                  practitioner?.isPrincipal && <ProgressTabReportSummary />}
+                {canAddChildren ? (
+                  <ProgressTabReportSummary />
+                ) : (
+                  !isAllObservationsComplete && (
+                    <ProgressTabObservationsSummary />
+                  )
+                )}
 
-                {isAllObservationsComplete && (
+                {!canAddChildren && (
                   <>
                     {!hasPermissionToCreateProgressReports ? (
                       <>

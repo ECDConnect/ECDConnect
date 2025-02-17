@@ -182,6 +182,7 @@ export const ProgrammeDashboard: React.FC = () => {
 
   const showStartPlanning = useCallback(() => {
     if (
+      isOnline &&
       !isWalkthrough &&
       hasPermissionToEdit &&
       !isWholeWeekPlanned &&
@@ -250,6 +251,7 @@ export const ProgrammeDashboard: React.FC = () => {
     selectedDate,
     tomorrowUnplannedActivity,
     user?.firstName,
+    isOnline,
   ]);
 
   const checkIfToShowInitialWalkthrough = useCallback(() => {
@@ -539,21 +541,21 @@ export const ProgrammeDashboard: React.FC = () => {
     listOfWorkingOnActivities,
   ]);
 
-  useEffect(() => {
-    if (
-      (percentageObservationsCompleted === 100 ||
-        percentageReportsCompleted === 100 ||
-        completedReportCount > 0) &&
-      lastProgressReportPeriodHasPassed
-    ) {
-      showProgressReportEndedDialog();
-    }
-  }, [
-    percentageReportsCompleted,
-    percentageObservationsCompleted,
-    completedReportCount,
-    lastProgressReportPeriodHasPassed,
-  ]);
+  // useEffect(() => {
+  //   if (
+  //     (percentageObservationsCompleted === 100 ||
+  //       percentageReportsCompleted === 100 ||
+  //       completedReportCount > 0) &&
+  //     lastProgressReportPeriodHasPassed
+  //   ) {
+  //     showProgressReportEndedDialog();
+  //   }
+  // }, [
+  //   percentageReportsCompleted,
+  //   percentageObservationsCompleted,
+  //   completedReportCount,
+  //   lastProgressReportPeriodHasPassed,
+  // ]);
 
   return (
     <BannerWrapper

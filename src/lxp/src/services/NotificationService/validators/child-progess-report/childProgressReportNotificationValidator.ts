@@ -7,7 +7,7 @@ import {
   NotificationIntervals,
 } from '../../NotificationService.types';
 import { ChildDto, ChildProgressReportSummaryModel } from '@ecdlink/core';
-import { addDays, addMonths, format, sub, subDays } from 'date-fns';
+import { addDays, addMonths, format, isBefore, subDays } from 'date-fns';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import ROUTES from '@/routes/routes';
 import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
@@ -175,12 +175,43 @@ export class ChildProgressReportNotificationValidator
     reportingPeriods: ChildProgressReportPeriodDto[]
   ): ChildProgressReportPeriodDto | undefined => {
     const today = new Date();
+    const currentYear = today.getFullYear();
 
-    const currentReportPeriod = reportingPeriods?.find(
-      (item) =>
-        new Date(item?.startDate) < today && new Date(item?.endDate) > today
+    const currentYearsReportingPeriods =
+      reportingPeriods
+        ?.filter((x) => new Date(x.startDate).getFullYear() === currentYear)
+        .sort(
+          (a, b) =>
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        ) || [];
+
+    // Get first in order where end date is after the current date
+    const index = currentYearsReportingPeriods.findIndex((x) =>
+      isBefore(
+        new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          new Date().getDate()
+        ),
+        new Date(x.endDate)
+      )
     );
-    return currentReportPeriod;
+
+    if (index < 0) {
+      return undefined;
+    }
+
+    const startDate = new Date(currentYearsReportingPeriods[index].startDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(currentYearsReportingPeriods[index].endDate);
+    endDate.setHours(23, 59, 59, 0);
+
+    return {
+      id: currentYearsReportingPeriods[index].id,
+      startDate: startDate.toString(),
+      endDate: endDate.toString(),
+    };
   };
 
   private notificationAlreadyDone = (reference: string): boolean => {
@@ -340,8 +371,8 @@ export class ChildProgressReportNotificationValidator
 
     const notification: Message = {
       reference,
-      title: `Well done, you've created progress reports for all children!`,
-      message: `Great job! You can get a summary of what you are working on with each child.`,
+      title: `Well done, all progress reports complete!`,
+      message: `Great job! View a summary of the skills each class is working on.`,
       priority: 23,
       actionText: 'Get summary',
       area: 'progress-report',

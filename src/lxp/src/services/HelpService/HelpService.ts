@@ -9,10 +9,7 @@ class HelpService {
 
   async SendHelp(body: HelpFormModel): Promise<boolean> {
     const apiInstance = api(Config.authApi);
-    const response = await apiInstance.post(
-      APIs.submitUserHelpForm,
-      JSON.stringify(body)
-    );
+    const response = await apiInstance.post(APIs.submitUserHelpForm, body); // No need for JSON.stringify
 
     if (response.status !== 200 || response.data.errors) {
       throw new Error('Send help message failed - Server connection error');

@@ -20,7 +20,7 @@ import { format, isBefore } from 'date-fns';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
-import { childrenSelectors } from '@store/children';
+import { childrenSelectors, childrenThunkActions } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { getChildAlertModel } from '@utils/child/child-alert-message-util';
 import SearchHeader from '../../../components/search-header/search-header';
@@ -45,6 +45,8 @@ import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { ChildProfileRouteState } from '@/pages/child/child-profile/child-profile.types';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
+import { AnyAction } from '@reduxjs/toolkit';
+import { useAppDispatch } from '@/store';
 
 const sortOptions: SearchSortOptions = {
   columns: [
@@ -94,6 +96,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const { state } = useLocation<ChildListRouteState>();
 
+  const classroomGroupId = state?.classroomGroupId;
+
+  const dispatch = useAppDispatch();
+
   const previousChildrenClassroomGroupId = usePrevious(state?.classroomGroupId);
 
   const history = useHistory();
@@ -130,6 +136,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const [classOptions, setClassOptions] = useState<
     SearchDropDownOption<ClassroomGroupDto>[]
   >([]);
+
+  const [learners, setLearners] = useState<ChildDto[]>([]);
+
+  console.log(learners);
 
   const today = new Date();
 
@@ -343,6 +353,23 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     populateInitialState();
   }, [populateInitialState]);
 
+  useEffect(() => {
+    if (classroomGroupId) {
+      dispatch(
+        childrenThunkActions.getChildrenForClassroomGroup({
+          classroomGroupId,
+        }) as unknown as AnyAction
+      )
+        .unwrap()
+        .then((response: any) => {
+          setLearners(response.childrenTest);
+        })
+        .catch((error: unknown) => {
+          console.error('Failed to fetch children:', error);
+        });
+    }
+  }, [classroomGroupId, dispatch]);
+
   return (
     <BannerWrapper
       title="Children"
@@ -354,7 +381,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       }
       size="small"
     >
-      {children && children.length > 0 && (
+      {children && children.length > 0 && learners.length && (
         <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}
           onScroll={handleListScroll}
@@ -400,22 +427,24 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         </SearchHeader>
       )}
       <div className={styles.overlay}>
-        {!childUserListData?.length && (
+        {!childUserListData?.length && !learners.length && (
           <IconInformationIndicator
             title="You don't have any children yet!"
             subTitle="Tap the add a child button below to start"
           />
         )}
-        {!!childUserListData?.length && !filteredChildData?.length && (
-          <IconInformationIndicator
-            title="You don't have any children in this class yet!"
-            subTitle=""
-          />
-        )}
-        {!!filteredChildData?.length && (
+        {!!childUserListData?.length &&
+          !filteredChildData?.length &&
+          !learners.length && (
+            <IconInformationIndicator
+              title="You don't have any children in this class yet!"
+              subTitle=""
+            />
+          )}
+        {filteredChildData?.length && learners && (
           <StackedList
             className={styles.stackedList}
-            listItems={filteredChildData}
+            listItems={learners.map(mapUserListDataItem)}
             type={'UserAlertList'}
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
           />

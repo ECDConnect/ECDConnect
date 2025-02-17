@@ -322,7 +322,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IAbsenteeService absenteeService,
             [Service] INotificationService notificationService,
             ApplicationUserManager userManager,
-            string practitionerUserId, string classroomId, string reasonForPractitionerLeavingProgrammeId, string reasonDetails, DateTime dateOfRemoval, List<ClassroomGroupReassignments> classroomGroupReassignments)
+            string practitionerUserId, 
+            string classroomId, 
+            string reasonForPractitionerLeavingProgrammeId, 
+            string reasonDetails, 
+            DateTime dateOfRemoval, 
+            List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
 

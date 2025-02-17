@@ -62,8 +62,11 @@ namespace EcdLink.Api.CoreApi.Services
             _logger = logger;
         }
 
-        public async Task<List<MessageTemplate>> RetrieveTemplate(string template)
+        public async Task<List<MessageTemplate>> RetrieveTemplate(string template, string protocol)
         {            
+            if (protocol != "") {
+                return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true && x.Protocol == protocol).OrderBy(x => x.Protocol).ToList();
+            }
             return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).OrderBy(x => x.Protocol).ToList();
         }
 
@@ -117,11 +120,12 @@ namespace EcdLink.Api.CoreApi.Services
             bool dontSendIfExists = false, 
             string searchCriteria = null, 
             List<RelatedEntity> relatedEntities = null,
-            Guid? groupingId = null)
+            Guid? groupingId = null,
+            string protocol = "")
         {
             try
             {                
-                var templates = await RetrieveTemplate(templatetype);
+                var templates = await RetrieveTemplate(templatetype, protocol);
 
                 if (templates != null)
                 {
@@ -321,14 +325,13 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public async Task<bool> DeleteAllNotificationsForTypeAndDate(string userId, string templatetype, DateTime messageDate, DateTime? messageEndDate)
+        public async Task<bool> DeleteAllNotificationsForTypeAndDate(string userId, string templatetype, DateTime? messageDate)
         {
             if (userId != null)
             {
                 var notifications = _messageRepo.GetAll().Where(x => x.To.Equals(userId) && 
                                                                 x.MessageTemplateType == templatetype &&
-                                                                x.MessageDate.Value.Date == messageDate.Date &&
-                                                                x.MessageEndDate == messageEndDate.Value.Date).ToArray();
+                                                                x.MessageDate.HasValue && x.MessageDate.Value.Date == messageDate.Value.Date).ToArray();
                 foreach (var notification in notifications)
                 {
                     _messageRepo.Delete(notification.Id);

@@ -27,24 +27,28 @@ export const getProgrammes = createAsyncThunk<
       programmeData: { programmes: programmeCache },
     } = getState();
 
-    try {
-      let programmes: ProgrammeDto[] | undefined;
+    if (!programmeCache) {
+      try {
+        let programmes: ProgrammeDto[] | undefined;
 
-      if (userAuth?.auth_token) {
-        programmes = await new ProgrammeService(
-          userAuth?.auth_token
-        ).getUserProgrammes();
-      } else {
-        return rejectWithValue('no access token, profile check required');
+        if (userAuth?.auth_token) {
+          programmes = await new ProgrammeService(
+            userAuth?.auth_token
+          ).getUserProgrammes();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!programmes) {
+          return rejectWithValue('Error getting programmes');
+        }
+
+        return programmes;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!programmes) {
-        return rejectWithValue('Error getting programmes');
-      }
-
-      return programmes;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return programmeCache;
     }
   }
 );

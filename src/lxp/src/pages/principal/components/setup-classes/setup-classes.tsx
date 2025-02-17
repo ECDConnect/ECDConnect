@@ -44,7 +44,7 @@ export const SetupClasses = ({
       }
       setClassroomGroups(_classroomGroups);
     }
-  }, [classroomGroupsFromStore.length]);
+  }, [classroomGroupsFromStore]);
 
   const onEditClass = (classroom: EditClassModel) => {
     setEditClassroom(classroom);

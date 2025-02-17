@@ -605,20 +605,22 @@ namespace ECDLink.Core.Services
         private void UpdateAttendance(string fromUserId, string toUserId, string newHierarchy, List<string> classProgrammes, List<string> learnerIds)
         {
             //TODO: work in start end dates to attendance to prevent a history record being edited/overridden and incorrectly allocated to new practitioner
-            foreach (var program in classProgrammes)
-            {
-                if (learnerIds != null && !string.IsNullOrWhiteSpace(newHierarchy))
+            if (classProgrammes != null) {
+                foreach (var program in classProgrammes)
                 {
-                    foreach (var learnerId in learnerIds)
+                    if (learnerIds != null && !string.IsNullOrWhiteSpace(newHierarchy))
                     {
-                        List<Attendance> attendanceData = _attendanceRepo.GetAllByParentClassroom(Guid.Parse(program), learnerId, fromUserId);
-
-                        if (attendanceData.Count > 0)
+                        foreach (var learnerId in learnerIds)
                         {
-                            foreach (var attendance in attendanceData)
-                            {
+                            List<Attendance> attendanceData = _attendanceRepo.GetAllByParentClassroom(Guid.Parse(program), learnerId, fromUserId);
 
-                                _attendanceRepo.UpdateAttendance(attendance, toUserId);
+                            if (attendanceData.Count > 0)
+                            {
+                                foreach (var attendance in attendanceData)
+                                {
+
+                                    _attendanceRepo.UpdateAttendance(attendance, toUserId);
+                                }
                             }
                         }
                     }
