@@ -20,10 +20,18 @@ export const useGeneratePdfReport = () => {
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
+
+    const checkMarkImage =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADUAAAA0CAYAAAAqunDVAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAG0SURBVHgB7dgxTsMwFIDhZ1rRDhkioUqIKRNipDegI1u5AZwAbgBXYGQCToA4QXsDyoAUmLKgZkBtBoYUqTV+RkUpahInaWwjvW9K09jyL6tJVABCCCGEEEL+MQYWcz3PZbPWLQD3GLC7yfj1WmWctVE/QdsD4OxweY43mt3o/WWUN3YLLLQuCDXnc1dlvHU7lRYEjI+m47euyhxW7VRWEG999VTnsWan8oKiIIhU57IiapNBchgYtukgORQMcncPxPOHD8Sht/JFhSA5HAypK0hOAQbUGSSnAc3qDpJTgUY6guR0Khft7O33Fwt2jscc2FkU+gEUpCtITpl3gbzlxq2nxGICEdYrEqYzCKm+JnnJY1wgLlRloO4g1Mi7II6iuO10mNjSo8RpV3zui/OP8edH6qJMBKHcKCQWPiwaZioIKUWhImEmg5ByFFIJSw0CNuTt2XHdQahQFMoKc5zOMwf+AH+CxP8L99PQP8HfJ2hQ+uErduRK7Mhl3nUYNAn9U9Co8E4tpezYChNBqHQUygozFYQqRaF1YSaDUOUo9BvGwBWvUDfipnABhBBCCCGEkHK+AWBwJ/5V9p+VAAAAAElFTkSuQmCC';
+    const crossMarkImage =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA0CAYAAADBjcvWAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHBSURBVHgB7ZixTgJBEIZntKEgBkJM0MoKLC19DN5ALC19Ax/BNxDfSDq1USsx0XAFBZXrDhcMd9zmbnZnrpqvgVsS5j5uuP3nAAzDMAzDMIy26Q1HV/2T8bI/HL8NTkcTUGK3Dr0HJghMqJB/OdseO3DTbPH6CIKQCALO/hcQsuXnSx8YHAAXhF7xEGcxv2iIPalI2GLO4W15TUouJFVVs45DYLJefT91uscfvocL/y9/QpNOd/C+Xv3MIYKgFOB1tnieARO2GCEtJy1FRIkRUnIaUkS0GJEqpyVFJIkRsXKaUkSyGMGV05YiRMSIpnJtSOV1hekNz6cI7qG8TgklL6gvlddRICRXhYYUIdaKu4TasoyWFKEiRtTJaUoR/BDM4tfFfZaO2hWrS+mp2bIOFbGmo4emnMLtPrxP5QWrtwLpYVX0itVtvlojTxViYk0TRVtyImLcmNSGXLJYbPbTlksSSw20mnLRYlIpXUsuSkx69NCQY4tpzVPScuys6AvdldekAi19x3YjL9REvAcmyU+CpVN6SI4LuxV9u3z5drmgMOZP4EZj9Ni05dFgjg4vN3X8k2BaA8MwDMMwDKNN/gDIC3NKdjMEagAAAABJRU5ErkJggg==';
+
     let startY = 30; // initial startY value
     var imgWidth = 45;
     var imgHeight = 8;
     const tablesByType: { [key: string]: ReportTableDataDto[] } = {};
+
+    doc.setFont('Arial'); // or 'times', depending on your preference
 
     // Group tables by type
     tableData.forEach((table) => {
@@ -41,7 +49,7 @@ export const useGeneratePdfReport = () => {
           doc.addPage();
         }
         doc.setFontSize(16);
-        doc.setFont('helvetica');
+        doc.setFont('bold');
         doc.text(tableType, 10, 19 + 7);
         lastTableType = tableType;
       }
@@ -81,16 +89,13 @@ export const useGeneratePdfReport = () => {
           columns: headers,
           body: table.data.map((d) =>
             table.headers.map((h) => {
-              const value = d[h.dataKey];
-
-              if (typeof value === 'number') {
-                return value === 1
-                  ? String.fromCharCode(10003)
-                  : value === 0
-                  ? String.fromCharCode(10007)
-                  : value; // Unicode checkmark (✓) and cross (✗)
+              const cellValue = d[h.dataKey];
+              if (cellValue === 1) {
+                doc.addImage(checkMarkImage, 'PNG', 0, 0, 5, 5);
+              } else if (cellValue === 0) {
+                doc.addImage(crossMarkImage, 'PNG', 0, 10, 5, 5); // Or you can use another image for 'x'
               }
-              return value;
+              return cellValue;
             })
           ),
 
@@ -105,12 +110,12 @@ export const useGeneratePdfReport = () => {
             // Add table header to each new page
             // Add left header
             doc.setFontSize(20);
-            doc.setFont('Arial');
+            doc.setFont('bold');
             doc.text(content?.pageTitle ?? '', 10, 10);
 
             // Add right header
             doc.setFontSize(16);
-            doc.setFont('Arial');
+            doc.setFont('bold');
             const pageWidth = doc.internal.pageSize.getWidth();
             doc.text(
               content.subtitle ?? '',
@@ -118,7 +123,7 @@ export const useGeneratePdfReport = () => {
               10
             );
             doc.setFontSize(12);
-            doc.setFont('Arial');
+            doc.setFont('bold');
 
             //Document Top text section
             doc.text(content.text_coulumn_one_row_one ?? '', 10, 20);
@@ -258,8 +263,6 @@ export const useGeneratePdfReport = () => {
     } else {
       //export pdf report
       // doc.save(outputName);
-
-      // Instead of saving the PDF, generate a blob URL and open in new tab
       const pdfBlobUrl = doc.output('bloburl');
       window.open(pdfBlobUrl, '_blank');
     }
