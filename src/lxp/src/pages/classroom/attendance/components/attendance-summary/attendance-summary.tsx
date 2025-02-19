@@ -420,8 +420,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
                 )}
               {attendanceActionList
                 .slice(0, registersToShow)
-                .map((register) => (
-                  <Fragment key={register?.id}>
+                .map((register, index) => (
+                  <Fragment key={index}>
                     <div className="flex items-center justify-between py-4">
                       <div>
                         <Typography

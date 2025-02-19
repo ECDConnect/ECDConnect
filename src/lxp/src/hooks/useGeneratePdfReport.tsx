@@ -2,6 +2,11 @@ import { ReportTableDataDto } from '@/../../../packages/core/lib/models/dto/Stat
 import { jsPDF, jsPDFOptions } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 
+const checkMarkImage =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADUAAAA0CAYAAAAqunDVAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAG0SURBVHgB7dgxTsMwFIDhZ1rRDhkioUqIKRNipDegI1u5AZwAbgBXYGQCToA4QXsDyoAUmLKgZkBtBoYUqTV+RkUpahInaWwjvW9K09jyL6tJVABCCCGEEEL+MQYWcz3PZbPWLQD3GLC7yfj1WmWctVE/QdsD4OxweY43mt3o/WWUN3YLLLQuCDXnc1dlvHU7lRYEjI+m47euyhxW7VRWEG999VTnsWan8oKiIIhU57IiapNBchgYtukgORQMcncPxPOHD8Sht/JFhSA5HAypK0hOAQbUGSSnAc3qDpJTgUY6guR0Khft7O33Fwt2jscc2FkU+gEUpCtITpl3gbzlxq2nxGICEdYrEqYzCKm+JnnJY1wgLlRloO4g1Mi7II6iuO10mNjSo8RpV3zui/OP8edH6qJMBKHcKCQWPiwaZioIKUWhImEmg5ByFFIJSw0CNuTt2XHdQahQFMoKc5zOMwf+AH+CxP8L99PQP8HfJ2hQ+uErduRK7Mhl3nUYNAn9U9Co8E4tpezYChNBqHQUygozFYQqRaF1YSaDUOUo9BvGwBWvUDfipnABhBBCCCGEkHK+AWBwJ/5V9p+VAAAAAElFTkSuQmCC';
+const crossMarkImage =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA0CAYAAADBjcvWAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHBSURBVHgB7ZixTgJBEIZntKEgBkJM0MoKLC19DN5ALC19Ax/BNxDfSDq1USsx0XAFBZXrDhcMd9zmbnZnrpqvgVsS5j5uuP3nAAzDMAzDMIy26Q1HV/2T8bI/HL8NTkcTUGK3Dr0HJghMqJB/OdseO3DTbPH6CIKQCALO/hcQsuXnSx8YHAAXhF7xEGcxv2iIPalI2GLO4W15TUouJFVVs45DYLJefT91uscfvocL/y9/QpNOd/C+Xv3MIYKgFOB1tnieARO2GCEtJy1FRIkRUnIaUkS0GJEqpyVFJIkRsXKaUkSyGMGV05YiRMSIpnJtSOV1hekNz6cI7qG8TgklL6gvlddRICRXhYYUIdaKu4TasoyWFKEiRtTJaUoR/BDM4tfFfZaO2hWrS+mp2bIOFbGmo4emnMLtPrxP5QWrtwLpYVX0itVtvlojTxViYk0TRVtyImLcmNSGXLJYbPbTlksSSw20mnLRYlIpXUsuSkx69NCQY4tpzVPScuys6AvdldekAi19x3YjL9REvAcmyU+CpVN6SI4LuxV9u3z5drmgMOZP4EZj9Ni05dFgjg4vN3X8k2BaA8MwDMMwDKNN/gDIC3NKdjMEagAAAABJRU5ErkJggg==';
+
 export const useGeneratePdfReport = () => {
   const generateReport = (
     tableData: ReportTableDataDto[],
@@ -24,6 +29,9 @@ export const useGeneratePdfReport = () => {
     var imgWidth = 45;
     var imgHeight = 8;
     const tablesByType: { [key: string]: ReportTableDataDto[] } = {};
+
+    // const rowHeight = 10; // Adjust row height as needed
+    // const cellPadding = 2;
 
     // Group tables by type
     tableData.forEach((table) => {
@@ -61,9 +69,10 @@ export const useGeneratePdfReport = () => {
               ]
             : footer;
 
-        console.log(tables);
+        console.log(
+          table.data.map((d) => table.headers.map((h) => d[h.dataKey]))
+        );
 
-        // table section with styles
         autoTable(doc, {
           headStyles: tableHeadStyles,
           footStyles: tableFootStyles,
@@ -81,12 +90,30 @@ export const useGeneratePdfReport = () => {
               ]
             : [table.headers.map((h) => h.header)],
           columns: headers,
-          body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
+          body: table.data.map((d) => {
+            return table.headers.map((h) => d[h.dataKey]);
+          }),
+
           foot: finalFooter,
-          rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
+          rowPageBreak: 'avoid',
           horizontalPageBreakRepeat: 'avoid',
           margin: {
             top: 35,
+          },
+          didDrawCell: (data) => {
+            const { cell } = data;
+            const cellValue = cell.raw;
+
+            // Check if the value is a boolean (or number) indicating success or failure
+            if (typeof cellValue === 'number') {
+              const image = cellValue ? checkMarkImage : crossMarkImage;
+
+              // Position the image at the center of the cell
+              const x = cell.x + cell.width / 2 - 2.5; // adjust for centering
+              const y = cell.y + cell.height / 2 - 2.5; // adjust for centering
+
+              doc.addImage(image, 'PNG', x, y, 5, 5); // Adjust image size if necessary
+            }
           },
           didDrawPage: (data) => {
             // Add table header to each new page
@@ -107,16 +134,80 @@ export const useGeneratePdfReport = () => {
             doc.setFontSize(12);
             doc.setFont('bold');
 
-            //Document Top text section
+            // Document Top text section
             doc.text(content.text_coulumn_one_row_one ?? '', 10, 20);
             doc.text(content.text_coulumn_one_row_two ?? '', 10, 25);
             doc.text(content.text_coulumn_one_row_three ?? '', 10, 30);
-            //column two top content
+            // Column two top content
             doc.text(content.text_column_two_row_one ?? '', 100, 20);
             doc.text(content.text_column_two_row_two ?? '', 100, 25);
             doc.text(content.text_column_two_row_three ?? '', 100, 30);
           },
         });
+
+        // table section with styles
+        // autoTable(doc, {
+        //   headStyles: tableHeadStyles,
+        //   footStyles: tableFootStyles,
+        //   styles: tableStyles,
+        //   head: !!table.tableName
+        //     ? [
+        //         [
+        //           {
+        //             content: `${table.tableName}`,
+        //             colSpan: 5,
+        //             styles: { halign: 'left' },
+        //           },
+        //         ],
+        //         table.headers.map((h) => h.header),
+        //       ]
+        //     : [table.headers.map((h) => h.header)],
+        //   columns: headers,
+        //   body: table.data.map((d) =>
+        //     table.headers.map((h) =>
+        //       typeof d[h.dataKey] === 'number'
+        //         ? d[h.dataKey]
+        //           ? '✓'
+        //           : '✘'
+        //         : d[h.dataKey]
+        //     )
+        //   ),
+        //   // body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
+        //   foot: finalFooter,
+        //   rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
+        //   horizontalPageBreakRepeat: 'avoid',
+        //   margin: {
+        //     top: 35,
+        //   },
+        //   didDrawPage: (data) => {
+        //     // Add table header to each new page
+        //     // Add left header
+        //     doc.setFontSize(20);
+        //     doc.setFont('bold');
+        //     doc.text(content?.pageTitle ?? '', 10, 10);
+
+        //     // Add right header
+        //     doc.setFontSize(16);
+        //     doc.setFont('bold');
+        //     const pageWidth = doc.internal.pageSize.getWidth();
+        //     doc.text(
+        //       content.subtitle ?? '',
+        //       pageWidth - doc.getStringUnitWidth(content.subtitle ?? '') - 50,
+        //       10
+        //     );
+        //     doc.setFontSize(12);
+        //     doc.setFont('bold');
+
+        //     //Document Top text section
+        //     doc.text(content.text_coulumn_one_row_one ?? '', 10, 20);
+        //     doc.text(content.text_coulumn_one_row_two ?? '', 10, 25);
+        //     doc.text(content.text_coulumn_one_row_three ?? '', 10, 30);
+        //     //column two top content
+        //     doc.text(content.text_column_two_row_one ?? '', 100, 20);
+        //     doc.text(content.text_column_two_row_two ?? '', 100, 25);
+        //     doc.text(content.text_column_two_row_three ?? '', 100, 30);
+        //   },
+        // });
         // Calculate position for next table
         startY = (doc as any).lastAutoTable.finalY + 10;
       });
