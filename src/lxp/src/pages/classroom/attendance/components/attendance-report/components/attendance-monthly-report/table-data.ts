@@ -55,8 +55,6 @@ export const getTableData = ({
     })),
   ];
 
-  console.log(`tableBody`, tableBody);
-
   const finalTableData = [
     {
       tableName: '',
@@ -77,8 +75,6 @@ export const getTableData = ({
   });
 
   let attendanceSum = 0;
-
-  console.log(attendanceSum);
 
   for (let i = 0; i < totalAttendance.length; i++) {
     attendanceSum += totalAttendance[i].value;

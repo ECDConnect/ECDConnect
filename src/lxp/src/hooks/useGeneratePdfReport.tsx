@@ -20,18 +20,10 @@ export const useGeneratePdfReport = () => {
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
-
-    const checkMarkImage =
-      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADUAAAA0CAYAAAAqunDVAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAG0SURBVHgB7dgxTsMwFIDhZ1rRDhkioUqIKRNipDegI1u5AZwAbgBXYGQCToA4QXsDyoAUmLKgZkBtBoYUqTV+RkUpahInaWwjvW9K09jyL6tJVABCCCGEEEL+MQYWcz3PZbPWLQD3GLC7yfj1WmWctVE/QdsD4OxweY43mt3o/WWUN3YLLLQuCDXnc1dlvHU7lRYEjI+m47euyhxW7VRWEG999VTnsWan8oKiIIhU57IiapNBchgYtukgORQMcncPxPOHD8Sht/JFhSA5HAypK0hOAQbUGSSnAc3qDpJTgUY6guR0Khft7O33Fwt2jscc2FkU+gEUpCtITpl3gbzlxq2nxGICEdYrEqYzCKm+JnnJY1wgLlRloO4g1Mi7II6iuO10mNjSo8RpV3zui/OP8edH6qJMBKHcKCQWPiwaZioIKUWhImEmg5ByFFIJSw0CNuTt2XHdQahQFMoKc5zOMwf+AH+CxP8L99PQP8HfJ2hQ+uErduRK7Mhl3nUYNAn9U9Co8E4tpezYChNBqHQUygozFYQqRaF1YSaDUOUo9BvGwBWvUDfipnABhBBCCCGEkHK+AWBwJ/5V9p+VAAAAAElFTkSuQmCC';
-    const crossMarkImage =
-      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA0CAYAAADBjcvWAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHBSURBVHgB7ZixTgJBEIZntKEgBkJM0MoKLC19DN5ALC19Ax/BNxDfSDq1USsx0XAFBZXrDhcMd9zmbnZnrpqvgVsS5j5uuP3nAAzDMAzDMIy26Q1HV/2T8bI/HL8NTkcTUGK3Dr0HJghMqJB/OdseO3DTbPH6CIKQCALO/hcQsuXnSx8YHAAXhF7xEGcxv2iIPalI2GLO4W15TUouJFVVs45DYLJefT91uscfvocL/y9/QpNOd/C+Xv3MIYKgFOB1tnieARO2GCEtJy1FRIkRUnIaUkS0GJEqpyVFJIkRsXKaUkSyGMGV05YiRMSIpnJtSOV1hekNz6cI7qG8TgklL6gvlddRICRXhYYUIdaKu4TasoyWFKEiRtTJaUoR/BDM4tfFfZaO2hWrS+mp2bIOFbGmo4emnMLtPrxP5QWrtwLpYVX0itVtvlojTxViYk0TRVtyImLcmNSGXLJYbPbTlksSSw20mnLRYlIpXUsuSkx69NCQY4tpzVPScuys6AvdldekAi19x3YjL9REvAcmyU+CpVN6SI4LuxV9u3z5drmgMOZP4EZj9Ni05dFgjg4vN3X8k2BaA8MwDMMwDKNN/gDIC3NKdjMEagAAAABJRU5ErkJggg==';
-
     let startY = 30; // initial startY value
     var imgWidth = 45;
     var imgHeight = 8;
     const tablesByType: { [key: string]: ReportTableDataDto[] } = {};
-
-    doc.setFont('Arial'); // or 'times', depending on your preference
 
     // Group tables by type
     tableData.forEach((table) => {
@@ -56,7 +48,7 @@ export const useGeneratePdfReport = () => {
 
       const total = tables.reduce((acc, obj) => acc + obj.total, 0);
 
-      tables.forEach((table, index) => {
+      tables?.forEach((table, index) => {
         const headers = table.headers;
         let finalFooter =
           component === 'income-statements' || component === 'submit-statements'
@@ -68,6 +60,8 @@ export const useGeneratePdfReport = () => {
                 ],
               ]
             : footer;
+
+        console.log(tables);
 
         // table section with styles
         autoTable(doc, {
@@ -87,19 +81,7 @@ export const useGeneratePdfReport = () => {
               ]
             : [table.headers.map((h) => h.header)],
           columns: headers,
-          body: table.data.map((d) =>
-            table.headers.map((h) => {
-              const cellValue = d[h.dataKey];
-              if (cellValue === 1) {
-                doc.addImage(checkMarkImage, 'PNG', 0, 0, 5, 5);
-              } else if (cellValue === 0) {
-                doc.addImage(crossMarkImage, 'PNG', 0, 10, 5, 5); // Or you can use another image for 'x'
-              }
-              return cellValue;
-            })
-          ),
-
-          // body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
+          body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
           foot: finalFooter,
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
           horizontalPageBreakRepeat: 'avoid',
@@ -263,6 +245,7 @@ export const useGeneratePdfReport = () => {
     } else {
       //export pdf report
       // doc.save(outputName);
+
       const pdfBlobUrl = doc.output('bloburl');
       window.open(pdfBlobUrl, '_blank');
     }
