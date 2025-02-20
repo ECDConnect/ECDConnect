@@ -45,7 +45,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     
-    <PackageReference Include="NewRelic.Azure.WebSites.x64" Version="10.36.0" />
+    <PackageReference Include="NewRelic.Agent" Version="10.37.0" />
+    
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
   </ItemGroup>
