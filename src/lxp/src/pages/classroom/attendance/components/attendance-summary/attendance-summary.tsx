@@ -365,9 +365,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     localStorage.setItem('summarylastDate', today);
   };
 
-  console.log(isValidAttendanceDay);
-  console.log(`attendanceActionList`, attendanceActionList);
-
   return (
     <div className="flex h-full flex-col px-4 pt-4">
       {isLoading ? (
@@ -420,8 +417,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
                 )}
               {attendanceActionList
                 .slice(0, registersToShow)
-                .map((register) => (
-                  <Fragment key={register?.id}>
+                .map((register, index) => (
+                  <Fragment key={index}>
                     <div className="flex items-center justify-between py-4">
                       <div>
                         <Typography

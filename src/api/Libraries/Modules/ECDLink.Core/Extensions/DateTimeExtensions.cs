@@ -118,5 +118,10 @@ namespace ECDLink.Core.Extensions
 
             return (long)Math.Round(dateDifferent.TotalSeconds);
         }
+
+        public static bool IsWeekend(this DateTime date)
+        {
+            return new[] {DayOfWeek.Sunday, DayOfWeek.Saturday}.Contains(date.DayOfWeek);
+        }
     }
 }
