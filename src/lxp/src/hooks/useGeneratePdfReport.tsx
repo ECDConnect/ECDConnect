@@ -69,10 +69,6 @@ export const useGeneratePdfReport = () => {
               ]
             : footer;
 
-        console.log(
-          table.data.map((d) => table.headers.map((h) => d[h.dataKey]))
-        );
-
         autoTable(doc, {
           headStyles: tableHeadStyles,
           footStyles: tableFootStyles,
@@ -100,19 +96,22 @@ export const useGeneratePdfReport = () => {
           margin: {
             top: 35,
           },
+          didParseCell: (data) => {
+            if (typeof data.cell.raw === 'number') {
+              data.cell.text = ['']; // Remove text
+            }
+          },
           didDrawCell: (data) => {
             const { cell } = data;
             const cellValue = cell.raw;
 
-            // Check if the value is a boolean (or number) indicating success or failure
             if (typeof cellValue === 'number') {
               const image = cellValue ? checkMarkImage : crossMarkImage;
 
-              // Position the image at the center of the cell
-              const x = cell.x + cell.width / 2 - 2.5; // adjust for centering
-              const y = cell.y + cell.height / 2 - 2.5; // adjust for centering
+              const x = cell.x + 1;
+              const y = cell.y + cell.height / 2 - 2.5;
 
-              doc.addImage(image, 'PNG', x, y, 5, 5); // Adjust image size if necessary
+              doc.addImage(image, 'PNG', x, y, 4, 4);
             }
           },
           didDrawPage: (data) => {

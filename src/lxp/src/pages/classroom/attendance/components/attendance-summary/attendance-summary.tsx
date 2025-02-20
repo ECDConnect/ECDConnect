@@ -365,9 +365,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     localStorage.setItem('summarylastDate', today);
   };
 
-  console.log(isValidAttendanceDay);
-  console.log(`attendanceActionList`, attendanceActionList);
-
   return (
     <div className="flex h-full flex-col px-4 pt-4">
       {isLoading ? (
