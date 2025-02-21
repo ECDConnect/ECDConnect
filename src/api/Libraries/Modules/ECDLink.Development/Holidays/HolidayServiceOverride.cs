@@ -21,6 +21,9 @@ namespace ECDLink.Development.Holidays
     {
         private readonly AuthenticationDbContext _context;
 
+        private readonly Dictionary<(DateTime startMonth, DateTime endMonth, string locale), IEnumerable<Holiday>> _holidayMonthCache = new Dictionary<(DateTime, DateTime, string), IEnumerable<Holiday>>();
+        private readonly Dictionary<(int year, string locale), IEnumerable<Holiday>> _holidayYearCache = new Dictionary<(int, string), IEnumerable<Holiday>>();
+
         public HolidayServiceOverride(AuthenticationDbContext context)
         {
             _context = context;
@@ -28,12 +31,28 @@ namespace ECDLink.Development.Holidays
 
         public IEnumerable<Holiday> GetHolidays(int year, string locale = "ZA")
         {
-            return GetHolidaysAsync(year, locale).Result;
+            var cacheKey = (year, locale);
+            if (_holidayYearCache.TryGetValue(cacheKey, out var cachedHolidays))
+            {
+                return cachedHolidays;
+            }
+            
+            var holidays = GetHolidaysAsync(year, locale).Result;
+            _holidayYearCache[cacheKey] = holidays;
+            return holidays;
         }
 
         public IEnumerable<Holiday> GetHolidays(DateTime startMonth, DateTime endMonth, string locale = "ZA")
         {
-            return GetHolidaysAsync(DateTime.Now.Year).Result.Where(x => x.Day >= startMonth && x.Day <= endMonth);
+            var cacheKey = (startMonth, endMonth, locale);
+            if (_holidayMonthCache.TryGetValue(cacheKey, out var cachedHolidays))
+            {
+                return cachedHolidays;
+            }
+            
+            var holidays = GetHolidaysAsync(DateTime.Now.Year).Result.Where(x => x.Day >= startMonth && x.Day <= endMonth);
+            _holidayMonthCache[cacheKey] = holidays;
+            return holidays;
         }
 
         public async Task<IEnumerable<Holiday>> GetHolidaysAsync(int year, string locale = "ZA")
