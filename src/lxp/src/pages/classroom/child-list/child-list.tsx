@@ -139,8 +139,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const [learners, setLearners] = useState<ChildDto[]>([]);
 
-  console.log(learners);
-
   const today = new Date();
 
   const { practitionerIsOnLeave } = usePractitionerAbsentees(practitioner!);
