@@ -7,7 +7,14 @@ import {
   NotificationIntervals,
 } from '../../NotificationService.types';
 import { ChildDto, ChildProgressReportSummaryModel } from '@ecdlink/core';
-import { addDays, addMonths, format, isBefore, subDays } from 'date-fns';
+import {
+  addDays,
+  addMonths,
+  format,
+  isBefore,
+  isSameDay,
+  subDays,
+} from 'date-fns';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import ROUTES from '@/routes/routes';
 import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
@@ -269,11 +276,20 @@ export class ChildProgressReportNotificationValidator
   };
 
   private getSevenDaysBeforeWithNoProgressReports = (): Message[] => {
-    const { practitioner: practitionerState, classroomData: classroomState } =
-      this.store.getState();
+    const {
+      practitioner: practitionerState,
+      classroomData: classroomState,
+      tenant: tenantState,
+    } = this.store.getState();
     const today = new Date();
 
-    if (!classroomState?.classroom?.childProgressReportPeriods) return [];
+    const hasPermission = tenantState.tenant?.modules?.progressEnabled;
+
+    if (
+      !hasPermission ||
+      !classroomState?.classroom?.childProgressReportPeriods
+    )
+      return [];
 
     const reportingPeriods =
       classroomState?.classroom?.childProgressReportPeriods;
@@ -293,7 +309,7 @@ export class ChildProgressReportNotificationValidator
 
     if (
       classroomState?.classroom?.childProgressReportPeriods &&
-      today === sevenDaysBeforeEndDate &&
+      isSameDay(today, sevenDaysBeforeEndDate) &&
       reports?.length === 0
     ) {
       notifications?.push({
@@ -308,7 +324,7 @@ export class ChildProgressReportNotificationValidator
         area: 'progress-report',
         color: 'alertMain',
         dateCreated: new Date().toISOString(),
-        expiryDate: addMonths(new Date(), 3).toISOString(),
+        expiryDate: reportPeriodEndDate.toISOString(),
         icon: 'ExclamationIcon',
         viewOnDashboard: true,
         viewType: 'Both',
