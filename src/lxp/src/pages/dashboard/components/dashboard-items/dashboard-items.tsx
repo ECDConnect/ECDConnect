@@ -39,7 +39,7 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       (notification?.message?.reference &&
         [
           referenceNames.yearPointsGreaterThen0,
-          referenceNames.getSevenDaysBeforeWithNoProgressReports,
+          // referenceNames.getSevenDaysBeforeWithNoProgressReports, // this notification expires after end date or report has been created
           referenceNames.allChildrenProgressReportsCompleted,
           referenceNames.allChildrenProgressReportsCreated,
           referenceNames.pastDeadlineDateForProgressReports,

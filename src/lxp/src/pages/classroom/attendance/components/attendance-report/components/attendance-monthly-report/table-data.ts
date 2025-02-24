@@ -50,7 +50,7 @@ export const getTableData = ({
     { header: 'Child', dataKey: 'child' },
     { header: 'ID/Passport', dataKey: 'id' },
     ...totalAttendance.slice(0, numDays).map(({ key }) => ({
-      header: `${key}`,
+      header: `${key} ${selectedMonth.month.slice(0, 3)}`,
       dataKey: `day${key}`, // using key value as dataKey
     })),
   ];
@@ -81,19 +81,19 @@ export const getTableData = ({
   }
 
   const tableTopContent = {
-    pageTitle: `${selectedMonth.month} Attendance Report`,
-    subtitle: '',
+    pageTitle: `${selectedMonth.month} ${selectedMonth.year} Attendance Report`,
+    subtitle: `Class: ${reportDetails?.classroomGroupName ?? 'N/A'}`,
     text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_coulumn_one_row_two: `ID: ${
+    text_coulumn_one_row_two: `ID number: ${
       reportDetails?.idNumber === null ? '' : reportDetails?.idNumber
     }`,
-    text_coulumn_one_row_three: `Phone: ${
+    text_coulumn_one_row_three: `Phone number: ${
       reportDetails?.phone === null ? '' : reportDetails?.phone
     }`,
-    text_column_two_row_two: `Class days: ${
+    text_column_two_row_one: `Class days: ${
       reportDetails?.programmeDays === null ? '' : reportDetails?.programmeDays
     } `,
-    text_column_two_row_three: `Site: ${
+    text_column_two_row_two: `Site address: ${
       reportDetails?.classSiteAddress === null
         ? ''
         : reportDetails?.classSiteAddress
@@ -112,9 +112,9 @@ export const getTableData = ({
   ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {
-    fillColor: [211, 211, 211], // Light grey
-    textColor: [0, 0, 0],
-    fontSize: 10,
+    fillColor: [128, 128, 128], // Light grey
+    textColor: [255, 255, 255],
+    fontSize: 9,
     lineWidth: 0.1,
     lineColor: 0x000000,
   };
@@ -124,9 +124,9 @@ export const getTableData = ({
     fontSize: 8,
   };
   const tableFootStyles: UserOptions['footStyles'] = {
+    fillColor: [229, 229, 229], // Light grey
     textColor: [0, 0, 0],
-    fillColor: [211, 211, 211], // Light grey
-    fontSize: 8,
+    fontSize: 9,
     lineWidth: 0.1,
     lineColor: 0x000000,
   };
