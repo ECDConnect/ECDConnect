@@ -90,6 +90,7 @@ export class IncompleteChildRegistrationNotificationValidator
           dateCreated: new Date().toISOString(),
           priority: 18,
           viewOnDashboard: true,
+          isFromBackend: false,
           area: 'child-registration',
           icon: 'XCircleIcon',
           color: 'errorMain',
