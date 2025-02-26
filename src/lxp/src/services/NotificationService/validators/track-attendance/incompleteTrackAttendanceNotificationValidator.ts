@@ -91,6 +91,7 @@ export class IncompleteTrackAttendanceNotificationValidator
         dateCreated: this.currentDate.toISOString(),
         priority: NotificationPriority.highest,
         viewOnDashboard: true,
+        isFromBackend: false,
         area: 'tracking-attendance',
         icon: 'ExclamationCircleIcon',
         color: 'alertMain',

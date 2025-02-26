@@ -5,7 +5,7 @@ import {
   StackedListItemType,
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
-import { useAppDispatch } from '@store';
+import { store, useAppDispatch } from '@store';
 import { Notification } from '@store/notifications';
 import { MessageActionConfig } from '@models/messages/messages';
 import { NotificationHeaderCard } from '../notification-header-card/notification-header-card';
@@ -41,7 +41,7 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
           referenceNames.yearPointsGreaterThen0,
           // referenceNames.getSevenDaysBeforeWithNoProgressReports, // this notification expires after end date or report has been created
           referenceNames.allChildrenProgressReportsCompleted,
-          referenceNames.allChildrenProgressReportsCreated,
+          // referenceNames.allChildrenProgressReportsCreated,
           referenceNames.pastDeadlineDateForProgressReports,
         ].includes(notification?.message?.reference)) ||
       notification?.message?.priority === 8,
@@ -90,6 +90,12 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
           })
         );
       }
+    } else {
+      appDispatch(
+        notificationActions.markNotificationRead({
+          reference: notification?.message?.reference ?? '',
+        })
+      );
     }
 
     if (resetNotificationOnClick) {

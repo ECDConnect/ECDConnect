@@ -261,6 +261,7 @@ export class ChildProgressReportNotificationValidator
         expiryDate: addMonths(new Date(), 3).toISOString(),
         icon: 'ExclamationIcon',
         viewOnDashboard: true,
+        isFromBackend: false,
         viewType: 'Both',
         routeConfig: {
           route: ROUTES.CLASSROOM.ROOT,
@@ -327,6 +328,7 @@ export class ChildProgressReportNotificationValidator
         expiryDate: reportPeriodEndDate.toISOString(),
         icon: 'ExclamationIcon',
         viewOnDashboard: true,
+        isFromBackend: false,
         viewType: 'Both',
         routeConfig: {
           route: ROUTES.CLASSROOM.ROOT,
@@ -397,6 +399,7 @@ export class ChildProgressReportNotificationValidator
       expiryDate: addDays(new Date(), 7).toISOString(),
       icon: 'CheckCircleIcon',
       viewOnDashboard: true,
+      isFromBackend: false,
       viewType: 'Both',
       routeConfig: {
         route:
@@ -479,6 +482,7 @@ export class ChildProgressReportNotificationValidator
       expiryDate: addDays(new Date(), 7).toISOString(),
       icon: 'InformationCircleIcon',
       viewOnDashboard: true,
+      isFromBackend: false,
       viewType: 'Both',
       routeConfig: {
         route:
