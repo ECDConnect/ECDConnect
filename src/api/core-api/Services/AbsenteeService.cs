@@ -259,7 +259,7 @@ namespace ECDLink.Api.CoreApi.Services
                         _reassignmentService.EditReassignment(userId, practitionerUserId, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
 
                         // Reassign classroom group to the practitioner that took attendance  
-                        if(absentee.ReassignedClass != null)
+                        if(!string.IsNullOrEmpty(absentee.ReassignedClass))
                         {
                             var classroomGroup = _dbContext.ClassroomGroups.FirstOrDefault(u => u.Id == Guid.Parse(absentee.ReassignedClass));
                             if (classroomGroup != null)
