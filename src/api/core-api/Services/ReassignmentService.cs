@@ -281,60 +281,63 @@ namespace ECDLink.Core.Services
                 if (fromUserId != null && absenteeId != null)
                 {
                     var reassignment = _reassignmentsRepo.GetAll().Where(x => x.AbsenteeId.HasValue && x.AbsenteeId.Equals(new Guid(absenteeId))).FirstOrDefault();
-
-                    if (startDate > DateTime.Now.Date)
+                    if (reassignment != null)
                     {
-                        if ( startDate != reassignment.AssignedToDate && reassignment.AssignedToDate.Date >= DateTime.Now.Date )
+
+                        if (startDate > DateTime.Now.Date)
                         {
-                            //change if date is still in future or today
-                            reassignment.AssignedToDate = startDate;
-                        }
-                    
-                        if (reassignment.ReassignedToUser.ToString() != toUserId)
+                            if ( startDate != reassignment.AssignedToDate && reassignment.AssignedToDate.Date >= DateTime.Now.Date )
+                            {
+                                //change if date is still in future or today
+                                reassignment.AssignedToDate = startDate;
+                            }
+                        
+                            if (reassignment.ReassignedToUser.ToString() != toUserId)
+                            {
+                                reassignment.ReassignedToUser = Guid.Parse(toUserId);
+                            }
+                            reassignment.Reason = reason;
+                        };
+
+                        //what the role will be when reassignments kicks in
+                        if (isRoleAssign)
                         {
-                            reassignment.ReassignedToUser = Guid.Parse(toUserId);
+                            if (roleAssignedToUser != null)
+                            {
+                                reassignment.RoleAssignedToUser = roleAssignedToUser;
+                            }
                         }
-                        reassignment.Reason = reason;
-                    };
-
-                    //what the role will be when reassignments kicks in
-                    if (isRoleAssign)
-                    {
-                        if (roleAssignedToUser != null)
+                        
+                        if (toUserId != null)
                         {
-                            reassignment.RoleAssignedToUser = roleAssignedToUser;
+                            var toUserHierarchy = _hierarchyEngine.GetUserHierarchy((toUserId != null ? Guid.Parse(toUserId) : _applicationUserId));
+
+                            reassignment.HierarchyToUser = toUserHierarchy;
                         }
-                    }
-                    
-                    if (toUserId != null)
-                    {
-                        var toUserHierarchy = _hierarchyEngine.GetUserHierarchy((toUserId != null ? Guid.Parse(toUserId) : _applicationUserId));
+                        if (deleteReassignment)
+                        {
+                            reassignment.IsActive = false;                        
+                        }
 
-                        reassignment.HierarchyToUser = toUserHierarchy;
-                    }
-                    if (deleteReassignment)
-                    {
-                        reassignment.IsActive = false;                        
-                    }
+                        //update the reassignments
+                        _reassignmentsRepo.Update(reassignment);
 
-                    //update the reassignments
-                    _reassignmentsRepo.Update(reassignment);
+                        if (startDate.Date <= DateTime.Now.Date && reassignment.IsActive) //backdating reassignments - immediately reassign everything back so that the records match up and functionality remains consistent
+                        {
+                            //process the reassignment and backdate again
+                            ProcessReassignments(reassignment.Id, false);
 
-                    if (startDate.Date <= DateTime.Now.Date && reassignment.IsActive) //backdating reassignments - immediately reassign everything back so that the records match up and functionality remains consistent
-                    {
-                        //process the reassignment and backdate again
-                        ProcessReassignments(reassignment.Id, false);
-
-                        isReassigned = true;
+                            isReassigned = true;
+                        }
                     }
                 }
-                else isReassigned = false;
-            }
-            catch (Exception)
-            {
-                // Error
-                isReassigned = false;
-            }
+                    else isReassigned = false;
+                }
+                catch (Exception)
+                {
+                    // Error
+                    isReassigned = false;
+                }
             return isReassigned;
         }
 
