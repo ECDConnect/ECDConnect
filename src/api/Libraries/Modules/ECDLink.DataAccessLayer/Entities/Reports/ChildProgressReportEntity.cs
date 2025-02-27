@@ -14,13 +14,14 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
 
     }
 
-    public class ChildProgressReport<TKey> : EntityBase<TKey>, ChildJoin<TKey>, ChildProgressReportPeriodJoin<TKey>
+    public class ChildProgressReport<TKey> : EntityBase<TKey>, ChildJoin<TKey>, ChildProgressReportPeriodJoin<TKey>, ApplicationUserJoin
          where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(ChildId))]
         public virtual Child Child { get; set; }
         public TKey ChildId { get; set; }
         public string ReportContent { get; set; }
+        public virtual ApplicationUser User { get; set; }
         public Guid? UserId { get; set; }
         public DateTime? DateCompleted { get; set; }
 
