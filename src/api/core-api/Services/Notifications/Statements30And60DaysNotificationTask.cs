@@ -101,7 +101,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                         };
                         foreach (var practitioner in usersToGetNotifications)
                         {
-                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, null,
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, null,
                                                                             relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
                         }
                     }
