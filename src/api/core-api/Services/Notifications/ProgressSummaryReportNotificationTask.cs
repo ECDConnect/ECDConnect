@@ -122,7 +122,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                             if (linkedClassLearners.Any()) 
                             {
                                 var linkedChildProgressReportPeriodId = allReportingEndingPeriods.Where(x => x.ClassroomId == record.ClassroomId).Select(x => x.Id).FirstOrDefault();
-                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, tomorrow.Date, record.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
+                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, today.Date, record.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
                                                                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(linkedChildProgressReportPeriodId, "ChildProgressReportPeriod") });
                             }
                         }
@@ -169,7 +169,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                             totalLearners = classes.Where(x => x.Classroom.UserId == practitioner.UserId).SelectMany(x => x.Learners).Distinct().Count();
                             if (totalLearners != 0 && totalLearners != totalReportsComplete) 
                             {
-                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, tomorrow.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
+                                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, today.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
                                                                             relatedEntities: new List<RelatedEntity> { new RelatedEntity(linkedChildProgressReportPeriodId, "ChildProgressReportPeriod") });
                             }
                         } 
@@ -181,7 +181,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                             {
                                 if (practitionerPermission != null) 
                                 {
-                                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, tomorrow.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
+                                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, today.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
                                                                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(linkedChildProgressReportPeriodId, "ChildProgressReportPeriod") });
                                 } 
                                 else 
@@ -189,7 +189,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                                     var totalLinkedLearners = learners.Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).Count();
                                     if (totalLinkedLearners != 0)
                                     {
-                                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, tomorrow.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
+                                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgressSummaryReport, today.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, endOfNotification,
                                                                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(linkedChildProgressReportPeriodId, "ChildProgressReportPeriod") });
                                     }
 
