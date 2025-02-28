@@ -54,13 +54,12 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task DailyUserOfflineNotification()
         {
-
             DateTime today = DateTime.Today;
             var start21Days = today.AddDays(-21).Date;
-            var end21Days = today.AddDays(-21).Date;
+            var end21Days = today.AddDays(-20).Date;
 
             var start30Days = today.AddDays(-30).Date;
-            var end30Days = today.AddDays(-30).Date;
+            var end30Days = today.AddDays(-29).Date;
 
             // Don't run this on weekends
             // Only send the message on week days between 7am and 5pm (roll forward to the next week day). 
@@ -69,18 +68,13 @@ namespace EcdLink.Api.CoreApi.Services
             // Every hour between 7am to 5pm and only on week days.
             if (!DateTime.Now.Date.IsWeekend()) {
                 
-                if (DateTime.Now.DayOfWeek == DayOfWeek.Monday) {
-                  start21Days = today.AddDays(-23).Date;
-                  start30Days = today.AddDays(-32).Date;
-                } 
-
                 var practitioners = _practitionerRepo.GetAll()
                                                     .Where(x => x.IsActive == true && x.IsRegistered.HasValue && x.IsRegistered.Value)
                                                     .Include(x => x.User)
                                                     .Where(x => x.IsActive == true && 
                                                     (
-                                                        (x.User.LastSeen >= start21Days && x.User.LastSeen <= end21Days) || 
-                                                        (x.User.LastSeen >= start30Days && x.User.LastSeen <= end30Days)
+                                                        (x.User.LastSeen >= start21Days && x.User.LastSeen < end21Days) || 
+                                                        (x.User.LastSeen >= start30Days && x.User.LastSeen < end30Days)
                                                     )
                                                     )
                                                     .Select(x => x.User)
@@ -105,6 +99,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                         if (totalDays >= 21 && totalDays < 30)
                         {
+                            // _notificationManager.SendOfflineSmsAsync(user, TemplateTypeConstants.ThreeWeekNotLoggedOn);
                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
                         }
