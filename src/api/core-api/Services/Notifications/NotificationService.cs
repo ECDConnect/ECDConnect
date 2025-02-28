@@ -207,7 +207,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private async Task SendSMSAsync(Notification notification, ApplicationUser user,  MessageTemplate template)
         {
-            // await CommitNotification(notification, template); //commit first, entities are null after sms has been sent
+            await CommitNotification(notification, template); //commit first, entities are null after sms has been sent
             //convert str to enum
             TemplateTypeEnum templateType = (TemplateTypeEnum)Enum.Parse(typeof(TemplateTypeEnum), template.TypeCode.ToString());
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
