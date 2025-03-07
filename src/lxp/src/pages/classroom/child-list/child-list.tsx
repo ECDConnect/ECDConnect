@@ -167,7 +167,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       childUserListData?.filter((child) =>
         value.some((x) =>
           x.value?.learners?.some(
-            (learner) => learner.childUserId === child.extraData?.userId
+            (learner) =>
+              learner.childUserId &&
+              learner.childUserId === child.extraData?.userId
           )
         )
       ) || [];
@@ -442,7 +444,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         {filteredChildData?.length && learners && (
           <StackedList
             className={styles.stackedList}
-            listItems={learners.map(mapUserListDataItem)}
+            listItems={filteredChildData || []}
             type={'UserAlertList'}
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
           />
