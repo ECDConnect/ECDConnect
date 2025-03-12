@@ -479,7 +479,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
         public Learner UpdateLearnerWithUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
