@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -476,6 +477,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }));
 
             return true;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Learner UpdateLearnerWithUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            LearnerInputModel input)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
+
+            var learnerToUpdate = learnerRepo.GetAll().Where(x => x.UserId == input.UserId 
+                                                             && x.IsActive 
+                                                             && x.ClassroomGroupId == input.ClassroomGroupId).FirstOrDefault();
+            if (learnerToUpdate != null) {
+                learnerToUpdate.IsActive = input.IsActive;
+                learnerToUpdate.StoppedAttendance = input.StoppedAttendance;
+                return learnerRepo.Update(learnerToUpdate);
+            }
+            return null;
         }
     }
 }
