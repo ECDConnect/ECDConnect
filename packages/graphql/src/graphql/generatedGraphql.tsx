@@ -6397,6 +6397,14 @@ export type LearnerInput = {
   UserId?: InputMaybe<Scalars['UUID']>;
 };
 
+export type LearnerInputModelInput = {
+  classroomGroupId: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
+  startedAttendance: Scalars['DateTime'];
+  stoppedAttendance: Scalars['DateTime'];
+  userId: Scalars['UUID'];
+};
+
 export type LearnerSortInput = {
   classroomGroup?: InputMaybe<ClassroomGroupSortInput>;
   classroomGroupId?: InputMaybe<SortEnumType>;
@@ -7908,6 +7916,7 @@ export type Mutation = {
   updateLeague?: Maybe<League>;
   updateLeagueType?: Maybe<LeagueType>;
   updateLearner?: Maybe<Learner>;
+  updateLearnerWithUserId?: Maybe<Learner>;
   updateLicense?: Maybe<License>;
   updateLicenseType?: Maybe<LicenseType>;
   updateMeetingType?: Maybe<MeetingType>;
@@ -10484,6 +10493,10 @@ export type MutationUpdateLeagueTypeArgs = {
 export type MutationUpdateLearnerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<LearnerInput>;
+};
+
+export type MutationUpdateLearnerWithUserIdArgs = {
+  input?: InputMaybe<LearnerInputModelInput>;
 };
 
 export type MutationUpdateLicenseArgs = {
@@ -14343,7 +14356,6 @@ export type Query = {
   teamLeadSummary?: Maybe<PortalTeamLeadModel>;
   teamLeadTemplateGenerator?: Maybe<FileModel>;
   tenantContext?: Maybe<TenantModel>;
-  testProgressSummaryNotification: Scalars['Boolean'];
   themeRecords?: Maybe<Array<Maybe<ThemeViewModel>>>;
   totalDaysAbsent: Scalars['Int'];
   traineeByUserId?: Maybe<Trainee>;

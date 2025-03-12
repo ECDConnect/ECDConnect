@@ -1,5 +1,5 @@
 import { Config, LearnerDto } from '@ecdlink/core';
-import { LearnerInput } from '@ecdlink/graphql';
+import { LearnerInput, LearnerInputModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class ClassroomGroupLearnerService {
   _accessToken: string;
@@ -46,6 +46,31 @@ class ClassroomGroupLearnerService {
       `,
       variables: {
         id: id,
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating learner failed - Server connection error');
+    }
+
+    return true;
+  }
+
+  async updateLearnerWithUserId(
+    userId: string,
+    input: LearnerInputModelInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateLearnerWithUserId($input: LearnerInputModelInput) {
+          updateLearnerWithUserId(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
         input: input,
       },
     });

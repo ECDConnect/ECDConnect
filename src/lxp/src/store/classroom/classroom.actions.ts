@@ -4,6 +4,7 @@ import {
   ClassroomGroupInput,
   ClassroomInput,
   LearnerInput,
+  LearnerInputModelInput,
   SiteAddressInput,
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -309,6 +310,8 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
       classroomData: { classroomGroupData },
     } = getState();
 
+    console.log('classroomData', classroomGroupData);
+
     try {
       let promises: Promise<boolean>[] = [];
       if (!!userAuth && !!userAuth?.auth_token) {
@@ -323,7 +326,18 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
                 StoppedAttendance: x.stoppedAttendance,
                 IsActive: x.isActive,
               };
-              if (!!x.learnerId && x.learnerId.length > 0) {
+              if (x.isActive === false) {
+                const updateInput: LearnerInputModelInput = {
+                  userId: x.childUserId,
+                  classroomGroupId: classroomGroup.id,
+                  startedAttendance: x.startedAttendance,
+                  stoppedAttendance: x.stoppedAttendance,
+                  isActive: x.isActive,
+                };
+                return await new ClassroomGroupLearnerService(
+                  userAuth?.auth_token
+                ).updateLearnerWithUserId(x.childUserId, updateInput);
+              } else if (!!x.learnerId && x.learnerId.length > 0) {
                 return await new ClassroomGroupLearnerService(
                   userAuth?.auth_token
                 ).updateLearner(x.learnerId, input);
