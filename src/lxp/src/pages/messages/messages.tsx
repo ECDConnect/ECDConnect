@@ -85,7 +85,10 @@ export const Messages: React.FC = () => {
         markAsReadNotification({
           notificationId: notification?.message?.reference ?? '',
         })
-      );
+      ).then(() => {
+        // when notification is marked as read, we want to remove it
+        appDispatch(notificationActions.removeNotification(notification!));
+      });
     } else {
       appDispatch(
         notificationActions.markNotificationRead({
