@@ -261,6 +261,7 @@ export class ChildProgressReportNotificationValidator
         expiryDate: addMonths(new Date(), 3).toISOString(),
         icon: 'ExclamationIcon',
         viewOnDashboard: true,
+        isFromBackend: false,
         viewType: 'Both',
         routeConfig: {
           route: ROUTES.CLASSROOM.ROOT,
@@ -327,6 +328,7 @@ export class ChildProgressReportNotificationValidator
         expiryDate: reportPeriodEndDate.toISOString(),
         icon: 'ExclamationIcon',
         viewOnDashboard: true,
+        isFromBackend: false,
         viewType: 'Both',
         routeConfig: {
           route: ROUTES.CLASSROOM.ROOT,
@@ -397,6 +399,7 @@ export class ChildProgressReportNotificationValidator
       expiryDate: addDays(new Date(), 7).toISOString(),
       icon: 'CheckCircleIcon',
       viewOnDashboard: true,
+      isFromBackend: false,
       viewType: 'Both',
       routeConfig: {
         route:
@@ -410,87 +413,89 @@ export class ChildProgressReportNotificationValidator
     return [notification];
   };
 
-  private getNotificationsPastDeadlineDate = (
-    reportingPeriod: ReportingPeriodType
-  ): Message[] => {
-    const {
-      practitioner: practitionerState,
-      classroomData: classroomState,
-      children: childrenState,
-    } = this.store.getState();
+  // moved this to a cron job
+  // private getNotificationsPastDeadlineDate = (
+  //   reportingPeriod: ReportingPeriodType
+  // ): Message[] => {
+  //   const {
+  //     practitioner: practitionerState,
+  //     classroomData: classroomState,
+  //     children: childrenState,
+  //   } = this.store.getState();
 
-    if (!practitionerState || !practitionerState.practitioner) return [];
-    const createProgressReportsPermission =
-      practitionerState?.practitioner?.permissions?.find(
-        (item) =>
-          item?.permissionName === PermissionsNames.create_progress_reports
-      );
+  //   if (!practitionerState || !practitionerState.practitioner) return [];
+  //   const createProgressReportsPermission =
+  //     practitionerState?.practitioner?.permissions?.find(
+  //       (item) =>
+  //         item?.permissionName === PermissionsNames.create_progress_reports
+  //     );
 
-    if (
-      !practitionerState?.practitioner?.isPrincipal &&
-      !createProgressReportsPermission
-    )
-      return [];
+  //   if (
+  //     !practitionerState?.practitioner?.isPrincipal &&
+  //     !createProgressReportsPermission
+  //   )
+  //     return [];
 
-    const children = childrenState?.childData?.children;
+  //   const children = childrenState?.childData?.children;
 
-    const reference = referenceNames?.pastDeadlineDateForProgressReports;
+  //   const reference = referenceNames?.pastDeadlineDateForProgressReports;
 
-    if (this.notificationAlreadyDone(reference)) return [];
+  //   if (this.notificationAlreadyDone(reference)) return [];
 
-    if (!classroomState?.classroom?.childProgressReportPeriods) return [];
+  //   if (!classroomState?.classroom?.childProgressReportPeriods) return [];
 
-    const activeChildren = children?.filter((item) => item?.isActive === true);
+  //   const activeChildren = children?.filter((item) => item?.isActive === true);
 
-    if (activeChildren?.length === 0) return [];
+  //   if (activeChildren?.length === 0) return [];
 
-    const reportingPeriods =
-      classroomState?.classroom?.childProgressReportPeriods;
+  //   const reportingPeriods =
+  //     classroomState?.classroom?.childProgressReportPeriods;
 
-    const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
+  //   const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
 
-    const reports = this?.getCompletedChildrenProgressReports(
-      currentReportPeriod!
-    );
+  //   const reports = this?.getCompletedChildrenProgressReports(
+  //     currentReportPeriod!
+  //   );
 
-    const today = new Date();
-    const pastOneDayAfterReportPeriodEndDate = addDays(
-      new Date(currentReportPeriod?.endDate!),
-      1
-    );
-    const isPastOneDayAfterReportPeriodEndDate =
-      today === pastOneDayAfterReportPeriodEndDate;
+  //   const today = new Date();
+  //   const pastOneDayAfterReportPeriodEndDate = addDays(
+  //     new Date(currentReportPeriod?.endDate!),
+  //     1
+  //   );
+  //   const isPastOneDayAfterReportPeriodEndDate =
+  //     today === pastOneDayAfterReportPeriodEndDate;
 
-    const expectedReportCount = activeChildren?.length;
+  //   const expectedReportCount = activeChildren?.length;
 
-    if (!isPastOneDayAfterReportPeriodEndDate) return [];
+  //   if (!isPastOneDayAfterReportPeriodEndDate) return [];
 
-    if (reports?.length === expectedReportCount) return [];
+  //   if (reports?.length === expectedReportCount) return [];
 
-    const notification: Message = {
-      reference,
-      title: `See progress summary`,
-      message: `Progress reports created for ${reports?.length} children! See a summary of the skills your class is working on.`,
-      priority: 25,
-      actionText: 'Get summary',
-      area: 'progress-report',
-      color: 'infoMain',
-      dateCreated: new Date().toISOString(),
-      expiryDate: addDays(new Date(), 7).toISOString(),
-      icon: 'InformationCircleIcon',
-      viewOnDashboard: true,
-      viewType: 'Both',
-      routeConfig: {
-        route:
-          ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
-        params: {
-          report: 'completed-all',
-        },
-      },
-    };
+  //   const notification: Message = {
+  //     reference,
+  //     title: `See progress summary`,
+  //     message: `Progress reports created for ${reports?.length} children! See a summary of the skills your class is working on.`,
+  //     priority: 25,
+  //     actionText: 'Get summary',
+  //     area: 'progress-report',
+  //     color: 'infoMain',
+  //     dateCreated: new Date().toISOString(),
+  //     expiryDate: addDays(new Date(), 7).toISOString(),
+  //     icon: 'InformationCircleIcon',
+  //     viewOnDashboard: true,
+  //     isFromBackend: false,
+  //     viewType: 'Both',
+  //     routeConfig: {
+  //       route:
+  //         ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+  //       params: {
+  //         report: 'completed-all',
+  //       },
+  //     },
+  //   };
 
-    return [notification];
-  };
+  //   return [notification];
+  // };
 
   // private getNotificationsPastDeadlineAndReportsNotComplete = (
   //   reportingPeriod: ReportingPeriodType
@@ -678,9 +683,9 @@ export class ChildProgressReportNotificationValidator
     // newNotifications?.push(
     //   ...this.getNotificationsCompletedReportsAllChildren(reportingPeriod)
     // );
-    newNotifications?.push(
-      ...this.getNotificationsPastDeadlineDate(reportingPeriod)
-    );
+    // newNotifications?.push(
+    //   ...this.getNotificationsPastDeadlineDate(reportingPeriod)
+    // );
 
     // don't add if added already ??
     const notifications = newNotifications.filter(

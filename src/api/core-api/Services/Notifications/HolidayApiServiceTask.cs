@@ -45,11 +45,12 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
 
             if (response.ResponseStatus == ResponseStatus.Completed)
             {
-
-                await _context.Holidays.ExecuteDeleteAsync();
-                await _context.SaveChangesAsync();
-
                 var holidays = JsonSerializer.Deserialize<IEnumerable<DaysOff>>(response.Content);
+
+                if (holidays.Count() > 0) {
+                    await _context.Holidays.ExecuteDeleteAsync();
+                    await _context.SaveChangesAsync();
+                }
 
                 var newHolidays = holidays
                     .Select(h => new Holiday

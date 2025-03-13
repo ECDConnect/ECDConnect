@@ -19,16 +19,22 @@ const notificationsState = createSlice({
       state.notificationReferences = initialState.notificationReferences;
     },
     resetFrontendNotificationState: (state) => {
-      const backendNotifications = state.notifications.filter(
-        (item) => item.message.isFromBackend
-      );
+      // const backendNotifications = state.notifications.filter(
+      //   (item) => item.message.isFromBackend
+      // );
+      // const backendReferences = backendNotifications.map(
+      //   (item) => item.message.reference
+      // );
 
-      const backendReferences = backendNotifications.map(
+      const frontendNotifications = state.notifications.filter(
+        (item) => !item.message.isFromBackend
+      );
+      const frontendReferences = frontendNotifications.map(
         (item) => item.message.reference
       );
 
-      state.notifications = backendNotifications || [];
-      state.notificationReferences = backendReferences || [];
+      state.notifications = frontendNotifications || [];
+      state.notificationReferences = frontendReferences || [];
     },
     addNotifications: (
       state: NotificationsState,
@@ -57,7 +63,6 @@ const notificationsState = createSlice({
       const notification = state.notifications.find(
         (n) => n.message.reference === action.payload.reference
       );
-
       if (notification) {
         notification.isNew = false;
       }

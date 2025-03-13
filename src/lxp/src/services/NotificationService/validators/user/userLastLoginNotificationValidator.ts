@@ -63,6 +63,7 @@ export class UserLastLoginNotificationValidator
       dateCreated: new Date().toISOString(),
       priority: NotificationPriority.higher,
       viewOnDashboard: true,
+      isFromBackend: false,
       area: 'data-sync',
       icon: 'SwitchVerticalIcon',
       color: 'alertMain',

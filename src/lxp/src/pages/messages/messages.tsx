@@ -49,10 +49,10 @@ export const Messages: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  useEffect(() => {
-    appDispatch(notificationActions.markAllNotificationsRead());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   appDispatch(notificationActions.markAllNotificationsRead());
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const removeNotification = (notification: Notification) => {
     if (notification.message?.isFromBackend) {
@@ -86,6 +86,12 @@ export const Messages: React.FC = () => {
           notificationId: notification?.message?.reference ?? '',
         })
       );
+    } else {
+      appDispatch(
+        notificationActions.markNotificationRead({
+          reference: notification?.message?.reference ?? '',
+        })
+      );
     }
 
     if (notification.message.action) {
@@ -105,12 +111,12 @@ export const Messages: React.FC = () => {
     const resetNotificationOnClick =
       notification?.message?.reference ===
         referenceNames?.yearPointsGreaterThen0 ||
-      notification?.message?.reference ===
-        referenceNames?.getSevenDaysBeforeWithNoProgressReports ||
+      // notification?.message?.reference ===
+      //   referenceNames?.getSevenDaysBeforeWithNoProgressReports ||
       notification?.message?.reference ===
         referenceNames?.allChildrenProgressReportsCompleted ||
-      notification?.message?.reference ===
-        referenceNames?.allChildrenProgressReportsCreated ||
+      // notification?.message?.reference ===
+      //   referenceNames?.allChildrenProgressReportsCreated ||
       notification?.message?.reference ===
         referenceNames?.pastDeadlineDateForProgressReports ||
       notification?.message?.priority === 8;

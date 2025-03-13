@@ -33,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public Absentees EditAbsentee(
-            [Service] IAbsenteeService absenteetService,
+            [Service] IAbsenteeService absenteeService,
             string absenteeId,
             bool deleteAbsentee = false,
             string reassignedToPractitioner = null,
@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             bool isRoleAssign = false,
             string roleAssignedToUser = null)
         {
-            return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd, isRoleAssign, roleAssignedToUser);
+            return absenteeService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd, isRoleAssign, roleAssignedToUser);
         }
 
         public bool ReassignAbsenteeFromHistory([Service] IReassignmentService reassignmentService,
