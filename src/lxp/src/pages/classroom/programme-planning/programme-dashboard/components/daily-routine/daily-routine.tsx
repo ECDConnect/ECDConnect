@@ -464,10 +464,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   );
 
   useEffect(() => {
-    if (
-      currentDailyProgramme === undefined ||
-      currentProgramme?.dailyProgrammes.length === 0
-    ) {
+    if (currentProgramme?.dailyProgrammes.length === 0) {
       createOrEditProgramme(
         classroomGroupId,
         selectedDate!,

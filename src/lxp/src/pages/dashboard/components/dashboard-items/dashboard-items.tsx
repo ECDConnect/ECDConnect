@@ -73,7 +73,10 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
         markAsReadNotification({
           notificationId: notification?.message?.reference ?? '',
         })
-      );
+      ).then(() => {
+        // when notification is marked as read, we want to remove it
+        appDispatch(notificationActions.removeNotification(notification!));
+      });
 
       if (
         notification.message?.cta?.includes(
