@@ -459,7 +459,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid classroomId,
             List<ChildProgressReportPeriodModel> childProgressReportPeriods)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var user = contextAccessor.HttpContext.GetUser() as ApplicationUser;
+            var uId = user.Id; 
 
             if (childProgressReportPeriods == null || childProgressReportPeriods.Count < 2 || childProgressReportPeriods.Count > 4)
             {
@@ -467,6 +468,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             var reportPeriodRepo = repoFactory.CreateGenericRepository<ChildProgressReportPeriod>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var practitioner = practitionerRepo.GetByUserId(uId);
+            var permissions = practitioner.User.UserPermissions;
 
             reportPeriodRepo.InsertMany(childProgressReportPeriods.Select(x => new ChildProgressReportPeriod
             {
@@ -475,6 +479,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 StartDate = x.StartDate,
                 EndDate = x.EndDate,
             }));
+
+            // create notifications
+            if (practitioner.IsPrincipalOrAdmin() || (permissions != null && permissions.Where(x => x.Permission.Name == Constants.PermissionNames.CreateProgressReports).Count() != 0))
+            {
+                foreach (var item in childProgressReportPeriods)
+                {
+                    var sevenDaysBeforeEnd = item.EndDate.AddDays(-7);
+                    var replacements = new List<TagsReplacements>
+                    {
+                        new TagsReplacements()
+                        {
+                            FindValue = "ReportEndDate",
+                            ReplacementValue = sevenDaysBeforeEnd.ToString("dd MMM yyyy")
+                        }
+                    };
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.FinishProgressReport, sevenDaysBeforeEnd, user, "", MessageStatusConstants.Amber, replacements, item.EndDate,
+                                                                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(item.Id, "ChildProgressReportPeriod") });
+                }
+            }
 
             return true;
         }

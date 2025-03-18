@@ -6,6 +6,7 @@ export interface MessageLogDto extends EntityBase {
   sendByUserId: string;
   message: string;
   messageDate: Date;
+  messageEndDate: Date;
   messageTime: string;
   subject: string;
   toGroups: string;
@@ -14,4 +15,7 @@ export interface MessageLogDto extends EntityBase {
   isEdit: boolean;
   messageLogIds: string[];
   id?: string;
+  cTAText?: string;
+  cTA?: string;
+  messageProtocol?: string;
 }
