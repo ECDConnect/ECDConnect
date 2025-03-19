@@ -34,6 +34,7 @@ import { syncThunkActions } from '@/store/sync';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { userThunkActions } from '@/store/user';
 import facebookLogo from '../../../assets/icon/facebook_white.svg';
+import ReactGA from 'react-ga4';
 import {
   OaLoginModel,
   initialOaLoginValues,
@@ -106,12 +107,14 @@ export const OaLogin: React.FC = () => {
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
-    await appDispatch(userThunkActions.getUser({})).unwrap();
+    const user = await appDispatch(userThunkActions.getUser({})).unwrap();
     localStorage.setItem(
       LocalStorageKeys.firstTimeOnCommunityDashboard,
       'true'
     );
     setIsLoading(false);
+    // Set userId for google
+    ReactGA.set({ userId: user?.id });
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 
