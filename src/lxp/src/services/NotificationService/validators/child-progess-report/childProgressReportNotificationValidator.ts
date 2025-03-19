@@ -298,7 +298,7 @@ export class ChildProgressReportNotificationValidator
       currentNotifications.forEach((item: MessageLogDto) => {
         if (
           today.getTime() >= new Date(item.messageDate).getTime() &&
-          today.getTime() <= new Date(item.messageEndDate).getTime()
+          today.getTime() <= new Date(item.messageEndDate!).getTime()
         ) {
           notifications.push({
             reference: item.id!,
@@ -309,7 +309,7 @@ export class ChildProgressReportNotificationValidator
             area: 'progress-report',
             color: 'alertMain',
             dateCreated: new Date(item.messageDate).toISOString(),
-            expiryDate: new Date(item.messageEndDate).toISOString(),
+            expiryDate: new Date(item.messageEndDate!).toISOString(),
             icon: 'ExclamationIcon',
             viewOnDashboard: true,
             isFromBackend: true,

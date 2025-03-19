@@ -6,7 +6,7 @@ export interface MessageLogDto extends EntityBase {
   sendByUserId: string;
   message: string;
   messageDate: Date;
-  messageEndDate: Date;
+  messageEndDate?: Date;
   messageTime: string;
   subject: string;
   toGroups: string;
