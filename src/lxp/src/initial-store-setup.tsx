@@ -69,7 +69,6 @@ import { statementsActions, statementsThunkActions } from '@store/statements';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
 import { communityThunkActions } from './store/community';
 import { ClassroomService } from './services/ClassroomService';
-import { useNotificationService } from './hooks/useNotificationService';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -110,8 +109,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
   const quarterStartDate = startOfQuarter(new Date());
   const quarterLastDay = lastDayOfQuarter(new Date());
-
-  const { stopService, startService } = useNotificationService();
 
   const resetAuth = async () => {
     appDispatch(authActions.resetAuthState());
@@ -446,11 +443,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         const currentDate = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setMonth(currentDate.getMonth() - 12);
-
-        // (async () =>
-        //   await appDispatch(
-        //     getClubForUser({ userId: userData?.id! })
-        //   ).unwrap())();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -461,21 +453,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       userAuth?.auth_token!
     ).getClassroomForUser(practitioner?.principalHierarchy!);
     if (classroom) {
-      // stop and start notifications
-      stopService();
-      startService();
-
       localStorage.setItem(
         LocalStorageKeys.classroomForInvitedUser,
         classroom?.name
       );
     }
-  }, [
-    practitioner?.principalHierarchy,
-    startService,
-    stopService,
-    userAuth?.auth_token,
-  ]);
+  }, [practitioner?.principalHierarchy, userAuth?.auth_token]);
 
   useEffect(() => {
     if (practitioner?.principalHierarchy && !classroomForUser)
