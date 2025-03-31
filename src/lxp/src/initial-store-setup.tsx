@@ -443,11 +443,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         const currentDate = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setMonth(currentDate.getMonth() - 12);
-
-        // (async () =>
-        //   await appDispatch(
-        //     getClubForUser({ userId: userData?.id! })
-        //   ).unwrap())();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

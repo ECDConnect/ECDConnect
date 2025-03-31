@@ -43,6 +43,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
             var templateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
+            // these items to exclude are not specifically applicable to user
+            var templatesToExclude = new List<string>() {
+                "finish-progress-report"
+            };
             List<MessageLog> logs = new List<MessageLog>();
 
             ApplicationUser user = userManager.FindByIdAsync(userId).Result;
@@ -82,8 +86,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 //TO BE COMPLETED - RESERVED FOR TAG REPLACEMENT IN ACTION
 
             }
-
-            logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId && x.IsActive == true && !x.ReadDate.HasValue).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
+            // Do not include the Message End date here - FE needs to make the decision to not show, because user might have been offline for a long time and the emssages are still relevant
+            logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId 
+                                                && x.IsActive == true 
+                                                && !x.ReadDate.HasValue 
+                                                && !templatesToExclude.Contains(x.MessageTemplateType))
+                                        .ToList());
             //only send in the relevcant prototcol types
             if (inApp)
             {

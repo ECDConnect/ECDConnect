@@ -1686,12 +1686,14 @@ export type ChildProgressReportPeriodModel = {
   __typename?: 'ChildProgressReportPeriodModel';
   endDate: Scalars['DateTime'];
   id: Scalars['UUID'];
+  notifications?: Maybe<Array<Maybe<MessageLog>>>;
   startDate: Scalars['DateTime'];
 };
 
 export type ChildProgressReportPeriodModelInput = {
   endDate: Scalars['DateTime'];
   id: Scalars['UUID'];
+  notifications?: InputMaybe<Array<InputMaybe<MessageLogInput>>>;
   startDate: Scalars['DateTime'];
 };
 

@@ -420,7 +420,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 return null;
             }
 
-            var practitionerQuery = practitionerRepo.GetAll(pagingInput);
+            var practitionerQuery = practitionerRepo.GetAll(pagingInput).Where(x => !x.User.UserName.StartsWith("External_"));
             // General search term
             if (!string.IsNullOrWhiteSpace(search))
             {

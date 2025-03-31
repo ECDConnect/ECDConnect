@@ -1,3 +1,4 @@
+import { MessageLogDto } from '@ecdlink/core';
 import { BasePractitionerDto } from './practitioner.dto';
 import { SiteAddressDto } from './site-address.dto';
 
@@ -20,4 +21,5 @@ export type ChildProgressReportPeriodDto = {
   id: string;
   startDate: string;
   endDate: string;
+  notifications?: MessageLogDto[];
 };

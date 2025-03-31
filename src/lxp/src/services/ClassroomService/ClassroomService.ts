@@ -58,6 +58,16 @@ class ClassroomService {
               id
               startDate
               endDate
+              notifications {
+                subject
+                message
+                id
+                messageProtocol
+                cTAText
+                cTA
+                messageDate
+                messageEndDate
+              }
             }
           }
         }

@@ -34,6 +34,7 @@ import { userThunkActions } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { useTenant } from '@/hooks/useTenant';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import ReactGA from 'react-ga4';
 
 var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
@@ -108,8 +109,10 @@ export const Login: React.FC = () => {
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
-    await appDispatch(userThunkActions.getUser({})).unwrap();
+    const user = await appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
+    // Set userId for google
+    ReactGA.set({ userId: user?.id });
 
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
