@@ -221,6 +221,7 @@ export const AddPractitioner = ({
           .sendPractitionerInviteToPreschool(
             practitionerPhoneNumber,
             classroom?.preschoolCode!,
+            classroom?.name!,
             user?.id!
           )
           .catch((error) => {
