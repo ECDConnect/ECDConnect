@@ -134,6 +134,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 [Service] IHttpContextAccessor httpContext,
                  string practitionerPhoneNumber,
                  string preSchoolNameCode,
+                  string preSchoolName,
                  Guid principalUserId)
         {
             if (string.IsNullOrEmpty(practitionerPhoneNumber))
@@ -144,7 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 throw new ArgumentException("Principal UserId is empty");
             }
-            if (string.IsNullOrEmpty(preSchoolNameCode))
+            if (string.IsNullOrEmpty(preSchoolName))
             {
                 throw new ArgumentException("Preschool name is empty");
             }
@@ -182,7 +183,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new QueryException("Token generation failed");
             }
             
-            await notificationManager.SendPreSchoolInvitationAsync(user, principal.FullName, preSchoolNameCode, token);
+            await notificationManager.SendPreSchoolInvitationAsync(user, principal.FullName,  preSchoolName, token);
 
             await Task.Delay(1000);
             user.IsActive = false;
