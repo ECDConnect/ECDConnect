@@ -134,7 +134,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 [Service] IHttpContextAccessor httpContext,
                  string practitionerPhoneNumber,
                  string preSchoolNameCode,
-                  string preSchoolName,
+                 string preSchoolName,
                  Guid principalUserId)
         {
             if (string.IsNullOrEmpty(practitionerPhoneNumber))

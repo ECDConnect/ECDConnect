@@ -10014,6 +10014,7 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
 export type MutationSendPractitionerInviteToPreSchoolArgs = {
   practitionerPhoneNumber?: InputMaybe<Scalars['String']>;
   preSchoolName?: InputMaybe<Scalars['String']>;
+  preSchoolNameCode?: InputMaybe<Scalars['String']>;
   principalUserId: Scalars['UUID'];
 };
 
