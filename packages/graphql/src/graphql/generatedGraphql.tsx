@@ -10013,6 +10013,7 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
 
 export type MutationSendPractitionerInviteToPreSchoolArgs = {
   practitionerPhoneNumber?: InputMaybe<Scalars['String']>;
+  preSchoolName?: InputMaybe<Scalars['String']>;
   preSchoolNameCode?: InputMaybe<Scalars['String']>;
   principalUserId: Scalars['UUID'];
 };
@@ -18028,6 +18029,7 @@ export type Setting_InvitationCutoffDelay = {
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
+  PreSchoolInvitation: Scalars['String'];
   PrincipalSignup: Scalars['String'];
   Signup: Scalars['String'];
 };

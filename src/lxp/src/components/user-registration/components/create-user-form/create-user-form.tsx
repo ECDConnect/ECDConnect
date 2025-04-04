@@ -69,7 +69,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const { password } = watch();
 
   const validateUsername = (name: string): string | null => {
-    if (!/^[a-zA-Z0-9_]+$/.test(name)) {
+    if (!/^[a-zA-Z0-9.@]+$/.test(name)) {
       return specialCharactersMessageErrorText;
     }
     return null;

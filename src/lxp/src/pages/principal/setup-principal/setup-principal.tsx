@@ -272,6 +272,7 @@ export const SetupPrincipal: React.FC = () => {
               .sendPractitionerInviteToPreschool(
                 principalPractitioner?.phoneNumber,
                 classroom?.preschoolCode!,
+                classroom?.name!,
                 user?.id!
               )
               .catch((error) => {
