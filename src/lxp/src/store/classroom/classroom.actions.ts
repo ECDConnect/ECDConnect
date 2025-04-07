@@ -309,9 +309,6 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
       auth: { userAuth },
       classroomData: { classroomGroupData },
     } = getState();
-
-    console.log('classroomData', classroomGroupData);
-
     try {
       let promises: Promise<boolean>[] = [];
       if (!!userAuth && !!userAuth?.auth_token) {

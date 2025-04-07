@@ -70,14 +70,15 @@ export class IncompletePractitionerInformationNotificationValidator
       const showNotificationForPractitionerFlow =
         !hasPrincipalRole &&
         (hasPractitionerRole || addedByPrincipal) &&
-        practitionerState?.practitioner?.progress === 0;
+        (practitionerState?.practitioner?.progress === 0 ||
+          practitionerState?.practitioner?.progress === 1);
 
       if (showNotificationForPractitionerFlow) {
         return [
           {
             reference: `practitioner-profile`,
             title:
-              practitionerState?.practitioner?.progress === 1.0
+              practitionerState?.practitioner?.progress === 0
                 ? 'Join your preschool team!'
                 : practitionerState?.practitioner?.principalHierarchy
                 ? `You have been added to ${
@@ -87,11 +88,11 @@ export class IncompletePractitionerInformationNotificationValidator
                   }`
                 : 'Join or add a preschool!',
             message:
-              practitionerState?.practitioner?.progress === 1.0
+              practitionerState?.practitioner?.progress === 0
                 ? `Ask your principal to sign up for ${tenantState?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
                 : practitionerState?.practitioner?.principalHierarchy
                 ? 'Connect with your principal & manage your classes.'
-                : 'Set up your preschool or connect with your principal.444',
+                : 'Set up your preschool or connect with your principal.',
             dateCreated: new Date().toISOString(),
             priority: 7,
             viewOnDashboard: true,
@@ -115,7 +116,6 @@ export class IncompletePractitionerInformationNotificationValidator
         (practitionerState?.practitioner?.progress === 1.0 &&
           !addedByPrincipal) ||
         (!hasPractitionerRole && isTrialPeriod);
-
       if (showNotificationForPrincipalFlow) {
         return [
           {
