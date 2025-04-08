@@ -46,7 +46,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 throw new QueryException("Practitioner not found.");
             }
 
-            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabelTemplate
+            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel
                 && !practitioner.IsPrincipalOrAdmin()
                 && practitioner.DateAccepted == null)
             {
