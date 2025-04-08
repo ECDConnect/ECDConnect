@@ -24,10 +24,7 @@ import AttendanceTutorial from '../attendance/components/attendance-tutorial/att
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState, TabsItems } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import walkthroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
 import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
@@ -209,22 +206,10 @@ export const ClassDashboard: React.FC = () => {
     setAttendanceTutorialActive(false);
   }, [attendanceTutorialComplete, previousTabIndex]);
 
-  const updatePractitionerProgress = useCallback(async () => {
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerProgress({
-        practitionerId: practitioner?.userId,
-        progress: 3.0,
-      })
-    );
-  }, [appDispatch, practitioner?.userId]);
-
   const completeTutorial = () => {
     setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
     setAttendanceTutorialComplete(true);
     setAttendanceTutorialActive(false);
-    if (!isTrialPeriod) {
-      updatePractitionerProgress();
-    }
   };
 
   const handleDeclineAttendanceTutorial = useCallback(() => {
@@ -269,9 +254,8 @@ export const ClassDashboard: React.FC = () => {
 
   const handleWalkthroughStart = useCallback(() => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
-    updatePractitionerProgress();
     history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
-  }, [history, setState, updatePractitionerProgress]);
+  }, [history, setState]);
 
   const handleAttendanceWalkthroughLanguage = useCallback(() => {
     setShowAttendanceWalkthrough(false);
@@ -452,10 +436,7 @@ export const ClassDashboard: React.FC = () => {
         position={DialogPosition.Top}
       >
         <div className={styles.dialogContent}>
-          <AttendanceTutorial
-            onClose={() => closeAttendanceTutorial()}
-            updatePractitionerProgress={updatePractitionerProgress}
-          />
+          <AttendanceTutorial onClose={() => closeAttendanceTutorial()} />
         </div>
       </Dialog>
       <div className={styles.dialogContent}>
