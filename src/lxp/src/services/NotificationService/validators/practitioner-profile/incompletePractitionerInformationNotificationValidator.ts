@@ -6,11 +6,7 @@ import {
   NotificationValidator,
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
-import {
-  LocalStorageKeys,
-  RoleSystemNameEnum,
-  TenantType,
-} from '@ecdlink/core';
+import { LocalStorageKeys, TenantType } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
 
 export class IncompletePractitionerInformationNotificationValidator
@@ -41,13 +37,8 @@ export class IncompletePractitionerInformationNotificationValidator
     if (!classroomState || !userState) return [];
 
     if (practitionerState.practitioner) {
-      const hasPractitionerRole = userState?.user?.roles?.some(
-        (role) => role.systemName === RoleSystemNameEnum.Practitioner
-      );
-
-      const hasPrincipalRole = userState?.user?.roles?.some(
-        (role) => role.systemName === RoleSystemNameEnum.Principal
-      );
+      const hasPractitionerRole = !practitionerState?.practitioner?.isPrincipal;
+      const hasPrincipalRole = practitionerState?.practitioner?.isPrincipal;
 
       const notRegistered = !Boolean(
         practitionerState.practitioner?.isRegistered
@@ -68,13 +59,12 @@ export class IncompletePractitionerInformationNotificationValidator
         !classroomState.classroom?.preschoolCode;
 
       const showNotificationForPractitionerFlow =
-        !hasPrincipalRole &&
-        (hasPractitionerRole || addedByPrincipal) &&
+        hasPractitionerRole &&
         (practitionerState?.practitioner?.progress === 0 ||
           practitionerState?.practitioner?.progress === 1);
 
       if (showNotificationForPractitionerFlow) {
-        // practitioner assigned to principal, which you need to accept
+        // practitioner assigned to principal, which you need to
         if (
           practitionerState?.practitioner?.principalHierarchy &&
           !practitionerState?.practitioner?.dateAccepted
@@ -103,6 +93,7 @@ export class IncompletePractitionerInformationNotificationValidator
             },
           ];
         }
+
         if (practitionerState?.practitioner?.progress === 0) {
           return [
             {
@@ -124,6 +115,7 @@ export class IncompletePractitionerInformationNotificationValidator
             },
           ];
         }
+
         if (
           practitionerState?.practitioner?.progress === 1 ||
           practitionerState?.practitioner?.progress === 1.0
