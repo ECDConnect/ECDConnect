@@ -9,10 +9,7 @@ import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
 import robot from '../../../../../assets/iconRobot.svg';
 import ROUTES from '../../../../../routes/routes';
 import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { useTranslation } from 'react-i18next';
@@ -110,15 +107,6 @@ export default function AttendanceWrapper() {
     );
   }
 
-  const updatePractitionerProgress = async () => {
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerProgress({
-        practitionerId: practitioner?.userId,
-        progress: 3.0,
-      })
-    );
-  };
-
   const handleCallback = async (data: CallBackProps) => {
     const { action, index, lifecycle, type } = data;
 
@@ -140,9 +128,6 @@ export default function AttendanceWrapper() {
       (action === 'reset' || lifecycle === 'complete')
     ) {
       setState({ run: false, stepIndex: 0, tourActive: false });
-      if (practitioner?.progress! < 3 && !isTrialPeriod) {
-        await updatePractitionerProgress();
-      }
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: TabsItems.ATTENDANCE,
       });
