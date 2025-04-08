@@ -14,10 +14,7 @@ import { useAppContext } from '@/walkthrougContext';
 import { InfoPage } from '@/pages/business/money/submit-income-statements/components/info-page';
 import { useTenant } from '@/hooks/useTenant';
 
-export const AttendanceTutorial = ({
-  onClose,
-  updatePractitionerProgress,
-}: AttendanceTutorialProps) => {
+export const AttendanceTutorial = ({ onClose }: AttendanceTutorialProps) => {
   const tutorialCompleteClicks = 3;
   const tutorialResetClicks = 4;
   const [tutorialProgressClicks, setTutorialProgressClicks] =
@@ -38,7 +35,6 @@ export const AttendanceTutorial = ({
 
   const handleClickStart = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
-    updatePractitionerProgress();
     history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
   };
 
