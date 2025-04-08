@@ -112,9 +112,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         if (practitioner.PrincipalHierarchy == null)
                         {
 
-                            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabelTemplate) 
+                            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel) 
                             {
-                                hasPreschool = classroom == null;
+                                hasPreschool = classroom != null;
                             } else 
                             {
                                 var belongToOtherSchool = dbContext.ClassroomGroups.Where(x => x.UserId == practitionerUser.Id && x.IsActive == true)
@@ -125,7 +125,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                                 var endDate = DateTime.Today;
                                 var trailPeriodDays = (endDate - startDate).TotalDays;
                                 var isTrialPeriod = trailPeriodDays < 31; 
-                                var isDummySchool = classroom.PreschoolCode == null;
+                                var isDummySchool = classroom?.PreschoolCode == null;
                                 hasPreschool = classroom == null ? false : !isDummySchool || belongToOtherSchool || !isTrialPeriod;
                             }
 
