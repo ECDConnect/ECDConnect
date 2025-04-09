@@ -58,13 +58,10 @@ export class IncompletePractitionerInformationNotificationValidator
         diffDays <= 30 &&
         !classroomState.classroom?.preschoolCode;
 
-      const showNotificationForPractitionerFlow =
-        hasPractitionerRole &&
-        (practitionerState?.practitioner?.progress === 0 ||
-          practitionerState?.practitioner?.progress === 1);
+      const showNotificationForPractitionerFlow = hasPractitionerRole;
 
       if (showNotificationForPractitionerFlow) {
-        // practitioner assigned to principal, which you need to
+        // practitioner assigned to principal, which you need to accept
         if (
           practitionerState?.practitioner?.principalHierarchy &&
           !practitionerState?.practitioner?.dateAccepted
