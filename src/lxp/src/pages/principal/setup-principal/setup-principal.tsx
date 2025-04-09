@@ -358,7 +358,7 @@ export const SetupPrincipal: React.FC = () => {
           iconColor={'alertMain'}
           iconBorderColor="alertBg"
           importantText={
-            'Please complete the process otherwise you will lose your changes.aaaaa'
+            'Please complete the process otherwise you will lose your changes.'
           }
           actionButtons={[
             {
