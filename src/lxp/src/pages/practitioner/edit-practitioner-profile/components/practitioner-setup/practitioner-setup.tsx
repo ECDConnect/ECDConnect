@@ -38,6 +38,7 @@ import { ClassroomDto } from '@/models/classroom/classroom.dto';
 import { notificationActions } from '@/store/notifications';
 import { useTenant } from '@/hooks/useTenant';
 import { Message } from '@/models/messages/messages';
+import { usePractitionerNotification } from '@/hooks/usePractitionerNotification';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -67,32 +68,17 @@ export const PractitionerSetup = ({
   const tenant = useTenant();
   const isWhiteLabel = tenant?.isWhiteLabel;
   const [isLoading, setIsLoading] = useState(false);
+  const notificationClassroom = classroom?.name
+    ? classroom?.name
+    : principalClassroom?.name;
 
-  const principalNotification: Message[] = [
-    {
-      reference: `practitioner-profile`,
-      // Check if user skip the link to a principal step
-      title:
-        practitioner?.progress === 1.0
-          ? 'Join your preschool team!'
-          : 'Join or add a preschool!',
-      message:
-        practitioner?.progress === 1.0
-          ? `Ask your principal to sign up for ${tenant?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
-          : 'Set up your preschool or connect with your principal.',
-      dateCreated: new Date().toISOString(),
-      priority: 6,
-      viewOnDashboard: true,
-      area: 'practitioner',
-      icon: 'SwitchVerticalIcon',
-      color: 'primary',
-      actionText: 'Get started',
-      viewType: 'Hub',
-      routeConfig: {
-        route: ROUTES.PRINCIPAL.SETUP_PROFILE,
-      },
-    },
-  ];
+  const { getPractitionerProgressNotification } = usePractitionerNotification();
+
+  const { practitionerNotification } = getPractitionerProgressNotification(
+    tenant?.tenant?.applicationName,
+    practitioner,
+    notificationClassroom
+  );
 
   const getPractitionerResponse = async () => {
     setIsLoading(true);
@@ -126,7 +112,7 @@ export const PractitionerSetup = ({
     await appDispatch(notificationActions.resetNotificationState());
 
     await appDispatch(
-      notificationActions.addNotifications(principalNotification)
+      notificationActions.addNotifications(practitionerNotification)
     );
 
     setIsLoading(false);
