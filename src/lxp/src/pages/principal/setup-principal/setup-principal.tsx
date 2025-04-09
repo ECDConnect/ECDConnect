@@ -87,8 +87,10 @@ export const SetupPrincipal: React.FC = () => {
   );
 
   useEffect(() => {
-    getPrincipalClassroom();
-  }, []);
+    if (practitioner?.principalHierarchy) {
+      getPrincipalClassroom();
+    }
+  }, [practitioner?.principalHierarchy]);
 
   const getPrincipalClassroom = useCallback(async () => {
     const classroom = await new ClassroomService(
