@@ -256,6 +256,10 @@ export const AddPractitioner = ({
       userId: newPractitioner?.userId,
       permissionIds: permissionsAdded,
     };
+    // also set the progress for this newly assigned user to 0
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerProgress(newPractitioner?.userId!, 0);
 
     const updatePermissions = await new PermissionsService(
       userAuth?.auth_token!
