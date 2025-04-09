@@ -121,8 +121,7 @@ export class IncompletePractitionerInformationNotificationValidator
             {
               reference: `practitioner-profile`,
               title: `Join your preschool team!`,
-              message:
-                'Ask your principal to sign up for ${tenantState?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.',
+              message: `Ask your principal to sign up for ${tenantState?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`,
               dateCreated: new Date().toISOString(),
               priority: 7,
               viewOnDashboard: true,
