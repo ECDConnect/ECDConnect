@@ -57,7 +57,9 @@ export const EditPractitionerProfile: React.FC = () => {
   });
 
   useEffect(() => {
-    getPrincipalClassroom();
+    if (practitioner?.principalHierarchy) {
+      getPrincipalClassroom();
+    }
   }, []);
 
   const getPrincipalClassroom = useCallback(async () => {

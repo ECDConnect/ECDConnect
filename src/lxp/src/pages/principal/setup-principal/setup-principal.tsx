@@ -87,7 +87,9 @@ export const SetupPrincipal: React.FC = () => {
   );
 
   useEffect(() => {
-    getPrincipalClassroom();
+    if (practitioner?.principalHierarchy) {
+      getPrincipalClassroom();
+    }
   }, []);
 
   const getPrincipalClassroom = useCallback(async () => {

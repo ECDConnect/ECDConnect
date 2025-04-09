@@ -119,7 +119,9 @@ export const PractitionerSetup = ({
   };
 
   useEffect(() => {
-    getPrincipalClassroom();
+    if (practitioner?.principalHierarchy) {
+      getPrincipalClassroom();
+    }
   }, []);
 
   const getPrincipalClassroom = useCallback(async () => {
