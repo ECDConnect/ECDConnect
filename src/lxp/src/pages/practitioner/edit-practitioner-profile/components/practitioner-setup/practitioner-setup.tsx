@@ -122,7 +122,7 @@ export const PractitionerSetup = ({
     if (practitioner?.principalHierarchy) {
       getPrincipalClassroom();
     }
-  }, []);
+  }, [practitioner?.principalHierarchy]);
 
   const getPrincipalClassroom = useCallback(async () => {
     const classroom = await new ClassroomService(

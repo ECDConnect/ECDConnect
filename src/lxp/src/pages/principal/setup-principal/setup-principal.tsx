@@ -90,7 +90,7 @@ export const SetupPrincipal: React.FC = () => {
     if (practitioner?.principalHierarchy) {
       getPrincipalClassroom();
     }
-  }, []);
+  }, [practitioner?.principalHierarchy]);
 
   const getPrincipalClassroom = useCallback(async () => {
     const classroom = await new ClassroomService(
