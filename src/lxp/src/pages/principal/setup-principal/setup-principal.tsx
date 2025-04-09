@@ -1,7 +1,6 @@
 import {
   useTheme,
   useDialog,
-  ClassroomGroupDto,
   usePrevious,
   LocalStorageKeys,
 } from '@ecdlink/core';
@@ -11,7 +10,7 @@ import {
   ProgrammeTypeEnum,
 } from '@ecdlink/graphql';
 import { IonContent } from '@ionic/react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
@@ -33,8 +32,6 @@ import { SetupClasses } from '../components/setup-classes/setup-classes';
 import { AddPhoto } from '@/pages/practitioner/edit-practitioner-profile/components/add-photo/add-photo';
 import { WelcomePage } from '@/components/welcome-page';
 import { staticDataSelectors } from '@/store/static-data';
-import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
-import { newGuid } from '@/utils/common/uuid.utils';
 import { userSelectors } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { PractitionerService } from '@/services/PractitionerService';
@@ -46,8 +43,10 @@ import { SelectPractitionerRole } from '../components/select-practitioner-role/s
 import { PreschoolCodeCheck } from '../components/preschool-code-check/preschool-code-check';
 import { updatePrincipalInvitation } from '@/store/practitioner/practitioner.actions';
 import { useTenant } from '@/hooks/useTenant';
-import { Message } from '@/models/messages/messages';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { usePractitionerNotification } from '@/hooks/usePractitionerNotification';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomService } from '@/services/ClassroomService';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -61,6 +60,7 @@ export const SetupPrincipal: React.FC = () => {
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const user = useSelector(userSelectors.getUser);
   const classroom = useSelector(classroomsSelectors?.getClassroom);
+  const [principalClassroom, setPrincipalClassroom] = useState<ClassroomDto>();
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -71,6 +71,8 @@ export const SetupPrincipal: React.FC = () => {
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
   );
+  const { getPractitionerProgressNotification } = usePractitionerNotification();
+
   const [isLoading, setIsLoading] = useState(false);
   const inviTePractitionerUserId = localStorage
     .getItem(LocalStorageKeys.practitionerInvitedPrincipalUserId)
@@ -83,6 +85,20 @@ export const SetupPrincipal: React.FC = () => {
   const [classesPage, setClassesPage] = useState<ConfirmClassesSteps>(
     ConfirmClassesSteps.CONFIRM_CLASSES
   );
+
+  useEffect(() => {
+    getPrincipalClassroom();
+  }, []);
+
+  const getPrincipalClassroom = useCallback(async () => {
+    const classroom = await new ClassroomService(
+      userAuth?.auth_token!
+    ).getClassroomForUser(practitioner?.principalHierarchy!);
+
+    if (classroom) {
+      setPrincipalClassroom(classroom);
+    }
+  }, []);
 
   const previousPage = usePrevious(page);
   const subTitleRules =
@@ -100,31 +116,40 @@ export const SetupPrincipal: React.FC = () => {
       classesPage === ConfirmClassesSteps.EDIT_CLASS) ||
     confirmPractitionerPage === ConfirmPractitionersSteps.EDIT_PRACTITIONER;
 
-  const principalNotification: Message[] = [
-    {
-      reference: `practitioner-profile`,
-      // Check if user skip the link to a principal step
-      title:
-        practitioner?.progress === 1.0
-          ? 'Join your preschool team!'
-          : 'Join or add a preschool!',
-      message:
-        practitioner?.progress === 1.0
-          ? `Ask your principal to sign up for ${tenant?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
-          : 'Set up your preschool or connect with your principal.',
-      dateCreated: new Date().toISOString(),
-      priority: 6,
-      viewOnDashboard: true,
-      area: 'practitioner',
-      icon: 'SwitchVerticalIcon',
-      color: 'primary',
-      actionText: 'Get started',
-      viewType: 'Hub',
-      routeConfig: {
-        route: ROUTES.PRINCIPAL.SETUP_PROFILE,
-      },
-    },
-  ];
+  const notificationClassroom = classroom?.name
+    ? classroom?.name
+    : principalClassroom?.name;
+  const { practitionerNotification } = getPractitionerProgressNotification(
+    tenant?.tenant?.applicationName,
+    practitioner,
+    notificationClassroom
+  );
+
+  // const principalNotification: Message[] = [
+  //   {
+  //     reference: `practitioner-profile`,
+  //     // Check if user skip the link to a principal step
+  //     title:
+  //       practitioner?.progress === 1.0
+  //         ? 'Join your preschool team!'
+  //         : 'Join or add a preschool!',
+  //     message:
+  //       practitioner?.progress === 1.0
+  //         ? `Ask your principal to sign up for ${tenant?.tenant?.applicationName} and add you to the preschool, or fill in your preschool code now.`
+  //         : 'Set up your preschool or connect with your principal.',
+  //     dateCreated: new Date().toISOString(),
+  //     priority: 6,
+  //     viewOnDashboard: true,
+  //     area: 'practitioner',
+  //     icon: 'SwitchVerticalIcon',
+  //     color: 'primary',
+  //     actionText: 'Get started',
+  //     viewType: 'Hub',
+  //     routeConfig: {
+  //       route: ROUTES.PRINCIPAL.SETUP_PROFILE,
+  //     },
+  //   },
+  // ];
 
   const { stopService } = useNotificationService();
 
@@ -225,7 +250,7 @@ export const SetupPrincipal: React.FC = () => {
     if (userAuth?.auth_token && user?.id) {
       if (practitioner?.progress === 1.0 && !practitioner?.isPrincipal) {
         await appDispatch(
-          notificationActions.addNotifications(principalNotification)
+          notificationActions.addNotifications(practitionerNotification)
         );
         history.push(ROUTES.DASHBOARD, { isFromCompleteProfile: true });
         return;
@@ -333,13 +358,16 @@ export const SetupPrincipal: React.FC = () => {
           iconColor={'alertMain'}
           iconBorderColor="alertBg"
           importantText={
-            'Please complete the process otherwise you will lose your changes.'
+            'Please complete the process otherwise you will lose your changes.aaaaa'
           }
           actionButtons={[
             {
               colour: 'quatenary',
               text: 'Exit',
               onClick: () => {
+                appDispatch(
+                  notificationActions.addNotifications(practitionerNotification)
+                );
                 onSubmit();
                 history.push('/');
               },
@@ -447,7 +475,11 @@ export const SetupPrincipal: React.FC = () => {
         return <></>;
     }
   };
-  const onBack = () => {
+
+  const onBack = async () => {
+    await appDispatch(
+      notificationActions.addNotifications(practitionerNotification)
+    );
     switch (page) {
       case PractitionerSetupSteps.SETUP_PROGRAMME:
         return setPage(PractitionerSetupSteps.SELECT_PRACTITIONER_ROLE);
