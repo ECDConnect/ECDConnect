@@ -26,8 +26,11 @@ import { useNotificationService } from '@/hooks/useNotificationService';
 import { PractitionerShareDetails } from './components/practitioner-share-details/practitioner-share-details';
 import { useTenant } from '@/hooks/useTenant';
 import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
-import { classroomsThunkActions } from '@/store/classroom';
+import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import TransparentLayer from '../../../assets/TransparentLayer.png';
+import { usePractitionerNotification } from '@/hooks/usePractitionerNotification';
+import { ClassroomDto } from '@/models/classroom/classroom.dto';
+import { ClassroomService } from '@/services/ClassroomService';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -43,6 +46,8 @@ export const EditPractitionerProfile: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const classroom = useSelector(classroomsSelectors?.getClassroom);
+  const [principalClassroom, setPrincipalClassroom] = useState<ClassroomDto>();
 
   const [label, setLabel] = useState('');
   const [activeStep, setActiveStep] = useState(EditPractitionerSteps.WELCOME);
@@ -51,7 +56,30 @@ export const EditPractitionerProfile: React.FC = () => {
     allowPermissions: false,
   });
 
+  useEffect(() => {
+    getPrincipalClassroom();
+  }, []);
+
+  const getPrincipalClassroom = useCallback(async () => {
+    const classroom = await new ClassroomService(
+      userAuth?.auth_token!
+    ).getClassroomForUser(practitioner?.principalHierarchy!);
+
+    if (classroom) {
+      setPrincipalClassroom(classroom);
+    }
+  }, []);
+
   const addedByPrincipal = !!practitioner?.principalHierarchy;
+  const { getPractitionerProgressNotification } = usePractitionerNotification();
+  const notificationClassroom = classroom?.name
+    ? classroom?.name
+    : principalClassroom?.name;
+  const { practitionerNotification } = getPractitionerProgressNotification(
+    tenant?.tenant?.applicationName,
+    practitioner,
+    notificationClassroom
+  );
 
   const { stopService } = useNotificationService();
 
@@ -194,6 +222,9 @@ export const EditPractitionerProfile: React.FC = () => {
               colour: 'quatenary',
               text: 'Exit',
               onClick: () => {
+                appDispatch(
+                  notificationActions.addNotifications(practitionerNotification)
+                );
                 onSubmit();
                 if (
                   activeStep === EditPractitionerSteps.SETUP_PRACTITIONER ||
@@ -224,7 +255,10 @@ export const EditPractitionerProfile: React.FC = () => {
     });
   };
 
-  const onBack = () => {
+  const onBack = async () => {
+    await appDispatch(
+      notificationActions.addNotifications(practitionerNotification)
+    );
     switch (activeStep) {
       case EditPractitionerSteps.WELCOME:
       default:
