@@ -11,13 +11,8 @@ import {
   getStorageItem,
   setStorageItem,
 } from '@/utils/common/local-storage.utils';
-import iconRobotImage from '@/assets/iconRobot.svg';
-import {
-  progressTrackingSelectors,
-  progressTrackingThunkActions,
-} from '@/store/progress-tracking';
+import { progressTrackingSelectors } from '@/store/progress-tracking';
 import { useHistory, useLocation, useParams } from 'react-router';
-import { useAppDispatch } from '@/store';
 import ProgressReport from '../components/progress-report/progress-report';
 import robot from '../../../../assets/iconRobot.svg';
 import { classroomsSelectors } from '@store/classroom';
@@ -42,27 +37,15 @@ import { StoryBookActions } from '@/store/content/story-book/story-book.actions'
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { practitionerSelectors } from '@/store/practitioner';
-import { replaceSkillText } from '@/utils/child/child-progress-report.utils';
-import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 
 const { usePDF } = require('react-to-pdf');
-
 export interface iSkills {
   skill: string;
   totalChildren: number;
 }
 
 export const ProgrammeDashboard: React.FC = () => {
-  const {
-    percentageReportsCompleted,
-    percentageObservationsCompleted,
-    childReports,
-  } = useProgressForChildren();
   const [showInitialWalkthrough, setShowInitialWalkthrough] = useState(false);
-
-  const completedReportCount = childReports.filter(
-    (x) => !!x.report && !!x.report.dateCompleted
-  ).length;
 
   const { isLoading: isLoadingActivities } = useThunkFetchCall(
     'activityData',
@@ -90,7 +73,6 @@ export const ProgrammeDashboard: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const dialog = useDialog();
-  const appDispatch = useAppDispatch();
 
   const isTrialPeriod = useIsTrialPeriod();
 
@@ -101,7 +83,7 @@ export const ProgrammeDashboard: React.FC = () => {
     hasPermissionToPlanClassroomActivities ||
     isTrialPeriod;
 
-  const [showReport, setShowReport] = useState(false);
+  const [showReport] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     programmeStartDate || new Date()
   );
@@ -111,10 +93,6 @@ export const ProgrammeDashboard: React.FC = () => {
   const currentReportingPeriod = useSelector(
     classroomsSelectors.getCurrentProgressReportPeriod()
   );
-
-  const lastProgressReportPeriodHasPassed =
-    currentReportingPeriod?.endDate &&
-    new Date(currentReportingPeriod?.endDate) > new Date();
 
   const currentProgramme = useSelector(
     programmeSelectors.getProgrammeByDateAndClassroomGroupId({
@@ -152,26 +130,9 @@ export const ProgrammeDashboard: React.FC = () => {
     }
   }, [history, state]);
 
-  const fetchData = useCallback(
-    async (reportDate: string) => {
-      await appDispatch(
-        progressTrackingThunkActions.getPractitionerProgressReportSummary({
-          reportingPeriod: reportDate,
-        })
-      );
-    },
-    [appDispatch]
-  );
-
-  const { toPDF, targetRef } = usePDF({
+  const { targetRef } = usePDF({
     filename: 'practitioner-progress-summary-report.pdf',
   });
-
-  const downloadPdf = useCallback(() => {
-    setShowReport(true);
-    setTimeout(() => toPDF(), 600);
-    setTimeout(() => setShowReport(false), 600);
-  }, [setShowReport, toPDF]);
 
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -418,14 +379,6 @@ export const ProgrammeDashboard: React.FC = () => {
   //   }
   // }, [fetchData, progressSummary, downloadPdf, dialog]);
 
-  const hasClickedAfterEndOfProgressReportPeriodEnded = getStorageItem(
-    LocalStorageKeys?.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
-  );
-
-  const allSkills = useSelector(
-    progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
-  );
-
   const baseReports = useSelector(
     progressTrackingSelectors.getProgressReportsForReportingPeriod(
       currentReportingPeriod?.id || ''
@@ -444,102 +397,6 @@ export const ProgrammeDashboard: React.FC = () => {
   flattenedArray.forEach((num: number) => {
     countOccurrences[num] = (countOccurrences[num] || 0) + 1;
   });
-
-  // Step 3: Extract the numbers that appear more than once and their counts
-  const duplicatesWithCounts: { number: number; count: number }[] =
-    Object.entries(countOccurrences)
-      .filter(([_, count]) => count > 1)
-      .map(([num, count]) => ({ number: Number(num), count }));
-
-  function getRandomValues(arr: number[], n: number): number[] {
-    const shuffled = [...arr].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, n);
-  }
-
-  const randomValues = getRandomValues(flattenedArray, 2);
-
-  const listOfWorkingOnActivities =
-    duplicatesWithCounts?.length > 0
-      ? allSkills.filter((skill) =>
-          duplicatesWithCounts.some((l) => skill?.id === l?.number)
-        )
-      : allSkills.filter((skill) => randomValues.some((l) => skill?.id === l));
-
-  const showProgressReportEndedDialog = useCallback(async () => {
-    dialog({
-      // blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <ActionModal
-          className={'mx-4 bg-white'}
-          title="What are children working on?"
-          customDetailText={
-            <div className="text-textMid">
-              {`Based on Report ${currentReportingPeriod?.reportNumber}, here are some areas that children are working on:`}
-              <div>
-                {listOfWorkingOnActivities?.map((item) => (
-                  <div className="mt-2">{`\u00A0\u00A0\u00A0\u00A0• ${replaceSkillText(
-                    item?.name,
-                    'Child'
-                  )}`}</div>
-                ))}
-                <div className="mt-8 mb-2">{`Think about adding activities to work on these areas. Download the full summary.`}</div>
-              </div>
-            </div>
-          }
-          customIcon={
-            <div
-              className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"
-              style={{ width: 85 }}
-            >
-              <img src={iconRobotImage} alt="card" />
-            </div>
-          }
-          actionButtons={[
-            {
-              text: 'Download the full summary',
-              colour: 'quatenary',
-              onClick: () => {
-                history?.push(
-                  ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
-                  {
-                    report: 'completed-all',
-                  }
-                );
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
-                );
-                onCancel();
-              },
-              type: 'filled',
-              textColour: 'white',
-              leadingIcon: 'DownloadIcon',
-            },
-            {
-              text: 'Close',
-              textColour: 'quatenary',
-              colour: 'quatenary',
-              type: 'outlined',
-              onClick: () => {
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
-                );
-                onCancel();
-              },
-              leadingIcon: 'XIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [
-    currentReportingPeriod?.reportNumber,
-    dialog,
-    history,
-    listOfWorkingOnActivities,
-  ]);
 
   // useEffect(() => {
   //   if (
