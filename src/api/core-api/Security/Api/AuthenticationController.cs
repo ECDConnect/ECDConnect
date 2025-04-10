@@ -100,14 +100,16 @@ namespace ECDLink.Security.Api
             }
             Console.WriteLine("Login: Username={0}, Referrer={1}, Origin={2}, TenantId={3}", login.Username, HttpContext.Request.Headers.Referer, HttpContext.Request.Headers.Origin, TenantExecutionContext.Tenant.Id);
 
-            var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            var tenantData = TenantExecutionContext.Tenant;
+            var organisationName = tenantData.OrganisationName;
+            var callCenterNumber = "0800 014 817"; // TODO: Callcenter number should be in the tenant config?
 
             //exclude funny script attempts
             if ((login?.Password?.StartsWith('<') ?? true)
                 || (login?.PhoneNumber?.StartsWith('<') ?? false)
                 || (login?.Username?.StartsWith('<') ?? true))
             {
-                return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
+                return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
             }
 
             ApplicationUser user;
@@ -117,13 +119,15 @@ namespace ECDLink.Security.Api
                 user = await _securityManager.GetUsernameAsync(login.Username, login.Password);
                 if (user != null)
                 {
-                    var tenantId = user.TenantId;
-                    var tenants = _tenantService.GetTenantById((Guid)tenantId);
-                    TenantExecutionContext.SetTenant(null, true);
-                    TenantExecutionContext.SetTenant((Tenancy.Model.TenantInternalModel)tenants.First());
-                    await _userManager.SetObjectDataAsync(user, tenantId);
+                    if (validateTenantForUser(user.TenantId, tenantData.Id))
+                    {
+                        var tenantId = user.TenantId;
+                        var tenants = _tenantService.GetTenantById((Guid)tenantId);
+                        TenantExecutionContext.SetTenant(null, true);
+                        TenantExecutionContext.SetTenant((Tenancy.Model.TenantInternalModel)tenants.First());
+                        await _userManager.SetObjectDataAsync(user, tenantId);
+                    }
                 }
-                // user = await _securityManager.LogInWithUsernameAsync(login.Username, login.Password);
             }
             else
             {
@@ -131,11 +135,15 @@ namespace ECDLink.Security.Api
                 user = await _securityManager.LogInWithPhoneNumberAsync(normalizePhoneNumber, login.Password);
             }
 
-            if (user == null || (user.LockoutEnabled == true && user.LockoutEnd > DateTime.Now))
+            if (!validateTenantForUser(user.TenantId, tenantData.Id))
             {
-                return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
+                return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
             }
 
+            if (user == null || (user.LockoutEnabled == true && user.LockoutEnd > DateTime.Now))
+            {
+                return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
+            }
 
             // Check if logging into admin portal and deny non "administrators" or "Coaches" access.
             var isAdminPortal = checkHostUrlForAdminPortal(
@@ -144,22 +152,22 @@ namespace ECDLink.Security.Api
                 _httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (_httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
 
             var userRoles = await _userManager.GetRolesAsync(user);
+            var isAdministrator = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.SUPER_ADMINISTRATOR);
 
             if (isAdminPortal)
             {
-                var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.SUPER_ADMINISTRATOR) || userRoles.Contains(RolesGG.TEAM_LEAD);
-                if (!hasAccess)
+                // You need to be an administrator to login into portal
+                if (!isAdministrator)
                 {
-
-                    // TODO: Callcenter number should be in the tenant config?
-                    return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
+                    return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
                 }
             }
             else
             {
-                if (!userRoles.Any())
+                // Can't login without a role or if you are an administrator
+                if (!userRoles.Any() || isAdministrator)
                 {
-                    return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
+                    return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
                 }
             }
 
@@ -171,6 +179,11 @@ namespace ECDLink.Security.Api
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
             var package = new OkObjectResult(jwtObj);
             return package;
+        }
+
+        private bool validateTenantForUser(Guid? userTenantId, Guid? tenantId) 
+        {
+            return userTenantId == null || tenantId == null ? false : userTenantId == tenantId;
         }
 
         private bool checkHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
