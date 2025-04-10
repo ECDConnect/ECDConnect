@@ -132,7 +132,7 @@ export const PractitionerSetup = ({
     if (classroom) {
       setPrincipalClassroom(classroom);
     }
-  }, []);
+  }, [practitioner?.principalHierarchy]);
 
   const { practitionerToProgramme, allowPermissions } = watch();
 
