@@ -70,7 +70,7 @@ export const EditPractitionerProfile: React.FC = () => {
     if (classroom) {
       setPrincipalClassroom(classroom);
     }
-  }, []);
+  }, [practitioner?.principalHierarchy]);
 
   const addedByPrincipal = !!practitioner?.principalHierarchy;
   const { getPractitionerProgressNotification } = usePractitionerNotification();

@@ -100,7 +100,7 @@ export const SetupPrincipal: React.FC = () => {
     if (classroom) {
       setPrincipalClassroom(classroom);
     }
-  }, []);
+  }, [practitioner?.principalHierarchy]);
 
   const previousPage = usePrevious(page);
   const subTitleRules =
