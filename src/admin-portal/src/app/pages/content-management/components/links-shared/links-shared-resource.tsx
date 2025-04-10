@@ -55,7 +55,7 @@ export const LinksSharedResource = ({
     loading: loadingLinks,
     refetch,
   } = useQuery(query, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
     variables: {
       localeId: LanguageId.enZa,
     },
