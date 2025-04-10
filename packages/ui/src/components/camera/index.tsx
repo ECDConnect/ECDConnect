@@ -112,7 +112,7 @@ export const Camera = ({ onGetPhoto, onClose }: CameraProps) => {
             audio={false}
             screenshotFormat="image/jpeg"
             videoConstraints={videoConstraints}
-            mirrored
+            mirrored={false}
           >
             {({ getScreenshot }) => (
               <div className="flex w-full items-center justify-evenly">
