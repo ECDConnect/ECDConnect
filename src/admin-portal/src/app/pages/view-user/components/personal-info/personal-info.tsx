@@ -295,6 +295,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
           title: 'Successfully Updated User!',
           variant: NOTIFICATION.SUCCESS,
         });
+        setPractitionerDetailsHasChanged(false);
       })
       .catch((err) => {
         setNotification({
@@ -675,8 +676,8 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
               colour: 'secondary',
               type: 'filled',
               onClick: handleSubmitChwDetails(onSave),
-
               leadingIcon: 'BadgeCheckIcon',
+              isLoading: loading,
             },
             {
               text: 'No, cancel',
