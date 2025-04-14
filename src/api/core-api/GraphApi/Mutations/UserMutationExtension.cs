@@ -234,7 +234,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.WhatsAppNumber = UserHelper.NormalizePhoneNumber(normalizedWhatsAppNumber);
             }
 
-            if (input.IdNumber is not null 
+            if (!string.IsNullOrWhiteSpace(input.IdNumber) 
                 && input.IdNumber != user.IdNumber)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "IdNumber", ValueBefore = user.IdNumber, ValueAfter = input.IdNumber });
