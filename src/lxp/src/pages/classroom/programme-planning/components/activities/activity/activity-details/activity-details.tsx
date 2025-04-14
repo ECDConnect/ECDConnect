@@ -87,9 +87,6 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
     const translatedActivity = activities?.find(
       (item) => item.id === currentActivity?.id
     );
-    console.log('translatedActivity', translatedActivity);
-    console.log('language', language);
-
     setCurrentActivity(translatedActivity || currentActivity);
   };
 
