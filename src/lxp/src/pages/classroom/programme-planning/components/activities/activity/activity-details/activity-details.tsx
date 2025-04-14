@@ -76,6 +76,8 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   }, [isWalkthrough, onActivityChanged, state.stepIndex]);
 
   const getDataByLanguage = async (language: LanguageDto) => {
+    setLanguage(language);
+
     let activities: ActivityDto[] | undefined;
 
     activities = await new ContentActivityService(
@@ -85,7 +87,6 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
     const translatedActivity = activities?.find(
       (item) => item.id === currentActivity?.id
     );
-
     setCurrentActivity(translatedActivity || currentActivity);
   };
 
@@ -124,8 +125,9 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
         )}
 
         <LanguageSelector
-          currentLocale={'en-za'}
-          selectLanguage={getDataByLanguage}
+          labelClassName="text-textDark mr-2"
+          currentLocale={language?.locale}
+          selectLanguage={(data) => getDataByLanguage(data)}
           availableLanguages={languages}
         />
         <Divider />
