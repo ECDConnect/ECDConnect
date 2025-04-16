@@ -101,6 +101,8 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                         };
                         foreach (var practitioner in usersToGetNotifications)
                         {
+                            // remove previous notification for user, before adding a new one
+                            _notificationService.DeleteGroupNotifications(TemplateTypeConstants.Statements30DaysNotification,  practitioner.Id);
                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements30DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, replacements, null,
                                                                             relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
                         }
@@ -123,6 +125,9 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
                 {
                     foreach (var practitioner in usersToGetNotifications)
                     {
+                        // remove previous notification for user, before adding a new one
+                        _notificationService.DeleteGroupNotifications(TemplateTypeConstants.Statements60DaysNotification,  practitioner.Id);
+
                         await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.Statements60DaysNotification, DateTime.Now.Date, practitioner.User, "", MessageStatusConstants.Blue, null, DateTime.Now.Date.AddDays(7),
                                                                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(practitioner.Id, "Practitioner") });
                     }
