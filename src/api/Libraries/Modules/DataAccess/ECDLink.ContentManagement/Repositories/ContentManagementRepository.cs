@@ -909,7 +909,12 @@ namespace ECDLink.ContentManagement.Repositories
                             .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
             objDict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
 
-            return objDict.ToObject();
+            // Add newly edited object to cache
+            var result = objDict.ToObject();
+            var key = string.Format("Content.{0}.{1}..Id.{2}", currentTenantId, localeId, contentId);
+            _memoryCache.Set(key, result, GetCacheOptions());
+
+            return result;
         }
 
         // public bool Delete(int contentId)
