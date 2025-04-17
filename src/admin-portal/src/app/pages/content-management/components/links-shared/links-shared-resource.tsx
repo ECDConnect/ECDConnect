@@ -10,13 +10,14 @@ import { ResourceLink, LinksSharedProps } from './links-shared.types';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { LanguageId } from '../../../../constants/language';
 import ContentLoader from '../../../../components/content-loader/content-loader';
-import { useDialog } from '@ecdlink/core';
+import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 
 export const LinksSharedResource = ({
   contentType,
   onClose: cancelEdit,
 }: LinksSharedProps) => {
+  const { setNotification } = useNotifications();
   const [resourcesLinks, setResourcesLinks] = useState<ResourceLink[]>([]);
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
   const dialog = useDialog();
@@ -53,7 +54,7 @@ export const LinksSharedResource = ({
   const {
     data: linksData,
     loading: loadingLinks,
-    refetch,
+    refetch: refetchLinks,
   } = useQuery(query, {
     fetchPolicy: 'network-only',
     variables: {
@@ -159,7 +160,11 @@ export const LinksSharedResource = ({
         localeId: LanguageId.enZa,
       },
     }).then(() => {
-      refetch();
+      setNotification({
+        title: ` Successfully changed!`,
+        variant: NOTIFICATION.SUCCESS,
+      });
+      refetchLinks();
     });
   };
 
