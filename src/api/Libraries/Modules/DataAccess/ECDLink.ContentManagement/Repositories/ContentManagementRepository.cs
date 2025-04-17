@@ -911,12 +911,11 @@ namespace ECDLink.ContentManagement.Repositories
                             .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
             objDict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
 
-            // Add newly edited object to cache
-            var result = objDict.ToObject();
-            var key = string.Format("Content.{0}.{1}..Id.{2}", currentTenantId, localeId, contentId);
-            _memoryCache.Set(key, result, GetCacheOptions());
+            // clear cache key to ensure we see the new values 
+            string key = string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, localeId);
+            _memoryCache.Remove(key);
 
-            return result;
+            return objDict.ToObject();
         }
 
         // public bool Delete(int contentId)
