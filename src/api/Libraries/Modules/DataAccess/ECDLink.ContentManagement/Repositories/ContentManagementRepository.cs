@@ -909,9 +909,13 @@ namespace ECDLink.ContentManagement.Repositories
                             .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
             objDict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
 
-            // clear cache key to ensure we see the new values 
-            string key = string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, localeId);
-            _memoryCache.Remove(key);
+            // Removing the cached keys for this object to ensure we see the change on the front-end
+            // clear cache for all key
+            string keyAll = string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, localeId);
+            _memoryCache.Remove(keyAll);
+            // clear cache for single key
+            var keySingle = string.Format("Content.{0}.{1}..Id.{2}", currentTenantId, localeId, contentId);
+            _memoryCache.Remove(keySingle);
 
             return objDict.ToObject();
         }
