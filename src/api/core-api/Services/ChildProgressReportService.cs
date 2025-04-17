@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
@@ -91,6 +92,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly ContentManagementRepository _contentRepo;
         private readonly ILocaleService<Language> _localeService;
         private readonly IPointsEngineService _pointsEngineService;
+        private readonly INotificationService _notificationService;
 
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<Learner, Guid> _learnerRepo;
@@ -114,7 +116,8 @@ namespace EcdLink.Api.CoreApi.Services
             [Service] IPersonnelService personnelService,
             [Service] ContentManagementRepository contentRepo,
             [Service] ILocaleService<Language> localeService,
-            [Service] IPointsEngineService pointsEngineService
+            [Service] IPointsEngineService pointsEngineService,
+            [Service] INotificationService notificationService
             )
         {
             _repoFactory = repoFactory;
@@ -126,6 +129,7 @@ namespace EcdLink.Api.CoreApi.Services
             _contentRepo = contentRepo;
             _localeService = localeService;
             _pointsEngineService = pointsEngineService;
+            _notificationService = notificationService;
 
             _contextUserId = contextAccessor.HttpContext.GetUser().Id;
             _childRepo = repoFactory.CreateRepository<Child>(userContext: _contextUserId);
@@ -208,7 +212,18 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
                 }
+
+                // Expire the finish-progress-report notification for the user, when creating a report
+                var messages = _notificationService.GetMessagesForUser(_contextUserId.ToString(), TemplateTypeConstants.FinishProgressReport, input.ChildProgressReportPeriodId).ToArray();
+                if (messages.Count() > 0) {
+                    foreach (var item in messages)
+                    {
+                        _notificationService.DisableNotification(item.Id.ToString());
+                    }
+                }
             }
+
+            
         }
 
 

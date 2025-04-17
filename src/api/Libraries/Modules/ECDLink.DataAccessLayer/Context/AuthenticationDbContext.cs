@@ -111,6 +111,7 @@ namespace ECDLink.DataAccessLayer.Context
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }
+        public DbSet<ChildProgressReportPeriod> ChildProgressReportPeriod { get; set; }
 
         // WORKFLOW
         public DbSet<WorkflowStatus> WorkflowStatuses { get; set; }

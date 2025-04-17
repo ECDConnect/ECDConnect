@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogPosition,
   Divider,
+  LoadingSpinner,
   Typography,
 } from '@ecdlink/ui';
 import {
@@ -75,12 +76,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   const [editAttendanceRegisterVisible, setEditAttendanceRegisterVisible] =
     useState<boolean>(false);
   const [isValidAttendanceDay, setIsValidAttendanceDay] =
-    useState<boolean>(false);
+    useState<boolean>(true);
   const [currentEditClassroomGroupId, setCurrentEditClassroomGroupId] =
     useState<string>();
   const [todayDate] = useState(new Date());
 
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const [isLoading, setIsLoading] = useState(true);
 
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
@@ -177,17 +179,17 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       }
     }
   }, [
-    publicHolidays,
     attendanceData,
-    previousAttendanceData,
     classProgrammes,
-    todayDate,
-    practitioner?.isPrincipal,
-    classroomGroups,
     classroomGroupLearners,
+    classroomGroups,
+    previousAttendanceData,
+    publicHolidays,
+    todayDate,
   ]);
 
   useEffect(() => {
+    setIsLoading(false);
     if (
       !!previousMissedAttendanceGroups.length &&
       previousMissedAttendanceGroups.length === missedAttendanceGroups.length
@@ -252,7 +254,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, isValidAttendanceDay, missedAttendanceGroups]);
+  }, [classroomGroups, missedAttendanceGroups]);
 
   useEffect(() => {
     if (missedAttendanceGroups && missedAttendanceGroups.length > 0) {
@@ -365,117 +367,132 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
 
   return (
     <div className="flex h-full flex-col px-4 pt-4">
-      <>
-        {isValidAttendanceDay ? (
-          <div></div>
-        ) : (
-          <>
-            <PointsSuccessCard
-              visible={successMessageVisible}
-              isSmartStartUser={isSmartStartUser}
-              points={100}
-              onClose={() => closeNotification()}
-              message={getPointsMessage(isSmartStartUser)}
-              icon={''}
-            />
+      {isLoading ? (
+        <LoadingSpinner
+          className="mt-6"
+          size="medium"
+          spinnerColor="quatenary"
+          backgroundColor="uiBg"
+        />
+      ) : (
+        <>
+          {!isValidAttendanceDay ? (
             <div>
-              <Alert
-                title={'Today is not a school day.'}
-                message={
-                  'This is a great time to catch up on your attendance registers!'
-                }
-                type={'info'}
+              <PointsSuccessCard
+                visible={successMessageVisible}
+                isSmartStartUser={isSmartStartUser}
+                points={100}
+                onClose={() => closeNotification()}
+                message={getPointsMessage(isSmartStartUser)}
+                icon=""
               />
-            </div>
-          </>
-        )}
-        {attendanceActionList.length > 0 &&
-          missedAttendanceGroups.length > 0 && (
-            <div className={'flex flex-row items-center'}>
-              <div className={styles.iconRound}>
-                <Typography
-                  type={'help'}
-                  weight={'bold'}
-                  text={attendanceActionList.length.toString()}
-                  color={'white'}
-                />
-              </div>
-              <Typography
-                type={'body'}
-                weight={'bold'}
-                text={'incomplete registers:'}
-                color={'textDark'}
-              />
-            </div>
-          )}
-        {attendanceActionList.slice(0, registersToShow).map((register) => (
-          <Fragment key={register?.id}>
-            <div className="flex items-center justify-between py-4">
               <div>
-                <Typography
-                  type={'h3'}
-                  weight={'bold'}
-                  text={register.title}
-                  color={'textDark'}
-                />
-                <Typography
-                  type={'h4'}
-                  text={register.subTitle}
-                  color={'textMid'}
+                <Alert
+                  title="Today is not a school day."
+                  message="This is a great time to catch up on your attendance registers!"
+                  type="info"
                 />
               </div>
-              <Button
-                className="h-9"
-                size="small"
-                type="filled"
-                color="secondaryAccent2"
-                textColor="secondary"
-                text="Edit"
-                icon="PencilIcon"
-                iconPosition="end"
-                onClick={register.onActionClick}
-              />
             </div>
-            <Divider dividerType="dashed" />
-          </Fragment>
-        ))}
-        {registersToShow < attendanceActionList.length && (
-          <Button
-            type="outlined"
-            color="quatenary"
-            className="mt-4"
-            onClick={onSeeMoreRegisters}
-            icon="EyeIcon"
-            text="See more registers"
-            textColor="quatenary"
-          />
-        )}
-        <div className="mt-auto w-full py-4">
-          <Button
-            className="w-full"
-            type="filled"
-            color="quatenary"
-            onClick={openCompletedRegisters}
-            icon="EyeIcon"
-            text="See completed registers"
-            textColor="white"
-          />
-        </div>
-      </>
-      {attendanceEditDay && (
-        <Dialog
-          fullScreen
-          visible={editAttendanceRegisterVisible}
-          position={DialogPosition.Top}
-        >
-          <EditAttendanceRegister
-            attendanceDate={attendanceEditDay}
-            onBack={() => closeEditAttendanceRegister()}
-            editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-            classroomName={classroomName ?? ''}
-            classroomGroupId={currentEditClassroomGroupId ?? ''}
-          />
-        </Dialog>
+          ) : (
+            <>
+              {attendanceActionList.length > 0 &&
+                missedAttendanceGroups.length > 0 && (
+                  <div className={'flex flex-row items-center'}>
+                    <div className={styles.iconRound}>
+                      <Typography
+                        type={'help'}
+                        weight={'bold'}
+                        text={attendanceActionList.length.toString()}
+                        color={'white'}
+                      />
+                    </div>
+                    <Typography
+                      type={'body'}
+                      weight={'bold'}
+                      text={'incomplete registers:'}
+                      color={'textDark'}
+                    />
+                  </div>
+                )}
+              {attendanceActionList
+                .slice(0, registersToShow)
+                .map((register, index) => (
+                  <Fragment key={index}>
+                    <div className="flex items-center justify-between py-4">
+                      <div>
+                        <Typography
+                          type={'h3'}
+                          weight={'bold'}
+                          text={register.title}
+                          color={'textDark'}
+                        />
+                        <Typography
+                          type={'h4'}
+                          text={register.subTitle}
+                          color={'textMid'}
+                        />
+                      </div>
+                      <Button
+                        className="h-9"
+                        size="small"
+                        type="filled"
+                        color="secondaryAccent2"
+                        textColor="secondary"
+                        text="Edit"
+                        icon="PencilIcon"
+                        iconPosition="end"
+                        onClick={register.onActionClick}
+                      />
+                    </div>
+                    <Divider dividerType="dashed" />
+                  </Fragment>
+                ))}
+              {registersToShow < attendanceActionList.length && (
+                <Button
+                  type="outlined"
+                  color="quatenary"
+                  className="mt-4"
+                  onClick={onSeeMoreRegisters}
+                  icon="EyeIcon"
+                  text="See more registers"
+                  textColor="quatenary"
+                />
+              )}
+              {attendanceActionList.length > 0 && (
+                <div className="mt-auto w-full py-4">
+                  <Button
+                    className="w-full"
+                    type="filled"
+                    color="quatenary"
+                    onClick={openCompletedRegisters}
+                    icon="EyeIcon"
+                    text="See completed registers"
+                    textColor="white"
+                  />
+                </div>
+              )}
+
+              {attendanceEditDay && (
+                <Dialog
+                  fullScreen
+                  visible={editAttendanceRegisterVisible}
+                  position={DialogPosition.Top}
+                >
+                  <EditAttendanceRegister
+                    attendanceDate={attendanceEditDay}
+                    onBack={() => closeEditAttendanceRegister()}
+                    editAttendanceRegisterVisible={
+                      editAttendanceRegisterVisible
+                    }
+                    classroomName={classroomName ?? ''}
+                    classroomGroupId={currentEditClassroomGroupId ?? ''}
+                  />
+                </Dialog>
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   );

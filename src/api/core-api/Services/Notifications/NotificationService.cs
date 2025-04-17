@@ -553,6 +553,8 @@ namespace EcdLink.Api.CoreApi.Services
             var messages = _messageRepo.GetAll()
                    .Where(n =>
                        n.MessageTemplateType == templateType
+                       && n.IsActive == true
+                       && n.ReadDate.HasValue == false
                        &&  n.MessageLogRelatedTos.Any(x => x.RelatedEntityId == relatedEntityId))
                    .ToList();
 

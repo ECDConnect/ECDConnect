@@ -31,6 +31,8 @@ import axios from 'axios';
 import { useHolidays } from '@/hooks/useHolidays';
 import { staticDataThunkActions } from '@/store/static-data';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -48,12 +50,18 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   selectedDate,
   weekSummary,
   isWeekendDay,
+  chosedTheme,
 }) => {
   const { classroomGroupId } = useParams<ProgrammeDashboardRouteParams>();
 
   const { hasPermissionToPlanClassroomActivities } = useUserPermissions();
+  const isTrialPeriod = useIsTrialPeriod();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const hasPermissionToEdit = hasPermissionToPlanClassroomActivities;
+  const hasPermissionToEdit =
+    practitioner?.isPrincipal ||
+    hasPermissionToPlanClassroomActivities ||
+    isTrialPeriod;
 
   const {
     state: { run: isWalkthrough },
@@ -70,7 +78,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     classroomsSelectors.getClassroomGroupById(classroomGroupId)
   );
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
-  const chosenTheme = themes?.find((item) => item?.name === theme?.name);
+  //const chosenTheme = themes?.find((item) => item?.name === theme?.name);
 
   const appDispatch = useAppDispatch();
 
@@ -85,7 +93,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const sixMonthsForward: Date = addMonths(selectedDate!, 6);
 
   const themeColour = () => {
-    if (chosenTheme?.color) return chosenTheme.color;
+    if (chosedTheme?.color) return chosedTheme.color;
     return 'bg-uiBg';
   };
 
@@ -293,13 +301,13 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
 
   useEffect(() => {
     if (
-      chosenTheme &&
-      chosenTheme.imageUrl !== undefined &&
-      chosenTheme.imageUrl !== ''
+      chosedTheme &&
+      chosedTheme.imageUrl !== undefined &&
+      chosedTheme.imageUrl !== ''
     ) {
-      setBase64String(chosenTheme.imageUrl);
+      setBase64String(chosedTheme.imageUrl);
     }
-  }, [chosenTheme]);
+  }, [chosedTheme]);
 
   return (
     <div>
@@ -361,43 +369,38 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
         )}
       </div>
       <div className={classNames(className, 'flex w-full gap-2')}>
-        {(!isWeekendDay && showChips) ||
-          (!hasPermissionToEdit && (
-            <button
-              className={`flex w-full items-center rounded-xl ${themeColour()}`}
-              disabled={isWalkthrough}
-              onClick={onClickTheme}
-            >
-              {chosenTheme && (
-                <img
-                  src={svgImageBase64}
-                  alt="theme"
-                  className="ml-4 h-8 w-8"
-                />
-              )}
-              {dailyProgramme && theme?.dailyProgrammes?.length ? (
-                <Typography
-                  type="small"
-                  color={chosenTheme?.color ? 'white' : 'textDark'}
-                  text={
-                    themeName
-                      ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
-                      : `No theme`
-                  }
-                  className={'p-4'}
-                  weight={`bold`}
-                />
-              ) : (
-                <Typography
-                  type="small"
-                  color={chosenTheme?.color ? 'white' : 'textDark'}
-                  text={`${themeName}`}
-                  className={'p-4'}
-                  weight={`bold`}
-                />
-              )}
-            </button>
-          ))}
+        {!isWeekendDay && showChips && (
+          <button
+            className={`flex w-full items-center rounded-xl ${themeColour()}`}
+            disabled={isWalkthrough || !hasPermissionToEdit}
+            onClick={onClickTheme}
+          >
+            {chosedTheme && (
+              <img src={svgImageBase64} alt="theme" className="ml-4 h-8 w-8" />
+            )}
+            {dailyProgramme && theme?.dailyProgrammes?.length ? (
+              <Typography
+                type="small"
+                color={chosedTheme?.color ? 'white' : 'textDark'}
+                text={
+                  themeName
+                    ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
+                    : `No theme`
+                }
+                className={'p-4'}
+                weight={`bold`}
+              />
+            ) : (
+              <Typography
+                type="small"
+                color={chosedTheme?.color ? 'white' : 'textDark'}
+                text={`${themeName}`}
+                className={'p-4'}
+                weight={`bold`}
+              />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

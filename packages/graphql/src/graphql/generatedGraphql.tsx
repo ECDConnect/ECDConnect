@@ -1566,6 +1566,7 @@ export type ChildProgressReport = {
   reportContent?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['UUID']>;
 };
 
@@ -1584,6 +1585,7 @@ export type ChildProgressReportFilterInput = {
   reportContent?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
   userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
 };
 
@@ -1598,6 +1600,7 @@ export type ChildProgressReportInput = {
   ObservationsCompleteDate?: InputMaybe<Scalars['DateTime']>;
   ReportContent?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -1683,12 +1686,14 @@ export type ChildProgressReportPeriodModel = {
   __typename?: 'ChildProgressReportPeriodModel';
   endDate: Scalars['DateTime'];
   id: Scalars['UUID'];
+  notifications?: Maybe<Array<Maybe<MessageLog>>>;
   startDate: Scalars['DateTime'];
 };
 
 export type ChildProgressReportPeriodModelInput = {
   endDate: Scalars['DateTime'];
   id: Scalars['UUID'];
+  notifications?: InputMaybe<Array<InputMaybe<MessageLogInput>>>;
   startDate: Scalars['DateTime'];
 };
 
@@ -1717,6 +1722,7 @@ export type ChildProgressReportSortInput = {
   reportContent?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+  user?: InputMaybe<ApplicationUserSortInput>;
   userId?: InputMaybe<SortEnumType>;
 };
 
@@ -5534,11 +5540,17 @@ export type HierarchyEntitySortInput = {
 
 export type Holiday = {
   __typename?: 'Holiday';
+  checkedDate: Scalars['DateTime'];
   day: Scalars['DateTime'];
+  id: Scalars['UUID'];
+  locale?: Maybe<Scalars['String']>;
 };
 
 export type HolidayInput = {
+  checkedDate: Scalars['DateTime'];
   day: Scalars['DateTime'];
+  id: Scalars['UUID'];
+  locale?: InputMaybe<Scalars['String']>;
 };
 
 export type IncomeExpensePdfDataModel = {
@@ -6385,6 +6397,14 @@ export type LearnerInput = {
   StoppedAttendance?: InputMaybe<Scalars['DateTime']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type LearnerInputModelInput = {
+  classroomGroupId: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
+  startedAttendance: Scalars['DateTime'];
+  stoppedAttendance: Scalars['DateTime'];
+  userId: Scalars['UUID'];
 };
 
 export type LearnerSortInput = {
@@ -7898,6 +7918,7 @@ export type Mutation = {
   updateLeague?: Maybe<League>;
   updateLeagueType?: Maybe<LeagueType>;
   updateLearner?: Maybe<Learner>;
+  updateLearnerWithUserId?: Maybe<Learner>;
   updateLicense?: Maybe<License>;
   updateLicenseType?: Maybe<LicenseType>;
   updateMeetingType?: Maybe<MeetingType>;
@@ -9992,6 +10013,7 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
 
 export type MutationSendPractitionerInviteToPreSchoolArgs = {
   practitionerPhoneNumber?: InputMaybe<Scalars['String']>;
+  preSchoolName?: InputMaybe<Scalars['String']>;
   preSchoolNameCode?: InputMaybe<Scalars['String']>;
   principalUserId: Scalars['UUID'];
 };
@@ -10474,6 +10496,10 @@ export type MutationUpdateLeagueTypeArgs = {
 export type MutationUpdateLearnerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<LearnerInput>;
+};
+
+export type MutationUpdateLearnerWithUserIdArgs = {
+  input?: InputMaybe<LearnerInputModelInput>;
 };
 
 export type MutationUpdateLicenseArgs = {
@@ -14051,7 +14077,9 @@ export type Query = {
   childProgressReportsForUser?: Maybe<Array<Maybe<ChildProgressReportModel>>>;
   childProgressReportsStatus?: Maybe<ChildProgressReportsStatus>;
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
+  childrenForClassroomGroup?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
+  classAttendanceByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classAttendanceMetrics?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classAttendanceMetricsByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classroomActionItems?: Maybe<Array<Maybe<NotificationDisplay>>>;
@@ -14322,6 +14350,7 @@ export type Query = {
   statementsIncomeExpensesPDFData?: Maybe<
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
+  storyBookPartQuestions?: Maybe<Array<Maybe<StoryBookPartModel>>>;
   storyBookRecords?: Maybe<Array<Maybe<StoryBookViewModel>>>;
   subDistrictsAndStats?: Maybe<Array<Maybe<SubDistrictStatsModel>>>;
   subDistrictsForDistrictId?: Maybe<Array<Maybe<SubDistrict>>>;
@@ -16324,6 +16353,16 @@ export type QueryChildrenAttendedVsAbsentMetricsArgs = {
   toDate: Scalars['DateTime'];
 };
 
+export type QueryChildrenForClassroomGroupArgs = {
+  classRoomGroupId: Scalars['UUID'];
+};
+
+export type QueryClassAttendanceByUserArgs = {
+  endMonth: Scalars['DateTime'];
+  startMonth: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryClassAttendanceMetricsArgs = {
   endMonth: Scalars['DateTime'];
   startMonth: Scalars['DateTime'];
@@ -17506,6 +17545,10 @@ export type QueryStatementsIncomeExpensesPdfDataArgs = {
   statementId: Scalars['UUID'];
 };
 
+export type QueryStoryBookPartQuestionsArgs = {
+  localeId: Scalars['UUID'];
+};
+
 export type QueryStoryBookRecordsArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   languageSearch?: InputMaybe<Array<Scalars['UUID']>>;
@@ -17986,6 +18029,7 @@ export type Setting_InvitationCutoffDelay = {
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
+  PreSchoolInvitation: Scalars['String'];
   PrincipalSignup: Scalars['String'];
   Signup: Scalars['String'];
 };
@@ -18957,6 +19001,13 @@ export type StoryBookModelInput = {
   questionText?: InputMaybe<Scalars['String']>;
 };
 
+export type StoryBookPartModel = {
+  __typename?: 'StoryBookPartModel';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  question?: Maybe<Scalars['String']>;
+};
+
 export type StoryBookPartQuestion = {
   __typename?: 'StoryBookPartQuestion';
   id?: Maybe<Scalars['Int']>;
@@ -19482,6 +19533,7 @@ export type ThemeViewModel = {
   localeId: Scalars['UUID'];
   name?: Maybe<Scalars['String']>;
   shareContent?: Maybe<Scalars['String']>;
+  tenantId?: Maybe<Scalars['String']>;
   themeDays?: Maybe<Scalars['String']>;
   themeLogo?: Maybe<Scalars['String']>;
   updatedDate?: Maybe<Scalars['DateTime']>;

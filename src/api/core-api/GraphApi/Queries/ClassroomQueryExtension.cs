@@ -1,6 +1,8 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -22,6 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]
         public ClassroomModel GetClassroomForUser(
             [Service] IClassroomService classroomService,
+            [Service] INotificationService notificationService,
             Guid userId)
         {
             var classroom = classroomService.GetClassroomForUser(userId);
@@ -31,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 return null;
             }
 
-            return new ClassroomModel()
+            var result =  new ClassroomModel()
             {
                 Id = classroom.Id,
                 Name = classroom.Name,
@@ -56,9 +59,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     Id = x.Id,
                     StartDate = x.StartDate,
-                    EndDate = x.EndDate
+                    EndDate = x.EndDate,
+                    Notifications = notificationService.GetMessages(TemplateTypeConstants.FinishProgressReport, x.Id)
                 }).ToList(),
             };
+
+            return result;
         }
 
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.View)]

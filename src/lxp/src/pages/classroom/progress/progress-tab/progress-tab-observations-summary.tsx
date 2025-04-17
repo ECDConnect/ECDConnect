@@ -1,14 +1,7 @@
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
 import ROUTES from '@/routes/routes';
 import { getAvatarColor } from '@ecdlink/core';
-import {
-  Button,
-  Card,
-  ProgressBar,
-  StackedList,
-  Typography,
-} from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { StackedList, Typography } from '@ecdlink/ui';
 import { useMemo } from 'react';
 import { useHistory } from 'react-router';
 
@@ -33,7 +26,7 @@ export const ProgressTabObservationsSummary: React.FC = () => {
             childId: childReport.childId,
           }),
       }));
-  }, childReports);
+  }, [childReports, history]);
 
   return (
     <>

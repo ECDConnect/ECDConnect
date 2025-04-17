@@ -138,23 +138,57 @@ export const MonthlyAttendanceReport = () => {
   useEffect(() => {
     if (!isOnline) return;
 
+    let isMounted = true; // Track if component is still mounted
+
     const getClassroomDetails = async () => {
-      const res = await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).getReportDetailsForPractitioner(userAuth?.id || '');
-      return res;
+      try {
+        const res = await new PractitionerService(
+          userAuth?.auth_token || ''
+        ).getReportDetailsForPractitioner(userAuth?.id || '');
+
+        if (isMounted) {
+          setReportDetails(res);
+        }
+      } catch (err) {
+        if (isMounted) {
+          if (err instanceof Error) {
+            errorDialog(err.message);
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingReportDetails(false);
+        }
+      }
     };
 
-    getClassroomDetails()
-      .then((data) => {
-        setReportDetails(data);
-      })
-      .catch((err) => {
-        errorDialog(err.message);
-      })
-      .finally(() => setIsLoadingReportDetails(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    getClassroomDetails();
+
+    return () => {
+      isMounted = false; // Cleanup function to prevent state updates on unmount
+    };
+  }, [isOnline, userAuth, errorDialog]);
+
+  // useEffect(() => {
+  //   if (!isOnline) return;
+
+  //   const getClassroomDetails = async () => {
+  //     const res = await new PractitionerService(
+  //       userAuth?.auth_token || ''
+  //     ).getReportDetailsForPractitioner(userAuth?.id || '');
+  //     return res;
+  //   };
+
+  //   getClassroomDetails()
+  //     .then((data) => {
+  //       setReportDetails(data);
+  //     })
+  //     .catch((err) => {
+  //       errorDialog(err.message);
+  //     })
+  //     .finally(() => setIsLoadingReportDetails(false));
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -204,47 +238,51 @@ export const MonthlyAttendanceReport = () => {
             className="mt-6 mb-5"
           />
           <table className="text-textDark text-left">
-            <tr className="bg-uiBg border-quatenary border-b">
-              <th className="py-3 pl-4">CHILD</th>
-              <th>% PRESENT</th>
-            </tr>
-            {classroomGroupReport.items?.map((report, idx) => {
-              const reportItemColor = getColor(report?.attendancePercentage);
-              const reportItemShape = getShape(report?.attendancePercentage);
+            <tbody>
+              <tr className="bg-uiBg border-quatenary border-b">
+                <th className="py-3 pl-4">CHILD</th>
+                <th>% PRESENT</th>
+              </tr>
+              {classroomGroupReport.items?.map((report, idx) => {
+                const reportItemColor = getColor(report?.attendancePercentage);
+                const reportItemShape = getShape(report?.attendancePercentage);
 
-              return (
-                <tr
-                  className={`${(idx + 1) % 2 === 0 ? 'bg-uiBg' : 'bg-white'}`}
-                  key={`child-attendance-report-month-${idx}`}
-                  onClick={() => {
-                    history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
-                      childUserId: report?.childUserId,
-                      classroomGroupId: classroomGroupReport.classroomGroupId,
-                      childId:
-                        children?.find(
-                          (child) => child.user?.id === report?.childUserId
-                        )?.id ?? '',
-                      selectedMonth,
-                    } as ChildAttendanceReportState);
-                  }}
-                >
-                  <td className="py-3 pl-4">{report.childFullName}</td>
-                  <td className="flex items-center gap-2 py-3">
-                    <div
-                      className={getShapeClass(
-                        reportItemShape,
-                        reportItemColor
-                      )}
-                    />
-                    <Typography
-                      type="body"
-                      color={reportItemColor}
-                      text={`${report?.attendancePercentage} %`}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
+                return (
+                  <tr
+                    className={`${
+                      (idx + 1) % 2 === 0 ? 'bg-uiBg' : 'bg-white'
+                    }`}
+                    key={`child-attendance-report-month-${idx}`}
+                    onClick={() => {
+                      history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
+                        childUserId: report?.childUserId,
+                        classroomGroupId: classroomGroupReport.classroomGroupId,
+                        childId:
+                          children?.find(
+                            (child) => child.user?.id === report?.childUserId
+                          )?.id ?? '',
+                        selectedMonth,
+                      } as ChildAttendanceReportState);
+                    }}
+                  >
+                    <td className="py-3 pl-4">{report.childFullName}</td>
+                    <td className="flex items-center gap-2 py-3">
+                      <div
+                        className={getShapeClass(
+                          reportItemShape,
+                          reportItemColor
+                        )}
+                      />
+                      <Typography
+                        type="body"
+                        color={reportItemColor}
+                        text={`${report?.attendancePercentage} %`}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
         </Fragment>
       ))}

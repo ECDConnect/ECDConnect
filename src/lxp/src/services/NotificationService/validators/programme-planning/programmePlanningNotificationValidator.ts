@@ -115,6 +115,7 @@ export class ProgrammePlanningNotificationValidator
         priority: NotificationPriority.highest,
         viewType: 'Hub',
         viewOnDashboard: true,
+        isFromBackend: false,
         routeConfig: {
           route: '/programmes/theme',
         },

@@ -30,7 +30,7 @@ namespace ECDLink.Development
             var holidayService = services.FirstOrDefault(x => x.ServiceType == typeof(IHolidayService<>));
             services.Remove(holidayService);
 
-            services.AddTransient(typeof(IHolidayService<Holiday>), typeof(HolidayServiceOverride));
+            services.AddScoped(typeof(IHolidayService<Holiday>), typeof(HolidayServiceOverride));
         }
 
         private static void OverrideNotifications(IServiceCollection services)

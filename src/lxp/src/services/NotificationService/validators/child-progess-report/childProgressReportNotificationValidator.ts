@@ -2,18 +2,20 @@ import { EnhancedStore } from '@reduxjs/toolkit';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
-  NotificationPriority,
   NotificationValidator,
   NotificationIntervals,
 } from '../../NotificationService.types';
-import { ChildDto, ChildProgressReportSummaryModel } from '@ecdlink/core';
-import { addDays, addMonths, format, isBefore, subDays } from 'date-fns';
+import {
+  ChildDto,
+  ChildProgressReportSummaryModel,
+  MessageLogDto,
+} from '@ecdlink/core';
+import { addDays, addMonths, isBefore } from 'date-fns';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import ROUTES from '@/routes/routes';
 import { ChildProgressReportPeriodDto } from '@/models/classroom/classroom.dto';
 import { ChildProgressReport } from '@ecdlink/graphql';
 import { referenceNames } from '../points/poinstNotificationValidator.types';
-import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 
 type ReportingPeriodType = {
   period: string;
@@ -211,6 +213,7 @@ export class ChildProgressReportNotificationValidator
       id: currentYearsReportingPeriods[index].id,
       startDate: startDate.toString(),
       endDate: endDate.toString(),
+      notifications: currentYearsReportingPeriods[index].notifications,
     };
   };
 
@@ -254,6 +257,7 @@ export class ChildProgressReportNotificationValidator
         expiryDate: addMonths(new Date(), 3).toISOString(),
         icon: 'ExclamationIcon',
         viewOnDashboard: true,
+        isFromBackend: false,
         viewType: 'Both',
         routeConfig: {
           route: ROUTES.CLASSROOM.ROOT,
@@ -269,59 +273,59 @@ export class ChildProgressReportNotificationValidator
   };
 
   private getSevenDaysBeforeWithNoProgressReports = (): Message[] => {
-    const { practitioner: practitionerState, classroomData: classroomState } =
-      this.store.getState();
+    const {
+      practitioner: practitionerState,
+      classroomData: classroomState,
+      tenant: tenantState,
+    } = this.store.getState();
     const today = new Date();
-
-    if (!classroomState?.classroom?.childProgressReportPeriods) return [];
-
-    const reportingPeriods =
-      classroomState?.classroom?.childProgressReportPeriods;
-
-    const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
-
-    const reportPeriodEndDate = new Date(currentReportPeriod?.endDate!);
-    const sevenDaysBeforeEndDate = subDays(reportPeriodEndDate, 7);
-
-    const reports = this.getChildrenProgressReports(currentReportPeriod!);
+    const hasPermission = tenantState.tenant?.modules?.progressEnabled;
 
     if (!practitionerState || !practitionerState.practitioner) return [];
+    if (
+      !practitionerState.practitioner.isPrincipal &&
+      (!hasPermission || !classroomState?.classroom?.childProgressReportPeriods)
+    )
+      return [];
 
+    const reportingPeriods =
+      classroomState?.classroom?.childProgressReportPeriods!;
+    const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
+    const currentNotifications = currentReportPeriod?.notifications;
     const notifications: Message[] = [];
 
-    const reference = `getSevenDaysBeforeWithNoProgressReports`;
-
-    if (
-      classroomState?.classroom?.childProgressReportPeriods &&
-      today === sevenDaysBeforeEndDate &&
-      reports?.length === 0
-    ) {
-      notifications?.push({
-        reference,
-        title: `Finish your progress reports`,
-        message: `The deadline is coming up on ${format(
-          reportPeriodEndDate,
-          'd MMMM y'
-        )}! Create the reports to share with caregivers.`,
-        priority: 22,
-        actionText: 'Create reports',
-        area: 'progress-report',
-        color: 'alertMain',
-        dateCreated: new Date().toISOString(),
-        expiryDate: addMonths(new Date(), 3).toISOString(),
-        icon: 'ExclamationIcon',
-        viewOnDashboard: true,
-        viewType: 'Both',
-        routeConfig: {
-          route: ROUTES.CLASSROOM.ROOT,
-          params: {
-            activeTabIndex: TabsItems.PROGRESS,
-            messageReference: reference,
-          },
-        },
+    if (currentNotifications && currentNotifications.length > 0) {
+      currentNotifications.forEach((item: MessageLogDto) => {
+        if (
+          today.getTime() >= new Date(item.messageDate).getTime() &&
+          today.getTime() <= new Date(item.messageEndDate!).getTime()
+        ) {
+          notifications.push({
+            reference: item.id!,
+            title: item.subject,
+            message: item.message,
+            priority: 22,
+            actionText: item.cTAText!,
+            area: 'progress-report',
+            color: 'alertMain',
+            dateCreated: new Date(item.messageDate).toISOString(),
+            expiryDate: new Date(item.messageEndDate!).toISOString(),
+            icon: 'ExclamationIcon',
+            viewOnDashboard: true,
+            isFromBackend: true,
+            cta: item.cTA,
+            viewType: item.messageProtocol === 'hub' ? 'Hub' : 'Messages',
+            routeConfig: {
+              route: ROUTES.CLASSROOM.ROOT,
+              params: {
+                activeTabIndex: TabsItems.PROGRESS,
+                messageReference: item.id!,
+              },
+            },
+          });
+        }
       });
     }
-
     return notifications;
   };
 
@@ -381,6 +385,7 @@ export class ChildProgressReportNotificationValidator
       expiryDate: addDays(new Date(), 7).toISOString(),
       icon: 'CheckCircleIcon',
       viewOnDashboard: true,
+      isFromBackend: false,
       viewType: 'Both',
       routeConfig: {
         route:
@@ -394,87 +399,89 @@ export class ChildProgressReportNotificationValidator
     return [notification];
   };
 
-  private getNotificationsPastDeadlineDate = (
-    reportingPeriod: ReportingPeriodType
-  ): Message[] => {
-    const {
-      practitioner: practitionerState,
-      classroomData: classroomState,
-      children: childrenState,
-    } = this.store.getState();
+  // moved this to a cron job
+  // private getNotificationsPastDeadlineDate = (
+  //   reportingPeriod: ReportingPeriodType
+  // ): Message[] => {
+  //   const {
+  //     practitioner: practitionerState,
+  //     classroomData: classroomState,
+  //     children: childrenState,
+  //   } = this.store.getState();
 
-    if (!practitionerState || !practitionerState.practitioner) return [];
-    const createProgressReportsPermission =
-      practitionerState?.practitioner?.permissions?.find(
-        (item) =>
-          item?.permissionName === PermissionsNames.create_progress_reports
-      );
+  //   if (!practitionerState || !practitionerState.practitioner) return [];
+  //   const createProgressReportsPermission =
+  //     practitionerState?.practitioner?.permissions?.find(
+  //       (item) =>
+  //         item?.permissionName === PermissionsNames.create_progress_reports
+  //     );
 
-    if (
-      !practitionerState?.practitioner?.isPrincipal &&
-      !createProgressReportsPermission
-    )
-      return [];
+  //   if (
+  //     !practitionerState?.practitioner?.isPrincipal &&
+  //     !createProgressReportsPermission
+  //   )
+  //     return [];
 
-    const children = childrenState?.childData?.children;
+  //   const children = childrenState?.childData?.children;
 
-    const reference = referenceNames?.pastDeadlineDateForProgressReports;
+  //   const reference = referenceNames?.pastDeadlineDateForProgressReports;
 
-    if (this.notificationAlreadyDone(reference)) return [];
+  //   if (this.notificationAlreadyDone(reference)) return [];
 
-    if (!classroomState?.classroom?.childProgressReportPeriods) return [];
+  //   if (!classroomState?.classroom?.childProgressReportPeriods) return [];
 
-    const activeChildren = children?.filter((item) => item?.isActive === true);
+  //   const activeChildren = children?.filter((item) => item?.isActive === true);
 
-    if (activeChildren?.length === 0) return [];
+  //   if (activeChildren?.length === 0) return [];
 
-    const reportingPeriods =
-      classroomState?.classroom?.childProgressReportPeriods;
+  //   const reportingPeriods =
+  //     classroomState?.classroom?.childProgressReportPeriods;
 
-    const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
+  //   const currentReportPeriod = this?.getCurrentReportPeriod(reportingPeriods);
 
-    const reports = this?.getCompletedChildrenProgressReports(
-      currentReportPeriod!
-    );
+  //   const reports = this?.getCompletedChildrenProgressReports(
+  //     currentReportPeriod!
+  //   );
 
-    const today = new Date();
-    const pastOneDayAfterReportPeriodEndDate = addDays(
-      new Date(currentReportPeriod?.endDate!),
-      1
-    );
-    const isPastOneDayAfterReportPeriodEndDate =
-      today === pastOneDayAfterReportPeriodEndDate;
+  //   const today = new Date();
+  //   const pastOneDayAfterReportPeriodEndDate = addDays(
+  //     new Date(currentReportPeriod?.endDate!),
+  //     1
+  //   );
+  //   const isPastOneDayAfterReportPeriodEndDate =
+  //     today === pastOneDayAfterReportPeriodEndDate;
 
-    const expectedReportCount = activeChildren?.length;
+  //   const expectedReportCount = activeChildren?.length;
 
-    if (!isPastOneDayAfterReportPeriodEndDate) return [];
+  //   if (!isPastOneDayAfterReportPeriodEndDate) return [];
 
-    if (reports?.length === expectedReportCount) return [];
+  //   if (reports?.length === expectedReportCount) return [];
 
-    const notification: Message = {
-      reference,
-      title: `See progress summary`,
-      message: `Progress reports created for ${reports?.length} children! See a summary of the skills your class is working on.`,
-      priority: 25,
-      actionText: 'Get summary',
-      area: 'progress-report',
-      color: 'infoMain',
-      dateCreated: new Date().toISOString(),
-      expiryDate: addDays(new Date(), 7).toISOString(),
-      icon: 'InformationCircleIcon',
-      viewOnDashboard: true,
-      viewType: 'Both',
-      routeConfig: {
-        route:
-          ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
-        params: {
-          report: 'completed-all',
-        },
-      },
-    };
+  //   const notification: Message = {
+  //     reference,
+  //     title: `See progress summary`,
+  //     message: `Progress reports created for ${reports?.length} children! See a summary of the skills your class is working on.`,
+  //     priority: 25,
+  //     actionText: 'Get summary',
+  //     area: 'progress-report',
+  //     color: 'infoMain',
+  //     dateCreated: new Date().toISOString(),
+  //     expiryDate: addDays(new Date(), 7).toISOString(),
+  //     icon: 'InformationCircleIcon',
+  //     viewOnDashboard: true,
+  //     isFromBackend: false,
+  //     viewType: 'Both',
+  //     routeConfig: {
+  //       route:
+  //         ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP,
+  //       params: {
+  //         report: 'completed-all',
+  //       },
+  //     },
+  //   };
 
-    return [notification];
-  };
+  //   return [notification];
+  // };
 
   // private getNotificationsPastDeadlineAndReportsNotComplete = (
   //   reportingPeriod: ReportingPeriodType
@@ -662,9 +669,9 @@ export class ChildProgressReportNotificationValidator
     // newNotifications?.push(
     //   ...this.getNotificationsCompletedReportsAllChildren(reportingPeriod)
     // );
-    newNotifications?.push(
-      ...this.getNotificationsPastDeadlineDate(reportingPeriod)
-    );
+    // newNotifications?.push(
+    //   ...this.getNotificationsPastDeadlineDate(reportingPeriod)
+    // );
 
     // don't add if added already ??
     const notifications = newNotifications.filter(

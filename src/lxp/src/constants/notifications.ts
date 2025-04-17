@@ -1,3 +1,4 @@
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import ROUTES from '@/routes/routes';
 import { Message } from '@models/messages/messages';
 
@@ -50,6 +51,16 @@ export const notificationTagConfig: NotificationTagConfigParams = {
     cta: '[[UpdateFee]]',
     routeConfig: {
       route: ROUTES.CLASSROOM.UPDATE_FEE,
+    },
+    viewType: 'Both',
+  },
+  FinishProgressReport: {
+    cta: '[[CreateReports]]',
+    routeConfig: {
+      route: ROUTES.CLASSROOM.ROOT,
+      params: {
+        activeTabIndex: TabsItems.PROGRESS,
+      },
     },
     viewType: 'Both',
   },

@@ -5,7 +5,6 @@ using ECDLink.Core.Caching.Configuration;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.EGraphQL.Constants;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -76,8 +75,8 @@ namespace ECDLink.ContentManagement.Repositories
             List<object> results = null;
 
             string key = string.Format("Content.{0}.{1}.{2}.All", currentTenant, contentTypeId, localeId);
-            //if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
-            //{
+            if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
+            {
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // Get the complete content for null tenant and current tenants.
                 var contentType = _context.ContentTypes
@@ -184,12 +183,12 @@ namespace ECDLink.ContentManagement.Repositories
 
                 results = allContentValuePairs;
 
-                //_memoryCache.Set(key, results, GetCacheOptions());
-            // }
-            // else
-            // {
-            //     _logger.LogDebug("Fetching from CACHE: {0}", key);
-            // }
+                _memoryCache.Set(key, results, GetCacheOptions());
+            }
+            else
+            {
+                _logger.LogDebug("Fetching from CACHE: {0}", key);
+            }
             return results;
         }
 
@@ -200,8 +199,8 @@ namespace ECDLink.ContentManagement.Repositories
             object result;
 
             var key = string.Format("Content.{0}.{1}..Id.{2}", currentTenant, localeId, contentId);
-            // if (!_memoryCache.TryGetValue<object>(key, out result))
-            // {
+            if (!_memoryCache.TryGetValue<object>(key, out result))
+            {
                 // Try get tenant data
                 var content = _context.Contents
                             .Include(i => i.ContentType)
@@ -280,8 +279,8 @@ namespace ECDLink.ContentManagement.Repositories
 
                 result = dict.ToObject();
 
-            //     _memoryCache.Set(key, result, GetCacheOptions());
-            // }
+                _memoryCache.Set(key, result, GetCacheOptions());
+            }
             return result;
         }
 
@@ -292,8 +291,8 @@ namespace ECDLink.ContentManagement.Repositories
             List<Guid> results;
 
             var key = string.Format("Content.{0}.{1}.{2}.AllLanguages", currentTenant, contentTypeId, contentId);
-            // if (!_memoryCache.TryGetValue<List<Guid>>(key, out results))
-            // {
+            if (!_memoryCache.TryGetValue<List<Guid>>(key, out results))
+            {
                 var content = _context.Contents
                             .Include(i => i.ContentValues)
                             .Where(x => x.Id == contentId
@@ -314,8 +313,8 @@ namespace ECDLink.ContentManagement.Repositories
 
                 results = content.ContentValues.Select(x => x.LocaleId).Distinct().ToList();
 
-            //     _memoryCache.Set(key, results, GetCacheOptions());
-            // }
+                _memoryCache.Set(key, results, GetCacheOptions());
+            }
             return results;
         }
 
@@ -342,8 +341,8 @@ namespace ECDLink.ContentManagement.Repositories
             List<object> results = null;
 
             string key = string.Format("Content.{0}.{1}.{2}.Ids.{3}", currentTenant, contentTypeId, localeId, string.Join(',', contentIds));
-            // if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
-            // {
+            if (!_memoryCache.TryGetValue<List<Object>>(key, out results))
+            {
                 _logger.LogDebug("Fetching from DB: {0}", key);
                 // TODO: Do we need to selectively skip the IsActive check?
                 var content = _context.Contents
@@ -418,12 +417,12 @@ namespace ECDLink.ContentManagement.Repositories
                 }
 
                 results = dynamicContentList;
-            //     _memoryCache.Set(key, results, GetCacheOptions());
-            // }
-            // else
-            // {
-            //     _logger.LogDebug("Fetching from CACHE: {0}", key);
-            // }
+                _memoryCache.Set(key, results, GetCacheOptions());
+            }
+            else
+            {
+                _logger.LogDebug("Fetching from CACHE: {0}", key);
+            }
             return results;
         }
 
@@ -912,72 +911,106 @@ namespace ECDLink.ContentManagement.Repositories
                             .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
             objDict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
 
+            // clear cache key to ensure we see the new values 
+            string key = string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, localeId);
+            _memoryCache.Remove(key);
+
             return objDict.ToObject();
         }
 
+        // public bool Delete(int contentId)
+        // {
+        //     // get content with content values for tenant id
+        //     var content = _context.Contents
+        //                     .Include(i => i.ContentValues.Where(x => x.TenantId == TenantExecutionContext.Tenant.Id))
+        //                     .Where(x => x.Id == contentId)
+        //                     .FirstOrDefault();
+        //     if (content != null) {
+
+        //        // If the content value is a "SmallGroupActivity" || "LargeGroupActivity" || "StoryBook" || "StoryActivity",
+        //         if (content.ContentTypeId == ContentTypeConstants.ActivityId || content.ContentTypeId == ContentTypeConstants.StoryBookId) 
+        //         {
+        //             // activities
+        //             if (content.ContentTypeId == ContentTypeConstants.ActivityId) {
+        //                 var isSmallGroupActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.SmallGroup).FirstOrDefault() != null;
+        //                 var isLargeGroupActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.LargeGroup).FirstOrDefault() != null;
+        //                 var isStoryActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.ActivityStoryTime).FirstOrDefault() != null;
+
+        //                 if (isSmallGroupActivity) {
+        //                     var programmeDays = _dbContext.DailyProgrammes.Where(x => x.SmallGroupActivityId == contentId).ToArray();
+        //                     foreach(var day in programmeDays) {
+        //                         day.SmallGroupActivityId = 0;
+        //                     }
+        //                     _dbContext.SaveChanges();
+        //                 }
+        //                 if (isLargeGroupActivity) {
+        //                     var programmeDays = _dbContext.DailyProgrammes.Where(x => x.LargeGroupActivityId == contentId).ToArray();
+        //                     foreach(var day in programmeDays) {
+        //                         day.LargeGroupActivityId = 0;
+        //                     }
+        //                     _dbContext.SaveChanges();
+        //                 }
+        //                 if (isStoryActivity) {
+        //                     var programmeDays = _dbContext.DailyProgrammes.Where(x => x.StoryActivityId == contentId).ToArray();
+        //                     foreach(var day in programmeDays) {
+        //                         day.StoryActivityId = 0;
+        //                     }
+        //                     _dbContext.SaveChanges();
+        //                 }
+        //             }
+        //             // story book
+        //             if (content.ContentTypeId == ContentTypeConstants.StoryBookId) {
+        //                 var programmeDays = _dbContext.DailyProgrammes.Where(x => x.StoryBookId == contentId).ToArray();
+        //                 foreach(var day in programmeDays) {
+        //                     day.StoryBookId = 0;
+        //                 }
+        //                 _dbContext.SaveChanges();
+        //             }
+        //         }
+
+        //         // remove content values
+        //         if (content.ContentValues.Count > 0) {
+        //             _context.RemoveRange(content.ContentValues);
+        //             _context.SaveChanges();
+        //         }
+
+        //         // remove content if no values are linked
+        //         content = _context.Contents.Where(x => x.Id == contentId).Include(i => i.ContentValues).FirstOrDefault();
+        //         if (content.ContentValues.Count == 0) {
+        //             _context.Remove(content);
+        //             _context.SaveChanges();
+        //         }
+        //     }
+        //     return true;
+        // }
+
         public bool Delete(int contentId)
         {
-            // get content with content values for tenant id
             var content = _context.Contents
-                            .Include(i => i.ContentValues.Where(x => x.TenantId == TenantExecutionContext.Tenant.Id))
-                            .Where(x => x.Id == contentId)
-                            .FirstOrDefault();
-            if (content != null) {
+                          .Where(x => x.Id == contentId
+                            && x.TenantId == TenantExecutionContext.Tenant.Id)
+                          .OrderBy(x => x.Id)
+                          .FirstOrDefault();
 
-                // If the content value is a "SmallGroupActivity" || "LargeGroupActivity" || "StoryBook" || "StoryActivity",
-                if (content.ContentTypeId == ContentTypeConstants.ActivityId || content.ContentTypeId == ContentTypeConstants.StoryBookId) 
-                {
-                    // activities
-                    if (content.ContentTypeId == ContentTypeConstants.ActivityId) {
-                        var isSmallGroupActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.SmallGroup).FirstOrDefault() != null;
-                        var isLargeGroupActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.LargeGroup).FirstOrDefault() != null;
-                        var isStoryActivity = content.ContentValues.Where(x => x.Value == ContentTypeConstants.ActivityStoryTime).FirstOrDefault() != null;
+            // Use global tenant as a fallback, mostly for static and dynamic links            
+            content ??= _context.Contents
+                          .Where(x => x.Id == contentId
+                            && x.TenantId == null)
+                          .OrderBy(x => x.Id)
+                          .FirstOrDefault();
 
-                        if (isSmallGroupActivity) {
-                            var programmeDays = _dbContext.DailyProgrammes.Where(x => x.SmallGroupActivityId == contentId).ToArray();
-                            foreach(var day in programmeDays) {
-                                day.SmallGroupActivityId = 0;
-                            }
-                            _dbContext.SaveChanges();
-                        }
-                        if (isLargeGroupActivity) {
-                            var programmeDays = _dbContext.DailyProgrammes.Where(x => x.LargeGroupActivityId == contentId).ToArray();
-                            foreach(var day in programmeDays) {
-                                day.LargeGroupActivityId = 0;
-                            }
-                            _dbContext.SaveChanges();
-                        }
-                        if (isStoryActivity) {
-                            var programmeDays = _dbContext.DailyProgrammes.Where(x => x.StoryActivityId == contentId).ToArray();
-                            foreach(var day in programmeDays) {
-                                day.StoryActivityId = 0;
-                            }
-                            _dbContext.SaveChanges();
-                        }
-                    }
-                    // story book
-                    if (content.ContentTypeId == ContentTypeConstants.StoryBookId) {
-                        var programmeDays = _dbContext.DailyProgrammes.Where(x => x.StoryBookId == contentId).ToArray();
-                        foreach(var day in programmeDays) {
-                            day.StoryBookId = 0;
-                        }
-                        _dbContext.SaveChanges();
-                    }
-                }
-
-                // remove content values
-                if (content.ContentValues.Count > 0) {
-                    _context.RemoveRange(content.ContentValues);
-                    _context.SaveChanges();
-                }
-
-                // remove content if no values are linked
-                content = _context.Contents.Where(x => x.Id == contentId).Include(i => i.ContentValues).FirstOrDefault();
-                if (content.ContentValues.Count == 0) {
-                    _context.Remove(content);
-                    _context.SaveChanges();
-                }
+            // No Content Found
+            if (content == default)
+            {
+                var errorMessage = "Could not find content with Id: {contentId}.";
+                _logger.LogWarning(errorMessage, contentId.ToString());
             }
+
+            content.IsActive = false;
+            content.UpdatedDate = DateTime.UtcNow;
+
+            _context.SaveChanges();
+
             return true;
         }
     }

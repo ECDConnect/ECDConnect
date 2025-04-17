@@ -36,7 +36,7 @@ export const ProgressTabReportSummary: React.FC = () => {
             childId: childReport.childId,
           }),
       }));
-  }, childReports);
+  }, [childReports, history]);
 
   const completeReportsList = useMemo(() => {
     return childReports
@@ -54,7 +54,7 @@ export const ProgressTabReportSummary: React.FC = () => {
             childId: childReport.childId,
           }),
       }));
-  }, childReports);
+  }, [childReports, history]);
 
   return (
     <>

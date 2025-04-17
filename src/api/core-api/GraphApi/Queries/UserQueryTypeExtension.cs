@@ -52,7 +52,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR) || await userManager.IsInRoleAsync(currentUser, Roles.SUPER_ADMINISTRATOR);
 
             var usersQuery = userManager.Users
-                .Where(u => u.TenantId == tenantId)
+                .Where(u => u.TenantId == tenantId && !u.UserName.StartsWith("External_Edit"))
                 .AsNoTracking();
 
 

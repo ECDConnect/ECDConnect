@@ -25,8 +25,7 @@
   
  
   <ItemGroup>    
-    <PackageReference Include="AngleSharp" Version="1.1.2" />    
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.0" />
+    <PackageReference Include="AngleSharp" Version="1.2.0" />    
     
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
     
@@ -44,35 +43,19 @@
     
     <PackageReference Include="HtmlToPdfConverter.Core" Version="2.0.0" />
     
-    <PackageReference Include="MailKit" Version="4.8.0" />
+    <PackageReference Include="MailKit" Version="4.11.0" />
     
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
     
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.4" />
     
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="RestSharp" Version="112.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-
-    <Reference Include="BouncyCastle.Crypto">
-
-      <Aliases>BouncyCastleCrypto</Aliases>
-
-    </Reference>
-
-    <Reference Include="BouncyCastle.Cryptography">
-
-      <Aliases>BouncyCastleCryptography</Aliases>
-
-    </Reference>
-
   </ItemGroup>
   
   <ItemGroup>

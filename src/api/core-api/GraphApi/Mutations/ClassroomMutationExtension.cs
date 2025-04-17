@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -458,7 +459,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid classroomId,
             List<ChildProgressReportPeriodModel> childProgressReportPeriods)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var user = contextAccessor.HttpContext.GetUser() as ApplicationUser;
+            var uId = user.Id; 
 
             if (childProgressReportPeriods == null || childProgressReportPeriods.Count < 2 || childProgressReportPeriods.Count > 4)
             {
@@ -466,6 +468,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             var reportPeriodRepo = repoFactory.CreateGenericRepository<ChildProgressReportPeriod>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var practitioner = practitionerRepo.GetByUserId(uId);
+            var permissions = practitioner.User.UserPermissions;
 
             reportPeriodRepo.InsertMany(childProgressReportPeriods.Select(x => new ChildProgressReportPeriod
             {
@@ -475,7 +480,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 EndDate = x.EndDate,
             }));
 
+            // create notifications
+            if (practitioner.IsPrincipalOrAdmin() || (permissions != null && permissions.Where(x => x.Permission.Name == Constants.PermissionNames.CreateProgressReports).Count() != 0))
+            {
+                foreach (var item in childProgressReportPeriods)
+                {
+                    var sevenDaysBeforeEnd = item.EndDate.AddDays(-7);
+                    var replacements = new List<TagsReplacements>
+                    {
+                        new TagsReplacements()
+                        {
+                            FindValue = "ReportEndDate",
+                            ReplacementValue = sevenDaysBeforeEnd.ToString("dd MMM yyyy")
+                        }
+                    };
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.FinishProgressReport, sevenDaysBeforeEnd, user, "", MessageStatusConstants.Amber, replacements, item.EndDate,
+                                                                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(item.Id, "ChildProgressReportPeriod") });
+                }
+            }
+
             return true;
+        }
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
+        public Learner UpdateLearnerWithUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            LearnerInputModel input)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id.ToString();
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
+
+            var learnerToUpdate = learnerRepo.GetAll().Where(x => x.UserId == input.UserId 
+                                                             && x.IsActive 
+                                                             && x.ClassroomGroupId == input.ClassroomGroupId).FirstOrDefault();
+            if (learnerToUpdate != null) {
+                learnerToUpdate.IsActive = input.IsActive;
+                learnerToUpdate.StoppedAttendance = input.StoppedAttendance;
+                return learnerRepo.Update(learnerToUpdate);
+            }
+            return null;
         }
     }
 }
