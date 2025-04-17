@@ -95,6 +95,7 @@ export class PointsNotificationValidator implements NotificationValidator {
         expiryDate: addDays(new Date(), 10).toISOString(),
         priority: 37,
         viewOnDashboard: true,
+        isFromBackend: false,
         area: 'points',
         icon: 'SwitchVerticalIcon',
         color: 'primary',

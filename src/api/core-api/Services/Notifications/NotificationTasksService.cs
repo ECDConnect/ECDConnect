@@ -1,4 +1,5 @@
 ﻿using ECDLink.Abstractrions.Constants;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -53,69 +54,60 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task DailyUserOfflineNotification()
         {
-
             DateTime today = DateTime.Today;
-            var twentyOneDaysAgo = today.AddDays(-21).Date;
-            var thirtyDaysAgo = today.AddDays(-30).Date;
+            var start21Days = today.AddDays(-21).Date;
+            var end21Days = today.AddDays(-20).Date;
 
-            var practitioners = _practitionerRepo.GetAll()
-                                                .Where(x => x.IsActive == true && x.IsRegistered.HasValue && x.IsRegistered.Value)
-                                                .Include(x => x.User)
-                                                .Where(x => x.User.LastSeen.Date == twentyOneDaysAgo || x.User.LastSeen.Date == thirtyDaysAgo)
-                                                .Select(x => x.User)
-                                                .OrderByDescending(x => x.LastSeen)
-                                                .ToList();
+            var start30Days = today.AddDays(-30).Date;
+            var end30Days = today.AddDays(-29).Date;
 
-            var replacements = new List<TagsReplacements>
-            {
-                new TagsReplacements()
-                {
-                    FindValue = "ApplicationName",
-                    ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
-                }
-            };
+            // Don't run this on weekends
+            // Only send the message on week days between 7am and 5pm (roll forward to the next week day). 
+            // So if 21 days is reached at 2pm on a Sunday, only send the message at 7am the next day (Monday)"
+            // Cronjob linked to this job: 0 7-17 * * 1-5
+            // Every hour between 7am to 5pm and only on week days.
+            if (!DateTime.Now.Date.IsWeekend()) {
+                
+                var practitioners = _practitionerRepo.GetAll()
+                                                    .Where(x => x.IsActive == true && x.IsRegistered.HasValue && x.IsRegistered.Value)
+                                                    .Include(x => x.User)
+                                                    .Where(x => x.IsActive == true && 
+                                                    (
+                                                        (x.User.LastSeen >= start21Days && x.User.LastSeen < end21Days) || 
+                                                        (x.User.LastSeen >= start30Days && x.User.LastSeen < end30Days)
+                                                    )
+                                                    )
+                                                    .Select(x => x.User)
+                                                    .OrderByDescending(x => x.LastSeen)
+                                                    .ToList();
 
-            foreach (var user in practitioners)
-            {
-                TimeSpan daysToCheck = DateTime.Now - user.LastSeen;
-
-                if (daysToCheck.Days >= 21)
-                {
-                    if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
+                if (practitioners.Count != 0) {
+                    var replacements = new List<TagsReplacements>
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
-                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
-                    }
-                    else if (daysToCheck.Days >= 30)
-                    {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
-                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
-                    }
-                }
-            }
+                        new TagsReplacements()
+                        {
+                            FindValue = "ApplicationName",
+                            ReplacementValue = TenantExecutionContext.Tenant.ApplicationName
+                        }
+                    };
 
-            var coaches = _coachRepo.GetAll()
-                                    .Where(x => x.IsActive == true && x.IsRegistered.HasValue && x.IsRegistered.Value)
-                                    .Include(x => x.User)
-                                    .Where(x => x.User.LastSeen.Date == twentyOneDaysAgo)
-                                    .Select(x => x.User)
-                                    .OrderByDescending(x => x.LastSeen)
-                                    .ToList();
 
-            foreach (var user in coaches)
-            {
-                TimeSpan daysToCheck = DateTime.Now - user.LastSeen;
-                if (daysToCheck.Days >= 14)
-                {
-                    if (daysToCheck.Days >= 14 && daysToCheck.Days < 21)
+                    foreach (var user in practitioners)
                     {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourteenDaysNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                        TimeSpan timeDifference = DateTime.Now - user.LastSeen;
+                        var totalDays = timeDifference.Days;
+
+                        if (totalDays >= 21 && totalDays < 30)
+                        {
+                            // _notificationManager.SendOfflineSmsAsync(user, TemplateTypeConstants.ThreeWeekNotLoggedOn);
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
                                 relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
-                    }
-                    else if (daysToCheck.Days >= 21 && daysToCheck.Days < 30)
-                    {
-                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ThreeWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
-                            relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                        }
+                        else if (totalDays >= 30)
+                        {
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.FourWeekNotLoggedOn, DateTime.Now.Date, user, "", null, replacements, null, false, false, null,
+                                relatedEntities: new List<RelatedEntity> { new RelatedEntity(user.Id, "ApplicationUser") });
+                        }
                     }
                 }
             }

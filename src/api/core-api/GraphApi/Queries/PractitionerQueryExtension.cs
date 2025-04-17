@@ -92,8 +92,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 throw new System.Exception("No active user found.");
 
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            //retrieve principal, check that the coach lines match, that the user to be searched for is not a principal or an FAA
-
             var principal = dbRepo.GetByUserId(uId.Value);
             if (principal != null)
             {
@@ -101,11 +99,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
                 if (practitionerUser != null)
                 {
-                    var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
                     ApplicationUser currentUser = userManager.FindByIdAsync(practitionerUser.Id.ToString()).Result;
                     Classroom classroom = dbContext.Classrooms.Where(classroom => classroom.UserId == practitionerUser.Id).FirstOrDefault();
-                    var linkedClasses = dbContext.ClassroomGroups.Where(x => x.UserId == practitionerUser.Id && x.IsActive).Count();
-                    var practitioner = practiRepo.GetByUserId(practitionerUser.Id);
+                    
+                    var practitioner = dbRepo.GetByUserId(practitionerUser.Id);
 
                     if (practitioner != null)
                     {
@@ -115,11 +112,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         if (practitioner.PrincipalHierarchy == null)
                         {
 
-                        if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabelTemplate) {
-                            hasPreschool = classroom == null;
-                        } else {
-                            hasPreschool = classroom == null ? false : linkedClasses > 0;
-                        }
+                            if (TenantExecutionContext.Tenant.TenantType == ECDLink.Tenancy.Enums.TenantType.WhiteLabel) 
+                            {
+                                hasPreschool = classroom != null;
+                            } else 
+                            {
+                                var belongToOtherSchool = dbContext.ClassroomGroups.Where(x => x.UserId == practitionerUser.Id && x.IsActive == true)
+                                                                        .Include(x => x.Classroom).Where(x => x.Classroom.UserId != practitionerUser.Id)
+                                                                        .Select(x => x.Classroom)
+                                                                        .Count() != 0;
+                                var startDate = practitioner.StartDate.Value.Date;
+                                var endDate = DateTime.Today;
+                                var trailPeriodDays = (endDate - startDate).TotalDays;
+                                var isTrialPeriod = trailPeriodDays < 31; 
+                                var isDummySchool = classroom?.PreschoolCode == null;
+                                hasPreschool = classroom == null ? false : !isDummySchool || belongToOtherSchool || !isTrialPeriod;
+                            }
+
                             return new PractitionerUserAndNote() { 
                                 AppUser = practitioner.User, 
                                 IsRegistered = practitioner.IsRegistered, 
@@ -420,7 +429,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 return null;
             }
 
-            var practitionerQuery = practitionerRepo.GetAll(pagingInput);
+            var practitionerQuery = practitionerRepo.GetAll(pagingInput).Where(x => !x.User.UserName.StartsWith("External_"));
             // General search term
             if (!string.IsNullOrWhiteSpace(search))
             {

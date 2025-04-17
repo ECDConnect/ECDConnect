@@ -24,6 +24,7 @@ import {
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
+import ReactGA from 'react-ga4';
 const { version } = require('../../../../package.json');
 
 interface VerifyPhoneNumberProps {
@@ -64,8 +65,10 @@ export const VerifyPhoneNumberAuthCode: React.FC<VerifyPhoneNumberProps> = ({
   const login = async () => {
     appDispatch(settingActions.setApplicationVersion(version));
     appDispatch(authActions.setUserExpired());
-    await appDispatch(userThunkActions.getUser({})).unwrap();
+    const user = await appDispatch(userThunkActions.getUser({})).unwrap();
     setIsLoading(false);
+    // Set userId for google
+    ReactGA.set({ userId: user?.id });
     history.push(ROUTES.DASHBOARD, { isFromLogin: true });
   };
 

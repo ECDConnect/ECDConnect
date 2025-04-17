@@ -65,12 +65,17 @@ const classroomsSlice = createSlice({
       action: PayloadAction<SimpleClassroomGroupDto>
     ) => {
       const payloadUpdated = { ...action.payload, synced: false };
-      state.classroomGroupData.classroomGroups =
-        state.classroomGroupData.classroomGroups.map((group) =>
-          group.id === action.payload.id ? payloadUpdated : group
-        );
+      for (
+        let i = 0;
+        i < state.classroomGroupData.classroomGroups.length;
+        i++
+      ) {
+        if (
+          state.classroomGroupData.classroomGroups[i].id === action.payload.id
+        )
+          state.classroomGroupData.classroomGroups[i] = payloadUpdated;
+      }
     },
-
     deactivateLearner: (
       state,
       action: PayloadAction<{ childUserId: string; classroomGroupId: string }>
@@ -80,9 +85,15 @@ const classroomsSlice = createSlice({
           classroomGroup.id === action.payload.classroomGroupId
             ? {
                 ...classroomGroup,
-                learners: classroomGroup.learners.filter(
-                  (learner) =>
-                    learner.childUserId !== action.payload.childUserId
+                learners: classroomGroup.learners.map((learner) =>
+                  learner.childUserId === action.payload.childUserId
+                    ? {
+                        ...learner,
+                        isActive: false,
+                        stoppedAttendance: new Date().toUTCString(),
+                        synced: false,
+                      }
+                    : learner
                 ),
               }
             : classroomGroup
@@ -100,24 +111,20 @@ const classroomsSlice = createSlice({
           classroomGroup.id === action.payload.newClassroomGroupId
             ? {
                 ...classroomGroup,
-                learners: [
-                  ...classroomGroup.learners,
-                  {
-                    learnerId: '',
-                    childUserId: action.payload.childUserId,
-                    startedAttendance: formatISO(new Date()),
-                    isActive: true,
-                    stoppedAttendance: null,
-                    synced: false,
-                    classroomGroupId: classroomGroup.id,
-                    userId: action.payload.childUserId,
-                  },
-                ],
+                learners: classroomGroup.learners.concat({
+                  learnerId: '',
+                  childUserId: action.payload.childUserId,
+                  startedAttendance: formatISO(new Date()),
+                  isActive: true,
+                  stoppedAttendance: null,
+                  synced: false,
+                  classroomGroupId: classroomGroup.id,
+                  userId: action.payload.childUserId,
+                }),
               }
-            : { ...classroomGroup }
+            : classroomGroup
         );
     },
-
     createClassroom: (state, action: PayloadAction<SimpleClassroomDto>) => {
       state.classroom = {
         ...action.payload,

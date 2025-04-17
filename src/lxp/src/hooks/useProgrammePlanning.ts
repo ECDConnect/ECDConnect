@@ -80,7 +80,7 @@ export const useProgrammePlanning = () => {
     ).toISOString();
     newProgramme.dailyProgrammes = dailyProgrammesResult.dailyProgrammes;
 
-    clearOverlappingDaysProgrammes(newProgramme);
+    clearOverlappingDaysProgrammes(newProgramme, classroomGroupId);
 
     if (!!programme) {
       dispatch(
@@ -287,12 +287,18 @@ export const useProgrammePlanning = () => {
     };
   };
 
-  const clearOverlappingDaysProgrammes = (newPrograme: ProgrammeDto) => {
+  const clearOverlappingDaysProgrammes = (
+    newPrograme: ProgrammeDto,
+    classroomGroupId: string
+  ) => {
     const newProgrammeStartDate = new Date(newPrograme.startDate);
     const newProgrammeEndDate = new Date(newPrograme.endDate);
 
+    const classroomProgrammes = programmes.filter(
+      (x) => x.classroomGroupId === classroomGroupId
+    );
     const conflictingProgrammes = findConflictingProgrammes(
-      programmes,
+      classroomProgrammes,
       newProgrammeStartDate,
       newProgrammeEndDate
     );

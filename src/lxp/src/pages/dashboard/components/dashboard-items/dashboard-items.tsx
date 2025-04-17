@@ -5,7 +5,7 @@ import {
   StackedListItemType,
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
-import { useAppDispatch } from '@store';
+import { store, useAppDispatch } from '@store';
 import { Notification } from '@store/notifications';
 import { MessageActionConfig } from '@models/messages/messages';
 import { NotificationHeaderCard } from '../notification-header-card/notification-header-card';
@@ -39,9 +39,7 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       (notification?.message?.reference &&
         [
           referenceNames.yearPointsGreaterThen0,
-          referenceNames.getSevenDaysBeforeWithNoProgressReports,
           referenceNames.allChildrenProgressReportsCompleted,
-          referenceNames.allChildrenProgressReportsCreated,
           referenceNames.pastDeadlineDateForProgressReports,
         ].includes(notification?.message?.reference)) ||
       notification?.message?.priority === 8,
@@ -73,7 +71,10 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
         markAsReadNotification({
           notificationId: notification?.message?.reference ?? '',
         })
-      );
+      ).then(() => {
+        // when notification is marked as read, we want to remove it
+        appDispatch(notificationActions.removeNotification(notification!));
+      });
 
       if (
         notification.message?.cta?.includes(
@@ -90,6 +91,12 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
           })
         );
       }
+    } else {
+      appDispatch(
+        notificationActions.markNotificationRead({
+          reference: notification?.message?.reference ?? '',
+        })
+      );
     }
 
     if (resetNotificationOnClick) {

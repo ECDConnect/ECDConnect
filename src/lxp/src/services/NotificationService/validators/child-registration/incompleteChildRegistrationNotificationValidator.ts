@@ -29,6 +29,7 @@ export class IncompleteChildRegistrationNotificationValidator
       children: childrenState,
       staticData: staticDataState,
       user: userState,
+      practitioner: practitionerState,
     } = this.store.getState();
 
     const isCoach = userState?.user?.roles?.some(
@@ -39,6 +40,8 @@ export class IncompleteChildRegistrationNotificationValidator
 
     if (!childrenState || !staticDataState) return [];
 
+    const isPrincipal = practitionerState.practitioner?.isPrincipal;
+
     const workflowStatus = staticDataState.WorkflowStatuses?.find(
       (x) => x.enumId === WorkflowStatusEnum.ChildPending
     );
@@ -48,15 +51,26 @@ export class IncompleteChildRegistrationNotificationValidator
         child.workflowStatusId === workflowStatus?.id || !child?.caregiverId
     );
 
-    const applicableChildren = incompleteChildren.filter(
-      (child) =>
-        Math.abs(
-          differenceInCalendarDays(
-            this.currentDate,
-            new Date(child.insertedDate || this.currentDate)
-          )
-        ) >= 20
-    );
+    const applicableChildren = isPrincipal
+      ? incompleteChildren.filter(
+          (child) =>
+            Math.abs(
+              differenceInCalendarDays(
+                this.currentDate,
+                new Date(child.insertedDate || this.currentDate)
+              )
+            ) >= 20
+        )
+      : incompleteChildren.filter(
+          (child) =>
+            child.insertedBy === userState.user?.id &&
+            Math.abs(
+              differenceInCalendarDays(
+                this.currentDate,
+                new Date(child.insertedDate || this.currentDate)
+              )
+            ) >= 20
+        );
 
     if (!applicableChildren) return [];
 
@@ -76,6 +90,7 @@ export class IncompleteChildRegistrationNotificationValidator
           dateCreated: new Date().toISOString(),
           priority: 18,
           viewOnDashboard: true,
+          isFromBackend: false,
           area: 'child-registration',
           icon: 'XCircleIcon',
           color: 'errorMain',
