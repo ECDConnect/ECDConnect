@@ -3,7 +3,6 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -77,13 +76,13 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var user = _userManager.FindByIdAsync(_userId.ToString()).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
-
+            
             var query = entities.Where(e => e.TenantId == null || e.TenantId == tenantId).AsQueryable();
 
             if (pagingInput is not null)
             {
                 query = PaginationHelper.AddFiltering(pagingInput?.FilterBy, query);
-
+                
                 if (pagingInput.PageSize is not null)
                     query = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, query);
             }
@@ -289,14 +288,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (typedEntity == null)
             {
                 throw new ArgumentNullException("entity");
-            }
-
-            if (entity is Practitioner practitioner)
-            {
-                if (practitioner.ReasonForPractitionerLeavingId == Guid.Empty)
-                {
-                    practitioner.ReasonForPractitionerLeavingId = null;
-                }
             }
 
             entity.TenantId = tenantId;

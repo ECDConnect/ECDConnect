@@ -1,3 +1,4 @@
+using DotLiquid.Util;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.ContentManagement.Constants;
 using ECDLink.ContentManagement.Entities;
@@ -271,10 +272,7 @@ namespace ECDLink.ContentManagement.Repositories
                 dict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
                 if (!dict.ContainsKey("updatedDate"))
                 {
-                    if (contentValuesList != null && contentValuesList.Count > 0)
-                    {
-                        dict.Add("updatedDate", contentValuesList[0].UpdatedDate.ToString());
-                    }
+                    dict.Add("updatedDate", contentValuesList.TryGetAtIndex(0).UpdatedDate.ToString());
                 }
 
                 result = dict.ToObject();
@@ -911,9 +909,13 @@ namespace ECDLink.ContentManagement.Repositories
                             .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
             objDict.Add(ObjectFieldConstants.Identifier, content.Id.ToString());
 
-            // clear cache key to ensure we see the new values 
-            string key = string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, localeId);
-            _memoryCache.Remove(key);
+            // Removing the cached keys for this object to ensure we see the change on the front-end
+            // clear cache for all key
+            string keyAll = string.Format("Content.{0}.{1}.{2}.All", currentTenantId, content.ContentTypeId, localeId);
+            _memoryCache.Remove(keyAll);
+            // clear cache for single key
+            var keySingle = string.Format("Content.{0}.{1}..Id.{2}", currentTenantId, localeId, contentId);
+            _memoryCache.Remove(keySingle);
 
             return objDict.ToObject();
         }
