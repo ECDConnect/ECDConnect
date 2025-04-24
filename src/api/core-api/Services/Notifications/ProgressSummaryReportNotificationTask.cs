@@ -72,7 +72,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
             // Don't show if user has zero children assigned to them."
 
             var today = DateTime.Now.Date;
-            var yesterday = today.AddDays(-11);
+            var yesterday = today.AddDays(-1);
             var tomorrow = today.AddDays(1);
             var endOfNotification = today.AddDays(7);
 
