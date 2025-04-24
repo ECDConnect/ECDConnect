@@ -30,7 +30,7 @@
     
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
     
-    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.14" />
+    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.22.6" />
     
     <PackageReference Include="HtmlToPdfConverter.Core" Version="2.0.0" />
     

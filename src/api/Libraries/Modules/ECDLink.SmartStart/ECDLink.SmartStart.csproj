@@ -7,7 +7,7 @@
 
   <ItemGroup>
 	  <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
-	  <PackageReference Include="HotChocolate.Abstractions" Version="13.9.14" />
+	  <PackageReference Include="HotChocolate.Abstractions" Version="12.22.6" />
   </ItemGroup>
 
   <ItemGroup>
