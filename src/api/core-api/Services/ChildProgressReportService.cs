@@ -7,6 +7,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -100,6 +101,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<ChildProgressReportPeriod, Guid> _childProgressReportPeriodRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private IGenericRepository<Document, Guid> _documentRepo;
+        private readonly IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
 
         private List<Category> _categories = null;
         private Dictionary<int, Skill> _skillMap = null;
@@ -137,6 +139,7 @@ namespace EcdLink.Api.CoreApi.Services
             _childProgressReportPeriodRepo = repoFactory.CreateRepository<ChildProgressReportPeriod>(userContext: _contextUserId);
             _practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: _contextUserId);
             _learnerRepo = repoFactory.CreateRepository<Learner>(userContext: _contextUserId);
+            _classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: _contextUserId);
             _documentRepo = repoFactory.CreateRepository<Document>();
         }
 
@@ -172,11 +175,7 @@ namespace EcdLink.Api.CoreApi.Services
                     existingReport.DateCompleted = input.DateCompleted;
                 }
 
-                //if (input.ObservationsCompleteDate != null)
-                //{
-                    existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
-                //}
-
+                existingReport.ObservationsCompleteDate = input.ObservationsCompleteDate;
                 existingReport.ReportContent = JsonConvert.SerializeObject(reportContent);
                 existingReport.UserId = _contextUserId;
 
@@ -186,12 +185,14 @@ namespace EcdLink.Api.CoreApi.Services
                 if (input.DateCompleted != null)
                 {
                     _pointsEngineService.CalculateCreateChildProgressReport(_contextUserId);
+                    // Create notification if progress is 100%
+                    CreateCompletedReportNotification(existingReport.ChildProgressReportPeriodId, input.DateCompleted.Value.Date);
+                
                 }
                 if (input.ObservationsCompleteDate != null)
                 {
                     _pointsEngineService.CalculateCompleteChildProgressObservations(_contextUserId);
                 }
-
             }
             else
             {
@@ -222,8 +223,41 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
             }
+        }
 
-            
+        private void CreateCompletedReportNotification(Guid childProgressReportPeriodId, DateTime dateCompleted) 
+        {
+            var practitioner = _practitionerRepo.GetByUserId(_contextUserId);
+            var isPrincipal = practitioner.IsPrincipalOrAdmin();
+            var totalChildren = 0;
+            if (isPrincipal)
+            {
+                //principal = the number of children at the preschool;
+                totalChildren = _classroomGroupRepo.GetAll()
+                                .Where(x => x.IsActive && x.Classroom.UserId == _contextUserId && x.Classroom.IsActive)
+                                .SelectMany(x => x.Learners.Where(y => y.IsActive && y.User.IsActive))
+                                .Count();
+            } else
+            {
+                //practitioner = the number of children assigned to the user
+                totalChildren = _childRepo.GetAll()
+                                .Where(x => x.IsActive && x.Hierarchy.StartsWith(practitioner.Hierarchy)).Count();
+            }
+
+            if (totalChildren != 0) {
+                var totalCompleted = _childProgressReportRepo
+                                    .GetAll()
+                                    .Where(x => x.ChildProgressReportPeriodId == childProgressReportPeriodId
+                                                && x.DateCompleted.HasValue
+                                                && x.IsActive == true)
+                                    .Count();
+
+                if (totalCompleted == totalChildren) {
+                    var endDate = dateCompleted.AddDays(7);
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.AllProgressReportsCreated, dateCompleted.Date, practitioner.User, "", MessageStatusConstants.Green, null, endDate, false, true, null,
+                        relatedEntities: new List<RelatedEntity> { new RelatedEntity(childProgressReportPeriodId, "ChildProgressReportPeriod") });
+                }
+            }
         }
 
 
