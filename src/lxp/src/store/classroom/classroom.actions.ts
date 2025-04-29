@@ -339,9 +339,12 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
                   userAuth?.auth_token
                 ).updateLearner(x.learnerId, input);
               } else {
+                await new ClassroomGroupLearnerService(
+                  userAuth?.auth_token
+                ).createLearner(input);
                 return !!(await new ClassroomGroupLearnerService(
                   userAuth?.auth_token
-                ).createLearner(input));
+                ).updateLearnerHierarchy(input.UserId, input.ClassroomGroupId));
               }
             });
 
