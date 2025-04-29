@@ -381,51 +381,56 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       }
       size="small"
     >
-      {children && children.length > 0 && learners.length && (
-        <SearchHeader<UserAlertListDataItem>
-          searchItems={filteredChildData || []}
-          onScroll={handleListScroll}
-          onSearchChange={onSearchChange}
-          isTextSearchActive={searchTextActive}
-          onBack={() => setSearchTextActive(false)}
-          onSearchButtonClick={() => setSearchTextActive(true)}
-        >
-          <SearchDropDown<ClassroomGroupDto>
-            displayMenuOverlay={true}
-            menuItemClassName={styles.dropdownStyles}
-            overlayTopOffset="0"
-            className="mr-1"
-            options={classOptions}
-            selectedOptions={selectedClasses}
-            onChange={onFilterClasses}
-            placeholder="Classes"
-            pluralSelectionText="Classes"
-            multiple
-            color="quatenary"
-            info={{
-              name: 'Filter by: Class',
-              hint: 'You can select multiple classes',
-            }}
-          />
+      {children &&
+        children.length > 0 &&
+        learners &&
+        learners.length > 0 &&
+        filteredChildData &&
+        filteredChildData.length > 0 && (
+          <SearchHeader<UserAlertListDataItem>
+            searchItems={filteredChildData || []}
+            onScroll={handleListScroll}
+            onSearchChange={onSearchChange}
+            isTextSearchActive={searchTextActive}
+            onBack={() => setSearchTextActive(false)}
+            onSearchButtonClick={() => setSearchTextActive(true)}
+          >
+            <SearchDropDown<ClassroomGroupDto>
+              displayMenuOverlay={true}
+              menuItemClassName={styles.dropdownStyles}
+              overlayTopOffset="0"
+              className="mr-1"
+              options={classOptions}
+              selectedOptions={selectedClasses}
+              onChange={onFilterClasses}
+              placeholder="Classes"
+              pluralSelectionText="Classes"
+              multiple
+              color="quatenary"
+              info={{
+                name: 'Filter by: Class',
+                hint: 'You can select multiple classes',
+              }}
+            />
 
-          <SearchDropDown<string>
-            displayMenuOverlay={true}
-            menuItemClassName={styles.dropdownStyles}
-            options={sortOptions.columns}
-            selectedOptions={activeSort}
-            onChange={(selectedColumns) => {
-              setActiveSort(selectedColumns);
-              onSortItemsChanges(selectedColumns[0]?.value);
-            }}
-            placeholder={'Sort By'}
-            multiple={false}
-            color={'quatenary'}
-            info={{
-              name: `Sort By:`,
-            }}
-          />
-        </SearchHeader>
-      )}
+            <SearchDropDown<string>
+              displayMenuOverlay={true}
+              menuItemClassName={styles.dropdownStyles}
+              options={sortOptions.columns}
+              selectedOptions={activeSort}
+              onChange={(selectedColumns) => {
+                setActiveSort(selectedColumns);
+                onSortItemsChanges(selectedColumns[0]?.value);
+              }}
+              placeholder={'Sort By'}
+              multiple={false}
+              color={'quatenary'}
+              info={{
+                name: `Sort By:`,
+              }}
+            />
+          </SearchHeader>
+        )}
       <div className={styles.overlay}>
         {!childUserListData?.length && !learners.length && (
           <IconInformationIndicator
@@ -441,7 +446,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               subTitle=""
             />
           )}
-        {filteredChildData?.length && learners && (
+        {filteredChildData?.length > 0 && learners && learners.length > 0 && (
           <StackedList
             className={styles.stackedList}
             listItems={filteredChildData || []}
