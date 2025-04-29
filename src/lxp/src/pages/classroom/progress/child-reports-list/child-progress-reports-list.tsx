@@ -98,7 +98,7 @@ export const ChildProgressReportsList: React.FC = () => {
   const reports = isWalkthrough ? walkthroughReports : detailedReports;
 
   const showShareButton = useMemo<boolean>(() => {
-    return detailedReports.filter((x) => x.dateCompleted !== null).length > 0;
+    return detailedReports.filter((x) => !!x.dateCompleted).length > 0;
   }, [detailedReports]);
 
   return (
