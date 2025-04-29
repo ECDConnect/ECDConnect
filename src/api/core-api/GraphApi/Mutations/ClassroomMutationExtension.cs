@@ -521,5 +521,59 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
             return null;
         }
+
+        [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Update)]
+        public Learner UpdateLearnerHierarchy(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] HierarchyEngine engine,
+            string learnerId, string classroomGroupId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : engine.GetAdminUserId().GetValueOrDefault();
+
+            var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
+            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
+            var staticHierarchyRepo = repoFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
+
+            Learner learnerUser = learnerRepo.GetAll().Where(x => x.UserId == Guid.Parse(learnerId) && x.IsActive == true).FirstOrDefault();
+            Child childUser = childRepo.GetByUserId(learnerId);
+            UserHierarchyEntity hierarchyEntry = staticHierarchyRepo.GetAll().Where(x => x.UserId == childUser.UserId).FirstOrDefault();
+
+            // Get correct practitioner hierarchy
+            IGenericRepository<ClassroomGroup, Guid> classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            var classroomGroup = classRepo.GetAll().Where(x => x.Id == Guid.Parse(classroomGroupId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+
+            if (classroomGroup == null)
+            {
+                throw new ArgumentException("Classroom Group not found");
+            }
+
+            string newHierarchy = engine.GetUserHierarchy(classroomGroup.UserId.GetValueOrDefault(uId));
+
+            if (string.IsNullOrEmpty(newHierarchy))
+            {
+                throw new ArgumentException("Hierarchy for practitioner not found");
+            }
+
+            string childHierarchy = "";
+            
+            if (learnerUser != null && childUser != null && newHierarchy != null)
+            {
+                if (hierarchyEntry != null)
+                {
+                    learnerUser.Hierarchy = newHierarchy;
+                    learnerRepo.Update(learnerUser);
+
+                    hierarchyEntry.ParentId = classroomGroup.UserId.GetValueOrDefault(uId);
+                    hierarchyEntry.NamedTypePath = hierarchyEntry.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                    childHierarchy = HierarchyHelper.AppendHierarchy(newHierarchy, hierarchyEntry.Key.ToString());
+                    staticHierarchyRepo.Update(hierarchyEntry);
+
+                    childUser.Hierarchy = childHierarchy;
+                    childRepo.Update(childUser);
+                }
+            }
+            return null;
+        }
     }
 }
