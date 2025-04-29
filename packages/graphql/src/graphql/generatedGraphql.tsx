@@ -7918,6 +7918,7 @@ export type Mutation = {
   updateLeague?: Maybe<League>;
   updateLeagueType?: Maybe<LeagueType>;
   updateLearner?: Maybe<Learner>;
+  updateLearnerHierarchy?: Maybe<Learner>;
   updateLearnerWithUserId?: Maybe<Learner>;
   updateLicense?: Maybe<License>;
   updateLicenseType?: Maybe<LicenseType>;
@@ -10496,6 +10497,11 @@ export type MutationUpdateLeagueTypeArgs = {
 export type MutationUpdateLearnerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<LearnerInput>;
+};
+
+export type MutationUpdateLearnerHierarchyArgs = {
+  classroomGroupId?: InputMaybe<Scalars['String']>;
+  learnerId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateLearnerWithUserIdArgs = {
@@ -18029,7 +18035,6 @@ export type Setting_InvitationCutoffDelay = {
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
   AdminSignup: Scalars['String'];
-  PreSchoolInvitation: Scalars['String'];
   PrincipalSignup: Scalars['String'];
   Signup: Scalars['String'];
 };

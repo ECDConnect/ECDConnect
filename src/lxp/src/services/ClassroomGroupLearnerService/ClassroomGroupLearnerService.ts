@@ -106,6 +106,34 @@ class ClassroomGroupLearnerService {
 
     return response.data.data.createLearner;
   }
+
+  async updateLearnerHierarchy(
+    learnerId: string,
+    classroomGroupId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation UpdateLearnerHierarchy($learnerId: String,  $classroomGroupId: String,) {
+          updateLearnerHierarchy(learnerId: $learnerId, classroomGroupId: $classroomGroupId){
+            id
+          }
+        }
+      `,
+      variables: {
+        learnerId: learnerId,
+        classroomGroupId: classroomGroupId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating learner hierarchy failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
 }
 
 export default ClassroomGroupLearnerService;
