@@ -2,7 +2,6 @@ using DinkToPdf;
 using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
-using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
 using EcdLink.Api.CoreApi.Managers.Notifications;
@@ -25,7 +24,6 @@ using ECDLink.DataAccessLayer.Diagnostics;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Development;
 using ECDLink.EGraphQL;
-using ECDLink.EGraphQL.Interceptors;
 using ECDLink.Moodle;
 using ECDLink.Notifications;
 using ECDLink.PDFGenerator;
@@ -53,6 +51,7 @@ using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace EcdLink.Api.CoreApi
 {
+    using EcdLink.Api.CoreApi.Middleware;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.HttpLogging;
@@ -218,7 +217,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
-            services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
+            //services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<UserAnonymiseService, UserAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
@@ -277,6 +276,7 @@ namespace EcdLink.Api.CoreApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
+            app.UseUserActivity();
 
             if (TelemtryEnabled()) app.UseMiddleware<CoreApi.Telemetry.TelemetryMiddleware>();
             // TODO: Can't upload images through CKEditor without bypassing Json sanitizer, update or replace.
