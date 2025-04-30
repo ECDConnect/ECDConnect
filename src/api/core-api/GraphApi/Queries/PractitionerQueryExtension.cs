@@ -656,38 +656,40 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             stats.TotalAttendanceRegistersCompleted = monthReports.Select(x => x.NumberOfSessions).Sum();
             stats.TotalAttendanceRegistersNotCompleted = monthReports.Select(x => x.TotalScheduledSessions).Sum();
 
-            var progressPeriodIds = childProgressReportPeriodRepo.GetAll()
+            var progressPeriodIds = new List<Guid>();
+            var totalProgressReportsNotCompleted = 0;
+            var totalProgressReportsCompleted = 0;
+            if (classroom != null) {
+                progressPeriodIds = childProgressReportPeriodRepo.GetAll()
                                                                  .Where(x => x.IsActive
                                                                     && x.ClassroomId == classroom.Id
                                                                     && ((x.StartDate.Date >= startDate.Date && x.StartDate.Date <= endDate.Value.Date)
                                                                     || (x.EndDate.Date >= startDate.Date && x.EndDate.Date <= endDate.Value.Date)))
                                                                  .Select(x => x.Id)
                                                                  .ToList();
-            var totalProgressReportsNotCompleted = 0;
-            var totalProgressReportsCompleted = 0;
-            foreach (var id in progressPeriodIds)
-            {
-                var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.ChildProgressReportPeriodId == id).FirstOrDefault();
-                if (progressData == null)
+                foreach (var id in progressPeriodIds)
                 {
-                    totalProgressReportsNotCompleted++;
-                }
-                else
-                {
-                    if (progressData.DateCompleted.HasValue)
+                    var progressData = childProgressReportRepo.GetAll().Where(x => x.IsActive == true && x.ChildProgressReportPeriodId == id).FirstOrDefault();
+                    if (progressData == null)
                     {
-                        totalProgressReportsCompleted++;
+                        totalProgressReportsNotCompleted++;
                     }
                     else
                     {
-                        totalProgressReportsNotCompleted++;
+                        if (progressData.DateCompleted.HasValue)
+                        {
+                            totalProgressReportsCompleted++;
+                        }
+                        else
+                        {
+                            totalProgressReportsNotCompleted++;
+                        }
                     }
                 }
             }
 
             stats.TotalProgressReportsCompleted = totalProgressReportsCompleted;
             stats.TotalProgressReportsNotCompleted = totalProgressReportsNotCompleted;
-
 
             var statementData = statementsRepo.GetAll().Where(x => x.IsActive == true
                                                                    && x.UserId == userId
