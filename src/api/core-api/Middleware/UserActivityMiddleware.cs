@@ -2,7 +2,10 @@
 using ECDLink.DataAccessLayer.Managers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Middleware
@@ -16,17 +19,22 @@ namespace EcdLink.Api.CoreApi.Middleware
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context,  AuthenticationDbContext dbContext, ApplicationUserManager userManager)
+        public async Task InvokeAsync(HttpContext context)
         {
             if (context.User.Identity.IsAuthenticated)
             {
-                var user = await userManager.GetUserAsync(context.User);
+                using var scope = context.RequestServices.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
+
+                var user = (from u in dbContext.Users
+                            where u.Id.ToString() == context.User.Identity.Name
+                            select new { u.Id, u.LastSeen }).FirstOrDefault();
+
                 if (user != null)
                 {
-                    if (user.LastSeen.Date != DateTime.Now.Date) 
+                    if (user.LastSeen.Date != DateTime.UtcNow.Date) 
                     {
-                        user.LastSeen = DateTime.UtcNow;
-                        await dbContext.SaveChangesAsync();
+                        dbContext.Database.ExecuteSqlInterpolated($"UPDATE \"AspNetUsers\" SET \"LastSeen\"={DateTime.UtcNow} WHERE \"Id\"={user.Id}");
                     }
                 }
             }
