@@ -40,7 +40,6 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
         [
           referenceNames.yearPointsGreaterThen0,
           referenceNames.allChildrenProgressReportsCompleted,
-          referenceNames.pastDeadlineDateForProgressReports,
         ].includes(notification?.message?.reference)) ||
       notification?.message?.priority === 8,
     [notification]

@@ -1,0 +1,6 @@
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('fca467c6-a6b6-45f1-b953-183aa37c1f8d'::uuid, true, current_date, current_date, NULL, 'hub', 'all-progress-reports-created', 'Great job! View a summary of the skills each class is working on.', NULL, 'Well done, all progress reports complete!', '[[GetSummary]]', 'Get summary', NULL, 'green', 23, '{"url":"/progress-view-reports-summary-select","state":{"report":"completed-all"}}');
+INSERT INTO public."MessageTemplate"
+("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "TenantId", "Subject", "CTA", "CTAText", "TypeCode", "NotificationColor", "Ordering", "Action")
+VALUES('cba80ad6-c2c2-4e30-9c14-bba3e6a4e243'::uuid, true, current_date, current_date, NULL, 'push', 'all-progress-reports-created', 'Great job! View a summary of the skills each class is working on.', NULL, 'Well done, all progress reports complete!', '[[GetSummary]]', 'Get summary', NULL, 'green', 23, '{"url":"/progress-view-reports-summary-select","state":{"report":"completed-all"}}');
