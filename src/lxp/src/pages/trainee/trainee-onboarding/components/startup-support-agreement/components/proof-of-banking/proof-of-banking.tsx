@@ -5,6 +5,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
+  IMAGE_WIDTH,
   ImageInput,
   Typography,
 } from '@ecdlink/ui';
@@ -109,6 +110,7 @@ export const ProofOfBanking: React.FC<ReadAndAcceptAgreementProps> = ({
           <div className="'flex items-center' w-full flex-row justify-start">
             <ImageInput
               acceptedFormats={acceptedFormats}
+              resolutionLimit={IMAGE_WIDTH}
               label={questions?.[0].question}
               nameProp="r4bPhoto"
               icon="CameraIcon"
@@ -151,6 +153,7 @@ export const ProofOfBanking: React.FC<ReadAndAcceptAgreementProps> = ({
       >
         <div className={`p-4`}>
           <PhotoPrompt
+            resolutionLimit={IMAGE_WIDTH}
             title={'Proof of banking'}
             onClose={() => setPhotoActionBarVisible(false)}
             onAction={(imageUrl: string) => {

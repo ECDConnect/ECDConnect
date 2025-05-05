@@ -239,6 +239,9 @@ namespace ECDLink.DataAccessLayer.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.HasDefaultSchema("public");
+
             builder.Entity<TenantEntity>(x =>
             {
                 x.HasKey(e => new { e.Id, e.ApplicationName, e.SiteAddress });

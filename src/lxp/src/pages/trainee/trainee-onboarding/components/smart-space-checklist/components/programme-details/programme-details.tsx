@@ -17,6 +17,7 @@ import {
   Dialog,
   DialogPosition,
   FormInput,
+  IMAGE_WIDTH,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
@@ -678,6 +679,7 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
                 />
                 <ImageInput<ProgrammeDetailsModel>
                   acceptedFormats={acceptedFormats}
+                  resolutionLimit={IMAGE_WIDTH}
                   label={questions?.[11].question}
                   nameProp="r4bPhoto"
                   icon="CameraIcon"
@@ -715,6 +717,7 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
                 />
                 <ImageInput<ProgrammeDetailsModel>
                   acceptedFormats={acceptedFormats}
+                  resolutionLimit={IMAGE_WIDTH}
                   label={questions?.[10].question}
                   nameProp="r4bPhoto"
                   icon="CameraIcon"
@@ -772,6 +775,7 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
           {haveTheTitleDeeds === true && (
             <ImageInput<ProgrammeDetailsModel>
               acceptedFormats={acceptedFormats}
+              resolutionLimit={IMAGE_WIDTH}
               label={questions?.[7].question}
               nameProp="r4bPhoto"
               icon="CameraIcon"
@@ -821,6 +825,7 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
               />
               <ImageInput<ProgrammeDetailsModel>
                 acceptedFormats={acceptedFormats}
+                resolutionLimit={IMAGE_WIDTH}
                 label={questions?.[8].question}
                 nameProp="r4bPhoto"
                 icon="CameraIcon"
@@ -888,6 +893,7 @@ export const ProgrammeDetails: React.FC<SmartSpaceChecklistProps> = ({
       >
         <div>
           <PhotoPrompt
+            resolutionLimit={IMAGE_WIDTH}
             title={'Upload image'}
             onClose={() => setPhotoActionBarVisible(false)}
             onAction={(imageUrl: string) => {

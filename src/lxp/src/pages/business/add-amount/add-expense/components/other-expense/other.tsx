@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogPosition,
   Alert,
+  IMAGE_WIDTH,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import * as styles from './other.styles';
@@ -183,6 +184,7 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
         />
         <ImageInput<ExpensesModel>
           acceptedFormats={acceptedFormats}
+          resolutionLimit={IMAGE_WIDTH}
           label={`Upload a photo of invoice or receipt`}
           subLabel={'Optional'}
           nameProp="photoProof"
@@ -209,6 +211,7 @@ export const OtherExpense: React.FC<AddExpenseState> = ({
         >
           <PhotoPrompt
             title="Expense invoice or receipt"
+            resolutionLimit={IMAGE_WIDTH}
             onClose={() => setPhotoActionBarVisible(false)}
             onAction={(imageUrl: string) => setPhotoUrl(imageUrl)}
             onDelete={
