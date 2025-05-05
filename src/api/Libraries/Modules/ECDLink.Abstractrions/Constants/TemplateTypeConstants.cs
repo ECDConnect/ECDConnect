@@ -57,6 +57,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string SubmitWeeksAttendance = "submit-weekly-attendance"; // hub, push
         // row 22
         public const string FinishProgressReport = "finish-progress-report"; // hub, push
+        // row 23
+        public const string AllProgressReportsCreated = "all-progress-reports-created"; // hub, push
         // row 25
         public const string ProgressSummaryReport = "progress-summary-report"; // hub, push
         // row 27
@@ -89,7 +91,7 @@ namespace ECDLink.Abstractrions.Constants
         // With GG also removed this will be +- 105 messages/notifications removed
         /* public const string DemotedFromPrincipalOrFAA = "demoted-from-principal-faa";
             public const string ProgressreportsNotCreated = "progressreports-not-created";
-            public const string AllProgressReportsCompletedForClass = "all-progress-reports-completed-for-class";
+            
             public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
             public const string PractitionerNotLinkedToProgramme = "not-linked-to-programme";
             public const string ChildRegistrationIncomplete = "child-reg-incomplete";

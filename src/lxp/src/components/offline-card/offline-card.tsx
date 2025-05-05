@@ -4,15 +4,15 @@ export const OfflineCard: React.FC = () => {
   return (
     <div
       className={
-        'bg-white rounded-lg shadow-sm flex flex-col justify-around items-center w-full p-6'
+        'flex w-full flex-col items-center justify-around rounded-lg bg-white p-6 shadow-sm'
       }
     >
-      <div className="rounded-full bg-alertBg w-12 h-12 flex flex-col justify-center items-center">
+      <div className="bg-alertBg flex h-12 w-12 flex-col items-center justify-center rounded-full">
         {renderIcon('InformationCircleIcon', 'h-5 w-5 text-alertMain')}
       </div>
 
       <Typography
-        text="Information not available when offline"
+        text="You need to go online to use this feature"
         type={'body'}
         weight={'bold'}
         align="center"
@@ -20,7 +20,7 @@ export const OfflineCard: React.FC = () => {
       />
 
       <Typography
-        text="Please go online and refresh the page to see previous months"
+        text="Switch on your mobile data or connect to a wifi network to use this feature"
         type={'body'}
         color={'textLight'}
         align="center"

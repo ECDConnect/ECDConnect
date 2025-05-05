@@ -1,7 +1,6 @@
-import { BannerWrapper } from '@ecdlink/ui';
+import { BannerWrapper, Dialog, DialogPosition } from '@ecdlink/ui';
 import React from 'react';
-import { OfflineCard } from '../offline-card/offline-card';
-
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 interface StepViewProps {
   title: string;
   isOnline?: boolean;
@@ -59,7 +58,16 @@ export const StepViewer: React.FC<StepViewProps> = ({
       onClose={onClose}
       displayOffline={!isOnline}
     >
-      {isOnline || !showOfflineCard ? activeChild : <OfflineCard />}
+      {isOnline || !showOfflineCard ? (
+        activeChild
+      ) : (
+        <Dialog visible={!isOnline} position={DialogPosition.Middle}>
+          <OnlineOnlyModal
+            overrideText={'You need to go online to use this feature.'}
+            onSubmit={onBack}
+          ></OnlineOnlyModal>
+        </Dialog>
+      )}
     </BannerWrapper>
   ) : (
     <>{activeChild}</>

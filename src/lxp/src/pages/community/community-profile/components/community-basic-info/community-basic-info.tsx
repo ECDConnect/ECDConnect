@@ -285,12 +285,6 @@ export const CommunityBasicInfo: React.FC<ContactDetailsProps> = ({
             type="h4"
             text="Which details would you like to share?"
           />
-          <Typography
-            className="mb-4"
-            type="help"
-            text="You can edit this in future by going to the Classroom then Practitioners tab."
-            color="textMid"
-          />
           {sharedInfoItems.map((item, index) => (
             <CheckboxGroup
               id={item.id}
