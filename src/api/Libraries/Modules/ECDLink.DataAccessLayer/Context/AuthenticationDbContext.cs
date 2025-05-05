@@ -240,8 +240,6 @@ namespace ECDLink.DataAccessLayer.Context
         {
             base.OnModelCreating(builder);
 
-            builder.HasDefaultSchema("public");
-
             builder.Entity<TenantEntity>(x =>
             {
                 x.HasKey(e => new { e.Id, e.ApplicationName, e.SiteAddress });
