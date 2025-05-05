@@ -118,10 +118,6 @@ export const Messages: React.FC = () => {
       //   referenceNames?.getSevenDaysBeforeWithNoProgressReports ||
       notification?.message?.reference ===
         referenceNames?.allChildrenProgressReportsCompleted ||
-      // notification?.message?.reference ===
-      //   referenceNames?.allChildrenProgressReportsCreated ||
-      notification?.message?.reference ===
-        referenceNames?.pastDeadlineDateForProgressReports ||
       notification?.message?.priority === 8;
 
     if (resetNotificationOnClick) {
