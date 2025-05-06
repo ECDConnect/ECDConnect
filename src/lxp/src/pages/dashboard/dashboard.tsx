@@ -565,19 +565,6 @@ export const Dashboard: React.FC = () => {
     classroomsSelectors.getCurrentProgressReportPeriod()
   );
 
-  const lastProgressReportPeriodisToday =
-    currentReportingPeriod?.endDate &&
-    isToday(new Date(currentReportingPeriod?.endDate));
-
-  useEffect(() => {
-    if (!lastProgressReportPeriodisToday) {
-      setStorageItem(
-        false,
-        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
-      );
-    }
-  }, [lastProgressReportPeriodisToday]);
-
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationNames.Messages,
