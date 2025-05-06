@@ -9,6 +9,8 @@ import {
   Dialog,
   DialogPosition,
   Typography,
+  imageResize,
+  IMAGE_WIDTH,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import * as styles from './photo-prompt.styles';
@@ -71,6 +73,7 @@ export interface PhotoPromptProps extends ComponentBaseProps {
   isProfileEmojis?: boolean;
   isLoading?: boolean;
   showEmojiOption?: boolean;
+  resolutionLimit?: number;
 }
 
 /**
@@ -86,6 +89,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   showEmojiOption,
   isProfileEmojis,
   isLoading,
+  resolutionLimit,
 }) => {
   const [actions, setActions] = useState<
     ActionSelectItem<PhotoPromptActionType>[]
@@ -187,7 +191,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   };
 
   const openGallery = () => {
-    getImageSourceFromFileSystem().then((dataUrl) => {
+    getImageSourceFromFileSystem(undefined, resolutionLimit).then((dataUrl) => {
       if (dataUrl && onAction) {
         onAction(dataUrl);
       }
@@ -246,7 +250,13 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
         onClose={close}
       />
 
-      {isOpenCamera && <Camera onGetPhoto={onGetPhoto} onClose={close} />}
+      {isOpenCamera && (
+        <Camera
+          onGetPhoto={onGetPhoto}
+          onClose={close}
+          resolutionLimit={resolutionLimit}
+        />
+      )}
 
       <Dialog
         visible={emojisSection}

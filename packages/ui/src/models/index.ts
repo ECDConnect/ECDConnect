@@ -23,3 +23,4 @@ export * from '../components/radio-group/models/RadioGroupOptions';
 export * from '../components/divider/models/Divider';
 export * from '../components/dropdown/search-dropdown/models/SearchDropDownOption';
 export * from '../components/side-menu/side-menu.types';
+export * from './ImageReductionSizes';
