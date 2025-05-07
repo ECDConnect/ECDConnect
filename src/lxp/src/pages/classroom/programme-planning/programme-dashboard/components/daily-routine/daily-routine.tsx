@@ -864,10 +864,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             className="fixed bottom-6 right-0 z-10 m-3 px-3.5 py-2.5"
           />
         )}
-        <div
-          id="walkthrough-last-step"
-          className="absolute bottom-0 h-0 w-full"
-        />
+        <div id="walkthrough-last-step" />
       </div>
     );
   }

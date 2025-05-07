@@ -10,7 +10,7 @@ import {
   SliderPagination,
   Typography,
 } from '@ecdlink/ui';
-import robot from '../../../../../assets/iconRobot.svg';
+import { ReactComponent as Robot } from '../../../../../assets/iconRobot.svg';
 import { useAppContext } from '@/walkthrougContext';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -154,7 +154,6 @@ export default function ProgrammeWrapper() {
       content: t("Great, you're ready to start!"),
       placement: 'bottom',
       offset: 10,
-      disableOverlayClose: true,
     },
   ];
 
@@ -174,7 +173,7 @@ export default function ProgrammeWrapper() {
           <div>
             {step.content && (
               <div className="flex items-center gap-2 align-middle">
-                <img src={robot} alt="walkthrough profile" />
+                <Robot />
                 <Typography
                   color={'textDark'}
                   type={'h2'}
