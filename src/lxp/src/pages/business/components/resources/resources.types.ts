@@ -1,7 +1,7 @@
 export const ResourcesNames = {
-  financial: 'Financial',
-  administration: 'Administration & policies',
-  dbe: 'DBE registration',
+  financial: 'Finances',
+  administration: 'Marketing, recruitment & communication',
+  dbe: 'Safety, hygiene & nutrition',
   other: 'Other',
 };
 
