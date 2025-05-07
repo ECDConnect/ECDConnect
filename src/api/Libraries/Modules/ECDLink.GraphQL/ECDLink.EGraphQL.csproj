@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
-	<TargetFramework>net7.0</TargetFramework>
+	<TargetFramework>net9.0</TargetFramework>
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
@@ -9,8 +9,8 @@
     <None Remove="Models\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.13.0" />
-    <PackageReference Include="Microsoft.NETCore.Targets" Version="3.0.0" PrivateAssets="all" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
+    <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="12.12.1" />
     <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="12.12.1" />
 	<PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />

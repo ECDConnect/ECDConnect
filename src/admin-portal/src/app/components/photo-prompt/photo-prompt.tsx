@@ -29,6 +29,7 @@ import { PhotoPromptActionType } from '@/components/photo-prompt/photo-prompt.ty
 export interface PhotoPromptProps extends ComponentBaseProps {
   title: string;
   hideEmojiOption?: boolean;
+  resolutionLimit?: number;
   onClose?: () => void;
   onDelete?: () => void;
   onAction?: (imageBaseString: string) => void;
@@ -41,6 +42,7 @@ export interface PhotoPromptProps extends ComponentBaseProps {
 export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   title,
   hideEmojiOption,
+  resolutionLimit,
   onClose,
   onAction,
   onDelete,
@@ -99,14 +101,17 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   };
 
   const openCamera = async () => {
-    const imageBaseString = await getImageSourceFromCamera();
+    const imageBaseString = await getImageSourceFromCamera(
+      undefeind,
+      resolutionLimit
+    );
     if (imageBaseString && onAction) {
       onAction(imageBaseString);
     }
   };
 
   const openGallery = () => {
-    getImageSourceFromFileSystem()
+    getImageSourceFromFileSystem(undefined, resolutionLimit)
       .then((dataUrl) => {
         if (dataUrl && onAction) {
           onAction(dataUrl);

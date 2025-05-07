@@ -10,6 +10,7 @@ import {
   Divider,
   Dropdown,
   DropDownOption,
+  IMAGE_WIDTH,
   ImageInput,
   renderIcon,
   Typography,
@@ -193,6 +194,7 @@ export const ChildBirthCertificateForm: React.FC<
           {hasBirthCertificateorClinicCard && (
             <ImageInput<ChildBirthCertificateFormModel>
               acceptedFormats={acceptedFormats}
+              resolutionLimit={IMAGE_WIDTH}
               label={`Take a photo of ${childName}’s ${
                 birthCertificateType === 'clinicCard'
                   ? 'clinic card'
