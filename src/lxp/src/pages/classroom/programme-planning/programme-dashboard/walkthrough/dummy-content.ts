@@ -6,8 +6,10 @@ export const dummyThemes = [
     id: 1,
     name: 'Nature',
     color: '#FFD700',
-    imageUrl: '',
-    themeLogo: '',
+    imageUrl:
+      'https://ecdconnectstoragestg.blob.core.windows.net/content-image/638821671475485273_imageUrl.png',
+    themeLogo:
+      'https://ecdconnectstoragestg.blob.core.windows.net/content-image/638821671475840891_themeLogo.png',
     themeDays: [],
   },
 ];
