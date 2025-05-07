@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
 
 import { DialogPosition } from '../../models';
-import { renderIcon } from '../../utils';
+import { imageResize, renderIcon } from '../../utils';
 import { Dialog } from '../dialog/dialog';
 
 import { PictureIcon, FlipArrowIcon } from './icons';
@@ -17,9 +17,14 @@ type VideoInput = {
 type CameraProps = {
   onGetPhoto: (photo: string) => void;
   onClose: () => void;
+  resolutionLimit?: number;
 };
 
-export const Camera = ({ onGetPhoto, onClose }: CameraProps) => {
+export const Camera = ({
+  onGetPhoto,
+  onClose,
+  resolutionLimit,
+}: CameraProps) => {
   const [facingMode, setFacingMode] = useState<
     'user' | { exact: 'environment' }
   >({ exact: 'environment' });
@@ -48,8 +53,15 @@ export const Camera = ({ onGetPhoto, onClose }: CameraProps) => {
 
     reader.addEventListener(
       'load',
-      () => {
-        onGetPhoto(String(reader.result));
+      async () => {
+        var data = String(reader.result);
+        var resizedImage = await imageResize(
+          data!,
+          resolutionLimit === undefined ? null : resolutionLimit!,
+          null,
+          null
+        );
+        onGetPhoto(resizedImage);
         onClose();
       },
       false
@@ -62,8 +74,14 @@ export const Camera = ({ onGetPhoto, onClose }: CameraProps) => {
     setPreview('');
   };
 
-  const onSubmit = () => {
-    onGetPhoto(String(preview));
+  const onSubmit = async () => {
+    var resizedPreview = await imageResize(
+      String(preview)!,
+      resolutionLimit === undefined ? null : resolutionLimit,
+      null,
+      null
+    );
+    onGetPhoto(String(resizedPreview));
     onClose();
   };
 

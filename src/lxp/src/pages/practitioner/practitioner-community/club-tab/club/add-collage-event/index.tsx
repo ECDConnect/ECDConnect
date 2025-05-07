@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogPosition,
   FormInput,
+  IMAGE_WIDTH,
   ImageInput,
   Typography,
 } from '@ecdlink/ui';
@@ -136,6 +137,7 @@ export const AddCollageEvent: React.FC = () => {
       <ImageInput
         className="mb-4"
         acceptedFormats={acceptedFormats}
+        resolutionLimit={IMAGE_WIDTH}
         label=""
         nameProp="maternalCaseRecord"
         icon="CameraIcon"

@@ -15,6 +15,7 @@ export interface ImageInputProps<T extends FieldValues>
   iconContainerColor?: Colours;
   iconColour?: Colours;
   acceptedFormats: string[];
+  resolutionLimit?: number;
   disabled?: boolean;
   onValueChange?: (imageString: string) => void;
   register?: UseFormRegister<T>;
@@ -34,6 +35,7 @@ export const ImageInput = <T extends FieldValues>({
   iconColour,
   className,
   currentImageString,
+  resolutionLimit,
   onValueChange,
   overrideOnClick,
 }: ImageInputProps<T>) => {
@@ -124,7 +126,7 @@ export const ImageInput = <T extends FieldValues>({
     if (overrideOnClick) {
       overrideOnClick();
     } else {
-      const res = await getImageSourceFromCamera()
+      const res = await getImageSourceFromCamera(undefined, resolutionLimit)
         .then((imageString: string | undefined) => {
           setCurrentImage(imageString ?? '');
           if (onValueChange) {
