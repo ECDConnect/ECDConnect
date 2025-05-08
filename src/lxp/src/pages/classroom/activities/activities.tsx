@@ -196,6 +196,7 @@ export const ActivitiesTab = () => {
     if (
       latestPeriod &&
       completedReports.length > 0 &&
+      listOfWorkingOnActivities.length > 0 &&
       !hasClickedOnLatestPeriod &&
       !hasShownDialog
     ) {
