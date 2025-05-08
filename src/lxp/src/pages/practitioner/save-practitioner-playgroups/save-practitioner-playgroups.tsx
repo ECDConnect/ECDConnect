@@ -25,6 +25,8 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
+import ROUTES from '@/routes/routes';
+import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsRouteState>();
@@ -177,7 +179,7 @@ export const EditPlaygroups: React.FC = () => {
     if (routeReturn) {
       history.push(routeReturn);
     } else {
-      history.goBack();
+      handleGoBack();
     }
   };
 
@@ -323,12 +325,18 @@ export const EditPlaygroups: React.FC = () => {
       setActiveClassroomGroupIndex(undefined);
       setActivePage(EditPlaygroupsSteps.confirm);
     } else {
-      history.goBack();
+      handleGoBack();
     }
   };
 
   const onClose = () => {
-    routeReturn ? history.push(routeReturn) : history.goBack();
+    routeReturn ? history.push(routeReturn) : handleGoBack();
+  };
+
+  const handleGoBack = () => {
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItems.CLASSES,
+    });
   };
 
   useEffect(() => {

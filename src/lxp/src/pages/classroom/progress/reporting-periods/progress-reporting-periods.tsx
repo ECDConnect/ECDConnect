@@ -117,6 +117,10 @@ export const ProgressReportingPeriods: React.FC = () => {
     showMessage({
       message: 'Reporting dates added!',
     });
+    handleGoBack();
+  };
+
+  const handleGoBack = () => {
     history.push(ROUTES.CLASSROOM.ROOT, {
       activeTabIndex: TabsItems.PROGRESS,
     });
@@ -187,7 +191,7 @@ export const ProgressReportingPeriods: React.FC = () => {
       title={'Child progress reporting periods'}
       color={'primary'}
       size="small"
-      onBack={() => (currentStep === 1 ? history.goBack() : setCurrentStep(1))}
+      onBack={() => (currentStep === 1 ? handleGoBack() : setCurrentStep(1))}
       displayOffline={!isOnline}
     >
       <div className="flex h-full w-full flex-col overflow-y-auto p-4">
