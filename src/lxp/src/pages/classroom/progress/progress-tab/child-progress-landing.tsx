@@ -73,9 +73,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   const { asyncGenerateReport } = usePdfFromHtml();
 
   const canAddChildren: any =
-    (hasPermissionToCreateProgressReports &&
-      !practitioner?.isPrincipal &&
-      hasPermissionToManageChildren) ||
+    (hasPermissionToManageChildren && !practitioner?.isPrincipal) ||
     practitioner?.isPrincipal;
 
   const showSuccessIcon =
@@ -258,7 +256,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {/* Report period setup, all children over 5 years*/}
       {isReportWindowSet &&
         !!children?.length &&
-        children.every((x) => !x.ageInMonths || x.ageInMonths > 60) && (
+        children.every((x) => x.ageInMonths && x.ageInMonths > 60) && (
           <ProgressTabAllChildrenOverFive
             canAddChildren={canAddChildren}
             isOnline={isOnline}
@@ -269,7 +267,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {isReportWindowSet &&
         currentReportingPeriod &&
         !!children.length &&
-        children.some((x) => !x.ageInMonths || x.ageInMonths < 60) && (
+        children.some((x) => x.ageInMonths && x.ageInMonths < 60) && (
           <div className="mt-2 flex flex-col p-4">
             <Typography
               color="textDark"
