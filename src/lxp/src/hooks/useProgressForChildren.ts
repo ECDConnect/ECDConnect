@@ -5,7 +5,7 @@ import {
   getProgressAgeGroupForChild,
   mapProgressReportDetails,
 } from '@/utils/child/child-progress-report.utils';
-import { differenceInMonths, isBefore } from 'date-fns';
+import { differenceInMonths, format, isBefore, isValid } from 'date-fns';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -52,9 +52,11 @@ export const useProgressForChildren = () => {
       childFirstName: child.user?.firstName || '',
       childProfileImageUrl: child.user?.profileImageUrl,
       childFullName: `${child.user?.firstName} ${child.user?.surname}`,
-      ageInMonths: !!child.user?.dateOfBirth
-        ? differenceInMonths(new Date(), new Date(child.user.dateOfBirth))
-        : undefined,
+      ageInMonths:
+        !!child.user?.dateOfBirth &&
+        format(new Date(child?.user?.dateOfBirth), 'yyyy') != '0001'
+          ? differenceInMonths(new Date(), new Date(child?.user?.dateOfBirth))
+          : undefined,
       ageGroup: !!currentReportingPeriod
         ? getProgressAgeGroupForChild(
             currentReportingPeriod.endDate,

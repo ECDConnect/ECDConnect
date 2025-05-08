@@ -1,4 +1,5 @@
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import ROUTES from '@/routes/routes';
 import { getAvatarColor } from '@ecdlink/core';
 import { Button, StackedList, Typography } from '@ecdlink/ui';
@@ -11,6 +12,8 @@ export const ProgressTabReportSummary: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
 
   const { childReports } = useProgressForChildren();
+
+  const { hasPermissionToCreateProgressReports } = useUserPermissions();
 
   const incompleteReportsList = useMemo(() => {
     return childReports
@@ -58,12 +61,15 @@ export const ProgressTabReportSummary: React.FC = () => {
 
   return (
     <>
-      <Typography
-        className="mt-4"
-        color="textDark"
-        text={'You have not created progress reports for:'}
-        type={'h3'}
-      />
+      {incompleteReportsList.length != 0 &&
+        hasPermissionToCreateProgressReports && (
+          <Typography
+            className="mt-4"
+            color="textDark"
+            text={'You have not created progress reports for:'}
+            type={'h3'}
+          />
+        )}
       <StackedList
         className={'mt-4 flex flex-col gap-1'}
         listItems={incompleteReportsList}

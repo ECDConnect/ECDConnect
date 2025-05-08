@@ -69,7 +69,7 @@ export const SelectChildToTrack: React.FC = () => {
   }, [filteredReports]);
 
   const anyChildrenOver5 = filteredReports.some(
-    (x) => !x.ageInMonths || x.ageInMonths > 60
+    (x) => x.ageInMonths && x.ageInMonths > 60
   );
 
   return (
