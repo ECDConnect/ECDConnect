@@ -207,7 +207,7 @@ export const ObservationsForChildLandingComplete: React.FC<
           text={`You have completed ${childFirstName}'s progress observations!`}
         />
       </Card>
-      {isBeforePeriod && (
+      {isBeforePeriod && hasPermissionToCreateProgressReports && (
         <Alert
           type={'info'}
           messageColor="textDark"
