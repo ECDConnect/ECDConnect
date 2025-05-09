@@ -375,20 +375,20 @@ export const ClassDashboard: React.FC = () => {
     }
   }, [history, isCoach]);
 
-  useEffect(() => {
-    if (
-      state?.activeTabIndex !== undefined &&
-      state?.activeTabIndex !== selectedTabIndex
-    ) {
-      setSelectedTabIndex(state?.activeTabIndex || selectedTabIndex);
-      history.replace({
-        state: {
-          ...state,
-          activeTabIndex: undefined,
-        },
-      });
-    }
-  }, [history, selectedTabIndex, state, state?.activeTabIndex]);
+  // useEffect(() => {
+  //   if (
+  //     state?.activeTabIndex !== undefined &&
+  //     state?.activeTabIndex !== selectedTabIndex
+  //   ) {
+  //     setSelectedTabIndex(state?.activeTabIndex || selectedTabIndex);
+  //     history.replace({
+  //       state: {
+  //         ...state,
+  //         activeTabIndex: undefined,
+  //       },
+  //     });
+  //   }
+  // }, [history, selectedTabIndex, state, state?.activeTabIndex]);
 
   return (
     <>

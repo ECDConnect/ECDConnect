@@ -1,4 +1,5 @@
 import {
+  Alert,
   ActionModal,
   Button,
   Card,
@@ -39,17 +40,42 @@ export const ProgressInfoPage: React.FC<ProgressInfoPageProps> = ({
 
   const renderFooterComponent = useMemo(
     () => (
-      <Button
-        className="mt-0 mb-4 w-60"
-        icon="ArrowCircleDownIcon"
-        type="outlined"
-        color="alertMain"
-        textColor="alertMain"
-        text={`Download example report`}
-        onClick={onDownloadPdf}
-      />
+      <>
+        <Alert
+          type="info"
+          title="Children learn and grow at different rates!"
+          list={[
+            `It is fine if the child can't do the things in the progress tracker yet`,
+          ]}
+        />
+        <Typography
+          className="mt-4"
+          color="textDark"
+          type="h4"
+          text={`What does the progress report for caregivers look like?`}
+        />
+        <Typography
+          className="mt-4"
+          type={'body'}
+          color={'textMid'}
+          text={`The report created by ${
+            tenant?.applicationName ? `${tenant.applicationName}` : ''
+          } will show the caregiver everything the child can or does do, everything you are working on with the child and all the skills the child still needs to develop.
+
+        If you would like to see an example of what the report will look like, you can download an example.`}
+        />
+        <Button
+          className="mt-3 mb-3 w-60"
+          icon="ArrowCircleDownIcon"
+          type="outlined"
+          color="alertMain"
+          textColor="alertMain"
+          text={`Download example report`}
+          onClick={onDownloadPdf}
+        />
+      </>
     ),
-    []
+    [tenant?.applicationName]
   );
 
   return (

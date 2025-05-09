@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogPosition,
   FormInput,
+  IMAGE_WIDTH,
   ImageInput,
   Typography,
 } from '@ecdlink/ui';
@@ -55,6 +56,7 @@ export const Step3 = ({ setIsEnabledButton, setStep3 }: AddMeetingProps) => {
       />
       <ImageInput
         acceptedFormats={acceptedFormats}
+        resolutionLimit={IMAGE_WIDTH}
         label="Take a photo of the attendance register"
         nameProp="maternalCaseRecord"
         icon="CameraIcon"
@@ -74,6 +76,7 @@ export const Step3 = ({ setIsEnabledButton, setStep3 }: AddMeetingProps) => {
       {isPhotoActionBarVisible && (
         <Dialog visible position={DialogPosition.Bottom} stretch>
           <PhotoPrompt
+            resolutionLimit={IMAGE_WIDTH}
             title="Attendance register"
             onClose={() => setPhotoActionBarVisible(false)}
             onAction={(imageUrl: string) => {
