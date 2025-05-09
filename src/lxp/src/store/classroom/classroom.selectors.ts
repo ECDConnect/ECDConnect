@@ -14,6 +14,7 @@ import {
 import { BasePractitionerDto } from '@/models/classroom/practitioner.dto';
 import { isBefore } from 'date-fns';
 import { ProgressReportPeriod } from '@/models/progress/progress-report-period';
+import { CompleteReportPeriods } from '@/models/progress/completed-report-periods';
 
 export const getClassroom = (
   state: RootState
@@ -227,6 +228,60 @@ export const getCurrentProgressReportPeriod = () =>
         startDate: startDate,
         endDate: endDate,
       } as ProgressReportPeriod;
+    }
+  );
+
+export const getExpiredProgressReportPeriod = () =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroom,
+    (classroom: ClassroomDto | undefined) => {
+      const currentYear = new Date().getFullYear();
+
+      // descended periods
+      const currentYearsReportingPeriodsDesc =
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === currentYear)
+          .sort(
+            (a, b) =>
+              new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+          ) || [];
+
+      if (currentYearsReportingPeriodsDesc.length === 0) {
+        return undefined;
+      }
+
+      // select first expired period
+      const expiredPeriod = currentYearsReportingPeriodsDesc.find(
+        (report) =>
+          new Date(report.endDate) <
+          new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate()
+          )
+      );
+
+      if (!expiredPeriod) {
+        return undefined;
+      }
+
+      // ascending periods
+      const currentYearsReportingPeriodsAsc =
+        classroom?.childProgressReportPeriods
+          ?.filter((x) => new Date(x.startDate).getFullYear() === currentYear)
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          ) || [];
+
+      const index = currentYearsReportingPeriodsAsc.findIndex(
+        (report) => report.id === expiredPeriod.id
+      );
+      return {
+        reportNumber: index + 1,
+        id: expiredPeriod?.id,
+        endDate: expiredPeriod?.endDate.toString(),
+      } as unknown as CompleteReportPeriods;
     }
   );
 

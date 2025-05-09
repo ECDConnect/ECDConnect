@@ -1,7 +1,9 @@
 import { CameraResultType, Camera, CameraSource } from '@capacitor/camera';
+import { imageResize } from './image-resize-handler.util';
 
 const getImageSourceFromCamera = async (
-  acceptableMimeFormats?: string[]
+  acceptableMimeFormats?: string[],
+  resolutionLimit: number = 100
 ): Promise<string | undefined> => {
   try {
     const imageSrc = await Camera.getPhoto({
@@ -20,14 +22,21 @@ const getImageSourceFromCamera = async (
       );
       if (!imageFormat) return undefined;
     }
-    return imageSrc.dataUrl;
+    var resizedImage = await imageResize(
+      imageSrc.dataUrl!,
+      resolutionLimit,
+      null,
+      null
+    );
+    return resizedImage!;
   } catch (error) {
     return undefined;
   }
 };
 
 const getImageSourceFromFileSystem = async (
-  acceptableMimeFormats?: string[]
+  acceptableMimeFormats?: string[],
+  resolutionLimit: number = 100
 ): Promise<string | undefined> => {
   try {
     const imageSrc = await Camera.getPhoto({
@@ -45,10 +54,16 @@ const getImageSourceFromFileSystem = async (
       );
       if (!imageFormat) return undefined;
     }
-    return imageSrc.dataUrl;
+    var resizedImage = await imageResize(
+      imageSrc.dataUrl!,
+      resolutionLimit,
+      null,
+      null
+    );
+    return resizedImage!;
   } catch (error) {
     return undefined;
   }
 };
 
-export { getImageSourceFromCamera, getImageSourceFromFileSystem };
+export { getImageSourceFromCamera, getImageSourceFromFileSystem, imageResize };

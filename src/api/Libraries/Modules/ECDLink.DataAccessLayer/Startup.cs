@@ -37,7 +37,7 @@ namespace ECDLink.EGraphQL
             services.AddTransient<IDomainEventService, EventServiceWrapper>();
             services.AddTransient<ISystemSettingsService, SystemSettingsService>();
 
-            services.AddMediatR(Assembly.GetExecutingAssembly());
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         }
 
         public static void AddDataAccessConfiguration(IApplicationBuilder app, IWebHostEnvironment env)

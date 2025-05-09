@@ -9,7 +9,7 @@ import {
   StackedList,
   UserAlertListDataItem,
 } from '@ecdlink/ui';
-import { isSameDay, parseISO, isAfter, isBefore } from 'date-fns';
+import { isSameDay, parseISO, isAfter, isBefore, format } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
@@ -35,6 +35,8 @@ export const ActivitiesTab = () => {
   const classes = useSelector(classroomsSelectors.getClassroomGroups);
   const programmes = useSelector(programmeSelectors.getProgrammes);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  // Add a state to track if the dialog has been shown
+  const [hasShownDialog, setHasShownDialog] = useState(false);
 
   const history = useHistory();
 
@@ -42,19 +44,81 @@ export const ActivitiesTab = () => {
 
   const dialog = useDialog();
 
-  const {
-    percentageReportsCompleted,
-    percentageObservationsCompleted,
-    childReports,
-  } = useProgressForChildren();
+  const { childReports } = useProgressForChildren();
 
-  const completedReportCount = childReports.filter(
-    (x) => !!x.report && !!x.report.dateCompleted
-  ).length;
-
-  const currentReportingPeriod = useSelector(
-    classroomsSelectors.getCurrentProgressReportPeriod()
+  // Handling the popup after the period has ended and there is completed reports
+  const progressReports = useSelector(
+    progressTrackingSelectors.getProgressReports()
   );
+  const latestPeriod = useSelector(
+    classroomsSelectors.getExpiredProgressReportPeriod()
+  );
+  const completedReports = progressReports.filter(
+    (report) =>
+      !!report.dateCompleted &&
+      report.childProgressReportPeriodId == latestPeriod?.id
+  );
+
+  const storageYear = getStorageItem(
+    LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportYear
+  );
+  // make sure the storageKeyYear is available
+  useEffect(() => {
+    if (!storageYear) {
+      setStorageItem(
+        new Date().getFullYear(),
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportYear
+      );
+    }
+  }, [storageYear]);
+
+  // update keys if year changes
+  useEffect(() => {
+    if (
+      storageYear &&
+      storageYear.toString() != new Date().getFullYear().toString()
+    ) {
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod1
+      );
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod2
+      );
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod3
+      );
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod4
+      );
+    }
+  }, [storageYear]);
+
+  const storageKey =
+    latestPeriod?.reportNumber == 1
+      ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod1
+      : latestPeriod?.reportNumber == 2
+      ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod2
+      : latestPeriod?.reportNumber == 3
+      ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod3
+      : latestPeriod?.reportNumber == 4
+      ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod4
+      : null;
+
+  // make sure the storageKey is available
+  useEffect(() => {
+    if (storageKey && !getStorageItem(storageKey)) {
+      setStorageItem(false, storageKey);
+    }
+  }, [storageKey]);
+
+  const hasClickedOnLatestPeriod =
+    storageKey && completedReports.length > 0
+      ? getStorageItem(storageKey)
+      : false;
 
   const allSkills = useSelector(
     progressTrackingSelectors.getProgressTrackingSkillsWithCategoryInfo()
@@ -62,7 +126,7 @@ export const ActivitiesTab = () => {
 
   const baseReports = useSelector(
     progressTrackingSelectors.getProgressReportsForReportingPeriod(
-      currentReportingPeriod?.id || ''
+      latestPeriod?.id || ''
     )
   );
 
@@ -70,7 +134,6 @@ export const ActivitiesTab = () => {
     item?.skillsToWorkOn?.map((item2) => item2?.skillId)
   );
 
-  // const firstSkillOfTwoFirstReports = skillsToWorkOnBaseOnPeriod?.map(item => item?.)
   const flattenedArray: number[] = skillsToWorkOnBaseOnPeriod.flat();
 
   // Step 2: Count the occurrences of each number
@@ -99,14 +162,6 @@ export const ActivitiesTab = () => {
     return shuffled.slice(0, n);
   }
 
-  const lastProgressReportPeriodHasPassed =
-    currentReportingPeriod?.endDate &&
-    new Date(currentReportingPeriod?.endDate) > new Date();
-
-  const hasClickedAfterEndOfProgressReportPeriodEnded = getStorageItem(
-    LocalStorageKeys?.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
-  );
-
   const showProgressReportEndedDialog = useCallback(async () => {
     dialog({
       // blocking: true,
@@ -117,10 +172,13 @@ export const ActivitiesTab = () => {
           title="What are children working on?"
           customDetailText={
             <div className="text-textMid">
-              {`Based on Report ${currentReportingPeriod?.reportNumber}, here are some areas that children are working on:`}
+              {`Based on Report ${latestPeriod?.reportNumber}, here are some areas that children are working on:`}
               <div>
                 {listOfWorkingOnActivities?.map((item) => (
-                  <div className="mt-2">{`\u00A0\u00A0\u00A0\u00A0• ${replaceSkillText(
+                  <div
+                    key={item?.id}
+                    className="mt-2"
+                  >{`\u00A0\u00A0\u00A0\u00A0• ${replaceSkillText(
                     item?.name,
                     'Child'
                   )}`}</div>
@@ -148,10 +206,7 @@ export const ActivitiesTab = () => {
                     report: 'completed-all',
                   }
                 );
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
-                );
+                if (storageKey) setStorageItem(true, storageKey);
                 onCancel();
               },
               type: 'filled',
@@ -164,10 +219,7 @@ export const ActivitiesTab = () => {
               colour: 'quatenary',
               type: 'outlined',
               onClick: () => {
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod
-                );
+                if (storageKey) setStorageItem(true, storageKey);
                 onCancel();
               },
               leadingIcon: 'XIcon',
@@ -176,25 +228,25 @@ export const ActivitiesTab = () => {
         />
       ),
     });
-  }, [
-    currentReportingPeriod?.reportNumber,
-    dialog,
-    history,
-    listOfWorkingOnActivities,
-  ]);
+  }, [latestPeriod?.reportNumber, dialog, history, listOfWorkingOnActivities]);
 
   useEffect(() => {
     if (
-      completedReportCount > 0 &&
-      lastProgressReportPeriodHasPassed &&
-      hasClickedAfterEndOfProgressReportPeriodEnded
+      latestPeriod &&
+      completedReports.length > 0 &&
+      listOfWorkingOnActivities.length > 0 &&
+      !hasClickedOnLatestPeriod &&
+      !hasShownDialog
     ) {
       showProgressReportEndedDialog();
+      setHasShownDialog(true);
     }
   }, [
-    completedReportCount,
-    lastProgressReportPeriodHasPassed,
-    hasClickedAfterEndOfProgressReportPeriodEnded,
+    latestPeriod,
+    completedReports,
+    hasClickedOnLatestPeriod,
+    hasShownDialog,
+    showProgressReportEndedDialog,
   ]);
 
   const getProgrammeName = (currentClass: ClassroomGroupDto) => {

@@ -120,6 +120,11 @@ const ProgrammeTheme: React.FC = () => {
   };
 
   const setBase64String = async (imageUrl: string, index: number) => {
+    if (isWalkthrough) {
+      updateArrayItem(themes[0]);
+      return;
+    }
+
     const prefix =
       imageUrl.indexOf('.svg') !== -1
         ? 'data:image/svg+xml;base64,'
