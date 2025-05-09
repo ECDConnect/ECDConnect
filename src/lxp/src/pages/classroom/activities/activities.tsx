@@ -59,6 +59,44 @@ export const ActivitiesTab = () => {
       report.childProgressReportPeriodId == latestPeriod?.id
   );
 
+  const storageYear = getStorageItem(
+    LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportYear
+  );
+  // make sure the storageKeyYear is available
+  useEffect(() => {
+    if (!storageYear) {
+      setStorageItem(
+        new Date().getFullYear(),
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportYear
+      );
+    }
+  }, [storageYear]);
+
+  // update keys if year changes
+  useEffect(() => {
+    if (
+      storageYear &&
+      storageYear.toString() != new Date().getFullYear().toString()
+    ) {
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod1
+      );
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod2
+      );
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod3
+      );
+      setStorageItem(
+        false,
+        LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod4
+      );
+    }
+  }, [storageYear]);
+
   const storageKey =
     latestPeriod?.reportNumber == 1
       ? LocalStorageKeys.hasClikedOnProgrammePlanningAfterEndOfProgressReportPeriod1
