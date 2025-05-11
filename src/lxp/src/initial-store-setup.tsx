@@ -17,10 +17,19 @@ import {
   contentConsentActions,
   contentConsentThunkActions,
 } from './store/content/consent';
-import { programmeRoutineActions } from './store/content/programme-routine';
-import { programmeThemeActions } from './store/content/programme-theme';
+import {
+  programmeRoutineActions,
+  programmeRoutineThunkActions,
+} from './store/content/programme-routine';
+import {
+  programmeThemeActions,
+  programmeThemeThunkActions,
+} from './store/content/programme-theme';
 import { contentReportActions } from './store/content/report';
-import { storyBookActions } from './store/content/story-book';
+import {
+  storyBookActions,
+  storyBookThunkActions,
+} from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
 import {
@@ -50,6 +59,7 @@ import {
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarActions, calendarThunkActions } from './store/calendar';
+import { activityThunkActions } from '@store/content/activity';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
@@ -234,9 +244,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
       appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
       appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
+
       appDispatch(
         contentConsentThunkActions.getConsent({ locale: 'en-za' })
       ).unwrap(),
@@ -244,6 +252,46 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         calendarThunkActions.getCalendarEventTypes({
           locale: 'en-za',
         })
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
+
+      appDispatch(
+        staticDataThunkActions.getProgrammeAttendanceReasons({})
+      ).unwrap(),
+
+      appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getReasonsForPractitionerLeaving({})
+      ).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
+      ).unwrap(),
+      appDispatch(
+        activityThunkActions.getActivities({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(
+        storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(
+        programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getProgressTrackingAgeGroups({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getProgressTrackingContent({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getResourceLinks({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
       ).unwrap(),
     ];
 

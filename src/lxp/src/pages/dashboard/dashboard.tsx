@@ -32,7 +32,7 @@ import {
   notificationActions,
   notificationsSelectors,
 } from '@store/notifications';
-import { settingSelectors, settingThunkActions } from '@store/settings';
+import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
@@ -41,16 +41,11 @@ import TransparentLayer from '../../assets/TransparentLayer.png';
 import { practitionerSelectors } from '@/store/practitioner';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
-import { staticDataThunkActions } from '@store/static-data';
-import { programmeThemeThunkActions } from '@store/content/programme-theme';
-import { storyBookThunkActions } from '@store/content/story-book';
-import { activityThunkActions } from '@store/content/activity';
 import { statementsThunkActions } from '@/store/statements';
 import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
-import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { traineeThunkActions } from '@/store/trainee';
@@ -61,9 +56,7 @@ import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card
 import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
 import { childrenThunkActions } from '@/store/children';
-import { contentConsentThunkActions } from '@/store/content/consent';
-import { progressTrackingThunkActions } from '@/store/progress-tracking';
-import { programmeRoutineThunkActions } from '@/store/content/programme-routine';
+
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -73,7 +66,7 @@ import hamburgerLogo from '../../assets/logos/hamburgerLogo.png';
 import { BusinessTabItems } from '../business/business.types';
 import { useTenant } from '@/hooks/useTenant';
 import { JoinOrAddPreschoolModal } from '@/components/join-or-add-preschool-modal/join-or-add-preschool-modal';
-import { differenceInDays, getMonth, getYear, isToday } from 'date-fns';
+import { differenceInDays, getMonth, getYear } from 'date-fns';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import DashboardWrapper from './dashboard-wrapper/dashboard-wrapper';
@@ -363,48 +356,12 @@ export const Dashboard: React.FC = () => {
 
   const initStaticStoreSetup = async () => {
     const promises = [
-      appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
       appDispatch(
         programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
       ).unwrap(),
-      appDispatch(
-        staticDataThunkActions.getProgrammeAttendanceReasons({})
-      ).unwrap(),
-
-      appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
-      appDispatch(
-        staticDataThunkActions.getReasonsForPractitionerLeaving({})
-      ).unwrap(),
-      appDispatch(
-        staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
-      ).unwrap(),
-      appDispatch(
-        activityThunkActions.getActivities({ locale: 'en-za' })
-      ).unwrap(),
-      appDispatch(
-        storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
-      ).unwrap(),
-      appDispatch(
-        programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
-      ).unwrap(),
-      appDispatch(
-        progressTrackingThunkActions.getProgressTrackingAgeGroups({
-          locale: 'en-za',
-        })
-      ).unwrap(),
-      appDispatch(
-        progressTrackingThunkActions.getProgressTrackingContent({
-          locale: 'en-za',
-        })
-      ).unwrap(),
-      appDispatch(
-        progressTrackingThunkActions.getResourceLinks({
-          locale: 'en-za',
-        })
-      ).unwrap(),
-      appDispatch(
-        programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
-      ).unwrap(),
+      appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
     ];
 
     Promise.allSettled(promises);
