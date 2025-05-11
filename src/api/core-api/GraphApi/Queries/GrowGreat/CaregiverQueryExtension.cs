@@ -13,6 +13,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public List<Caregiver> GetAllCaregiver(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] PersonnelService personnelManager,
-            IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory,
+            AuthenticationDbContext dbContext)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
@@ -75,8 +77,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 }
                 else
                 {
-                    //return all caregivers
-                    return careGiverRepo.GetAll().ToList();
+                     List<Caregiver> caregivers = dbContext.Caregivers.FromSql($@"
+                                        SELECT cg.* 
+                                        FROM ""Caregiver"" cg 
+                                        JOIN ""Child"" c ON cg.""Id"" = c.""CaregiverId""
+                                        JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
+                                        WHERE p.""CoachHierarchy"" = '{uId}'::uuid
+                                        ").ToList();
+                    return caregivers;
                 }
             }
         }

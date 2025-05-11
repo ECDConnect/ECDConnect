@@ -23,7 +23,6 @@ const activitySlice = createSlice({
     setThunkActionStatus(builder, getActivities);
     builder.addCase(getActivities.fulfilled, (state, action) => {
       state.activities = action.payload;
-
       setFulfilledThunkActionStatus(state, action);
     });
   },

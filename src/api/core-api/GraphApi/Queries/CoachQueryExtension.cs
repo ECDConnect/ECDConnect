@@ -12,6 +12,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
@@ -137,45 +138,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public List<Child> GetAllChildrenForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
+            AuthenticationDbContext dbContext,
             string userId)
         {
 
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateGenericRepository<Child>();
-
-            List<Child> children = new List<Child>();
-            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue && x.CoachHierarchy == Guid.Parse(userId)).ToList();
-            foreach (var practioner in practitioners)
-            {
-                List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
-                children.AddRange(practitionerChildren);
-            }
-            return children;
+          List<Child> children = [.. dbContext.Children.FromSql($@"
+                                        SELECT c.* 
+                                        FROM ""Child"" c 
+                                        JOIN ""Practitioner"" p ON c.""Hierarchy"" LIKE p.""Hierarchy"" || '%'
+                                        WHERE p.""CoachHierarchy"" = {userId}::uuid AND c.""IsActive"" is true
+                                        ")];
+          return children;
         }
 
-        public List<Classroom> GetAllClassroomsForCoach(
+       public List<Classroom> GetAllClassroomsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
+            AuthenticationDbContext dbContext,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser()?.Id ?? throw new ArgumentNullException("User.Id"); ;
-            
-            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            List<Classroom> classrooms = [.. dbContext.Classrooms.FromSql($@"
+                                        SELECT c.* 
+                                        FROM ""Classroom"" c 
+                                        JOIN ""Practitioner"" p ON c.""UserId"" = p.""UserId""
+                                        WHERE p.""CoachHierarchy"" = {userId}::uuid AND c.""IsActive"" is true
+                                        ")];
 
-            List<Classroom> classrooms = new List<Classroom>();
-            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
-            practitioners.Where(x => x.CoachHierarchy == Guid.Parse(userId)).ToList();
-            foreach (var practioner in practitioners)
-            {
-                List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.ToString().Contains(practioner.UserId.ToString())).ToList();
-                classrooms.AddRange(practitionerClasses);
-            }
             return classrooms;
         }
-
         public List<ClassroomGroupModel> GetAllClassroomGroupsForCoach(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IClassroomService classroomService,
