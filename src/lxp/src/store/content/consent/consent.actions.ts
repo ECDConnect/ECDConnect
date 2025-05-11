@@ -14,29 +14,34 @@ export const getConsent = createAsyncThunk<
   async ({ locale, authToken }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      contentConsentData: { consent: consentCache },
     } = getState();
 
-    try {
-      let content: ConsentDto[] = [];
+    if (!consentCache) {
+      try {
+        let content: ConsentDto[] = [];
 
-      if (userAuth?.auth_token || authToken) {
-        content = await new ContentConsentService(
-          locale,
-          userAuth && userAuth?.auth_token
-            ? userAuth?.auth_token
-            : authToken ?? ''
-        ).getConsent();
-      } else {
-        return rejectWithValue('no access token, profile check required');
+        if (userAuth?.auth_token || authToken) {
+          content = await new ContentConsentService(
+            locale,
+            userAuth && userAuth?.auth_token
+              ? userAuth?.auth_token
+              : authToken ?? ''
+          ).getConsent();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!content) {
+          return rejectWithValue('Error getting Terms And Conditions');
+        }
+
+        return content;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!content) {
-        return rejectWithValue('Error getting Terms And Conditions');
-      }
-
-      return content;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return consentCache;
     }
   }
 );

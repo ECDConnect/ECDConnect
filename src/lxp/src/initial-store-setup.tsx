@@ -1,17 +1,11 @@
-import {
-  getYear,
-  getWeek,
-  subMonths,
-  startOfQuarter,
-  lastDayOfQuarter,
-} from 'date-fns';
+import { subMonths, startOfQuarter, lastDayOfQuarter } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
-import { useAppDispatch, useAppSelector } from './store';
+import { useAppDispatch } from './store';
 import { attendanceActions, attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
-import { caregiverActions, caregiverThunkActions } from './store/caregiver';
+import { caregiverActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
 import {
   classroomsActions,
@@ -23,24 +17,17 @@ import {
   contentConsentActions,
   contentConsentThunkActions,
 } from './store/content/consent';
-import {
-  programmeRoutineActions,
-  programmeRoutineThunkActions,
-} from './store/content/programme-routine';
+import { programmeRoutineActions } from './store/content/programme-routine';
 import { programmeThemeActions } from './store/content/programme-theme';
-import {
-  contentReportActions,
-  contentReportThunkActions,
-} from './store/content/report';
+import { contentReportActions } from './store/content/report';
 import { storyBookActions } from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
-import { notificationActions } from './store/notifications';
 import {
   progressTrackingActions,
   progressTrackingThunkActions,
 } from './store/progress-tracking';
-import { settingActions } from './store/settings';
+import { settingActions, settingThunkActions } from './store/settings';
 import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
@@ -230,39 +217,37 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   const initStaticStoreSetup = async () => {
     setStaticDataLoading(true);
+    const promises = [
+      appDispatch(settingThunkActions.getSettings({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getHolidays({ year: new Date().getFullYear() })
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getGrants({})).unwrap(),
+      appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+      appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
+      appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRelations({})).unwrap(),
+      appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
+      appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
+      appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
+      appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
+      appDispatch(
+        contentConsentThunkActions.getConsent({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(
+        calendarThunkActions.getCalendarEventTypes({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+    ];
 
-    await appDispatch(
-      contentConsentThunkActions.getConsent({ locale: 'en-za' })
-    ).unwrap();
-
-    // PROGRESS TRACKING
-    await appDispatch(
-      progressTrackingThunkActions.getProgressTrackingAgeGroups({
-        locale: 'en-za',
-      })
-    ).unwrap();
-    await appDispatch(
-      progressTrackingThunkActions.getProgressTrackingContent({
-        locale: 'en-za',
-      })
-    ).unwrap();
-    await appDispatch(
-      progressTrackingThunkActions.getResourceLinks({
-        locale: 'en-za',
-      })
-    ).unwrap();
-
-    // CALENDAR
-    await appDispatch(
-      calendarThunkActions.getCalendarEventTypes({
-        locale: 'en-za',
-      })
-    ).unwrap();
-
-    await appDispatch(
-      programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
-    ).unwrap();
-
+    Promise.allSettled(promises);
     setStaticDataLoading(false);
   };
 

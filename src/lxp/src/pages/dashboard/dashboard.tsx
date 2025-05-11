@@ -61,6 +61,9 @@ import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card
 import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
 import { childrenThunkActions } from '@/store/children';
+import { contentConsentThunkActions } from '@/store/content/consent';
+import { progressTrackingThunkActions } from '@/store/progress-tracking';
+import { programmeRoutineThunkActions } from '@/store/content/programme-routine';
 import {
   TabsItemForPrincipal,
   TabsItems,
@@ -358,16 +361,8 @@ export const Dashboard: React.FC = () => {
 
   const { userProfilePicture } = useDocuments();
 
-  useEffect(() => {
-    convertImageToBase64(offlineStatments, setStorageItem);
-  }, []);
-
   const initStaticStoreSetup = async () => {
-    const today = new Date();
-
     const promises = [
-      appDispatch(settingThunkActions.getSettings({})).unwrap(),
-      appDispatch(staticDataThunkActions.getRelations({})).unwrap(),
       appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
       appDispatch(
         programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
@@ -375,14 +370,7 @@ export const Dashboard: React.FC = () => {
       appDispatch(
         staticDataThunkActions.getProgrammeAttendanceReasons({})
       ).unwrap(),
-      appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
-      appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
-      appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
-      appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
-      appDispatch(
-        staticDataThunkActions.getHolidays({ year: today.getFullYear() })
-      ).unwrap(),
-      appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
+
       appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
       appDispatch(
         staticDataThunkActions.getReasonsForPractitionerLeaving({})
@@ -390,35 +378,41 @@ export const Dashboard: React.FC = () => {
       appDispatch(
         staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
       ).unwrap(),
-      appDispatch(staticDataThunkActions.getGrants({})).unwrap(),
-      appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
-      appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
-      appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
-      appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
-      appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap(),
-      appDispatch(statementsThunkActions.getAllPayType({})).unwrap(),
-
       appDispatch(
         activityThunkActions.getActivities({ locale: 'en-za' })
       ).unwrap(),
-
       appDispatch(
         storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
       ).unwrap(),
-
       appDispatch(
         programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
       ).unwrap(),
-
       appDispatch(
-        calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
+        progressTrackingThunkActions.getProgressTrackingAgeGroups({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getProgressTrackingContent({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getResourceLinks({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
       ).unwrap(),
     ];
 
     Promise.allSettled(promises);
   };
+
+  useEffect(() => {
+    convertImageToBase64(offlineStatments, setStorageItem);
+  }, []);
 
   useEffect(() => {
     if (isOnline) {
