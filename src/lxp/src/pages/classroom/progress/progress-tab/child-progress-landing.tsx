@@ -222,6 +222,13 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
     );
   }
 
+  const childrenUnder5Years = children.filter(
+    (x) => !x.ageInMonths || x.ageInMonths < 60
+  );
+  const childrenOver5Years = children.filter(
+    (x) => !x.ageInMonths || x.ageInMonths >= 60
+  );
+
   return (
     <>
       {/* No report periods defined and principal */}
@@ -247,8 +254,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {/* Report period setup, children, but no reports yet */}
       {isReportWindowSet &&
         !!children.length &&
-        childReports.every((x) => x.isNotStarted) &&
-        children.every((x) => (x.ageInMonths ?? 0) < 60) && (
+        !!childrenUnder5Years.length &&
+        childReports.every((x) => x.isNotStarted) && (
           <ProgressTabNoReports
             trackProgress={handleContinueTrackingProgress}
           />
@@ -256,7 +263,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {/* Report period setup, all children over 5 years*/}
       {isReportWindowSet &&
         !!children?.length &&
-        children.every((x) => !x.ageInMonths || x.ageInMonths > 60) && (
+        childrenOver5Years?.length === children?.length && (
           <ProgressTabAllChildrenOverFive
             canAddChildren={canAddChildren}
             isOnline={isOnline}
@@ -266,8 +273,8 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
       {/* Observations summary */}
       {isReportWindowSet &&
         !!children.length &&
-        childReports.some((x) => x.isInProgress) &&
-        children.some((x) => !x.ageInMonths || x.ageInMonths < 60) && (
+        !!childrenUnder5Years.length &&
+        childReports.some((x) => !x.isNotStarted) && (
           <div className="mt-2 flex flex-col p-4">
             <Typography
               color="textDark"
