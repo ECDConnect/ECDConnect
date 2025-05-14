@@ -117,19 +117,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const nextProgrammes = useSelector(
     programmeSelectors.getProgrammesAfterDate(selectedDate!)
   );
-  const prevProgrammes = useSelector(
-    programmeSelectors.getProgrammesBeforeDate(selectedDate!)
-  );
+
   const { getCurrentProgrammeRecommendedActivities } =
     useProgrammePlanningRecommendations();
-  const useProgramme = !!programme
-    ? programme
-    : prevProgrammes?.length > 0
-    ? prevProgrammes?.[0]
-    : nextProgrammes?.[0];
 
   const recommendedActivities = getCurrentProgrammeRecommendedActivities(
-    useProgramme,
+    programme,
     selectedDate
   );
 
