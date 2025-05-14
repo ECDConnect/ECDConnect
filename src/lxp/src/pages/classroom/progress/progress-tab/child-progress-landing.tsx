@@ -5,6 +5,7 @@ import {
   Alert,
   Button,
   Card,
+  Colours,
   DialogPosition,
   ProgressBar,
   Typography,
@@ -28,8 +29,8 @@ import { ReactComponent as RobotIcon } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useProgressForChildren } from '@/hooks/useProgressForChildren';
-import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { ProgressCaregiverReportPdf } from '../caregiver-report-pdf/caregiver-report-pdf';
+import { ReactComponent as Balloons } from '@/assets/balloons.svg';
 
 export type ChildProgressLandingRouteState = {
   childId: string;
@@ -75,24 +76,6 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   const canAddChildren: any =
     (hasPermissionToManageChildren && !practitioner?.isPrincipal) ||
     practitioner?.isPrincipal;
-
-  const showSuccessIcon =
-    !!isWithinReportPeriod && percentageObservationsCompleted === 100;
-  const completionPercentage =
-    hasPermissionToCreateProgressReports &&
-    isWithinReportPeriod &&
-    canAddChildren
-      ? percentageReportsCompleted
-      : percentageObservationsCompleted;
-
-  const progressHint =
-    hasPermissionToCreateProgressReports &&
-    isWithinReportPeriod &&
-    canAddChildren
-      ? 'Reports created'
-      : 'Observations completed';
-
-  const progressColour = showSuccessIcon ? 'successMain' : 'alertMain';
 
   const showOnlineOnly = () => {
     dialog({
@@ -223,11 +206,25 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
   }
 
   const childrenUnder5Years = children.filter(
-    (x) => !x.ageInMonths || x.ageInMonths < 60
+    (x) => !x.ageInMonths || x.ageInMonths <= 60
   );
   const childrenOver5Years = children.filter(
-    (x) => !x.ageInMonths || x.ageInMonths >= 60
+    (x) => !x.ageInMonths || x.ageInMonths > 60
   );
+
+  const progressBarColour: Colours = hasPermissionToCreateProgressReports
+    ? (isWithinReportPeriod && percentageReportsCompleted === 100) ||
+      (!isWithinReportPeriod && percentageObservationsCompleted === 100)
+      ? 'successMain'
+      : 'alertMain'
+    : percentageObservationsCompleted === 100
+    ? 'successMain'
+    : 'alertMain';
+
+  const showBalloon: boolean = hasPermissionToCreateProgressReports
+    ? (isWithinReportPeriod && percentageReportsCompleted === 100) ||
+      (!isWithinReportPeriod && percentageObservationsCompleted === 100)
+    : percentageObservationsCompleted === 100;
 
   return (
     <>
@@ -292,7 +289,7 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 'd MMM yyyy'
               )}`}
             />
-            {(!canAddChildren && isWithinReportPeriod
+            {(!hasPermissionToCreateProgressReports && isWithinReportPeriod
               ? !isAllObservationsComplete
               : !isAllReportsComplete) && (
               <Button
@@ -306,78 +303,59 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                 text={'Continue tracking progress'}
               />
             )}
-            {/* <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
-              <div className="justify-center">
-                {((isWithinReportPeriod &&
-                  percentageReportsCompleted === 100) ||
-                  (!isWithinReportPeriod &&
-                    percentageObservationsCompleted === 100)) && (
-                  <div className="mt-6 flex w-full justify-center">
-                    <EmojiYellowSmile className="h-20 w-20" />
+            {/* Show progress bar  */}
+            <Card className="bg-uiBg mb-4 mt-4 flex rounded-2xl p-4">
+              <div className="flex w-full justify-center">
+                {showBalloon && (
+                  <div className="mt-6 mr-6 flex justify-center">
+                    <Balloons className="h-20 w-20" />
                   </div>
                 )}
                 <ProgressBar
                   label={`${
-                    isWithinReportPeriod
+                    hasPermissionToCreateProgressReports && isWithinReportPeriod
                       ? percentageReportsCompleted
                       : percentageObservationsCompleted
                   }%`}
                   hint={
                     hasPermissionToCreateProgressReports && isWithinReportPeriod
-                      ? 'Reports created'
+                      ? 'Reports completed'
                       : 'Observations completed'
                   }
                   subLabel=""
                   isHiddenSubLabel={true}
                   value={
-                    isWithinReportPeriod
+                    hasPermissionToCreateProgressReports && isWithinReportPeriod
                       ? percentageReportsCompleted
                       : percentageObservationsCompleted
                   }
-                  primaryColour={
-                    (isWithinReportPeriod &&
-                      percentageReportsCompleted === 100) ||
-                    (!isWithinReportPeriod &&
-                      percentageObservationsCompleted === 100)
-                      ? 'successMain'
-                      : 'alertMain'
-                  }
+                  primaryColour={progressBarColour}
                   secondaryColour="textLight"
                   textColour="textDark"
-                />
-              </div>
-            </Card> */}
-
-            <Card className="bg-uiBg mb-4 mt-4 rounded-2xl p-4">
-              <div className="justify-center">
-                {/* Extracted logic for better readability */}
-                {!canAddChildren && showSuccessIcon && (
-                  <div className="mt-6 flex w-full justify-center">
-                    <EmojiYellowSmile className="h-20 w-20" />
-                  </div>
-                )}
-                <ProgressBar
-                  label={`${completionPercentage}%`}
-                  hint={progressHint}
-                  subLabel=""
-                  isHiddenSubLabel={true}
-                  value={completionPercentage}
-                  primaryColour={progressColour}
-                  secondaryColour="textLight"
-                  textColour="textDark"
+                  className="w-full"
                 />
               </div>
             </Card>
 
             {/* Outside report period */}
-            {/* {isWithinReportPeriod &&
+            {!isWithinReportPeriod &&
               !isAllObservationsComplete &&
-              !practitioner?.isPrincipal && <ProgressTabObservationsSummary />} */}
+              !practitioner?.isPrincipal && <ProgressTabObservationsSummary />}
 
             {/* Within report period */}
-            {/* {isWithinReportPeriod && (
+            {isWithinReportPeriod && (
               <>
-                {!isAllReportsComplete && <ProgressTabReportSummary />}
+                {/* Permission view */}
+                {!isAllReportsComplete &&
+                  hasPermissionToCreateProgressReports && (
+                    <ProgressTabReportSummary />
+                  )}
+                {/* No permission view */}
+                {!isAllObservationsComplete &&
+                  !hasPermissionToCreateProgressReports && (
+                    <ProgressTabObservationsSummary />
+                  )}
+
                 {isAllObservationsComplete &&
                   !isAllReportsComplete &&
                   !hasPermissionToCreateProgressReports &&
@@ -431,86 +409,22 @@ export const ChildProgressLanding: React.FC<ChildProgressLandingProps> = ({
                   </>
                 )}
               </>
-            )} */}
-
-            {isWithinReportPeriod && (
-              <>
-                {canAddChildren ? (
-                  <ProgressTabReportSummary />
-                ) : (
-                  !isAllObservationsComplete && (
-                    <ProgressTabObservationsSummary />
-                  )
-                )}
-
-                {!canAddChildren && (
-                  <>
-                    {!hasPermissionToCreateProgressReports ? (
-                      <>
-                        <Alert
-                          type="success"
-                          title="Well done!"
-                          message="You can keep observing children and change your responses."
-                          className="mt-4"
-                        />
-                        <Button
-                          onClick={handleContinueTrackingProgress}
-                          className="mt-4 w-full"
-                          size="small"
-                          color="quatenary"
-                          textColor="white"
-                          type="filled"
-                          icon="PresentationChartBarIcon"
-                          text="Continue tracking progress"
-                        />
-                      </>
-                    ) : (
-                      <div className="report-buttons">
-                        <Button
-                          onClick={generateAllReports}
-                          className="mt-auto w-full"
-                          size="small"
-                          color="quatenary"
-                          textColor="white"
-                          type="filled"
-                          icon={generatingReports ? undefined : 'DownloadIcon'}
-                          text={generateButtonLabel()}
-                          disabled={generatingReports || !isOnline}
-                        />
-                        <Button
-                          onClick={() =>
-                            history.replace(
-                              ROUTES.PROGRESS_VIEW_REPORTS_SUMMARY_SELECT_CLASSROOM_GROUP_AND_AGE_GROUP
-                            )
-                          }
-                          className="mt-4 w-full"
-                          size="small"
-                          color="quatenary"
-                          textColor="quatenary"
-                          type="outlined"
-                          icon="EyeIcon"
-                          text="See Summary"
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
             )}
           </div>
         )}
       <div hidden={true}>
         <div ref={shareRef}>
-          {childReports.map((report) =>
-            report.report.id ? (
-              <div key={report.childId} style={{ letterSpacing: '0.01px' }}>
-                <ProgressCaregiverReportPdf
-                  childId={report.childId}
-                  reportId={report.report.id as string}
-                />
-              </div>
-            ) : null
-          )}
+          {childReports &&
+            childReports.map((report) =>
+              report.report.id ? (
+                <div key={report.childId} style={{ letterSpacing: '0.01px' }}>
+                  <ProgressCaregiverReportPdf
+                    childId={report.childId}
+                    reportId={report.report.id as string}
+                  />
+                </div>
+              ) : null
+            )}
         </div>
       </div>
     </>

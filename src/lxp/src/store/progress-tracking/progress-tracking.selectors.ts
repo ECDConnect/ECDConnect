@@ -166,7 +166,7 @@ export const getSkillsForAgeGroup = (ageGroupId: number) =>
     ): ProgressSkill[] => {
       const ageGroup = ageGroups.find((x) => x.id === ageGroupId);
 
-      if (!ageGroup) {
+      if (!ageGroup || !detailedSkills) {
         return [];
       }
 
