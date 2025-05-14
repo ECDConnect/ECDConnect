@@ -18,7 +18,10 @@ export const ProgressCreateReportSkillsToWorkOnSummary: React.FC<
         className="mb-2"
       />
       {skillsToWorkOn.map((skill) => (
-        <Card className="border-primary my-2 flex flex-col gap-1 rounded-2xl border p-4">
+        <Card
+          key={skill?.skillId}
+          className="border-primary my-2 flex flex-col gap-1 rounded-2xl border p-4"
+        >
           <Typography type="small" color="textMid" text={'Skill:'} />
           <Typography type="body" color="textDark" text={skill.skillName} />
           <Typography type="small" color="textMid" text={'Todo:'} />

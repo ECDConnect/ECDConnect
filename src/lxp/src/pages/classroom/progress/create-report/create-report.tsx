@@ -206,7 +206,7 @@ export const ProgressCreateReport: React.FC = () => {
             (currentStep === 3 && !howCanCaregiverSupport)
           }
         />
-        {currentStep === 3 && (
+        {currentStep === 3 && !!currentReport?.skillsToWorkOn.length && (
           <ProgressCreateReportSkillsToWorkOnSummary
             childFirstname={child?.user?.firstName || ''}
             skillsToWorkOn={currentReport?.skillsToWorkOn || []}
