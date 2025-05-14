@@ -1,5 +1,6 @@
 import { classroomsSelectors } from '@/store/classroom';
 import {
+  Alert,
   BannerWrapper,
   Button,
   CoreRadioGroup,
@@ -23,7 +24,7 @@ export const SelectCategoryToTrack: React.FC = () => {
     progressTrackingSelectors.getProgressTrackingCategories()
   );
 
-  const { currentReportingPeriod, ageGroupsAvailableForTracking } =
+  const { currentReportingPeriod, ageGroupsAvailableForTracking, children } =
     useProgressForChildren();
 
   const [step, setStep] = useState(1);
@@ -42,6 +43,11 @@ export const SelectCategoryToTrack: React.FC = () => {
 
   const filteredCategories = categories.filter((cat) =>
     skills.some((skill) => skill.subCategory.category.id === cat.id)
+  );
+
+  // we need to find the children over 5 from the original list and not filtered
+  const anyChildrenOver5 = children.some(
+    (x) => x.ageInMonths && x.ageInMonths > 60
   );
 
   return (
@@ -101,6 +107,18 @@ export const SelectCategoryToTrack: React.FC = () => {
               }}
             />
           </>
+        )}
+        {anyChildrenOver5 && (
+          <Alert
+            className="mt-4"
+            type={'warning'}
+            messageColor="textDark"
+            title={'Some children are older than 5 years old!'}
+            list={[
+              'Our progress trackers are only for children 5 years old and younger',
+              "Stay tuned, tools for tracking older children's progress are coming soon!",
+            ]}
+          />
         )}
         <Button
           onClick={() => {
