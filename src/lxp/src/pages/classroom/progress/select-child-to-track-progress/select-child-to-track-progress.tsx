@@ -18,7 +18,8 @@ import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 export const SelectChildToTrack: React.FC = () => {
   const history = useHistory();
 
-  const { currentReportingPeriod, childReports } = useProgressForChildren();
+  const { currentReportingPeriod, childReports, children } =
+    useProgressForChildren();
 
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
@@ -68,7 +69,8 @@ export const SelectChildToTrack: React.FC = () => {
     }));
   }, [filteredReports]);
 
-  const anyChildrenOver5 = filteredReports.some(
+  // we need to find the children over 5 from the original list and not filtered
+  const anyChildrenOver5 = children.some(
     (x) => x.ageInMonths && x.ageInMonths > 60
   );
 
