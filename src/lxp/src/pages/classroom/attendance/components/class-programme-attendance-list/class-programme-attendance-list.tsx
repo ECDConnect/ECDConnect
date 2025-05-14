@@ -69,7 +69,8 @@ export const ClassProgrammeAttendanceList: React.FC<
         child &&
         !!child.user &&
         !!child.user.firstName &&
-        !!child.user.surname
+        !!child.user.surname &&
+        !!child.caregiverId
       ) {
         filteredLearners.push(learner);
       }
