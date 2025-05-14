@@ -20,10 +20,7 @@ export const getTableData = ({
   practitioner,
 }: TableDataProps) => {
   const reportData = monthlyReport?.classroomAttendanceReport ?? [];
-  const totalAttendance =
-    monthlyReport?.totalAttendance.filter(
-      (attendance) => attendance.value !== null
-    ) ?? [];
+  const totalAttendance = monthlyReport?.totalAttendance || [];
   const totalAttendanceStatsReport = monthlyReport?.totalAttendanceStatsReport;
 
   const numDays = totalAttendance.length;
@@ -71,7 +68,7 @@ export const getTableData = ({
   ];
 
   totalAttendance.forEach((obj) => {
-    footer.push(obj.value.toString());
+    footer.push(obj.value?.toString() || '*');
   });
 
   let attendanceSum = 0;
