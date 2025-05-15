@@ -129,11 +129,14 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         : new Date();
 
     const uniqueLearners = learners?.filter((object, index, array) => {
+      const child = children?.find((c) => c.userId === object.childUserId);
       return (
+        child &&
+        !!child.caregiverId &&
         index ===
-        array.findIndex(
-          (newObject) => newObject.childUserId === object.childUserId
-        )
+          array.findIndex(
+            (newObject) => newObject.childUserId === object.childUserId
+          )
       );
     });
 

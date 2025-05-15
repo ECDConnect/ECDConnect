@@ -38,6 +38,7 @@ export const ClassProgrammeAttendanceList: React.FC<
     const classroomGroupLearners = classroomGroup.learners.filter((x) => {
       const startedAttendance = new Date(x.startedAttendance);
       startedAttendance.setHours(0, 0, 0, 0);
+      const child = children?.find((c) => c.userId === x.childUserId);
 
       return (
         x.isActive &&
@@ -60,9 +61,7 @@ export const ClassProgrammeAttendanceList: React.FC<
 
     for (const learner of uniqueLearners) {
       const child = children?.find(
-        (child) =>
-          (child.userId === learner.childUserId || child?.user?.id) &&
-          child.isActive
+        (child) => child.userId === learner.childUserId && child.isActive
       );
 
       if (

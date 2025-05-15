@@ -108,11 +108,11 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       setSelectedClassroomGroups(selectedClassroomGroup);
 
       const _allLearners = allLearners.filter((x) => {
-        const child = children?.find((c) => c.userId === x.userId);
+        const child = children?.find((c) => c.userId === x.childUserId);
 
         return (
           child &&
-          child.caregiverId &&
+          !!child.caregiverId &&
           !Boolean(x.stoppedAttendance) &&
           endOfDay.getTime() >= new Date(x.startedAttendance).getTime()
         );
