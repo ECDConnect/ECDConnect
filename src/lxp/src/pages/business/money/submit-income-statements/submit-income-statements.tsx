@@ -129,20 +129,20 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const currentMonthExpenseTotal = useMemo(
     () =>
-      isWalkthrough ? -1700 : getStatementExpenseTotal(currentMonthStatement),
+      isWalkthrough ? -700 : getStatementExpenseTotal(currentMonthStatement),
     [currentMonthStatement, isWalkthrough]
   );
 
   const previousMonthBalance = useMemo(
-    () => (isWalkthrough ? 300.1 : getStatementBalance(previousMonthStatement)),
+    () => (isWalkthrough ? -700 : getStatementBalance(previousMonthStatement)),
     [previousMonthStatement, isWalkthrough]
   );
 
   const lastMonthBalance = isWalkthrough
-    ? 300.1
+    ? -700
     : lastMonthIncomeTotal - lastMonthExpenseTotal;
   const currentMonthBalance = isWalkthrough
-    ? 100.25
+    ? 1100
     : currentMonthIncomeTotal - currentMonthExpenseTotal;
 
   const hasIncomeStatements =
