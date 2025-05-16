@@ -1,0 +1,1 @@
+update "ContentTypeField" set "IsRequired" = false where "ContentTypeId" = 8 and "FieldName" = 'themeLogo';
