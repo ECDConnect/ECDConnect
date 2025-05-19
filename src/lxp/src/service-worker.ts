@@ -14,18 +14,15 @@ clientsClaim();
 precacheAndRoute(self.__WB_MANIFEST);
 
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
-registerRoute(
-  ({ request, url }) => {
-    if (request.mode !== 'navigate') return false;
-    if (url.pathname.startsWith('/_')) return false;
-    if (url.pathname.match(fileExtensionRegexp)) return false;
-    return true;
-  },
-  createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
-);
+registerRoute(({ request, url }) => {
+  if (request.mode !== 'navigate') return false;
+  if (url.pathname.startsWith('/_')) return false;
+  if (url.pathname.match(fileExtensionRegexp)) return false;
+  return true;
+}, createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html'));
 
 registerRoute(
-  ({ url }) => /\.(?:png|ico)$/.test(url.pathname),
+  ({ url }) => url.pathname.endsWith('.png') || url.pathname.endsWith('.ico'),
   new CacheFirst({
     cacheName: 'images',
     plugins: [
@@ -38,11 +35,7 @@ registerRoute(
 );
 
 registerRoute(
-  ({ url }) => {
-    const isJson = url.pathname.endsWith('.json');
-    console.log(`[ServiceWorker] Attempting to cache: ${url.href}, isJson: ${isJson}`);
-    return isJson;
-  },
+  ({ url }) => url.pathname.endsWith('.json'),
   new CacheFirst({
     cacheName: 'json-files',
     plugins: [
