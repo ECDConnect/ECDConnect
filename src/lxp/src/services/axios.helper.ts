@@ -1,5 +1,10 @@
 import { APIs, Config } from '@ecdlink/core';
-import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import type {
+  AxiosInstance,
+  AxiosResponse,
+  AxiosError,
+  AxiosRequestConfig,
+} from 'axios';
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
 import { store } from '@store';
@@ -45,6 +50,8 @@ const updateConfigEndTime = (
   response: any,
   ignoreTimeoutCheck: boolean = false
 ) => {
+  if (!response.config || !response.config.metadata) return; // might be undefined if offline
+
   response.config.metadata.endTime = new Date();
   response.duration =
     response.config.metadata.endTime - response.config.metadata.startTime;
@@ -88,14 +95,14 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
   });
 
   axiosInstance.interceptors.request.use(
-    async (config: any) => {
+    async (config: AxiosRequestConfig) => {
       if (!navigator.onLine) {
-        return new Promise((resolve) => {
-          resolve({
-            data: null,
-            status: 'offline',
-            statusText: 'Browser is offline',
-          });
+        return Promise.resolve({
+          data: null,
+          status: 0,
+          statusText: 'Browser is offline',
+          headers: {},
+          config,
         });
       }
 
@@ -116,7 +123,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
         }
       }
 
-      config.metadata = { startTime: new Date() };
+      (config as any).metadata = { startTime: new Date() };
       return config;
     },
     (error) => {
@@ -168,7 +175,7 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
       return response;
     },
     (error: AxiosError | any) => {
-      if (error.config.baseURL === Config.graphQlApi) {
+      if (!!error.config && error.config.baseURL === Config.graphQlApi) {
         logGraphQL(
           console.error,
           error.request.statusText,
