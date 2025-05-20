@@ -23,7 +23,7 @@ registerRoute(({ request, url }) => {
 }, createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html'));
 
 const log = (msg: string) => {
-  console.log(msg);
+  //console.log(msg);
 };
 
 registerRoute(
