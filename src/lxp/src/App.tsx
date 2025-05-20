@@ -135,6 +135,10 @@ const App: React.FC = () => {
 
         const head = document.getElementsByTagName('head')[0];
         head.insertBefore(favicon_link_html, head.firstChild);
+
+        // Preload favicon to trigger service worker
+        const preloadFavicon = new Image();
+        preloadFavicon.src = theme.images.faviconUrl;
       } catch (e) {}
     }
   }, [theme?.images]);
