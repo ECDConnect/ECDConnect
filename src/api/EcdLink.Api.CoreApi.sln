@@ -47,6 +47,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.IntegrationAPI", "L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.Core.UnitTest", "ECDLink.Core.UnitTest\ECDLink.Core.UnitTest.csproj", "{EC1D4027-5130-44D4-99D8-696825CE0C16}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECDLink.FileStorage", "ECDLink.FileStorage\ECDLink.FileStorage.csproj", "{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,10 @@ Global
 		{EC1D4027-5130-44D4-99D8-696825CE0C16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC1D4027-5130-44D4-99D8-696825CE0C16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC1D4027-5130-44D4-99D8-696825CE0C16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BC0D44A-6F84-4767-80E2-FCAD775DECE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -154,6 +160,7 @@ Global
 		{57F66D59-6E5F-4B4D-94FF-5F35350A2B7C} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}
 		{A621BD98-C0FB-45D3-A2CB-B4378244A349} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}
 		{EC1D4027-5130-44D4-99D8-696825CE0C16} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}
+		{0BC0D44A-6F84-4767-80E2-FCAD775DECE5} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {90B0BAB8-3C6B-478C-989F-51637AD716FC}

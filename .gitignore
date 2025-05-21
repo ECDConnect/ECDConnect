@@ -174,3 +174,4 @@ _data
 /src/api/.idea/*
 /src/api/core-api/appsettings.QA.json
 /src/lxp/public/settings.QA.json
+/src/api/core-api/_Storage/*
