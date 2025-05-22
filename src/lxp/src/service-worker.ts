@@ -7,12 +7,20 @@ import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { PrecacheEntry } from 'workbox-precaching/_types';
 
 declare const self: ServiceWorkerGlobalScope;
 
 clientsClaim();
 
-precacheAndRoute(self.__WB_MANIFEST);
+var wb_manifest = [
+  {
+    revision: null as any as string,
+    url: '/settings.json',
+  } as PrecacheEntry,
+  ...self.__WB_MANIFEST,
+];
+precacheAndRoute(wb_manifest);
 
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 registerRoute(({ request, url }) => {
