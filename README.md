@@ -201,3 +201,41 @@ hosted on Azure infrastructure.
 | **QA**        | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |
 | **STAGING**   | - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |
 | **PRODUCTION**| - 20240927_Message_Coach.sql<br>- 20240930_SystemSettings.sql<br>- 20241002_calendar_event_types.sql<br>- 20241009_ProgrammeDay_Add_CompleteDate.sql | Yes       |
+
+
+## Blob Storage
+There are currently two storage types:  Azure Blob Storage or File System.
+This is specified in the /src/api/core-api/appsettings.json file:
+  "Storage": {
+    "Type": "FileSystem",
+    "AzureBlob": {
+    },
+    "FileSystem": {
+      "Location": "_Storage"
+    }
+  },
+Storage.Type can be either FileSystem or AzureBlob
+Storage.FileSystem.Location is the location for the file system store.  This can be a rooted path, e.g. C:\\Storage or relative path.
+
+If Type is FileSystem, the following configuration should also be applied:
+
+- Tenant table
+  - BlobStorageAddress should be the backend url, e.g. https://api.domain.co.za/storage or https://localhost:5001/storage
+  - ThemePath (if specified) should be be the backend url, e.g. https://api.domain.co.za/storage/theme/mytheme.json
+- Settings.json files
+  - themeUrl should be https://api.domain.co.za/storage/theme/mytheme.json
+
+If Type is AzureBlob:
+
+- Tenant table
+  - BlobStorageAddress should be the blob storage url, e.g. https://mystorage.blob.core.windows.net
+  - ThemePath (if specified) should be be the backend url, e.g. https://mystorage.blob.core.windows.net/theme/mytheme.json
+- Settings.json files
+  - themeUrl should be https://mystorage.blob.core.windows.net/theme/mytheme.json
+
+Make sure that all references for the storage url are correct:
+- ContentValue table
+  Check the Value column and update if necessary
+- Theme file
+  Make sure all urls to other files in the theme are correct.
+

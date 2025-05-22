@@ -9,13 +9,16 @@ namespace ECDLink.Core.Services.Interfaces
     {
         Task<DocumentModel> UploadBase64StringFileAsync(string base64stringFile, string fileName, FileTypeEnum fileType);
         DocumentModel UploadBase64StringFile(string base64stringFile, string fileName, FileTypeEnum fileType);
-        Task<string> UploadFileStream(MemoryStream file, string fileName, FileTypeEnum fileType);
-        Task<byte[]> GetFile(string fileName, FileTypeEnum fileType);
-
-        Task<bool> DeleteFile(string fileName, FileTypeEnum fileType);
+        Task<string> UploadFileStreamAsync(MemoryStream file, string fileName, FileTypeEnum fileType);
+        Task<byte[]> GetFileAsync(string fileName, FileTypeEnum fileType);
+        Task<byte[]> GetFileAsync(string fileName, string fileTypeDescription);
+        Task<bool> DeleteFileAsync(string fileName, FileTypeEnum fileType);
         Task<string> GetFileAsBase64Async(string url);
-        Task<string> GetFileExtensionFromUrl(string url);
-        Task<string> GetMimeType(string extension);
+        string GetFileExtensionFromUrl(string url);
+        string GetMimeType(string extension);
+        string GetMimeTypeFromUrl(string url);
         bool IsImageFileType(string base64stringFile);
+        FileTypeEnum GetFileTypeEnumFromContainer(string container);
+        void OverrideBaseUrl(string baseUrl);
     }
 }

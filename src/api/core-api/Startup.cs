@@ -24,6 +24,7 @@ using ECDLink.DataAccessLayer.Diagnostics;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Development;
 using ECDLink.EGraphQL;
+using ECDLink.FileStorage;
 using ECDLink.Moodle;
 using ECDLink.Notifications;
 using ECDLink.PDFGenerator;
@@ -155,7 +156,11 @@ namespace EcdLink.Api.CoreApi
 
             //PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
 
-            AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
+            var storageType = GetStorageType();
+            if (storageType == "AzureBlob")
+                AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
+            else if (storageType == "FileSystem")
+                FileStorageStartup.ConfigureFileStorageServices(services, Configuration);
 
             DataAccessStartup.ConfigureDataAccessServices(services);
 
@@ -169,7 +174,7 @@ namespace EcdLink.Api.CoreApi
 
             NotificationsStartup.ConfigureNotificationServices(services, Configuration);
 
-            PdfGeneratorStartup.ConfigureAzureStorageServices(services, Configuration);
+            PdfGeneratorStartup.ConfigurePdfGeneratorServices(services, Configuration);
 
             MoodleStartup.ConfigureMoodleServices(services, Configuration);
 
@@ -298,6 +303,15 @@ namespace EcdLink.Api.CoreApi
             aiConnString = aiConfig["ConnectionString"];
             if (!string.IsNullOrEmpty(aiConnString)) return true; ;
             return false;
+        }
+
+        string GetStorageType()
+        {
+            var section = Configuration.GetSection("Storage");
+            if (section == null) return "FileSystem";
+            var type = section["Type"];
+            if (string.IsNullOrEmpty(type)) return "FileSystem";
+            return type;
         }
     }
 }

@@ -49,6 +49,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
+    <ProjectReference Include="..\ECDLink.FileStorage\ECDLink.FileStorage.csproj" />
     <ProjectReference Include="..\ECDLink.PostgresTenancy\ECDLink.PostgresTenancy.csproj" />
     <ProjectReference Include="..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
     <ProjectReference Include="..\Jobs\ECDLink.AutomatedJobs\ECDLink.AutomatedJobs.csproj" />
@@ -67,6 +68,10 @@
   
   <ItemGroup>
     <Folder Include="Middleware\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="ECDLink.FileStorage.csproj" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>
   
