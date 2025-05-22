@@ -27,7 +27,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
         public string AttendanceRegisterLink { get; set; }
-        public int? MaxChildren { get; set; }
         public bool? ConsentForPhoto { get; set; }
         public decimal? ParentFees { get; set; }
         public string LanguageUsedInGroups { get; set; }
@@ -51,8 +50,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual Practitioner Principal { get; set; }
         public Guid? PrincipalHierarchy { get; set; }
         public bool? IsPrincipal { get; set; }
-        public bool? IsFundaAppAdmin { get; set; }
-        public bool? IsTrainee { get; set; }
         public string SigningSignature { get; set; }
         public bool? IsRegistered { get; set; }
         public bool? ShareInfo { get; set; }
@@ -68,14 +65,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal Progress { get; set; }
         public string ProgrammeType { get; set; }
         public bool? IsClubOwner { get; set; }
-        public bool? AttendedChildProgress { get; set; }
-        public bool? AttendedBusinessSkills { get; set; }
         public string LeavingComment { get; set; }
-        public string StipendType { get; set; }
         public string UsePhotoInReport { get; set; }
-        public bool? IsOnStipend { get; set; }
-        public bool? AttendedFirstAidCourse { get; set; }
-        public bool? SetupTraineeInitiated { get; set; }
         public bool? IsCompletedBusinessWalkThrough { get; set; }
         public bool? ClickedCommunityTab { get; set; } = false;
         public DateTime? CommunitySectionViewDate { get; set; }
@@ -84,7 +75,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         public bool IsPrincipalOrAdmin()
         {
-            return (IsPrincipal.HasValue && IsPrincipal.Value) || (IsFundaAppAdmin.HasValue && IsFundaAppAdmin.Value);
+            return IsPrincipal.HasValue && IsPrincipal.Value;
         }
     }
 

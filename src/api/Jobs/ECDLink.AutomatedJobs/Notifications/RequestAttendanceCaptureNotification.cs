@@ -1,16 +1,12 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
-using ECDLink.AutomatedJobs.Anonymise;
 using ECDLink.AutomatedJobs.Cron;
-using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.SmartStart.Reports;
-using ECDLink.SmartStart.Reports.Models;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +31,7 @@ namespace ECDLink.AutomatedJobs.Notifications
             var dbContext = Scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
             var notificationProviderFactory = Scope.ServiceProvider.GetRequiredService<INotificationProviderFactory<ApplicationUser>>();
             var options = Scope.ServiceProvider.GetRequiredService<ISystemSetting<SecurityNotificationOptions>>();
-            var reportService = Scope.ServiceProvider.GetRequiredService<MonthlyAttendanceReport>();
+            //var reportService = Scope.ServiceProvider.GetRequiredService<MonthlyAttendanceReport>();
 
             var startOfWeek = DateTime.UtcNow.StartOfWeek(DayOfWeek.Monday);
 
@@ -58,19 +54,18 @@ namespace ECDLink.AutomatedJobs.Notifications
                                             .Where(x => x.UserId == practitioner.UserId)
                                             .ToList();
 
-                var reports = new List<MonthlyAttendanceReportModel>();
-
+                //      var reports = new List<MonthlyAttendanceReportModel>();
                 foreach (var classroom in classrooms)
                 {
-                    var report = reportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), startOfWeek, DateTime.UtcNow).FirstOrDefault();
+                    //     var report = reportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), startOfWeek, DateTime.UtcNow).FirstOrDefault();
 
-                    if (report != default)
-                    {
-                        reports.Add(report);
-                    }
+                    //    if (report != default)
+                    //     {
+                    //         reports.Add(report);
+                    //    }
                 }
 
-                foreach (var report in reports)
+                /*foreach (var report in reports)
                 {
                     if (report.PercentageAttendance < 100)
                     {
@@ -88,7 +83,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                             .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
                             .SendMessageAsync();
                     }
-                }
+                }*/
             }
         }
     }

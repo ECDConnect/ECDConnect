@@ -266,30 +266,22 @@ class PractitionerService {
             }
             programmeType
             isPrincipal
-            isTrainee
             isRegistered
-            isTrainee
             principalHierarchy
             coachHierarchy
             attendanceRegisterLink
-            maxChildren
             consentForPhoto
             parentFees
             languageUsedInGroups
             signingSignature
             startDate
-            monthSinceFranchisee
             shareInfo
             dateLinked
             dateAccepted
             dateToBeRemoved
             isLeaving
             progress
-            attendedChildProgress
             usePhotoInReport
-            setupTraineeInitiated
-            isOnStipend
-            stipendType
             isCompletedBusinessWalkThrough
           }
         }
@@ -343,32 +335,24 @@ class PractitionerService {
             }
             programmeType
             isPrincipal
-            isTrainee
             isRegistered
-            isTrainee
             principalHierarchy
             coachHierarchy
             coachName
             coachProfilePic
             attendanceRegisterLink
-            maxChildren
             consentForPhoto
             parentFees
             languageUsedInGroups
             signingSignature
             startDate
-            monthSinceFranchisee
             shareInfo
             dateLinked
             dateAccepted
             dateToBeRemoved
             isLeaving
             progress
-            attendedChildProgress
             usePhotoInReport
-            setupTraineeInitiated
-            isOnStipend
-            stipendType
             isCompletedBusinessWalkThrough
             clickedCommunityTab
             communitySectionViewDate
@@ -420,8 +404,6 @@ class PractitionerService {
             id
             userId
             isPrincipal
-            isFundaAppAdmin
-            isTrainee
             programmeType
             principalHierarchy
             isActive
@@ -486,11 +468,8 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
-            attendedChildProgress
             usePhotoInReport
-            isOnStipend
             isCompletedBusinessWalkThrough
-            clubId
             absentees {
               absentDate
               absentDateEnd
@@ -537,8 +516,6 @@ class PractitionerService {
                 dateToBeRemoved
                 isLeaving
                 progress
-                isTrainee
-                attendedChildProgress
                 usePhotoInReport
                 isCompletedBusinessWalkThrough
               }

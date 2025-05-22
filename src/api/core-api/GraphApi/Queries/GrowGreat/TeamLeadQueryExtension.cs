@@ -7,6 +7,7 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -15,7 +16,6 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
@@ -273,14 +273,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 var totalVisitsCompleted = 0;
                 foreach (var item in clinicTeamLeadRecords)
                 {
-                    var league = item.Clinic.Leagues.Where(x => x.IsActive).FirstOrDefault();
-                    if (league != null)
-                    {
-                        clinicNameList.Add(item.Clinic.Name + " (" + league?.League.Name + ")");
-                    } else
-                    {
-                        clinicNameList.Add(item.Clinic.Name);
-                    }
                     clinicIds.Add(item.ClinicId);
                     clinics.Add(new BaseClinicModel
                     {

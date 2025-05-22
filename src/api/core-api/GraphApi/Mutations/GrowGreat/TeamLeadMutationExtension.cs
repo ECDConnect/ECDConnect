@@ -5,7 +5,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clinics;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -124,7 +123,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: applicationUserId);
             var clinicTeamLeadRepo = repoFactory.CreateRepository<ClinicTeamLead>(userContext: applicationUserId);
-            var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: applicationUserId);
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var teamLead = teamLeadRepo.GetById(teamLeadId);
@@ -137,18 +135,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 user.IsActive = false;
                 user.UpdatedDate = DateTime.UtcNow;
                 await userManager.UpdateAsync(user);
-
-                auditInsertRepo.Insert(new IntegrationAudit()
-                {
-                    ChangeType = "Delete",
-                    Entity = "ApplicationUser",
-                    Property = "IsActive",
-                    ValueAfter = "false",
-                    ValueBefore = "true",
-                    UserId = applicationUserId,
-                    RelatedId = user.Id.ToString(),
-                    TenantId = tenantId
-                });
 
                 // Archive clinic team lead records linked to this team lead
                 var clinicTeamLeads = clinicTeamLeadRepo.GetAll().Where(x => x.TeamLeadId == teamLeadId).ToList();

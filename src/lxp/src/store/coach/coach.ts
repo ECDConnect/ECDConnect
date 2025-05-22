@@ -10,7 +10,6 @@ import {
   getCoachByCoachId,
   getCoachByUserId,
   getCoachingCircleTopics,
-  updateCoachClubClicked,
 } from './coach.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
@@ -35,17 +34,7 @@ const coachSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    setThunkActionStatus(builder, updateCoachClubClicked);
     setThunkActionStatus(builder, getCoachByCoachId);
-    builder.addCase(updateCoachClubClicked.fulfilled, (state, action) => {
-      if (state.coach) {
-        state.coach = {
-          ...state.coach,
-          clickedClubTab: true,
-        };
-      }
-      setFulfilledThunkActionStatus(state, action);
-    });
     builder.addCase(getCoachByCoachId.fulfilled, (state, action) => {
       state.coach = action.payload;
       setFulfilledThunkActionStatus(state, action);

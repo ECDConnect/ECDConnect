@@ -1,5 +1,4 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -21,9 +20,6 @@ namespace ECDLink.DataAccessLayer.Entities.Clinics
 
         [ForeignKey(nameof(ClinicId))]
         public virtual Clinic Clinic { get; set; }
-
-        [ForeignKey(nameof(LeagueId))]
-        public virtual League League { get; set; }
     }
 
     public interface ClinicLeagueJoin<TKey>

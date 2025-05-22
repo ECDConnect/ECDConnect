@@ -140,7 +140,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 VisitTypeId = input.VisitType.Id,
-                TraineeId = input.TraineeId,
                 PractitionerId = input.PractitionerId,
                 CoachId = input.CoachId,
                 Risk = input.Risk ?? Constants.GGSettings.normal_risk,
@@ -150,36 +149,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 ActualVisitDate = input.ActualVisitDate,
                 PlannedVisitDate = input.PlannedVisitDate,
                 EventId = input.EventId,
-            };
-        }
-
-        public Visit AddVisitForTrainee(VisitModel input)
-        {
-            var visit = GetTraineeVisitFromInputModel(input);
-            return _visitRepo.Insert(visit);
-        }
-
-        private Visit GetTraineeVisitFromInputModel(VisitModel input)
-        {
-            if (input == null)
-            {
-                return null;
-            }
-
-            return new Visit()
-            {
-                Id = Guid.NewGuid(),
-                IsActive = true,
-                Attended = input.Attended,
-                InsertedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                VisitTypeId = input.VisitType.Id,
-                TraineeId = input.TraineeId,
-                Risk = input.Risk ?? Constants.GGSettings.normal_risk,
-                UpdatedBy = _applicationUserId.ToString(),
-                LinkedVisitId = input.LinkedVisitId,
-                ActualVisitDate = input.ActualVisitDate,
-                PlannedVisitDate = input.PlannedVisitDate
             };
         }
         
@@ -471,10 +440,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             else if (type == Constants.SSSettings.client_practitioner)
             {
                 allVisits = _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == id && x.VisitType.Type == Constants.SSSettings.client_practitioner).OrderBy(y => y.PlannedVisitDate).ToList();
-            }
-            else if (type == Constants.SSSettings.client_trainee)
-            {
-                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId.ToString() == id && x.CoachId == null && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_coach)
             {
@@ -963,18 +928,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         
         public Visit GetVisitForUserForType(string id, string userType, string vType)
         {
-            if (userType == Constants.SSSettings.client_trainee)
-            {
-                if (vType == Constants.SSSettings.visitType_trainee_visit)
-                {
-                    return _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id && x.VisitType.Name == vType && x.VisitType.Type == Constants.SSSettings.client_coach).FirstOrDefault();
-                }
-                else
-                {
-                    return _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id && x.VisitType.Name == vType && x.VisitType.Type == Constants.SSSettings.client_trainee).FirstOrDefault();
-                }
-            }
-
             if (userType == Constants.SSSettings.client_practitioner)
             {
                 return _visitRepo.GetAll().Where(x => x.PractitionerId.ToString() == id && x.VisitType.Name == vType && x.VisitType.Type == Constants.SSSettings.client_practitioner).FirstOrDefault();

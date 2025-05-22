@@ -64,24 +64,6 @@ class CoachService {
               ward
               isActive
             }
-            franchisorId
-            franchisor {
-              siteAddressId
-              siteAddress {
-                id
-                provinceId
-                province {
-                  id
-                  description
-                }
-                name
-                addressLine1
-                addressLine2
-                addressLine3
-                postalCode
-                ward
-              }
-            }
             signingSignature
             isActive
           }
@@ -108,7 +90,6 @@ class CoachService {
           signingSignature
           id
           startDate
-          clickedClubTab
           user {
             id
             userName
@@ -145,29 +126,8 @@ class CoachService {
                 ward
                 isActive
             }
-            franchisorId
-            franchisor {
-                siteAddressId
-                siteAddress {
-                  id
-                  provinceId
-                  province {
-                    id
-                    description
-                  }
-                  name
-                  addressLine1
-                  addressLine2
-                  addressLine3
-                  postalCode
-                  ward
-                  }
-            }
             signingSignature
             isActive
-            traineeVisits {
-              id
-            }
             practitionerVisits {
               id
             }
@@ -229,29 +189,6 @@ class CoachService {
     }
 
     return true;
-  }
-
-  async updateCoachClubClicked(userId: string): Promise<boolean> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<{
-      data: { updateCoachClubClicked: boolean };
-      errors?: {};
-    }>(``, {
-      query: `
-        mutation updateCoachClubClicked ($userId: String) {          
-          updateCoachClubClicked( userId: $userId )    
-        }  
-      `,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200 || response.data.errors) {
-      throw new Error('Change failed - Server connection error');
-    }
-
-    return response.data.data.updateCoachClubClicked;
   }
 
   async GetAllCoachingCircleClubsForCoachserId(

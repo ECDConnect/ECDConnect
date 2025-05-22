@@ -27,7 +27,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     {
         public string PhoneNumber { get; set; }
         public SiteAddressModel SiteAddress { get; set; }
-        public GrowGreatLeagueModel League { get; set; }
         public List<TeamLeadModel> TeamLeads { get; set; }
         public List<ClinicMemberModel> ClinicMembers { get; set; }
         public ClinicPointsModel Points { get; set; }
@@ -45,12 +44,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 
             TeamLeads = clinic.TeamLeads.Select(x => new TeamLeadModel(x.TeamLead, x.WelcomeMessage)).ToList();
             ClinicMembers = clinic.HealthCareWorkers.Select(x => new ClinicMemberModel(x)).ToList();
-
-            var league = clinic.Leagues.FirstOrDefault(x => x.IsActive);
-            if (league != null) 
-            {
-                League = new GrowGreatLeagueModel(league.League);
-            }
 
             Points = points;
         }

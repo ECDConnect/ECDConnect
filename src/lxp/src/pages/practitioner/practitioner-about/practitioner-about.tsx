@@ -527,14 +527,9 @@ export const PractitionerAbout: React.FC = () => {
         renderBorder
         renderOverflow={false}
         onBack={() => {
-          history.push(
-            isFromCommunityWelcome
-              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              : ROUTES.PRACTITIONER.PROFILE.ROOT,
-            {
-              isFromCommunityWelcome: false,
-            } as PractitionerAboutRouteState
-          );
+          history.push(ROUTES.PRACTITIONER.PROFILE.ROOT, {
+            isFromCommunityWelcome: false,
+          } as PractitionerAboutRouteState);
         }}
         displayOffline={!isOnline}
       >

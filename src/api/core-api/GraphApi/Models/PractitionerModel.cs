@@ -3,7 +3,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
+namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class PractitionerModel
     {
@@ -11,7 +11,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public Guid UserId { get; set; }
         public bool? IsPrincipal { get; set; }
         public bool? IsFundaAppAdmin { get; set; }
-        public bool? IsTrainee { get; set; }
         public Guid? PrincipalHierarchy { get; set; }
         public bool IsActive { get; set; }
         public Guid? CoachHierarchy { get; set; }
@@ -29,21 +28,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string ProgrammeType { get; set; }
         public virtual SiteAddress SiteAddress { get; set; }
         public string UsePhotoInReport { get; set; }
-        public bool? AttendedChildProgress { get; set; }
-        public bool? IsOnStipend { get; set; }
         public bool? IsCompletedBusinessWalkThrough { get; set; }
-        public bool? IsNewInClub { get; set; }
-        public Guid? ClubId { get; set; }
-        public string ClubName { get; set; }
         public string AttendanceRegisterLink { get; set; }
-        public int? MaxChildren { get; set; }
         public bool? ConsentForPhoto { get; set; }
         public decimal? ParentFees { get; set; }
         public string LanguageUsedInGroups { get; set; }
         public DateTime? StartDate { get; set; }
-        public int? MonthSinceFranchisee { get; set; }
-        public bool? SetupTraineeInitiated { get; set; }
-        public string StipendType { get; set; }
         public int DaysAbsentLastMonth { get; set; } = 0;
         public bool IsOnLeave { get; set; } = false;
         public bool? ClickedCommunityTab { get; set; }

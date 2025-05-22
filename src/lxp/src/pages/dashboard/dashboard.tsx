@@ -48,13 +48,10 @@ import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
-import { traineeThunkActions } from '@/store/trainee';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { CommunityRouteState } from '../community-old/community.types';
-import { coachSelectors } from '@/store/coach';
 import { childrenThunkActions } from '@/store/children';
 
 import {
@@ -84,7 +81,6 @@ import { PermissionsNames } from '../principal/components/add-practitioner/add-p
 const { version } = require('../../../package.json');
 
 export interface DashboardRouteState {
-  isFromTraineeFlow?: boolean;
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
 }
@@ -100,7 +96,6 @@ export const Dashboard: React.FC = () => {
     calendarEnabled,
     classroomActivitiesEnabled,
     progressEnabled,
-    trainingEnabled,
   } = useTenantModules();
 
   const appName = tenant?.tenant?.applicationName;
@@ -111,7 +106,6 @@ export const Dashboard: React.FC = () => {
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const coach = useSelector(coachSelectors.getCoach);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -132,7 +126,6 @@ export const Dashboard: React.FC = () => {
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
 
-  const isFirstTimeCommunitySection = !coach?.clickedClubTab;
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
@@ -148,11 +141,6 @@ export const Dashboard: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
-  const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
-  const planActivitiesPermission = practitioner?.permissions?.find(
-    (item) =>
-      item?.permissionName === PermissionsNames.plan_classroom_actitivies
-  );
 
   const getPointsToDoItems = useCallback(async () => {
     appDispatch(
@@ -207,14 +195,6 @@ export const Dashboard: React.FC = () => {
       practitioner?.principalHierarchy
     ) {
       history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
-    }
-  }, []);
-
-  // Sync the coach data -> TODO make a better sync method
-  useEffect(() => {
-    if (isCoach) {
-      appDispatch(traineeThunkActions.syncCoachSmartSpaceVisitData());
-      appDispatch(traineeThunkActions.syncTraineeFranchisorAgreementData());
     }
   }, []);
 
@@ -512,10 +492,6 @@ export const Dashboard: React.FC = () => {
     }
   }, [practitioner?.userId]);
 
-  const currentReportingPeriod = useSelector(
-    classroomsSelectors.getCurrentProgressReportPeriod()
-  );
-
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationNames.Messages,
@@ -671,32 +647,6 @@ export const Dashboard: React.FC = () => {
           },
         ]
       : []),
-    {
-      name: NavigationNames.Community.Community,
-      icon: styles.communityIconName,
-      current: false,
-      showDivider: true,
-      nestedChildren: [
-        {
-          name: NavigationNames.Community.Community,
-          href: isFirstTimeCommunitySection
-            ? ROUTES.COMMUNITY.WELCOME
-            : ROUTES.COMMUNITY.ROOT,
-          params: { isFromDashboard: true } as CommunityRouteState,
-          onNavigation: onNavigation,
-          current: false,
-        },
-        {
-          name: NavigationNames.Community.Resources,
-          href: isFirstTimeCommunitySection
-            ? ROUTES.COMMUNITY.WELCOME
-            : ROUTES.COMMUNITY.ROOT,
-          params: { isFromDashboard: true } as CommunityRouteState,
-          onNavigation: onNavigation,
-          current: false,
-        },
-      ],
-    },
     // {
     //   name: NavigationNames.Training,
     //   href: ROUTES.TRAINING,

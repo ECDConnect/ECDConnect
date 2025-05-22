@@ -82,9 +82,6 @@ export default function PractitionerPanelEdit({
           shouldValidate: true,
         }
       );
-      practitionerSetValue('maxChildren', practitioner.maxChildren ?? 0, {
-        shouldValidate: true,
-      });
       practitionerSetValue(
         'consentForPhoto',
         practitioner.consentForPhoto ?? false,
@@ -105,23 +102,6 @@ export default function PractitionerPanelEdit({
       practitionerSetValue(
         'startDate',
         practitioner.startDate ? new Date(practitioner.startDate) : undefined,
-        {
-          shouldValidate: true,
-        }
-      );
-      practitionerSetValue(
-        'monthSinceFranchisee',
-        practitioner.monthSinceFranchisee ?? 0,
-        {
-          shouldValidate: true,
-        }
-      );
-      practitionerSetValue('isTrainee', practitioner.isTrainee ?? false, {
-        shouldValidate: true,
-      });
-      practitionerSetValue(
-        'isFundaAppAdmin',
-        practitioner.isFundaAppAdmin ?? false,
         {
           shouldValidate: true,
         }
@@ -203,19 +183,12 @@ export default function PractitionerPanelEdit({
       UserId: practitioner.userId,
       SiteAddressId: siteAddressId !== '' ? siteAddressId : null,
       AttendanceRegisterLink: practitionerForm.attendanceRegisterLink,
-      MaxChildren:
-        practitionerForm.maxChildren && +practitionerForm.maxChildren,
       ConsentForPhoto: practitionerForm.consentForPhoto,
       ParentFees: practitionerForm.parentFees && +practitionerForm.parentFees,
       LanguageUsedInGroups: practitionerForm.languageUsedInGroups,
       StartDate: practitionerForm.startDate,
-      MonthSinceFranchisee:
-        practitionerForm.monthSinceFranchisee &&
-        +practitionerForm.monthSinceFranchisee,
       IsActive: true,
       IsPrincipal: practitionerForm.isPrincipal,
-      IsTrainee: practitionerForm.isTrainee,
-      IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
       CoachHierarchy:
         practitionerForm.coachHierarchy !== ''
           ? practitionerForm.coachHierarchy

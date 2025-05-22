@@ -267,19 +267,12 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       UserId: userId,
       SiteAddressId: siteAddressId,
       AttendanceRegisterLink: practitionerForm.attendanceRegisterLink,
-      MaxChildren:
-        practitionerForm.maxChildren && +practitionerForm.maxChildren,
       ConsentForPhoto: practitionerForm.consentForPhoto,
       ParentFees: practitionerForm.parentFees && +practitionerForm.parentFees,
       LanguageUsedInGroups: practitionerForm.languageUsedInGroups,
       StartDate: practitionerForm.startDate,
-      MonthSinceFranchisee:
-        practitionerForm.monthSinceFranchisee &&
-        +practitionerForm.monthSinceFranchisee,
       IsActive: true,
       IsPrincipal: practitionerForm.isPrincipal,
-      IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
-      IsTrainee: practitionerForm.isTrainee,
       CoachHierarchy:
         practitionerForm.coachHierarchy !== ''
           ? practitionerForm.coachHierarchy

@@ -31,7 +31,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
-        private IGenericRepository<Trainee, Guid> _traineeRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
         private UserLicenseManager _userLicenseManager;
@@ -64,7 +63,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
-            _traineeRepo = _repoFactory.CreateRepository<Trainee>(userContext: _applicationUserId);
             _practitionerRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
         }
 
@@ -201,51 +199,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return visit;
         }
-        public Boolean AddTraineeVisitData(CMSVisitDataInputModel input)
-        {
-
-            if (input.VisitData.Sections == null)
-            {
-                var _section = new CMSVisitSection();
-                _section.VisitSection = "";
-                _section.Questions = new List<CMSQuestion>();
-
-                var _question = new CMSQuestion();
-                _question.Question = "";
-                _question.Answer = "";
-                _section.Questions.Add(_question);
-                input.VisitData.Sections = new CMSVisitSection[] { _section };
-            }
-
-            // first add all your questions and answers
-            foreach (CMSVisitSection section in input.VisitData.Sections)
-            {
-                foreach (CMSQuestion question in section.Questions)
-                {
-                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
-                    if (ValidateInsertRecord(visitData))
-                    {
-                        _visitDataRepo.Insert(visitData);
-                    }
-                }
-            }
-
-            List<string> sections = new List<string>();
-            sections.Add(Constants.SSSettings.ss_programme);
-            sections.Add(Constants.SSSettings.ss_health);
-            sections.Add(Constants.SSSettings.ss_safety);
-
-            var completedSections = _visitDataRepo.GetAll()
-                                       .Where(x => x.VisitId == Guid.Parse(input.VisitId) && 
-                                                x.VisitName == Constants.SSSettings.smart_space_checklist &&
-                                                sections.Contains(x.VisitSection))
-                                       .Select(y => y.VisitSection).Distinct().ToList();
-            if (completedSections.Count == 3)
-            {
-                MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
-            }
-            return true;
-        }
+      
         public Visit MarkChecklistVisitStatus(Guid visitId)
         {
             int programmeCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == Constants.SSSettings.ss_programme).Count();
@@ -298,40 +252,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         _visitDataRepo.Insert(visitData);
                     }
                 }
-            }
-
-            //mark the visit as 'attended' once the sections are completed
-            var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.coach_smartspace_check).Select(y => y.VisitSection).Distinct().ToList();
-
-            if (completedSections.Count >= 10)
-            {
-                var trainee = _traineeRepo.GetByUserId(input.TraineeId);
-                var smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId.Value, Constants.SSSettings.ss_smart_space_licence);
-
-                // when the smart space checklist is completed, we activate the smartspace license
-                if (smartSpaceLicense == null)
-                {
-                    _userLicenseManager.AddSmartSpaceLicense(trainee.UserId.Value, DateTime.Now);
-                } 
-                else
-                {
-                    _userLicenseManager.UpdateSmartSpaceLicense(trainee.UserId.Value, DateTime.Now);
-                }
-
-                // update the visit record to show attended/completed 
-                var entityToUpdate = _visitRepo.GetById(new Guid(input.VisitId));
-                entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId.ToString();
-                entityToUpdate.Attended = true;
-                entityToUpdate.ActualVisitDate = DateTime.Now;
-                _visitRepo.Update(entityToUpdate);
-
-                return entityToUpdate;
-            }
-            else if (completedSections.Count == 3)
-            {
-                var nextStepsComment = input.VisitData.Sections.FirstOrDefault(x => x.VisitSection == "Discuss next steps")?.Questions.FirstOrDefault()?.Answer;
-                _userLicenseManager.DeclineSmartSpaceLicense(Guid.Parse(input.TraineeId), DateTime.Now, nextStepsComment ?? "");           
             }
 
             return new Visit();
@@ -1108,18 +1028,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                                                   x.VisitSection == visitData.VisitSection &&
                                                                   x.Question == visitData.Question).FirstOrDefault();
             return record;
-        }
-        public List<string> GetVisitStatusForSSChecklist(Guid traineeId)
-        {
-            List<string> vData = new List<string>();
-                vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.TraineeId == traineeId).OrderBy(x => x.PlannedVisitDate)
-                join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && (y.Name == Constants.SSSettings.visitType_smart_space_checklist)) on visit.VisitTypeId equals visitType.Id
-                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                select visitData
-            ).Select(y => y.VisitSection).Distinct().ToList();
-
-            return vData;
         }
         public List<PractitionerNotes> GetVisitNotesForPractitioner(string userId)
         {

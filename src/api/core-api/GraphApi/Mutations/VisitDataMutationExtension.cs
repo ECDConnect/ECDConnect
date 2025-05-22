@@ -41,11 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var pqaRating = visitDataManager.CalculateAndSaveReAccreditationRating(visit);
                     visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, visit.PractitionerId.Value, visit);
                 }
-            }
-            else if (input.TraineeId != null)
-            {
-                visitDataManager.AddTraineeVisitData(input);
-            }           
+            }     
 
             return true;
         }
@@ -63,7 +59,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool AddCoachVisitData([Service] IIntegrationService integrationService, [Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
+        public bool AddCoachVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
             Visit visit = visitDataManager.AddCoachData(input);
             return true;

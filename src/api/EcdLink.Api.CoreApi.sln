@@ -27,8 +27,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.Development", "Libr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.UrlShortner", "Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj", "{8F93687E-1665-4343-8DAE-2321D3845E86}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.SmartStart", "Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj", "{022F675F-FBB9-4DCE-B5B5-CC99D1069BC2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.ContentManagement", "Libraries\Modules\DataAccess\ECDLink.ContentManagement\ECDLink.ContentManagement.csproj", "{E5A9B4A8-DF8A-4B3E-B096-B8572BF5C2F9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.PDFGenerator", "Libraries\Modules\ECDLink.PDFGenerator\ECDLink.PDFGenerator.csproj", "{827EFA96-972B-438C-B39C-87134465C8E2}"
@@ -42,8 +40,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.AutomatedJobs", "Jobs\ECDLink.AutomatedJobs\ECDLink.AutomatedJobs.csproj", "{C8A64C57-4865-4707-AFDB-6A43F1A093E2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.Moodle", "ECDLink.Moodle\ECDLink.Moodle.csproj", "{57F66D59-6E5F-4B4D-94FF-5F35350A2B7C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.IntegrationAPI", "Libraries\Modules\ECDLink.IntegrationAPI\ECDLink.IntegrationAPI.csproj", "{A621BD98-C0FB-45D3-A2CB-B4378244A349}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.Core.UnitTest", "ECDLink.Core.UnitTest\ECDLink.Core.UnitTest.csproj", "{EC1D4027-5130-44D4-99D8-696825CE0C16}"
 EndProject

@@ -2,7 +2,6 @@
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Model;
-using HotChocolate.Data.Filters.Expressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

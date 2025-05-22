@@ -1,48 +1,32 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.Abstractrions.Constants;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Licenses;
-using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {
     public class UserLicenseManager
     {
-        private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private Guid _applicationUserId;
-        private HierarchyEngine _hierarchyEngine;
-        private readonly INotificationService _notificationService;
-
+  
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
-        private ApplicationUserManager _userManager;
 
         public UserLicenseManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            [Service] INotificationService notificationService,
-            ApplicationUserManager userManager,
             HierarchyEngine hierarchyEngine
             )
         {
-            _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _hierarchyEngine = hierarchyEngine;
-            _notificationService = notificationService;
-            _userManager = userManager;
 
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
 
@@ -71,8 +55,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 if (license.LicenseType.Name == Constants.SSSettings.ss_smart_space_licence)
                 {
                     license.DelicensedComment = input.DelicensedComment;
-                    license.CollectedSSPlaykit = input.CollectedSSPlaykit;
-                    license.CollectedSSHandbook = input.CollectedSSHandbook;
                 }
 
                 _licenseRepo.Update(license);
@@ -93,23 +75,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     LicenseDate = dateAwarded,
                     InsertedDate = DateTime.UtcNow,
                     IsActive = true,
-                    CollectedSSHandbook = false,
-                    CollectedSSPlaykit = false,
                     DeclinedDate = null, //if previously declined, clear this detail
                     DeclinedCommentsSteps = null,
                 };
 
                 return _licenseRepo.Insert(input);
-                //List<TagsReplacements> replacements = new List<TagsReplacements>();
-                //replacements.Add(new TagsReplacements()
-                //{
-                //    FindValue = "DueDate",
-                //    ReplacementValue = DateTime.Now.AddDays(21).ToShortDateString(),
-                //});
-
-                //var userToSend =  _userManager.FindByIdAsync(userId.ToString()).Result;
-                //_notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now.Date, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
-
             }
 
             return null;
@@ -147,8 +117,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     LicenseType = licenseType,
                     InsertedDate = DateTime.UtcNow,
                     IsActive = true,
-                    CollectedSSHandbook = false,
-                    CollectedSSPlaykit = false,
                     DeclinedDate = dateDeclined,
                     DeclinedCommentsSteps = NextStepsComments, 
                     LicenseDate = dateDeclined

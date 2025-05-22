@@ -19,7 +19,6 @@ namespace EcdLink.Api.CoreApi
         public static class SSSettings
         {
             public const string client_practitioner = "practitioner";
-            public const string client_trainee = "trainee";
             public const string client_coach = "coach";
 
             // Visit types
@@ -34,15 +33,10 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_re_accreditation_1 = "re_accreditation_1";
             public const string visitType_re_accreditation_follow_up = "re_accreditation_follow_up";
 
-            public const string visitType_smart_space_checklist = "smart_space_checklist";
-            public const string visitType_startup_support_agreement = "startup_support_agreement";
             public const string visitType_self_assessment = "self_assessment";
 
-            public const string visitType_trainee_visit = "trainee_visit";
             public const string visitType_practitioner_visit = "practitioner_visit";
             public const string visitType_practitioner_call = "practitioner_call";
-            public const string visitType_coach_franchisee_agreement = "franchisee_agreement";
-
             public const string answer_yes = "true";
             public const string answer_no = "false";
 
@@ -411,7 +405,6 @@ namespace EcdLink.Api.CoreApi
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
 
-            // integration values
             public const string own_property = "Do you own the property where you will run your SmartStart programme?";
             public const string number_assistants = "How many assistants will attend every session?";
             public const string capacity = "Capacity";
@@ -730,90 +723,7 @@ namespace EcdLink.Api.CoreApi
             public const string child_docs = "Child documentation";
             public const string child_road_to_health = "Road to Health Book";
         }
-        public static class SSIntegrationSettings
-        {
-            //Franchisee Queries
-            public const string SSPractitioner = "Practitioner";
-            public const string SLPractitioner = "Franchisee";
-            public const string SLPractitionerQueryAll = SLPractitioner + QueryAll;
-            public const string SLPractitionerQueryByGuid = SLPractitioner + QueryByGuid;
-            public const string SLPractitionerUpdate = SLPractitioner + UpdateSingular;
-            //Coach Queries
-            public const string SSCoach = "Coach";
-            public const string SLCoach = "Coach";
-            //Franchisor Queries
-            public const string SSFranchisor = "Franchisor";
-            public const string SLFranchisor = "Franchisor";
-            //Child Queries
-            public const string SSChild = "Child";
-            public const string SLChild = "Child";
-            //Caregiver Queries
-            public const string SSCaregiver = "Caregiver";
-            public const string SLCaregiver = "Caregiver";
-            //Trainee Queries
-            public const string SSTrainee = "Trainee";
-            public const string SLTrainee = "Trainee";
-            //Address Queries
-            public const string SSAddress = "SiteAddress";
-            public const string SLAddress = "Address";
-            //Record Queries
-            public const string SSRecordChange = "";
-            public const string SLRecordChange = "RecordChange";
-            //Column Queries
-            public const string SSColumnChange = "";
-            public const string SLColumnChange = "ColumnChange";
-            //Document Queries
-            public const string SSDocument = "Document";
-            public const string SLDocument = "Document";
-            //DocumentType Queries
-            public const string SSDocumentType = "DocumentType";
-            public const string SLDocumentType = "DocumentType";
-            //IncomeStatement Queries
-            public const string SSIncomeStatementIncome = "StatementsIncome";
-            public const string SLIncomeStatementIncome = "IncomeStatement";
-            public const string SSIncomeStatementExpense = "StatementsExpense";
-            public const string SLIncomeStatementExpense = "IncomeStatement";
-            //ChildAttendanceRegister Queries
-            public const string SSChildAttendanceRegister = "Attendance";
-            public const string SLChildAttendanceRegister = "ChildAttendanceRegister";
-            // Child Progress
-            public const string SSChildProgressReport = "ChildProgressReport";
-            //Note Queries
-            public const string SSNote = "Note";
-            public const string SLNote = "Note";
-            //Club data Queries
-            public const string SSClub = "Club";
-            public const string SLClub = "Club";
-            public const string SSClubMeeting = "ClubMeeting";
-            public const string SLClubMeeting = "ClubMeeting";
-            public const string SSClubMeetingRegister = "ClubMeetingRegister";
-            public const string SLClubMeetingRegister = "ClubMeetingRegister";
-            //PQA
-            public const string SSPQA = "PQA";
-            public const string SLPQA = "PQA";
-            //Re-accreditation
-            public const string SSAnnualAccreditation = "AnnualAccreditation";
-            public const string SLAnnualAccreditation = "AnnualAccreditation";
-            //SmartSpaceVisits
-            public const string SSSmartSpaceVisit = "SmartSpaceVisit";
-            public const string SLSmartSpaceVisit = "SmartSpaceVisit";
-
-            public const string SLLeagues = "League";
-
-            //Additional API Switches
-            public const string QueryAll = "/Query";
-            public const string Singular = "/{{Guid}}";
-            public const string QueryByGuid = "/Query/{{Guid}}";
-            public const string ColumnsMetadata = "/Columns";
-            public const string UpdateMultiple = "/Multiple";
-            public const string UpdateSingular = "/{{Guid}}";
-            public const string CreateMultiple = "/Multiple";
-            public const string CreateSingular = "/";
-            public const string DocumentSendLength = "20";
-            public const string IntegrationSystem = "Smartlink";
-            public const string Upsert = "/Upsert";
-
-        }
+    
         public static class PointsEngineSettings
         {
             public const string client_registration = "Client Registration";
@@ -968,82 +878,6 @@ namespace EcdLink.Api.CoreApi
             public const string circle_meetings_held = "Last coaching circle held: ";
 
             public const string meeting_type_coach_circle = "coaching_circle";
-        }
-        public static class ClubSettings
-        {
-            public const string meeting_type_club_meeting = "club_meeting";
-            public const string meeting_type_play_day = "play_day";
-            public const string meeting_type_story_day = "story_day";
-            public const string meeting_type_end_of_year_celebration = "end_of_year_celebration";
-            public const string meeting_type_open_day = "open_day";
-            public const string meeting_type_caregiver_meeting = "caregiver_meeting";
-            public const string meeting_type_other = "other";
-
-            public const string calendar_club_monthly_meeting = "Club Monthly Meeting";
-
-            public const string no_club_leader = "No club leader";
-            public const string contact_club_leader = "Contact club leader";
-            public const string contact_club_leader_name = "Contact ";
-            public const string choose_club_leader = "Choose a new club leader";
-            public const string assign_club_leader = "Assign club leader";
-            public const string not_accepted_club_leader = "Club leader has not accepted agreement";
-            public const string not_enough_club_members = "Not enough club members";
-            public const string contact_club_members = "Contact club members";
-            public const string add_members = "Add members";
-            public const string too_many_club_members = "Too many club members";
-            public const string create_club = "Create an additional club";
-            public const string club_leader_months = " has been a club leader for 6 or more months";
-            public const string missing_register = "Missing club meeting register";
-            public const string missing_register_for_month = " club meeting register";
-            public const string club_attendance = "% club attendance in ";
-            public const string new_club = "New club";
-            public const string name_purple = "Purple";
-            public const string club_purple = "Purple club";
-            public const string club_not_in_league = "Club not in league";
-            public const string name_new_stars = "New Stars";
-            public const string name_rising_stars = "Rising Stars";
-            public const string top_of_the_league = "Top of the league";
-            public const string points_earned = " points earned in ";
-            public const string coach_meeting_attended = ", Attend club meeting";
-            public const string coach_attend_first_meeting = ", Attend first club meeting";
-            public const string first_meeting_attended = ", Attended first club meeting";
-            public const int purple_club_max_points = 2200;
-            public const int non_purple_club_max_points = 2000;
-
-            public const string leave_no_one_behind = "Leave no one behind";
-            public const string host_family_days = "Host family days";
-            public const string child_progress_reports = "Complete child progress reports";
-            public const string capture_child_attendance = "Capture child attendance";
-            public const string meet_regularly = "Meet regularly";
-            public const string be_creative = "Be creative";
-            public const string sub_caregiver_meeting = "Caregiver meeting";
-            public const string sub_progress_tracking = "Progress tracking";
-
-            public const string document_success = "Image completed";
-            public const string document_verified = "Image verified";
-            public const string document_in_complete = "Image incomplete";
-            public const string document_waiting_verified = "Image uploaded, waiting for verification";
-            public const string document_images_add = "Images added";
-
-            public const string not_completed = "Not completed";
-
-            public static readonly int[] allowed_months = { 4,5,6,7,8,9,10,11 };
-
-            public const int warning_start_800 = 1;
-            public const int warning_end_800 = 599;
-
-            public const int success_start_800 = 600;
-            public const int success_end_800 = 800;
-
-            public const string workflow_upload_type = "Document";
-            public const string workflow_status_upload_type = "Verified";
-            public const string activity_upload_type = "ClubActivityUpload";
-
-            public const string upload_type_be_creative = "BeCreative";
-            public const string upload_type_family_days = "FamilyDays";
-
-            public const string first_reporting_period = "\"reportingPeriod\":\"First\"";
-
         }
 
         public static class PortalSettings

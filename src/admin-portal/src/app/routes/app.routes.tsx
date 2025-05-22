@@ -32,7 +32,6 @@ import HealthCareWorkers from '../pages/users/sub-pages/health-care-worker/healt
 import Infants from '../pages/users/sub-pages/infant/infant';
 import Mothers from '../pages/users/sub-pages/mother/mother';
 import Practitioners from '../pages/users/sub-pages/practitioners/practitioners';
-import Franchisors from '../pages/users/sub-pages/franchisors/franchisors';
 import Users from '../pages/users/users';
 import Clinics from '../pages/users/sub-pages/clincs/clinics';
 import TeamLeads from '../pages/users/sub-pages/team-leads/team-leads';
@@ -264,7 +263,6 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/roles`} component={Roles}></Route>
       <Route path={ROUTES.USERS.VIEW_USER} component={ViewUser}></Route>
       <Route path={ROUTES.USERS.ADMINS} component={ApplicationAdmins}></Route>
-      <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>
       <Route path={`/users/clinics`} component={Clinics}></Route>

@@ -60,8 +60,6 @@ export const PractitionerDelicensed: React.FC<PractitionerDelicensedProps> = ({
           userId: practitioner?.userId,
           delicensedDate: new Date(),
           delicensedComment: additionalNotes,
-          collectedSSHandbook: handbookReturned,
-          collectedSSPlaykit: playkitReturned,
         })
       );
       history.push(ROUTES.COACH.PRACTITIONERS);

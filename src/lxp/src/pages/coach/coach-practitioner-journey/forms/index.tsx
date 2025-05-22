@@ -675,13 +675,6 @@ export const Form = ({
         )
       )?.answer as string[] | [];
 
-    const collectedSSPlaykit = collectedDocsQuestions.some((answer) =>
-      answer.endsWith('SmartStart playkit')
-    );
-    const collectedSSHandbook = collectedDocsQuestions.some((answer) =>
-      answer.endsWith('SmartStart handbook')
-    );
-
     if (!!practitioner?.userId) {
       appDispatch(
         deActivatePractitioner({
@@ -696,8 +689,6 @@ export const Form = ({
           userId: practitioner?.userId,
           delicensedDate: new Date(),
           delicensedComment: leavingComment,
-          collectedSSHandbook,
-          collectedSSPlaykit,
         })
       );
     }

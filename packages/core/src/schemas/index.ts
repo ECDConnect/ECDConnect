@@ -26,7 +26,6 @@ export * from './settings';
 export * from './navigation';
 export * from './reason-for-leaving';
 export * from './relation';
-export * from './franchisor';
 export * from './principal';
 export * from './team-lead';
 export * from './clinic';

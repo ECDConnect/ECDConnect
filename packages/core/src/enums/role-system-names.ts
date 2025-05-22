@@ -1,7 +1,6 @@
 export enum RoleSystemNameEnum {
   // OA/WL
   Coach = 'Coach',
-  Franchisor = 'Franchisor',
   Practitioner = 'Practitioner',
   Principal = 'Principal',
   Child = 'Child',
@@ -16,7 +15,6 @@ export enum RoleSystemNameEnum {
 export enum RoleDefaultNameEnum {
   // OA/WL
   Coach = 'Coach',
-  Franchisor = 'Franchisor',
   Practitioner = 'Practitioner',
   Principal = 'Principal',
   Child = 'Child',

@@ -4,7 +4,6 @@ import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { traineeSelectors } from '@/store/trainee';
 import { WhatsappCall } from '../contact/whatsapp-call';
 import ROUTES from '@routes/routes';
 import { format } from 'date-fns';

@@ -68,8 +68,6 @@ namespace ECDLink.DataAccessLayer.Entities
         public bool isAdminRegistered { get; set; }
 
         [NotMapped]
-        public virtual Franchisor franchisorObjectData { get; set; }
-        [NotMapped] 
         public virtual Coach coachObjectData { get; set; }
         [NotMapped]
         public virtual Practitioner principalObjectData { get; set; }
@@ -77,9 +75,6 @@ namespace ECDLink.DataAccessLayer.Entities
         public virtual Practitioner practitionerObjectData { get; set; }
         //[NotMapped] 
         //public virtual Child childObjectData { get; set; }
-        [NotMapped] 
-        public virtual Trainee traineeObjectData { get; set; }
-
         public override DateTimeOffset? LockoutEnd { get => base.LockoutEnd; set => base.LockoutEnd = value; }
 
         [GraphQLIgnore]

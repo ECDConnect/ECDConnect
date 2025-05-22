@@ -5,7 +5,6 @@ using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
@@ -89,7 +88,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var hcwRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: applicationUserId);
-            var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: applicationUserId);
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var hcw = hcwRepo.GetById(hcwId);
@@ -102,18 +100,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 user.IsActive = false;
                 user.UpdatedDate = DateTime.UtcNow;
                 await userManager.UpdateAsync(user);
-
-                auditInsertRepo.Insert(new IntegrationAudit()
-                {
-                    ChangeType = "Delete",
-                    Entity = "ApplicationUser",
-                    Property = "IsActive",
-                    ValueAfter = "false",
-                    ValueBefore = "true",
-                    UserId = applicationUserId,
-                    RelatedId = user.Id.ToString(),
-                    TenantId = tenantId
-                });
 
                 // Archive hcw
                 hcw.IsActive = false;

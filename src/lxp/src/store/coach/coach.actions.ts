@@ -18,7 +18,6 @@ import { CoachService } from '@/services/CoachService';
 import { RootState, ThunkApiType } from '../types';
 
 export const CoachActions = {
-  UPDATE_COACH_CLUB_CLICKED: 'updateCoachClubClicked',
   GET_COACH_BY_COACH_ID: 'getCoachByCoachId',
 };
 
@@ -328,31 +327,6 @@ export const getCoachingCircleTopics = createAsyncThunk<
   }
 );
 
-export const updateCoachClubClicked = createAsyncThunk<
-  boolean,
-  { userId: string },
-  ThunkApiType<RootState>
->(
-  CoachActions.UPDATE_COACH_CLUB_CLICKED,
-  async ({ userId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        return await new CoachService(
-          userAuth?.auth_token
-        ).updateCoachClubClicked(userId);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
 const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   SecondaryAreaOfOperation: coach.secondaryAreaOfOperation,
   SigningSignature: coach.signingSignature || undefined,
@@ -361,10 +335,8 @@ const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   StartDate: coach.startDate || undefined,
   AreaOfOperation: coach.areaOfOperation,
   IsActive: coach.isActive || false,
-  FranchisorId: coach.franchisorId,
   UserId: coach.userId,
   Id: coach.id,
-  ClickedClubTab: coach.clickedClubTab,
 });
 
 const mapSiteAddress = (

@@ -19,7 +19,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public bool Attended { get; set; }
         public bool? isSupportCall { get; set; }
         public Guid? PractitionerId { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public Guid? EventId { get; set; }
@@ -38,7 +37,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? InfantId { get; set; }
         public Guid? MotherId { get; set; }
         public Guid? PractitionerId { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public bool? isSupportCall { get; set; }
@@ -57,7 +55,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? InfantId { get; set; }
         public Guid? MotherId { get; set; }
         public Guid? PractitionerId { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel FollowUpData { get; set; }
@@ -75,7 +72,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? InfantId { get; set; }
         public Guid? MotherId { get; set; }
         public Guid? PractitionerId { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel ReAccreditationData { get; set; }
@@ -91,7 +87,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string? Risk { get; set; }  // high or normal
         public string? Comment { get; set; }
         public bool? Attended { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel ChecklistData { get; set; }

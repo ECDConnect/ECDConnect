@@ -16,8 +16,6 @@
     <EmbeddedResource Remove="Tenancy\TempScripts\**" />
     <None Remove="Migrations\**" />
     <None Remove="Tenancy\TempScripts\**" />
-    <Compile Remove="Services\IntegrationService.cs" />
-    <Compile Remove="Services\Interfaces\IIntegrationService.cs" />
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
     <None Remove="SQLUpgradeScripts" />
@@ -63,7 +61,6 @@
     <ProjectReference Include="..\Libraries\Modules\ECDLink.Notifications\ECDLink.Notifications.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.PDFGenerator\ECDLink.PDFGenerator.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.Security\ECDLink.Security.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
     <ProjectReference Include="..\ECDLink.Moodle\ECDLink.Moodle.csproj" />
   </ItemGroup>

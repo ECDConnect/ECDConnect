@@ -8,16 +8,13 @@ import {
 } from 'react';
 import {
   Typography,
-  Divider,
   StackedList,
   Button,
   ActionListDataItem,
-  Alert,
   Card,
   LoadingSpinner,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { userSelectors } from '@/store/user';
 import { AddOrEditPractitioner } from './add-or-edit-practitioner';
 import { useAppDispatch } from '@/store';
 import {
@@ -47,7 +44,6 @@ export default function ConfirmPractitioners({
   onNext,
   page,
   setConfirmPractitionerPage,
-  isFundaAppAdmin,
 }: {
   onNext: OnNext;
   page: ConfirmPractitionersSteps;
@@ -57,24 +53,20 @@ export default function ConfirmPractitioners({
   >;
 }) {
   const appDispatch = useAppDispatch();
-  const user = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const tenant = useTenant();
   const appName = tenant?.tenant?.applicationName;
   const practitionersForPrincipal = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const [principalPractitioners, setPrincipalPractitioners] = useState<
     RegisterPractitioner[]
   >([]);
   const [allInFundaApp, setAllInFundaApp] = useState<boolean>();
-  const [hasTrainees, setHasTrainees] = useState<boolean>();
   const [editPractitioner, setEditPractitioner] =
     useState<RegisterPractitioner>();
   const clasroom = useSelector(classroomsSelectors.getClassroom);
   const [listItems, setListItems] = useState<StackListItems[]>([]);
-  const isSmartLinkImported = user?.isImported;
   const [invitingPractitioner, setInvitingPractitioner] =
     useState<AddNewPractitionerModel>();
   const inviTePractitionerIdNumber = localStorage
@@ -132,74 +124,10 @@ export default function ConfirmPractitioners({
   });
 
   useEffect(() => {
-    if (isSmartLinkImported) {
-      const _practitionersList: SetStateAction<RegisterPractitioner[]> = [];
-      practitioners?.forEach((item) => {
-        if (item?.userId !== user?.id)
-          listItems.push(
-            createStackItem({
-              firstName: item?.user?.firstName || item?.user?.userName || '',
-              surname: item?.user?.surname ?? '',
-              idNumber: item?.user?.idNumber ?? '',
-              userId: item?.user?.id ?? '',
-              passport: '',
-              preferId: !!item?.user?.idNumber,
-              isRegistered: Boolean(item?.isRegistered),
-              isTrainee: Boolean(item?.isTrainee),
-              phoneNumber: item?.user?.phoneNumber || '',
-            })
-          );
-
-        const filteredList = listItems.filter(
-          (value, index, self) =>
-            index === self.findIndex((t) => t?.idNumber === value?.idNumber)
-        );
-
-        setListItems(filteredList);
-
-        _practitionersList.push({
-          firstName: item?.user?.firstName ?? '',
-          surname: item?.user?.surname ?? '',
-          idNumber: item?.user?.idNumber ?? '',
-          id: item?.user?.id ?? '',
-          userId: item?.user?.id,
-          passport: '',
-          preferId: !!item?.user?.idNumber,
-          isRegistered: Boolean(item?.isRegistered),
-          isTrainee: Boolean(item?.isTrainee),
-          phoneNumber: item?.user?.phoneNumber || '',
-        });
-      });
-
-      const principalFilteredList = _practitionersList.filter(
-        (value, index, self) =>
-          index === self.findIndex((t) => t?.idNumber === value?.idNumber)
-      );
-      setPrincipalPractitioners(principalFilteredList);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isFundaAppAdmin,
-    isSmartLinkImported,
-    listItems,
-    practitioners,
-    user?.id,
-    user?.idNumber,
-  ]);
-
-  useEffect(() => {
     if (practitionersForPrincipal?.length) {
       const _practitionersList: SetStateAction<RegisterPractitioner[]> = [];
       (practitionersForPrincipal as unknown as RegisterPractitioner[]).forEach(
-        ({
-          firstName,
-          surname,
-          id,
-          idNumber,
-          isRegistered,
-          userId,
-          isTrainee,
-        }) => {
+        ({ firstName, surname, id, idNumber, isRegistered, userId }) => {
           listItems.push(
             createStackItem({
               firstName: firstName ?? '',
@@ -209,7 +137,6 @@ export default function ConfirmPractitioners({
               passport: '',
               preferId: !!idNumber,
               isRegistered: Boolean(isRegistered),
-              isTrainee: Boolean(isTrainee),
             })
           );
 
@@ -228,7 +155,6 @@ export default function ConfirmPractitioners({
             passport: '',
             preferId: !!idNumber,
             isRegistered: Boolean(isRegistered),
-            isTrainee: Boolean(isTrainee),
           });
         }
       );

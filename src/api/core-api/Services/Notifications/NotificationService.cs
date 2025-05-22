@@ -511,10 +511,6 @@ namespace EcdLink.Api.CoreApi.Services
                     roleIds = savedRoles.Split(",").ToList();
                     foreach (var item in roleIds)
                     {
-                        if (item == "trainees")
-                        {
-                            roleNames.Add("Trainees");
-                        }
                         if (item == "practitioners_principals")
                         {
                             roleNames.Add("Principal");

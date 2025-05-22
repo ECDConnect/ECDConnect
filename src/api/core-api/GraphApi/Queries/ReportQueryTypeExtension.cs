@@ -1,10 +1,10 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
@@ -25,9 +25,6 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports;
-using ECDLink.SmartStart.Reports.Models;
-using ECDLink.SmartStart.Services;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
@@ -1190,10 +1187,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 #region NOT REGISTERED ON APP
                 if (
-                    // If they are a trainee, check if they have logged in
-                    (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value && practitioner.User.LastSeen == DateTime.MinValue)
-                    // If they are a practitioner, check is registered
-                    || ((!practitioner.IsTrainee.HasValue || !practitioner.IsTrainee.Value) && (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)))
+                   !practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)
                 {
                     notification.Subject = $"Not registered on {applicationName}";
                     notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1260,7 +1254,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
                 #endregion
 
-                if ((practitioner.IsPrincipal.HasValue && (bool)practitioner.IsPrincipal.Value == true) || (practitioner.IsFundaAppAdmin.HasValue && (bool)practitioner.IsFundaAppAdmin.Value == true))
+                if (practitioner.IsPrincipal.HasValue && (bool)practitioner.IsPrincipal.Value == true)
                 {
                     var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.Value, previousMonthStart, previousMonthEnd).FirstOrDefault();
                     var lastMonthStatementBalance = lastMonthStatement != null
@@ -1321,9 +1315,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     #endregion
                 }
 
-                if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
-                {
-
                     var monthlyReport = monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).SingleOrDefault();
 
                     if (monthlyReport != null)
@@ -1374,7 +1365,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             #endregion
                         }
                     }
-                }
+                
 
                 notification.Subject = "";
                 notification.Icon = MetricsIconEnum.None.ToString();
@@ -1463,11 +1454,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion                             
 
                 #region NOT REGISTERED ON APP
-                if (
-                    // If they are a trainee, check if they have logged in
-                    (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value && practitioner.User.LastSeen == DateTime.MinValue)
-                    // If they are a practitioner, check is registered
-                    || ((!practitioner.IsTrainee.HasValue || !practitioner.IsTrainee.Value) && (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)))
+                if (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)
                 {
                     notification.Subject = $"Not registered on {applicationName}";
                     notification.Icon = MetricsIconEnum.Error.ToString();
