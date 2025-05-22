@@ -1,9 +1,8 @@
-using Azure.Storage.Blobs;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Models.Storage;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.Core.SystemSettings.SystemOptions;
+using ECDLink.Tenancy.Context;
 using FileSignatures;
 using FileSignatures.Formats;
 using HeyRed.Mime;
@@ -13,148 +12,125 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace ECDLink.AzureStorage.Blob
+namespace ECDLink.FileStorage
 {
-    public class FileService : IFileService
+    internal class FileService : IFileService
     {
-        private ISystemSetting<AzureBlobOptions> _options;
-        private BlobServiceClient _blobServiceClient;
+        private FileServiceConfig _config;
         private FileFormatInspector _inspector;
+        private string _storageUrl;
 
-        public FileService(ISystemSetting<AzureBlobOptions> options)
+        public FileService(FileServiceConfig config)
         {
-            _options = options;
+            _config = config;
             _inspector = new FileFormatInspector();
+
+            var baseUrl = TenantExecutionContext.Tenant.BlobStorageAddress;
+            _storageUrl = CombineUrl(baseUrl, "storage");
         }
 
-        private BlobServiceClient BlobClient
+        private string GetContainerPath(FileTypeEnum fileType)
         {
-            get
-            {
-                if (_blobServiceClient == null)
-                {
-                    _blobServiceClient = new BlobServiceClient(_options.Value.BlobStorageConnection);
-                }
+            var description = EnumHelper.GetDescription(fileType);
+            var path = Path.Combine(_config.FullLocation, description);
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            return path;
+        }
 
-                return _blobServiceClient;
-            }
+        private string CombineUrl(string baseUrl, string pathSegment)
+        {
+            var baseUri = new Uri(baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/");
+            var combinedUri = new Uri(baseUri, pathSegment.TrimStart('/'));
+            return combinedUri.ToString();
         }
 
         public async Task<DocumentModel> UploadBase64StringFileAsync(string base64stringFile, string fileName, FileTypeEnum fileType)
         {
-            // TODO: Security, js injection at least.
             try
-            {// TODO: \$”{guid}_profile_image/generic file name”
+            {
                 var fileReference = fileName;
 
-                var container = EnumHelper.GetDescription(fileType);
-                var blobContainer = BlobClient.GetBlobContainerClient(container);
-                await blobContainer.CreateIfNotExistsAsync();
-                await blobContainer.SetAccessPolicyAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
-
-                var blobClient = blobContainer.GetBlobClient(fileName);
-
-                if (!blobClient.Exists())
-                {
-                    fileReference = $"{Guid.NewGuid()}_{fileName}";
-                    blobClient = blobContainer.GetBlobClient(fileReference);
-                }
-
+                var path = GetContainerPath(fileType);
                 var bytes = Convert.FromBase64String(base64stringFile);
 
+                var fileNameWithPath = Path.Combine(path, fileName);
+                if (File.Exists(fileNameWithPath))
+                {
+                    fileReference = $"{Guid.NewGuid()}_{fileName}";
+                    fileNameWithPath = Path.Combine(path, fileReference);
+                }
+
                 using MemoryStream fileStream = new MemoryStream(bytes);
-
                 ValidateFileType(fileStream);
-
-                await blobClient.UploadAsync(fileStream);
-
                 fileStream.Dispose();
 
-                var fileUrl = blobClient.Uri.AbsoluteUri;
+                await File.WriteAllBytesAsync(fileNameWithPath, bytes);
 
                 return new DocumentModel
                 {
                     Name = fileName,
-                    Url = ConvertToDisplay(fileUrl),
+                    Url = ConvertToUrl(fileNameWithPath),
                     Reference = fileReference
                 };
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
 
         public DocumentModel UploadBase64StringFile(string base64stringFile, string fileName, FileTypeEnum fileType)
         {
-            // TODO: Security, js injection at least.
             try
-            {// TODO: \$”{guid}_profile_image/generic file name”
+            {
                 var fileReference = fileName;
 
-                var container = EnumHelper.GetDescription(fileType);
-                var blobContainer = BlobClient.GetBlobContainerClient(container);
-                blobContainer.CreateIfNotExists();
-                blobContainer.SetAccessPolicy(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
-
-                var blobClient = blobContainer.GetBlobClient(fileName);
-
-                if (!blobClient.Exists())
-                {
-                    fileReference = $"{Guid.NewGuid()}_{fileName}";
-                    blobClient = blobContainer.GetBlobClient(fileReference);
-                }
-
+                var path = GetContainerPath(fileType);
                 var bytes = Convert.FromBase64String(base64stringFile);
 
+                var fileNameWithPath = Path.Combine(path, fileName);
+                if (File.Exists(fileNameWithPath))
+                {
+                    fileReference = $"{Guid.NewGuid()}_{fileName}";
+                    fileNameWithPath = Path.Combine(path, fileReference);
+                }
+
                 using MemoryStream fileStream = new MemoryStream(bytes);
-
                 ValidateFileType(fileStream);
-
-                blobClient.Upload(fileStream);
-
                 fileStream.Dispose();
 
-                var fileUrl = blobClient.Uri.AbsoluteUri;
+                File.WriteAllBytes(fileNameWithPath, bytes);
 
                 return new DocumentModel
                 {
                     Name = fileName,
-                    Url = ConvertToDisplay(fileUrl),
+                    Url = ConvertToUrl(fileNameWithPath),
                     Reference = fileReference
                 };
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
 
         public async Task<string> UploadFileStreamAsync(MemoryStream file, string fileName, FileTypeEnum fileType)
         {
-            // TODO: Security, js injection at least.
-            // TODO: Anyone in TenantA can overwrite TenantB's file if they know the file name? (filenames get guids appended though?)
-            // make files tenant specific? What if they need to be mass removed or migrated?
             try
             {
+                var fileReference = $"{fileName}";
+
                 ValidateFileType(file);
 
-                var container = EnumHelper.GetDescription(fileType);
-                var fileReference = $"{fileName}";
-                var blobContainer = BlobClient.GetBlobContainerClient(container);
-                await blobContainer.CreateIfNotExistsAsync();
-                var blobClient = blobContainer.GetBlobClient(fileReference);
-                
-                //await blobClient.DeleteIfExistsAsync();
+                var path = GetContainerPath(fileType);
+                var fileNameWithPath = Path.Combine(path, fileReference);
+                using (FileStream fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+                {
+                    file.Position = 0; // Reset stream position to start
+                    await file.CopyToAsync(fileStream);
+                }
 
-                await blobClient.UploadAsync(file, true);
-                file.Dispose();
-
-                var fileUrl = blobClient.Uri.AbsoluteUri;
-
-                return ConvertToDisplay(fileUrl);
+                return ConvertToUrl(fileNameWithPath);
             }
             catch (Exception)
             {
@@ -164,30 +140,18 @@ namespace ECDLink.AzureStorage.Blob
 
         public async Task<byte[]> GetFileAsync(string fileName, FileTypeEnum fileType)
         {
-            fileName = ConvertToActual(fileName);
-            var memoryStream = new MemoryStream();
-
             try
             {
-                var container = EnumHelper.GetDescription(fileType);
-                var fileReference = $"{fileName}";
-                var blobContainer = BlobClient.GetBlobContainerClient(container);
+                var path = GetContainerPath(fileType);
+                var fileNameWithPath = Path.Combine(path, fileName);
 
-                if (!blobContainer.Exists())
-                {
-                    return null;
-                }
+                if (!File.Exists(fileNameWithPath)) { return null; }
 
-                var blobClient = blobContainer.GetBlobClient(fileReference);
-
-                await blobClient.DownloadToAsync(memoryStream);
-
-                return memoryStream.ToArray();
+                var bytes = await File.ReadAllBytesAsync(fileNameWithPath);
+                return bytes;
             }
             catch (Exception)
             {
-                memoryStream.Dispose();
-                memoryStream.Close();
                 throw;
             }
         }
@@ -201,19 +165,12 @@ namespace ECDLink.AzureStorage.Blob
         {
             try
             {
-                fileName = ConvertToActual(fileName);
-                var container = EnumHelper.GetDescription(fileType);
-                var blobContainer = BlobClient.GetBlobContainerClient(container);
+                var path = GetContainerPath(fileType);
+                var fileNameWithPath = Path.Combine(path, fileName);
 
-                if (!blobContainer.Exists())
-                {
-                    return true;
-                }
+                if (!File.Exists(fileNameWithPath)) { return false; }
 
-                var blobClient = blobContainer.GetBlobClient(fileName);
-
-                await blobClient.DeleteAsync();
-
+                File.Delete(fileNameWithPath);
                 return true;
             }
             catch (Exception)
@@ -223,22 +180,14 @@ namespace ECDLink.AzureStorage.Blob
             }
         }
 
-        private string ConvertToActual(string url)
+        private string ConvertToPath(string url)
         {
-            var display = _options.Value.BlobStorageDisplayUrl;
-            var actual = _options.Value.BlobStorageActualUrl;
-            if (string.IsNullOrEmpty(display) || string.IsNullOrEmpty(actual) || string.Compare(display, actual, true) == 0)
-                return url;
-            return url.Replace(display, actual);
+            return url.Replace(_storageUrl, _config.FullLocation).Replace("/", "\\");
         }
 
-        private string ConvertToDisplay(string url)
+        private string ConvertToUrl(string path)
         {
-            var display = _options.Value.BlobStorageDisplayUrl;
-            var actual = _options.Value.BlobStorageActualUrl;
-            if (string.IsNullOrEmpty(display) || string.IsNullOrEmpty(actual) || string.Compare(display, actual, true) == 0)
-                return url;
-            return url.Replace(actual, display);
+            return path.Replace(_config.FullLocation, _storageUrl).Replace("\\", "/");
         }
 
         private void ValidateFileType(MemoryStream fileStream)
@@ -312,14 +261,14 @@ namespace ECDLink.AzureStorage.Blob
 
         public string GetMimeType(string extension)
         {
-           return MimeTypesMap.GetMimeType(extension);
+            return MimeTypesMap.GetMimeType(extension);
         }
+
         public string GetMimeTypeFromUrl(string url)
         {
             var extension = GetFileExtensionFromUrl(url);
             return GetMimeType(extension);
         }
-
         public FileTypeEnum GetFileTypeEnumFromContainer(string container)
         {
             return EnumHelper.GetEnumFromDescription<FileTypeEnum>(container);
@@ -327,8 +276,7 @@ namespace ECDLink.AzureStorage.Blob
 
         public void OverrideBaseUrl(string baseUrl)
         {
-            // not applicable for azure storage.
+            _storageUrl = CombineUrl(baseUrl, "storage");
         }
-
     }
 }

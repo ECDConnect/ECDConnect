@@ -7,7 +7,6 @@ namespace ECDLink.AzureStorage
 {
     public static class AzureStorageStartup
     {
-
         public static void ConfigureAzureStorageServices(IServiceCollection services, IConfiguration Configuration)
         {
             services.AddScoped<IFileService, FileService>();
