@@ -228,9 +228,7 @@ export default function ApplicationAdmins() {
   };
 
   const viewSelectedRow = (selectedRow: any) => {
-    const role = selectedRow?.roles?.filter(
-      (item) => item?.name !== RoleSystemNameEnum.CHW
-    );
+    const role = selectedRow?.roles;
 
     localStorage.setItem(
       'selectedUser',

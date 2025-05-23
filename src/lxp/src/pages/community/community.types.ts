@@ -9,3 +9,8 @@ export const ConnectionsTypes = {
   ReceivedRequests: 'Received requests',
   SentRequests: 'Sent requests',
 };
+
+export type CommunityRouteState = {
+  activeTabIndex?: number;
+  isFromDashboard?: boolean;
+};

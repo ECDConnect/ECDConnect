@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.ChildProgress;
 using EcdLink.Api.CoreApi.GraphApi.Models.Input;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;

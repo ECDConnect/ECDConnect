@@ -12,13 +12,4 @@ export const navigationFromFrontend: INavigation[] = [
     sequence: 0,
     description: 'View notifications',
   },
-  {
-    icon: 'UserGroupIcon',
-    hide: true,
-    name: NavbarTypes.CHWsOptedOut + ' - ' + format(new Date(), 'MMMM yyyy'),
-    permissions: [],
-    route: ROUTES.HEALTH_CARE_WORKER.OPTED_OUT,
-    sequence: 0,
-    description: 'View CHWs who have opted out',
-  },
 ];

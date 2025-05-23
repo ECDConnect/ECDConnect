@@ -1,8 +1,6 @@
 import { useTheme } from '@ecdlink/core';
 import { Alert, BannerWrapper, Divider, Typography } from '@ecdlink/ui';
 import joinCOmmunity from '../../../../../../assets/joinCommunity.svg';
-import { UseFormGetValues } from 'react-hook-form';
-import { SetupOrgModel } from '../../../../../schemas/setup-org';
 
 interface ConfirmationScreenProps {
   orgName?: string;

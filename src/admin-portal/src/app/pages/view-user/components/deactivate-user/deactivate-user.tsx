@@ -23,10 +23,10 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
 }) => {
   const dialog = useDialog();
   const { setNotification } = useNotifications();
-  const [deactivateHcw] = useMutation(DeleteUser);
+  const [deactivateUser] = useMutation(DeleteUser);
 
   const handleDeactivateUser = useCallback(() => {
-    deactivateHcw({
+    deactivateUser({
       variables: {
         id: userData?.id,
       },
@@ -44,7 +44,7 @@ export const DeactivateUser: React.FC<DeactivateUserProps> = ({
           variant: NOTIFICATION.ERROR,
         });
       });
-  }, [deactivateHcw, refetchUserData, setNotification, userData?.id]);
+  }, [deactivateUser, refetchUserData, setNotification, userData?.id]);
 
   const deactivaterUser = async () => {
     dialog({

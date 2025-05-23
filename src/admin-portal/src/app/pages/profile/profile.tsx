@@ -21,11 +21,9 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import {
-  GetTeamLead,
   GetUserById,
   ResetUserPassword,
-  SendTeamLeadVerifyPhoneNumberSMS,
-  UpdateTeamLeadMessage,
+  SendVerifyPhoneNumberSMS,
   UpdateUser,
   UserModelInput,
 } from '@ecdlink/graphql';
@@ -55,7 +53,7 @@ export const tlSchema = yup.object().shape({
 
 export function Profile(props: any) {
   const [resetUserPassword] = useMutation(ResetUserPassword);
-  const [resendSms] = useMutation(SendTeamLeadVerifyPhoneNumberSMS);
+  const [resendSms] = useMutation(SendVerifyPhoneNumberSMS);
   const user = useUser();
   const { setNotification } = useNotifications();
   const [handleChangePassword, setHandleChangePassword] = useState(false);
@@ -65,11 +63,11 @@ export function Profile(props: any) {
     setHandleChangePasswordAndPhoneNumber,
   ] = useState(false);
 
-  const { isAdministrator, isSuperAdmin, isTeamLead } = useUserRole();
+  const { isAdministrator, isSuperAdmin } = useUserRole();
 
   const { register, formState, getValues, handleSubmit, setValue, control } =
     useForm({
-      resolver: yupResolver(isTeamLead ? tlSchema : userSchema),
+      resolver: yupResolver(userSchema),
       defaultValues: initialUserDetailsValues,
       mode: 'onChange',
     });
@@ -100,30 +98,11 @@ export function Profile(props: any) {
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
-  const [updateWelcomeMessage] = useMutation(UpdateTeamLeadMessage);
-
-  const [getTeamLeadData, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
-    variables: {
-      teamLeadId: '',
-    },
-    fetchPolicy: 'cache-and-network',
-  });
-
-  useEffect(() => {
-    if (isTeamLead && userData?.userById?.id) {
-      getTeamLeadData({
-        variables: {
-          teamLeadId: userData?.userById?.id!,
-        },
-      });
-    }
-  }, [getTeamLeadData, isTeamLead, userData?.userById?.id]);
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
   const { phoneNumber } = useWatch({ control });
   const [avatarFile, setAvatarFile] = useState(null);
-  const [teamLeadWelcomeMessage, setTeamLeadWelcomeMessage] = useState('');
 
   const saveUser = async (
     passwordChange: boolean,
@@ -174,25 +153,6 @@ export function Profile(props: any) {
         shouldValidate: true,
       });
     }
-
-    if (
-      isTeamLead &&
-      teamLeadWelcomeMessage &&
-      teamLeadWelcomeMessage !==
-        teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
-    ) {
-      updateWelcomeMessage({
-        variables: {
-          teamLeadUserId: userData?.userById?.id,
-          welcomeMessage: teamLeadWelcomeMessage,
-        },
-      });
-      getTeamLeadData({
-        variables: {
-          teamLeadId: userData?.userById?.id!,
-        },
-      });
-    }
   };
 
   const onSave = async () => {
@@ -237,14 +197,6 @@ export function Profile(props: any) {
       },
     });
   }, [user]);
-
-  useEffect(() => {
-    if (teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage) {
-      setTeamLeadWelcomeMessage(
-        teamLeadData?.GetAllTeamLead?.[0]?.welcomeMessage
-      );
-    }
-  }, [teamLeadData?.GetAllTeamLead]);
 
   useEffect(() => {
     if (user) {
@@ -406,7 +358,7 @@ export function Profile(props: any) {
                       <SuperAdminProfile user={user} />
                     </div>
                   )}
-                  {!isAdministrator && !isSuperAdmin && !isTeamLead && (
+                  {!isAdministrator && !isSuperAdmin && (
                     <div>
                       <FormField
                         label={'Email address *'}
@@ -415,28 +367,6 @@ export function Profile(props: any) {
                         disabled
                         error={errors.email?.message}
                       />
-                    </div>
-                  )}
-
-                  {isTeamLead && (
-                    <div>
-                      <div className="w-full pt-10">
-                        <FormField
-                          label={'Cellphone number *'}
-                          nameProp={'phoneNumber'}
-                          register={register}
-                          error={errors.phoneNumber?.message}
-                        />
-                      </div>
-                      <div className="mt-2 w-full pt-10">
-                        <FormField
-                          label={'WhatsApp number'}
-                          subLabel="Optional. If your WhatsApp number is different from your cellphone number, you can add it below. This will help CHWs to connect with you through WhatsApp, if needed."
-                          nameProp={'whatsAppNumber'}
-                          register={register}
-                          error={errors.whatsappNumber?.message}
-                        />
-                      </div>
                     </div>
                   )}
 
@@ -451,23 +381,6 @@ export function Profile(props: any) {
                       className="mb-9 "
                     />
                   </div>
-                  {isTeamLead && (
-                    <div>
-                      <FormInput
-                        className="mt-2 w-full pt-10"
-                        isAdminPortalField={true}
-                        label="In 4 or 5 words, share something about yourself with your CHWs!"
-                        value={teamLeadWelcomeMessage}
-                        onChange={(e) =>
-                          setTeamLeadWelcomeMessage(e?.target?.value)
-                        }
-                        textInputType="input"
-                        placeholder={'Add a text...'}
-                        maxCharacters={125}
-                        maxLength={125}
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

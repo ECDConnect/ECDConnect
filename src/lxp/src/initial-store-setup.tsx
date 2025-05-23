@@ -60,7 +60,6 @@ import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { activityThunkActions } from '@store/content/activity';
-import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
 import { LocalStorageKeys, RoleSystemNameEnum } from '@ecdlink/core';
@@ -151,7 +150,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(documentActions.resetDocumentsState());
     appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(contentReportActions.resetContentReportState());
-    appDispatch(clubActions.resetClubState());
     appDispatch(statementsActions.resetStatementsState());
     appDispatch(calendarActions.resetCalendarState());
   };
@@ -440,20 +438,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         (async () =>
           await appDispatch(
             practitionerForCoachThunkActions.getPractitionersForCoach({})
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getAllCoachingCircleClubsForCoach({
-              coachId: userData?.id!,
-              startDate: quarterStartDate,
-              endDate: quarterLastDay,
-            })
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getAllClubsForCoach({
-              userId: userData?.id!,
-            })
           ).unwrap())();
         (async (id) =>
           await appDispatch(

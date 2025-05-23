@@ -75,21 +75,6 @@ const navigation = [
   },
 ];
 
-const growgreatNavigation = [
-  {
-    name: 'Relationship to child',
-    section: 'Client registration (child)',
-    href: '/data/relations',
-    query: 'GetAllRelation',
-  },
-  {
-    name: 'Languages',
-    section: 'CHW registration',
-    href: '/data/languages',
-    query: 'GetAllLanguage',
-  },
-];
-
 export function StaticData() {
   const history = useHistory();
   const tenant = useTenant();
@@ -154,7 +139,7 @@ export function StaticData() {
                 { field: 'name', use: 'Field' },
                 { field: 'section', use: 'App section' },
               ]}
-              rows={tenant.isCHWConnect ? growgreatNavigation : navigation}
+              rows={navigation}
               component={'cms'}
               viewRow={openEditDialog}
               searchInput={searchValue}

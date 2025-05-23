@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class HealthPromotionQueryExtension

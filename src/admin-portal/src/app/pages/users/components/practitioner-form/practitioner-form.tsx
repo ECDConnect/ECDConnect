@@ -1,16 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { UseFormRegister } from 'react-hook-form';
-import FormField from '../../../../components/form-field/form-field';
-import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
-import {
-  GetAllCoach,
-  GetAllHealthCareWorker,
-  GetAllPortalCoaches,
-  GetAllPractitioner,
-} from '@ecdlink/graphql';
-import { CoachDto, PractitionerDto } from '@ecdlink/core';
+import { GetAllPortalCoaches } from '@ecdlink/graphql';
 import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
-import { useMemo } from 'react';
 import { useTenant } from '../../../../hooks/useTenant';
 
 export interface PractitionerFormProps {

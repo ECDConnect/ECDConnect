@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Points;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;

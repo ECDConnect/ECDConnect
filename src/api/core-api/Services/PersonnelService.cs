@@ -1,7 +1,7 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.GraphApi.Models.Users;
+using EcdLink.Api.CoreApi.GraphApi.Models.Visits;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Services.Interfaces;
@@ -14,7 +14,6 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Licenses;
@@ -63,19 +62,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<Coach, Guid> _coachGenericRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
-        private IGenericRepository<TeamLead, Guid> _teamLeadRepo;
         private AuthenticationDbContext _dbContext;
         private IGenericRepository<CalendarEventParticipant, Guid> _calendarEventParticipantRepo;
         private IGenericRepository<StatementsStartupSupport, Guid> _statementStartupSupportRepo;
-
-
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
         private UserLicenseManager _userLicenseManager;
         private ApplicationUserManager _userManager;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
-        private IClubService _clubService;
         private ILogger<UserMutationExtension> _logger;
         private IReassignmentService __reassignmentService;
         private IServiceProvider _services;
@@ -90,7 +85,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             VisitManager visitManager,
             UserLicenseManager userLicenseManager,
             [Service] INotificationService notificationService,
-            [Service] IClubService clubService,
             [Service] IClassroomService classroomService,
             ApplicationUserManager userManager,
             [Service] HierarchyEngine hierarchyEngine,
@@ -118,7 +112,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
             _calendarEventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>(userContext: _applicationUserId);
             _statementStartupSupportRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
-            _teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: _applicationUserId);
             _dbContext = dbContext;
 
             _visitDataManager = visitDataManager;
@@ -127,7 +120,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
-            _clubService = clubService;
             _logger = logger;
             _services = services;
             _classroomService = classroomService;
@@ -216,13 +208,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             ApplicationUser practitionerUser = _userManager.FindByIdAsync(practitioner.UserId).Result;
             if (practitionerUser != null) {
                  practitionerRecord.User = practitionerUser;
-            }
-            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
-            if (practitionerRecord != null)
-            {
-                practitionerRecord.ClubId = clubMember?.Club?.Id;
-                practitionerRecord.ClubName = clubMember?.Club?.Name;
-                practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
             }
             if (practitioner.SiteAddressId != null) {
                 SiteAddress address = _addressRepo.GetById((Guid)practitioner.SiteAddressId);
@@ -365,32 +350,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     classroom.UserId = practitionerToPromote.UserId;
                     _classRepo.Update(classroom);
                 }
-
-                //now list through all practitioners and remove the principalhierarchies and assign new
-                /*List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy == Guid.Parse(oldPrincipalUserId)).ToList();
-                if (allPrincipalPractitioners.Count > 0)
-                {
-                    //send notifications about change of FAA/Principal
-                    List<TagsReplacements> replacements = new List<TagsReplacements>();
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "ProgrammeName",
-                        ReplacementValue = classroomName
-                    });
-
-                    foreach (var practi in allPrincipalPractitioners)
-                    {
-                        practi.PrincipalHierarchy = practitionerToPromote.UserId;
-                        _practiGenericRepo.Update(practi);
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "PrincipalOrFAA",
-                            ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
-                        });
-
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now.Date, practi.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
-                    }
-                }*/
 
                 //Swap the unsure class if there is one
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId.ToString()).Where(x => x.Name == "Unsure").FirstOrDefault();
@@ -748,29 +707,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
             }
 
-            // Coach Circles
-            // get all attendance for practitioner
-            PractitionerAttendance attendance = _clubService.GetPractitionerAttendance(practitioner.Id, Constants.CoachingCircleSettings.meeting_type_coach_circle);
-            if (attendance.MeetingRegister != null && attendance.MeetingRegister.Count > 0)
-            {
-                // coach circle color application
-                attendance.AttendanceColor = attendance.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
-                timeline.CoachCircles = attendance;
-            }
-
-            // Club meetings
-            var clubAttendance = _clubService.GetPractitionerAttendance(practitioner.Id, Constants.ClubSettings.meeting_type_club_meeting);
-            if (clubAttendance.MeetingRegister != null && clubAttendance.MeetingRegister.Count > 0)
-            {
-                clubAttendance.AttendanceColor = clubAttendance.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
-                timeline.ClubMeetings = clubAttendance;
-            }
-
             timeline.PrePQASiteVisits = prePqaVisits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.PQASiteVisits = pqaVisits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.SupportVisits = supportVisits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.ReAccreditationVisits = reaccreditationVisits.OrderBy(x => x.PlannedVisitDate).ToList();
-            //timeline.RequestedCoachVisits = requestedCoachVisits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.SelfAssessmentVisits = selfVisits.OrderBy(x => x.PlannedVisitDate).ToList();
 
             return timeline;
@@ -1178,16 +1118,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _dbContext.Classrooms.RemoveRange(classrooms);
             _dbContext.SaveChanges();
             return true;
-        }
-
-        public TeamLead RegisterTeamLead(Guid userId)
-        {
-            var teamLead = _teamLeadRepo.GetByUserId(userId);
-
-            teamLead.IsRegistered = true;
-            teamLead.UpdatedDate = DateTime.Now;
-            teamLead.UpdatedBy = _applicationUserId.ToString();
-            return _teamLeadRepo.Update(teamLead);
         }
 
         public Practitioner AddOAPractitioner(Guid userId, string userName)

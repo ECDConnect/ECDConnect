@@ -1,6 +1,6 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using EcdLink.Api.CoreApi.GraphApi.Models.ChildProgress;
 
 namespace EcdLink.Api.CoreApi.Services.Interfaces
 {

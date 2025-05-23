@@ -1,5 +1,6 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.ChildProgress;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Enums;

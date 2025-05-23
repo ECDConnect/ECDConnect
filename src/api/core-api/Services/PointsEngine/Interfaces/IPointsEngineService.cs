@@ -1,5 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Points;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;

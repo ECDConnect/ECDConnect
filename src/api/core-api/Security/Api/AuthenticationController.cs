@@ -115,7 +115,7 @@ namespace ECDLink.Security.Api
             ApplicationUser user;
             if (!string.IsNullOrWhiteSpace(login.Username))
             {
-                // find the user and set the tenat they belong to WLPrin40
+                // find the user and set the tenant they belong to
                 user = await _securityManager.GetUsernameAsync(login.Username, login.Password);
                 if (user != null)
                 {
@@ -135,14 +135,14 @@ namespace ECDLink.Security.Api
                 user = await _securityManager.LogInWithPhoneNumberAsync(normalizePhoneNumber, login.Password);
             }
 
-            if (!validateTenantForUser(user.TenantId, tenantData.Id))
-            {
-                return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
-            }
-
             if (user == null || (user.LockoutEnabled == true && user.LockoutEnd > DateTime.Now))
             {
                 return Unauthorized(new { Error = $"Some of the information you have entered is incorrect. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
+            }
+
+            if (!validateTenantForUser(user.TenantId, tenantData.Id))
+            {
+                return Unauthorized(new { Error = $"You do not have access. Please contact the {organisationName} call centre to find out more: {callCenterNumber}" });
             }
 
             // Check if logging into admin portal and deny non "administrators" or "Coaches" access.

@@ -10,7 +10,7 @@ import { subDays } from 'date-fns';
 import CustomDateRangePicker from '../../../components/date-picker';
 import NavigationTable from '../../../components/navigation-table';
 import { useHistory } from 'react-router';
-import { MessageRoleDto, ggRoles, ssRoles } from './message';
+import { MessageRoleDto, ssRoles } from './message';
 import { useTenant } from '../../../hooks/useTenant';
 
 export default function MessageList() {
@@ -22,7 +22,7 @@ export default function MessageList() {
   const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
-  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>(ssRoles);
   const user = localStorage.getItem(LocalStorageKeys.user);
   const [selectedPageSize] = useState<number>(null);
   const tenant = useTenant();
@@ -74,11 +74,6 @@ export default function MessageList() {
   };
 
   useEffect(() => {
-    if (tenant.isCHWConnect) {
-      setRoleData(ggRoles);
-    } else {
-      setRoleData(ssRoles);
-    }
     if (messages) {
       const copyItems = messages.allMessageLogsForAdmin.map(
         (item: MessageLogDto, index: number) => ({

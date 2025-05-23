@@ -1,4 +1,3 @@
-using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using System;
 using System.Collections.Generic;
@@ -72,7 +71,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public double PercAttended { get; set; }
         public string AttendanceText { get; set; } // date on which the most recent coaching circle was held
         public string AttendanceColor { get; set; } // 60% or more - green & 60% less - amber
-        public ICollection<ClubMeetingRegister> MeetingRegister { get; set; }
 
     }
     public class PractitionerNotes

@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.AccessModifiers.OpenAccess;

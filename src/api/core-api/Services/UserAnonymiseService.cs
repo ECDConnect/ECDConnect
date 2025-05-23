@@ -10,10 +10,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using ECDLink.DataAccessLayer.Entities.Clubs;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -123,14 +121,6 @@ namespace EcdLink.Api.CoreApi.Services
                             foreach (var visit in traineeVisits)
                             {
                                 _context.Remove(visit);
-                            }
-                        }
-                        List<ClubMember> clubsMembers = _context.ClubMember.Where(x => x.PractitionerId == userId).ToList();
-                        if (clubsMembers.Any())
-                        {
-                            foreach (var clubsMember in clubsMembers)
-                            {
-                                _context.Remove(clubsMember);
                             }
                         }
                         //remove hierarchy

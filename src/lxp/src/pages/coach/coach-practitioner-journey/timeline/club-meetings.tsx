@@ -17,7 +17,7 @@ export const ClubMeetingMeeting = ({
   onView,
 }: SupportVisitsProps) => (
   <>
-    {attendanceRecord.meetingRegister?.map((item) => (
+    {/* {attendanceRecord.meetingRegister?.map((item) => (
       <div className="my-4" key={item?.id}>
         <div className="relative flex items-center gap-2">
           {item?.attended === true ? (
@@ -60,6 +60,6 @@ export const ClubMeetingMeeting = ({
           }
         />
       </div>
-    ))}
+    ))} */}
   </>
 );
