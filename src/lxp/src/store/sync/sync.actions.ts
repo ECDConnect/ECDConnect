@@ -14,7 +14,6 @@ import { userThunkActions } from '../user';
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
-import { clubActions, clubThunkActions } from '../club';
 import { progressTrackingThunkActions } from '../progress-tracking';
 
 type SyncStep = {
@@ -86,26 +85,6 @@ export const syncOfflineData = createAsyncThunk<
     {
       title: 'Analytics',
       action: analyticsThunkActions.pushAnalytics,
-    },
-    {
-      title: 'Club Support role',
-      action: clubThunkActions.changeClubSupportRole,
-    },
-    {
-      title: 'Club meetings',
-      action: clubThunkActions.addClubMeeting,
-    },
-    {
-      title: 'Club be creative activity',
-      action: clubThunkActions.addBeCreativeActivity,
-    },
-    {
-      title: 'Family day meetings',
-      action: clubThunkActions.addFamilyDayMeeting,
-    },
-    {
-      title: 'Caregiver report back meeting',
-      action: clubThunkActions.addCaregiverReportBackMeeting,
     },
     {
       title: 'Calendar events',
@@ -227,26 +206,7 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         title: 'ReAccreditation Follow up Visits',
         action: pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner,
       },
-      {
-        title: 'Club Support role',
-        action: clubThunkActions.changeClubSupportRole,
-      },
-      {
-        title: 'Club meetings',
-        action: clubThunkActions.addClubMeeting,
-      },
-      {
-        title: 'Club be creative activity',
-        action: clubThunkActions.addBeCreativeActivity,
-      },
-      {
-        title: 'Family day meetings',
-        action: clubThunkActions.addFamilyDayMeeting,
-      },
-      {
-        title: 'Caregiver report back meeting',
-        action: clubThunkActions.addCaregiverReportBackMeeting,
-      },
+
       {
         title: 'Calendar events',
         action: calendarThunkActions.cancelCalendarEvent,
@@ -254,8 +214,6 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
     ];
 
     let error: Error | null = null;
-
-    dispatch(clubActions.forceMeetRegularlyDataReload());
 
     for (let i = 0; i < syncSteps.length; i++) {
       const step = syncSteps[i];

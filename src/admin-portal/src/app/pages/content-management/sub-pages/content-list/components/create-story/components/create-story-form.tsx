@@ -50,7 +50,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   requiredMessage,
   useWatch,
 }) => {
-  const { register, control, errors } = handleform;
+  const { register, control } = handleform;
   const [isLoading, setIsLoading] = useState(true);
   const initialValues = getValues();
   const storyBookTypeOptions = [

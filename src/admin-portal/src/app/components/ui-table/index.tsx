@@ -19,7 +19,6 @@ import { useMutation } from '@apollo/client';
 import {
   sentInviteToMultipleUsers,
   deleteMultipleUsers,
-  bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
@@ -94,16 +93,6 @@ export default function UiTable({
     }
   );
 
-  const [
-    deleteCoachingCircleTopicsMutation,
-    { loading: deletingCoachingCircleTopics },
-  ] = useMutation(bulkDeleteCoachingCircleTopics, {
-    variables: {
-      contentIds: [],
-    },
-    fetchPolicy: 'network-only',
-  });
-
   const inviteUsers = useCallback(() => {
     sendInvitations({
       variables: {
@@ -159,42 +148,6 @@ export default function UiTable({
         });
       });
   }, [deactivateUsers, selectedRows, setNotification]);
-
-  const deleteCoachingCircleTopics = useCallback(() => {
-    deleteCoachingCircleTopicsMutation({
-      variables: {
-        contentIds: selectedRows,
-      },
-    })
-      .then((res) => {
-        if (res.data?.bulkDeleteCoachingCircleTopics?.success.length > 0) {
-          setNotification({
-            title: ` Successfully deleted ${res.data?.bulkDeleteCoachingCircleTopics?.success.length} topics!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-          onBulkActionCallback?.('success');
-        }
-        if (res.data?.bulkDeleteCoachingCircleTopics?.failed.length > 0) {
-          setNotification({
-            title: ` Failed to delete ${res.data?.bulkDeleteCoachingCircleTopics?.failed.length} topics!`,
-            variant: NOTIFICATION.ERROR,
-          });
-          onBulkActionCallback?.('failed');
-        }
-      })
-      .catch((err) => {
-        setNotification({
-          title: 'Failed to delete topics',
-          variant: NOTIFICATION.ERROR,
-        });
-        onBulkActionCallback?.('failed');
-      });
-  }, [
-    deleteCoachingCircleTopicsMutation,
-    onBulkActionCallback,
-    selectedRows,
-    setNotification,
-  ]);
 
   useEffect(() => {
     fuse.current = new Fuse(rows, fuseOptions);
@@ -349,7 +302,7 @@ export default function UiTable({
         <span
           className="cursor-pointer overflow-ellipsis"
           onClick={() => {
-            component !== 'team-leads' && viewRow(row);
+            viewRow(row);
           }}
         >
           {formatDate(display_value)}
@@ -459,10 +412,7 @@ export default function UiTable({
           })}
         </div>
       );
-    } else if (
-      column?.field === 'subCategories' ||
-      column?.field === 'subDistricts'
-    ) {
+    } else if (column?.field === 'subCategories') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
@@ -477,19 +427,6 @@ export default function UiTable({
           ))}
         </div>
       );
-    } else if (column.field === 'teamLeads') {
-      rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row items-center">
-          {display_value?.map((item: any, index: number) => (
-            <div
-              key={`teamLeads_` + item?.id + Math.random()}
-              className={' text-textMid m-1 rounded-full py-1 text-xs'}
-            >
-              {`${item?.teamLead?.user?.firstName}, `}
-            </div>
-          ))}
-        </div>
-      );
     } else if (column.field === 'province' && column?.use === 'Province') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
@@ -498,26 +435,7 @@ export default function UiTable({
           </div>
         </div>
       );
-    } else if (column.field === 'district' && column?.use === 'District') {
-      rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row items-center">
-          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
-            {display_value?.name}
-          </div>
-        </div>
-      );
-    } else if (
-      column.field === 'subDistrict' &&
-      column?.use === 'Sub-district'
-    ) {
-      rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row items-center">
-          <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
-            {display_value?.name}
-          </div>
-        </div>
-      );
-    } else if (column.field === 'district' && column?.use === 'Province') {
+    } else if (column?.use === 'Province') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row items-center">
           <div className={' text-textMid m-1 rounded-full py-1 text-xs'}>
@@ -555,8 +473,6 @@ export default function UiTable({
                   return 'bg-infoMain';
                 case 'Practitioner':
                   return 'bg-secondary';
-                case 'Community Health Worker':
-                  return 'bg-secondary';
                 default:
                   return 'bg-primary';
               }
@@ -569,9 +485,7 @@ export default function UiTable({
                   ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
               >
-                {item[column?.displayProperty] === 'Community Health Worker'
-                  ? 'CHW'
-                  : item[column?.displayProperty]}
+                {item[column?.displayProperty]}
               </div>
             );
           })}
@@ -602,7 +516,7 @@ export default function UiTable({
     return (
       <div
         onClick={() => {
-          component !== 'team-leads' && viewRow(row);
+          viewRow(row);
         }}
         className={'cursor-pointer'}
       >
@@ -635,7 +549,6 @@ export default function UiTable({
           onCancel={onClose}
           btnText={[`${confirmationTrue}`, `${confirmationFalse}`]}
           onSubmit={() => {
-            deleteCoachingCircleTopics();
             onClose();
           }}
         />
@@ -646,7 +559,6 @@ export default function UiTable({
     confirmationMessage,
     confirmationTitle,
     confirmationTrue,
-    deleteCoachingCircleTopics,
     dialog,
   ]);
 
@@ -661,8 +573,6 @@ export default function UiTable({
           text="Delete"
           icon="TrashIcon"
           iconPosition="end"
-          isLoading={deletingCoachingCircleTopics}
-          disabled={deletingCoachingCircleTopics}
           onClick={deleteDialog}
         />
       );
@@ -704,7 +614,6 @@ export default function UiTable({
     deactivateUser,
     deactivating,
     deleteDialog,
-    deletingCoachingCircleTopics,
     invitationsLoading,
     inviteUsers,
   ]);

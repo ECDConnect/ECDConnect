@@ -5,9 +5,6 @@ export enum RoleSystemNameEnum {
   Practitioner = 'Practitioner',
   Principal = 'Principal',
   Child = 'Child',
-  // GG
-  CHW = 'Community Health Worker',
-  TeamLead = 'Team Lead',
   // ALL
   SuperAdmin = 'Super Admin',
   Administrator = 'Administrator',
@@ -20,9 +17,6 @@ export enum RoleDefaultNameEnum {
   Practitioner = 'Practitioner',
   Principal = 'Principal',
   Child = 'Child',
-  // GG
-  CHW = 'Community Health Worker',
-  TeamLead = 'Team Lead',
   // ALL
   SuperAdmin = 'Super Admin',
   Administrator = 'Administrator',

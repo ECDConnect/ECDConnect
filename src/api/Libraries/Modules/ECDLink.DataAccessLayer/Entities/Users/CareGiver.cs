@@ -1,5 +1,4 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -17,8 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     public class Caregiver<TKey> : EntityBase<TKey>, 
         SiteAddressJoin<Guid?>, 
         RelationJoin<Guid?>, 
-        EducationJoin<Guid?>, 
-        HealthCareWorkerJoin<Guid?>, ITrackableType
+        EducationJoin<Guid?>
          where TKey : IEquatable<TKey>
     {
         public string IdNumber { get; set; }
@@ -71,18 +69,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(LanguageId))]
         public virtual Language Language { get; set; }
         public Guid? LanguageId { get; set; }
-
-        // REMOVE THIS
-        public bool isMother { get; set; }
-
-        [NotMapped]
-        public virtual ICollection<Infant> Infants { get; set; }
-        [NotMapped]
-        public Mother Mother { get; set; }
-
-        public Guid? HealthCareWorkerId { get; set; }
-        [ForeignKey(nameof(HealthCareWorkerId))]
-        public virtual HealthCareWorker HealthCareWorker { get; set; }
     }
 
     public interface CaregiverJoin<TKey>

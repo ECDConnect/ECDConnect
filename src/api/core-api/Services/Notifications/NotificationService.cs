@@ -527,14 +527,6 @@ namespace EcdLink.Api.CoreApi.Services
                         {
                             roleNames.Add("Coach");
                         }
-                        if (item == "chw")
-                        {
-                            roleNames.Add("CHWs");
-                        }
-                        if (item == "team_lead")
-                        {
-                            roleNames.Add("Team Lead");
-                        }
                     }
                 }
             }

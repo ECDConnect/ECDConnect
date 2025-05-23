@@ -386,7 +386,7 @@ class TraineeService {
   ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { addAdditionalVisitForInfant: Visit };
+      data: { addCoachVisitInviteForTrainee: Visit };
       errors?: {};
     }>(``, {
       query: `
@@ -407,7 +407,7 @@ class TraineeService {
       );
     }
 
-    return response.data.data.addAdditionalVisitForInfant;
+    return response.data.data.addCoachVisitInviteForTrainee;
   }
 
   async AddCoachFranchiseeAgreementForTrainee(

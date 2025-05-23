@@ -13,17 +13,6 @@ export const ssRoles = [
   },
 ];
 
-export const ggRoles = [
-  {
-    id: 'chw',
-    label: 'CHWs',
-  },
-  {
-    id: 'team_lead',
-    label: 'Team Lead',
-  },
-];
-
 export interface MessageRoleDto {
   id: string;
   label: string;

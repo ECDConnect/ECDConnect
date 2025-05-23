@@ -170,7 +170,6 @@ export default function ActivityList({
 
   const [tableData, setTableData] = useState<any[]>([]);
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
-  const [searchText, setSearchText] = useState('Search by title or content...');
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
   // Filter options
@@ -237,14 +236,6 @@ export default function ActivityList({
       setFilterDateAdded((prevState) => !prevState);
     }
   };
-
-  const dateDropdownValue = useMemo(
-    () =>
-      startDate && endDate
-        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
-        : '',
-    [endDate, startDate]
-  );
 
   const filterByValue = useCallback((array, value) => {
     return array?.filter(

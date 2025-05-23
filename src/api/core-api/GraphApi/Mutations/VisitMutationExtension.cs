@@ -1,6 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Visits;
-using ECDLink.Abstractrions.Constants;
+﻿using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -18,68 +16,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using ECDLink.DataAccessLayer.Managers;
+using EcdLink.Api.CoreApi.GraphApi.Models.Visits;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitMutationExtension
     {
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Visit AddAdditionalVisitForMother(
-            [Service] IHttpContextAccessor httpContextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            [Service] VisitManager visitManager,
-            VisitModel input)
-        {
-            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
-            var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name == Constants.GGSettings.VisitTypeAdditionalVisit).OrderBy(x => x.NormalizedName).FirstOrDefault();
-            Mother mother = motherRepo.GetAll().Where(x => x.UserId.ToString() == input.MotherId.ToString()).FirstOrDefault();
-
-            input.VisitType = visitType;
-            input.Attended = false;
-            input.InfantId = null;
-            input.MotherId = mother.Id;
-            input.LinkedVisitId = null;
-            input.PractitionerId = null;
-            if (input.PlannedVisitDate != default)
-            {
-                input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-            }
-
-            return visitManager.AddAdditionalVisit(input);
-        }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Visit AddAdditionalVisitForInfant(
-            [Service] IHttpContextAccessor httpContextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            [Service] VisitManager visitManager,
-            VisitModel input)
-        {
-            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
-            var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name == Constants.GGSettings.VisitTypeAdditionalVisit).OrderBy(x => x.NormalizedName).FirstOrDefault();
-            Infant infant = infantRepo.GetAll().Where(x => x.UserId.ToString() == input.InfantId.ToString()).FirstOrDefault();
-
-
-            input.VisitType = visitType;
-            input.Attended = false;
-            input.MotherId = null;
-            input.InfantId = infant.Id;
-            input.LinkedVisitId = null;
-            input.PractitionerId = null;
-            if (input.PlannedVisitDate != default)
-            {
-                input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-            }
-
-            return visitManager.AddAdditionalVisit(input);
-        }
-
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public BasicVisitModel RestartVisit(
             [Service] VisitManager visitManager,
@@ -145,8 +88,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // Add Visit
             var visitModel = new VisitModel();
             visitModel.VisitType = visitType;
-            visitModel.MotherId = null;
-            visitModel.InfantId = null;
             visitModel.LinkedVisitId = null;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
@@ -185,8 +126,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // Add Visit
             var visitModel = new VisitModel();
             visitModel.VisitType = visitType;
-            visitModel.MotherId = null;
-            visitModel.InfantId = null;
             visitModel.LinkedVisitId = input.LinkedVisitId;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
@@ -229,8 +168,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // Add Visit
             var visitModel = new VisitModel();
             visitModel.VisitType = visitType;
-            visitModel.MotherId = null;
-            visitModel.InfantId = null;
             visitModel.LinkedVisitId = input.LinkedVisitId;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
@@ -273,8 +210,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // Add Visit
             var visitModel = new VisitModel();
             visitModel.VisitType = visitType;
-            visitModel.MotherId = null;
-            visitModel.InfantId = null;
             visitModel.LinkedVisitId = input.LinkedVisitId;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
@@ -320,8 +255,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // Add Visit
             var visitModel = new VisitModel();
             visitModel.VisitType = visitType;
-            visitModel.MotherId = null;
-            visitModel.InfantId = null;
             visitModel.LinkedVisitId = input.LinkedVisitId;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
@@ -362,8 +295,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
-            [Service] ApplicationUserManager userManager,
-            [Service] INotificationService notificationService,
             SSChecklistVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;

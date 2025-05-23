@@ -1,12 +1,4 @@
-﻿using ECDLink.Abstractrions.Constants;
-using ECDLink.Core.Extensions;
-using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Clubs;
-using ECDLink.DataAccessLayer.Entities.Notifications;
-using ECDLink.DataAccessLayer.Entities.Users;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using ECDLink.Core.Services.Interfaces;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services

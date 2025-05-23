@@ -1,7 +1,6 @@
 ﻿using AngleSharp.Common;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.Visits;
 using EcdLink.Api.CoreApi.Managers.Users;
-using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -68,25 +67,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _practitionerRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
         }
 
-        public bool AddChildVisitData(CMSVisitDataInputModel input)
-        {
-            var visit = AddVisitData(input);
-                        
-            _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
-
-            return true;
-        }
-        public bool AddAntenatalVisitData(CMSVisitDataInputModel input)
-        {
-            AddVisitData(input);
-
-            // then handle status data - TODO I think we can clean this up and prevent it needing to reload the data from the DB again. 
-            // Can we just pass in the full visit we have just updated and calculate from there?
-            bool result = _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
-
-            return true;
-        }
-
         /// <summary>
         /// Adds data to a visit and marks it as attended
         /// </summary>
@@ -104,11 +84,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (input.VisitData.Sections == null)
             {
                 var section = new CMSVisitSection();
-                section.VisitSection = "";
-                if (input.VisitData.VisitName == Constants.GGSettings.pillar3_db)
-                {
-                    section.VisitSection = Constants.GGSettings.pillar3_section;
-                }
+                
                 section.Questions = new List<CMSQuestion>();
                 var question = new CMSQuestion();
                question.Question = "";
@@ -141,14 +117,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // update the visit record to show attended when follow up is done
-            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
-            if (count != 0)
-            {
-               visit.UpdatedDate = DateTime.Now;
-               visit.UpdatedBy = _applicationUserId.ToString();
-               visit.Attended = true;
-               visit.ActualVisitDate = DateTime.Now;
-            }        
+            // int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
+            // if (count != 0)
+            // {
+            //    visit.UpdatedDate = DateTime.Now;
+            //    visit.UpdatedBy = _applicationUserId.ToString();
+            //    visit.Attended = true;
+            //    visit.ActualVisitDate = DateTime.Now;
+            // }        
 
             return _visitRepo.Update(visit);
         }
@@ -462,85 +438,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         {
             return _visitDataRepo.GetAll().Where(x => x.Visit.Id.ToString() == visitId).OrderBy(x => x.Visit.PlannedVisitDate).ToList();
         }
-        public List<VisitData> GetGrowthDataForInfant(string id) {
-
-            return _visitDataRepo.GetAll().Where(x => x.Visit.Infant.UserId.ToString() == id && x.QuestionAnswer != "undefined" &&
-                                                (x.Question == Constants.GGSettings.QuestionWeight || x.Question == Constants.GGSettings.QuestionLength || x.Question == Constants.GGSettings.QuestionMUAC))
-                .OrderBy(x => x.Visit.PlannedVisitDate).ToList();
-        }
-        public int GetTotalGrowthInfantsForWeek(string id, Boolean currentWeek)
-        {
-            //- the number of children for which either a weight. length. and/or MUAC measure was taken
-            DateTime today = DateTime.Today;
-            var monday = StartOfWeek(today, DayOfWeek.Monday);
-            var next7Days = monday.AddDays(6);
-
-            if (!currentWeek)
-            {
-                int days = DateTime.Now.DayOfWeek - DayOfWeek.Sunday;
-                DateTime pastDate = DateTime.Now.AddDays(-days);
-                monday = StartOfWeek(pastDate, DayOfWeek.Monday);
-                next7Days = monday.AddDays(6);
-            }
-
-            return (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == id)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.QuestionWeight || y.Question == Constants.GGSettings.QuestionLength || y.Question == Constants.GGSettings.QuestionMUAC && y.InsertedDate.Date >= monday.Date && y.InsertedDate.Date <= next7Days.Date) on visit.Id equals visitData.VisitId
-                select visit.InfantId
-            ).Distinct().Count();
-
-        }
-        public string GetIDDocCSGStatusForInfant(string id)
-        {
-            var status = "";
-
-            List<VisitData> vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_birth_certificate || y.Question == Constants.GGSettings.QuestionReceivingCSG)
-                                                        .OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
-                select visitData
-            ).ToList();
-
-            if (vData.Count != 0)
-            {
-                var birth = vData.Where(x => x.Question == Constants.GGSettings.q_birth_certificate).OrderBy(x => x.Id).FirstOrDefault();
-                var csg = vData.Where(x => x.Question == Constants.GGSettings.QuestionReceivingCSG).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (birth?.QuestionAnswer == "false")
-                {
-                    status = "No birth certificate";
-                }
-
-                if (csg?.QuestionAnswer == "false")
-                {
-                    if (status == "")
-                    {
-                        status = "No CSG";
-                    } else
-                    {
-                        status = status + "/No CSG";
-                    }
-                }
-            }
-            return status;
-        }
-        public string GetCSGStatusForInfant(string id)
-        {
-            var status = "";
-
-            VisitData vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_csg_applied && y.QuestionAnswer == "false")
-                                                        .OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
-                select visitData
-            ).FirstOrDefault();
-
-            if (vData != null)
-            {
-                status = "Not applied for CSG";
-            }
-            return status;
-        }
+        
         public PQARating CalculateAndSavePractitionerPQARating(Visit pqaVisit)
         {
             int totalSections = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
@@ -761,7 +659,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // re-issued the SmartSpace licence (ie the use case 18 scenario);
 
                     if (rating.OverallScore > 42 ||
-                        (step11_q1 != null && step11_q1.QuestionAnswer == Constants.GGSettings.AnswerNo) ||
+                        (step11_q1 != null && step11_q1.QuestionAnswer == Constants.SSSettings.answer_no) ||
                         (step14_q1 != null && step14_q1.QuestionAnswer == Constants.SSSettings.answer_yes))
                     {
                         rating.OverallRatingColor = MetricsColorEnum.Success.ToString();
@@ -773,7 +671,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // 2. if user selected ""No"" to the second question in use case 21(ie, ""Is the SmartStart programme being implemented for long enough?""
                     // 3. if user selected ""Yes"" to the third question in use case 21(ie, ""Are there too many children attending the SmartStart programme ? "")
                     if (rating.OverallScore >= 18 && rating.OverallScore <= 42 ||
-                        (step16_q3 != null && step16_q3.QuestionAnswer == Constants.GGSettings.AnswerNo) ||
+                        (step16_q3 != null && step16_q3.QuestionAnswer == Constants.SSSettings.answer_no) ||
                         (step16_q4 != null && step16_q4.QuestionAnswer == Constants.SSSettings.answer_yes))
                     {
                         rating.OverallRatingColor = MetricsColorEnum.Warning.ToString();
@@ -787,7 +685,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // (4.note that if the user selected ""Yes"" to the first question in use case 21, then the scenario in use case 23 applies - please see use case 23 above for that red rating case, not covered here) 
 
                     if (rating.OverallScore < 18 || (step5Score > 0 && step5Score < 5) ||
-                        (step14_q1 != null && step14_q1.QuestionAnswer == Constants.GGSettings.AnswerNo) ||
+                        (step14_q1 != null && step14_q1.QuestionAnswer == Constants.SSSettings.answer_no) ||
                         (step16_q1 != null && step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes) ||
                         (step12 != null && step12_count <= 12))
                     {

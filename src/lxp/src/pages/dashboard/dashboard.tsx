@@ -53,7 +53,6 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { CommunityRouteState } from '../community-old/community.types';
 import { coachSelectors } from '@/store/coach';
 import { childrenThunkActions } from '@/store/children';
 
@@ -80,6 +79,7 @@ import {
 import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
+import { CommunityRouteState } from '../community/community.types';
 
 const { version } = require('../../../package.json');
 

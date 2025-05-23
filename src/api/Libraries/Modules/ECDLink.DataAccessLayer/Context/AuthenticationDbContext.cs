@@ -4,15 +4,11 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Clinics;
-using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Community;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
-using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
@@ -103,11 +99,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Coach> Coaches { get; set; }
         public DbSet<Caregiver> Caregivers { get; set; }
         public DbSet<Franchisor> Franchisors { get; set; }
-        public DbSet<HealthCareWorker> HealthCareWorkers { get; set; }
-        public DbSet<Mother> Mothers { get; set; }
-        public DbSet<Infant> Infants { get; set; }
         public DbSet<Trainee> Trainees { get; set; }
-        public DbSet<TeamLead> TeamLead {  get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }
@@ -146,48 +138,12 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Visit> Visits { get; set; }
         public DbSet<VisitData> VisitData { get; set; }
         public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
-        public DbSet<VisitGrowthDataDay> VisitGrowthDataDay { get; set; }
-        public DbSet<VisitGrowthDataHeight> VisitGrowthDataHeight { get; set; }
-        public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
-        public DbSet<ReferralType> ReferralTypes { get; set; }
-        public DbSet<VisitDataStatusReferralType> VisitDataStatusReferralTypes { get; set; }        
 
         // Licenses
         public DbSet<LicenseType> LicenseType { get; set; }
         public DbSet<License> License { get; set; }
 
-
-        // Event Records
-        public DbSet<EventRecordType> EventRecordTypes { get; set; }
-        public DbSet<EventRecord> EventRecords { get; set; }
-
-        // Clubs
-        public DbSet<Club> Clubs { get; set; }
-        public DbSet<ClubMeeting> ClubMeetings { get; set; }
-        public DbSet<ClubMeetingRegister> ClubMeetingRegisters { get; set; }
         public DbSet<MeetingType> MeetingType { get; set; }
-        public DbSet<ClubMember> ClubMember { get; set; }
-        public DbSet<ClubLeader> ClubLeader { get; set; }
-        public DbSet<ClubSupport> ClubSupport { get; set; }
-        public DbSet<ClubPointsLibrary> ClubPointsLibrary { get; set; }
-        public DbSet<ClubPoints> ClubPoints { get; set; }
-        public DbSet<ClubActivityUpload> ClubActivityUpload { get; set; }
-        public DbSet<ClubActivityUploadType> ClubActivityUploadType { get; set; }
-
-        // Clinics, Districts, SubDistricts
-        public DbSet<Clinic> Clinics { get; set; }
-        public DbSet<District> Districts { get; set; }
-        public DbSet<SubDistrict> SubDistricts { get; set; }
-        public DbSet<ClinicLeague> ClinicLeagues { get; set; }
-        public DbSet<ClinicTeamLead> ClinicTeamLeads { get; set; }
-        public DbSet<BreastFeedingClub> BreastFeedingClubs { get; set; }
-        public DbSet<ClinicMeeting> ClinicMeetings { get; set; }
-        public DbSet<ClinicMeetingParticipantInField> ClinicMeetingParticipantInField { get; set; }
-        public DbSet<ClinicMeetingParticipantOptedOut> ClinicMeetingParticipantOptedOut { get; set; }
-
-        // Leagues
-        public DbSet<LeagueType> LeagueType { get; set; }
-        public DbSet<League> League { get; set; }
 
         // PQA
         public DbSet<PQA> PQAs { get; set; } // TODO - I think we can remove this now, it was old integration stuff
@@ -266,10 +222,6 @@ namespace ECDLink.DataAccessLayer.Context
             {
                 x.HasNoKey();
             });
-            builder.Entity<CareGiverGrant>(x =>
-            {
-                x.HasKey(e => new { e.GrantId, e.Id });
-            });
             builder.Entity<ChildProgressReport>(x =>
             {
                 x.HasKey(e => new { e.Id });
@@ -306,11 +258,6 @@ namespace ECDLink.DataAccessLayer.Context
             {
                 x.HasKey(e => new { e.GrantId, e.UserId });
             });
-            builder.Entity<VisitDataStatus>()
-                .HasOne(e => e.VisitBackReferral)
-                .WithOne(e => e.VisitDataStatus)
-                .HasForeignKey<VisitBackReferral>(e => e.VisitDataStatusId)
-                .IsRequired();
             builder.Entity<MessageLogRelatedTo>(x =>
             {
                 x.HasKey(e => new { e.MessageLogId, e.RelatedEntityId });

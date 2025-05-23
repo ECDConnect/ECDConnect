@@ -1,8 +1,6 @@
 export type CoachRouteState = {};
 
-export interface CoachesRouteState {
-  //queryVariables: QueryAllHealthCareWorkersArgs;
-}
+export interface CoachesRouteState {}
 
 export const ColumnNames = {
   IdPassport: 'ID/Passport',

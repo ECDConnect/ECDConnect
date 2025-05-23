@@ -28,7 +28,6 @@ import {
   UsersRolesTypeEnum,
   UsersRouteRedirectTypeEnum,
 } from './view-user.types';
-import { ConenctUsage } from '../users/sub-pages/team-leads/team-leads.types';
 import { SendInvite } from './components/send-invite/send-invite';
 import { DeactivateUser } from './components/deactivate-user/deactivate-user';
 import { ReactivateUser } from './components/reactivate-user/reactivate-user';
@@ -42,6 +41,7 @@ import { CoachSummary } from './components/coach-summary/coach-summary';
 import { CoachIssuesAndHighlights } from './components/coach-issues-and-highlights/coach-issues-and-highlights';
 import { pluralize } from '../pages.utils';
 import { ResetUserPassword } from './components/reset-password/reset-password';
+import { ConnectUsage } from '../users/user.types';
 
 const formatDate = (value: string | number | Date) => {
   try {
@@ -260,7 +260,7 @@ export function ViewUser(props: any) {
 
   const getConnectUsageChip = (value: string) => {
     switch (value) {
-      case ConenctUsage?.InvitationActive:
+      case ConnectUsage?.InvitationActive:
         return (
           <div>
             <StatusChip
@@ -272,7 +272,7 @@ export function ViewUser(props: any) {
             />
           </div>
         );
-      case ConenctUsage?.InvitationExpired:
+      case ConnectUsage?.InvitationExpired:
         return (
           <div>
             <StatusChip
@@ -284,7 +284,7 @@ export function ViewUser(props: any) {
             />
           </div>
         );
-      case ConenctUsage?.LastOnlineOver6Months:
+      case ConnectUsage?.LastOnlineOver6Months:
         return (
           <div>
             <StatusChip
@@ -296,7 +296,7 @@ export function ViewUser(props: any) {
             />
           </div>
         );
-      case ConenctUsage?.LastOnlineWithinPast6Months:
+      case ConnectUsage?.LastOnlineWithinPast6Months:
         return (
           <div>
             <StatusChip
