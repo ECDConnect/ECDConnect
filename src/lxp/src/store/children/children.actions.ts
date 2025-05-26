@@ -451,6 +451,9 @@ const mapChildInput = (
   isActive: child.isActive === false ? false : true,
   user: mapUserInput(child.user!),
   caregiver: !!child.caregiver ? mapCaregiver(child.caregiver) : null,
+  reasonForLeavingId: child?.reasonForLeavingId || null,
+  inactivityComments: child?.inactivityComments || null,
+  inactiveDate: child?.inactiveDate || null,
 });
 
 const mapUserInput = (childUser: Partial<UserDto>): ChildUserUpdateInput => ({
