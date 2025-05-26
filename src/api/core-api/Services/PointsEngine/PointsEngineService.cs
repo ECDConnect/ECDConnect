@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Points;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Extensions;

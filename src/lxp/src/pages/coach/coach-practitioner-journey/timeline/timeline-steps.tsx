@@ -15,7 +15,6 @@ import {
   sortVisits,
 } from './utils';
 import { visitTypes } from '../coach-practitioner-journey.types';
-import { ClubMeetingMeeting } from './club-meetings';
 import { visitIdKey } from '../forms';
 
 export type ScheduleEventType =
@@ -237,83 +236,6 @@ export const timelineSteps = ({
           visits={visits}
           onStart={onStart}
           onScheduleOrStart={onScheduleOrStart}
-        />
-      ),
-    });
-  }
-
-  if (timeline?.coachCircles) {
-    const coachingCirclesAttendedMeetings =
-      timeline?.coachCircles?.totalPresent;
-    const coachingCirclesTotalMeetings = timeline?.coachCircles?.totalMeetings;
-    const lastMeetingattendanceDate = timeline?.coachCircles?.attendanceText
-      ? new Date(timeline?.coachCircles?.attendanceText)
-      : new Date();
-    const attendanceColor =
-      timeline?.coachCircles?.attendanceColor || 'Success';
-    const attendanceColorType =
-      timeline?.coachCircles?.attendanceColor === 'Success'
-        ? 'completed'
-        : 'inProgress';
-
-    const date = new Date(
-      timeline.coachCircles?.attendanceText!
-    ).toLocaleDateString('en-ZA', dateOptions);
-    steps.push({
-      title: `${coachingCirclesAttendedMeetings}/${coachingCirclesTotalMeetings} coaching circles attended`,
-      subTitle: `${new Date(lastMeetingattendanceDate).toLocaleDateString(
-        'en-ZA',
-        dateOptions
-      )}`,
-      type: attendanceColorType,
-      extraData: {
-        date: new Date(date),
-      },
-      showAccordion: true,
-      inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',
-      color: getIconBgColor(attendanceColor),
-      accordionContent: (
-        <ClubMeetingMeeting
-          isLoading={isLoading}
-          isOnline={isOnline}
-          onView={onView}
-          attendanceRecord={timeline.coachCircles}
-        />
-      ),
-    });
-  }
-
-  if (timeline?.clubMeetings) {
-    const clubMeetingsAttendedMeetings = timeline.clubMeetings.totalPresent;
-    const clubMeetingsTotalMeetings = timeline.clubMeetings.totalMeetings;
-    const lastMeetingAttendanceDate = timeline.clubMeetings.attendanceText
-      ? new Date(timeline?.clubMeetings?.attendanceText)
-      : new Date();
-    const attendanceColor = timeline.clubMeetings.attendanceColor || 'Success';
-    const attendanceColorType =
-      timeline.clubMeetings.attendanceColor === 'Success'
-        ? 'completed'
-        : 'inProgress';
-
-    steps.push({
-      title: `${clubMeetingsAttendedMeetings}/${clubMeetingsTotalMeetings} club meetings attended`,
-      subTitle: `${lastMeetingAttendanceDate.toLocaleDateString(
-        'en-ZA',
-        dateOptions
-      )}`,
-      type: attendanceColorType,
-      extraData: {
-        date: lastMeetingAttendanceDate,
-      },
-      showAccordion: true,
-      inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',
-      color: getIconBgColor(attendanceColor),
-      accordionContent: (
-        <ClubMeetingMeeting
-          isLoading={isLoading}
-          isOnline={isOnline}
-          onView={onView}
-          attendanceRecord={timeline.clubMeetings}
         />
       ),
     });

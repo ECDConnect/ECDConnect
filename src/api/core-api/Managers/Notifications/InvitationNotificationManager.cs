@@ -64,28 +64,6 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
               .SendMessageAsync();
         }
 
-        public async Task SendSMSAsync(ApplicationUserManager userManager, ApplicationUser user, string token)
-        {
-            var encodedToken = TokenHelper.EncodeToken(token);
-
-            var userIsTL = await userManager.IsInRoleAsync(user, RolesGG.TEAM_LEAD);
-
-            var invitationUrl = userIsTL ? $"{_options.Value.TeamLeadSignup}/{encodedToken}" : $"{_options.Value.AdminSignup}/{encodedToken}";
-            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
-            var organisationName = TenantExecutionContext.Tenant.OrganisationName;
-            string firstName = user.FirstName;
-
-            var notificationProvider = _notificationProviderFactory.Create(user);
-
-            await notificationProvider
-              .SetMessageTemplate(TemplateTypeEnum.AdminPortalInvitation)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
-              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
-              .SendMessageAsync();
-        }
-
         public async Task SendPreSchoolInvitationAsync(ApplicationUser user, string principalFirstName, string preSchoolName, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);

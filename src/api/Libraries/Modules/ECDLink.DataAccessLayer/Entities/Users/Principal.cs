@@ -32,7 +32,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal? ParentFees { get; set; }
         public string LanguageUsedInGroups { get; set; }
         public DateTime? StartDate { get; set; }
-        public int? MonthSinceFranchisee { get; set; }
         public virtual ICollection<Document> Documents { get; set; }
 
         [ForeignKey(nameof(UserId))]
@@ -62,8 +61,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string ReasonForLeavingDetails { get; set; }
         public decimal Progress { get; set; }
         public string ProgrammeType { get; set; }
-        public bool? IsClubOwner { get; set; }
-        public bool? AttendedBusinessSkills { get; set; }
         public string LeavingComment { get; set; }
         public string UsePhotoInReport { get; set; }
         public bool? IsCompletedBusinessWalkThrough { get; set; }

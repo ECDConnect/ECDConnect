@@ -1,7 +1,6 @@
 ﻿using EcdLink.Api.CoreApi;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Mutations;
-using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
@@ -11,6 +10,7 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -48,9 +48,7 @@ namespace ECDLink.Api.CoreApi.Services
         private IGenericRepository<SiteAddress, Guid> _addressRepo;
         private IGenericRepository<Coach, Guid> _coachGenericRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
-        private IGenericRepository<TeamLead, Guid> _teamLeadRepo;
         private AuthenticationDbContext _dbContext;
-
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
         private ApplicationUserManager _userManager;
@@ -86,7 +84,6 @@ namespace ECDLink.Api.CoreApi.Services
             _addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
             _coachGenericRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
-            _teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: _applicationUserId);
             _dbContext = dbContext;
 
             _visitDataManager = visitDataManager;
@@ -313,32 +310,6 @@ namespace ECDLink.Api.CoreApi.Services
                     _classRepo.Update(classroom);
                 }
 
-                //now list through all practitioners and remove the principalhierarchies and assign new
-                /*List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy == Guid.Parse(oldPrincipalUserId)).ToList();
-                if (allPrincipalPractitioners.Count > 0)
-                {
-                    //send notifications about change of FAA/Principal
-                    List<TagsReplacements> replacements = new List<TagsReplacements>();
-                    replacements.Add(new TagsReplacements()
-                    {
-                        FindValue = "ProgrammeName",
-                        ReplacementValue = classroomName
-                    });
-
-                    foreach (var practi in allPrincipalPractitioners)
-                    {
-                        practi.PrincipalHierarchy = practitionerToPromote.UserId;
-                        _practiGenericRepo.Update(practi);
-                        replacements.Add(new TagsReplacements()
-                        {
-                            FindValue = "PrincipalOrFAA",
-                            ReplacementValue = (isRolePrincipal ? "Principal" : isRoleFAA ? "Funda App admin" : "")
-                        });
-
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalFAAChanged, DateTime.Now.Date, practi.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7),true);
-                    }
-                }*/
-
                 //Swap the unsure class if there is one
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId.ToString()).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
@@ -464,7 +435,6 @@ namespace ECDLink.Api.CoreApi.Services
                 ParentFees = practitioner?.ParentFees,
                 LanguageUsedInGroups = practitioner?.LanguageUsedInGroups,
                 StartDate = practitioner.StartDate,
-                MonthSinceFranchisee = practitioner?.MonthSinceFranchisee,
                 UserId = practitioner.UserId,
                 SiteAddressId = practitioner?.SiteAddressId,
                 IsPrincipal = true,
@@ -596,7 +566,6 @@ namespace ECDLink.Api.CoreApi.Services
             timeline.PQASiteVisits = pqaVisits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.SupportVisits = supportVisits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.ReAccreditationVisits = reaccreditationVisits.OrderBy(x => x.PlannedVisitDate).ToList();
-            //timeline.RequestedCoachVisits = requestedCoachVisits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.SelfAssessmentVisits = selfVisits.OrderBy(x => x.PlannedVisitDate).ToList();
 
             return timeline;
@@ -724,16 +693,6 @@ namespace ECDLink.Api.CoreApi.Services
             _dbContext.Classrooms.RemoveRange(classrooms);
             _dbContext.SaveChanges();
             return true;
-        }
-
-        public TeamLead RegisterTeamLead(Guid userId)
-        {
-            var teamLead = _teamLeadRepo.GetByUserId(userId);
-
-            teamLead.IsRegistered = true;
-            teamLead.UpdatedDate = DateTime.Now;
-            teamLead.UpdatedBy = _applicationUserId.ToString();
-            return _teamLeadRepo.Update(teamLead);
         }
 
         public Practitioner AddOAPractitioner(Guid userId, string userName)

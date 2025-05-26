@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
-import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -18,7 +18,6 @@ import {
 } from '@ecdlink/ui';
 import { NoteTypeEnum, PractitionerRemovalHistory } from '@ecdlink/graphql';
 import { PractitionerService } from '@/services/PractitionerService';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './practitioner-profile-info.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './practitioner-profile-info.styles';
@@ -51,9 +50,7 @@ import {
 } from 'date-fns';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
-import { PractitionerDelicensed } from './practitioner-delicensed/practitioner-delicensed';
 import { authSelectors } from '@/store/auth';
 import { useTenantModules } from '@/hooks/useTenantModules';
 import { useTenant } from '@/hooks/useTenant';
@@ -102,9 +99,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const [isToRemoveSmartStarter, setIsToRemoveSmartStarter] =
     useState<boolean>(false);
-  const [delicenseDate, setDelicenseDate] = useState<Date>();
 
-  const { theme } = useTheme();
   const { showMessage } = useSnackbar();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
@@ -139,57 +134,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   useEffect(() => {
     appDispatch(getPractitionerTimeline({ userId: practitionerId }));
   }, [appDispatch, practitionerId]);
-
-  const practitionerTimeline = useSelector(
-    getPractitionerTimelineByIdSelector(practitionerId)
-  );
-
-  // Check if the practitioner needs to be removed for whatever reason
-  useEffect(() => {
-    if (!practitionerTimeline) {
-      return;
-    }
-
-    const attendedPqaVisits = practitionerTimeline?.pQASiteVisits?.filter(
-      (visit) => !!visit?.attended
-    );
-    const attendedReaccreditationVisits =
-      practitionerTimeline?.reAccreditationVisits?.filter(
-        (visit) => !!visit?.attended
-      );
-
-    const lastPqa = attendedPqaVisits?.[attendedPqaVisits?.length - 1];
-
-    const previousPqa = attendedPqaVisits?.[attendedPqaVisits?.length - 2];
-
-    const lastReaccreditation =
-      attendedReaccreditationVisits?.[
-        attendedReaccreditationVisits?.length - 1
-      ];
-
-    const previousReaccreditation =
-      attendedReaccreditationVisits?.[
-        attendedReaccreditationVisits?.length - 2
-      ];
-
-    if (
-      !!lastPqa?.delicenseQuestionAnswered ||
-      (lastPqa?.overallRatingColor === 'Error' &&
-        previousPqa?.overallRatingColor === 'Error')
-    ) {
-      setIsToRemoveSmartStarter(true);
-      setDelicenseDate(new Date(lastPqa.insertedDate));
-    }
-
-    if (
-      !!lastReaccreditation?.delicenseQuestionAnswered ||
-      (lastReaccreditation?.overallRatingColor === 'Error' &&
-        previousReaccreditation?.overallRatingColor === 'Error')
-    ) {
-      setIsToRemoveSmartStarter(true);
-      setDelicenseDate(new Date(lastReaccreditation.insertedDate));
-    }
-  }, [practitionerTimeline]);
 
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
@@ -486,12 +430,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   return (
     <>
-      {isToRemoveSmartStarter && (
-        <PractitionerDelicensed
-          practitioner={practitioner!}
-          delicenseDate={delicenseDate!}
-        />
-      )}
       {practitionerNotRegistered && (
         <CoachPractitionerNotRegistered
           practitioner={practitioner}
@@ -1201,9 +1139,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 color="quatenary"
                 textColor="white"
                 className={`mt-6 w-11/12 ${
-                  !practitioner?.isPrincipal &&
-                  !practitioner?.isFundaAppAdmin &&
-                  'mb-6'
+                  !practitioner?.isPrincipal && 'mb-6'
                 }`}
                 onClick={() =>
                   isOnline

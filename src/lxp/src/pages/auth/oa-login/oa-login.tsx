@@ -149,7 +149,7 @@ export const OaLogin: React.FC = () => {
     setIsLoading(false);
 
     if (isValid) {
-      if (freeMemory > 300 || freeMemory === 0) {
+      if (freeMemory > 200 || freeMemory === 0) {
         setIsLoading(true);
         const body: LoginRequestModel = {
           username: loginFormGetValues().username,

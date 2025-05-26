@@ -412,20 +412,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           await appDispatch(
             practitionerForCoachThunkActions.getPractitionersForCoach({})
           ).unwrap())();
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getAllCoachingCircleClubsForCoach({
-              coachId: userData?.id!,
-              startDate: quarterStartDate,
-              endDate: quarterLastDay,
-            })
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getAllClubsForCoach({
-              userId: userData?.id!,
-            })
-          ).unwrap())();
         (async (id) =>
           await appDispatch(
             classroomsForCoachThunkActions.getClassroomForCoach({

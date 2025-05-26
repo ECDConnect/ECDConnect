@@ -5,19 +5,13 @@ import localForage from 'localforage';
 import { CoachState } from './coach.types';
 import {
   coachNameByUserId,
-  getAllClubsForCoach,
-  getAllCoachingCircleClubsForCoach,
   getCoachByCoachId,
   getCoachByUserId,
-  getCoachingCircleTopics,
 } from './coach.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: CoachState = {
   coach: undefined,
-  coachCircles: undefined,
-  coachClubs: undefined,
-  coachCicleTopics: undefined,
 };
 
 const coachSlice = createSlice({
@@ -44,18 +38,6 @@ const coachSlice = createSlice({
     });
     builder.addCase(getCoachByUserId.fulfilled, (state, action) => {
       state.coach = action.payload;
-    });
-    builder.addCase(
-      getAllCoachingCircleClubsForCoach.fulfilled,
-      (state, action) => {
-        state.coachCircles = action.payload;
-      }
-    );
-    builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
-      state.coachClubs = action.payload;
-    });
-    builder.addCase(getCoachingCircleTopics.fulfilled, (state, action) => {
-      state.coachCicleTopics = action.payload;
     });
   },
 });

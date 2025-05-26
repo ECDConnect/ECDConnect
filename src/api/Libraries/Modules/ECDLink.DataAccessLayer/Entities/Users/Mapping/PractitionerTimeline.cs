@@ -52,8 +52,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public ICollection<Visit> ReAccreditationVisits { get; set; }
         public ICollection<Visit> RequestedCoachVisits { get; set; }
         public ICollection<Visit> SelfAssessmentVisits { get; set; }
-        public PractitionerAttendance CoachCircles { get; set; }
-        public PractitionerAttendance ClubMeetings { get; set; }
+        
         public ICollection<PQARating> PQARatings { get; set; }
         public ICollection<PQARating> ReAccreditationRatings { get; set; }
         public PQARating PQARating1 { get; set; }

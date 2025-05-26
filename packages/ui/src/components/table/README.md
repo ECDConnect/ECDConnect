@@ -29,15 +29,12 @@ Here's how you can use the `Table` component:
   const columns = [
     { field: 'id', use: 'Unique ID' },
     { field: 'name', use: 'Name' },
-    { field: 'teamLeads', use: 'teamLead(s)' },
-    { field: 'subDistrict', use: 'Sub-district' },
     { field: 'insertedDate', use: 'Date added' },
   ]
 
   const rows = Array.from({ length: 100 }, (_, i) => ({
     id: i,
     name: `Name ${i}`,
-    teamLeads: `Team Leads ${i}`,
     // You can use html elements in the data, it isn't restricted to just text
     subDistrict: <div className='bg-red-400 rounded-xl p-2'>Sub District {i}</div>,
     insertedDate: `Date ${i}`

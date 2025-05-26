@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -68,7 +69,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     throw new QueryException("You may not create an admin user.");
                 }
             }
-            
+
             // Check for existing user.
             var newUsername = input?.IdNumber ?? input.Email ?? Guid.NewGuid().ToString();
             //var existingUser = await userManager.FindByNameAsync(newUsername);
@@ -108,7 +109,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             try
             {
                 userCreatedResult = await userManager.CreateAsync(newUser);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError("Could not add user: {0}\nException:{1}", userCreatedResult?.Errors?.FirstOrDefault()?.Description, ex?.InnerException?.Message ?? ex.Message);
                 throw new QueryException("Could not add user.");
@@ -185,7 +187,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (user is null || currentUserId is null)
                 throw new QueryException("User not found.");
-            
+
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             // Cross tenant, but allow admin user which has no tenant... 
@@ -201,7 +203,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             // Phone Number
-            if (input.PhoneNumber is not null 
+            if (input.PhoneNumber is not null
                 && input.PhoneNumber != user.PhoneNumber)
             {
                 user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
@@ -214,7 +216,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.WhatsAppNumber = UserHelper.NormalizePhoneNumber(normalizedWhatsAppNumber);
             }
 
-            if (!string.IsNullOrWhiteSpace(input.IdNumber) 
+            if (!string.IsNullOrWhiteSpace(input.IdNumber)
                 && input.IdNumber != user.IdNumber)
             {
                 user.IdNumber = input.IdNumber;
@@ -225,13 +227,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.UserName = input.UserName;
             }
 
-            if (input.IsSouthAfricanCitizen is not null 
+            if (input.IsSouthAfricanCitizen is not null
                 && input.IsSouthAfricanCitizen != user.IsSouthAfricanCitizen)
             {
                 user.IsSouthAfricanCitizen = input.IsSouthAfricanCitizen ?? false;
             }
 
-            if (input.VerifiedByHomeAffairs is not null 
+            if (input.VerifiedByHomeAffairs is not null
                 && input.VerifiedByHomeAffairs != user.VerifiedByHomeAffairs)
             {
                 user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs ?? false;
@@ -243,20 +245,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.DateOfBirth = input.DateOfBirth.Value.Date;
             }
 
-            if (input.GenderId is not null 
+            if (input.GenderId is not null
                 && input.GenderId != user.GenderId)
             {
                 user.GenderId = input.GenderId;
             }
 
-            if (input?.RaceId is not null 
+            if (input?.RaceId is not null
                 && input.RaceId != user.RaceId)
             {
           
                 user.RaceId = input.RaceId;
             }
 
-            if (input.LanguageId is not null 
+            if (input.LanguageId is not null
                 && input.LanguageId != user.LanguageId)
             {
                 user.LanguageId = input.LanguageId;
@@ -329,11 +331,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 && user.Id != currentUserId)
             {
                 // if current user is super admin and the user is admin, then we don't verify
-                if (currentUserIsSuperAdmin && userIsAdmin) 
+                if (currentUserIsSuperAdmin && userIsAdmin)
                 {
                     user.Email = input.Email;
                     user.EmailConfirmed = false;
-                } 
+                }
                 else
                 {
                     user.PendingEmail = input.Email;
@@ -349,7 +351,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // Set email back to original so that it must first be verified.
                     input.Email = user.Email;
                 }
-               
+
             }
 
             // If the email is different (or will become unconfirmed)
@@ -361,7 +363,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 && user.Id == currentUserId)
             {
                 user.Email = input.Email;
-                user.EmailConfirmed = false;                
+                user.EmailConfirmed = false;
             }
 
             if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl)
@@ -439,12 +441,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var guidIds = ids.Select(x => Guid.Parse(x)).ToList();
             var users = userManager.Users.Where(u => guidIds.Contains(u.Id)).ToList();
-            
+
             if (users is null || users.Count == 0)
             {
                 return new BulkDeactivateResult();
             }
-            
+
             var success = new List<string>();
             var failed = new List<string>();
 
@@ -466,7 +468,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.IsActive = false;
 
                 var updateResult = await userManager.UpdateAsync(user);
-                
+
                 if (updateResult.Succeeded)
                 {
                     // Remove any roles
@@ -478,7 +480,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
 
                     success.Add(user.Id.ToString());
-                } 
+                }
                 else
                 {
                     failed.Add(user.Id.ToString());
@@ -539,7 +541,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     userManager.AddToRoleAsync(user, Roles.COACH);
                 }
 
-                
+
             }
 
             return true;

@@ -3,10 +3,8 @@ using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.Managers;
-using EcdLink.Api.CoreApi.Managers.EventRecords;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
-using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers;
@@ -198,16 +196,12 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IJWTRepository, JWTRepository>();
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
-            services.AddTransient<HealthCareWorkerManager>();
             services.AddTransient<CaregiverManager>();
-            services.AddTransient<MotherManager>();
-            services.AddTransient<EventRecordManager>();
-            services.AddTransient<InfantManager>();
             services.AddTransient<VisitManager>();
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
             services.AddTransient<VisitDataStatusManager_Practitioner>();
-            services.AddTransient<VisitBackReferralManager>();
+
             services.AddTransient<PersonnelService>();
             services.AddTransient<IPersonnelService, PersonnelService>();
             services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
@@ -227,9 +221,6 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ChildAttendanceReport>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
-            services.AddTransient<IClinicService, ClinicService>();
-            services.AddTransient<IReferralService, ReferralService>();
-            services.AddTransient<ITeamLeadService, TeamLeadService>();
             services.AddTransient<IClassroomService, ClassroomService>();
             services.AddTransient<ICommunityService, CommunityService>();
             services.AddTransient<IChildProgressReportService, ChildProgressReportService>();

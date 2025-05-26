@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.Visits;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -19,15 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool AddVisitData([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, HierarchyEngine hierarchyEngine, [Service] INotificationService notificationService, CMSVisitDataInputModel input)
         {
-            if (input.MotherId != null)
-            {
-                visitDataManager.AddAntenatalVisitData(input);
-            }
-            else if (input.InfantId != null)
-            {
-                visitDataManager.AddChildVisitData(input);
-            }
-            else if (input.PractitionerId != null)
+            if (input.PractitionerId != null)
             {
                 var visit = visitDataManager.AddPractitionerVisitData(input, true);
                 // PQA Rating

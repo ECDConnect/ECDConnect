@@ -17,7 +17,6 @@ export interface PractitionerDto extends EntityBase {
   startDate?: Date;
   documents?: DocumentDto[];
   isPrincipal?: boolean;
-  isNewInClub?: boolean;
   principalHierarchy?: string;
   principalName?: string;
   principalProfilePic?: string;

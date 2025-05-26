@@ -3,7 +3,6 @@ import localForage from 'localforage';
 import { PointsState } from './points.types';
 import {
   getPointsSummaryForUser,
-  getUserClubStanding,
   pointsTodoItems,
   sharedData,
   yearPointsView,
@@ -12,7 +11,6 @@ import {
 const initialState: PointsState = {
   pointsSummary: [],
   pointsLibrary: [],
-  userClubStanding: undefined,
   pointsToDo: undefined,
   yearPoints: undefined,
   shareData: undefined,
@@ -25,7 +23,6 @@ const pointsState = createSlice({
     resetPointsState: (state) => {
       state.pointsSummary = [];
       state.pointsLibrary = [];
-      state.userClubStanding = undefined;
       state.pointsToDo = undefined;
       state.yearPoints = undefined;
       state.shareData = undefined;
@@ -34,12 +31,6 @@ const pointsState = createSlice({
   extraReducers: (builder) => {
     builder.addCase(getPointsSummaryForUser.fulfilled, (state, action) => {
       state.pointsSummary = action.payload;
-    });
-    builder.addCase(getUserClubStanding.fulfilled, (state, action) => {
-      state.userClubStanding = {
-        standing: action.payload,
-        dateLoaded: new Date().toISOString(),
-      };
     });
     builder.addCase(pointsTodoItems.fulfilled, (state, action) => {
       state.pointsToDo = action.payload;

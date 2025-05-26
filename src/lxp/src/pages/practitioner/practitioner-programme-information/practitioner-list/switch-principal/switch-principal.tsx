@@ -49,7 +49,7 @@ export const SwitchPrincipal: React.FC<SwapPrincipalProps> = () => {
     { label: string; value: string }[]
   >(() => {
     return (
-      ((practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+      ((practitioner?.isPrincipal
         ? practitioners?.filter((x) => x.userId !== practitionerUserId)
         : practitioners
       )

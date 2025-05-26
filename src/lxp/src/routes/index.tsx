@@ -254,7 +254,6 @@ const AuthRoutes: React.FC = () => {
         component={CommunityConnections}
         exact
       />
-
       <Route
         path={ROUTES.COMMUNITY.PROFILE}
         component={CommunityProfile}

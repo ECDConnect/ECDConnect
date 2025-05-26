@@ -77,6 +77,7 @@ import {
 import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
+import { CommunityRouteState } from '../community/community.types';
 
 const { version } = require('../../../package.json');
 
@@ -121,7 +122,6 @@ export const Dashboard: React.FC = () => {
 
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
-  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
@@ -218,10 +218,9 @@ export const Dashboard: React.FC = () => {
       return total;
     }, 0);
 
-    let pointsMax =
-      isPrincipal || isFundaAppAdmin
-        ? pointsConstants.principalOrAdminMonthlyMax
-        : pointsConstants.practitionerMonthlyMax;
+    let pointsMax = isPrincipal
+      ? pointsConstants.principalOrAdminMonthlyMax
+      : pointsConstants.practitionerMonthlyMax;
 
     const percentageScore = (pointsTotal / pointsMax) * 100;
 
@@ -400,13 +399,6 @@ export const Dashboard: React.FC = () => {
               endDate: currentDate,
             })
           ).unwrap())();
-
-        // (async () =>
-        //   await appDispatch(
-        //     pointsThunkActions.getUserClubStanding({
-        //       userId: userData?.id!,
-        //     })
-        //   ).unwrap())();
       }
     }
   }, [userData]);
@@ -612,7 +604,7 @@ export const Dashboard: React.FC = () => {
             },
           ],
     },
-    ...(isPrincipal || isFundaAppAdmin || isTrialPeriod
+    ...(isPrincipal || isTrialPeriod
       ? [
           {
             name: NavigationNames.Business.Business,
@@ -772,7 +764,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
+  if (isPrincipal || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
       titleIcon: styles.businessIconName,
@@ -987,7 +979,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToBusiness = () => {
-    if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
+    if (isPrincipal || isTrialPeriod) {
       history.push(ROUTES.BUSINESS);
       return;
     }

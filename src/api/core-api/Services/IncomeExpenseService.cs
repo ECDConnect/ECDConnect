@@ -1,6 +1,7 @@
 ﻿
 using DinkToPdf.Contracts;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.Statements;
 using EcdLink.Api.CoreApi.Managers;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Api.CoreApi.Services;
