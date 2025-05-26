@@ -88,7 +88,11 @@ namespace EcdLink.Api.CoreApi.Services
             child.Disabilities = input.Disabilities;
             child.OtherHealthConditions = input.OtherHealthConditions;
             child.WorkflowStatusId = input.WorkflowStatusId;
-
+            if (input.ReasonForLeavingId != null) child.ReasonForLeavingId = input.ReasonForLeavingId;
+            if (input.InactiveDate != null) child.InactiveDate = input. InactiveDate;
+            if (input.InactiveReason != null) child.InactiveReason = input.InactiveReason;
+            if (input.InactivityComments != null) child.InactivityComments = input.InactivityComments;
+            
             // Update child user fields
             if (input.User != null)
             {

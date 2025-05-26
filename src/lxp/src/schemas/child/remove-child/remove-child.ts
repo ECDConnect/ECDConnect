@@ -12,4 +12,5 @@ export const initialRemoveChildValues: RemoveChildModel = {
 
 export const removeChildModelSchema = Yup.object().shape({
   removeReasonId: Yup.string().required().min(1),
+  reasonDetail: Yup.string().required().min(1),
 });

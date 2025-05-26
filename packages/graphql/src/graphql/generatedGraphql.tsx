@@ -14564,9 +14564,13 @@ export type UpdateChildAndCaregiverInput = {
   caregiver?: InputMaybe<ChildCaregiverInput>;
   disabilities?: InputMaybe<Scalars['String']>;
   id: Scalars['UUID'];
+  inactiveDate?: InputMaybe<Scalars['DateTime']>;
+  inactiveReason?: InputMaybe<Scalars['String']>;
+  inactivityComments?: InputMaybe<Scalars['String']>;
   isActive: Scalars['Boolean'];
   languageId?: InputMaybe<Scalars['UUID']>;
   otherHealthConditions?: InputMaybe<Scalars['String']>;
+  reasonForLeavingId?: InputMaybe<Scalars['UUID']>;
   user?: InputMaybe<ChildUserUpdateInput>;
   workflowStatusId: Scalars['UUID'];
 };

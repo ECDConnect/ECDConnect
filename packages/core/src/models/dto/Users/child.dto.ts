@@ -20,6 +20,9 @@ export interface ChildDto extends EntityBase {
   workflowStatusId?: string;
   insertedBy?: string;
   isOnline?: boolean;
+  reasonForLeavingId?: string;
+  inactiveDate?: Date;
+  inactivityComments?: string;
 }
 
 export interface AddChildTokenDto {
