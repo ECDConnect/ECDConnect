@@ -102,6 +102,10 @@ export const RemoveChild: React.FC = () => {
 
     const updatedChild = { ...child };
     updatedChild.isActive = false;
+    updatedChild.reasonForLeavingId =
+      removeChildFormGetValues('removeReasonId');
+    updatedChild.inactivityComments = removeChildFormGetValues('reasonDetail');
+    updatedChild.inactiveDate = new Date();
     appDispatch(
       classroomsActions.deactivateLearner({
         childUserId: child.userId!,
@@ -187,8 +191,11 @@ export const RemoveChild: React.FC = () => {
           textInputType="textarea"
           register={removeChildFormRegister}
           nameProp={'reasonDetail'}
-          hint={'Optional'}
           placeholder={'E.g. Did not like the activities'}
+          onChange={(item) => {
+            removeChildFormSetValues('reasonDetail', item.target.value);
+            triggerRemoveChildForm();
+          }}
         />
         <div className="mt-auto">
           <Button
