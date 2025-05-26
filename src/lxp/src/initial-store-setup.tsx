@@ -1,17 +1,11 @@
-import {
-  getYear,
-  getWeek,
-  subMonths,
-  startOfQuarter,
-  lastDayOfQuarter,
-} from 'date-fns';
+import { subMonths, startOfQuarter, lastDayOfQuarter } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
-import { useAppDispatch, useAppSelector } from './store';
+import { useAppDispatch } from './store';
 import { attendanceActions, attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
-import { caregiverActions, caregiverThunkActions } from './store/caregiver';
+import { caregiverActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
 import {
   classroomsActions,
@@ -27,20 +21,22 @@ import {
   programmeRoutineActions,
   programmeRoutineThunkActions,
 } from './store/content/programme-routine';
-import { programmeThemeActions } from './store/content/programme-theme';
 import {
-  contentReportActions,
-  contentReportThunkActions,
-} from './store/content/report';
-import { storyBookActions } from './store/content/story-book';
+  programmeThemeActions,
+  programmeThemeThunkActions,
+} from './store/content/programme-theme';
+import { contentReportActions } from './store/content/report';
+import {
+  storyBookActions,
+  storyBookThunkActions,
+} from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
-import { notificationActions } from './store/notifications';
 import {
   progressTrackingActions,
   progressTrackingThunkActions,
 } from './store/progress-tracking';
-import { settingActions } from './store/settings';
+import { settingActions, settingThunkActions } from './store/settings';
 import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
@@ -63,6 +59,7 @@ import {
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarActions, calendarThunkActions } from './store/calendar';
+import { activityThunkActions } from '@store/content/activity';
 import { clubActions } from './store/club';
 import { authSelectors } from '@store/auth';
 import { statementsActions, statementsThunkActions } from '@store/statements';
@@ -230,39 +227,75 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   const initStaticStoreSetup = async () => {
     setStaticDataLoading(true);
+    const promises = [
+      appDispatch(settingThunkActions.getSettings({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getHolidays({ year: new Date().getFullYear() })
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getGrants({})).unwrap(),
+      appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getPermissions({})).unwrap(),
+      appDispatch(staticDataThunkActions.getCommunitySkills({})).unwrap(),
+      appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRelations({})).unwrap(),
+      appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
+      appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
+      appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
 
-    await appDispatch(
-      contentConsentThunkActions.getConsent({ locale: 'en-za' })
-    ).unwrap();
+      appDispatch(
+        contentConsentThunkActions.getConsent({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(
+        calendarThunkActions.getCalendarEventTypes({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap(),
 
-    // PROGRESS TRACKING
-    await appDispatch(
-      progressTrackingThunkActions.getProgressTrackingAgeGroups({
-        locale: 'en-za',
-      })
-    ).unwrap();
-    await appDispatch(
-      progressTrackingThunkActions.getProgressTrackingContent({
-        locale: 'en-za',
-      })
-    ).unwrap();
-    await appDispatch(
-      progressTrackingThunkActions.getResourceLinks({
-        locale: 'en-za',
-      })
-    ).unwrap();
+      appDispatch(
+        staticDataThunkActions.getProgrammeAttendanceReasons({})
+      ).unwrap(),
 
-    // CALENDAR
-    await appDispatch(
-      calendarThunkActions.getCalendarEventTypes({
-        locale: 'en-za',
-      })
-    ).unwrap();
+      appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getReasonsForPractitionerLeaving({})
+      ).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
+      ).unwrap(),
+      appDispatch(
+        activityThunkActions.getActivities({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(
+        storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(
+        programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getProgressTrackingAgeGroups({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getProgressTrackingContent({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        progressTrackingThunkActions.getResourceLinks({
+          locale: 'en-za',
+        })
+      ).unwrap(),
+      appDispatch(
+        programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
+      ).unwrap(),
+    ];
 
-    await appDispatch(
-      programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
-    ).unwrap();
-
+    Promise.allSettled(promises);
     setStaticDataLoading(false);
   };
 

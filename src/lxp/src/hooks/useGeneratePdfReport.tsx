@@ -86,10 +86,7 @@ export const useGeneratePdfReport = () => {
               ]
             : [table.headers.map((h) => h.header)],
           columns: headers,
-          body: table.data.map((d) => {
-            return table.headers.map((h) => d[h.dataKey]);
-          }),
-
+          body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
           foot: finalFooter,
           rowPageBreak: 'avoid',
           horizontalPageBreakRepeat: 'avoid',

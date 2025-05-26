@@ -16,13 +16,6 @@ if (
   worker.start();
 }
 
-ReactDOM.render(
-  <ConfigProvider>
-    <ConfigWrapper />
-  </ConfigProvider>,
-  document.getElementById('root')
-);
-
 const updateHandler = (registration: ServiceWorkerRegistration) => {
   if (window.confirm('An update is available. Would you like to reload?')) {
     window.location.reload();
@@ -35,6 +28,13 @@ const updateHandler = (registration: ServiceWorkerRegistration) => {
 serviceWorkerRegistration.register({
   onUpdate: updateHandler,
 });
+
+ReactDOM.render(
+  <ConfigProvider>
+    <ConfigWrapper />
+  </ConfigProvider>,
+  document.getElementById('root')
+);
 
 defineCustomElements(window);
 // If you want to start measuring performance in your app, pass a function

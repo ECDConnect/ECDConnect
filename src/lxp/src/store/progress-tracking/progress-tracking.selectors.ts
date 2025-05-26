@@ -50,7 +50,7 @@ export const getProgressTrackingSubCategories = () =>
     (
       categories: ProgressTrackingCategoryDto[]
     ): ProgressTrackingSubCategoryDto[] => {
-      return categories.flatMap((x) => x.subCategories);
+      return categories?.flatMap((x) => x.subCategories);
     }
   );
 
@@ -110,7 +110,7 @@ export const getProgressTrackingSkillsWithCategoryInfo = () =>
   createSelector(
     getProgressTrackingCategories(),
     (categories: ProgressTrackingCategoryDto[]): ProgressSkill[] => {
-      const detailedSkills = categories.flatMap((category) =>
+      const detailedSkills = categories?.flatMap((category) =>
         category?.subCategories?.flatMap((subCategory) =>
           subCategory?.skills?.map((skill) => ({
             id: skill.id,
@@ -166,7 +166,7 @@ export const getSkillsForAgeGroup = (ageGroupId: number) =>
     ): ProgressSkill[] => {
       const ageGroup = ageGroups.find((x) => x.id === ageGroupId);
 
-      if (!ageGroup) {
+      if (!ageGroup || !detailedSkills) {
         return [];
       }
 

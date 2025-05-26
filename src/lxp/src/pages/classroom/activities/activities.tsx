@@ -155,7 +155,7 @@ export const ActivitiesTab = () => {
       ? allSkills?.filter((skill) =>
           duplicatesWithCounts?.some((l) => skill?.id === l?.number)
         )
-      : allSkills.filter((skill) => randomValues.some((l) => skill?.id === l));
+      : allSkills?.filter((skill) => randomValues.some((l) => skill?.id === l));
 
   function getRandomValues(arr: number[], n: number): number[] {
     const shuffled = [...arr].sort(() => 0.5 - Math.random());

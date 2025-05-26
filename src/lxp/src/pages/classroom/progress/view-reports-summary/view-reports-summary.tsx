@@ -18,6 +18,8 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ProgressTrackingService } from '@/services/ProgressTrackingService';
 import { authSelectors } from '@/store/auth';
 import { pointsThunkActions } from '@/store/points';
+import ROUTES from '@/routes/routes';
+import { TabsItems } from '../../class-dashboard/class-dashboard.types';
 
 export type ProgressViewReportsSummaryState = {
   ageGroupId: number;
@@ -97,11 +99,17 @@ export const ProgressViewReportsSummary: React.FC = () => {
     }
   };
 
+  const handleGoBack = () => {
+    history.push(ROUTES.CLASSROOM.ROOT, {
+      activeTabIndex: TabsItems.PROGRESS,
+    });
+  };
+
   return (
     <BannerWrapper
       size={'small'}
       title={`${classroomGroup?.name} progress summary`}
-      onBack={() => history.goBack()}
+      onBack={() => handleGoBack()}
     >
       <div className={'flex h-full flex-col px-4 pb-4 pt-4'}>
         <Typography

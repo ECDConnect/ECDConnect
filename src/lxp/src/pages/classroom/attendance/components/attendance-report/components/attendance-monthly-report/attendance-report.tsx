@@ -1,5 +1,5 @@
 import { BannerWrapper, Typography, Divider, Button } from '@ecdlink/ui';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState, useCallback } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -14,7 +14,6 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
-import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import ROUTES from '@routes/routes';
 import { useHistory, useLocation } from 'react-router';
 import { classroomsSelectors } from '@/store/classroom';
@@ -32,6 +31,8 @@ import { PractitionerReportDetails } from '@ecdlink/graphql';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useIsTrialPeriod } from '@/hooks/useIsTrialPeriod';
 import { MonthlyAttendanceReportRouteState } from './attendance-report.types';
+import { useDialog } from '@ecdlink/core';
+import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import {
   ClassDashboardRouteState,
   TabsItems,
@@ -48,12 +49,43 @@ export const MonthlyAttendanceReport = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const today = new Date();
   const history = useHistory();
+  const dialog = useDialog();
 
   const location = useLocation<MonthlyAttendanceReportRouteState>();
 
   const selectedMonth = location.state?.selectedMonth;
 
-  const { errorDialog } = useRequestResponseDialog();
+  const errorDialog = useCallback(
+    (message) => {
+      dialog({
+        blocking: false,
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render: (onClose) => {
+          return (
+            <ActionModal
+              iconColor="alertMain"
+              iconBorderColor="errorBg"
+              title="Eish! Something went wrong!"
+              detailText={message || 'Please try again'}
+              icon={'ExclamationCircleIcon'}
+              actionButtons={[
+                {
+                  colour: 'primary',
+                  text: 'Close',
+                  textColour: 'white',
+                  type: 'filled',
+                  leadingIcon: 'XIcon',
+                  onClick: onClose,
+                },
+              ]}
+            />
+          );
+        },
+      });
+    },
+    [dialog]
+  );
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);

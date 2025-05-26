@@ -29,6 +29,7 @@ export interface FileModel {
 
 export interface FormFileInputProps {
   label: string;
+  subLabel?: string;
   hideAcceptedFormats?: boolean;
   nameProp: string;
   contentUrl?: string;
@@ -64,6 +65,7 @@ const errorIconStyle = 'text-errorMain';
 
 const FormFileInput: React.FC<FormFileInputProps> = ({
   label,
+  subLabel,
   hideAcceptedFormats,
   nameProp,
   acceptedFormats,
@@ -315,7 +317,16 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           <span className="font-bold"> ({acceptedFormats?.join(', ')})</span>
         )}
       </label>
-
+      {subLabel && (
+        <label
+          htmlFor={nameProp}
+          className={
+            'font-body text-textMid block self-stretch text-sm leading-snug'
+          }
+        >
+          {subLabel}
+        </label>
+      )}
       {nameProp === FieldType.Image && acceptedFormats?.length > 0 && (
         <p className="text-textMid mb-2 text-sm">
           Size limit: {(allowedFileSize / (1024 * 1024))?.toFixed(0)} MB. To

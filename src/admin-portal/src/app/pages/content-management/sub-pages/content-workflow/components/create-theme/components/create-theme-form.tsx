@@ -268,6 +268,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
                 <FormFileInput
                   acceptedFormats={acceptedFileFormats || acceptedFormats}
                   label={propName === 'themeLogo' ? title : title + ' *'}
+                  subLabel={propName === 'themeLogo' && 'Optional'}
                   nameProp={propName}
                   contentUrl={
                     field.contentValue ? field.contentValue.value : undefined
