@@ -114,8 +114,13 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   const currentDate = new Date();
 
+  const nextProgrammes = useSelector(
+    programmeSelectors.getProgrammesAfterDate(selectedDate!)
+  );
+
   const { getCurrentProgrammeRecommendedActivities } =
     useProgrammePlanningRecommendations();
+
   const recommendedActivities = getCurrentProgrammeRecommendedActivities(
     programme,
     selectedDate
@@ -161,10 +166,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const [triggerSaveActivity, setTriggerSaveActivity] = useState(false);
 
   const isWeekendDay = isWeekend(new Date(selectedDate!));
-
-  const nextProgrammes = useSelector(
-    programmeSelectors.getProgrammesAfterDate(selectedDate!)
-  );
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 

@@ -28,6 +28,7 @@ import ClassProgrammeAttendanceList from '../class-programme-attendance-list/cla
 import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
 import { ClassroomGroupDto } from '@/models/classroom/classroom-group.dto';
+import { childrenSelectors } from '@store/children';
 
 export const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -43,7 +44,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const appDispatch = useAppDispatch();
 
   const { showMessage } = useSnackbar();
-
+  const children = useSelector(childrenSelectors.getChildren);
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
   const [hasChildren, setHasChildren] = useState<boolean>(false);
@@ -106,11 +107,16 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     if (classroomGroups?.length) {
       setSelectedClassroomGroups(selectedClassroomGroup);
 
-      const _allLearners = allLearners.filter(
-        (x) =>
+      const _allLearners = allLearners.filter((x) => {
+        const child = children?.find((c) => c.userId === x.childUserId);
+
+        return (
+          child &&
+          !!child.caregiverId &&
           !Boolean(x.stoppedAttendance) &&
           endOfDay.getTime() >= new Date(x.startedAttendance).getTime()
-      );
+        );
+      });
 
       const uniqueLearners = _allLearners.filter((object, index, array) => {
         return (

@@ -51,6 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public List<Child> GetAllChildrenForFranchisor(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            AuthenticationDbContext dbContext,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -59,7 +60,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Child> children = new List<Child>();
             foreach (var c in coaches)
             {
-                var coachChild = new CoachQueryExtension().GetAllChildrenForCoach(contextAccessor, repoFactory, c.UserId.ToString());
+                var coachChild = new CoachQueryExtension().GetAllChildrenForCoach(contextAccessor, dbContext, c.UserId.ToString());
                 children.AddRange(coachChild);
             }
 
