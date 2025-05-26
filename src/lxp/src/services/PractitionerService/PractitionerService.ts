@@ -8,7 +8,6 @@ import {
 } from '@ecdlink/core';
 import {
   ClassroomGroupReassignmentsInput,
-  LicenseModelInput,
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
   NotificationDisplay,
@@ -1291,32 +1290,6 @@ class PractitionerService {
     }
 
     return response.data.data.deActivatePractitioner;
-  }
-
-  async delicensePractitioner(input: LicenseModelInput): Promise<boolean> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-
-    const response = await apiInstance.post<{
-      data: { delicensePractitioner: boolean };
-      errors?: {};
-    }>(``, {
-      query: `
-      mutation delicensePractitioner($input: LicenseModelInput) {          
-        delicensePractitioner(input: $input) {          
-      }        
-      }
-      `,
-      variables: {
-        input,
-      },
-    });
-    if (response.status !== 200 || response.data.errors) {
-      throw new Error(
-        'Delicense Practitioner Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.delicensePractitioner;
   }
 
   async getRemovalForPractitioner(

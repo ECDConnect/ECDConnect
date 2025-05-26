@@ -13,7 +13,6 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -1141,7 +1140,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var visitRepo = repoFactory.CreateRepository<Visit>(userContext: uId);
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
-            var licenseRepo = repoFactory.CreateRepository<License>(userContext: uId);
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
 
@@ -1168,7 +1166,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var pracitionerUserIds = practitioners.Select(y => y.UserId.ToString());
             var classrooms = classroomRepo.GetAll().ToList();
             var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString()) && x.AbsentDate >= previousMonthStart).ToList();
-            var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
             var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId.ToString())).ToList();
             var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
 

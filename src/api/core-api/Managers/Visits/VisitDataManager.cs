@@ -32,8 +32,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
-
-        private UserLicenseManager _userLicenseManager;
         private VisitManager _visitManager;
 
         private Guid _applicationUserId;
@@ -44,7 +42,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             IGenericRepositoryFactory repoFactory,
             VisitDataStatusManager visitDataStatusManager,
             VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner,
-            UserLicenseManager userLicenseManager,
             VisitManager visitManager,
             HierarchyEngine hierarchyEngine, 
             [Service] INotificationService notificationService)
@@ -53,7 +50,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _repoFactory = repoFactory;
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataStatusManager_practitioner = visitDataStatusManager_Practitioner;
-            _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
             _visitManager = visitManager;
             _notificationService = notificationService;

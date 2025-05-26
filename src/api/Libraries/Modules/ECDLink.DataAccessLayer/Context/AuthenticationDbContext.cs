@@ -10,7 +10,6 @@ using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -137,10 +136,6 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
         public DbSet<ReferralType> ReferralTypes { get; set; }
         public DbSet<VisitDataStatusReferralType> VisitDataStatusReferralTypes { get; set; }        
-
-        // Licenses
-        public DbSet<LicenseType> LicenseType { get; set; }
-        public DbSet<License> License { get; set; }
 
 
         // Event Records

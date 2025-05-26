@@ -8,7 +8,6 @@ import {
   MutationUpdatePractitionerProgressArgs,
   MutationUpdatePractitionerUsePhotoInReportArgs,
   MutationUpdatePractitionerShareInfoArgs,
-  LicenseModelInput,
   NotificationDisplay,
   PrincipalInvitationStatus,
   UserPermissionModel,
@@ -19,7 +18,6 @@ export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
   UPDATE_PRACTITIONER_PROGRESS: 'updatePractitionerProgress',
   DEACTIVATE_PRACTITIONER: 'deActivatePractitioner',
-  DELICENSE_PRACTITIONER: 'delicensePractitioner',
   UPDATE_PRACTITIONER_USEPHOTOINPROGRESS:
     'updatePractitionerUsePhotoInProgress',
   GET_ALL_STATEMENTS_BALANCE_SHEET_FOR_PRACTITIONER:
@@ -378,29 +376,6 @@ export const deActivatePractitioner = createAsyncThunk<
           leavingComment,
           reasonDetails
         );
-      }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const delicensePractitioner = createAsyncThunk<
-  boolean | undefined,
-  LicenseModelInput,
-  ThunkApiType<RootState>
->(
-  PractitionerActions.DELICENSE_PRACTITIONER,
-  async (input, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        return await new PractitionerService(
-          userAuth.auth_token
-        ).delicensePractitioner(input);
       }
     } catch (err) {
       return rejectWithValue(err);

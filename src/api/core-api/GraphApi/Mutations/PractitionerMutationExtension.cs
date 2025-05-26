@@ -287,12 +287,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             return await personnelService.DeActivatePractitionerAsync(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
-
-        public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)
-        {
-            return userLicenseManager.DelicenseUser(input);
-        }
-
         public bool RemoveFromProgramme(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

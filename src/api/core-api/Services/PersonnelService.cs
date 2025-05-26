@@ -12,7 +12,6 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
@@ -54,7 +53,6 @@ namespace ECDLink.Api.CoreApi.Services
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
-        private UserLicenseManager _userLicenseManager;
         private ApplicationUserManager _userManager;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
@@ -69,7 +67,6 @@ namespace ECDLink.Api.CoreApi.Services
             AuthenticationDbContext dbContext,
             VisitDataManager visitDataManager,
             VisitManager visitManager,
-            UserLicenseManager userLicenseManager,
             [Service] INotificationService notificationService,
             [Service] IClassroomService classroomService,
             ApplicationUserManager userManager,
@@ -94,7 +91,6 @@ namespace ECDLink.Api.CoreApi.Services
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
-            _userLicenseManager = userLicenseManager;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
@@ -498,48 +494,6 @@ namespace ECDLink.Api.CoreApi.Services
             List<Visit> allAccreditationVisits = _visitManager.GetReAccreditationVisitsForPractitioner(userId);
             var accreditationRatings = _pqaRatingRepo.GetAll().Where(x => allAccreditationVisits.Select(y => y.Id).Contains(x.VisitId)).ToList();
             timeline.ReAccreditationRatings = accreditationRatings;
-
-            // Starter license received
-            License starterLicense = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_starter_licence);
-            if (starterLicense?.LicenseDate != null)
-            {
-                timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
-                timeline.StarterLicenseDate = starterLicense?.LicenseDate;
-                timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
-            }
-            else
-            {
-                timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_not_received;
-                timeline.StarterLicenseColor = MetricsColorEnum.Warning.ToString();
-            }
-
-            // SmartSpace license received
-            License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_smart_space_licence);
-            if (smartSpaceLicense?.LicenseDate != null  && smartSpaceLicense?.DeclinedDate == null)
-            {
-                timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
-                timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
-                timeline.SmartSpaceLicenseColor = MetricsColorEnum.Success.ToString();
-            }
-            else
-            {
-                timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
-                timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
-            }
-
-            // Practice license received
-            License practiceLicense = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_practice_licence);
-            if (practiceLicense?.LicenseDate != null)
-            {
-                timeline.PracticeLicenseStatus = Constants.SSSettings.practice_licence_received;
-                timeline.PracticeLicenseDate = practiceLicense?.LicenseDate;
-                timeline.PracticeLicenseColor = MetricsColorEnum.Success.ToString();
-            }
-            else
-            {
-                timeline.PracticeLicenseStatus = Constants.SSSettings.practice_licence_not_received;
-                timeline.PracticeLicenseColor = MetricsColorEnum.Warning.ToString();
-            }
 
             // PQA visits
             List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);

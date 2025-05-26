@@ -47,7 +47,6 @@ import {
 import {
   PractitionerActions,
   deActivatePractitioner,
-  delicensePractitioner,
 } from '@/store/practitioner/practitioner.actions';
 import {
   delicensingQuestion2,
@@ -682,13 +681,6 @@ export const Form = ({
           reasonForPractitionerLeavingId:
             ReasonsForPractitionerLeaving.DELICENSED,
           leavingComment,
-        })
-      );
-      appDispatch(
-        delicensePractitioner({
-          userId: practitioner?.userId,
-          delicensedDate: new Date(),
-          delicensedComment: leavingComment,
         })
       );
     }

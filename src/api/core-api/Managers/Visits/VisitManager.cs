@@ -26,7 +26,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
-        private UserLicenseManager _userLicenseManager;
         private HierarchyEngine _hierarchyEngine;
 
         private Guid _applicationUserId;
@@ -34,11 +33,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public VisitManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            UserLicenseManager userLicenseManager, HierarchyEngine hierarchyEngine)
+            HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
             _applicationUserId = contextAccessor.HttpContext != null && contextAccessor.HttpContext.GetUser() != null ? contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
@@ -1480,76 +1478,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             return newVisit;
-        }
-
-        public bool ValidateDefaultVisitsForPractitioner(string userId, Guid practitionerId)
-        {
-            var smartSpaceLic = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_smart_space_licence);
-
-            if (smartSpaceLic == null)
-            {
-                return false;
-            } 
-
-            List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) &&
-                                                                        (x.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 ||
-                                                                        x.Name == Constants.SSSettings.visitType_pre_pqa_visit_2 ||
-                                                                        x.Name == Constants.SSSettings.visitType_pqa_visit_1)
-                                                                        ).OrderBy(x => x.Order).ToList();
-            List<Visit> visits = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive == true).ToList();
-
-
-            DateTime dt = smartSpaceLic.LicenseDate.Value.Date;
-            var input = new VisitModel();
-            foreach (VisitType visitType in visitTypes)
-            {
-                input = new VisitModel
-                {
-                    VisitType = visitType,
-                    Attended = false,
-                    MotherId = null,
-                    InfantId = null,
-                    LinkedVisitId = null,
-                    PractitionerId = practitionerId
-                };
-
-                // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
-                if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
-                {
-                    DateTime newDate = dt.AddMonths(1);
-                    input.PlannedVisitDate = newDate;
-                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
-                    if (visit == null)
-                    {
-                        AddVisit(input);
-                    }
-                }
-                // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
-                if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
-                {
-                    DateTime newDate = dt.AddMonths(2);
-                    input.PlannedVisitDate = newDate;
-                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
-                    if (visit == null)
-                    {
-                        AddVisit(input);
-                    }
-                }
-                // SmartSpace licence received date + 3 months
-                if (visitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
-                {
-                    DateTime newDate = dt.AddMonths(3);
-                    input.PlannedVisitDate = newDate;
-                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
-                    if (visit == null)
-                    {
-                        visit = AddVisit(input);
-                    }
-                    // EC-548 -- add self assessment
-                    AddSelfAssessmentVisit(visit);
-                }
-            }
-            return true;
         }
 
         public Visit RestartVisit(Guid existingVisitId)

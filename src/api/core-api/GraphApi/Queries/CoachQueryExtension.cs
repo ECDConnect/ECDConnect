@@ -58,9 +58,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             foreach (var practitioner in practitioners)
             {
-                // validate default visits for smartSpace license
-                visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId.ToString(), practitioner.Id);
-
                 coachPractitioners.Add(new CoachPractitioner
                 {
                     Id = practitioner.Id,
