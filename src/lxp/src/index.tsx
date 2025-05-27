@@ -23,6 +23,7 @@ const updateHandler = (registration: ServiceWorkerRegistration) => {
 };
 
 const renderApp = () => {
+  console.log('[REACT] render app');
   ReactDOM.render(
     <ConfigProvider>
       <ConfigWrapper />
