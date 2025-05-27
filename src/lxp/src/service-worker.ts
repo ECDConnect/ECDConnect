@@ -11,6 +11,12 @@ import { PrecacheEntry } from 'workbox-precaching/_types';
 
 declare const self: ServiceWorkerGlobalScope;
 
+const log = (msg: string) => {
+  console.log(`[SW] ${msg}`);
+};
+
+log('installing');
+
 clientsClaim();
 
 var wb_manifest = [
@@ -30,19 +36,15 @@ registerRoute(({ request, url }) => {
   return true;
 }, createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html'));
 
-const log = (msg: string) => {
-  //console.log(msg);
-};
-
 registerRoute(
   ({ url, request }) => {
     const cache =
       url.pathname.endsWith('.png') || url.pathname.endsWith('.ico');
-    log(
-      `[ServiceWorker] Checking image: ${url.href}, cache: ${
-        cache ? 'Y' : 'N'
-      }, destination: ${request.destination}, mode: ${request.mode}`
-    );
+    // log(
+    //   `[ServiceWorker] Checking image: ${url.href}, cache: ${
+    //     cache ? 'Y' : 'N'
+    //   }, destination: ${request.destination}, mode: ${request.mode}`
+    // );
     return cache;
   },
   new CacheFirst({
@@ -57,9 +59,9 @@ registerRoute(
       }),
       {
         cacheWillUpdate: async ({ response }) => {
-          log(
-            `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
-          );
+          // log(
+          //   `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
+          // );
           if (response.status === 200 || response.status === 0) {
             return response;
           }
@@ -73,11 +75,11 @@ registerRoute(
 registerRoute(
   ({ url, request }) => {
     const cache = url.pathname.endsWith('.json');
-    log(
-      `[ServiceWorker] Checking json: ${url.href}, cache: ${
-        cache ? 'Y' : 'N'
-      }, destination: ${request.destination}, mode: ${request.mode}`
-    );
+    // log(
+    //   `[ServiceWorker] Checking json: ${url.href}, cache: ${
+    //     cache ? 'Y' : 'N'
+    //   }, destination: ${request.destination}, mode: ${request.mode}`
+    // );
     return cache;
   },
   new CacheFirst({
@@ -92,9 +94,9 @@ registerRoute(
       }),
       {
         cacheWillUpdate: async ({ response }) => {
-          log(
-            `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
-          );
+          // log(
+          //   `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
+          // );
           if (response.status === 200 || response.status === 0) {
             return response;
           }
@@ -111,9 +113,9 @@ registerRoute(
     const isFont =
       url.pathname.endsWith('.woff2') ||
       url.href.startsWith('https://fonts.googleapis.com/css2');
-    log(
-      `[ServiceWorker] Checking font: ${url.href}, isFont: ${isFont}, destination: ${request.destination}, mode: ${request.mode}`
-    );
+    // log(
+    //   `[ServiceWorker] Checking font: ${url.href}, isFont: ${isFont}, destination: ${request.destination}, mode: ${request.mode}`
+    // );
     return isFont;
   },
   new CacheFirst({
@@ -128,9 +130,9 @@ registerRoute(
       }),
       {
         cacheWillUpdate: async ({ response }) => {
-          log(
-            `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
-          );
+          // log(
+          //   `[ServiceWorker] Cache update for ${response.url}, status: ${response.status}, type: ${response.type}`
+          // );
           if (response.status === 200 || response.status === 0) {
             return response;
           }
@@ -173,3 +175,5 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+log('installed');
