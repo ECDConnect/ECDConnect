@@ -13919,6 +13919,7 @@ export type StoryBookViewModel = {
   id?: Maybe<Scalars['String']>;
   illustrator?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
+  isInUse: Scalars['Boolean'];
   keywords?: Maybe<Scalars['String']>;
   localeId: Scalars['UUID'];
   name?: Maybe<Scalars['String']>;
