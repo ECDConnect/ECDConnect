@@ -167,13 +167,15 @@ namespace ECDLink.Api.CoreApi.Services
                     {
                         // practitioner-marked-onleave 
                         // show while on leave
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDateEnd, false, true, practitionerId);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedOnLeave, absentDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDateEnd, false, false, null,
+                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerId), "ApplicationUser") });
 
                         // marked-onleave
                         // show until day before leave starts
                         var beforeAbsentDayStarts = absentDate.AddDays(-1);
                         var startDate = DateTime.Now.Date < beforeAbsentDayStarts.Date ? DateTime.Now.Date : beforeAbsentDayStarts.Date;
-                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalMarkedOnLeave, startDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDate.AddDays(-1), false, true, practitionerId);
+                        _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PrincipalMarkedOnLeave, startDate, userToSend, "", MessageStatusConstants.Amber, replacements, absentDate.AddDays(-1), false, false, null,
+                         relatedEntities: new List<RelatedEntity> { new RelatedEntity(Guid.Parse(practitionerId), "ApplicationUser") });
                     }
                 }
             }
@@ -194,7 +196,7 @@ namespace ECDLink.Api.CoreApi.Services
             if (absenteeId != null)
             {
                 var absentee = _absenteeRepo.GetById(Guid.Parse(absenteeId));
-                
+
                 var userId = _userManager.FindByIdAsync(absentee.UserId.ToString()).Result?.Id.ToString();
 
                 if (string.IsNullOrEmpty(userId))
@@ -255,11 +257,11 @@ namespace ECDLink.Api.CoreApi.Services
                             var practitioner = _dbContext.Practitioners.FirstOrDefault(u => u.Id == Guid.Parse(reassignedToPractitioner));
                             practitionerUserId = practitioner?.UserId.ToString() ?? reassignedToPractitioner;
                         }
-                        
+
                         _reassignmentService.EditReassignment(userId, practitionerUserId, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
 
                         // Reassign classroom group to the practitioner that took attendance  
-                        if(!string.IsNullOrEmpty(absentee.ReassignedClass))
+                        if (!string.IsNullOrEmpty(absentee.ReassignedClass))
                         {
                             var classroomGroup = _dbContext.ClassroomGroups.FirstOrDefault(u => u.Id == Guid.Parse(absentee.ReassignedClass));
                             if (classroomGroup != null)
