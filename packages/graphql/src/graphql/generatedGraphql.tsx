@@ -185,6 +185,7 @@ export type ActivityViewModel = {
   id?: Maybe<Scalars['String']>;
   image?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
+  isInUse: Scalars['Boolean'];
   localeId: Scalars['UUID'];
   materials?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
