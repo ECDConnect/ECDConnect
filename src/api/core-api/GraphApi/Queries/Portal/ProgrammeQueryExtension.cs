@@ -222,9 +222,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.Portal
 
             var englishId = new Guid("9688cd08-adef-408c-9d34-5d75ae5c44df");
             var records = new List<ActivityViewModel>();
-            var smallIds = dbContext.DailyProgrammes.Select(x => x.SmallGroupActivityId.ToString()).Distinct().ToList();
-            var largeIds = dbContext.DailyProgrammes.Select(x => x.LargeGroupActivityId.ToString()).Distinct().ToList();
-            var storyIds = dbContext.DailyProgrammes.Select(x => x.StoryActivityId.ToString()).Distinct().ToList();
+            var dailyProgrammes = dbContext.DailyProgrammes.Select(x => new { x.SmallGroupActivityId, x.LargeGroupActivityId, x.StoryActivityId}).Distinct().ToList();
+            var smallIds = dailyProgrammes.Select(x => x.SmallGroupActivityId.ToString()).Distinct().ToList();
+            var largeIds = dailyProgrammes.Select(x => x.LargeGroupActivityId.ToString()).Distinct().ToList();
+            var storyIds = dailyProgrammes.Select(x => x.StoryActivityId.ToString()).Distinct().ToList();
             var subCategories = contentRepo.GetAll(ContentTypeConstants.ProgressTrackingSubCategoryId, englishId)
                 .Select(x => new SubCategoryViewModel(x)).ToList();
 
