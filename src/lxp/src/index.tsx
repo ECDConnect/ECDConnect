@@ -36,12 +36,12 @@ const renderApp = () => {
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.register({
+const registering = serviceWorkerRegistration.register({
   onUpdate: updateHandler,
   onRenderApp: renderApp,
 });
 
-ReactDOM.render(<Loader />, document.getElementById('root'));
+if (registering) ReactDOM.render(<Loader />, document.getElementById('root'));
 
 defineCustomElements(window);
 // If you want to start measuring performance in your app, pass a function
