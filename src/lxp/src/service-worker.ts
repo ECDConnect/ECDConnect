@@ -15,7 +15,7 @@ const log = (msg: string) => {
   console.log(`[SW] ${msg}`);
 };
 
-log('installing');
+log('Installing');
 
 clientsClaim();
 
@@ -176,4 +176,4 @@ self.addEventListener('message', (event) => {
   }
 });
 
-log('installed');
+log('Installed');
