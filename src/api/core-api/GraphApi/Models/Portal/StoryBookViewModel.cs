@@ -24,8 +24,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public string Keywords { get; set; }
         public string StoryBookParts { get; set; }
         public List<int> ThemeItems { get; set; }
+        public bool IsInUse { get; set; }
 
-        public StoryBookViewModel(Object record, Guid localeId) {
+        public StoryBookViewModel(Object record, Guid localeId, List<string> allInUseIds)
+        {
 
             var item = (IDictionary<string, object>)record;
             item.TryGetValue("id", out var id);
@@ -55,12 +57,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             Keywords = keywords != null ? keywords.ToString() : "";
             StoryBookParts = storyBookParts != null ? storyBookParts.ToString() : "";
             LocaleId = localeId;
-            Themes = themes != null ? themes.ToString(): "";
+            Themes = themes != null ? themes.ToString() : "";
             ShareContent = shareContent == null ? "" : shareContent.ToString();
             UpdatedDate = updatedDate != null ? DateTime.Parse(updatedDate.ToString()) : null;
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
             AvailableLanguages = availableLanguages != null ? (availableLanguages as string).Split(",").Select(i => new Guid(i)).ToList() : new List<Guid>();
             ThemeItems = themes != null ? themes.ToString().Split(",").Where(x => x != "").Select(x => Int32.Parse(x)).ToList() : new List<int>();
+            IsInUse = allInUseIds.Contains(id.ToString());
         }
     }
 }

@@ -185,6 +185,7 @@ export type ActivityViewModel = {
   id?: Maybe<Scalars['String']>;
   image?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
+  isInUse: Scalars['Boolean'];
   localeId: Scalars['UUID'];
   materials?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
@@ -12547,6 +12548,7 @@ export type StoryBookViewModel = {
   id?: Maybe<Scalars['String']>;
   illustrator?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
+  isInUse: Scalars['Boolean'];
   keywords?: Maybe<Scalars['String']>;
   localeId: Scalars['UUID'];
   name?: Maybe<Scalars['String']>;
@@ -12956,9 +12958,13 @@ export type UpdateChildAndCaregiverInput = {
   caregiver?: InputMaybe<ChildCaregiverInput>;
   disabilities?: InputMaybe<Scalars['String']>;
   id: Scalars['UUID'];
+  inactiveDate?: InputMaybe<Scalars['DateTime']>;
+  inactiveReason?: InputMaybe<Scalars['String']>;
+  inactivityComments?: InputMaybe<Scalars['String']>;
   isActive: Scalars['Boolean'];
   languageId?: InputMaybe<Scalars['UUID']>;
   otherHealthConditions?: InputMaybe<Scalars['String']>;
+  reasonForLeavingId?: InputMaybe<Scalars['UUID']>;
   user?: InputMaybe<ChildUserUpdateInput>;
   workflowStatusId: Scalars['UUID'];
 };

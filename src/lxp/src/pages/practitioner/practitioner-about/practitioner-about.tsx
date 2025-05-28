@@ -12,6 +12,7 @@ import {
   Button,
   Dialog,
   DialogPosition,
+  IMAGE_WIDTH,
   PasswordInput,
   ProfileAvatar,
   StackedList,
@@ -570,6 +571,7 @@ export const PractitionerAbout: React.FC = () => {
             }
             isProfileEmojis={true}
             showEmojiOption={true}
+            resolutionLimit={IMAGE_WIDTH}
           ></PhotoPrompt>
         </div>
       </Dialog>
