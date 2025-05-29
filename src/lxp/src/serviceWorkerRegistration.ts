@@ -27,7 +27,6 @@ const log = (msg: string) => {
 type Config = {
   onSuccess?: (registration: ServiceWorkerRegistration) => void;
   onUpdate?: (registration: ServiceWorkerRegistration) => void;
-  onRenderApp: () => void;
 };
 
 export function register(config: Config): boolean {
@@ -55,7 +54,6 @@ export function register(config: Config): boolean {
           log(
             'This web app is being served cache-first by a service worker. To learn more, visit https://cra.link/PWA'
           );
-          config.onRenderApp();
         });
       } else {
         // Is not localhost. Just register service worker
@@ -66,7 +64,6 @@ export function register(config: Config): boolean {
   }
 
   log('Development and localhost, not registering service worker');
-  config.onRenderApp();
   return false;
 }
 
@@ -105,16 +102,13 @@ function registerValidSW(swUrl: string, config: Config) {
               if (config && config.onSuccess) {
                 config.onSuccess(registration);
               }
-              config.onRenderApp();
             }
           }
         };
       };
-      if (registration.installing == null) config.onRenderApp();
     })
     .catch((error) => {
       console.error('Error during service worker registration:', error);
-      config.onRenderApp();
     });
 }
 
