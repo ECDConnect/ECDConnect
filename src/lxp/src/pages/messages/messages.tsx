@@ -86,8 +86,9 @@ export const Messages: React.FC = () => {
           notificationId: notification?.message?.reference ?? '',
         })
       ).then(() => {
-        // when notification is marked as read, we want to remove it
-        appDispatch(notificationActions.removeNotification(notification!));
+        if (notification.message?.actionText !== 'Create Reports') {
+          appDispatch(notificationActions.removeNotification(notification!));
+        }
       });
     } else {
       appDispatch(
