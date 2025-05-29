@@ -176,12 +176,17 @@ export const getLearnersForClassroomGroups = (
                 (!learner.stoppedAttendance ||
                   new Date(learner.stoppedAttendance) >= startDate)
             )
-            .map((learner) => ({
-              ...learner,
-              child: children.find(
+            .filter((learner) =>
+              children.find(
                 (child) =>
                   child.userId === learner.childUserId &&
                   child.caregiverId != null
+              )
+            )
+            .map((learner) => ({
+              ...learner,
+              child: children.find(
+                (child) => child.userId === learner.childUserId
               ),
             })),
         }));
