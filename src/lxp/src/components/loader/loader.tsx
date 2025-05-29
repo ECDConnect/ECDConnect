@@ -49,6 +49,7 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
             message={
               'Having issues? Go back to the login screen here to allow for a reset'
             }
+            messageColor="white"
             type={'warning'}
             button={
               <Button
@@ -56,9 +57,11 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
                 type="filled"
                 size="small"
                 onClick={async () => {
-                  await resetAppStore();
                   await resetAuth();
-                  history.push(ROUTES.LOGIN);
+                  resetAppStore && (await resetAppStore());
+                  history
+                    ? history.push(ROUTES.LOGIN)
+                    : window.location.reload();
                 }}
               >
                 <Typography
