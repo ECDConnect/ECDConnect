@@ -1269,17 +1269,17 @@ export const Dashboard: React.FC = () => {
     practitioner?.isPrincipal,
   ]);
 
-  const practitionerWithAttendancePermissionPointsToDo =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo < 4
-      : getCurrentPointsToDo < 3;
+  // const practitionerWithAttendancePermissionPointsToDo =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo < 4
+  //     : getCurrentPointsToDo < 3;
 
-  const practitionerWithAttendancePermissionPoints =
-    practitioner?.isPrincipal ||
-    (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-      ? getCurrentPointsToDo === 4
-      : getCurrentPointsToDo === 3;
+  // const practitionerWithAttendancePermissionPoints =
+  //   practitioner?.isPrincipal ||
+  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
+  //     ? getCurrentPointsToDo === 4
+  //     : getCurrentPointsToDo === 3;
 
   function removeMandatoryProperty<T, K extends keyof T>(
     obj: T,
