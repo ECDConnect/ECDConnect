@@ -42,7 +42,6 @@ export * from './level';
 export * from './skill';
 export * from './reason-for-leaving';
 export * from './siteInformation';
-export * from './franchisor';
 export * from './principal';
 export * from './navigation';
 export * from './personalRecords';

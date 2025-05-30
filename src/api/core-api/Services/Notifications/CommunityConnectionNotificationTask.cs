@@ -40,7 +40,7 @@ namespace EcdLink.Api.CoreApi.Services.Notifications.Portal
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
+            _applicationUserId = (_contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value);
 
             _communityProfileConnectionRepo = _repoFactory.CreateGenericRepository<CommunityProfileConnection>(userContext: _applicationUserId);
 

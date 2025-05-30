@@ -1,6 +1,5 @@
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Managers;
@@ -8,12 +7,9 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,10 +45,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (roles.Any(x => x.SystemName.Contains(Roles.ADMINISTRATOR.ToUpper())))
                 {
                     return Roles.ADMINISTRATOR;
-                }
-                if (roles.Any(x => x.SystemName.Contains(Roles.FRANCHISOR.ToUpper())))
-                {
-                    return Roles.FRANCHISOR;
                 }
                 //Coach
                 if (roles.Any(x => x.SystemName.Contains(Roles.COACH.ToUpper())))

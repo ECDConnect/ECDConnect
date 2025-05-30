@@ -54,42 +54,6 @@ const ROUTES = {
     CONNECTION_PROFILE: '/connection-profile',
     ECD_HEROES_LIST: '/ecd-heroes-list',
     RECEIVED_REQUESTS: '/received-requests',
-    CLUB: addPrefix('/club/:clubId', {
-      ADD: '/add',
-      EDIT: '/edit',
-      MEMBER: addPrefix('/member/:practitionerId', {
-        ADD: '/add',
-      }),
-      MEMBERS: addPrefix('/members', {
-        ADD: '/add',
-        EDIT: '/edit',
-      }),
-      LEADER: addPrefix('/leader', {
-        ADD: '/add',
-        EDIT: '/edit',
-      }),
-      USER_PROFILE: addPrefix('/user-profile', {
-        COACH: '/coach/:coachId',
-        LEADER: '/leader/:leaderId',
-        SUPPORT_ROLE: '/support-role/:supportRoleId',
-        MEMBER: '/member/:practitionerId',
-      }),
-      POINTS: addPrefix('/points', {
-        MEET_REGULARLY: addPrefix('/meet-regularly', {
-          MEETING_DETAILS: '/:meetingId/meeting-details',
-          MISSING_MEETING_REGISTERS: '/missing-meeting-registers',
-        }),
-        BE_CREATIVE: '/be-creative',
-        HOST_FAMILY_EVENT: '/host-family-event',
-        LEAVE_NO_ONE_BEHIND: '/leave-no-one-behind',
-        CAPTURE_CHILD_ATTENDANCE: '/capture-child-attendance',
-        COMPLETE_CHILD_PROGRESS_REPORTS: '/complete-child-progress-reports',
-        HELP: '/help/:helpSection',
-      }),
-    }),
-    LEAGUE: addPrefix('/league/:leagueId', {
-      HELP: '/help/:helpSection',
-    }),
   }),
   CHILD: addPrefix('/child', {
     INFORMATION: addPrefix('/information', {
@@ -127,31 +91,6 @@ const ROUTES = {
       YEAR: '/year',
     }),
     CONTACT_COACH: '/contact-coach',
-    COMMUNITY: addPrefix('/community', {
-      WELCOME: '/welcome',
-      ACCEPT_CLUB_LEADER_ROLE: '/accept-club-leader-role',
-      CLUB: addPrefix('/club', {
-        SUPPORT_ROLE: addPrefix('/support-role', {
-          EDIT: '/edit',
-        }),
-        MEETING: addPrefix('/meeting', {
-          ADD_MEETING: addPrefix('/add', {
-            UPCOMING_MEETING: '/:eventId',
-          }),
-        }),
-        FAMILY_DAY_EVENT: addPrefix('/family-day-event', {
-          ADD_EVENT: '/add',
-        }),
-        COLLAGE_EVENT: addPrefix('/collage-event', {
-          ADD_EVENT: '/add',
-        }),
-      }),
-    }),
-  }),
-  TRAINEE: addPrefix('/trainee', {
-    SETUP_TRAINEE: '/setup-trainee',
-    TRAINEE_ONBOARDING: '/trainee-onboarding',
-    TRAINEE_ONBOARDING_DASHBOARD: 'trainee-onboarding-dashboard',
   }),
   CHILD_NOTES: '/child-notes',
   CHILD_PROFILE: '/child-profile',
@@ -176,9 +115,6 @@ const ROUTES = {
     '/progress-view-reports-summary-select',
   PROGRESS_VIEW_REPORTS_SUMMARY: '/progress-view-reports-summary',
   COACH_REGISTRATION: '/coach-registration',
-  COACH_SMARTSPACE_CHECK: '/coach-smart-space-check',
-  COACH_TRAINEE_ONBOARDING: '/coach-trainee-onboarding',
-  COACH_FRANCHISE_AGREEMENT: '/coach-franchisor-agreement',
   COACH_SELF_ASSESSMENT: '/coach-self-assessment',
   COACH: addPrefix('/coach', {
     ABOUT: addPrefix('/about', {
@@ -208,7 +144,6 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
-  SMART_STARTER_JOURNEY: addPrefix('/smart-starter-journey/:clientId', {}),
 };
 
 export default ROUTES;

@@ -29,7 +29,6 @@ import ApplicationAdmins from '../pages/users/sub-pages/application-admins/appli
 import Children from '../pages/users/sub-pages/children/children';
 import Coaches from '../pages/users/sub-pages/coaches/coaches';
 import Practitioners from '../pages/users/sub-pages/practitioners/practitioners';
-import Franchisors from '../pages/users/sub-pages/franchisors/franchisors';
 import Users from '../pages/users/users';
 import ForgotPassword from '../components/auth/forgot-password/forgot-password';
 import ResetPassword from '../components/auth/reset-password/reset-password';
@@ -127,7 +126,6 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/roles`} component={Roles}></Route>
       <Route path={ROUTES.USERS.VIEW_USER} component={ViewUser}></Route>
       <Route path={ROUTES.USERS.ADMINS} component={ApplicationAdmins}></Route>
-      <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>
       <Route path={`/users/children`} component={Children}></Route>

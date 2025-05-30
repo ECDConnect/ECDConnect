@@ -206,7 +206,6 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         title: 'ReAccreditation Follow up Visits',
         action: pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner,
       },
-
       {
         title: 'Calendar events',
         action: calendarThunkActions.cancelCalendarEvent,

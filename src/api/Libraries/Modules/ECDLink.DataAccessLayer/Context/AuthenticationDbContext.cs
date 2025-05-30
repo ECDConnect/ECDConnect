@@ -5,18 +5,13 @@ using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Community;
-using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
-using ECDLink.DataAccessLayer.Entities.PQA;
 using ECDLink.DataAccessLayer.Entities.Reports;
-using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
 using ECDLink.DataAccessLayer.Entities.Training;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
@@ -58,8 +53,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<UserConsent> UserConsents { get; set; }
         public DbSet<Absentees> Absents { get; set; }
         public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
-        public DbSet<SL_Ingestion_User> SL_Ingestion_Users { get; set; }
-        public DbSet<SL_Ingestion_User_Update> SL_Ingestion_Users_Update { get; set; }
+ 
         public DbSet<SystemLog> SystemLogs { get; set; }
         public DbSet<PractitionerRemovalHistory> PractitionerRemovalHistories { get; set; }
 
@@ -98,8 +92,6 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Practitioner> Practitioners { get; set; }
         public DbSet<Coach> Coaches { get; set; }
         public DbSet<Caregiver> Caregivers { get; set; }
-        public DbSet<Franchisor> Franchisors { get; set; }
-        public DbSet<Trainee> Trainees { get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }
@@ -115,12 +107,6 @@ namespace ECDLink.DataAccessLayer.Context
 
         //JOBS
         public DbSet<JobNotification> JobNotifications { get; set; }
-
-        // Integration
-        public DbSet<IntegrationEntityMapping> IntegrationEntityMappings { get; set; }
-        public DbSet<IntegrationColumnMapping> IntegrationColumnMappings { get; set; }
-        public DbSet<IntegrationAudit> IntegrationAudits { get; set; }
-        public DbSet<IntegrationLog> IntegrationLogs { get; set; }
 
         // Income Statements
         public DbSet<StatementsContributionType> StatementsContributionTypes { get; set; }
@@ -138,20 +124,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Visit> Visits { get; set; }
         public DbSet<VisitData> VisitData { get; set; }
         public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
-
-        // Licenses
-        public DbSet<LicenseType> LicenseType { get; set; }
-        public DbSet<License> License { get; set; }
-
-        public DbSet<MeetingType> MeetingType { get; set; }
-
-        // PQA
-        public DbSet<PQA> PQAs { get; set; } // TODO - I think we can remove this now, it was old integration stuff
-        public DbSet<PQARating> PQARatings { get; set; }
-        
-        // SmartSpaceVisit
-        public DbSet<SmartSpaceVisit> SmartSpaceVisits { get; set; }
-
+    
         // Calendar
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
         public DbSet<CalendarEventParticipant> CalendarEventParticipants { get; set; }

@@ -266,7 +266,6 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       StartDate: coachForm.startDate,
       IsActive: true,
       SiteAddressId: siteAddressId,
-      FranchisorId: coachForm.franchisorId || newGuid(),
     };
 
     await createCoach({

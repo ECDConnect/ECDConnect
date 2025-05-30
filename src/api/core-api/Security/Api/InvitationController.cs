@@ -1,10 +1,11 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Users;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Abstractrions.Constants;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -34,7 +35,6 @@ namespace ECDLink.Security.Api
     {
         private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
         private readonly ITokenManager<ApplicationUser, SecurityCodeTokenManager> _securityCodeManager;
-        private readonly ITokenManager<ApplicationUser, OpenAccessTokenManager> _tokenManager;
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly ShortUrlManager _shortUrlManager;
         private readonly SecurityNotificationManager _notificationManager;
@@ -69,8 +69,6 @@ namespace ECDLink.Security.Api
             _securityManager = securityManager;
             _userManager = userManager;
             _personnelService = personnelService;
-            _tokenManager = tokenManager;
-
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _applicationUserId = _contextAccessor.HttpContext != null && _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : hierarchyEngine.GetAdminUserId().GetValueOrDefault();

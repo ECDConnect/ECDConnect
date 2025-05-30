@@ -1,6 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Points;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
@@ -59,17 +58,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             bool isMonthly)
         {
             return pointsService.GetSharedData(userId, isMonthly);
-        }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public UserClubStandingModel GetUserClubStanding(
-            [Service] IPointsEngineService pointsService,
-            string userId)
-        {
-            // TODO: REMOVE
-            //var userStanding = pointsService.GetUserClubStanding(userId);
-            //return userStanding;
-            return null;
         }
 
     }

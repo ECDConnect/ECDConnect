@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { ReactComponent as Star } from '../../../assets/star.svg';
 import { ReactComponent as Trophy } from '../../../assets/trophy.svg';
-import { ReactComponent as Logo } from '@/assets/logo.svg';
 import { ReactComponent as EmojiLightBulb } from '@ecdlink/ui/src/assets/emoji/emoji_lightbulb.svg';
 import { useTenant } from '@/hooks/useTenant';
 import { useSelector } from 'react-redux';
@@ -16,8 +15,6 @@ export type PointsShareProps = {
   pointsTotal?: string;
   userFullName: string;
   childCount: number;
-  clubStanding: number;
-  clubName: string;
   messageNr?: number;
 };
 
@@ -26,8 +23,6 @@ export const PointsShare: React.FC<PointsShareProps> = ({
   pointsSummaries,
   userFullName,
   childCount,
-  clubStanding,
-  clubName,
   pointsTotal,
   messageNr,
 }) => {
@@ -94,9 +89,7 @@ export const PointsShare: React.FC<PointsShareProps> = ({
                     : messageNr === 2
                     ? `One of the top ${
                         practitioner?.isPrincipal ? 'principal' : 'practitioner'
-                      } on ${clubName} for this period!`
-                    : clubStanding > 60
-                    ? 'High points earner!'
+                      } for this period!`
                     : 'Well done'
                 }
               />

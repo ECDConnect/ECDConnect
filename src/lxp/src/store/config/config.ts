@@ -90,7 +90,6 @@ import {
 import { communityReducer } from '../community';
 import { communityPersistConfig } from '../community/community';
 import { pqaPersistConfig, pqaReducer } from '../pqa/pqa';
-import { traineePersistConfig, traineerReducer } from '../trainee/trainee';
 import { pointsPersistConfig, pointsReducer } from '../points/points';
 import { tenantPersistConfig, tenantReducer } from '../tenant/tenant';
 
@@ -143,7 +142,6 @@ const persistedReducers = {
   storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
   sync: syncReducer,
   tenant: persistReducer(tenantPersistConfig, tenantReducer),
-  trainee: persistReducer(traineePersistConfig, traineerReducer),
   user: persistReducer(userPersistConfig, userReducer),
 };
 

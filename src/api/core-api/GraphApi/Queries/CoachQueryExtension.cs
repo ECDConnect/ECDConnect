@@ -1,7 +1,6 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.Classroom;
 using EcdLink.Api.CoreApi.GraphApi.Models.Portal;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
@@ -9,6 +8,7 @@ using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -23,9 +23,6 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports;
-using ECDLink.SmartStart.Reports.Models;
-using ECDLink.SmartStart.Services;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
@@ -62,9 +59,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             foreach (var practitioner in practitioners)
             {
-                // validate default visits for smartSpace license
-                visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId.ToString(), practitioner.Id);
-
                 coachPractitioners.Add(new CoachPractitioner
                 {
                     Id = practitioner.Id,
@@ -90,7 +84,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             List<Visit> visits = visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_coach);
 
-            coach.TraineeVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_trainee_visit).ToList();
             coach.PractitionerVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit || x.VisitType.Name == Constants.SSSettings.visitType_practitioner_call).ToList();
 
             return coach;

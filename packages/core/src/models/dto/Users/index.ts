@@ -5,7 +5,5 @@ export * from './child.dto';
 export * from './care-giver.dto';
 export * from './user-hierarchy-entity.dto';
 export * from './user-consent.dto';
-export * from './franchisor.dto';
 export * from './principal.dto';
 export * from './practitioner-colleagues.dto';
-export * from './trainee.dto';

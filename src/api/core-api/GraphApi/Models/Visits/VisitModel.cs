@@ -15,7 +15,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Visits
         public bool Attended { get; set; }
         public bool? isSupportCall { get; set; }
         public Guid? PractitionerId { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public Guid? EventId { get; set; }
@@ -32,7 +31,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Visits
         public string? Comment { get; set; }
         public bool? Attended { get; set; }
         public Guid? PractitionerId { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public bool? isSupportCall { get; set; }
@@ -49,7 +47,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Visits
         public string? Comment { get; set; }
         public bool? Attended { get; set; }
         public Guid? PractitionerId { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel FollowUpData { get; set; }
@@ -65,7 +62,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Visits
         public string? Comment { get; set; }
         public bool? Attended { get; set; }
         public Guid? PractitionerId { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel ReAccreditationData { get; set; }
@@ -81,7 +77,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Visits
         public string? Risk { get; set; }  // high or normal
         public string? Comment { get; set; }
         public bool? Attended { get; set; }
-        public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel ChecklistData { get; set; }

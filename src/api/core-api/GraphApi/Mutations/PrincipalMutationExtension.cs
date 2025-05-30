@@ -1,14 +1,15 @@
+using EcdLink.Api.CoreApi.GraphApi.Queries;
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Abstractrions.Constants;
+using ECDLink.Api.CoreApi.Services;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Managers;
@@ -51,7 +52,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
  
-            if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
+            if (principalUser != null && (principalUser.IsPrincipal == true)) //make sure the principal user exists and is a principal or a FAA
             {
                 if (practitionerUser != null)
                 {
@@ -60,7 +61,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = principalUser.UserId;
-                        practitioner.IsFundaAppAdmin = false;
                         practitioner.IsPrincipal = false;
                         practitionerRepo.Update(practitioner);
 
@@ -189,19 +189,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (user is null || currentUserId is null)
                 throw new QueryException("User not found.");
 
-            //audit user changes
-            List<AuditChanges> auditFields = new List<AuditChanges>();
-
             if (phoneNumber != user.PhoneNumber && !string.IsNullOrWhiteSpace(phoneNumber))
             {
-                auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = phoneNumber });
                 user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, phoneNumber));
                 user.PendingPhoneNumber = null;
             }
 
             if (user.Email != email && !string.IsNullOrWhiteSpace(email) && user.Id == currentUserId)
             {
-                auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = email });
                 user.Email = email;
                 user.EmailConfirmed = false;
             }

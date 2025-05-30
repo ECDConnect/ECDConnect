@@ -1,11 +1,9 @@
-import { Config, PointsTodoItemDto } from '@ecdlink/core';
+import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
 import {
-  PointsLibrary,
   PointsToDoItemModel,
   PointsUserSummary,
   PointsUserYearMonthSummary,
-  UserClubStandingModel,
 } from '@ecdlink/graphql';
 
 class PointsService {
@@ -56,31 +54,6 @@ class PointsService {
     }
 
     return response.data.data.pointsSummaryForUser;
-  }
-  async getUserClubStanding(userId: string): Promise<UserClubStandingModel> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<{
-      data: { userClubStanding: UserClubStandingModel };
-      errors?: {};
-    }>(``, {
-      query: `query userClubStanding($userId: String) {
-          userClubStanding(userId: $userId) {
-            percentageMembersWithFewerPointsForCurrentMonth
-            percentageMembersWithFewerPointsForCurrentYear
-            percentageMembersWithMorePointsForCurrentMonth
-            percentageMembersWithMorePointsForCurrentYear
-          }
-        }`,
-      variables: {
-        userId,
-      },
-    });
-
-    if (response.status !== 200 || !!response.data.errors) {
-      throw new Error('Get standing for user Failed - Server connection error');
-    }
-
-    return response.data.data.userClubStanding;
   }
 
   async addChildRegistrationPoints(userId: string): Promise<boolean> {

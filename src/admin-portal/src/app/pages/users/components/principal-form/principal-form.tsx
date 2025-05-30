@@ -26,15 +26,6 @@ const PrincipalForm: React.FC<PrincipalFormProps> = ({
           </div>
           <div className="sm:col-span-3">
             <FormField
-              label={'Max Children'}
-              nameProp={'maxChildren'}
-              type="number"
-              register={register}
-              error={errors.maxChildren?.message}
-            />
-          </div>
-          <div className="sm:col-span-3">
-            <FormField
               label={'Parent Fees'}
               nameProp={'parentFees'}
               type="number"
@@ -48,15 +39,6 @@ const PrincipalForm: React.FC<PrincipalFormProps> = ({
               nameProp={'languageUsedInGroups'}
               register={register}
               error={errors.languageUsedInGroups?.message}
-            />
-          </div>
-          <div className="sm:col-span-3">
-            <FormField
-              label={'Month Since Franchisee'}
-              nameProp={'monthSinceFranchisee'}
-              type="number"
-              register={register}
-              error={errors.monthSinceFranchisee?.message}
             />
           </div>
           <div className="sm:col-span-3">

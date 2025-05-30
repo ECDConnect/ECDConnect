@@ -10,8 +10,6 @@
 
         public const string COACH = "Coach";
 
-        public const string FRANCHISOR = "Franchisor";
-
         public const string PRINCIPAL = "Principal";
 
         public const string CHILD = "Child";

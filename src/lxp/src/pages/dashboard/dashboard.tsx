@@ -48,12 +48,10 @@ import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
-import { traineeThunkActions } from '@/store/trainee';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '../../assets/neutral_blue_emoticon.svg';
 import { ReactComponent as EmojiOrangeSmile } from '../../assets/mehFace.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
-import { coachSelectors } from '@/store/coach';
 import { childrenThunkActions } from '@/store/children';
 
 import {
@@ -84,7 +82,6 @@ import { CommunityRouteState } from '../community/community.types';
 const { version } = require('../../../package.json');
 
 export interface DashboardRouteState {
-  isFromTraineeFlow?: boolean;
   isFromLogin?: boolean;
   isFromCompleteProfile?: boolean;
 }
@@ -100,7 +97,6 @@ export const Dashboard: React.FC = () => {
     calendarEnabled,
     classroomActivitiesEnabled,
     progressEnabled,
-    trainingEnabled,
   } = useTenantModules();
 
   const appName = tenant?.tenant?.applicationName;
@@ -111,7 +107,6 @@ export const Dashboard: React.FC = () => {
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const coach = useSelector(coachSelectors.getCoach);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -127,12 +122,10 @@ export const Dashboard: React.FC = () => {
 
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
-  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
 
-  const isFirstTimeCommunitySection = !coach?.clickedClubTab;
   const missingProgramme =
     (practitioner?.isRegistered === null || practitioner?.isRegistered) &&
     !practitioner?.principalHierarchy &&
@@ -148,11 +141,6 @@ export const Dashboard: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
-  const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
-  const planActivitiesPermission = practitioner?.permissions?.find(
-    (item) =>
-      item?.permissionName === PermissionsNames.plan_classroom_actitivies
-  );
 
   const getPointsToDoItems = useCallback(async () => {
     appDispatch(
@@ -210,14 +198,6 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
-  // Sync the coach data -> TODO make a better sync method
-  useEffect(() => {
-    if (isCoach) {
-      appDispatch(traineeThunkActions.syncCoachSmartSpaceVisitData());
-      appDispatch(traineeThunkActions.syncTraineeFranchisorAgreementData());
-    }
-  }, []);
-
   useEffect(() => {
     //This will prevent points card showing up for coaches
     if (isCoach) {
@@ -238,10 +218,9 @@ export const Dashboard: React.FC = () => {
       return total;
     }, 0);
 
-    let pointsMax =
-      isPrincipal || isFundaAppAdmin
-        ? pointsConstants.principalOrAdminMonthlyMax
-        : pointsConstants.practitionerMonthlyMax;
+    let pointsMax = isPrincipal
+      ? pointsConstants.principalOrAdminMonthlyMax
+      : pointsConstants.practitionerMonthlyMax;
 
     const percentageScore = (pointsTotal / pointsMax) * 100;
 
@@ -420,13 +399,6 @@ export const Dashboard: React.FC = () => {
               endDate: currentDate,
             })
           ).unwrap())();
-
-        // (async () =>
-        //   await appDispatch(
-        //     pointsThunkActions.getUserClubStanding({
-        //       userId: userData?.id!,
-        //     })
-        //   ).unwrap())();
       }
     }
   }, [userData]);
@@ -511,10 +483,6 @@ export const Dashboard: React.FC = () => {
         await appDispatch(childrenThunkActions.getChildren({})).unwrap())();
     }
   }, [practitioner?.userId]);
-
-  const currentReportingPeriod = useSelector(
-    classroomsSelectors.getCurrentProgressReportPeriod()
-  );
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
@@ -636,7 +604,7 @@ export const Dashboard: React.FC = () => {
             },
           ],
     },
-    ...(isPrincipal || isFundaAppAdmin || isTrialPeriod
+    ...(isPrincipal || isTrialPeriod
       ? [
           {
             name: NavigationNames.Business.Business,
@@ -671,32 +639,6 @@ export const Dashboard: React.FC = () => {
           },
         ]
       : []),
-    {
-      name: NavigationNames.Community.Community,
-      icon: styles.communityIconName,
-      current: false,
-      showDivider: true,
-      nestedChildren: [
-        {
-          name: NavigationNames.Community.Community,
-          href: isFirstTimeCommunitySection
-            ? ROUTES.COMMUNITY.WELCOME
-            : ROUTES.COMMUNITY.ROOT,
-          params: { isFromDashboard: true } as CommunityRouteState,
-          onNavigation: onNavigation,
-          current: false,
-        },
-        {
-          name: NavigationNames.Community.Resources,
-          href: isFirstTimeCommunitySection
-            ? ROUTES.COMMUNITY.WELCOME
-            : ROUTES.COMMUNITY.ROOT,
-          params: { isFromDashboard: true } as CommunityRouteState,
-          onNavigation: onNavigation,
-          current: false,
-        },
-      ],
-    },
     // {
     //   name: NavigationNames.Training,
     //   href: ROUTES.TRAINING,
@@ -822,7 +764,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
+  if (isPrincipal || isTrialPeriod) {
     dashboardItems.splice(1, 0, {
       title: NavigationNames.Business.Business,
       titleIcon: styles.businessIconName,
@@ -1037,7 +979,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToBusiness = () => {
-    if (isPrincipal || isFundaAppAdmin || isTrialPeriod) {
+    if (isPrincipal || isTrialPeriod) {
       history.push(ROUTES.BUSINESS);
       return;
     }

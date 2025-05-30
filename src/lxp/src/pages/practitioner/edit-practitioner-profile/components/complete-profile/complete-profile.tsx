@@ -4,8 +4,6 @@ import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
-import { traineeSelectors } from '@/store/trainee';
-import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { RoleSystemNameEnum, useDialog } from '@ecdlink/core';
 import { DialogPosition } from '@ecdlink/ui';
@@ -15,24 +13,8 @@ export const CompleteProfile: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userData = useSelector(userSelectors.getUser);
   const history = useHistory();
-  const timeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
   const { isOnline } = useOnlineStatus();
-  const isOnStipend = practitioner?.isOnStipend;
   const dialog = useDialog();
-
-  const completedSteps = timelineSteps(
-    timeline!,
-    () => {},
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined,
-    '',
-    timeline?.consolidationMeetingStatus,
-    isOnStipend
-  ).filter((item) => item?.type === 'completed');
 
   const hasPractitionerRole = userData?.roles?.some(
     (role) => role.systemName === RoleSystemNameEnum.Practitioner

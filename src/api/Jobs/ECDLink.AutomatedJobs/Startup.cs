@@ -72,21 +72,6 @@ namespace ECDLink.AutomatedJobs
                     );
                     return service;
                 });
-
-                //}
-                //else if (jobName == "IntegrationTest2")
-                //{
-                //    //services.AddSingleton<Jobs.Integration.IntegrationJobServiceConfig>((Jobs.Integration.IntegrationJobServiceConfig)jobConfig);
-                //    //services.AddHostedService<Jobs.Integration.IntegrationJobService>(sp => {
-                //    services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService>(sp => {
-                //        var service = new Jobs.Integration.IntegrationJobService(
-                //                sp.GetService<IServiceScopeFactory>(),
-                //                (Jobs.Integration.IntegrationJobServiceConfig)jobConfig,
-                //                sp.GetService<Microsoft.Extensions.Logging.ILogger<Jobs.Integration.IntegrationJobService>>()
-                //            );
-                //        return service;
-                //    });
-                //}
             }
         }
     }

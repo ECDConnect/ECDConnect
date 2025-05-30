@@ -7,9 +7,6 @@ import {
   StackedList,
   TabItem,
   TabList,
-  Card,
-  Typography,
-  Button,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -35,19 +32,16 @@ import { useTenant } from '@/hooks/useTenant';
 import { ReassignClassPageState } from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class.types';
 import { usePractitionerAbsentees } from '@/hooks/usePractitionerAbsentees';
 import { AbsenceCard } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/absence-card/absence-card';
-// import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
   const [isJourneyFormOpen, setJourneyFormOpen] = useState(false);
   // const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const isTrainee = practitioner?.isTrainee;
   const isPrincipal = practitioner?.isPrincipal;
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomForPractitionerAnyType: any = classroom;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
   const appDispatch = useAppDispatch();
   const { userProfilePicture, classroomImage } = useDocuments();
   const { isOnline } = useOnlineStatus();
@@ -64,36 +58,10 @@ export const PractitionerProfile: React.FC = () => {
 
   const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
 
-  const { practitionerIsOnLeave, isScheduledLeave } = usePractitionerAbsentees(
-    practitioner!
-  );
-
   const selectedTab =
     wasJourneyFormOpen && !isJourneyFormOpen
       ? 1
       : location.state?.tabIndex || undefined;
-  // const sync = async () => {
-  //   if (practitioner?.isPrincipal === true) {
-  //     await appDispatch(syncThunkActions.syncOfflineData({}));
-  //   } else {
-  //     await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-  //   }
-  //   await appDispatch(settingActions.setLastDataSync());
-  // };
-
-  const handleOnlineCallback = (callback: () => void) => {
-    if (isOnline) {
-      callback();
-    } else {
-      dialog({
-        color: 'bg-white',
-        position: DialogPosition.Middle,
-        render: (onSubmit) => {
-          return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-        },
-      });
-    }
-  };
 
   useEffect(() => {
     if (!isOnline) {
@@ -175,20 +143,6 @@ export const PractitionerProfile: React.FC = () => {
           history.push(ROUTES.PRACTITIONER.ABOUT.ROOT);
         },
       },
-      // {
-      //   title: 'Account',
-      //   titleStyle,
-      //   subTitleStyle,
-      //   subTitle: 'Password',
-      //   menuIcon: 'ShieldCheckIcon',
-      //   menuIconClassName: 'text-white',
-      //   iconBackgroundColor: 'tertiary',
-      //   showIcon: true,
-      //   iconColor: 'white',
-      //   onActionClick: () => {
-      //     history.push(ROUTES.PRACTITIONER.ACCOUNT);
-      //   },
-      // },
       {
         title: NavigationNames.Logout,
         titleStyle,
@@ -215,43 +169,41 @@ export const PractitionerProfile: React.FC = () => {
       },
     ];
 
-    if (!isTrainee) {
-      stackedMenuList?.splice(1, 0, {
-        title: 'Preschool',
-        titleStyle,
-        subTitle:
-          classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
-            ? classroomForPractitionerAnyType?.name
-            : classroom?.name || 'N/A',
-        subTitleStyle,
-        menuIconUrl: classroomImage?.file,
-        menuIcon: 'HeartIcon',
-        menuIconClassName: 'text-white',
-        iconBackgroundColor: 'secondary',
-        backgroundColor: 'secondaryAccent2',
-        iconColor: 'white',
-        showIcon: classroomImage?.file === undefined,
-        onActionClick: () => {
-          if (
-            ((classroom &&
-              classroom.id &&
-              classroomGroups &&
-              classroomGroups?.length > 0) ||
-              (classroomGroups && !missingProgramme) ||
-              isOpenAccess) &&
-            !(!classroom && practitioner?.principalHierarchy)
-          ) {
-            if (isOnline) {
-              history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
-            } else {
-              showOnlineOnly();
-            }
-          } else if (!isOpenAccess) {
-            showCompleteProfileBlockingDialog();
+    stackedMenuList?.splice(1, 0, {
+      title: 'Preschool',
+      titleStyle,
+      subTitle:
+        classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
+          ? classroomForPractitionerAnyType?.name
+          : classroom?.name || 'N/A',
+      subTitleStyle,
+      menuIconUrl: classroomImage?.file,
+      menuIcon: 'HeartIcon',
+      menuIconClassName: 'text-white',
+      iconBackgroundColor: 'secondary',
+      backgroundColor: 'secondaryAccent2',
+      iconColor: 'white',
+      showIcon: classroomImage?.file === undefined,
+      onActionClick: () => {
+        if (
+          ((classroom &&
+            classroom.id &&
+            classroomGroups &&
+            classroomGroups?.length > 0) ||
+            (classroomGroups && !missingProgramme) ||
+            isOpenAccess) &&
+          !(!classroom && practitioner?.principalHierarchy)
+        ) {
+          if (isOnline) {
+            history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
+          } else {
+            showOnlineOnly();
           }
-        },
-      });
-    }
+        } else if (!isOpenAccess) {
+          showCompleteProfileBlockingDialog();
+        }
+      },
+    });
 
     return stackedMenuList;
   };
