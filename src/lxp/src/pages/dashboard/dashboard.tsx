@@ -705,13 +705,13 @@ export const Dashboard: React.FC = () => {
     //   showDivider: true,
     //   hideItem: !trainingEnabled && isWhiteLabel,
     // },
-    // {
-    //   name: NavigationNames.Points,
-    //   href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
-    //   icon: styles.pointsIconName,
-    //   current: false,
-    //   showDivider: true,
-    // },
+    {
+      name: NavigationNames.Points,
+      href: ROUTES.PRACTITIONER.POINTS.SUMMARY,
+      icon: styles.pointsIconName,
+      current: false,
+      showDivider: true,
+    },
     {
       name: NavigationNames.Calendar,
       href: ROUTES.CALENDAR,
@@ -1373,12 +1373,12 @@ export const Dashboard: React.FC = () => {
             listItems={dashboardItems}
             notification={dashboardNotification}
           />
-          {/* {totalYearPoints &&
+          {totalYearPoints &&
           totalYearPoints >= 10 &&
           !!pointsScoreProps &&
           !isCoach ? (
             <ScoreCard
-              className="mt-1 mb-1 h-20"
+              className="mt-1 mb-1 h-20 w-full"
               progressBarClassName="flex pt-2"
               mainText={pointsScoreProps?.mainText!}
               hint={pointsScoreProps?.hint}
@@ -1392,8 +1392,8 @@ export const Dashboard: React.FC = () => {
               textColour={pointsScoreProps?.textColour!}
               textPosition={pointsScoreProps?.textPosition!}
             />
-          ) : null} */}
-          {/* {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
+          ) : null}
+          {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
           !isCoach ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
@@ -1418,7 +1418,7 @@ export const Dashboard: React.FC = () => {
               hint={renderTodoText}
               textPosition="left"
             />
-          ) : null} */}
+          ) : null}
         </div>
       </BannerWrapper>
     </>
