@@ -42,6 +42,8 @@ export const GetActivityRecords = gql`
       insertedDate
       subTypeItems
       image
+      isInUse
+      inUseThemeNames
       subCategoryItems {
         id
         name

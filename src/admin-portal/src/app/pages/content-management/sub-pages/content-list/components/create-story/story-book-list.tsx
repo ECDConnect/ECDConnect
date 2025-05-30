@@ -331,18 +331,20 @@ export default function StoryBookList({
       const copyItem = {
         __typename: ContentTypes.STORY_BOOK,
         id: +item.id,
-        name: item.name,
-        type: item.type,
-        author: item.auther,
-        illustrator: item.illustrator,
-        translator: item.translator,
-        bookLocation: item.bookLocation,
-        keywords: item.keywords,
+        name: item?.name,
+        type: item?.type,
+        author: item?.auther,
+        illustrator: item?.illustrator,
+        translator: item?.translator,
+        bookLocation: item?.bookLocation,
+        keywords: item?.keywords,
         storyBookParts: itemStoryBookParts,
         availableLanguages: itemLanguages,
-        shareContent: item.shareContent,
-        themes: item.themes,
-        authorsAuthorization: item.authorsAuthorization,
+        shareContent: item?.shareContent,
+        themes: item?.themes,
+        authorsAuthorization: item?.authorsAuthorization,
+        isInUse: item?.isInUse,
+        inUseThemeNames: item?.inUseThemeNames,
       };
       model.content = copyItem;
     }
@@ -374,6 +376,10 @@ export default function StoryBookList({
 
   const isAllInactive = selectedStorybooks.every(
     (obj) => obj?.isActive === false
+  );
+
+  const inUseStoryBooks = selectedStorybooks?.filter(
+    (item) => item?.isInUse === true
   );
 
   const getChipColor = (type?: string) => {
@@ -513,7 +519,9 @@ export default function StoryBookList({
   const deactivateRecords = useCallback(() => {
     deactivateStoryBooks({
       variables: {
-        contentIds: selectedStorybooks?.map((item) => item?.id),
+        contentIds: selectedStorybooks?.map(
+          (item) => item?.id && item?.isInUse === false
+        ), // exclude ids which is in use
       },
     })
       .then((res) => {
@@ -555,11 +563,21 @@ export default function StoryBookList({
         <AlertModal
           title={`Are you sure you want to delete ${
             selectedStorybooks?.length - inactiveStorybooks?.length
-          } items?`}
-          message={`Practitioners will no longer have access to these story books.`}
+          } items?  Some practitioner's programme plans will be incomplete`}
+          message={`Practitioners who have included these items in their plans will have incomplete programmes`}
           btnText={['Yes, delete', 'No, Cancel']}
-          hasAlert={isAllInactive || inactiveStorybooks?.length > 0}
-          alertMessage={`Note: ${inactiveStorybooks?.length} deleted.`}
+          hasAlert={
+            isAllInactive ||
+            inactiveStorybooks?.length > 0 ||
+            inUseStoryBooks?.length > 0
+          }
+          alertMessage={
+            inUseStoryBooks?.length > 0
+              ? `Note: ${inUseStoryBooks?.length} item(s) selected cannot be removed because they are linked to  a published theme.`
+              : isAllInactive || inactiveStorybooks?.length > 0
+              ? `Note: ${inactiveStorybooks?.length} deleted.`
+              : ''
+          }
           alertType="error"
           onCancel={() => {
             onClose();

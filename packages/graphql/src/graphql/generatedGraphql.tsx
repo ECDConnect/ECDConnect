@@ -297,6 +297,7 @@ export type ActivityViewModel = {
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   image?: Maybe<Scalars['String']>;
+  inUseThemeNames?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
   localeId: Scalars['UUID'];
   materials?: Maybe<Scalars['String']>;
@@ -19057,6 +19058,7 @@ export type StoryBookViewModel = {
   bookLocationLink?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   illustrator?: Maybe<Scalars['String']>;
+  inUseThemeNames?: Maybe<Scalars['String']>;
   insertedDate?: Maybe<Scalars['DateTime']>;
   keywords?: Maybe<Scalars['String']>;
   localeId: Scalars['UUID'];
