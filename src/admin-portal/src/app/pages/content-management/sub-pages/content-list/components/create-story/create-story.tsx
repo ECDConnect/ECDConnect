@@ -19,7 +19,7 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
-import { Alert, DialogPosition } from '@ecdlink/ui';
+import { ActionModal, Alert, DialogPosition } from '@ecdlink/ui';
 import { SaveIcon, TrashIcon, XIcon } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 import CreateStoryForm from './components/create-story-form';
@@ -161,6 +161,37 @@ export default function CreateStory({
             cancelEdit();
             onCancel();
           }}
+        />
+      ),
+    });
+  };
+
+  const cannotDeleteDialog = async () => {
+    dialog({
+      // blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'ExclamationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          actionButtons={[
+            {
+              text: 'No, cancel',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => onCancel && onCancel(),
+              leadingIcon: 'XIcon',
+            },
+          ]}
+          title="You cannot delete this item"
+          customDetailText={
+            <div className="w-full text-center">
+              <div>{`This item is linked to these published theme(s): ${content?.inUseThemeNames}.`}</div>
+              <div className="mt-2">{`To delete this item, remove it from the theme(s) first`}</div>
+            </div>
+          }
         />
       ),
     });
@@ -472,7 +503,7 @@ export default function CreateStory({
             </button>
 
             <button
-              onClick={deleteAndRefresh}
+              onClick={content?.isInUse ? cannotDeleteDialog : deleteAndRefresh}
               className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
             >
               <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />

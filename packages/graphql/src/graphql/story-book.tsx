@@ -34,6 +34,8 @@ export const GetStoryBookRecords = gql`
       bookLocation
       keywords
       storyBookParts
+      isInUse
+      inUseThemeNames
       __typename
     }
   }
