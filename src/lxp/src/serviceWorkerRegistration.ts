@@ -27,24 +27,23 @@ const log = (msg: string) => {
 type Config = {
   onSuccess?: (registration: ServiceWorkerRegistration) => void;
   onUpdate?: (registration: ServiceWorkerRegistration) => void;
-  onRenderApp: () => void;
 };
 
-export function register(config: Config) {
-  log('register');
+export function register(config: Config): boolean {
   if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+    log('Registering service worker');
     // The URL constructor is available in all browsers that support SW.
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
     if (publicUrl.origin !== window.location.origin) {
       // Our service worker won't work if PUBLIC_URL is on a different origin
       // from what our page is served on. This might happen if a CDN is used to
       // serve assets; see https://github.com/facebook/create-react-app/issues/2374
-      return;
+      return false;
     }
 
     window.addEventListener('load', () => {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
-      log(`load event isLocalhost=${isLocalhost}`);
+      log(`Listening for load event. isLocalhost=${isLocalhost}`);
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
         checkValidServiceWorker(swUrl, config);
@@ -55,16 +54,17 @@ export function register(config: Config) {
           log(
             'This web app is being served cache-first by a service worker. To learn more, visit https://cra.link/PWA'
           );
-          config.onRenderApp();
         });
       } else {
         // Is not localhost. Just register service worker
         registerValidSW(swUrl, config);
       }
     });
-  } else {
-    config.onRenderApp();
+    return true;
   }
+
+  log('Development and localhost, not registering service worker');
+  return false;
 }
 
 function registerValidSW(swUrl: string, config: Config) {
@@ -72,7 +72,7 @@ function registerValidSW(swUrl: string, config: Config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
-      log('register-then');
+      log('Registering service worker, registered');
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {
@@ -102,16 +102,13 @@ function registerValidSW(swUrl: string, config: Config) {
               if (config && config.onSuccess) {
                 config.onSuccess(registration);
               }
-              config.onRenderApp();
             }
           }
         };
       };
-      if (registration.installing == null) config.onRenderApp();
     })
     .catch((error) => {
       console.error('Error during service worker registration:', error);
-      config.onRenderApp();
     });
 }
 

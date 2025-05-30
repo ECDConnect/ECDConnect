@@ -176,6 +176,13 @@ export const getLearnersForClassroomGroups = (
                 (!learner.stoppedAttendance ||
                   new Date(learner.stoppedAttendance) >= startDate)
             )
+            .filter((learner) =>
+              children.find(
+                (child) =>
+                  child.userId === learner.childUserId &&
+                  child.caregiverId != null
+              )
+            )
             .map((learner) => ({
               ...learner,
               child: children.find(

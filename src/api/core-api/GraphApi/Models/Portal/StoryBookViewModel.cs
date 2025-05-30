@@ -25,10 +25,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
         public string StoryBookParts { get; set; }
         public List<int> ThemeItems { get; set; }
         public bool IsInUse { get; set; }
+        public string InUseThemeNames { get; set; }
 
-        public StoryBookViewModel(Object record, Guid localeId, List<string> allInUseIds)
+        public StoryBookViewModel(Object record, Guid localeId,
+                                 List<ThemeDayViewModel> themeDayRecords,
+                                 List<ThemeNameDaysViewModel> themeRecords)
         {
-
             var item = (IDictionary<string, object>)record;
             item.TryGetValue("id", out var id);
             item.TryGetValue("name", out var name);
@@ -45,6 +47,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             item.TryGetValue("keywords", out var keywords);
             item.TryGetValue("storyBookParts", out var storyBookParts);
             item.TryGetValue("themes", out var themes);
+            item.TryGetValue("contentId", out var contentId);
+
+            // story books are linked to theme days and theme days are linked to themes
+            var linkedThemeDays = themeDayRecords
+                .Where(x => x.ActivityId == id.ToString())
+                .Select(x => x.ContentId)
+                .Distinct()
+                .ToList();
+
+            var linkedThemes = string.Join(", ",
+                themeRecords
+                    .Where(x => x.ThemeDays.Intersect(linkedThemeDays).Any())
+                    .Select(x => x.Name)
+                    .Distinct()
+                );  
 
             Id = id.ToString();
             Name = name != null ? name.ToString() : "";
@@ -63,7 +80,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.Portal
             InsertedDate = insertedDate != null ? DateTime.Parse(insertedDate.ToString()) : null;
             AvailableLanguages = availableLanguages != null ? (availableLanguages as string).Split(",").Select(i => new Guid(i)).ToList() : new List<Guid>();
             ThemeItems = themes != null ? themes.ToString().Split(",").Where(x => x != "").Select(x => Int32.Parse(x)).ToList() : new List<int>();
-            IsInUse = allInUseIds.Contains(id.ToString());
+            InUseThemeNames = linkedThemes;
+            IsInUse = linkedThemes.Count() != 0;
+
         }
     }
 }

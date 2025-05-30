@@ -5,6 +5,7 @@ import RobotHearts from '../../assets/gifs/robothearts.gif';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import ROUTES from '@routes/routes';
 import { TIMEOUTS } from '@/constants/timeouts';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 
 const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
   const history = useHistory();
@@ -49,22 +50,34 @@ const Loader = ({ loadingMessage = 'Waking up the robots' }) => {
             message={
               'Having issues? Go back to the login screen here to allow for a reset'
             }
+            messageColor="white"
             type={'warning'}
+            customIcon={
+              <ExclamationCircleIcon
+                className="white mb-4 h-6 w-6"
+                style={{
+                  color: '#ffffff',
+                }}
+              />
+            }
             button={
               <Button
                 color="textMid"
                 type="filled"
                 size="small"
                 onClick={async () => {
-                  await resetAppStore();
-                  await resetAuth();
-                  history.push(ROUTES.LOGIN);
+                  resetAuth && (await resetAuth());
+                  resetAppStore && (await resetAppStore());
+                  history
+                    ? history.push(ROUTES.LOGIN)
+                    : window.location.reload();
                 }}
               >
                 <Typography
                   color="white"
                   text={'Reset & Go back to login'}
                   type="small"
+                  underline
                 />
               </Button>
             }
