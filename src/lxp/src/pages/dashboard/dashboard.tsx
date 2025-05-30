@@ -145,6 +145,9 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getDashboardNotification
   );
 
+  const [fetchClassroomGroups, setFetchClassroomGroups] = useState(
+    !!classroomGroups.length
+  );
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
@@ -174,6 +177,15 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (isOnline && practitioner) {
       getPointsToDoItems();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOnline && !fetchClassroomGroups) {
+      appDispatch(
+        classroomsThunkActions.getClassroomGroups({ overrideCache: true })
+      );
+      setFetchClassroomGroups(true);
     }
   }, []);
 
