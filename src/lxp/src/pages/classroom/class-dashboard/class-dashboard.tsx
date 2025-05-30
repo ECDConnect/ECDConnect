@@ -133,40 +133,42 @@ export const ClassDashboard: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
+  const tabItems: TabItem[] = useMemo(
+    () => [
+      {
+        title: NavigationNames.Classroom.Classes,
+        initActive: true,
+        child: <Classes setSelectedTabIndex={setSelectedTabIndex} />,
+      },
+      {
+        title: NavigationNames.Classroom.Attendance,
+        initActive: false,
+        child: <AttendanceComponent />,
+      },
+      {
+        title: NavigationNames.Classroom.Progress,
+        initActive: false,
+        child: <ChildProgressLanding messageReference={messageReference} />,
+      },
+      {
+        title: NavigationNames.Classroom.Activities,
+        initActive: false,
+        child: <ActivitiesTab />,
+      },
+      {
+        title: NavigationNames.Classroom.Resources,
+        initActive: false,
+        child: <Resources />,
+      },
+    ],
+    [messageReference]
+  );
+
   useEffect(() => {
     if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
       setCurrentTab(tabItems[selectedTabIndex]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTabIndex]);
-
-  const tabItems: TabItem[] = [
-    {
-      title: NavigationNames.Classroom.Classes,
-      initActive: true,
-      child: <Classes />,
-    },
-    {
-      title: NavigationNames.Classroom.Attendance,
-      initActive: false,
-      child: <AttendanceComponent />,
-    },
-    {
-      title: NavigationNames.Classroom.Progress,
-      initActive: false,
-      child: <ChildProgressLanding messageReference={messageReference} />,
-    },
-    {
-      title: NavigationNames.Classroom.Activities,
-      initActive: false,
-      child: <ActivitiesTab />,
-    },
-    {
-      title: NavigationNames.Classroom.Resources,
-      initActive: false,
-      child: <Resources />,
-    },
-  ];
+  }, [selectedTabIndex, tabItems]);
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
     setPreviousTabIndex(selectedTabIndex);

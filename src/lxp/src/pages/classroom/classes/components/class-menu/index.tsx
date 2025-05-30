@@ -23,6 +23,7 @@ interface ClassMenuProps {
   classroomGroupId: string;
   className: string;
   onClose: () => void;
+  setSelectedTabIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const ClassMenu = ({
@@ -30,6 +31,7 @@ export const ClassMenu = ({
   classroomGroupId,
   className,
   onClose,
+  setSelectedTabIndex,
 }: ClassMenuProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -71,7 +73,6 @@ export const ClassMenu = ({
             history.push(ROUTES.CLASSROOM.CHILDREN, {
               classroomGroupId,
             } as ChildListRouteState);
-
             onClose();
           },
           textColour: 'white',
@@ -84,12 +85,13 @@ export const ClassMenu = ({
                 colour: 'quatenary',
                 text: 'Take attendance',
                 type: 'outlined',
-                onClick: () => {
-                  history.push(ROUTES.CLASSROOM.ROOT, {
+                onClick: async () => {
+                  onClose();
+                  setSelectedTabIndex(TabsItems.ATTENDANCE);
+                  return history.push(ROUTES.CLASSROOM.ROOT, {
                     activeTabIndex: TabsItems.ATTENDANCE,
                     classroomGroupIdFromClassTab: classroomGroupId,
                   } as ClassDashboardRouteState);
-                  onClose();
                 },
                 textColour: 'quatenary',
               },
@@ -104,6 +106,7 @@ export const ClassMenu = ({
                 text: 'Track child progress',
                 type: 'outlined',
                 onClick: () => {
+                  setSelectedTabIndex(TabsItems.PROGRESS);
                   history.push(ROUTES.CLASSROOM.ROOT, {
                     activeTabIndex: TabsItems.PROGRESS,
                   });
