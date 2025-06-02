@@ -115,45 +115,44 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
     setEditPractitionerModal(true);
   };
 
-  const stackedListItems: ActionListDataItem[] =
-    practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-      ? [practitioner, ...(practitioners || [])].map((item) => {
-          return {
-            title: item?.user?.firstName || item?.user?.userName || '',
-            subTitle: item?.isPrincipal ? 'Principal' : 'Practitioner',
-            switchTextStyles: false,
-            actionName: !!practitioners && practitioners.length ? 'Edit' : '',
-            buttonColor: 'quatenary',
-            textColor: 'white',
-            actionIcon: 'PencilIcon',
-            buttonType:
-              !!practitioners && practitioners.length ? 'filled' : 'ghost',
-            onActionClick: () => {
-              handleEditPractitioner(item?.id);
-            },
-          };
-        })
-      : otherColleaguesFiltered?.map((item: any) => {
-          return {
-            title: item?.name,
-            subTitle: item?.title,
-            switchTextStyles: false,
-            actionName: 'View',
-            actionIcon: 'PencilIcon',
-            onActionClick: () => {
-              setPractitionerInfo(true);
-              setColleagueProfile({
-                name: item?.name,
-                classroomNames: item?.classroomNames,
-                contactNumber: item?.contactNumber,
-                profilePhoto: item?.profilePhoto,
-                title:
-                  item?.title === 'Practitioner' ? 'Practitioner' : 'Principal',
-                nickName: item?.nickName,
-              });
-            },
-          };
-        });
+  const stackedListItems: ActionListDataItem[] = practitioner?.isPrincipal
+    ? [practitioner, ...(practitioners || [])].map((item) => {
+        return {
+          title: item?.user?.firstName || item?.user?.userName || '',
+          subTitle: item?.isPrincipal ? 'Principal' : 'Practitioner',
+          switchTextStyles: false,
+          actionName: !!practitioners && practitioners.length ? 'Edit' : '',
+          buttonColor: 'quatenary',
+          textColor: 'white',
+          actionIcon: 'PencilIcon',
+          buttonType:
+            !!practitioners && practitioners.length ? 'filled' : 'ghost',
+          onActionClick: () => {
+            handleEditPractitioner(item?.id);
+          },
+        };
+      })
+    : otherColleaguesFiltered?.map((item: any) => {
+        return {
+          title: item?.name,
+          subTitle: item?.title,
+          switchTextStyles: false,
+          actionName: 'View',
+          actionIcon: 'PencilIcon',
+          onActionClick: () => {
+            setPractitionerInfo(true);
+            setColleagueProfile({
+              name: item?.name,
+              classroomNames: item?.classroomNames,
+              contactNumber: item?.contactNumber,
+              profilePhoto: item?.profilePhoto,
+              title:
+                item?.title === 'Practitioner' ? 'Practitioner' : 'Principal',
+              nickName: item?.nickName,
+            });
+          },
+        };
+      });
 
   return (
     <>

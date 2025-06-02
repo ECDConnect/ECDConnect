@@ -57,7 +57,6 @@ import {
   classroomsForCoachActions,
 } from './store/classroomForCoach';
 import { programmeActions, programmeThunkActions } from './store/programme';
-import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarActions, calendarThunkActions } from './store/calendar';
 import { activityThunkActions } from '@store/content/activity';
 import { authSelectors } from '@store/auth';
@@ -94,12 +93,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const classroomForUser = useSelector(classroomsSelectors.getClassroom);
   const isPrincipal = practitioner?.isPrincipal;
-
-  const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline(practitioner?.userId || '')
-  );
-  const traineeVisits = traineeTimeline?.traineeVisits;
-  const traineeCurrentVisit = traineeVisits?.[0];
   const [otherLoading, setOtherLoading] = useState(false);
 
   const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
@@ -403,28 +396,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             ).unwrap())();
         }
       }
-      if (practitioner?.isTrainee) {
-        (async () =>
-          await appDispatch(
-            traineeThunkActions.getTraineeById({ userId: userData?.id! })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            traineeThunkActions.getTraineeTimeline({
-              userId: practitioner?.userId ? practitioner?.userId : '',
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            traineeThunkActions.getTraineeVisitData({
-              visitId: traineeCurrentVisit?.id,
-            })
-          ).unwrap())();
-      }
     }
-  }, [appDispatch, userData, practitioner, isCoach, traineeCurrentVisit?.id]);
+  }, [appDispatch, userData, practitioner, isCoach]);
 
   useEffect(() => {
     if (userData) {

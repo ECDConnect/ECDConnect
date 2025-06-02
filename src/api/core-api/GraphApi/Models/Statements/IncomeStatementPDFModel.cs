@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.Statements

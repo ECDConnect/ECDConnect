@@ -31,12 +31,8 @@ using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
-using ECDLink.SmartStart;
-using ECDLink.SmartStart.Services;
-using ECDLink.SmartStart.Services.Interfaces;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,14 +42,13 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace EcdLink.Api.CoreApi
 {
+    using EcdLink.Api.CoreApi.GraphApi.Models;
     using EcdLink.Api.CoreApi.Middleware;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.HttpLogging;
     using System;
     using System.Threading.Tasks;
 
@@ -179,8 +174,6 @@ namespace EcdLink.Api.CoreApi
 
             PdfGeneratorStartup.ConfigurePdfGeneratorServices(services, Configuration);
 
-            SmartStartStartup.ConfigureSmartStartServices(services, Environment.IsDevelopment());
-
             MoodleStartup.ConfigureMoodleServices(services, Configuration);
 
             // if (Environment.IsDevelopment())
@@ -208,7 +201,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
             services.AddTransient<VisitDataStatusManager_Practitioner>();
-            services.AddTransient<UserLicenseManager>();
+
             services.AddTransient<PersonnelService>();
             services.AddTransient<IPersonnelService, PersonnelService>();
             services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
@@ -224,6 +217,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IPointsService, PointsEngineService>();
             services.AddTransient<IChildService, ChildService>();
             services.AddTransient<DocumentManager>();
+            services.AddTransient<MonthlyAttendanceReport>();
+            services.AddTransient<ChildAttendanceReport>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
             services.AddTransient<IClassroomService, ClassroomService>();

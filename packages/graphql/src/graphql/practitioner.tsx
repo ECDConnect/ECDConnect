@@ -28,16 +28,12 @@ export const GetAllPractitioner = gql`
         ward
       }
       attendanceRegisterLink
-      maxChildren
       isPrincipal
-      isFundaAppAdmin
       isRegistered
-      isTrainee
       consentForPhoto
       parentFees
       languageUsedInGroups
       startDate
-      monthSinceFranchisee
       signingSignature
       coachHierarchy
       principalHierarchy
@@ -46,7 +42,6 @@ export const GetAllPractitioner = gql`
       dateToBeRemoved
       dateAccepted
       progress
-      attendedChildProgress
       usePhotoInReport
     }
   }
@@ -75,16 +70,12 @@ export const GetPractitionerById = gql`
         ward
       }
       attendanceRegisterLink
-      maxChildren
       consentForPhoto
       parentFees
       languageUsedInGroups
       startDate
-      monthSinceFranchisee
       isPrincipal
-      isFundaAppAdmin
       isRegistered
-      isTrainee
       signingSignature
       coachHierarchy
       principalHierarchy
@@ -93,12 +84,8 @@ export const GetPractitionerById = gql`
       dateToBeRemoved
       dateAccepted
       progress
-      attendedChildProgress
       usePhotoInReport
       isCompletedBusinessWalkThrough
-      isNewInClub
-      clubId
-      clubName
       permissions {
         id
         isActive
@@ -182,7 +169,6 @@ export const GetAllPortalPractitioners = gql`
       id
       userId
       isPrincipal
-      isFundaAppAdmin
       isRegistered
       user {
         id
@@ -274,31 +260,23 @@ export const GetPractitionerByUserId = gql`
       }
       programmeType
       isPrincipal
-      isTrainee
       isRegistered
-      isTrainee
       principalHierarchy
       coachHierarchy
       coachName
       attendanceRegisterLink
-      maxChildren
       consentForPhoto
       parentFees
       languageUsedInGroups
       signingSignature
       startDate
-      monthSinceFranchisee
       shareInfo
       dateLinked
       dateAccepted
       dateToBeRemoved
       isLeaving
       progress
-      attendedChildProgress
       usePhotoInReport
-      setupTraineeInitiated
-      isOnStipend
-      stipendType
       isCompletedBusinessWalkThrough
       clickedCommunityTab
       communitySectionViewDate

@@ -60,12 +60,6 @@ namespace ECDLink.DataAccessLayer.Managers
 
             var roles = await base.GetRolesAsync(user);
 
-            //Franchisor
-            if (roles.Any(x => x.Contains(Roles.FRANCHISOR)))
-            {
-                var franchisorRepo = _repoFactory.CreateGenericRepository<Franchisor>(userContext: user.Id);
-                user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);
-            }
             //Coach
             if (roles.Any(x => x.Contains(Roles.COACH)))
             {
@@ -85,14 +79,6 @@ namespace ECDLink.DataAccessLayer.Managers
                         user.practitionerObjectData = null;
                         user.principalObjectData = userData;
                     }
-                    else if (userData.IsTrainee.HasValue && userData.IsTrainee == true)
-                    {
-                        var traineeRepo = _repoFactory.CreateGenericRepository<Trainee>(userContext: user.Id);
-                        var traineeUserData = traineeRepo.GetByUserId(user.Id);
-                        user.practitionerObjectData = null;
-                        user.principalObjectData = null;
-                        user.traineeObjectData = traineeUserData;
-                    }
                     else
                     {
                         user.principalObjectData = null;
@@ -100,13 +86,6 @@ namespace ECDLink.DataAccessLayer.Managers
                     }
                 }
             }
-            //Child
-            //if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
-            //{
-            //    var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
-            //    user.childObjectData = childRepo.GetByUserId(user.Id);
-            //}
-
         }
     }
 }

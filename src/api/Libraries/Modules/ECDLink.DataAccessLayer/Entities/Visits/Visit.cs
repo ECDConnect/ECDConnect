@@ -27,8 +27,6 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public Guid? LinkedVisitId { get; set; }
         public Guid? PractitionerId { get; set; }
         public virtual Practitioner Practitioner { get; set; }
-        public Guid? TraineeId { get; set; }
-        public virtual Trainee Trainee { get; set; }
         public Guid? CoachId { get; set; }
         public virtual Coach Coach { get; set; }
         [NotMapped]
@@ -47,7 +45,6 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public bool HasAnswerData { get; set; }
         public string Rating { get; set; }
         public virtual PQARating PQARating { get; set; }
-        public DateTime? IntegrationSubmitDate {  get; set; }
         public virtual ICollection<VisitData> VisitData { get; set; }
     }
 

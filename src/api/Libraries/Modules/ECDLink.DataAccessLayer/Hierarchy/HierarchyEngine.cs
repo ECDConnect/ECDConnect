@@ -113,7 +113,6 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var user = _userManager.FindByIdAsync(userId.ToString()).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
 
-            var isFranchisor = roles.Contains(Roles.FRANCHISOR);
             var isCoach = roles.Contains(Roles.COACH);
             var isPrincipal = roles.Contains(Roles.PRINCIPAL);
             var isPractitioner = roles.Contains(Roles.PRACTITIONER);
@@ -121,12 +120,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             // Add userId to list of hierarchies to fetch
             var userIdsToFetch = new List<Guid>() { userId };
 
-            if (isFranchisor)
-            {
-                userIdsToFetch.AddRange(
-                    GetFranchisorIds(practRepo, userId));
-            }
-            else if (isCoach)
+            if (isCoach)
             {
                 userIdsToFetch.AddRange(
                     GetCoachIds(practRepo, userId));
@@ -196,32 +190,6 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             }
 
             return hierarchyList.Distinct().ToList();
-        }
-
-        private List<Guid> GetFranchisorIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userId)
-        {
-            var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: userId);
-            List<Guid> franchisorCoachIds = coachRepo.GetAll()
-                .Where(c => c.FranchisorId == userId)
-                .Select(f => f.UserId.Value)
-                .ToList();
-
-            List<Guid> userIdsToFetch = new List<Guid>();
-            if (franchisorCoachIds?.Count > 0)
-            {
-                userIdsToFetch.AddRange(franchisorCoachIds);
-            }
-
-            List<Practitioner> franchisorsPractitioners = practRepo.GetAll()
-                    .Where(p => franchisorCoachIds.Contains(p.CoachHierarchy ?? Guid.Empty))
-                    .ToList();
-
-            if (franchisorsPractitioners?.Count > 0)
-            {
-                userIdsToFetch.AddRange(franchisorsPractitioners.Select(f => f.UserId.Value));
-            }
-
-            return userIdsToFetch;
         }
 
         private static List<Guid> GetCoachIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
@@ -373,17 +341,6 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             }
             return value.Count == 0 ? null : value[0];
-        }
-
-        public Guid? GetIntegrationUserId()
-        {
-            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
-            var entity = userHierarchyRepo.GetAll()
-                               .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator") && string.Equals(x.User.UserName, "IntegrationUser"))
-                               .OrderBy(x => x.Key)
-                               .FirstOrDefault();
-
-            return entity?.UserId;
         }
 
         public Guid? GetSuperAdminUserId()

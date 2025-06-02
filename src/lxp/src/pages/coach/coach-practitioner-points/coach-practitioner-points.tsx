@@ -22,7 +22,6 @@ export const CoachPractitionerPoints: React.FC = () => {
   const practitioner = useSelector(getPractitionerByUserId(userId));
 
   const isPrincipal = practitioner?.isPrincipal;
-  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
 
   const [monthsLoaded, setMonthsLoaded] = useState<number[]>([currentMonth]);
   const [loadNextMonthDisabled, setLoadNextMonthDisabled] = useState<boolean>(
@@ -33,10 +32,9 @@ export const CoachPractitionerPoints: React.FC = () => {
     practitionerForCoachSelectors.getPointsTotalForYear(userId)
   );
 
-  const pointsMax =
-    isPrincipal || isFundaAppAdmin
-      ? pointsConstants.principalOrAdminYearlyMax
-      : pointsConstants.practitionerYearlyMax;
+  const pointsMax = isPrincipal
+    ? pointsConstants.principalOrAdminYearlyMax
+    : pointsConstants.practitionerYearlyMax;
 
   const percentageScore = (pointsTotalForYear / pointsMax) * 100;
 

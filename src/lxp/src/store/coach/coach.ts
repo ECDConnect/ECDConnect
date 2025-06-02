@@ -28,17 +28,7 @@ const coachSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // setThunkActionStatus(builder, updateCoachClubClicked);
     setThunkActionStatus(builder, getCoachByCoachId);
-    // builder.addCase(updateCoachClubClicked.fulfilled, (state, action) => {
-    //   if (state.coach) {
-    //     state.coach = {
-    //       ...state.coach,
-    //       clickedClubTab: true,
-    //     };
-    //   }
-    //   setFulfilledThunkActionStatus(state, action);
-    // });
     builder.addCase(getCoachByCoachId.fulfilled, (state, action) => {
       state.coach = action.payload;
       setFulfilledThunkActionStatus(state, action);
@@ -49,18 +39,6 @@ const coachSlice = createSlice({
     builder.addCase(getCoachByUserId.fulfilled, (state, action) => {
       state.coach = action.payload;
     });
-    // builder.addCase(
-    //   getAllCoachingCircleClubsForCoach.fulfilled,
-    //   (state, action) => {
-    //     state.coachCircles = action.payload;
-    //   }
-    // );
-    // builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
-    //   state.coachClubs = action.payload;
-    // });
-    // builder.addCase(getCoachingCircleTopics.fulfilled, (state, action) => {
-    //   state.coachCicleTopics = action.payload;
-    // });
   },
 });
 

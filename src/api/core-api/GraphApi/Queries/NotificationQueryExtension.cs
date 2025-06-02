@@ -179,26 +179,15 @@ IGenericRepositoryFactory repoFactory, string templateId)
 
             if (roleIds.Count != 0)
             {
-                var isTrainee = roleIds.FindIndex(x => x == "trainees") != -1;
                 var isPrincipal = roleIds.FindIndex(x => x == "practitioners_principals") != -1;
                 var isNonPractitioner = roleIds.FindIndex(x => x == "practitioners_non_principals") != -1;
                 var isCoach = roleIds.FindIndex(x => x == "coaches") != -1;
 
-                // SS roles
-                if (isTrainee)
-                {
-                    messageRecords.AddRange(
-                        (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
-                            join practitioner in context.Practitioners.Where(x => x.IsTrainee == true && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
-                            select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
-                            .OrderByDescending(x => x.MessageDate).Distinct().ToList()
-                        );
-                }
                 if (isPrincipal)
                 {
                     messageRecords.AddRange(
                         (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
-                            join practitioner in context.Practitioners.Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
+                            join practitioner in context.Practitioners.Where(x => (x.IsPrincipal == true) && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
                          select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
                             .OrderByDescending(x => x.MessageDate).Distinct().ToList()
                         );
@@ -207,7 +196,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
                 {
                     messageRecords.AddRange(
                         (from message in context.MessageLogs.Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive == true)
-                            join practitioner in context.Practitioners.Where(x => (x.IsPrincipal == false && x.IsFundaAppAdmin == false) && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
+                            join practitioner in context.Practitioners.Where(x => (x.IsPrincipal == false) && x.IsActive == true) on message.To equals practitioner.UserId.ToString()
                          select new MessageLog() { Id = message.Id, Message = message.Message, Subject = message.Subject, ToGroups = message.ToGroups, MessageDate = message.MessageDate, Status = message.Status })
                             .OrderByDescending(x => x.MessageDate).Distinct().ToList()
                         );
@@ -294,28 +283,22 @@ IGenericRepositoryFactory repoFactory, string templateId)
                 return count;
             }
 
-            var isTrainee = roleIds.FindIndex(x => x == "trainees") != -1;
             var isPrincipal = roleIds.FindIndex(x => x == "practitioners_principals") != -1;
             var isNonPractitioner = roleIds.FindIndex(x => x == "practitioners_non_principals") != -1;
             var isCoach = roleIds.FindIndex(x => x == "coaches") != -1;
 
-            if (isTrainee || isPrincipal || isNonPractitioner)
+            if (isPrincipal || isNonPractitioner)
             {
                 practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true).ToList();
             }
 
-            // SS roles
-            if (isTrainee)
-            {
-                userIds.AddRange(practitioners.Where(x => x.IsTrainee == true).Select(x => x.UserId.Value).Distinct().ToList());
-            }
             if (isPrincipal)
             {
-                userIds.AddRange(practitioners.Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isNonPractitioner)
             {
-                userIds.AddRange(practitioners.Where(x => (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId.Value).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsPrincipal == true).Select(x => x.UserId.Value).Distinct().ToList());
             }
             if (isCoach)
             {
@@ -326,7 +309,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
             // Currently we don't have districts in the system, but this will change after the development in December 23
             if (provinceId != "" || wardName != "")
             {
-                if (isTrainee || isPrincipal || isNonPractitioner)
+                if (isPrincipal || isNonPractitioner)
                 {
                     if (provinceId != "" && wardName == "")
                     {

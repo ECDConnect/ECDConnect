@@ -10,7 +10,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace ECDLink.SmartStart.GraphQL.Mutations
+namespace ECDLink.GraphQL.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ChildProgressReportMutation

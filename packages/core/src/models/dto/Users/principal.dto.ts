@@ -9,16 +9,12 @@ export interface PrincipalDto extends EntityBase {
   siteAddress?: SiteAddressDto;
   siteAddressId?: string;
   attendanceRegisterLink: string;
-  maxChildren?: number;
   consentForPhoto?: boolean;
   parentFees?: number;
   languageUsedInGroups: string;
   startDate?: Date;
-  monthSinceFranchisee?: number;
   documents?: DocumentDto[];
   isPrincipal?: boolean;
-  isFundaAppAdmin?: boolean;
-  isTrainee?: boolean;
   signingSignature: string;
   shareInfo?: boolean;
 }

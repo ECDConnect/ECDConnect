@@ -65,7 +65,6 @@ export const PointsSummary: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
-  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [showInfo, setShowInfo] = useState(false);
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
@@ -83,7 +82,6 @@ export const PointsSummary: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const monthPoints = useSelector(pointsSelectors.getMonthPointsSummary);
 
-  const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
   // const pointsTotalForYear = useSelector(
   //   pointsSelectors.getPointsTotalForYear()
   // );
@@ -836,18 +834,14 @@ export const PointsSummary: React.FC = () => {
         pointsActivity.pointsLibraryId ===
           pointsActivitiesIds.MonthlyPreschoolFeeUpdated &&
         pointsActivity.pointsYTD === 0 &&
-        (practitioner?.isPrincipal || practitioner?.isFundaAppAdmin)
+        practitioner?.isPrincipal
       ) {
         pointsList.push(pointsActivity);
       }
     });
 
     return pointsList;
-  }, [
-    pointsSummaryDataWithLibrary,
-    practitioner?.isFundaAppAdmin,
-    practitioner?.isPrincipal,
-  ]);
+  }, [pointsSummaryDataWithLibrary, practitioner?.isPrincipal]);
 
   const currentMonth = new Date().getMonth(); // +1 for 0 index
 
@@ -860,10 +854,9 @@ export const PointsSummary: React.FC = () => {
     }
     return total;
   }, 0);
-  let pointsMax =
-    isPrincipal || isFundaAppAdmin
-      ? pointsConstants.principalOrAdminMonthlyMax
-      : pointsConstants.practitionerMonthlyMax;
+  let pointsMax = isPrincipal
+    ? pointsConstants.principalOrAdminMonthlyMax
+    : pointsConstants.practitionerMonthlyMax;
 
   const percentageScore = (monthPoints / pointsMax) * 100;
 
@@ -1258,10 +1251,6 @@ export const PointsSummary: React.FC = () => {
               : `${practitioner?.user?.firstName}`
           }
           childCount={pointsShareData?.totalChildren || 0}
-          clubStanding={
-            userStanding?.percentageMembersWithFewerPointsForCurrentMonth || 0
-          }
-          clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>
     </>

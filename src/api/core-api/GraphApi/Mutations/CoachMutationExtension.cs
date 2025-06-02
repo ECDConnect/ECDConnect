@@ -53,17 +53,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             
             if (coach != null)
             {
-                if (input.FranchisorId != null)
-                    coach.FranchisorId = input.FranchisorId;
                 if (input.StartDate != default)
                     coach.StartDate = input.StartDate;
                 if (input.AreaOfOperation != null)
                     coach.AreaOfOperation = input.AreaOfOperation;
-                if (input.ClickedClubTab != null)
-                    coach.ClickedClubTab = input.ClickedClubTab;
-                else
-                    coach.ClickedClubTab = false;
-
                 if (input.SiteAddress != null)
                 {
                     if (input.SiteAddressId is not null && input.SiteAddressId.HasValue)
@@ -158,47 +151,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return practitioner;
         }
 
-        public Coach DeleteCoachForFranchisor(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] VisitManager visitManager,
-            IGenericRepositoryFactory repoFactory,
-            string coachId, string franchisorId)
-        {
-
-            //find the practitioner
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(visitManager, contextAccessor, repoFactory, coachId);
-            coach.FranchisorId = null;
-            var updateResult = dbRepo.Update(coach);
-
-            return coach;
-        }
-
-        public Coach AddCoachToFranchisor([Service] IHttpContextAccessor contextAccessor,
-            [Service] VisitManager visitManager,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            IGenericRepositoryFactory repoFactory,
-            string coachId, string franchisorId)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(visitManager, contextAccessor, repoFactory, coachId);
-            if (coach != null)
-            {
-                coach.FranchisorId = new Guid(franchisorId);
-                var updateResult = dbRepo.Update(coach);
-
-                return coach;
-            }
-            return coach;
-        }
-
         public Coach UpdateCoachAboutInfo([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId, string aboutInfo)
@@ -217,25 +169,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 return coach;
             }
             return coach;
-        }
-
-        public bool UpdateCoachClubClicked([Service] IHttpContextAccessor contextAccessor,
-                                           IGenericRepositoryFactory repoFactory,
-                                           string userId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = coachRepo.GetByUserId(userId);
-
-            if (coach != null)
-            {
-                coach.ClickedClubTab = true;
-                coach.UpdatedDate = DateTime.UtcNow;
-                coach.UpdatedBy = uId.ToString();
-                coachRepo.Update(coach);
-
-            }
-            return true;
         }
 
         public Coach UpdateCoachCommunityTabStatus(

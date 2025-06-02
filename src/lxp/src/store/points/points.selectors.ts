@@ -80,14 +80,12 @@ export const getPointsSummaryWithLibrary = (date: Date) =>
             subActivity: pointsLibrary.subActivity || '',
             description: pointsLibrary.description || '',
             todoDescription: pointsLibrary.todoDescription || '',
-            maxMonthlyPoints:
-              practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-                ? pointsLibrary.maxPointsPrincipalMonthly
-                : pointsLibrary.maxPointsNonPrincipalMonthly,
-            maxYearlyPoints:
-              practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-                ? pointsLibrary.maxPointsPrincipalYearly
-                : pointsLibrary.maxPointsNonPrincipalYearly,
+            maxMonthlyPoints: practitioner?.isPrincipal
+              ? pointsLibrary.maxPointsPrincipalMonthly
+              : pointsLibrary.maxPointsNonPrincipalMonthly,
+            maxYearlyPoints: practitioner?.isPrincipal
+              ? pointsLibrary.maxPointsPrincipalYearly
+              : pointsLibrary.maxPointsNonPrincipalYearly,
             pointsPerAward: pointsLibrary.points,
           };
         }
@@ -156,14 +154,12 @@ export const getPointsSummariesForActivity = (
           subActivity: activity.subActivity || '',
           description: activity.description || '',
           todoDescription: activity.todoDescription || '',
-          maxMonthlyPoints:
-            practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-              ? activity.maxPointsPrincipalMonthly
-              : activity.maxPointsNonPrincipalMonthly,
-          maxYearlyPoints:
-            practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-              ? activity.maxPointsPrincipalYearly
-              : activity.maxPointsNonPrincipalYearly,
+          maxMonthlyPoints: practitioner?.isPrincipal
+            ? activity.maxPointsPrincipalMonthly
+            : activity.maxPointsNonPrincipalMonthly,
+          maxYearlyPoints: practitioner?.isPrincipal
+            ? activity.maxPointsPrincipalYearly
+            : activity.maxPointsNonPrincipalYearly,
           pointsPerAward: activity.points,
         });
 
@@ -214,14 +210,12 @@ export const getPointsSummaryForYear = () =>
             subActivity: activity.subActivity || '',
             description: activity.description || '',
             todoDescription: activity.todoDescription || '',
-            maxMonthlyPoints:
-              practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-                ? activity.maxPointsPrincipalMonthly
-                : activity.maxPointsNonPrincipalMonthly,
-            maxYearlyPoints:
-              practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-                ? activity.maxPointsPrincipalYearly
-                : activity.maxPointsNonPrincipalYearly,
+            maxMonthlyPoints: practitioner?.isPrincipal
+              ? activity.maxPointsPrincipalMonthly
+              : activity.maxPointsNonPrincipalMonthly,
+            maxYearlyPoints: practitioner?.isPrincipal
+              ? activity.maxPointsPrincipalYearly
+              : activity.maxPointsNonPrincipalYearly,
             pointsPerAward: activity.points,
           });
         }
@@ -255,14 +249,6 @@ export const getPointsTotalForYear = () =>
       });
 
       return total;
-    }
-  );
-
-export const getCurrentClubStanding = () =>
-  createSelector(
-    (state: RootState) => state.points.userClubStanding,
-    (userClubStanding) => {
-      return userClubStanding?.standing;
     }
   );
 

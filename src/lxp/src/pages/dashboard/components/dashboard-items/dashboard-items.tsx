@@ -74,22 +74,6 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
         // when notification is marked as read, we want to remove it
         appDispatch(notificationActions.removeNotification(notification!));
       });
-
-      if (
-        notification.message?.cta?.includes(
-          notificationTagConfig?.StartJourney?.cta ?? ''
-        ) ||
-        notification.message?.cta?.includes(
-          notificationTagConfig?.GetStartedTrainee?.cta ?? ''
-        )
-      ) {
-        appDispatch(notificationActions.removeNotification(notification!));
-        appDispatch(
-          disableBackendNotification({
-            notificationId: notification?.message?.reference ?? '',
-          })
-        );
-      }
     } else {
       appDispatch(
         notificationActions.markNotificationRead({
