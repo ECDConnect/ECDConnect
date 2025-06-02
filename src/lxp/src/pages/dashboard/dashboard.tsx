@@ -141,6 +141,11 @@ export const Dashboard: React.FC = () => {
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
+  const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
+  const planActivitiesPermission = practitioner?.permissions?.find(
+    (item) =>
+      item?.permissionName === PermissionsNames.plan_classroom_actitivies
+  );
 
   const getPointsToDoItems = useCallback(async () => {
     appDispatch(
