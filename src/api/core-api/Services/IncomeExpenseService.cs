@@ -162,14 +162,18 @@ namespace ECDLink.Core.Services
                 }).ToList(),
             };
 
-            _pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+            var newRecord = _statementsRepo.Insert(newStatement);
+            
             if (newStatement.IncomeItems.Count > 0 || newStatement.ExpenseItems.Count > 0)
             {
                 _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements60DaysNotification);
                 _notificationService.ExpireNotificationsTypesForUser(userId.ToString(), TemplateTypeConstants.Statements30DaysNotification);
             }
 
-            return _statementsRepo.Insert(newStatement);
+            // calucate points after the record was added
+            _pointsService.CalculateAddExpenseOrIncomeToStatement(userId);
+
+            return newRecord;
         }
 
         public StatementsIncomeStatement UpdateStatement(IncomeStatementModel input)
