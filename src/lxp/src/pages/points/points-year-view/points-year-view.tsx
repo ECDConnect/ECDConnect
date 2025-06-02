@@ -286,7 +286,7 @@ export const PointsYearView: React.FC = () => {
                 if (shareRef.current) {
                   captureAndDownloadComponent(
                     shareRef.current,
-                    'points-year-summary.jpg'
+                    `points-year-summary-${format(new Date(), 'yyyy')}`
                   );
                   setShowPrintData(false);
                 }

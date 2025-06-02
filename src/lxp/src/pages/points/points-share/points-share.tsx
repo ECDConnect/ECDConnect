@@ -90,7 +90,7 @@ export const PointsShare: React.FC<PointsShareProps> = ({
                     ? `One of the top ${
                         practitioner?.isPrincipal ? 'principal' : 'practitioner'
                       } for this period!`
-                    : 'Well done'
+                    : 'Well done!'
                 }
               />
               <table>
