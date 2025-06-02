@@ -1179,7 +1179,7 @@ export const PointsSummary: React.FC = () => {
                   if (shareRef.current) {
                     captureAndDownloadComponent(
                       shareRef.current,
-                      'points-month-summary.jpg'
+                      `points-month-summary-${format(new Date(), 'MMM-yyyy')}`
                     );
                     setShowPrintData(false);
                   }
