@@ -61,6 +61,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ReasonForLeaving { get; set; }
         public string ReasonForLeavingComments { get; set; }
         public string RegisterType { get; set; }
+        public bool? ShareInfoPartners { get; set; }
 
         public virtual ICollection<UserPermission> UserPermissions { get; set; }
 

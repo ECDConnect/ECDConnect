@@ -443,7 +443,8 @@ namespace ECDLink.Security.Api
                     TenantId = tenantId,
                     InsertedDate = DateTime.Now,
                     IsActive = true,
-                    RegisterType = addOAPractitionerModel.RegisterType
+                    RegisterType = addOAPractitionerModel.RegisterType,
+                    ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners,
                 };
 
                 // Validate password for user
@@ -469,7 +470,8 @@ namespace ECDLink.Security.Api
                     TenantId = tenantId,
                     InsertedDate = DateTime.Now,
                     IsActive = true,
-                    RegisterType = addOAPractitionerModel.RegisterType
+                    RegisterType = addOAPractitionerModel.RegisterType,
+                    ShareInfoPartners = addOAPractitionerModel.ShareInfoPartners,
                 };
             }
 
