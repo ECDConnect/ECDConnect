@@ -33,12 +33,14 @@ interface CreateUserFormProps {
   closeAction?: (item: boolean) => void;
   userId?: string;
   token?: string;
+  shareInfoPartners?: boolean;
 }
 
 export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   closeAction,
   userId,
   token,
+  shareInfoPartners,
 }) => {
   const { isOnline } = useOnlineStatus();
   const { setNotification } = useNotifications();
@@ -81,6 +83,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       password,
       phoneNumber,
       registerType: 'username',
+      shareInfoPartners: shareInfoPartners,
     };
     if (isFromAuthCodeScreen && isOpenAccess) {
       setIsLoading(true);
@@ -133,6 +136,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         password,
         phoneNumber,
         registerType: 'username',
+        shareInfoPartners: shareInfoPartners,
       };
 
       if (checkUsername) {

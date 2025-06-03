@@ -170,9 +170,9 @@ namespace EcdLink.Api.CoreApi.Services
                 maxTotal = isPrincipal ? Constants.MaxPointsTotal.PrincipalMaxYearPoints : Constants.MaxPointsTotal.PractitionerMaxYearPoints;
             }
 
-            var takeAttendance = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.TakeAttendanceId).FirstOrDefault();
-            var planClassroomActivities = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.PlanClassroomActivitiesId).FirstOrDefault();
-            var createProgressReports = userPermissions.Where(x => x.PermissionId == Constants.PractitionerPermissions.CreateProgressReportsId).FirstOrDefault();
+            var takeAttendance = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.TakeAttendance && x.IsActive).FirstOrDefault();
+            var planClassroomActivities = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.PlanClassroomActivities && x.IsActive).FirstOrDefault();
+            var createProgressReports = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.CreateProgressReports && x.IsActive).FirstOrDefault();
 
             if (!isPrincipal)
             {
@@ -564,25 +564,62 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null)
                 {
                     var today = DateTime.Now;
-                    var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
-                    if (schoolClasses.Any())
-                    {
-                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
-                        var classroomProgrammes = schoolClasses
-                                                .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month && x.Name != "No theme")
-                                                .ToList();
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.ThemePlannedId);
 
-                        if (classroomProgrammes.Count > 0)
+                    if (practitioner?.IsPrincipal == true)
+                    {
+                        var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
+                        if (schoolClasses.Any())
                         {
-                            AddOrUpdatePoints(
-                                PointsActivityConstants.ThemePlannedId,
-                                userId,
-                                activity.Points * classroomProgrammes.Count,
-                                classroomProgrammes.Count,
-                                today.GetStartOfMonth()
-                            );
+                            var classroomProgrammes = schoolClasses
+                                                    .SelectMany(x => x.Programmes)
+                                                    .Where(x => x.IsActive && x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month && x.Name != "No theme")
+                                                    .ToList();
+
+                            if (classroomProgrammes.Count > 0)
+                            {
+                                AddOrUpdatePoints(
+                                    PointsActivityConstants.ThemePlannedId,
+                                    userId,
+                                    activity.Points * classroomProgrammes.Count,
+                                    classroomProgrammes.Count,
+                                    today.GetStartOfMonth()
+                                );
+                            }
                         }
+                    }
+                    else
+                    {
+                        var userPermissions = practitioner.User.UserPermissions;
+                        var planClassroomActivities = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.PlanClassroomActivities && x.IsActive).FirstOrDefault();
+                        if (planClassroomActivities != null)
+                        {
+                            var classRoomGroup = _classroomGroupRepo.GetByUserId(userId);
+                            if (classRoomGroup != null)
+                            {
+                                var classroomProgrammes = _programmeRepo.GetAll()
+                                                                        .Where(x => x.IsActive
+                                                                                    && x.InsertedDate.Year == today.Year
+                                                                                    && x.InsertedDate.Month == today.Month
+                                                                                    && x.Name != "No theme"
+                                                                                    && x.ClassroomGroupId == classRoomGroup.Id)
+                                                                        .ToList();
+
+                                if (classroomProgrammes.Count > 0)
+                                {
+                                    AddOrUpdatePoints(
+                                        PointsActivityConstants.ThemePlannedId,
+                                        userId,
+                                        activity.Points * classroomProgrammes.Count,
+                                        classroomProgrammes.Count,
+                                        today.GetStartOfMonth()
+                                    );
+                                }
+                            }
+
+
+                        }
+
                     }
                 }
             }
