@@ -86,7 +86,10 @@ export const Messages: React.FC = () => {
           notificationId: notification?.message?.reference ?? '',
         })
       ).then(() => {
-        if (notification.message?.actionText !== 'Create Reports') {
+        if (
+          notification.message?.actionText !== 'Create Reports' ||
+          notification.message?.cta !== '[[ContactPrincipal]]'
+        ) {
           appDispatch(notificationActions.removeNotification(notification!));
         }
       });
