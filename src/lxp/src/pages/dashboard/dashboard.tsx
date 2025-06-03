@@ -78,6 +78,8 @@ import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
 import { CommunityRouteState } from '../community/community.types';
+import { usePoints } from '@/hooks/usePoints';
+import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 
 const { version } = require('../../../package.json');
 
@@ -142,6 +144,7 @@ export const Dashboard: React.FC = () => {
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
+
   const planActivitiesPermission = practitioner?.permissions?.find(
     (item) =>
       item?.permissionName === PermissionsNames.plan_classroom_actitivies
@@ -1020,223 +1023,17 @@ export const Dashboard: React.FC = () => {
     userData?.profileImageUrl ||
     userProfilePicture?.reference;
 
-  const getCurrentPointsToDo = useMemo(() => {
-    if (pointsToDo) {
-      let newPointsToDo = { ...pointsToDo };
-      if (practitioner?.isPrincipal) {
-        removeMandatoryProperty(
-          newPointsToDo,
-          'plannedOneDay',
-          (value) => practitioner?.isPrincipal === true
-        );
-      } else {
-        removeMandatoryProperty(
-          newPointsToDo,
-          'savedIncomeOrExpense',
-          (value) => !practitioner?.isPrincipal
-        );
-      }
+  // Hooks for points
+  const {
+    phase1StatusText,
+    isPhase1Completed,
+    getCurrentPointsToDo,
+    renderPointsToDoProgressBarColor,
+    renderPointsToDoScoreCardBgColor,
+    showPhase2Card,
+  } = usePoints();
 
-      const pointsToDoValues = Object.values(newPointsToDo!)?.filter(
-        (item) => item === true
-      );
-      return pointsToDoValues?.length;
-    } else {
-      return 0;
-    }
-  }, [pointsToDo, practitioner?.isPrincipal]);
-
-  const renderTodoText = useMemo(() => {
-    const planActivitiesPermission = practitioner?.permissions?.find(
-      (item) =>
-        item?.permissionName === PermissionsNames.plan_classroom_actitivies
-    );
-
-    if (pointsToDo?.viewedCommunitySection) {
-      return 'Influencer';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'Boss';
-    }
-
-    if (
-      (pointsToDo?.plannedOneDay && practitioner?.isPrincipal) ||
-      (pointsToDo?.plannedOneDay &&
-        !practitioner?.isPrincipal &&
-        planActivitiesPermission?.isActive === true)
-    ) {
-      return 'Cwepheshe';
-    }
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'Tichere';
-    }
-
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
-      return 'Umtsha';
-    }
-
-    return 'Umtsha';
-  }, [
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-  ]);
-
-  const renderPointsToDoScoreCardBgColor = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
-        return 'quatenaryBg';
-      }
-      return 'successBg';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'quatenaryBg';
-    }
-
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
-      return 'quatenaryBg';
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'secondaryAccent2';
-    }
-
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
-      return 'alertBg';
-    }
-
-    return 'alertBg';
-  }, [
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-  ]);
-
-  const renderPointsToDoEmoji = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
-        return (
-          <div className="bg-quatenary mr-4 rounded-full p-3">
-            <FireIcon className="font-white h-8 w-8 text-white" />
-          </div>
-        );
-      }
-      return (
-        <div className="bg-successMain mr-4 rounded-full p-3">
-          <FireIcon className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return (
-        <div className="bg-quatenary mr-4 rounded-full p-3">
-          <Crown className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
-      return (
-        <div className="bg-quatenary mr-4 rounded-full p-3">
-          <CalendarIcon className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return (
-        <div className="bg-secondary mr-4 rounded-full p-3">
-          <Kindgarden className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
-      return (
-        <div className="bg-alertMain mr-4 rounded-full p-2">
-          <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
-        </div>
-      );
-    }
-
-    return (
-      <div className="bg-alertMain mr-4 rounded-full p-2">
-        <ClipboardCheckIcon className="font-white h-8  w-8 text-white" />
-      </div>
-    );
-  }, [
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-  ]);
-
-  const renderPointsToDoProgressBarColor = useMemo(() => {
-    if (pointsToDo?.viewedCommunitySection) {
-      if (getCurrentPointsToDo === 3) {
-        return 'quatenary';
-      }
-      return 'successMain';
-    }
-
-    if (pointsToDo?.savedIncomeOrExpense && practitioner?.isPrincipal) {
-      return 'quatenary';
-    }
-
-    if (pointsToDo?.plannedOneDay && !practitioner?.isPrincipal) {
-      return 'quatenary';
-    }
-
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
-      return 'secondary';
-    }
-
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
-      return 'alertMain';
-    }
-
-    return 'alertMain';
-  }, [
-    pointsToDo?.isPartOfPreschool,
-    pointsToDo?.plannedOneDay,
-    pointsToDo?.savedIncomeOrExpense,
-    pointsToDo?.signedUpForApp,
-    pointsToDo?.viewedCommunitySection,
-    practitioner?.isPrincipal,
-  ]);
-
-  // const practitionerWithAttendancePermissionPointsToDo =
-  //   practitioner?.isPrincipal ||
-  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-  //     ? getCurrentPointsToDo < 4
-  //     : getCurrentPointsToDo < 3;
-
-  // const practitionerWithAttendancePermissionPoints =
-  //   practitioner?.isPrincipal ||
-  //   (!practitioner?.isPrincipal && planActivitiesPermission?.isActive === true)
-  //     ? getCurrentPointsToDo === 4
-  //     : getCurrentPointsToDo === 3;
-
-  function removeMandatoryProperty<T, K extends keyof T>(
-    obj: T,
-    prop: K,
-    condition: (value: T[K]) => boolean
-  ): void {
-    if (condition(obj[prop])) {
-      delete (obj as any)[prop]; // Use type assertion to bypass TypeScript checks
-    }
-  }
+  const { renderPointsToDoEmoji } = usePointsToDoEmoji();
 
   const name =
     userData && userData?.firstName
@@ -1320,31 +1117,12 @@ export const Dashboard: React.FC = () => {
             listItems={dashboardItems}
             notification={dashboardNotification}
           />
-          {totalYearPoints &&
-          totalYearPoints >= 10 &&
-          !!pointsScoreProps &&
-          !isCoach ? (
-            <ScoreCard
-              className="mt-1 mb-1 h-20 w-full"
-              progressBarClassName="flex pt-2"
-              mainText={pointsScoreProps?.mainText!}
-              hint={pointsScoreProps?.hint}
-              currentPoints={pointsScoreProps?.currentPoints!}
-              maxPoints={pointsScoreProps?.maxPoints!}
-              onClick={pointsScoreProps?.onClick!}
-              barBgColour={pointsScoreProps?.barBgColour!}
-              barColour={pointsScoreProps?.barColour!}
-              bgColour={pointsScoreProps?.bgColour!}
-              image={pointsScoreProps?.image!}
-              textColour={pointsScoreProps?.textColour!}
-              textPosition={pointsScoreProps?.textPosition!}
-            />
-          ) : null}
-          {(!totalYearPoints || (totalYearPoints && totalYearPoints < 10)) &&
-          !isCoach ? (
+
+          {/* Score Card for phase 1 */}
+          {(!isPhase1Completed && !isCoach) || totalYearPoints === 0 ? (
             <NoPointsScoreCard
               image={renderPointsToDoEmoji}
-              className="mt-5 w-full py-6"
+              className="mt-1 w-full py-4"
               mainText={''}
               currentPoints={getCurrentPointsToDo}
               maxPoints={
@@ -1362,8 +1140,30 @@ export const Dashboard: React.FC = () => {
               textColour="black"
               onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY)}
               isBigTitle={false}
-              hint={renderTodoText}
+              hint={phase1StatusText}
               textPosition="left"
+            />
+          ) : null}
+
+          {/* Score Card for phase 2 */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          !isCoach &&
+          !!pointsScoreProps ? (
+            <ScoreCard
+              className="mt-1 mb-1 h-20 w-full"
+              progressBarClassName="flex pt-2"
+              mainText={pointsScoreProps?.mainText!}
+              hint={pointsScoreProps?.hint}
+              currentPoints={pointsScoreProps?.currentPoints!}
+              maxPoints={pointsScoreProps?.maxPoints!}
+              onClick={pointsScoreProps?.onClick!}
+              barBgColour={pointsScoreProps?.barBgColour!}
+              barColour={pointsScoreProps?.barColour!}
+              bgColour={pointsScoreProps?.bgColour!}
+              image={pointsScoreProps?.image!}
+              textColour={pointsScoreProps?.textColour!}
+              textPosition={pointsScoreProps?.textPosition!}
             />
           ) : null}
         </div>
