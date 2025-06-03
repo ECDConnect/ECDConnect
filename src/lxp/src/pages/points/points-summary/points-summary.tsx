@@ -401,8 +401,6 @@ export const PointsSummary: React.FC = () => {
     return stackedMenuList;
   };
 
-  console.log('pointsToDo', pointsToDo);
-
   useEffect(() => {
     getPointsToDoItems();
     getshareData();
@@ -695,7 +693,7 @@ export const PointsSummary: React.FC = () => {
             />
           ) : null}
 
-          {/* celebration card????? */}
+          {/* celebration card with no percentage score */}
           {!isOnline &&
           isPhase1Completed &&
           showPhase2Card &&
@@ -704,21 +702,20 @@ export const PointsSummary: React.FC = () => {
             <div>{celebrationCard}</div>
           ) : null}
 
-          {/* celebration card????? */}
+          {/* celebration card */}
           {isOnline &&
           isPhase1Completed &&
           showPhase2Card &&
           monthPoints &&
           pointsTotalForYear &&
-          pointsTotalForYear >= 10 ? (
+          pointsTotalForYear > 0 ? (
             <CelebrationCard
               image={getEmoji(
                 pointsShareData?.userRankingData
                   ?.comparativeTargetPercentageColor!
               )}
               primaryMessage={
-                pointsShareData?.userRankingData?.comparativePrimaryMessage! +
-                'assss'
+                pointsShareData?.userRankingData?.comparativePrimaryMessage!
               }
               secondaryMessage={
                 pointsShareData?.userRankingData?.comparativeSecondaryMessage!
@@ -830,7 +827,7 @@ export const PointsSummary: React.FC = () => {
           {(isPhase1Completed &&
             showPhase2Card &&
             pointsTotalForYear &&
-            pointsTotalForYear >= 10 &&
+            pointsTotalForYear > 0 &&
             monthPoints === 0 &&
             practitioner?.coachHierarchy) ||
           (percentageScore === 0 && practitioner?.coachHierarchy) ? (
