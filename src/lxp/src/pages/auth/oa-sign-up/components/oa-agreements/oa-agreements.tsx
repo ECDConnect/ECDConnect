@@ -9,7 +9,6 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useTenant } from '@/hooks/useTenant';
 import { ContentConsentTypeEnum, useTheme } from '@ecdlink/core';
 import Article from '@/components/article/article';
 import { useHistory } from 'react-router';
@@ -28,12 +27,10 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
   const { isOnline } = useOnlineStatus();
   const { theme } = useTheme();
   const history = useHistory();
-  const tenant = useTenant();
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [articleTitle, setArticleTitle] = useState<string>();
-  const applicationName = tenant?.tenant?.applicationName;
   const [termsAndConditions, setTermsAndConditions] = useState(false);
   const [termsAndConditionsError, setTermsAndConditionsError] = useState(false);
   const [permissionsAgreement, setPermissionAgreement] = useState(false);
@@ -64,7 +61,7 @@ export const OAAgreements: React.FC<OAAgreementsProps> = ({ closeAction }) => {
       return;
     }
 
-    history.push(ROUTES.CREATE_USERNAME);
+    history.push(ROUTES.CREATE_USERNAME, { shareInfoPartners: shareConsent });
   };
 
   useEffect(() => {
