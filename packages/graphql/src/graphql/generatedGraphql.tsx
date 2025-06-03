@@ -480,6 +480,7 @@ export type ApplicationUser = {
   registerType?: Maybe<Scalars['String']>;
   resetData?: Maybe<Scalars['Boolean']>;
   roles?: Maybe<Array<Maybe<ApplicationIdentityRole>>>;
+  shareInfoPartners?: Maybe<Scalars['Boolean']>;
   surname?: Maybe<Scalars['String']>;
   tenantId?: Maybe<Scalars['UUID']>;
   traineeObjectData?: Maybe<Trainee>;
@@ -544,6 +545,7 @@ export type ApplicationUserFilterInput = {
   reasonForLeavingComments?: InputMaybe<StringOperationFilterInput>;
   registerType?: InputMaybe<StringOperationFilterInput>;
   resetData?: InputMaybe<BooleanOperationFilterInput>;
+  shareInfoPartners?: InputMaybe<BooleanOperationFilterInput>;
   surname?: InputMaybe<StringOperationFilterInput>;
   tenantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   traineeObjectData?: InputMaybe<TraineeFilterInput>;
@@ -606,6 +608,7 @@ export type ApplicationUserInput = {
   reasonForLeavingComments?: InputMaybe<Scalars['String']>;
   registerType?: InputMaybe<Scalars['String']>;
   resetData?: InputMaybe<Scalars['Boolean']>;
+  shareInfoPartners?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;
   tenantId?: InputMaybe<Scalars['UUID']>;
   traineeObjectData?: InputMaybe<TraineeInput>;
@@ -666,6 +669,7 @@ export type ApplicationUserSortInput = {
   reasonForLeavingComments?: InputMaybe<SortEnumType>;
   registerType?: InputMaybe<SortEnumType>;
   resetData?: InputMaybe<SortEnumType>;
+  shareInfoPartners?: InputMaybe<SortEnumType>;
   surname?: InputMaybe<SortEnumType>;
   tenantId?: InputMaybe<SortEnumType>;
   traineeObjectData?: InputMaybe<TraineeSortInput>;

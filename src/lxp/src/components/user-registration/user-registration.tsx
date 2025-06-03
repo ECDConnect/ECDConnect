@@ -4,23 +4,20 @@ import {
   Button,
   Dialog,
   DialogPosition,
-  Divider,
   Typography,
 } from '@ecdlink/ui';
 
 import { useState } from 'react';
 import { CreateUserForm } from './components/create-user-form/create-user-form';
 import { useHistory, useLocation } from 'react-router';
-import { useTheme } from '@ecdlink/core';
 import TransparentLayer from '../../assets/TransparentLayer.png';
-
 interface UserRegistrationProps {
   closeAction?: (item: boolean) => void;
 }
-
 export interface UserRegistrationRouteState {
   userId?: string;
   token?: string;
+  shareInfoPartners?: boolean;
 }
 
 export const UserRegistration: React.FC<UserRegistrationProps> = ({
@@ -31,8 +28,8 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
   const { state } = useLocation<UserRegistrationRouteState>();
   const userId = state?.userId;
   const token = state?.token;
+  const shareInfoPartners = state?.shareInfoPartners;
   const [openCreateUser, setOpencreateUser] = useState(false);
-  const { theme } = useTheme();
 
   return (
     <BannerWrapper
@@ -50,37 +47,6 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
           className={'text-sm font-normal'}
           color={'textDark'}
         />
-        {/* <div>
-          <Button
-            className={'mt-10 w-full rounded-xl'}
-            type="filled"
-            color="infoMain"
-            onClick={() => {}}
-            textColor="white"
-          >
-            <img
-              src={facebookLogo}
-              alt="facebook"
-              className="relative mr-2 h-5 w-5"
-            />
-            <Typography
-              type={'h4'}
-              text={'Sign up with Facebook'}
-              className={'text-sm font-normal'}
-              color={'white'}
-            />
-          </Button>
-        </div>
-        <div className="my-12 flex flex-row items-center gap-2">
-          <Divider className="absolute w-6/12" />
-          <Typography
-            type={'h4'}
-            text={'OR'}
-            className={'text-sm font-normal'}
-            color={'textMid'}
-          />
-          <Divider className="absolute w-6/12" />
-        </div> */}
         <Button
           className={'mt-2 w-full rounded-xl'}
           type="filled"
@@ -101,6 +67,7 @@ export const UserRegistration: React.FC<UserRegistrationProps> = ({
           closeAction={setOpencreateUser}
           userId={userId}
           token={token}
+          shareInfoPartners={shareInfoPartners}
         />
       </Dialog>
     </BannerWrapper>
