@@ -362,6 +362,15 @@ namespace ECDLink.Core.Services
 
         public string CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
+            // update statement Download field
+            if (statement?.Downloaded == false)
+            {
+                var statementRecord = _statementsRepo.GetById(statement.Id);
+                statementRecord.Downloaded = true;
+                _statementsRepo.Update(statementRecord);
+                _pointsService.CalculateDownloadIncomeStatement((Guid)statement.UserId); 
+            }
+
             var classroom = _classroomRepo.GetByUserId(userId);
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);
