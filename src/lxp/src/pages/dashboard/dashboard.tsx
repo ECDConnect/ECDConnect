@@ -1,10 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  LocalStorageKeys,
-  RoleSystemNameEnum,
-  useDialog,
-  useTheme,
-} from '@ecdlink/core';
+import { RoleSystemNameEnum, useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
   Avatar,
@@ -19,7 +14,7 @@ import {
   ScoreCard,
   NoPointsScoreCard,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -69,15 +64,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import DashboardWrapper from './dashboard-wrapper/dashboard-wrapper';
 import { useAppContext } from '@/walkthrougContext';
 import { useTenantModules } from '@/hooks/useTenantModules';
-import {
-  CalendarIcon,
-  ClipboardCheckIcon,
-  FireIcon,
-} from '@heroicons/react/solid';
-import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
-import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
 import { PermissionsNames } from '../principal/components/add-practitioner/add-practitioner.types';
-import { CommunityRouteState } from '../community/community.types';
 import { usePoints } from '@/hooks/usePoints';
 import { usePointsToDoEmoji } from '@/hooks/usePointsToDoEmoji';
 
@@ -1148,6 +1135,8 @@ export const Dashboard: React.FC = () => {
           {/* Score Card for phase 2 */}
           {isPhase1Completed &&
           showPhase2Card &&
+          totalYearPoints &&
+          totalYearPoints > 0 &&
           !isCoach &&
           !!pointsScoreProps ? (
             <ScoreCard
