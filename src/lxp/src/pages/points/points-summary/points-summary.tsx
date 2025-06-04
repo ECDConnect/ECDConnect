@@ -138,6 +138,28 @@ export const PointsSummary: React.FC = () => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const stackedMenuList: MenuListDataItem[] = [];
+
+    // To make tichere clickable
+    const canClickTichere = tenant.isWhiteLabel
+      ? pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool
+      : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
+        (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ||
+        practitioner?.progress! < 2;
+
+    const tichereUrl = tenant.isWhiteLabel
+      ? ROUTES.PRINCIPAL.SETUP_PROFILE
+      : practitioner?.principalHierarchy && !practitioner?.dateAccepted
+      ? ROUTES.PRACTITIONER.PROFILE.EDIT
+      : ROUTES.PRINCIPAL.SETUP_PROFILE;
+    // To make influencer clickable
+    const canClickInfluencer = tenant.isWhiteLabel
+      ? pointsToDo?.signedUpForApp &&
+        pointsToDo?.isPartOfPreschool &&
+        !pointsToDo?.viewedCommunitySection
+      : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
+        (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ||
+        practitioner?.progress === 2;
+
     const umtsha: MenuListDataItem = {
       id: '1',
       title: `Umtsha`,
@@ -203,18 +225,9 @@ export const PointsSummary: React.FC = () => {
           : pointsToDo?.signedUpForApp
           ? 'quatenaryBg'
           : 'adminPortalBg',
-      onActionClick:
-        pointsToDo?.signedUpForApp &&
-        !pointsToDo?.isPartOfPreschool &&
-        !isTrialPeriod &&
-        practitioner?.isPrincipal
-          ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-          : pointsToDo?.signedUpForApp &&
-            !pointsToDo?.isPartOfPreschool &&
-            !isTrialPeriod &&
-            !practitioner?.isPrincipal
-          ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-          : () => {},
+      onActionClick: canClickTichere
+        ? () => history.push(tichereUrl, {})
+        : () => {},
     };
 
     const bossOrCwepheshe: MenuListDataItem = {
@@ -334,12 +347,9 @@ export const PointsSummary: React.FC = () => {
           : 'bg-uiLight'
       } rounded-full h-12 w-12 p-2.5`,
       showIcon: true,
-      onActionClick:
-        pointsToDo?.signedUpForApp &&
-        pointsToDo?.isPartOfPreschool &&
-        !pointsToDo?.viewedCommunitySection
-          ? () => history.push(ROUTES.COMMUNITY.WELCOME)
-          : () => {},
+      onActionClick: canClickInfluencer
+        ? () => history.push(ROUTES.COMMUNITY.WELCOME)
+        : () => {},
       hideRightIcon: true,
       backgroundColor: pointsToDo?.viewedCommunitySection
         ? 'successBg'
