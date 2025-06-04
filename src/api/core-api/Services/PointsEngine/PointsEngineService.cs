@@ -592,7 +592,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         var userPermissions = practitioner.User.UserPermissions;
                         var planClassroomActivities = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.PlanClassroomActivities && x.IsActive).FirstOrDefault();
-                        if (planClassroomActivities != null)
+                        if (planClassroomActivities != null && planClassroomActivities.IsActive == true)
                         {
                             var classRoomGroup = _classroomGroupRepo.GetByUserId(userId);
                             if (classRoomGroup != null)
@@ -616,10 +616,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     );
                                 }
                             }
-
-
                         }
-
                     }
                 }
             }
@@ -639,28 +636,63 @@ namespace EcdLink.Api.CoreApi.Services
                 if (practitioner != null)
                 {
                     var today = DateTime.Now;
-                    var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
-                    if (schoolClasses.Any())
-                    {
-                        var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
+                    var activity = _pointsActivityRepo.GetAll().Single(x => x.Id == PointsActivityConstants.NoThemePlannedId);
 
-                        var totalCompletedDays = schoolClasses
-                                                .SelectMany(x => x.Programmes)
-                                                .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name == "No theme")
-                                                .ToList()
-                                                .SelectMany(x => x.DailyProgrammes)
-                                                .ToList()
-                                                .Where(x => x.IsActive && x.DateCompleted.HasValue && x.DateCompleted.Value.Year == today.Year && x.DateCompleted.Value.Month == today.Month)
-                                                .Select(x => x.Id)
-                                                .Count();
-                       if (totalCompletedDays > 0)
+                    if (practitioner?.IsPrincipal == true)
+                    {
+                        var schoolClasses = _classRepo.GetAll().Where(x => x.IsActive && x.UserId == userId).ToList();
+                        if (schoolClasses.Any())
                         {
-                            AddOrUpdatePoints(
-                                PointsActivityConstants.NoThemePlannedId,
-                                userId,
-                                activity.Points * totalCompletedDays,
-                                totalCompletedDays
-                                );
+                            var totalCompletedDays = schoolClasses
+                                                    .SelectMany(x => x.Programmes)
+                                                    .Where(x => x.IsActive && x.StartDate.Year >= today.Year && x.Name == "No theme")
+                                                    .ToList()
+                                                    .SelectMany(x => x.DailyProgrammes)
+                                                    .ToList()
+                                                    .Where(x => x.IsActive && x.DateCompleted.HasValue && x.DateCompleted.Value.Year == today.Year && x.DateCompleted.Value.Month == today.Month)
+                                                    .Select(x => x.Id)
+                                                    .Count();
+                            if (totalCompletedDays > 0)
+                            {
+                                AddOrUpdatePoints(
+                                    PointsActivityConstants.NoThemePlannedId,
+                                    userId,
+                                    activity.Points * totalCompletedDays,
+                                    totalCompletedDays
+                                    );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var userPermissions = practitioner.User.UserPermissions;
+                        var planClassroomActivities = userPermissions.Where(x => x.Permission.Name == Constants.PractitionerPermissions.PlanClassroomActivities && x.IsActive).FirstOrDefault();
+                        if (planClassroomActivities != null && planClassroomActivities.IsActive == true)
+                        {
+                            var classRoomGroup = _classroomGroupRepo.GetByUserId(userId);
+                            if (classRoomGroup != null)
+                            {
+                                var totalCompletedDays = _programmeRepo.GetAll()
+                                                    .Where(x => x.IsActive
+                                                            && x.StartDate.Year >= today.Year
+                                                            && x.Name == "No theme"
+                                                            && x.ClassroomGroupId == classRoomGroup.Id)
+                                                    .SelectMany(x => x.DailyProgrammes)
+                                                    .ToList()
+                                                    .Where(x => x.IsActive && x.DateCompleted.HasValue && x.DateCompleted.Value.Year == today.Year && x.DateCompleted.Value.Month == today.Month)
+                                                    .Select(x => x.Id)
+                                                    .Count();
+
+                                if (totalCompletedDays > 0)
+                                {
+                                    AddOrUpdatePoints(
+                                        PointsActivityConstants.NoThemePlannedId,
+                                        userId,
+                                        activity.Points * totalCompletedDays,
+                                        totalCompletedDays
+                                        );
+                                }
+                            }
                         }
                     }
                 }
