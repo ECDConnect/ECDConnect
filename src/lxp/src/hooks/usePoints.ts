@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 import { useTenant } from './useTenant';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import { pointsSelectors } from '@/store/points';
-import { useIsTrialPeriod } from './useIsTrialPeriod';
 import { Colours } from '@ecdlink/ui';
 
 export const usePoints = () => {
@@ -12,7 +11,6 @@ export const usePoints = () => {
   const tenant = useTenant();
   const isWhiteLabel = tenant?.isWhiteLabel;
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
-  const isTrialPeriod = useIsTrialPeriod();
   const totalYearPoints = useSelector(pointsSelectors.getTotalYearPoints);
 
   const planActivitiesPermission = useMemo(
@@ -26,20 +24,18 @@ export const usePoints = () => {
 
   const phase1StatusText = useMemo(() => {
     // step 1 - all
-    const umtsha = isWhiteLabel
-      ? !pointsToDo?.isPartOfPreschool
-      : !pointsToDo?.isPartOfPreschool || isTrialPeriod;
+    const umtsha = !pointsToDo?.isPartOfPreschool;
     // step 2 - all
-    const tichere = isWhiteLabel
-      ? pointsToDo?.isPartOfPreschool
-      : pointsToDo?.isPartOfPreschool && !isTrialPeriod;
+    const tichere = pointsToDo?.isPartOfPreschool;
     // step 3a - principal
     const boss = practitioner?.isPrincipal
       ? pointsToDo?.savedIncomeOrExpense
       : false;
     // step 3b - practitioner
     const cwepheshe = !practitioner?.isPrincipal
-      ? pointsToDo?.plannedOneDay && planActivitiesPermission?.isActive
+      ? pointsToDo?.plannedOneDay &&
+        planActivitiesPermission &&
+        planActivitiesPermission?.isActive
       : false;
     // step 4 - all
     const influencer = pointsToDo?.viewedCommunitySection;
@@ -59,28 +55,45 @@ export const usePoints = () => {
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
-    planActivitiesPermission?.isActive,
+    planActivitiesPermission,
   ]);
+
   const isPhase1Completed = useMemo(() => {
-    // Report complete, or no age group (so no report can be created)
-    return practitioner?.isPrincipal
-      ? pointsToDo?.isPartOfPreschool &&
+    const isCompleted =
+      // WL
+      tenant.isWhiteLabel
+        ? practitioner?.isPrincipal
+          ? pointsToDo?.isPartOfPreschool &&
+            pointsToDo?.savedIncomeOrExpense &&
+            pointsToDo?.signedUpForApp &&
+            pointsToDo?.viewedCommunitySection
+          : planActivitiesPermission && planActivitiesPermission?.isActive
+          ? pointsToDo?.isPartOfPreschool &&
+            pointsToDo?.plannedOneDay &&
+            pointsToDo?.signedUpForApp &&
+            pointsToDo?.viewedCommunitySection
+          : pointsToDo?.isPartOfPreschool &&
+            pointsToDo?.signedUpForApp &&
+            pointsToDo?.viewedCommunitySection
+        : // OA
+        practitioner?.isPrincipal
+        ? pointsToDo?.isPartOfPreschool &&
+          practitioner?.progress === 2 &&
           pointsToDo?.savedIncomeOrExpense &&
           pointsToDo?.signedUpForApp &&
           pointsToDo?.viewedCommunitySection
-      : planActivitiesPermission?.isActive
-      ? pointsToDo?.isPartOfPreschool &&
-        pointsToDo?.plannedOneDay &&
-        pointsToDo?.signedUpForApp &&
-        pointsToDo?.viewedCommunitySection
-      : pointsToDo?.isPartOfPreschool &&
-        pointsToDo?.signedUpForApp &&
-        pointsToDo?.viewedCommunitySection;
-  }, [
-    practitioner?.isPrincipal,
-    pointsToDo,
-    planActivitiesPermission?.isActive,
-  ]);
+        : planActivitiesPermission && planActivitiesPermission?.isActive
+        ? pointsToDo?.isPartOfPreschool &&
+          practitioner?.progress === 2 &&
+          pointsToDo?.plannedOneDay &&
+          pointsToDo?.signedUpForApp &&
+          pointsToDo?.viewedCommunitySection
+        : pointsToDo?.isPartOfPreschool &&
+          practitioner?.progress === 2 &&
+          pointsToDo?.signedUpForApp &&
+          pointsToDo?.viewedCommunitySection;
+    return isCompleted;
+  }, [practitioner?.isPrincipal, pointsToDo, planActivitiesPermission]);
 
   const showPhase2Card = isPhase1Completed && (totalYearPoints || 0) > 0;
 
@@ -122,14 +135,16 @@ export const usePoints = () => {
 
   const renderPointsToDoProgressBarColor: Colours = useMemo(() => {
     if (pointsToDo?.viewedCommunitySection) {
-      if (
-        (getCurrentPointsToDo === 3 && practitioner?.isPrincipal) ||
-        (!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true &&
-          getCurrentPointsToDo === 3)
-      ) {
-        return 'quatenary';
+      if (practitioner?.isPrincipal) {
+        if (!pointsToDo?.savedIncomeOrExpense) {
+          return 'quatenary';
+        }
+      } else {
+        if (!pointsToDo.plannedOneDay) {
+          return 'quatenary';
+        }
       }
+
       return 'successMain';
     }
 
@@ -140,12 +155,17 @@ export const usePoints = () => {
     if (
       pointsToDo?.plannedOneDay &&
       !practitioner?.isPrincipal &&
+      planActivitiesPermission &&
       planActivitiesPermission?.isActive === true
     ) {
       return 'quatenary';
     }
 
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
+    if (
+      tenant.isWhiteLabel
+        ? pointsToDo?.isPartOfPreschool
+        : pointsToDo?.isPartOfPreschool && practitioner?.progress === 2
+    ) {
       return 'secondary';
     }
 
@@ -156,26 +176,27 @@ export const usePoints = () => {
     return 'alertMain';
   }, [
     getCurrentPointsToDo,
-    planActivitiesPermission?.isActive,
+    planActivitiesPermission,
     pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
-    isTrialPeriod,
   ]);
 
   const renderPointsToDoScoreCardBgColor: Colours = useMemo(() => {
     if (pointsToDo?.viewedCommunitySection) {
-      if (
-        (getCurrentPointsToDo === 3 && practitioner?.isPrincipal) ||
-        (!practitioner?.isPrincipal &&
-          planActivitiesPermission?.isActive === true &&
-          getCurrentPointsToDo === 3)
-      ) {
-        return 'quatenaryBg';
+      if (practitioner?.isPrincipal) {
+        if (!pointsToDo?.savedIncomeOrExpense) {
+          return 'quatenaryBg';
+        }
+      } else {
+        if (!pointsToDo.plannedOneDay) {
+          return 'quatenaryBg';
+        }
       }
+
       return 'successBg';
     }
 
@@ -186,12 +207,17 @@ export const usePoints = () => {
     if (
       pointsToDo?.plannedOneDay &&
       !practitioner?.isPrincipal &&
+      planActivitiesPermission &&
       planActivitiesPermission?.isActive === true
     ) {
       return 'quatenaryBg';
     }
 
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
+    if (
+      tenant.isWhiteLabel
+        ? pointsToDo?.isPartOfPreschool
+        : pointsToDo?.isPartOfPreschool && practitioner?.progress === 2
+    ) {
       return 'secondaryAccent2';
     }
 
@@ -202,14 +228,13 @@ export const usePoints = () => {
     return 'alertBg';
   }, [
     getCurrentPointsToDo,
-    planActivitiesPermission?.isActive,
+    planActivitiesPermission,
     pointsToDo?.isPartOfPreschool,
     pointsToDo?.plannedOneDay,
     pointsToDo?.savedIncomeOrExpense,
     pointsToDo?.signedUpForApp,
     pointsToDo?.viewedCommunitySection,
     practitioner?.isPrincipal,
-    isTrialPeriod,
   ]);
 
   return {

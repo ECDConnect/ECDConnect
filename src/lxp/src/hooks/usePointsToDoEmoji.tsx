@@ -10,12 +10,12 @@ import {
 import { ReactComponent as Kindgarden } from '@/assets/icon/kindergarten1.svg';
 import { ReactComponent as Crown } from '@/assets/icon/crown.svg';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
-import { useIsTrialPeriod } from './useIsTrialPeriod';
+import { useTenant } from './useTenant';
 
 export const usePointsToDoEmoji = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const pointsToDo = useSelector(pointsSelectors.getPointsToDo);
-  const isTrialPeriod = useIsTrialPeriod();
+  const tenant = useTenant();
 
   const planActivitiesPermission = useMemo(
     () =>
@@ -27,18 +27,21 @@ export const usePointsToDoEmoji = () => {
   );
 
   const renderPointsToDoEmoji = useMemo(() => {
-    let communityColor = 'bg-successMain';
+    let communityColor = 'bg-quatenary';
 
     if (pointsToDo?.viewedCommunitySection) {
-      if (practitioner?.isPrincipal && !pointsToDo.savedIncomeOrExpense) {
-        communityColor = 'bg-quatenary';
-      }
-      if (
-        !practitioner?.isPrincipal &&
-        planActivitiesPermission?.isActive &&
-        !pointsToDo.plannedOneDay
-      ) {
-        communityColor = 'bg-quatenary';
+      if (practitioner?.isPrincipal) {
+        if (pointsToDo.savedIncomeOrExpense) {
+          communityColor = 'bg-successMain';
+        }
+      } else {
+        if (
+          planActivitiesPermission &&
+          planActivitiesPermission?.isActive &&
+          pointsToDo.plannedOneDay
+        ) {
+          communityColor = 'bg-successMain';
+        }
       }
       return (
         <div className={`${communityColor} mr-4 rounded-full p-3`}>
@@ -63,7 +66,11 @@ export const usePointsToDoEmoji = () => {
       );
     }
 
-    if (pointsToDo?.isPartOfPreschool && !isTrialPeriod) {
+    if (
+      tenant?.isWhiteLabel
+        ? pointsToDo?.isPartOfPreschool
+        : pointsToDo?.isPartOfPreschool && practitioner?.progress === 2
+    ) {
       return (
         <div className="bg-secondary mr-4 rounded-full p-3">
           <Kindgarden className="font-white h-6 w-6 text-white" />
@@ -71,7 +78,7 @@ export const usePointsToDoEmoji = () => {
       );
     }
 
-    if (pointsToDo?.signedUpForApp || isTrialPeriod) {
+    if (pointsToDo?.signedUpForApp) {
       return (
         <div className="bg-alertMain mr-4 rounded-full p-2">
           <ClipboardCheckIcon className="font-white h-6 w-6 text-white" />
@@ -91,8 +98,9 @@ export const usePointsToDoEmoji = () => {
     pointsToDo?.isPartOfPreschool,
     pointsToDo?.signedUpForApp,
     practitioner?.isPrincipal,
-    planActivitiesPermission?.isActive,
-    isTrialPeriod,
+    practitioner?.progress,
+    planActivitiesPermission,
+    tenant?.isWhiteLabel,
   ]);
 
   return {

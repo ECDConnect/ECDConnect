@@ -1,7 +1,8 @@
 import {
-  pointActivitiesItems,
   pointsActivitiesIds,
   pointsConstants,
+  practitionerActivitiesItems,
+  principalActivitiesItems,
 } from '@/constants/points';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -39,15 +40,9 @@ import { authSelectors } from '@/store/auth';
 import { PointsTodoItem } from './components/points-todo-item/points-todo-item';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
-import {
-  CalendarIcon,
-  ClipboardCheckIcon,
-  FireIcon,
-} from '@heroicons/react/solid';
-import { ReactComponent as Kindgarden } from '@/assets//icon/kindergarten1.svg';
-import { ReactComponent as Crown } from '@/assets//icon/crown.svg';
+import { ReactComponent as Kindgarden } from '@/assets/icon/kindergarten1.svg';
+import { ReactComponent as Crown } from '@/assets/icon/crown.svg';
 import { useTenant } from '@/hooks/useTenant';
-// import { pointsTodoItems } from '@/store/points/points.actions';
 import { TabsItems } from '@/pages/classroom/class-dashboard/class-dashboard.types';
 import { PermissionsNames } from '@/pages/principal/components/add-practitioner/add-practitioner.types';
 import { BusinessTabItems } from '@/pages/business/business.types';
@@ -124,9 +119,9 @@ export const PointsSummary: React.FC = () => {
     return response;
   }, [practitioner?.userId, userAuth?.auth_token]);
 
-  const todoListFiltered = !practitioner?.isPrincipal
-    ? pointActivitiesItems
-        ?.filter((item) => item?.activity !== 'Income/expenses added')
+  const todoListFiltered = practitioner?.isPrincipal
+    ? principalActivitiesItems
+    : practitionerActivitiesItems
         ?.filter((item2) =>
           attendancePermission?.isActive !== true
             ? item2?.activity !== 'Attendance registers saved'
@@ -136,18 +131,35 @@ export const PointsSummary: React.FC = () => {
           return pointsShareData?.activityDetail?.some((f: any) => {
             return f.activity !== el.activity;
           });
-        })
-    : pointActivitiesItems.filter((el) => {
-        if (pointsShareData?.activityDetail?.length === 0) return true;
-        return pointsShareData?.activityDetail?.some((f: any) => {
-          return f.activity !== el.activity;
         });
-      });
 
   const getPhase1StackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const stackedMenuList: MenuListDataItem[] = [];
+
+    // To make tichere clickable
+    const canClickTichere = tenant.isWhiteLabel
+      ? pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool
+      : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
+        (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ||
+        practitioner?.progress! < 2;
+
+    const tichereUrl = practitioner?.isPrincipal
+      ? ROUTES.PRINCIPAL.SETUP_PROFILE
+      : practitioner?.principalHierarchy && !practitioner?.dateAccepted
+      ? ROUTES.PRACTITIONER.PROFILE.EDIT
+      : ROUTES.PRINCIPAL.SETUP_PROFILE;
+
+    // To make influencer clickable
+    const canClickInfluencer = tenant.isWhiteLabel
+      ? pointsToDo?.signedUpForApp &&
+        pointsToDo?.isPartOfPreschool &&
+        !pointsToDo?.viewedCommunitySection
+      : // OA Principal/Practitioner will have a preschool by default, but we need to check for progress less than 2
+        (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ||
+        practitioner?.progress === 2;
+
     const umtsha: MenuListDataItem = {
       id: '1',
       title: `Umtsha`,
@@ -213,18 +225,9 @@ export const PointsSummary: React.FC = () => {
           : pointsToDo?.signedUpForApp
           ? 'quatenaryBg'
           : 'adminPortalBg',
-      onActionClick:
-        pointsToDo?.signedUpForApp &&
-        !pointsToDo?.isPartOfPreschool &&
-        !isTrialPeriod &&
-        practitioner?.isPrincipal
-          ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-          : pointsToDo?.signedUpForApp &&
-            !pointsToDo?.isPartOfPreschool &&
-            !isTrialPeriod &&
-            !practitioner?.isPrincipal
-          ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-          : () => {},
+      onActionClick: canClickTichere
+        ? () => history.push(tichereUrl, {})
+        : () => {},
     };
 
     const bossOrCwepheshe: MenuListDataItem = {
@@ -344,12 +347,9 @@ export const PointsSummary: React.FC = () => {
           : 'bg-uiLight'
       } rounded-full h-12 w-12 p-2.5`,
       showIcon: true,
-      onActionClick:
-        pointsToDo?.signedUpForApp &&
-        pointsToDo?.isPartOfPreschool &&
-        !pointsToDo?.viewedCommunitySection
-          ? () => history.push(ROUTES.COMMUNITY.WELCOME)
-          : () => {},
+      onActionClick: canClickInfluencer
+        ? () => history.push(ROUTES.COMMUNITY.WELCOME)
+        : () => {},
       hideRightIcon: true,
       backgroundColor: pointsToDo?.viewedCommunitySection
         ? 'successBg'
@@ -710,6 +710,7 @@ export const PointsSummary: React.FC = () => {
           pointsTotalForYear &&
           pointsTotalForYear > 0 ? (
             <CelebrationCard
+              className="mt-3"
               image={getEmoji(
                 pointsShareData?.userRankingData
                   ?.comparativeTargetPercentageColor!
@@ -732,13 +733,13 @@ export const PointsSummary: React.FC = () => {
             />
           ) : null}
 
-          {/* Text for earning more points */}
+          {/* Text heading for earning more points */}
           {!!todoListFiltered &&
           isPhase1Completed &&
           showPhase2Card &&
           !!todoListFiltered.length ? (
             <Typography
-              className="mt-8 mb-4"
+              className="mt-4 mb-4"
               type={'h3'}
               color="black"
               text={`How you can earn more points in ${format(
@@ -748,7 +749,7 @@ export const PointsSummary: React.FC = () => {
             />
           ) : null}
 
-          {/* Show items of how you can score */}
+          {/* Show items of how you can score - when in phase 2 and there are points for the year */}
           {!!todoListFiltered &&
           isPhase1Completed &&
           showPhase2Card &&
@@ -774,12 +775,13 @@ export const PointsSummary: React.FC = () => {
             : null}
         </div>
 
-        {/* Share icon button */}
+        {/* Share icon button - when phase 2 and there are month and year points */}
         <div className="flex-column mt-10 justify-end p-4">
           {isPhase1Completed &&
           showPhase2Card &&
           pointsTotalForYear &&
           pointsTotalForYear > 0 &&
+          monthPoints &&
           monthPoints > 0 ? (
             <Button
               size="normal"
@@ -804,33 +806,33 @@ export const PointsSummary: React.FC = () => {
             />
           ) : null}
 
-          {/* Button to find to show how to */}
-          {(isPhase1Completed &&
-            showPhase2Card &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 0 &&
-            monthPoints === 0 &&
-            !practitioner?.coachHierarchy) ||
-          (percentageScore === 0 && !practitioner?.coachHierarchy) ? (
+          {/* Button to find to show how to - when there is yearly points but no month points in phase 2 */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 &&
+          monthPoints &&
+          monthPoints === 0 ? (
             <Button
               size="normal"
               className="mb-4 w-full"
               type="filled"
               color="quatenary"
-              text="Find out how you can earn points"
+              text="How to earn points"
               textColor="white"
-              icon="LightBulbIcon"
+              icon="QuestionMarkCircleIcon"
               onClick={() => setShowInfo(true)}
             />
           ) : null}
-          {/* Button to ask coach help */}
-          {(isPhase1Completed &&
-            showPhase2Card &&
-            pointsTotalForYear &&
-            pointsTotalForYear > 0 &&
-            monthPoints === 0 &&
-            practitioner?.coachHierarchy) ||
-          (percentageScore === 0 && practitioner?.coachHierarchy) ? (
+
+          {/* Button to ask coach help - when there is yearly points, no month points and assigned coach in phase 2 */}
+          {isPhase1Completed &&
+          showPhase2Card &&
+          pointsTotalForYear &&
+          pointsTotalForYear > 0 &&
+          monthPoints &&
+          monthPoints === 0 &&
+          practitioner?.coachHierarchy ? (
             <Button
               size="normal"
               className="mb-4 w-full"
@@ -842,7 +844,8 @@ export const PointsSummary: React.FC = () => {
               onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
             />
           ) : null}
-          {/* Button to see detailed report */}
+
+          {/* Button to see detailed report - when in phase 2 and there are points for year */}
           {isPhase1Completed &&
           showPhase2Card &&
           pointsTotalForYear &&
