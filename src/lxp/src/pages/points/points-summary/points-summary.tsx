@@ -146,7 +146,7 @@ export const PointsSummary: React.FC = () => {
         (pointsToDo?.signedUpForApp && !pointsToDo?.isPartOfPreschool) ||
         practitioner?.progress! < 2;
 
-    const tichereUrl = tenant.isWhiteLabel
+    const tichereUrl = practitioner?.isPrincipal
       ? ROUTES.PRINCIPAL.SETUP_PROFILE
       : practitioner?.principalHierarchy && !practitioner?.dateAccepted
       ? ROUTES.PRACTITIONER.PROFILE.EDIT
