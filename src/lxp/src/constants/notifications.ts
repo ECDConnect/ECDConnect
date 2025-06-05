@@ -6,6 +6,8 @@ interface NotificationTagConfigParams {
   [key: string]: Partial<Message>;
   AddedToProgramme: Partial<Message>;
   UpdateFee: Partial<Message>;
+  TrackIncome: Partial<Message>;
+  ProgressSummary: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AddedToProgramme: {
@@ -31,6 +33,12 @@ export const notificationTagConfig: NotificationTagConfigParams = {
       },
     },
     viewType: 'Both',
+  },
+  TrackIncome: {
+    cta: '[[StartNow]]',
+  },
+  ProgressSummary: {
+    cta: '[[GetSummary]]',
   },
 };
 

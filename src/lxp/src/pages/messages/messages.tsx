@@ -85,33 +85,59 @@ export const Messages: React.FC = () => {
         markAsReadNotification({
           notificationId: notification?.message?.reference ?? '',
         })
-      ).then(() => {
-        if (
-          notification.message?.actionText !== 'Create Reports' ||
-          notification.message?.cta !== '[[ContactPrincipal]]'
-        ) {
-          appDispatch(notificationActions.removeNotification(notification!));
-        }
-      });
-    } else {
-      appDispatch(
-        notificationActions.markNotificationRead({
-          reference: notification?.message?.reference ?? '',
-        })
       );
+    }
+
+    appDispatch(
+      notificationActions.markNotificationRead({
+        reference: notification?.message?.reference ?? '',
+      })
+    );
+
+    if (
+      notification.message?.cta?.includes(
+        notificationTagConfig?.TrackIncome?.cta ?? ''
+      ) ||
+      notification.message?.cta?.includes(
+        notificationTagConfig?.ProgressSummary?.cta ?? ''
+      )
+    ) {
+      appDispatch(notificationActions.removeNotification(notification!));
+      if (notification.message?.isFromBackend) {
+        appDispatch(
+          disableBackendNotification({
+            notificationId: notification?.message?.reference ?? '',
+          })
+        );
+      }
     }
 
     if (notification.message.action) {
       const action = JSON.parse(
         notification.message.action
       ) as MessageActionConfig;
-      action?.url && history.push(action.url, action.state);
+
+      if (action.state?.activeTabIndex) {
+        return (
+          action?.url &&
+          history.push({
+            pathname: action.url,
+            state: {
+              activeTabIndex: Number(action.state.activeTabIndex),
+            },
+          })
+        );
+      } else {
+        return (
+          action?.url &&
+          history.push({ pathname: action.url, state: action.state })
+        );
+      }
     }
 
     for (const [key, value] of Object.entries(notificationTagConfig)) {
       if (value.cta === notification.message.cta && value.routeConfig!) {
-        history.push(value?.routeConfig?.route);
-        break;
+        return history.push(value?.routeConfig?.route);
       }
     }
 
